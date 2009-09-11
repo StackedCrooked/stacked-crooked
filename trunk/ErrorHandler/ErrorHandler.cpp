@@ -57,7 +57,7 @@ int ErrorReporter::lastError() const
 	{
 		return mStack.top()->errorCode();
 	}
-	return 0;
+	return mTopLevelError.errorCode();
 }
 
 

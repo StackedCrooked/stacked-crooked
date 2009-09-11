@@ -2,7 +2,7 @@
 #include <assert.h>
 
 
-GlobalErrorHandler * GlobalErrorHandler::sInstance = 0;
+ErrorReporter * ErrorReporter::sInstance = 0;
 
 
 ErrorHandler::ErrorHandler() :
@@ -29,24 +29,24 @@ int ErrorHandler::errorCode() const
 }
 
 
-void GlobalErrorHandler::CreateInstance()
+void ErrorReporter::CreateInstance()
 {
 	assert(!sInstance);
 	if (!sInstance)
 	{
-		sInstance = new GlobalErrorHandler();
+		sInstance = new ErrorReporter();
 	}
 }
 
 
-GlobalErrorHandler & GlobalErrorHandler::Instance()
+ErrorReporter & ErrorReporter::Instance()
 {
 	assert(sInstance);
 	return *sInstance;
 }
 
 
-void GlobalErrorHandler::DestroyInstance()
+void ErrorReporter::DestroyInstance()
 {
 	assert(sInstance);
 	if (sInstance)
@@ -57,7 +57,7 @@ void GlobalErrorHandler::DestroyInstance()
 }
 
 
-int GlobalErrorHandler::lastError() const
+int ErrorReporter::lastError() const
 {
 	if (!mStack.empty())
 	{
@@ -67,7 +67,7 @@ int GlobalErrorHandler::lastError() const
 }
 
 
-void GlobalErrorHandler::postError(int inErrorCode)
+void ErrorReporter::postError(int inErrorCode)
 {
 	if (!mStack.empty())
 	{
@@ -80,13 +80,13 @@ void GlobalErrorHandler::postError(int inErrorCode)
 }
 
 
-void GlobalErrorHandler::push(ScopedErrorHandler * inErrorHandler)
+void ErrorReporter::push(ScopedErrorHandler * inErrorHandler)
 {
 	mStack.push(inErrorHandler);
 }
 
 
-void GlobalErrorHandler::pop(ScopedErrorHandler * inErrorHandler)
+void ErrorReporter::pop(ScopedErrorHandler * inErrorHandler)
 {
 	bool foundOnTop = mStack.top() == inErrorHandler;
 	assert(foundOnTop);
@@ -97,12 +97,12 @@ void GlobalErrorHandler::pop(ScopedErrorHandler * inErrorHandler)
 }
 
 
-void GlobalErrorHandler::propagate(ScopedErrorHandler * inErrorHandler)
+void ErrorReporter::propagate(ScopedErrorHandler * inErrorHandler)
 {
 	// Empty stack would mean that there are no ScopedErrorHandle objects in existence right now
 	assert (!mStack.empty());
 
-	// We must propagate the GlobalErrorHandler
+	// We must propagate the ErrorReporter
 	if (mStack.size() == 1)
 	{
 		setErrorCode(inErrorHandler->errorCode());
@@ -119,23 +119,29 @@ void GlobalErrorHandler::propagate(ScopedErrorHandler * inErrorHandler)
 
 
 ScopedErrorHandler::ScopedErrorHandler() :
-	mDismissed(false)
+	mPropagate(false)
 {
-	GlobalErrorHandler::Instance().push(this);
+	ErrorReporter::Instance().push(this);
 }
 
 
 ScopedErrorHandler::~ScopedErrorHandler()
 {
-	if (!mDismissed)
+	if (mPropagate)
 	{
-		GlobalErrorHandler::Instance().propagate(this);
+		ErrorReporter::Instance().propagate(this);
 	}
-	GlobalErrorHandler::Instance().pop(this);
+	ErrorReporter::Instance().pop(this);
 }
 
 
-void ScopedErrorHandler::dismiss()
+void ScopedErrorHandler::propagate()
 {
-	mDismissed = true;
+	mPropagate = true;
+}
+
+
+void ReportError(int inErrorCode)
+{
+	ErrorReporter::Instance().postError(inErrorCode);
 }

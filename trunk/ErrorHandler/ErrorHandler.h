@@ -28,20 +28,19 @@ public:
 
 	~ScopedErrorHandler();
 
-	void dismiss();
+	void propagate();
 
 private:
-	void propagate();
-	bool mDismissed;
+	bool mPropagate;
 };
 
 
-class GlobalErrorHandler : public ErrorHandler
+class ErrorReporter : public ErrorHandler
 {
 public:
 	static void CreateInstance();
 	
-	static GlobalErrorHandler & Instance();
+	static ErrorReporter & Instance();
 	
 	static void DestroyInstance();
 
@@ -59,7 +58,11 @@ private:
 	void propagate(ScopedErrorHandler * inErrorHandler);
 
 	std::stack<ScopedErrorHandler*> mStack;
-	static GlobalErrorHandler * sInstance;
+	static ErrorReporter * sInstance;
 };
+
+
+void ReportError(int inErrorCode);
+
 
 #endif // ERRORHANDLER_H

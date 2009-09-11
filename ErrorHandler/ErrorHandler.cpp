@@ -61,7 +61,7 @@ int ErrorReporter::lastError() const
 }
 
 
-void ErrorReporter::postError(int inErrorCode)
+void ErrorReporter::reportError(int inErrorCode)
 {
 	if (!mStack.empty())
 	{
@@ -130,7 +130,7 @@ ScopedError::~ScopedError()
 }
 
 
-bool ScopedError::hasError() const
+bool ScopedError::isError() const
 {
 	return mErrorInfo.errorCode() != 0;
 }
@@ -156,5 +156,5 @@ void ScopedError::propagate()
 
 void ReportError(int inErrorCode)
 {
-	ErrorReporter::Instance().postError(inErrorCode);
+	ErrorReporter::Instance().reportError(inErrorCode);
 }

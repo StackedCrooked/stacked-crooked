@@ -1,6 +1,7 @@
 #include "ErrorHandler.h"
 #include <iostream>
 #include <string>
+#include <assert.h>
 
 
 enum
@@ -15,29 +16,29 @@ enum
 
 void openFile()
 {
-	ReportError(OPEN_FILE_FAILED);
+	ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
 }
 
 void readFile()
 {
-	ScopedError errorHandler;
+	ScopedError scopedError;
 	
 	openFile();
-	if (errorHandler.hasError())
+	if (scopedError.isError())
 	{
 		// propagate because want the caller to handle the error
-		errorHandler.propagate();
+		scopedError.propagate();
 		return;
 	}
 
 	bool readFailed = true;
 	if (readFailed)
 	{
-		ReportError(READ_FILE_FAILED);
+		ErrorReporter::Instance().reportError(READ_FILE_FAILED);
 
 		// propagation needed because we reported to local errorHandle
 		// and we want the error to be handled by its parent
-		errorHandler.propagate(); 
+		scopedError.propagate(); 
 	}
 }
 
@@ -93,26 +94,63 @@ void log(int inErrorCode, const std::string & inMessage)
 
 void testErrorHandler()
 {
-	ScopedError errorHandler;
+	ScopedError scopedError;
 	readFile();
-	if (errorHandler.hasError())
+	if (scopedError.isError())
 	{
-		log(errorHandler.errorCode(), "Failed to read the file");
+		log(scopedError.errorCode(), "Failed to read the file");
 		return;
 	}
 
 	processFile();
-	if (errorHandler.hasError())
+	if (scopedError.isError())
 	{
-		log(errorHandler.errorCode(), "Failed to process the file.");
+		log(scopedError.errorCode(), "Failed to process the file.");
 		return;
 	}
 
 	writeFile();
-	if (errorHandler.hasError())
+	if (scopedError.isError())
 	{
-		log(errorHandler.errorCode(), "Failed to write the file.");
+		log(scopedError.errorCode(), "Failed to write the file.");
 		return;
+	}
+}
+
+
+void test()
+{
+	{
+		ScopedError se;
+		assert(!se.isError());
+		se.setErrorCode(1);
+		assert(se.isError());
+		assert(se.errorCode() == 1);
+	}
+
+	// test nested scope without propagation
+	{
+		ScopedError se1;
+		{
+			ScopedError se2;
+			ErrorReporter::Instance().reportError(2);
+			assert(se2.isError());
+			assert(se2.errorCode() == 2);
+		}
+		assert(!se1.isError());
+	}
+
+
+	// test nested scope with propagation
+	{
+		ScopedError se1;
+		{
+			ScopedError se2;
+			ErrorReporter::Instance().reportError(3);
+			se2.propagate();
+		}
+		assert (se1.isError());
+		assert (se1.errorCode() == 3);
 	}
 }
 
@@ -121,6 +159,7 @@ int main()
 {
 	ErrorReporter::CreateInstance();
 	
+	test();
 	testErrorHandler();
 
 	ErrorReporter::DestroyInstance();

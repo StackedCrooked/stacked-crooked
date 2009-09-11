@@ -26,7 +26,7 @@ public:
 
 	~ScopedError();
 
-	bool hasError() const;
+	bool isError() const;
 
 	int errorCode() const;
 
@@ -51,7 +51,7 @@ public:
 
 	int lastError() const;
 
-	void postError(int inErrorCode);
+	void reportError(int inErrorCode);
 
 private:
 	friend class ScopedError;
@@ -66,9 +66,6 @@ private:
 	std::stack<ScopedError*> mStack;
 	static ErrorReporter * sInstance;
 };
-
-
-void ReportError(int inErrorCode);
 
 
 #endif // ERRORHANDLER_H

@@ -15,26 +15,30 @@ enum
 
 void openFile()
 {
-	//GlobalErrorHandler::Instance().postError(OPEN_FILE_FAILED);
+	ReportError(OPEN_FILE_FAILED);
 }
 
 void readFile()
 {
-	// read the file
 	ScopedErrorHandler errorHandler;
 	
-	// opening the file
 	openFile();
 	if (errorHandler.hasError())
 	{
+		// propagate because want the caller to handle the error
+		errorHandler.propagate();
 		return;
 	}
 
-	// trying to read the file, suppose it fails
-	GlobalErrorHandler::Instance().postError(READ_FILE_FAILED);
+	bool readFailed = true;
+	if (readFailed)
+	{
+		ReportError(READ_FILE_FAILED);
 
-	// end of scope
-	// any errors information contained in errorHandler will now be propagated to parent errorHandler
+		// propagation needed because we reported to local errorHandle
+		// and we want the error to be handled by its parent
+		errorHandler.propagate(); 
+	}
 }
 
 void processFile()
@@ -115,11 +119,11 @@ void testErrorHandler()
 
 int main()
 {
-	GlobalErrorHandler::CreateInstance();
+	ErrorReporter::CreateInstance();
 	
 	testErrorHandler();
 
-	GlobalErrorHandler::DestroyInstance();
+	ErrorReporter::DestroyInstance();
 
 	std::cout << "Press ENTER to quit.";
 	getchar();

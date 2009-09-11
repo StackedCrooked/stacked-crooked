@@ -5,25 +5,19 @@
 ErrorReporter * ErrorReporter::sInstance = 0;
 
 
-ErrorHandler::ErrorHandler() :
+ErrorInfo::ErrorInfo() :
 	mErrorCode(0)
 {
 }
 
 
-bool ErrorHandler::hasError() const
-{
-	return mErrorCode != 0;
-}
-
-
-void ErrorHandler::setErrorCode(int inErrorCode)
+void ErrorInfo::setErrorCode(int inErrorCode)
 {
 	mErrorCode = inErrorCode;
 }
 
 
-int ErrorHandler::errorCode() const
+int ErrorInfo::errorCode() const
 {
 	return mErrorCode;
 }
@@ -80,13 +74,13 @@ void ErrorReporter::postError(int inErrorCode)
 }
 
 
-void ErrorReporter::push(ScopedErrorHandler * inErrorHandler)
+void ErrorReporter::push(ScopedError * inErrorHandler)
 {
 	mStack.push(inErrorHandler);
 }
 
 
-void ErrorReporter::pop(ScopedErrorHandler * inErrorHandler)
+void ErrorReporter::pop(ScopedError * inErrorHandler)
 {
 	bool foundOnTop = mStack.top() == inErrorHandler;
 	assert(foundOnTop);
@@ -97,7 +91,7 @@ void ErrorReporter::pop(ScopedErrorHandler * inErrorHandler)
 }
 
 
-void ErrorReporter::propagate(ScopedErrorHandler * inErrorHandler)
+void ErrorReporter::propagate(ScopedError * inErrorHandler)
 {
 	// Empty stack would mean that there are no ScopedErrorHandle objects in existence right now
 	assert (!mStack.empty());
@@ -109,23 +103,23 @@ void ErrorReporter::propagate(ScopedErrorHandler * inErrorHandler)
 	}
 	else
 	{
-		std::stack<ScopedErrorHandler*>::container_type::const_iterator target = mStack._Get_container().end();
+		std::stack<ScopedError*>::container_type::const_iterator target = mStack._Get_container().end();
 		--target;
 		--target;
-		ScopedErrorHandler * parentErrorHandler = *target;
+		ScopedError * parentErrorHandler = *target;
 		parentErrorHandler->setErrorCode(inErrorHandler->errorCode());
 	}
 }
 
 
-ScopedErrorHandler::ScopedErrorHandler() :
+ScopedError::ScopedError() :
 	mPropagate(false)
 {
 	ErrorReporter::Instance().push(this);
 }
 
 
-ScopedErrorHandler::~ScopedErrorHandler()
+ScopedError::~ScopedError()
 {
 	if (mPropagate)
 	{
@@ -135,7 +129,25 @@ ScopedErrorHandler::~ScopedErrorHandler()
 }
 
 
-void ScopedErrorHandler::propagate()
+bool ScopedError::hasError() const
+{
+	return mErrorInfo.errorCode() != 0;
+}
+
+
+int ScopedError::errorCode() const
+{
+	return mErrorInfo.errorCode();
+}
+
+
+void ScopedError::setErrorCode(int inErrorCode)
+{
+	mErrorInfo.setErrorCode(inErrorCode);
+}
+
+
+void ScopedError::propagate()
 {
 	mPropagate = true;
 }

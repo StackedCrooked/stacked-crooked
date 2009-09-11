@@ -20,7 +20,7 @@ void openFile()
 
 void readFile()
 {
-	ScopedErrorHandler errorHandler;
+	ScopedError errorHandler;
 	
 	openFile();
 	if (errorHandler.hasError())
@@ -93,7 +93,7 @@ void log(int inErrorCode, const std::string & inMessage)
 
 void testErrorHandler()
 {
-	ScopedErrorHandler errorHandler;
+	ScopedError errorHandler;
 	readFile();
 	if (errorHandler.hasError())
 	{

@@ -5,12 +5,10 @@
 #include <stack>
 
 
-class ErrorHandler
+class ErrorInfo
 {
 public:
-	ErrorHandler();
-
-	bool hasError() const;
+	ErrorInfo();
 
 	int errorCode() const;
 
@@ -21,21 +19,28 @@ private:
 };
 
 
-class ScopedErrorHandler : public ErrorHandler
+class ScopedError
 {
 public:
-	ScopedErrorHandler();
+	ScopedError();
 
-	~ScopedErrorHandler();
+	~ScopedError();
+
+	bool hasError() const;
+
+	int errorCode() const;
+
+	void setErrorCode(int inErrorCode);
 
 	void propagate();
 
 private:
+	ErrorInfo mErrorInfo;
 	bool mPropagate;
 };
 
 
-class ErrorReporter : public ErrorHandler
+class ErrorReporter : public ErrorInfo
 {
 public:
 	static void CreateInstance();
@@ -49,15 +54,15 @@ public:
 	void postError(int inErrorCode);
 
 private:
-	friend class ScopedErrorHandler;
+	friend class ScopedError;
 
-	void push(ScopedErrorHandler * inErrorHandler);
+	void push(ScopedError * inErrorHandler);
 
-	void pop(ScopedErrorHandler * inErrorHandler);
+	void pop(ScopedError * inErrorHandler);
 
-	void propagate(ScopedErrorHandler * inErrorHandler);
+	void propagate(ScopedError * inErrorHandler);
 
-	std::stack<ScopedErrorHandler*> mStack;
+	std::stack<ScopedError*> mStack;
 	static ErrorReporter * sInstance;
 };
 

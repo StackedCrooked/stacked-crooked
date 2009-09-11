@@ -120,37 +120,46 @@ void testErrorHandler()
 
 void test()
 {
+	// Basic usage
+	{
+		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
+		int lastError = ErrorReporter::Instance().lastError();
+		assert(lastError == OPEN_FILE_FAILED);
+	}
+
+
+	// test ScopedError
 	{
 		ScopedError se;
 		assert(!se.isError());
-		se.setErrorCode(1);
+		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
 		assert(se.isError());
-		assert(se.errorCode() == 1);
+		assert(se.errorCode() == OPEN_FILE_FAILED);
 	}
 
-	// test nested scope without propagation
+	// test nested ScopedError without propagation
 	{
 		ScopedError se1;
 		{
 			ScopedError se2;
-			ErrorReporter::Instance().reportError(2);
+			ErrorReporter::Instance().reportError(READ_FILE_FAILED);
 			assert(se2.isError());
-			assert(se2.errorCode() == 2);
+			assert(se2.errorCode() == READ_FILE_FAILED);
 		}
 		assert(!se1.isError());
 	}
 
 
-	// test nested scope with propagation
+	// test nested ScopedError with propagation
 	{
 		ScopedError se1;
 		{
 			ScopedError se2;
-			ErrorReporter::Instance().reportError(3);
+			ErrorReporter::Instance().reportError(PROCESS_FILE_FAILED);
 			se2.propagate();
 		}
 		assert (se1.isError());
-		assert (se1.errorCode() == 3);
+		assert (se1.errorCode() == PROCESS_FILE_FAILED);
 	}
 }
 

@@ -69,20 +69,20 @@ void ErrorReporter::postError(int inErrorCode)
 	}
 	else
 	{
-		setErrorCode(inErrorCode);
+		mTopLevelError.setErrorCode(inErrorCode);
 	}
 }
 
 
-void ErrorReporter::push(ScopedError * inErrorHandler)
+void ErrorReporter::push(ScopedError * inError)
 {
-	mStack.push(inErrorHandler);
+	mStack.push(inError);
 }
 
 
-void ErrorReporter::pop(ScopedError * inErrorHandler)
+void ErrorReporter::pop(ScopedError * inError)
 {
-	bool foundOnTop = mStack.top() == inErrorHandler;
+	bool foundOnTop = mStack.top() == inError;
 	assert(foundOnTop);
 	if (foundOnTop)
 	{
@@ -91,23 +91,24 @@ void ErrorReporter::pop(ScopedError * inErrorHandler)
 }
 
 
-void ErrorReporter::propagate(ScopedError * inErrorHandler)
+void ErrorReporter::propagate(ScopedError * inError)
 {
 	// Empty stack would mean that there are no ScopedErrorHandle objects in existence right now
 	assert (!mStack.empty());
 
-	// We must propagate the ErrorReporter
+	// If only one element is on the stack, then we propagate to top-level-error.
 	if (mStack.size() == 1)
 	{
-		setErrorCode(inErrorHandler->errorCode());
+		mTopLevelError.setErrorCode(inError->errorCode());
 	}
+	// Otherwise we overwrite the parent error
 	else
 	{
 		std::stack<ScopedError*>::container_type::const_iterator target = mStack._Get_container().end();
 		--target;
 		--target;
 		ScopedError * parentErrorHandler = *target;
-		parentErrorHandler->setErrorCode(inErrorHandler->errorCode());
+		*parentErrorHandler = *inError;
 	}
 }
 

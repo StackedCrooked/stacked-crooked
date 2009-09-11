@@ -40,7 +40,7 @@ private:
 };
 
 
-class ErrorReporter : public ErrorInfo
+class ErrorReporter
 {
 public:
 	static void CreateInstance();
@@ -56,12 +56,13 @@ public:
 private:
 	friend class ScopedError;
 
-	void push(ScopedError * inErrorHandler);
+	void push(ScopedError * inError);
 
-	void pop(ScopedError * inErrorHandler);
+	void pop(ScopedError * inError);
 
-	void propagate(ScopedError * inErrorHandler);
+	void propagate(ScopedError * inError);
 
+	ErrorInfo mTopLevelError;
 	std::stack<ScopedError*> mStack;
 	static ErrorReporter * sInstance;
 };

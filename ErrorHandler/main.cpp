@@ -36,16 +36,8 @@ void runSelfTest()
 		}
 	};
 
-
 	{
-		Formatter f("Basic usage");
-		ThrowError(OPEN_FILE_FAILED);
-		const Error & lastError = ErrorStack::Instance().lastError();
-		assert(lastError.code() == OPEN_FILE_FAILED);
-	}
-
-	{
-		Formatter f("With ErrorCatcher");
+		Formatter f("Basic ErrorCatcher");
 		ErrorCatcher se;
 		assert(!se.hasCaught());
 		ThrowError(OPEN_FILE_FAILED);
@@ -76,6 +68,13 @@ void runSelfTest()
 			se2.rethrow();
 		}
 		assert (se1.code() == PROCESS_FILE_FAILED);
+	}
+
+	{
+		Formatter f("Without ErrorCatcher");
+		ThrowError(OPEN_FILE_FAILED);
+		const Error & lastError = ErrorStack::Instance().lastError();
+		assert(lastError.code() == OPEN_FILE_FAILED);
 	}
 }
 
@@ -131,7 +130,6 @@ void runSamples()
 			std::cout << errorCatcher.message() << std::endl;
 		}		
 	}
-
 }
 
 

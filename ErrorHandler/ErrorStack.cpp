@@ -1,4 +1,4 @@
-#include "ErrorReporter.h"
+#include "ErrorStack.h"
 #include <assert.h>
 
 

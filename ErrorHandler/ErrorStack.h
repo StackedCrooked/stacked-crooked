@@ -1,5 +1,5 @@
-#ifndef ERRORREPORTER_H
-#define ERRORREPORTER_H
+#ifndef ERRORSTACK_H
+#define ERRORSTACK_H
 
 
 #include <stack>
@@ -177,4 +177,4 @@ namespace CppToys
 } // namespace CppToys
 
 
-#endif // ERRORREPORTER_H
+#endif // ERRORSTACK_H

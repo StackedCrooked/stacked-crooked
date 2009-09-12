@@ -138,7 +138,7 @@ void test()
 {
 	{
 		TestInfo ti("Basic usage");
-		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
+		ReportError(OPEN_FILE_FAILED);
 		const Error & lastError = ErrorReporter::Instance().lastError();
 		assert(lastError.errorCode() == OPEN_FILE_FAILED);
 	}
@@ -147,7 +147,7 @@ void test()
 		TestInfo ti("With ScopedError");
 		ScopedError se;
 		assert(!se.isError());
-		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
+		ReportError(OPEN_FILE_FAILED);
 		assert(se.isError());
 		assert(se.errorCode() == OPEN_FILE_FAILED);
 	}
@@ -155,24 +155,25 @@ void test()
 	{
 		TestInfo ti("Nested ScopedError without propagation");
 		ScopedError se1;
+		ReportError(OPEN_FILE_FAILED);
 		{
 			ScopedError se2;
-			ErrorReporter::Instance().reportError(READ_FILE_FAILED);
+			ReportError(READ_FILE_FAILED);
 			assert(se2.isError());
 			assert(se2.errorCode() == READ_FILE_FAILED);
 		}
-		assert(!se1.isError());
+		assert(se1.errorCode() == OPEN_FILE_FAILED);
 	}
 
 	{
 		TestInfo ti("Nested ScopedError with propagation");
 		ScopedError se1;
+		ReportError(READ_FILE_FAILED);
 		{
 			ScopedError se2;
-			ErrorReporter::Instance().reportError(PROCESS_FILE_FAILED);
+			ReportError(PROCESS_FILE_FAILED);
 			se2.propagate();
 		}
-		assert (se1.isError());
 		assert (se1.errorCode() == PROCESS_FILE_FAILED);
 	}
 }

@@ -6,7 +6,7 @@ namespace CppToys
 {
 
 
-	ErrorReporter * ErrorReporter::sInstance = 0;
+	ErrorStack * ErrorStack::sInstance = 0;
 
 
 	Error::Error() :
@@ -62,7 +62,7 @@ namespace CppToys
 	ErrorCatcher::ErrorCatcher() :
 		mPropagate(false)
 	{
-		ErrorReporter::Instance().push(this);
+		ErrorStack::Instance().push(this);
 	}
 
 
@@ -70,9 +70,9 @@ namespace CppToys
 	{
 		if (mPropagate)
 		{
-			ErrorReporter::Instance().rethrow(this);
+			ErrorStack::Instance().rethrow(this);
 		}
-		ErrorReporter::Instance().pop(this);
+		ErrorStack::Instance().pop(this);
 	}
 
 
@@ -88,24 +88,24 @@ namespace CppToys
 	}
 
 
-	void ErrorReporter::CreateInstance()
+	void ErrorStack::Initialize()
 	{
 		assert(!sInstance);
 		if (!sInstance)
 		{
-			sInstance = new ErrorReporter();
+			sInstance = new ErrorStack();
 		}
 	}
 
 
-	ErrorReporter & ErrorReporter::Instance()
+	ErrorStack & ErrorStack::Instance()
 	{
 		assert(sInstance);
 		return *sInstance;
 	}
 
 
-	void ErrorReporter::DestroyInstance()
+	void ErrorStack::Finalize()
 	{
 		assert(sInstance);
 		if (sInstance)
@@ -116,7 +116,7 @@ namespace CppToys
 	}
 
 
-	const Error & ErrorReporter::lastError() const
+	const Error & ErrorStack::lastError() const
 	{
 		if (!mStack.empty())
 		{
@@ -126,7 +126,7 @@ namespace CppToys
 	}
 
 
-	void ErrorReporter::reportFailure(const Error & inError)
+	void ErrorStack::throwError(const Error & inError)
 	{
 		if (!mStack.empty())
 		{
@@ -139,13 +139,13 @@ namespace CppToys
 	}
 
 
-	void ErrorReporter::push(ErrorCatcher * inError)
+	void ErrorStack::push(ErrorCatcher * inError)
 	{
 		mStack.push(inError);
 	}
 
 
-	void ErrorReporter::pop(ErrorCatcher * inError)
+	void ErrorStack::pop(ErrorCatcher * inError)
 	{
 		bool foundOnTop = mStack.top() == inError;
 		assert(foundOnTop);
@@ -156,7 +156,7 @@ namespace CppToys
 	}
 
 
-	void ErrorReporter::rethrow(ErrorCatcher * inError)
+	void ErrorStack::rethrow(ErrorCatcher * inError)
 	{
 		// Empty stack would mean that there are no ErrorCatcher objects in existence right now
 		assert (!mStack.empty());
@@ -178,21 +178,21 @@ namespace CppToys
 	}
 
 	
-	void Fail(int inErrorCode, const std::string & inErrorMessage)
+	void ThrowError(int inErrorCode, const std::string & inErrorMessage)
 	{
-		ErrorReporter::Instance().reportFailure(Error(inErrorCode, inErrorMessage));
+		ErrorStack::Instance().throwError(Error(inErrorCode, inErrorMessage));
 	}
 	
 	
-	void Fail(const std::string & inErrorMessage)
+	void ThrowError(const std::string & inErrorMessage)
 	{
-		ErrorReporter::Instance().reportFailure(Error(inErrorMessage));
+		ErrorStack::Instance().throwError(Error(inErrorMessage));
 	}
 
 
-	void Fail(int inErrorCode)
+	void ThrowError(int inErrorCode)
 	{
-		ErrorReporter::Instance().reportFailure(Error(inErrorCode));
+		ErrorStack::Instance().throwError(Error(inErrorCode));
 	}
 
 

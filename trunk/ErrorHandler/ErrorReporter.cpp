@@ -47,12 +47,6 @@ void Error::setErrorMessage(const std::string & inErrorMessage)
 }
 
 
-bool Error::caughtError() const
-{
-	return errorCode() != 0;
-}
-
-
 void ErrorReporter::CreateInstance()
 {
 	assert(!sInstance);
@@ -162,7 +156,7 @@ ErrorCatcher::~ErrorCatcher()
 
 bool ErrorCatcher::caughtError() const
 {
-	return mError.caughtError();
+	return mError.errorCode() != 0;
 }
 
 

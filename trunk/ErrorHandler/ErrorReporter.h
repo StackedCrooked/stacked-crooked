@@ -27,11 +27,11 @@ namespace CppToys
 		/**
 		 * If no error has occurred then 0 is returned.
 		 */
-		int errorCode() const;
+		int code() const;
 
 		void setErrorCode(int inErrorCode);
 
-		const std::string & errorMessage() const;
+		const std::string & message() const;
 		
 		void setErrorMessage(const std::string & inErrorMessage);
 
@@ -59,15 +59,21 @@ namespace CppToys
 
 		/**
 		 * Returns true if an error was reported during the lifetime of this object
-		 * and within its scope (unless the error was caught by deeper nested
-		 * ErrorCatcher object without being propagated).
+		 * and not caught by a deeper nested ErrorCatcher object.
 		 */
 		bool caughtError() const;
 
 		/**
-		 * Returns the error object.
+		 * Returns the error message
 		 */
-		const Error & error() const;
+		const std::string & message() const
+		{ return mError.message(); }
+
+		/**
+		 * Returns the error code. Zero means no error.
+		 */
+		int code() const
+		{ return mError.code(); }
 
 		/**
 		 * Errors caught will be disposed of when this object's lifetime ends.
@@ -140,7 +146,9 @@ namespace CppToys
 	};
 
 	// Shortcut function for ErrorReporter::Instance().throwError(..).
-	void ThrowError(const Error & inError);
+	void Throw(const Error & inError);
+
+	void Throw(const std::string & inErrorMessage);
 
 
 } // namespace CppToys

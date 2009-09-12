@@ -34,13 +34,13 @@ namespace CppToys
 	}
 
 
-	int Error::errorCode() const
+	int Error::code() const
 	{
 		return mErrorCode;
 	}
 
 
-	const std::string & Error::errorMessage() const
+	const std::string & Error::message() const
 	{
 		return mErrorMessage;
 	}
@@ -71,14 +71,14 @@ namespace CppToys
 
 	bool ErrorCatcher::caughtError() const
 	{
-		return mError.errorCode() != 0;
+		return mError.code() != 0;
 	}
 
 
-	const Error & ErrorCatcher::error() const
-	{
-		return mError;
-	}
+	//const Error & ErrorCatcher::error() const
+	//{
+	//	return mError;
+	//}
 
 
 	void ErrorCatcher::rethrow()
@@ -119,7 +119,7 @@ namespace CppToys
 	{
 		if (!mStack.empty())
 		{
-			return mStack.top()->error();
+			return mStack.top()->mError;
 		}
 		return mTopLevelError;
 	}
@@ -177,9 +177,15 @@ namespace CppToys
 	}
 
 
-	void ThrowError(const Error & inError)
+	void Throw(const Error & inError)
 	{
 		ErrorReporter::Instance().throwError(inError);
+	}
+	
+	
+	void Throw(const std::string & inErrorMessage)
+	{
+		Throw(Error(1, inErrorMessage));
 	}
 
 

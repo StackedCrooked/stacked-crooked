@@ -41,7 +41,7 @@ void readFile()
 	bool readFailed = true;
 	if (readFailed)
 	{
-		ErrorReporter::Instance().throwError(READ_FILE_FAILED);
+		Throw(READ_FILE_FAILED);
 
 		// propagation needed because we reported to local errorHandle object
 		// and we want the error to be handled by its parent
@@ -57,6 +57,35 @@ void processFile()
 void writeFile()
 {
 	// write the file
+}
+
+float divideBy(float a, float b)
+{
+	if (b == 0)
+	{
+		Throw("You can't divide by zero.");
+		return 0.0; // still need to return something
+	}
+
+	return a/b;
+}
+
+std::string getExifDataFromPhoto(const std::string & inFilePath)
+{
+	std::string result;
+
+	if ("FileNotFound")
+	{
+		Throw("File not found.");
+		return result;
+	}
+
+	if ("NoExifDataFound")
+	{
+		Throw("No exif data found.");
+		return result;
+	}
+	return result;
 }
 
 void log(int inErrorCode, const std::string & inMessage)
@@ -105,21 +134,21 @@ void testErrorHandler()
 	readFile();
 	if (errorCatcher.caughtError())
 	{
-		log(errorCatcher.error().errorCode(), "Failed to read the file");
+		log(errorCatcher.code(), "Failed to read the file");
 		return;
 	}
 
 	processFile();
 	if (errorCatcher.caughtError())
 	{
-		log(errorCatcher.error().errorCode(), "Failed to process the file.");
+		log(errorCatcher.code(), "Failed to process the file.");
 		return;
 	}
 
 	writeFile();
 	if (errorCatcher.caughtError())
 	{
-		log(errorCatcher.error().errorCode(), "Failed to write the file.");
+		log(errorCatcher.code(), "Failed to write the file.");
 		return;
 	}
 }
@@ -141,43 +170,54 @@ void test()
 {
 	{
 		TestInfo ti("Basic usage");
-		ThrowError(OPEN_FILE_FAILED);
+		Throw(OPEN_FILE_FAILED);
 		const Error & lastError = ErrorReporter::Instance().lastError();
-		assert(lastError.errorCode() == OPEN_FILE_FAILED);
+		assert(lastError.code() == OPEN_FILE_FAILED);
 	}
 
 	{
 		TestInfo ti("With ErrorCatcher");
 		ErrorCatcher se;
 		assert(!se.caughtError());
-		ThrowError(OPEN_FILE_FAILED);
+		Throw(OPEN_FILE_FAILED);
 		assert(se.caughtError());
-		assert(se.error().errorCode() == OPEN_FILE_FAILED);
+		assert(se.code() == OPEN_FILE_FAILED);
 	}
 
 	{
 		TestInfo ti("Nested ErrorCatcher without propagation");
 		ErrorCatcher se1;
-		ThrowError(OPEN_FILE_FAILED);
+		Throw(OPEN_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			ThrowError(READ_FILE_FAILED);
+			Throw(READ_FILE_FAILED);
 			assert(se2.caughtError());
-			assert(se2.error().errorCode() == READ_FILE_FAILED);
+			assert(se2.code() == READ_FILE_FAILED);
 		}
-		assert(se1.error().errorCode() == OPEN_FILE_FAILED);
+		assert(se1.code() == OPEN_FILE_FAILED);
 	}
 
 	{
 		TestInfo ti("Nested ErrorCatcher with propagation");
 		ErrorCatcher se1;
-		ThrowError(READ_FILE_FAILED);
+		Throw(READ_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			ThrowError(PROCESS_FILE_FAILED);
+			Throw(PROCESS_FILE_FAILED);
 			se2.rethrow();
 		}
-		assert (se1.error().errorCode() == PROCESS_FILE_FAILED);
+		assert (se1.code() == PROCESS_FILE_FAILED);
+	}
+}
+
+
+void testSamples()
+{
+	ErrorCatcher errorCatcher;
+	float a = divideBy(1, 0);
+	if (errorCatcher.caughtError())
+	{
+		std::cout << errorCatcher.message() << std::endl;
 	}
 }
 
@@ -187,6 +227,8 @@ int main()
 	ErrorReporter::CreateInstance();
 	
 	test();
+	testSamples();
+	
 
 	ErrorReporter::DestroyInstance();
 

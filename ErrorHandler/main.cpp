@@ -121,23 +121,21 @@ void testErrorHandler()
 	}
 }
 
+class TestInfo
+{
+public:
+	TestInfo(const std::string & inMessage)
+	{
+		std::cout << inMessage << std::setw(60 - inMessage.size()) << std::setfill('.');
+	}
+	~TestInfo()
+	{
+		std::cout << "OK\n";
+	}
+};
 
 void test()
 {
-	class TestInfo
-	{
-	public:
-		TestInfo(const std::string & inMessage)
-		{
-			std::cout << inMessage << std::setw(60 - inMessage.size()) << std::setfill('.');
-		}
-		~TestInfo()
-		{
-			std::cout << "OK\n";
-		}
-	};
-
-	// Basic usage
 	{
 		TestInfo ti("Basic usage");
 		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
@@ -145,8 +143,6 @@ void test()
 		assert(lastError.errorCode() == OPEN_FILE_FAILED);
 	}
 
-
-	// test ScopedError
 	{
 		TestInfo ti("With ScopedError");
 		ScopedError se;
@@ -156,7 +152,6 @@ void test()
 		assert(se.errorCode() == OPEN_FILE_FAILED);
 	}
 
-	// test nested ScopedError without propagation
 	{
 		TestInfo ti("Nested ScopedError without propagation");
 		ScopedError se1;
@@ -169,8 +164,6 @@ void test()
 		assert(!se1.isError());
 	}
 
-
-	// test nested ScopedError with propagation
 	{
 		TestInfo ti("Nested ScopedError with propagation");
 		ScopedError se1;

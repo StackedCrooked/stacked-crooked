@@ -80,12 +80,12 @@ namespace CppToys
 		{ return mError.code(); }
 
 		/**
-		 * Errors caught will be disposed of when this object's lifetime ends.
-		 * If this is not desirable then you can use 'rethrow' to forward the Error object to
-		 * the nearest parent ErrorCatcher. If no ErrorCatcher is defined in a parent scope, then
+		 * Caught Errors will be disposed of on destruction of the ErrorCatcher object.
+		 * If this is not desirable then you can use 'rethrow' to forward the Error to
+		 * the nearest parent ErrorCatcher. If no parent ErrorCatcher is defined, then
 		 * the error is set as the ErrorStack's top level error.
-		 * NOTE: Unlike c++ exceptions, calling this method will not alter program flow in any way. 
-		 *       So you still need to write a return statement.
+		 * NOTE: No actual C++ exception is thrown here. So you still need to write a
+		 *       return statement if you want to return to caller.
 		 */
 		void rethrow();
 

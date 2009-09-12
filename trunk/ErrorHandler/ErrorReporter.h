@@ -46,7 +46,7 @@ namespace CppToys
 
 
 	/** Forward declaration */
-	class ErrorReporter;
+	class ErrorStack;
 
 
 	/**
@@ -83,41 +83,51 @@ namespace CppToys
 		 * Errors caught will be disposed of when this object's lifetime ends.
 		 * If this is not desirable then you can use 'rethrow' to forward the Error object to
 		 * the nearest parent ErrorCatcher. If no ErrorCatcher is defined in a parent scope, then
-		 * the error is set as the ErrorReporter's top level error.
+		 * the error is set as the ErrorStack's top level error.
 		 * NOTE: Unlike c++ exceptions, calling this method will not alter program flow in any way. 
 		 *       So you still need to write a return statement.
 		 */
 		void rethrow();
 
 	private:
-		friend class ErrorReporter;
+		friend class ErrorStack;
 		Error mError;
 		bool mPropagate;
 	};
 
 
 	/**
-	 * ErrorReporter is the class that you can use for reporting errors.
+	 * ErrorStack serves as a global manager for ErrorCatcher objects.
+	 * You can also use the instance for 
 	 */
-	class ErrorReporter
+	class ErrorStack
 	{
 	public:
 		/**
-		 * CreateInstance must be called once (and only once) at program startup, and
+		 * Initialize must be called once (and only once) at program startup, and
 		 * before any ErrorCatcher objects are created.
 		 */
-		static void CreateInstance();
+		static void Initialize();
 		
 
 		/**
 		 * Returns the singleton object.
 		 */
-		static ErrorReporter & Instance();
+		static ErrorStack & Instance();
 		
 		/**
-		 * DestroyInstance should be called before shutting down your program.
+		 * Finalize should be called before shutting down your program.
 		 */
-		static void DestroyInstance();
+		static void Finalize();
+
+		/**
+		 * You can use this method to report an error, however
+		 * the ThrowError functions below are more convenient.
+		 * NOTE: Calling this will not cause an exception to be thrown, so
+		 *       program flow will not be altered. If you want to return to
+		 *       the caller you still have to write a return statement.
+		 */
+		void throwError(const Error & inError);
 
 		/**
 		 * Returns the last reported error. This means the error that is
@@ -126,14 +136,6 @@ namespace CppToys
 		 * error object is returned.
 		 */
 		const Error & lastError() const;
-
-		/**
-		 * Use this method to report an error.
-		 * NOTE: Calling this will not cause an exception to be thrown, so
-		 *       program flow will not be altered. If you want to return to
-		 *       the caller you still have to write a return statement.
-		 */
-		void reportFailure(const Error & inError);
 
 	private:
 		friend class ErrorCatcher;
@@ -146,14 +148,31 @@ namespace CppToys
 
 		Error mTopLevelError;
 		std::stack<ErrorCatcher*> mStack;
-		static ErrorReporter * sInstance;
+		static ErrorStack * sInstance;
 	};
 
-	void Fail(int inErrorCode, const std::string & inErrorMessage);
 
-	void Fail(const std::string & inErrorMessage);
+	/**
+	 * ThrowError and its overloads are shorter versions 
+	 * for ErrorStack::Instance().throwError(..) 
+	 * NOTE: These functions don't throw an actual C++ exception. They only
+	 *       notify the nearest ErrorCatcher that an error has occured.
+	 *       So you still need to write your return statement (if returning
+	 *       is required, of course).
+	 */
+	void ThrowError(int inErrorCode, const std::string & inErrorMessage);
 
-	void Fail(int inErrorCode);
+
+	/**
+	 * ThrowError by only passing a message. Error code will default to 1.
+	 */
+	void ThrowError(const std::string & inErrorMessage);
+
+
+	/**
+	 * ThrowError by only passing an error code.
+	 */
+	void ThrowError(int inErrorCode);
 
 
 } // namespace CppToys

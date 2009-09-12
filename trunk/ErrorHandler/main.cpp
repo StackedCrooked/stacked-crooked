@@ -21,7 +21,7 @@ enum
 void openFile()
 {
 	// suppose it fails
-	ErrorReporter::Instance().reportFailure(OPEN_FILE_FAILED);
+	ErrorStack::Instance().throwError(OPEN_FILE_FAILED);
 }
 
 void readFile()
@@ -41,7 +41,7 @@ void readFile()
 	bool readFailed = true;
 	if (readFailed)
 	{
-		Fail(READ_FILE_FAILED);
+		ThrowError(READ_FILE_FAILED);
 
 		// propagation needed because we reported to local errorHandle object
 		// and we want the error to be handled by its parent
@@ -63,7 +63,7 @@ float divideBy(float a, float b)
 {
 	if (b == 0)
 	{
-		Fail("You can't divide by zero.");
+		ThrowError("You can't divide by zero.");
 		return 0.0; // still need to return something
 	}
 
@@ -76,13 +76,13 @@ std::string getExifDataFromPhoto(const std::string & inFilePath)
 
 	if ("FileNotFound")
 	{
-		Fail("File not found.");
+		ThrowError("File not found.");
 		return result;
 	}
 
 	if ("NoExifDataFound")
 	{
-		Fail("No exif data found.");
+		ThrowError("No exif data found.");
 		return result;
 	}
 	return result;
@@ -170,8 +170,8 @@ void test()
 {
 	{
 		TestInfo ti("Basic usage");
-		Fail(OPEN_FILE_FAILED);
-		const Error & lastError = ErrorReporter::Instance().lastError();
+		ThrowError(OPEN_FILE_FAILED);
+		const Error & lastError = ErrorStack::Instance().lastError();
 		assert(lastError.code() == OPEN_FILE_FAILED);
 	}
 
@@ -179,7 +179,7 @@ void test()
 		TestInfo ti("With ErrorCatcher");
 		ErrorCatcher se;
 		assert(!se.hasCaught());
-		Fail(OPEN_FILE_FAILED);
+		ThrowError(OPEN_FILE_FAILED);
 		assert(se.hasCaught());
 		assert(se.code() == OPEN_FILE_FAILED);
 	}
@@ -187,10 +187,10 @@ void test()
 	{
 		TestInfo ti("Nested ErrorCatcher without propagation");
 		ErrorCatcher se1;
-		Fail(OPEN_FILE_FAILED);
+		ThrowError(OPEN_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			Fail(READ_FILE_FAILED);
+			ThrowError(READ_FILE_FAILED);
 			assert(se2.hasCaught());
 			assert(se2.code() == READ_FILE_FAILED);
 		}
@@ -200,10 +200,10 @@ void test()
 	{
 		TestInfo ti("Nested ErrorCatcher with propagation");
 		ErrorCatcher se1;
-		Fail(READ_FILE_FAILED);
+		ThrowError(READ_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			Fail(PROCESS_FILE_FAILED);
+			ThrowError(PROCESS_FILE_FAILED);
 			se2.rethrow();
 		}
 		assert (se1.code() == PROCESS_FILE_FAILED);
@@ -224,13 +224,13 @@ void testSamples()
 
 int main()
 {
-	ErrorReporter::CreateInstance();
+	ErrorStack::Initialize();
 	
 	test();
 	testSamples();
 	
 
-	ErrorReporter::DestroyInstance();
+	ErrorStack::Finalize();
 
 	std::cout << "\nPress ENTER to quit.";
 	getchar();

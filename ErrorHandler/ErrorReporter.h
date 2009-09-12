@@ -119,6 +119,9 @@ namespace CppToys
 
 		/**
 		 * Use this method to report an error.
+		 * NOTE: Calling this will not cause an exception to be thrown, so
+		 *       program flow will not be altered. If you want to return to
+		 *       the caller you still have to write a return statement.
 		 */
 		void throwError(const Error & inError);
 

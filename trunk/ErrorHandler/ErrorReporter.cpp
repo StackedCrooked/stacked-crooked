@@ -19,6 +19,13 @@ namespace CppToys
 		mErrorCode(inErrorCode)
 	{
 	}
+		
+		
+	Error::Error(const std::string & inErrorMessage) :
+		mErrorCode(1),
+		mErrorMessage(inErrorMessage)
+	{
+	}
 
 
 	Error::Error(int inErrorCode, const std::string & inErrorMessage) :
@@ -125,7 +132,7 @@ namespace CppToys
 	}
 
 
-	void ErrorReporter::throwError(const Error & inError)
+	void ErrorReporter::reportFailure(const Error & inError)
 	{
 		if (!mStack.empty())
 		{
@@ -176,16 +183,22 @@ namespace CppToys
 		}
 	}
 
-
-	void Throw(const Error & inError)
+	
+	void Fail(int inErrorCode, const std::string & inErrorMessage)
 	{
-		ErrorReporter::Instance().throwError(inError);
+		ErrorReporter::Instance().reportFailure(Error(inErrorCode, inErrorMessage));
 	}
 	
 	
-	void Throw(const std::string & inErrorMessage)
+	void Fail(const std::string & inErrorMessage)
 	{
-		Throw(Error(1, inErrorMessage));
+		ErrorReporter::Instance().reportFailure(Error(inErrorMessage));
+	}
+
+
+	void Fail(int inErrorCode)
+	{
+		ErrorReporter::Instance().reportFailure(Error(inErrorCode));
 	}
 
 

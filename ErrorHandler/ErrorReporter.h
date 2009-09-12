@@ -1,5 +1,5 @@
-#ifndef ERRORHANDLER_H
-#define ERRORHANDLER_H
+#ifndef ERRORREPORTER_H
+#define ERRORREPORTER_H
 
 
 #include <stack>
@@ -68,4 +68,4 @@ private:
 };
 
 
-#endif // ERRORHANDLER_H
+#endif // ERRORREPORTER_H

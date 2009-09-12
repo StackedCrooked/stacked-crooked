@@ -23,13 +23,13 @@ void openFile()
 
 void readFile()
 {
-	ScopedError scopedError;
+	ErrorCatcher errorCatcher;
 	
 	openFile();
-	if (scopedError.isError())
+	if (errorCatcher.caughtError())
 	{
 		// propagate because want the caller to handle the error
-		scopedError.propagate();
+		errorCatcher.propagate();
 		return;
 	}
 
@@ -42,7 +42,7 @@ void readFile()
 
 		// propagation needed because we reported to local errorHandle object
 		// and we want the error to be handled by its parent
-		scopedError.propagate(); 
+		errorCatcher.propagate(); 
 	}
 }
 
@@ -98,25 +98,25 @@ void log(int inErrorCode, const std::string & inMessage)
 
 void testErrorHandler()
 {
-	ScopedError scopedError;
+	ErrorCatcher errorCatcher;
 	readFile();
-	if (scopedError.isError())
+	if (errorCatcher.caughtError())
 	{
-		log(scopedError.errorCode(), "Failed to read the file");
+		log(errorCatcher.error().errorCode(), "Failed to read the file");
 		return;
 	}
 
 	processFile();
-	if (scopedError.isError())
+	if (errorCatcher.caughtError())
 	{
-		log(scopedError.errorCode(), "Failed to process the file.");
+		log(errorCatcher.error().errorCode(), "Failed to process the file.");
 		return;
 	}
 
 	writeFile();
-	if (scopedError.isError())
+	if (errorCatcher.caughtError())
 	{
-		log(scopedError.errorCode(), "Failed to write the file.");
+		log(errorCatcher.error().errorCode(), "Failed to write the file.");
 		return;
 	}
 }
@@ -144,37 +144,37 @@ void test()
 	}
 
 	{
-		TestInfo ti("With ScopedError");
-		ScopedError se;
-		assert(!se.isError());
+		TestInfo ti("With ErrorCatcher");
+		ErrorCatcher se;
+		assert(!se.caughtError());
 		ReportError(OPEN_FILE_FAILED);
-		assert(se.isError());
-		assert(se.errorCode() == OPEN_FILE_FAILED);
+		assert(se.caughtError());
+		assert(se.error().errorCode() == OPEN_FILE_FAILED);
 	}
 
 	{
-		TestInfo ti("Nested ScopedError without propagation");
-		ScopedError se1;
+		TestInfo ti("Nested ErrorCatcher without propagation");
+		ErrorCatcher se1;
 		ReportError(OPEN_FILE_FAILED);
 		{
-			ScopedError se2;
+			ErrorCatcher se2;
 			ReportError(READ_FILE_FAILED);
-			assert(se2.isError());
-			assert(se2.errorCode() == READ_FILE_FAILED);
+			assert(se2.caughtError());
+			assert(se2.error().errorCode() == READ_FILE_FAILED);
 		}
-		assert(se1.errorCode() == OPEN_FILE_FAILED);
+		assert(se1.error().errorCode() == OPEN_FILE_FAILED);
 	}
 
 	{
-		TestInfo ti("Nested ScopedError with propagation");
-		ScopedError se1;
+		TestInfo ti("Nested ErrorCatcher with propagation");
+		ErrorCatcher se1;
 		ReportError(READ_FILE_FAILED);
 		{
-			ScopedError se2;
+			ErrorCatcher se2;
 			ReportError(PROCESS_FILE_FAILED);
 			se2.propagate();
 		}
-		assert (se1.errorCode() == PROCESS_FILE_FAILED);
+		assert (se1.error().errorCode() == PROCESS_FILE_FAILED);
 	}
 }
 

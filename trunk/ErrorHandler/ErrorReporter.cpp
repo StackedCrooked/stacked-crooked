@@ -47,7 +47,7 @@ void Error::setErrorMessage(const std::string & inErrorMessage)
 }
 
 
-bool Error::isError() const
+bool Error::caughtError() const
 {
 	return errorCode() != 0;
 }
@@ -85,7 +85,7 @@ const Error & ErrorReporter::lastError() const
 {
 	if (!mStack.empty())
 	{
-		return *mStack.top();
+		return mStack.top()->error();
 	}
 	return mTopLevelError;
 }
@@ -95,8 +95,7 @@ void ErrorReporter::reportError(const Error & inError)
 {
 	if (!mStack.empty())
 	{
-		mStack.top()->setErrorCode(inError.errorCode());
-		mStack.top()->setErrorMessage(inError.errorMessage());
+		mStack.top()->mError = inError;
 	}
 	else
 	{
@@ -105,13 +104,13 @@ void ErrorReporter::reportError(const Error & inError)
 }
 
 
-void ErrorReporter::push(ScopedError * inError)
+void ErrorReporter::push(ErrorCatcher * inError)
 {
 	mStack.push(inError);
 }
 
 
-void ErrorReporter::pop(ScopedError * inError)
+void ErrorReporter::pop(ErrorCatcher * inError)
 {
 	bool foundOnTop = mStack.top() == inError;
 	assert(foundOnTop);
@@ -122,36 +121,36 @@ void ErrorReporter::pop(ScopedError * inError)
 }
 
 
-void ErrorReporter::propagate(ScopedError * inError)
+void ErrorReporter::propagate(ErrorCatcher * inError)
 {
-	// Empty stack would mean that there are no ScopedErrorHandle objects in existence right now
+	// Empty stack would mean that there are no ErrorCatcher objects in existence right now
 	assert (!mStack.empty());
 
 	// If only one element is on the stack, then we propagate to top-level-error.
 	if (mStack.size() == 1)
 	{
-		mTopLevelError.setErrorCode(inError->errorCode());
+		mTopLevelError = inError->mError;
 	}
 	// Otherwise we overwrite the parent error
 	else
 	{
-		std::stack<ScopedError*>::container_type::const_iterator target = mStack._Get_container().end();
+		std::stack<ErrorCatcher*>::container_type::const_iterator target = mStack._Get_container().end();
 		--target;
 		--target;
-		ScopedError * parentErrorHandler = *target;
+		ErrorCatcher * parentErrorHandler = *target;
 		*parentErrorHandler = *inError;
 	}
 }
 
 
-ScopedError::ScopedError() :
+ErrorCatcher::ErrorCatcher() :
 	mPropagate(false)
 {
 	ErrorReporter::Instance().push(this);
 }
 
 
-ScopedError::~ScopedError()
+ErrorCatcher::~ErrorCatcher()
 {
 	if (mPropagate)
 	{
@@ -161,7 +160,19 @@ ScopedError::~ScopedError()
 }
 
 
-void ScopedError::propagate()
+bool ErrorCatcher::caughtError() const
+{
+	return mError.caughtError();
+}
+
+
+const Error & ErrorCatcher::error() const
+{
+	return mError;
+}
+
+
+void ErrorCatcher::propagate()
 {
 	mPropagate = true;
 }

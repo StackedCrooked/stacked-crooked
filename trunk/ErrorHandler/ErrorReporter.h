@@ -14,7 +14,7 @@ public:
 
 	Error(int inErrorCode, const std::string & inErrorMessage);
 
-	bool isError() const;
+	bool caughtError() const;
 
 	int errorCode() const;
 
@@ -30,16 +30,24 @@ private:
 };
 
 
-class ScopedError : public Error
+class ErrorReporter;
+
+class ErrorCatcher
 {
 public:
-	ScopedError();
+	ErrorCatcher();
 
-	~ScopedError();
+	~ErrorCatcher();
+
+	bool caughtError() const;
+
+	const Error & error() const;
 
 	void propagate();
 
 private:
+	friend class ErrorReporter;
+	Error mError;
 	bool mPropagate;
 };
 
@@ -58,16 +66,16 @@ public:
 	void reportError(const Error & inError);
 
 private:
-	friend class ScopedError;
+	friend class ErrorCatcher;
 
-	void push(ScopedError * inError);
+	void push(ErrorCatcher * inError);
 
-	void pop(ScopedError * inError);
+	void pop(ErrorCatcher * inError);
 
-	void propagate(ScopedError * inError);
+	void propagate(ErrorCatcher * inError);
 
 	Error mTopLevelError;
-	std::stack<ScopedError*> mStack;
+	std::stack<ErrorCatcher*> mStack;
 	static ErrorReporter * sInstance;
 };
 

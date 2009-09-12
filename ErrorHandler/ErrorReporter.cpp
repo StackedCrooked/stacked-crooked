@@ -2,177 +2,185 @@
 #include <assert.h>
 
 
-ErrorReporter * ErrorReporter::sInstance = 0;
-
-
-Error::Error() :
-	mErrorCode(0)
+namespace CppToys
 {
-}
 
 
-Error::Error(int inErrorCode) :
-	mErrorCode(inErrorCode)
-{
-}
+	ErrorReporter * ErrorReporter::sInstance = 0;
 
 
-Error::Error(int inErrorCode, const std::string & inErrorMessage) :
-	mErrorCode(inErrorCode),
-	mErrorMessage(inErrorMessage)
-{
-}
-
-void Error::setErrorCode(int inErrorCode)
-{
-	mErrorCode = inErrorCode;
-}
-
-
-int Error::errorCode() const
-{
-	return mErrorCode;
-}
-
-
-const std::string & Error::errorMessage() const
-{
-	return mErrorMessage;
-}
-
-	
-void Error::setErrorMessage(const std::string & inErrorMessage)
-{
-	mErrorMessage = inErrorMessage;
-}
-
-
-void ErrorReporter::CreateInstance()
-{
-	assert(!sInstance);
-	if (!sInstance)
+	Error::Error() :
+		mErrorCode(0)
 	{
-		sInstance = new ErrorReporter();
 	}
-}
 
 
-ErrorReporter & ErrorReporter::Instance()
-{
-	assert(sInstance);
-	return *sInstance;
-}
-
-
-void ErrorReporter::DestroyInstance()
-{
-	assert(sInstance);
-	if (sInstance)
+	Error::Error(int inErrorCode) :
+		mErrorCode(inErrorCode)
 	{
-		delete sInstance;
-		sInstance = 0;
 	}
-}
 
 
-const Error & ErrorReporter::lastError() const
-{
-	if (!mStack.empty())
+	Error::Error(int inErrorCode, const std::string & inErrorMessage) :
+		mErrorCode(inErrorCode),
+		mErrorMessage(inErrorMessage)
 	{
-		return mStack.top()->error();
 	}
-	return mTopLevelError;
-}
 
 
-void ErrorReporter::throwError(const Error & inError)
-{
-	if (!mStack.empty())
+	void Error::setErrorCode(int inErrorCode)
 	{
-		mStack.top()->mError = inError;
+		mErrorCode = inErrorCode;
 	}
-	else
+
+
+	int Error::errorCode() const
 	{
-		mTopLevelError = inError;
+		return mErrorCode;
 	}
-}
 
 
-void ErrorReporter::push(ErrorCatcher * inError)
-{
-	mStack.push(inError);
-}
-
-
-void ErrorReporter::pop(ErrorCatcher * inError)
-{
-	bool foundOnTop = mStack.top() == inError;
-	assert(foundOnTop);
-	if (foundOnTop)
+	const std::string & Error::errorMessage() const
 	{
-		mStack.pop();
+		return mErrorMessage;
 	}
-}
 
-
-void ErrorReporter::rethrow(ErrorCatcher * inError)
-{
-	// Empty stack would mean that there are no ErrorCatcher objects in existence right now
-	assert (!mStack.empty());
-
-	// If only one element is on the stack, then we rethrow to top-level-error.
-	if (mStack.size() == 1)
+		
+	void Error::setErrorMessage(const std::string & inErrorMessage)
 	{
-		mTopLevelError = inError->mError;
+		mErrorMessage = inErrorMessage;
 	}
-	// Otherwise we overwrite the parent error
-	else
+
+
+	ErrorCatcher::ErrorCatcher() :
+		mPropagate(false)
 	{
-		std::stack<ErrorCatcher*>::container_type::const_iterator target = mStack._Get_container().end();
-		--target;
-		--target;
-		ErrorCatcher * parentErrorHandler = *target;
-		*parentErrorHandler = *inError;
+		ErrorReporter::Instance().push(this);
 	}
-}
 
 
-ErrorCatcher::ErrorCatcher() :
-	mPropagate(false)
-{
-	ErrorReporter::Instance().push(this);
-}
-
-
-ErrorCatcher::~ErrorCatcher()
-{
-	if (mPropagate)
+	ErrorCatcher::~ErrorCatcher()
 	{
-		ErrorReporter::Instance().rethrow(this);
+		if (mPropagate)
+		{
+			ErrorReporter::Instance().rethrow(this);
+		}
+		ErrorReporter::Instance().pop(this);
 	}
-	ErrorReporter::Instance().pop(this);
-}
 
 
-bool ErrorCatcher::caughtError() const
-{
-	return mError.errorCode() != 0;
-}
+	bool ErrorCatcher::caughtError() const
+	{
+		return mError.errorCode() != 0;
+	}
 
 
-const Error & ErrorCatcher::error() const
-{
-	return mError;
-}
+	const Error & ErrorCatcher::error() const
+	{
+		return mError;
+	}
 
 
-void ErrorCatcher::rethrow()
-{
-	mPropagate = true;
-}
+	void ErrorCatcher::rethrow()
+	{
+		mPropagate = true;
+	}
 
 
-void ThrowError(const Error & inError)
-{
-	ErrorReporter::Instance().throwError(inError);
-}
+	void ErrorReporter::CreateInstance()
+	{
+		assert(!sInstance);
+		if (!sInstance)
+		{
+			sInstance = new ErrorReporter();
+		}
+	}
+
+
+	ErrorReporter & ErrorReporter::Instance()
+	{
+		assert(sInstance);
+		return *sInstance;
+	}
+
+
+	void ErrorReporter::DestroyInstance()
+	{
+		assert(sInstance);
+		if (sInstance)
+		{
+			delete sInstance;
+			sInstance = 0;
+		}
+	}
+
+
+	const Error & ErrorReporter::lastError() const
+	{
+		if (!mStack.empty())
+		{
+			return mStack.top()->error();
+		}
+		return mTopLevelError;
+	}
+
+
+	void ErrorReporter::throwError(const Error & inError)
+	{
+		if (!mStack.empty())
+		{
+			mStack.top()->mError = inError;
+		}
+		else
+		{
+			mTopLevelError = inError;
+		}
+	}
+
+
+	void ErrorReporter::push(ErrorCatcher * inError)
+	{
+		mStack.push(inError);
+	}
+
+
+	void ErrorReporter::pop(ErrorCatcher * inError)
+	{
+		bool foundOnTop = mStack.top() == inError;
+		assert(foundOnTop);
+		if (foundOnTop)
+		{
+			mStack.pop();
+		}
+	}
+
+
+	void ErrorReporter::rethrow(ErrorCatcher * inError)
+	{
+		// Empty stack would mean that there are no ErrorCatcher objects in existence right now
+		assert (!mStack.empty());
+
+		// If only one element is on the stack, then we rethrow to top-level-error.
+		if (mStack.size() == 1)
+		{
+			mTopLevelError = inError->mError;
+		}
+		// Otherwise we overwrite the parent error
+		else
+		{
+			std::stack<ErrorCatcher*>::container_type::const_iterator target = mStack._Get_container().end();
+			--target;
+			--target;
+			ErrorCatcher * parentErrorHandler = *target;
+			*parentErrorHandler = *inError;
+		}
+	}
+
+
+	void ThrowError(const Error & inError)
+	{
+		ErrorReporter::Instance().throwError(inError);
+	}
+
+
+} // namespace CppToys

@@ -97,8 +97,7 @@ namespace CppToys
 
 
 	/**
-	 * ErrorStack serves as a global manager for ErrorCatcher objects.
-	 * You can also use the instance for 
+	 * ErrorStack serves as a global stack for ErrorCatcher objects.
 	 */
 	class ErrorStack
 	{

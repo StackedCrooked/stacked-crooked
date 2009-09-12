@@ -1,4 +1,4 @@
-#include "ErrorHandler.h"
+#include "ErrorReporter.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -17,6 +17,7 @@ enum
 
 void openFile()
 {
+	// suppose it fails
 	ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
 }
 
@@ -32,12 +33,14 @@ void readFile()
 		return;
 	}
 
+	// once the file is opened we want to read it
+	// suppose that fails
 	bool readFailed = true;
 	if (readFailed)
 	{
 		ErrorReporter::Instance().reportError(READ_FILE_FAILED);
 
-		// propagation needed because we reported to local errorHandle
+		// propagation needed because we reported to local errorHandle object
 		// and we want the error to be handled by its parent
 		scopedError.propagate(); 
 	}
@@ -138,8 +141,8 @@ void test()
 	{
 		TestInfo ti("Basic usage");
 		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
-		int lastError = ErrorReporter::Instance().lastError();
-		assert(lastError == OPEN_FILE_FAILED);
+		const Error & lastError = ErrorReporter::Instance().lastError();
+		assert(lastError.errorCode() == OPEN_FILE_FAILED);
 	}
 
 

@@ -49,7 +49,7 @@ public:
 	
 	static void DestroyInstance();
 
-	int lastError() const;
+	const Error & lastError() const;
 
 	void reportError(int inErrorCode);
 

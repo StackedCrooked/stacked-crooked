@@ -18,9 +18,13 @@ namespace CppToys
 	class Error
 	{
 	public:
+		// Error code defaults to 0 (no error).
 		Error();
 
 		Error(int inErrorCode);
+
+		// Error code defaults to 1.
+		Error(const std::string & inErrorMessage);
 
 		Error(int inErrorCode, const std::string & inErrorMessage);
 
@@ -129,7 +133,7 @@ namespace CppToys
 		 *       program flow will not be altered. If you want to return to
 		 *       the caller you still have to write a return statement.
 		 */
-		void throwError(const Error & inError);
+		void reportFailure(const Error & inError);
 
 	private:
 		friend class ErrorCatcher;
@@ -145,10 +149,11 @@ namespace CppToys
 		static ErrorReporter * sInstance;
 	};
 
-	// Shortcut function for ErrorReporter::Instance().throwError(..).
-	void Throw(const Error & inError);
+	void Fail(int inErrorCode, const std::string & inErrorMessage);
 
-	void Throw(const std::string & inErrorMessage);
+	void Fail(const std::string & inErrorMessage);
+
+	void Fail(int inErrorCode);
 
 
 } // namespace CppToys

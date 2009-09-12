@@ -21,7 +21,7 @@ enum
 void openFile()
 {
 	// suppose it fails
-	ErrorReporter::Instance().throwError(OPEN_FILE_FAILED);
+	ErrorReporter::Instance().reportFailure(OPEN_FILE_FAILED);
 }
 
 void readFile()
@@ -41,7 +41,7 @@ void readFile()
 	bool readFailed = true;
 	if (readFailed)
 	{
-		Throw(READ_FILE_FAILED);
+		Fail(READ_FILE_FAILED);
 
 		// propagation needed because we reported to local errorHandle object
 		// and we want the error to be handled by its parent
@@ -63,7 +63,7 @@ float divideBy(float a, float b)
 {
 	if (b == 0)
 	{
-		Throw("You can't divide by zero.");
+		Fail("You can't divide by zero.");
 		return 0.0; // still need to return something
 	}
 
@@ -76,13 +76,13 @@ std::string getExifDataFromPhoto(const std::string & inFilePath)
 
 	if ("FileNotFound")
 	{
-		Throw("File not found.");
+		Fail("File not found.");
 		return result;
 	}
 
 	if ("NoExifDataFound")
 	{
-		Throw("No exif data found.");
+		Fail("No exif data found.");
 		return result;
 	}
 	return result;
@@ -170,7 +170,7 @@ void test()
 {
 	{
 		TestInfo ti("Basic usage");
-		Throw(OPEN_FILE_FAILED);
+		Fail(OPEN_FILE_FAILED);
 		const Error & lastError = ErrorReporter::Instance().lastError();
 		assert(lastError.code() == OPEN_FILE_FAILED);
 	}
@@ -179,7 +179,7 @@ void test()
 		TestInfo ti("With ErrorCatcher");
 		ErrorCatcher se;
 		assert(!se.caughtError());
-		Throw(OPEN_FILE_FAILED);
+		Fail(OPEN_FILE_FAILED);
 		assert(se.caughtError());
 		assert(se.code() == OPEN_FILE_FAILED);
 	}
@@ -187,10 +187,10 @@ void test()
 	{
 		TestInfo ti("Nested ErrorCatcher without propagation");
 		ErrorCatcher se1;
-		Throw(OPEN_FILE_FAILED);
+		Fail(OPEN_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			Throw(READ_FILE_FAILED);
+			Fail(READ_FILE_FAILED);
 			assert(se2.caughtError());
 			assert(se2.code() == READ_FILE_FAILED);
 		}
@@ -200,10 +200,10 @@ void test()
 	{
 		TestInfo ti("Nested ErrorCatcher with propagation");
 		ErrorCatcher se1;
-		Throw(READ_FILE_FAILED);
+		Fail(READ_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			Throw(PROCESS_FILE_FAILED);
+			Fail(PROCESS_FILE_FAILED);
 			se2.rethrow();
 		}
 		assert (se1.code() == PROCESS_FILE_FAILED);

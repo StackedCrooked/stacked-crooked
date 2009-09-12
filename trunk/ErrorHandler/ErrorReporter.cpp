@@ -170,10 +170,9 @@ namespace CppToys
 		else
 		{
 			std::stack<ErrorCatcher*>::container_type::const_iterator target = mStack._Get_container().end();
-			--target;
-			--target;
-			ErrorCatcher * parentErrorHandler = *target;
-			*parentErrorHandler = *inError;
+			--target; // make it point to the last object
+			--target; // make it point to the one but last object
+			**target = *inError;
 		}
 	}
 

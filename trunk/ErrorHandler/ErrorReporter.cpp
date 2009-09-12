@@ -76,16 +76,10 @@ namespace CppToys
 	}
 
 
-	bool ErrorCatcher::caughtError() const
+	bool ErrorCatcher::hasCaught() const
 	{
 		return mError.code() != 0;
 	}
-
-
-	//const Error & ErrorCatcher::error() const
-	//{
-	//	return mError;
-	//}
 
 
 	void ErrorCatcher::rethrow()

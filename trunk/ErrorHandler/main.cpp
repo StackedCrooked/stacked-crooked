@@ -29,7 +29,7 @@ void readFile()
 	ErrorCatcher errorCatcher;
 	
 	openFile();
-	if (errorCatcher.caughtError())
+	if (errorCatcher.hasCaught())
 	{
 		// rethrow because want the caller to handle the error
 		errorCatcher.rethrow();
@@ -132,21 +132,21 @@ void testErrorHandler()
 {
 	ErrorCatcher errorCatcher;
 	readFile();
-	if (errorCatcher.caughtError())
+	if (errorCatcher.hasCaught())
 	{
 		log(errorCatcher.code(), "Failed to read the file");
 		return;
 	}
 
 	processFile();
-	if (errorCatcher.caughtError())
+	if (errorCatcher.hasCaught())
 	{
 		log(errorCatcher.code(), "Failed to process the file.");
 		return;
 	}
 
 	writeFile();
-	if (errorCatcher.caughtError())
+	if (errorCatcher.hasCaught())
 	{
 		log(errorCatcher.code(), "Failed to write the file.");
 		return;
@@ -178,9 +178,9 @@ void test()
 	{
 		TestInfo ti("With ErrorCatcher");
 		ErrorCatcher se;
-		assert(!se.caughtError());
+		assert(!se.hasCaught());
 		Fail(OPEN_FILE_FAILED);
-		assert(se.caughtError());
+		assert(se.hasCaught());
 		assert(se.code() == OPEN_FILE_FAILED);
 	}
 
@@ -191,7 +191,7 @@ void test()
 		{
 			ErrorCatcher se2;
 			Fail(READ_FILE_FAILED);
-			assert(se2.caughtError());
+			assert(se2.hasCaught());
 			assert(se2.code() == READ_FILE_FAILED);
 		}
 		assert(se1.code() == OPEN_FILE_FAILED);
@@ -215,7 +215,7 @@ void testSamples()
 {
 	ErrorCatcher errorCatcher;
 	float a = divideBy(1, 0);
-	if (errorCatcher.caughtError())
+	if (errorCatcher.hasCaught())
 	{
 		std::cout << errorCatcher.message() << std::endl;
 	}

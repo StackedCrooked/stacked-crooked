@@ -5,21 +5,39 @@
 ErrorReporter * ErrorReporter::sInstance = 0;
 
 
-ErrorInfo::ErrorInfo() :
+Error::Error() :
 	mErrorCode(0)
 {
 }
 
 
-void ErrorInfo::setErrorCode(int inErrorCode)
+void Error::setErrorCode(int inErrorCode)
 {
 	mErrorCode = inErrorCode;
 }
 
 
-int ErrorInfo::errorCode() const
+int Error::errorCode() const
 {
 	return mErrorCode;
+}
+
+
+const std::string & Error::errorMessage()
+{
+	return mErrorMessage;
+}
+
+	
+void Error::setErrorMessage(const std::string & inErrorMessage)
+{
+	mErrorMessage = inErrorMessage;
+}
+
+
+bool Error::isError() const
+{
+	return errorCode() != 0;
 }
 
 
@@ -127,24 +145,6 @@ ScopedError::~ScopedError()
 		ErrorReporter::Instance().propagate(this);
 	}
 	ErrorReporter::Instance().pop(this);
-}
-
-
-bool ScopedError::isError() const
-{
-	return mErrorInfo.errorCode() != 0;
-}
-
-
-int ScopedError::errorCode() const
-{
-	return mErrorInfo.errorCode();
-}
-
-
-void ScopedError::setErrorCode(int inErrorCode)
-{
-	mErrorInfo.setErrorCode(inErrorCode);
 }
 
 

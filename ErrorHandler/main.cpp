@@ -112,12 +112,26 @@ std::string getExifDataFromPhoto(const std::string & inFilePath)
 
 void runSamples()
 {
-	ErrorCatcher errorCatcher;
-	float a = divideBy(1, 0);
-	if (errorCatcher.hasCaught())
+	// Division by zero sample
 	{
-		std::cout << errorCatcher.message() << std::endl;
+		ErrorCatcher errorCatcher;
+		float a = divideBy(1, 0);
+		if (errorCatcher.hasCaught())
+		{
+			std::cout << errorCatcher.message() << std::endl;
+		}
+	}	
+
+	// Exif data sample
+	{
+		ErrorCatcher errorCatcher;
+		std::string exifData = getExifDataFromPhoto("non-existing-file");
+		if (errorCatcher.hasCaught())
+		{
+			std::cout << errorCatcher.message() << std::endl;
+		}		
 	}
+
 }
 
 

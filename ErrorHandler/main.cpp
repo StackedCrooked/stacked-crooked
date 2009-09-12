@@ -18,7 +18,7 @@ enum
 void openFile()
 {
 	// suppose it fails
-	ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
+	ErrorReporter::Instance().throwError(OPEN_FILE_FAILED);
 }
 
 void readFile()
@@ -28,8 +28,8 @@ void readFile()
 	openFile();
 	if (errorCatcher.caughtError())
 	{
-		// propagate because want the caller to handle the error
-		errorCatcher.propagate();
+		// rethrow because want the caller to handle the error
+		errorCatcher.rethrow();
 		return;
 	}
 
@@ -38,11 +38,11 @@ void readFile()
 	bool readFailed = true;
 	if (readFailed)
 	{
-		ErrorReporter::Instance().reportError(READ_FILE_FAILED);
+		ErrorReporter::Instance().throwError(READ_FILE_FAILED);
 
 		// propagation needed because we reported to local errorHandle object
 		// and we want the error to be handled by its parent
-		errorCatcher.propagate(); 
+		errorCatcher.rethrow(); 
 	}
 }
 
@@ -138,7 +138,7 @@ void test()
 {
 	{
 		TestInfo ti("Basic usage");
-		ReportError(OPEN_FILE_FAILED);
+		ThrowError(OPEN_FILE_FAILED);
 		const Error & lastError = ErrorReporter::Instance().lastError();
 		assert(lastError.errorCode() == OPEN_FILE_FAILED);
 	}
@@ -147,7 +147,7 @@ void test()
 		TestInfo ti("With ErrorCatcher");
 		ErrorCatcher se;
 		assert(!se.caughtError());
-		ReportError(OPEN_FILE_FAILED);
+		ThrowError(OPEN_FILE_FAILED);
 		assert(se.caughtError());
 		assert(se.error().errorCode() == OPEN_FILE_FAILED);
 	}
@@ -155,10 +155,10 @@ void test()
 	{
 		TestInfo ti("Nested ErrorCatcher without propagation");
 		ErrorCatcher se1;
-		ReportError(OPEN_FILE_FAILED);
+		ThrowError(OPEN_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			ReportError(READ_FILE_FAILED);
+			ThrowError(READ_FILE_FAILED);
 			assert(se2.caughtError());
 			assert(se2.error().errorCode() == READ_FILE_FAILED);
 		}
@@ -168,11 +168,11 @@ void test()
 	{
 		TestInfo ti("Nested ErrorCatcher with propagation");
 		ErrorCatcher se1;
-		ReportError(READ_FILE_FAILED);
+		ThrowError(READ_FILE_FAILED);
 		{
 			ErrorCatcher se2;
-			ReportError(PROCESS_FILE_FAILED);
-			se2.propagate();
+			ThrowError(PROCESS_FILE_FAILED);
+			se2.rethrow();
 		}
 		assert (se1.error().errorCode() == PROCESS_FILE_FAILED);
 	}

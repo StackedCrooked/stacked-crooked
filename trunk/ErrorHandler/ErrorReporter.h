@@ -67,7 +67,7 @@ public:
 
 	/**
 	 * Errors caught will be disposed of when this object's lifetime ends.
-	 * If this is not desirable, you can use propagate to forward the Error object into
+	 * If this is not desirable then you can use 'propagate' to forward the Error object to
 	 * the nearest parent ErrorCatcher. If no ErrorCatcher is defined in a parent scope, then
 	 * the error is set as the ErrorReporter's top level error.
 	 */
@@ -106,9 +106,8 @@ public:
 	/**
 	 * Returns the last reported error. This means the error that is
 	 * currently held by the deepest nested ErrorCatcher object.
-	 * If no ErrorCatcher objects are currently defined the top-level
-	 * error object is returned (which may just have error code 0 in
-	 * case no errors have been reported).
+	 * If no ErrorCatcher objects are currently defined the top level
+	 * error object is returned.
 	 */
 	const Error & lastError() const;
 

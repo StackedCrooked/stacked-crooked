@@ -69,13 +69,13 @@ void ErrorReporter::DestroyInstance()
 }
 
 
-int ErrorReporter::lastError() const
+const Error & ErrorReporter::lastError() const
 {
 	if (!mStack.empty())
 	{
-		return mStack.top()->errorCode();
+		return *mStack.top();
 	}
-	return mTopLevelError.errorCode();
+	return mTopLevelError;
 }
 
 

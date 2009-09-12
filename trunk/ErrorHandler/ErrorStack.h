@@ -28,16 +28,9 @@ namespace CppToys
 
 		Error(int inErrorCode, const std::string & inErrorMessage);
 
-		/**
-		 * If no error has occurred then 0 is returned.
-		 */
 		int code() const;
 
-		void setErrorCode(int inErrorCode);
-
 		const std::string & message() const;
-		
-		void setErrorMessage(const std::string & inErrorMessage);
 
 	private:
 		int mErrorCode;

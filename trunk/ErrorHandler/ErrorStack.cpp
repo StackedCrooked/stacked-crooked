@@ -35,12 +35,6 @@ namespace CppToys
 	}
 
 
-	void Error::setErrorCode(int inErrorCode)
-	{
-		mErrorCode = inErrorCode;
-	}
-
-
 	int Error::code() const
 	{
 		return mErrorCode;
@@ -50,12 +44,6 @@ namespace CppToys
 	const std::string & Error::message() const
 	{
 		return mErrorMessage;
-	}
-
-		
-	void Error::setErrorMessage(const std::string & inErrorMessage)
-	{
-		mErrorMessage = inErrorMessage;
 	}
 
 

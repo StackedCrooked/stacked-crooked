@@ -85,7 +85,7 @@ const Error & ErrorReporter::lastError() const
 }
 
 
-void ErrorReporter::reportError(const Error & inError)
+void ErrorReporter::throwError(const Error & inError)
 {
 	if (!mStack.empty())
 	{
@@ -115,12 +115,12 @@ void ErrorReporter::pop(ErrorCatcher * inError)
 }
 
 
-void ErrorReporter::propagate(ErrorCatcher * inError)
+void ErrorReporter::rethrow(ErrorCatcher * inError)
 {
 	// Empty stack would mean that there are no ErrorCatcher objects in existence right now
 	assert (!mStack.empty());
 
-	// If only one element is on the stack, then we propagate to top-level-error.
+	// If only one element is on the stack, then we rethrow to top-level-error.
 	if (mStack.size() == 1)
 	{
 		mTopLevelError = inError->mError;
@@ -148,7 +148,7 @@ ErrorCatcher::~ErrorCatcher()
 {
 	if (mPropagate)
 	{
-		ErrorReporter::Instance().propagate(this);
+		ErrorReporter::Instance().rethrow(this);
 	}
 	ErrorReporter::Instance().pop(this);
 }
@@ -166,13 +166,13 @@ const Error & ErrorCatcher::error() const
 }
 
 
-void ErrorCatcher::propagate()
+void ErrorCatcher::rethrow()
 {
 	mPropagate = true;
 }
 
 
-void ReportError(const Error & inError)
+void ThrowError(const Error & inError)
 {
-	ErrorReporter::Instance().reportError(inError);
+	ErrorReporter::Instance().throwError(inError);
 }

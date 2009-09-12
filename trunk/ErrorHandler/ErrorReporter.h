@@ -67,11 +67,11 @@ public:
 
 	/**
 	 * Errors caught will be disposed of when this object's lifetime ends.
-	 * If this is not desirable then you can use 'propagate' to forward the Error object to
+	 * If this is not desirable then you can use 'rethrow' to forward the Error object to
 	 * the nearest parent ErrorCatcher. If no ErrorCatcher is defined in a parent scope, then
 	 * the error is set as the ErrorReporter's top level error.
 	 */
-	void propagate();
+	void rethrow();
 
 private:
 	friend class ErrorReporter;
@@ -114,7 +114,7 @@ public:
 	/**
 	 * Use this method to report an error.
 	 */
-	void reportError(const Error & inError);
+	void throwError(const Error & inError);
 
 private:
 	friend class ErrorCatcher;
@@ -123,15 +123,15 @@ private:
 
 	void pop(ErrorCatcher * inError);
 
-	void propagate(ErrorCatcher * inError);
+	void rethrow(ErrorCatcher * inError);
 
 	Error mTopLevelError;
 	std::stack<ErrorCatcher*> mStack;
 	static ErrorReporter * sInstance;
 };
 
-// Shortcut function for ErrorReporter::Instance().reportError(..).
-void ReportError(const Error & inError);
+// Shortcut function for ErrorReporter::Instance().throwError(..).
+void ThrowError(const Error & inError);
 
 
 #endif // ERRORREPORTER_H

@@ -10,13 +10,17 @@ class Error
 public:
 	Error();
 
+	Error(int inErrorCode);
+
+	Error(int inErrorCode, const std::string & inErrorMessage);
+
 	bool isError() const;
 
 	int errorCode() const;
 
 	void setErrorCode(int inErrorCode);
 
-	const std::string & errorMessage();
+	const std::string & errorMessage() const;
 	
 	void setErrorMessage(const std::string & inErrorMessage);
 
@@ -51,7 +55,7 @@ public:
 
 	const Error & lastError() const;
 
-	void reportError(int inErrorCode);
+	void reportError(const Error & inError);
 
 private:
 	friend class ScopedError;
@@ -66,6 +70,9 @@ private:
 	std::stack<ScopedError*> mStack;
 	static ErrorReporter * sInstance;
 };
+
+// Shortcut function for ErrorReporter::Instance().reportError(..).
+void ReportError(const Error & inError);
 
 
 #endif // ERRORREPORTER_H

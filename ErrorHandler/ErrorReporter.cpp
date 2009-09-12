@@ -11,6 +11,18 @@ Error::Error() :
 }
 
 
+Error::Error(int inErrorCode) :
+	mErrorCode(inErrorCode)
+{
+}
+
+
+Error::Error(int inErrorCode, const std::string & inErrorMessage) :
+	mErrorCode(inErrorCode),
+	mErrorMessage(inErrorMessage)
+{
+}
+
 void Error::setErrorCode(int inErrorCode)
 {
 	mErrorCode = inErrorCode;
@@ -23,7 +35,7 @@ int Error::errorCode() const
 }
 
 
-const std::string & Error::errorMessage()
+const std::string & Error::errorMessage() const
 {
 	return mErrorMessage;
 }
@@ -79,15 +91,16 @@ const Error & ErrorReporter::lastError() const
 }
 
 
-void ErrorReporter::reportError(int inErrorCode)
+void ErrorReporter::reportError(const Error & inError)
 {
 	if (!mStack.empty())
 	{
-		mStack.top()->setErrorCode(inErrorCode);
+		mStack.top()->setErrorCode(inError.errorCode());
+		mStack.top()->setErrorMessage(inError.errorMessage());
 	}
 	else
 	{
-		mTopLevelError.setErrorCode(inErrorCode);
+		mTopLevelError = inError;
 	}
 }
 
@@ -154,7 +167,7 @@ void ScopedError::propagate()
 }
 
 
-void ReportError(int inErrorCode)
+void ReportError(const Error & inError)
 {
-	ErrorReporter::Instance().reportError(inErrorCode);
+	ErrorReporter::Instance().reportError(inError);
 }

@@ -5,6 +5,9 @@
 #include <assert.h>
 
 
+using namespace CppToys;
+
+
 enum
 {
 	NO_ERROR,

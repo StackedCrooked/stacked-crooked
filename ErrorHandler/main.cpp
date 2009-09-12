@@ -1,4 +1,5 @@
 #include "ErrorHandler.h"
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <assert.h>
@@ -120,8 +121,22 @@ void testErrorHandler()
 
 void test()
 {
+	class TestInfo
+	{
+	public:
+		TestInfo(const std::string & inMessage)
+		{
+			std::cout << inMessage << std::setw(60 - inMessage.size()) << std::setfill('.');
+		}
+		~TestInfo()
+		{
+			std::cout << "OK\n";
+		}
+	};
+
 	// Basic usage
 	{
+		TestInfo ti("Basic usage");
 		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
 		int lastError = ErrorReporter::Instance().lastError();
 		assert(lastError == OPEN_FILE_FAILED);
@@ -130,6 +145,7 @@ void test()
 
 	// test ScopedError
 	{
+		TestInfo ti("With ScopedError");
 		ScopedError se;
 		assert(!se.isError());
 		ErrorReporter::Instance().reportError(OPEN_FILE_FAILED);
@@ -139,6 +155,7 @@ void test()
 
 	// test nested ScopedError without propagation
 	{
+		TestInfo ti("Nested ScopedError without propagation");
 		ScopedError se1;
 		{
 			ScopedError se2;
@@ -152,6 +169,7 @@ void test()
 
 	// test nested ScopedError with propagation
 	{
+		TestInfo ti("Nested ScopedError with propagation");
 		ScopedError se1;
 		{
 			ScopedError se2;
@@ -169,11 +187,10 @@ int main()
 	ErrorReporter::CreateInstance();
 	
 	test();
-	testErrorHandler();
 
 	ErrorReporter::DestroyInstance();
 
-	std::cout << "Press ENTER to quit.";
+	std::cout << "\nPress ENTER to quit.";
 	getchar();
 	return 0;
 }

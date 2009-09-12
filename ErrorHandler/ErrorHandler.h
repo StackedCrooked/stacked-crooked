@@ -5,26 +5,10 @@
 #include <stack>
 
 
-class ErrorInfo
+class Error
 {
 public:
-	ErrorInfo();
-
-	int errorCode() const;
-
-	void setErrorCode(int inErrorCode);
-
-private:
-	int mErrorCode;
-};
-
-
-class ScopedError
-{
-public:
-	ScopedError();
-
-	~ScopedError();
+	Error();
 
 	bool isError() const;
 
@@ -32,10 +16,26 @@ public:
 
 	void setErrorCode(int inErrorCode);
 
+	const std::string & errorMessage();
+	
+	void setErrorMessage(const std::string & inErrorMessage);
+
+private:
+	int mErrorCode;
+	std::string mErrorMessage;
+};
+
+
+class ScopedError : public Error
+{
+public:
+	ScopedError();
+
+	~ScopedError();
+
 	void propagate();
 
 private:
-	ErrorInfo mErrorInfo;
 	bool mPropagate;
 };
 
@@ -62,7 +62,7 @@ private:
 
 	void propagate(ScopedError * inError);
 
-	ErrorInfo mTopLevelError;
+	Error mTopLevelError;
 	std::stack<ScopedError*> mStack;
 	static ErrorReporter * sInstance;
 };

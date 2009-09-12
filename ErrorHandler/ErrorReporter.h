@@ -65,7 +65,7 @@ namespace CppToys
 		 * Returns true if an error was reported during the lifetime of this object
 		 * and not caught by a deeper nested ErrorCatcher object.
 		 */
-		bool caughtError() const;
+		bool hasCaught() const;
 
 		/**
 		 * Returns the error message

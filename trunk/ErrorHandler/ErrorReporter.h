@@ -155,9 +155,9 @@ namespace CppToys
 	 * ThrowError and its overloads are shorter versions 
 	 * for ErrorStack::Instance().throwError(..) 
 	 * NOTE: These functions don't throw an actual C++ exception. They only
-	 *       notify the nearest ErrorCatcher that an error has occured.
-	 *       So you still need to write your return statement (if returning
-	 *       is required, of course).
+	 *       notify the nearest ErrorCatcher that an error has occured. So
+	 *       you still need to write the return statement (if returning
+	 *       is desired, of course).
 	 */
 	void ThrowError(int inErrorCode, const std::string & inErrorMessage);
 

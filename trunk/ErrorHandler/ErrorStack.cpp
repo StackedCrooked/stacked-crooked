@@ -10,7 +10,7 @@ namespace CppToys
 
 
 	Error::Error() :
-		mErrorCode(0)
+		mErrorCode(Error::SUCCEEDED)
 	{
 	}
 
@@ -22,7 +22,7 @@ namespace CppToys
 		
 		
 	Error::Error(const std::string & inErrorMessage) :
-		mErrorCode(1),
+		mErrorCode(Error::FAILED),
 		mErrorMessage(inErrorMessage)
 	{
 	}

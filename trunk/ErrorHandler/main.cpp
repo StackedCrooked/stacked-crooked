@@ -90,22 +90,22 @@ float divideBy(float a, float b)
 	return a/b;
 }
 
-std::string getExifDataFromPhoto(const std::string & inFilePath)
+void getExifDataFromPhoto(const std::string & inFilePath, std::string & outExifData)
 {
-	std::string result;
 
 	if ("FileNotFound")
 	{
 		ThrowError("File not found.");
-		return result;
+		return;
 	}
 
 	if ("NoExifDataFound")
 	{
 		ThrowError("No exif data found.");
-		return result;
+		return;
 	}
-	return result;
+
+	// process exif data..
 }
 
 
@@ -117,17 +117,18 @@ void runSamples()
 		float a = divideBy(1, 0);
 		if (errorCatcher.hasCaught())
 		{
-			std::cout << errorCatcher.message() << std::endl;
+			std::cout << "Division failed. Reason: " << errorCatcher.message() << std::endl;
 		}
 	}	
 
 	// Exif data sample
 	{
 		ErrorCatcher errorCatcher;
-		std::string exifData = getExifDataFromPhoto("non-existing-file");
+		std::string exifData;
+		getExifDataFromPhoto("non-existing-file", exifData);
 		if (errorCatcher.hasCaught())
 		{
-			std::cout << errorCatcher.message() << std::endl;
+			std::cout << "Read exif data failed. Reason: " << errorCatcher.message() << std::endl;
 		}		
 	}
 }

@@ -11,19 +11,27 @@ namespace CppToys
 
 	/**
 	 * Class Error bundles an error code with its message.
-	 * The default value for the error code is zero.
-	 * Error code zero means that no error has occured.
 	 * The error message can be empty.
 	 */
 	class Error
 	{
 	public:
-		// Error code defaults to 0 (no error).
+
+		/**
+		 * Default error codes.
+		 */
+		enum
+		{
+			SUCCEEDED = 0,
+			FAILED = -1
+		};
+
+		// Error code defaults to SUCCEEDED.
 		Error();
 
 		Error(int inErrorCode);
 
-		// Error code defaults to 1.
+		// Error code defaults to FAILED.
 		Error(const std::string & inErrorMessage);
 
 		Error(int inErrorCode, const std::string & inErrorMessage);
@@ -123,7 +131,7 @@ namespace CppToys
 
 		/**
 		 * Returns the last reported error. This means the error that is
-		 * currently held by the deepest nested ErrorCatcher object.
+		 * currently held by the most deeply nested ErrorCatcher object.
 		 * If no ErrorCatcher objects are currently defined the top level
 		 * error object is returned.
 		 */
@@ -156,7 +164,7 @@ namespace CppToys
 
 
 	/**
-	 * ThrowError by only passing a message. Error code will default to 1.
+	 * ThrowError by only passing a message. Default error code will be used (FAILED).
 	 */
 	void ThrowError(const std::string & inErrorMessage);
 

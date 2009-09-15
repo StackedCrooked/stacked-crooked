@@ -9,7 +9,7 @@ using namespace XULWin;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	WindowFactory::Initialize();
+	WindowFactory::Initialize(hInstance);
 	ElementFactory::Initialize();
 
 	

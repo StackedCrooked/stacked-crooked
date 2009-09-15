@@ -20,7 +20,9 @@ namespace XULWin
 
 		static void Finalize();
 
-		Element * createElement(const std::string & inType, const std::string & inID);
+		Element * create(const std::string & inType, const std::string & inID);
+
+		Element * get(const std::string & inID) const;
 
 	private:
 		static ElementFactory * sInstance;

@@ -6,6 +6,9 @@
 namespace XULWin
 {
 
+	ElementFactory * ElementFactory::sInstance = 0;
+
+
 	void ElementFactory::Initialize()
 	{
 		assert (!sInstance);
@@ -26,13 +29,15 @@ namespace XULWin
 	}
 
 	
-	Element * ElementFactory::createElement(const std::string & inType, const std::string & inID)
+	Element * ElementFactory::create(const std::string & inType, const std::string & inID)
 	{
+		return 0;
 	}
 
 	
-	HWND ElementFactory::getWindowHandle(const std::string & inID) const
+	Element * ElementFactory::get(const std::string & inID) const
 	{
+		return 0;
 	}
 
 

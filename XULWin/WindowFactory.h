@@ -4,6 +4,7 @@
 
 #include <string>
 #include <map>
+#include <windows.h>
 
 
 namespace XULWin
@@ -18,7 +19,7 @@ namespace XULWin
 
 		static void Finalize();
 
-		HWND create(const std::string & inType) const;
+		HWND create(const std::string & inType);
 
 		HWND get(const std::string & inID) const;
 

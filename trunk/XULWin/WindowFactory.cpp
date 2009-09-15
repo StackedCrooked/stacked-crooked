@@ -1,10 +1,13 @@
 #include "WindowFactory.h"
-#include "Window.h"
+#include <assert.h>
 
 
 namespace XULWin
 {
 
+	WindowFactory * WindowFactory::sInstance = 0;
+
+	
 	void WindowFactory::Initialize()
 	{
 		assert (!sInstance);
@@ -25,13 +28,16 @@ namespace XULWin
 	}
 
 	
-	HWND WindowFactory::create(const std::string & inType) const
+	HWND WindowFactory::create(const std::string & inType)
 	{
+		//::CreateWindowEx(
+		return 0;
 	}
 
 	
 	HWND WindowFactory::get(const std::string & inID) const
 	{
+		return 0;
 	}
 
 

@@ -2,6 +2,7 @@
 #define ELEMENT_FACTORY_H_INCLUDED
 
 
+#include "Element.h"
 #include <string>
 #include <map>
 #include <windows.h>
@@ -9,7 +10,6 @@
 
 namespace XULWin
 {
-	class Element;
 
 	class ElementFactory
 	{
@@ -20,13 +20,13 @@ namespace XULWin
 
 		static void Finalize();
 
-		Element * create(const std::string & inType, const std::string & inID);
+		Element * create(Element * inParent, const Element::Type & inType, const Element::ID & inID);
 
-		Element * get(const std::string & inID) const;
+		Element * get(const Element::ID & inID) const;
 
 	private:
 		static ElementFactory * sInstance;
-		std::map<std::string, HWND> mHandles;
+		std::map<Element::ID, HWND> mHandles;
 	};
 
 } // XULWin

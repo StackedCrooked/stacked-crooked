@@ -1,5 +1,6 @@
 #include "ElementFactory.h"
 #include "Element.h"
+#include "WindowFactory.h"
 #include <assert.h>
 
 
@@ -29,13 +30,14 @@ namespace XULWin
 	}
 
 	
-	Element * ElementFactory::create(const std::string & inType, const std::string & inID)
+	Element * ElementFactory::create(Element * inParent, const Element::Type & inType, const Element::ID & inID)
 	{
+		WindowFactory::Instance().create(WindowFactory::Instance().get(inParent->id()), inType, inID);
 		return 0;
 	}
 
 	
-	Element * ElementFactory::get(const std::string & inID) const
+	Element * ElementFactory::get(const Element::ID & inID) const
 	{
 		return 0;
 	}

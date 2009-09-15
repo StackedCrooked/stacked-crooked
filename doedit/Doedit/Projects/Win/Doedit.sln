@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C++ Express 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doedit", "Doedit.vcproj", "{53560DEB-6E01-48C4-BC0C-DD3F9606B1B0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EBB059D0-592E-4F0A-BE76-6F89A1785BF5} = {EBB059D0-592E-4F0A-BE76-6F89A1785BF5}
+		{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49} = {E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}
+		{16DAE96A-D487-4C93-A1D5-EE7E9813D081} = {16DAE96A-D487-4C93-A1D5-EE7E9813D081}
+		{D3008D61-780D-4AAD-87F8-469B101AD325} = {D3008D61-780D-4AAD-87F8-469B101AD325}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EditViewLayer", "..\..\..\EditViewLayer\Projects\Win\EditViewLayer.vcproj", "{D3008D61-780D-4AAD-87F8-469B101AD325}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DoIPCLayer", "..\..\..\DoIPCLayer\Projects\Win\DoIPCLayer.vcproj", "{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EditIPCLayer", "..\..\..\EditIPCLayer\Projects\Win\EditIPCLayer.vcproj", "{EBB059D0-592E-4F0A-BE76-6F89A1785BF5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49} = {E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}
+		{16DAE96A-D487-4C93-A1D5-EE7E9813D081} = {16DAE96A-D487-4C93-A1D5-EE7E9813D081}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EditInterfaceLayer", "..\..\..\EditInterfaceLayer\Projects\Win\EditInterfaceLayer.vcproj", "{16DAE96A-D487-4C93-A1D5-EE7E9813D081}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D3008D61-780D-4AAD-87F8-469B101AD325} = {D3008D61-780D-4AAD-87F8-469B101AD325}
+		{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49} = {E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53560DEB-6E01-48C4-BC0C-DD3F9606B1B0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{53560DEB-6E01-48C4-BC0C-DD3F9606B1B0}.Debug|Win32.Build.0 = Debug|Win32
+		{53560DEB-6E01-48C4-BC0C-DD3F9606B1B0}.Release|Win32.ActiveCfg = Release|Win32
+		{53560DEB-6E01-48C4-BC0C-DD3F9606B1B0}.Release|Win32.Build.0 = Release|Win32
+		{D3008D61-780D-4AAD-87F8-469B101AD325}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D3008D61-780D-4AAD-87F8-469B101AD325}.Debug|Win32.Build.0 = Debug|Win32
+		{D3008D61-780D-4AAD-87F8-469B101AD325}.Release|Win32.ActiveCfg = Release|Win32
+		{D3008D61-780D-4AAD-87F8-469B101AD325}.Release|Win32.Build.0 = Release|Win32
+		{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}.Debug|Win32.Build.0 = Debug|Win32
+		{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}.Release|Win32.ActiveCfg = Release|Win32
+		{E1D9AF6D-9A05-4DAC-A0FF-D896AC0B7B49}.Release|Win32.Build.0 = Release|Win32
+		{EBB059D0-592E-4F0A-BE76-6F89A1785BF5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EBB059D0-592E-4F0A-BE76-6F89A1785BF5}.Debug|Win32.Build.0 = Debug|Win32
+		{EBB059D0-592E-4F0A-BE76-6F89A1785BF5}.Release|Win32.ActiveCfg = Release|Win32
+		{EBB059D0-592E-4F0A-BE76-6F89A1785BF5}.Release|Win32.Build.0 = Release|Win32
+		{16DAE96A-D487-4C93-A1D5-EE7E9813D081}.Debug|Win32.ActiveCfg = Debug|Win32
+		{16DAE96A-D487-4C93-A1D5-EE7E9813D081}.Debug|Win32.Build.0 = Debug|Win32
+		{16DAE96A-D487-4C93-A1D5-EE7E9813D081}.Release|Win32.ActiveCfg = Release|Win32
+		{16DAE96A-D487-4C93-A1D5-EE7E9813D081}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

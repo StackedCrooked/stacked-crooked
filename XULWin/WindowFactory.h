@@ -13,19 +13,36 @@ namespace XULWin
 	class WindowFactory
 	{
 	public:
-		static void Initialize();
+		static void Initialize(HMODULE inModuleHandle);
 
 		static WindowFactory & Instance();
 
 		static void Finalize();
 
-		HWND create(const std::string & inType);
+		HWND create(HWND inParent, const std::string & inType);
 
 		HWND get(const std::string & inID) const;
 
 	private:
-		static WindowFactory * sInstance;
+		WindowFactory(HMODULE inModuleHandle);
+
+		struct Params
+		{
+			DWORD dwExStyle;
+			LPCWSTR lpClassName;
+			DWORD dwStyle;
+		};
+
+		bool get(const std::string & inType, WindowFactory::Params & outParams) const;
+		
+				
+		HMODULE mModuleHandle;
 		std::map<std::string, HWND> mHandles;
+		
+		typedef std::map<std::string, Params> ParamsMapping;
+		ParamsMapping mParams;
+
+		static WindowFactory * sInstance;
 	};
 
 } // XULWin

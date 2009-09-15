@@ -4,31 +4,31 @@
 namespace XULWin
 {
 
-	Element::Element(const std::string & inType, const std::string & inId) :
+	Element::Element(const Type & inType, const ID & inID) :
 		mParent(0),
 		mType(inType),
-		mId(inId)
+		mID(inID)
 	{
 	}
 	
 		
-	Element::Element(Element * inParent, const std::string & inType, const std::string & inId) :
+	Element::Element(Element * inParent, const Type & inType, const ID & inID) :
 		mParent(inParent),
 		mType(inType),
-		mId(inId)
+		mID(inID)
 	{
 	}
 
 
-	const std::string & Element::type() const
+	const Element::Type & Element::type() const
 	{
 		return mType;
 	}
 
 
-	const std::string & Element::id() const
+	const Element::ID & Element::id() const
 	{
-		return mId;
+		return mID;
 	}
 
 } // XULWin

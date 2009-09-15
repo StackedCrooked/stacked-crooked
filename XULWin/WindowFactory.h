@@ -2,6 +2,7 @@
 #define WINDOW_FACTORY_H_INCLUDED
 
 
+#include "Element.h"
 #include <string>
 #include <map>
 #include <windows.h>
@@ -19,9 +20,9 @@ namespace XULWin
 
 		static void Finalize();
 
-		HWND create(HWND inParent, const std::string & inType);
+		HWND create(HWND inParent, const Element::Type & inType, const Element::ID & inID);
 
-		HWND get(const std::string & inID) const;
+		HWND get(const Element::ID & inID) const;
 
 	private:
 		WindowFactory(HMODULE inModuleHandle);
@@ -33,13 +34,13 @@ namespace XULWin
 			DWORD dwStyle;
 		};
 
-		bool get(const std::string & inType, WindowFactory::Params & outParams) const;
+		bool get(const Element::Type & inType, WindowFactory::Params & outParams) const;
 		
 				
 		HMODULE mModuleHandle;
-		std::map<std::string, HWND> mHandles;
+		std::map<Element::ID, HWND> mHandles;
 		
-		typedef std::map<std::string, Params> ParamsMapping;
+		typedef std::map<Element::Type, Params> ParamsMapping;
 		ParamsMapping mParams;
 
 		static WindowFactory * sInstance;

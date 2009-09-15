@@ -34,7 +34,7 @@ namespace XULWin
 	}
 
 	
-	HWND WindowFactory::create(HWND inParent, const std::string & inType)
+	HWND WindowFactory::create(HWND inParent, const Element::Type & inType, const Element::ID & inID)
 	{
 		static int fID = 101;
 		Params p;
@@ -56,17 +56,18 @@ namespace XULWin
 			mModuleHandle,
 			0
 		);
+		mHandles.insert(std::make_pair(inID, handle));
 		return handle;
 	}
 
 	
-	HWND WindowFactory::get(const std::string & inID) const
+	HWND WindowFactory::get(const Element::ID & inID) const
 	{
 		return 0;
 	}
 	
 	
-	bool WindowFactory::get(const std::string & inType, WindowFactory::Params & outParams) const
+	bool WindowFactory::get(const Element::Type & inType, WindowFactory::Params & outParams) const
 	{
 		bool result = false;
 		ParamsMapping::const_iterator it = mParams.find(inType);

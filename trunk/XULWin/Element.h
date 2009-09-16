@@ -4,8 +4,9 @@
 
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <set>
+#include <map>
 #include <string>
+#include <vector>
 #include <windows.h>
 
 
@@ -20,8 +21,7 @@ namespace XULWin
     // We use shared_ptr for children.
     typedef boost::shared_ptr<Element> ElementPtr;
 
-    // Using weak_ptr for reference from child to parent.
-    typedef boost::weak_ptr<Element> ElementWPtr;
+    typedef std::vector<ElementPtr> Children;
 
     /**
      * Represents a XUL element.
@@ -36,8 +36,15 @@ namespace XULWin
 
         const ID & id() const;
 
-        boost::shared_ptr<NativeComponent> nativeComponent() const;
+        const Children & children() const { return mChildren; }
 
+        Children & children() { return mChildren; }
+
+        boost::weak_ptr<Element> parent() const { return mParent; }
+
+        std::map<std::string, std::string> Attributes;
+
+        boost::shared_ptr<NativeComponent> nativeComponent() const;
 
         class Type
         {
@@ -63,27 +70,47 @@ namespace XULWin
             std::string mID;
         };
 
+        void add(ElementPtr inChild);
+
     protected:
         Element(ElementPtr inParent, const Type & inType, const ID & inID, boost::shared_ptr<NativeComponent> inNativeComponent);
 
-        void add(ElementPtr inChild);
+        template<class T>
+        static ElementPtr Create(ElementPtr inParent, const ID & inID)
+        {
+            ElementPtr result(new T(inParent, inID));
+            inParent->add(result);
+            return result;
+        }
+
+        boost::weak_ptr<Element> mParent;
+        Children mChildren;
 
     private:
-
         friend class ElementFactory;
-        ElementWPtr mParent;
         Type mType;
         ID mID;
-        boost::shared_ptr<NativeComponent> mNativeComponent;
-        std::set<ElementPtr> mChildren;
-
-        
+        boost::shared_ptr<NativeComponent> mNativeComponent;       
     };
+
+
+    typedef Element::ID elid;
+    typedef Element::Type eltype;
+
 
 
     class Window : public Element
     {
     public:
+        static ElementPtr Create(ElementPtr inParent, const ID & inID)
+        {
+            assert(!inParent);
+            ElementPtr result(new Window(inID));
+            return result;
+        }
+
+    private:
+        friend class Element;
         Window(const ID & inID);
     };
 
@@ -91,7 +118,36 @@ namespace XULWin
     class Button : public Element
     {
     public:
+        static ElementPtr Create(ElementPtr inParent, const ID & inID)
+        { return Element::Create<Button>(inParent, inID); }
+    
+    private:
+        friend class Element;
         Button(ElementPtr inParent, const ID & inID);
+    };
+
+
+    class CheckBox : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const ID & inID)
+        { return Element::Create<CheckBox>(inParent, inID); }
+
+    private:
+        friend class Element;
+        CheckBox(ElementPtr inParent, const ID & inID);
+    };
+
+
+    class HBox : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const ID & inID)
+        { return Element::Create<HBox>(inParent, inID); }
+
+    private:
+        friend class Element;
+        HBox(ElementPtr inParent, const ID & inID);
     };
 
 

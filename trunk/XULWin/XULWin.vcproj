@@ -175,6 +175,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Layout.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -190,6 +194,10 @@
 			>
 			<File
 				RelativePath=".\Element.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Layout.h"
 				>
 			</File>
 			<File

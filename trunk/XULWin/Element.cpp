@@ -11,7 +11,11 @@ namespace XULWin
         mType(inType),
         mID(inID),
         mNativeComponent(inNativeComponent)
-    {   
+    {
+        mNativeComponent->setOwningElement(this);
+
+        // Set default attributes
+        Attributes["flex"] = "1";
     }
 
 
@@ -35,7 +39,7 @@ namespace XULWin
     
     void Element::add(ElementPtr inChild)
     {
-        mChildren.insert(inChild);
+        mChildren.push_back(inChild);
     }
 
 
@@ -55,5 +59,24 @@ namespace XULWin
                 NativeComponentPtr(new NativeButton(inParent->nativeComponent())))
     {
     }
+
+
+    CheckBox::CheckBox(ElementPtr inParent, const ID & inID) :
+        Element(inParent,
+                Element::Type("checkbox"),
+                inID,
+                NativeComponentPtr(new NativeCheckBox(inParent->nativeComponent())))
+    {
+    }
+
+
+    HBox::HBox(ElementPtr inParent, const ID & inID) :
+        Element(inParent,
+                Element::Type("hbox"),
+                inID,
+                NativeComponentPtr(new NativeHBox(inParent->nativeComponent())))
+    {
+    }
+
 
 } // XULWin

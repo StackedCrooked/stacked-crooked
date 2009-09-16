@@ -1,10 +1,15 @@
 #include "Window.h"
+#include "Element.h"
+#include "Layout.h"
+#include <boost/lexical_cast.hpp>
 #include <string>
 
 
 namespace XULWin
 {
     int CommandID::sID = 101; // start command IDs at 101 to avoid conflicts with Windows predefined values
+    
+    NativeComponent::Components NativeComponent::sComponents;
 
     NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCWSTR inClassName, DWORD inExStyle, DWORD inStyle) :
         mParent(inParent),
@@ -49,6 +54,38 @@ namespace XULWin
             mModuleHandle,
             0
         );
+
+        int a = 0;
+        int b = 0;
+        sComponents.insert(std::make_pair(mHandle, this));
+        a++;
+        b++;
+    }
+
+
+    NativeComponent::~NativeComponent()
+    {
+        Components::iterator it = sComponents.find(mHandle);
+        bool found = it != sComponents.end();
+        assert(found);
+        if (found)
+        {
+            sComponents.erase(it);
+        }
+
+        ::DestroyWindow(mHandle);
+    }
+    
+    
+    void NativeComponent::setOwningElement(Element * inElement)
+    {
+        mElement = inElement;
+    }
+
+    
+    Element * NativeComponent::owningElement() const
+    {
+        return mElement;
     }
 
 
@@ -67,17 +104,49 @@ namespace XULWin
     {
         return mHandle;
     }
+    
+
+    void NativeComponent::rebuildLayout()
+    {
+        rebuildChildLayouts();
+    }
+
+    
+    void NativeComponent::rebuildChildLayouts()
+    {
+        Children::iterator it = mElement->children().begin(), end = mElement->children().end();
+        for (; it != end; ++it)
+        {
+            (*it)->nativeComponent()->rebuildLayout();
+        }
+    }
+
+    
+    LRESULT CALLBACK NativeComponent::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        Components::iterator it = sComponents.find(hWnd);
+        if (it != sComponents.end())
+        {
+            return it->second->handleMessage(inMessage, wParam, lParam);
+        }
+        return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
+    }
 
 
-    void NativeWindow::Register(HMODULE inModuleHandle, WNDPROC inWndProc)
+    LRESULT NativeComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
+    }
+
+    void NativeWindow::Register(HMODULE inModuleHandle)
     {
         WNDCLASSEX wndClass;
         wndClass.cbSize = sizeof(wndClass);
         wndClass.style = 0;
-        wndClass.lpfnWndProc = inWndProc;
-        wndClass.cbClsExtra    = 0;
-        wndClass.cbWndExtra    = 0;
-        wndClass.hInstance    = inModuleHandle;
+        wndClass.lpfnWndProc = &NativeComponent::MessageHandler;
+        wndClass.cbClsExtra = 0;
+        wndClass.cbWndExtra = 0;
+        wndClass.hInstance = inModuleHandle;
         wndClass.hIcon = 0;
         wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
         wndClass.hbrBackground = 0; // covered by content pane so no color needed (reduces flicker)
@@ -88,6 +157,78 @@ namespace XULWin
         {
             throw std::runtime_error(std::string("Could not register Windows class."));
         }
+    }
+
+
+    LRESULT NativeWindow::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        if (inMessage == WM_SIZE)
+        {
+            Children::iterator it = owningElement()->children().begin();
+            if (it != owningElement()->children().end())
+            {
+                RECT rc;
+                ::GetClientRect(handle(), &rc);
+                HWND childHandle = (*it)->nativeComponent()->handle();
+                ::MoveWindow(childHandle, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+                ::InvalidateRect(childHandle, 0, FALSE);
+                rebuildChildLayouts();
+            }
+            ::InvalidateRect(handle(), 0, FALSE);
+            ::UpdateWindow(handle());
+        }
+        return ::DefWindowProc(handle(), inMessage, wParam, lParam);
+    }
+    
+    
+    void NativeHBox::rebuildLayout()
+    {
+        if (NativeComponentPtr parent = mParent.lock())
+        {
+            RECT rc;
+            ::GetClientRect(handle(), &rc);
+
+            LinearLayoutManager lm(HORIZONTAL);
+            std::vector<Rect> rects;
+
+            std::vector<int> flexValues;
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                std::string flex = mElement->children()[idx]->Attributes["flex"];
+
+                int flexValue = 0;
+                try
+                {
+                    flexValue = boost::lexical_cast<int>(flex);
+                }
+                catch (const boost::bad_lexical_cast & inExc)
+                {
+                    // do nothing, flexValue will be 0
+                }
+                flexValues.push_back(flexValue);
+            }
+
+            lm.getRects
+            (
+                Rect(rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top),
+                flexValues,
+                rects
+            );
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                Rect & rect = rects[idx];
+                HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
+                ::MoveWindow(childHandle, rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
+                ::InvalidateRect(childHandle, 0, FALSE);
+            }
+        }
+        rebuildChildLayouts();
+    }
+
+
+    LRESULT NativeHBox::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
 
 } // namespace XULWin

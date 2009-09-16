@@ -1,4 +1,5 @@
 #include "NativeComponent.h"
+#include "Defaults.h"
 #include "Element.h"
 #include "Layout.h"
 #include "ErrorHandler/ErrorStack.h"
@@ -26,10 +27,10 @@ namespace XULWin
             throw std::runtime_error("Invalid parent");
         }
 
-        int x = 100;
-        int y = 100;
-        int w = 200;
-        int h = 300;
+        int x = 0, y = 0;
+        int w = Defaults::windowWidth();
+        int h = Defaults::windowHeight();
+
         if (parent)
         {
             RECT rc;
@@ -78,6 +79,22 @@ namespace XULWin
         }
 
         ::DestroyWindow(mHandle);
+    }
+    
+
+    void NativeComponent::init()
+    {
+    }
+
+
+    void NativeComponent::applyAttributes()
+    {
+        AttributesMapping & attr = owningElement()->Attributes;
+        AttributesMapping::iterator it = attr.begin(), end = attr.end();
+        for (; it != end; ++it)
+        {
+            applyAttribute(it->first, it->second);
+        }
     }
     
     
@@ -209,6 +226,24 @@ namespace XULWin
         }
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
+
+
+    NativeLabel::NativeLabel(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("STATIC"),
+                      0, // exStyle
+                      0)
+    {
+    }
+        
+        
+    void NativeLabel::applyAttribute(const std::string & inName, const std::string & inValue)
+    {
+        if (inName == "value")
+        {
+            ::SetWindowTextA(handle(), inValue.c_str());
+        }
+    }
     
     
     void NativeHBox::rebuildLayout()
@@ -228,7 +263,7 @@ namespace XULWin
             {
                 std::string flex = mElement->children()[idx]->Attributes["flex"];
 
-                int flexValue = 0;
+                int flexValue = Defaults::Attributes::flex();
                 try
                 {
                     flexValue = boost::lexical_cast<int>(flex);
@@ -291,7 +326,7 @@ namespace XULWin
             {
                 std::string flex = mElement->children()[idx]->Attributes["flex"];
 
-                int flexValue = 0;
+                int flexValue = Defaults::Attributes::flex();
                 try
                 {
                     flexValue = boost::lexical_cast<int>(flex);

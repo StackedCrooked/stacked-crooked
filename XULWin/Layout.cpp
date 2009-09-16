@@ -10,7 +10,7 @@ namespace XULWin
         assert(outPortions.empty());
         for (size_t idx = 0; idx != inItemCount; ++idx)
         {
-            outPortions.push_back(inLength/inItemCount);
+            outPortions.push_back((int)(0.5 + (float)inLength/(float)inItemCount));
         }
     }
 
@@ -26,7 +26,11 @@ namespace XULWin
 
         for (size_t idx = 0; idx != inProportions.size(); ++idx)
         {
-            int proportion = (int)(0.5 + (float)inLength*(float)inProportions[idx]/(float)sumOfProportions);
+            int proportion = 0;
+            if (inProportions[idx] != 0 && sumOfProportions != 0)
+            {
+                proportion = (int)(0.5 + (float)inLength*(float)inProportions[idx]/(float)sumOfProportions);
+            }
             outPortions.push_back(proportion);
         }
     }

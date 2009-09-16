@@ -13,9 +13,12 @@ namespace XULWin
         mNativeComponent(inNativeComponent)
     {
         mNativeComponent->setOwningElement(this);
+    }
 
-        // Set default attributes
-        Attributes["flex"] = "1";
+    
+    void Element::init()
+    {
+        mNativeComponent->init();
     }
 
 
@@ -34,6 +37,12 @@ namespace XULWin
     boost::shared_ptr<NativeComponent> Element::nativeComponent() const
     {
         return mNativeComponent;
+    }
+    
+    
+    void Element::applyAttributes() const
+    {
+        mNativeComponent->applyAttributes();
     }
     
     

@@ -40,6 +40,11 @@ namespace XULWin
 
         virtual ~NativeComponent();
 
+        // post-constructor initializer
+        virtual void init();
+
+        void applyAttributes();
+
         void setOwningElement(Element * inElement);
 
         Element * owningElement() const;
@@ -57,6 +62,8 @@ namespace XULWin
         virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
 
     protected:
+        virtual void applyAttribute(const std::string & inName, const std::string & inValue) {}
+
         NativeComponentWPtr mParent;
         Element * mElement;
 
@@ -125,13 +132,10 @@ namespace XULWin
     class NativeLabel: public NativeControl
     {
     public:
-        NativeLabel(NativeComponentPtr inParent) :
-            NativeControl(inParent,
-                          TEXT("STATIC"),
-                          0, // exStyle
-                          0)
-        {
-        }
+        NativeLabel(NativeComponentPtr inParent);
+
+    protected:
+        virtual void applyAttribute(const std::string & inName, const std::string & inValue);
     };
 
 

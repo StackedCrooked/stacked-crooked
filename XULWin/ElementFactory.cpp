@@ -27,6 +27,7 @@ namespace XULWin
         if (it != mFactoryMethods.end())
         {
             result = it->second(inType, inParent);
+            result->init();
         }
         else
         {

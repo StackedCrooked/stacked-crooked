@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <windows.h>
 
 
 namespace XULWin
@@ -22,6 +21,8 @@ namespace XULWin
     typedef boost::shared_ptr<Element> ElementPtr;
 
     typedef std::vector<ElementPtr> Children;
+
+    typedef std::map<std::string, std::string> AttributesMapping;
 
     /**
      * Represents a XUL element.
@@ -42,9 +43,11 @@ namespace XULWin
 
         boost::weak_ptr<Element> parent() const { return mParent; }
 
-        std::map<std::string, std::string> Attributes;
+        AttributesMapping Attributes;
 
         boost::shared_ptr<NativeComponent> nativeComponent() const;
+
+        void applyAttributes() const;
 
         class Type
         {
@@ -81,7 +84,10 @@ namespace XULWin
             ElementPtr result(new T(inType, inParent));
             inParent->add(result);
             return result;
-        }
+        }        
+
+        // this method gets called after construction
+        virtual void init();
 
         boost::weak_ptr<Element> mParent;
         Children mChildren;

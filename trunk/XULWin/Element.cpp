@@ -1,57 +1,59 @@
 #include "Element.h"
 #include "Window.h"
-#include "WindowFactory.h"
 
 
 namespace XULWin
 {
-		
-	Element::Element(Element * inParent, const Type & inType, const ID & inID, NativeComponent * inNativeWindow) :
-		mParent(inParent),
-		mType(inType),
-		mID(inID),
-		mNativeWindow(inNativeWindow)
-	{
-		if (inParent)
-		{
-			inParent->add(this);
-		}
-	}
 
 
-	const Element::Type & Element::type() const
-	{
-		return mType;
-	}
+    Element::Element(ElementPtr inParent, const Type & inType, const ID & inID, boost::shared_ptr<NativeComponent> inNativeComponent) :
+        mParent(inParent),
+        mType(inType),
+        mID(inID),
+        mNativeComponent(inNativeComponent)
+    {   
+    }
 
 
-	const Element::ID & Element::id() const
-	{
-		return mID;
-	}
-	
-	
-	NativeComponent * Element::window() const
-	{
-		return mNativeWindow;
-	}
-	
-	
-	void Element::add(Element * inChild)
-	{
-		mChildren.insert(inChild);
-	}
+    const Element::Type & Element::type() const
+    {
+        return mType;
+    }
 
 
-	Window::Window(const ID & inID) :
-		Element(0, Element::Type("window"), inID, new NativeWindow)
-	{
-	}
+    const Element::ID & Element::id() const
+    {
+        return mID;
+    }
+    
+    
+    boost::shared_ptr<NativeComponent> Element::nativeComponent() const
+    {
+        return mNativeComponent;
+    }
+    
+    
+    void Element::add(ElementPtr inChild)
+    {
+        mChildren.insert(inChild);
+    }
 
 
-	Button::Button(Element * inParent, const ID & inID) :
-		Element(inParent, Element::Type("button"), inID, new NativeButton(inParent->window()))
-	{
-	}
+    Window::Window(const ID & inID) :
+        Element(ElementPtr(),
+                Element::Type("window"),
+                inID,
+                NativeComponentPtr(new NativeWindow))
+    {
+    }
+
+
+    Button::Button(ElementPtr inParent, const ID & inID) :
+        Element(inParent,
+                Element::Type("button"),
+                inID,
+                NativeComponentPtr(new NativeButton(inParent->nativeComponent())))
+    {
+    }
 
 } // XULWin

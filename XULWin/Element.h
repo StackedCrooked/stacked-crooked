@@ -97,8 +97,6 @@ namespace XULWin
     typedef Element::ID elid;
     typedef Element::Type eltype;
 
-
-
     class Window : public Element
     {
     public:
@@ -108,6 +106,8 @@ namespace XULWin
             ElementPtr result(new Window(inID));
             return result;
         }
+
+        void showModal();
 
     private:
         friend class Element;

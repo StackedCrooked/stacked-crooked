@@ -10,15 +10,11 @@
 
 	<!-- Tree -->
 	<hbox flex="1" id="main-box">
+    <label value="hbox1" ></label>
+    <label value="hbox2" ></label>
     <vbox>
-      <label>vbox1</label>
-      <label>vbox1</label>
-    </vbox>
-    <vbox>
-      <label>vbox2</label>
-      <label>vbox2</label>
-      <label>vbox2</label>
-      <label>vbox2</label>
+      <label value="vbox1" ></label>
+      <label value="vbox2" ></label>
     </vbox>
 	</hbox>
 </window>

@@ -1,3 +1,2 @@
 - Add ErrorCatcher live reporter in a sep DOS window
-- Rename ErrorStack to ErrorReporter
-- Rename ErrorStack::throwError to ErrorStack::reportError
+- Add Unicode version

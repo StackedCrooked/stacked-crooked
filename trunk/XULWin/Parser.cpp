@@ -58,8 +58,11 @@ namespace XULWin
                 mStack.push(element);
                 for (int idx = 0; idx != attributes.getLength(); ++idx)
                 {
-                    mStack.top()->Attributes[attributes.getLocalName(idx)] = attributes.getValue(idx);
+                    const Poco::XML::XMLString & name = attributes.getLocalName(idx);
+                    const Poco::XML::XMLString & value = attributes.getValue(idx);
+                    mStack.top()->Attributes[name] = value;
                 }
+                element->applyAttributes();
             }
             else
             {

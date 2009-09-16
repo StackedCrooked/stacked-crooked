@@ -10,16 +10,26 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ErrorHandler", "..\ErrorHan
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debug_shared|Win32 = debug_shared|Win32
 		Debug|Win32 = Debug|Win32
+		release_shared|Win32 = release_shared|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.debug_shared|Win32.ActiveCfg = Debug|Win32
+		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.debug_shared|Win32.Build.0 = Debug|Win32
 		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.Debug|Win32.ActiveCfg = Debug|Win32
 		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.Debug|Win32.Build.0 = Debug|Win32
+		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.release_shared|Win32.ActiveCfg = Release|Win32
+		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.release_shared|Win32.Build.0 = Release|Win32
 		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.Release|Win32.ActiveCfg = Release|Win32
 		{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}.Release|Win32.Build.0 = Release|Win32
+		{85286E77-8679-422A-A839-C1D563D4441F}.debug_shared|Win32.ActiveCfg = Debug|Win32
+		{85286E77-8679-422A-A839-C1D563D4441F}.debug_shared|Win32.Build.0 = Debug|Win32
 		{85286E77-8679-422A-A839-C1D563D4441F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{85286E77-8679-422A-A839-C1D563D4441F}.Debug|Win32.Build.0 = Debug|Win32
+		{85286E77-8679-422A-A839-C1D563D4441F}.release_shared|Win32.ActiveCfg = Release|Win32
+		{85286E77-8679-422A-A839-C1D563D4441F}.release_shared|Win32.Build.0 = Release|Win32
 		{85286E77-8679-422A-A839-C1D563D4441F}.Release|Win32.ActiveCfg = Release|Win32
 		{85286E77-8679-422A-A839-C1D563D4441F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection

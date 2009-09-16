@@ -61,7 +61,7 @@ namespace XULWin
         class ID
         {
         public:
-            explicit ID(const std::string & inID) : mID(inID) {}
+            explicit ID(const std::string & inID = "") : mID(inID) {}
 
             operator const std::string & () const { return mID; }
 
@@ -73,12 +73,12 @@ namespace XULWin
         void add(ElementPtr inChild);
 
     protected:
-        Element(ElementPtr inParent, const Type & inType, const ID & inID, boost::shared_ptr<NativeComponent> inNativeComponent);
+        Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent);
 
         template<class T>
-        static ElementPtr Create(ElementPtr inParent, const ID & inID)
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
         {
-            ElementPtr result(new T(inParent, inID));
+            ElementPtr result(new T(inType, inParent));
             inParent->add(result);
             return result;
         }
@@ -100,10 +100,10 @@ namespace XULWin
     class Window : public Element
     {
     public:
-        static ElementPtr Create(ElementPtr inParent, const ID & inID)
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
         {
             assert(!inParent);
-            ElementPtr result(new Window(inID));
+            ElementPtr result(new Window(inType));
             return result;
         }
 
@@ -111,43 +111,55 @@ namespace XULWin
 
     private:
         friend class Element;
-        Window(const ID & inID);
+        Window(const Type & inType);
     };
 
 
     class Button : public Element
     {
     public:
-        static ElementPtr Create(ElementPtr inParent, const ID & inID)
-        { return Element::Create<Button>(inParent, inID); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<Button>(inType, inParent); }
     
     private:
         friend class Element;
-        Button(ElementPtr inParent, const ID & inID);
+        Button(const Type & inType, ElementPtr inParent);
     };
 
 
     class CheckBox : public Element
     {
     public:
-        static ElementPtr Create(ElementPtr inParent, const ID & inID)
-        { return Element::Create<CheckBox>(inParent, inID); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<CheckBox>(inType, inParent); }
 
     private:
         friend class Element;
-        CheckBox(ElementPtr inParent, const ID & inID);
+        CheckBox(const Type & inType, ElementPtr inParent);
     };
 
 
     class HBox : public Element
     {
     public:
-        static ElementPtr Create(ElementPtr inParent, const ID & inID)
-        { return Element::Create<HBox>(inParent, inID); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<HBox>(inType, inParent); }
 
     private:
         friend class Element;
-        HBox(ElementPtr inParent, const ID & inID);
+        HBox(const Type & inType, ElementPtr inParent);
+    };
+
+
+    class VBox : public Element
+    {
+    public:
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<VBox>(inType, inParent); }
+
+    private:
+        friend class Element;
+        VBox(const Type & inType, ElementPtr inParent);
     };
 
 

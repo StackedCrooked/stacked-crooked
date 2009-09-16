@@ -201,9 +201,11 @@ namespace XULWin
             RECT rc;
             ::GetClientRect(handle(), &rc);
 
-            LinearLayoutManager lm(HORIZONTAL);
-            std::vector<Rect> rects;
-
+            LinearLayoutManager layoutManager(HORIZONTAL);
+            
+            //
+            // Obtain the flex values
+            //
             std::vector<int> flexValues;
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
@@ -221,16 +223,25 @@ namespace XULWin
                 }
                 flexValues.push_back(flexValue);
             }
-
-            lm.getRects
-            (
-                Rect(rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top),
+            
+            //
+            // Use the flex values to obtain the child rectangles
+            //
+            std::vector<Rect> childRects;
+            layoutManager.getRects(
+                Rect(rc.left,
+                     rc.top,
+                     rc.right-rc.left,
+                     rc.bottom-rc.top),
                 flexValues,
-                rects
-            );
+                childRects);
+
+            //
+            // Apply the new child rectangles
+            //
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
-                Rect & rect = rects[idx];
+                Rect & rect = childRects[idx];
                 HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
                 ::MoveWindow(childHandle, rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
                 ::InvalidateRect(childHandle, 0, FALSE);

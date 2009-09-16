@@ -199,6 +199,14 @@
 				RelativePath=".\NativeComponent.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Parser.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

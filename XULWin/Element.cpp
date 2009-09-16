@@ -7,10 +7,9 @@ namespace XULWin
 {
 
 
-    Element::Element(ElementPtr inParent, const Type & inType, const ID & inID, boost::shared_ptr<NativeComponent> inNativeComponent) :
-        mParent(inParent),
+    Element::Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent) :
         mType(inType),
-        mID(inID),
+        mParent(inParent),
         mNativeComponent(inNativeComponent)
     {
         mNativeComponent->setOwningElement(this);
@@ -44,10 +43,9 @@ namespace XULWin
     }
 
 
-    Window::Window(const ID & inID) :
-        Element(ElementPtr(),
-                Element::Type("window"),
-                inID,
+    Window::Window(const Type & inType) :
+        Element(inType,
+                ElementPtr(),
                 NativeComponentPtr(new NativeWindow))
     {
     }
@@ -70,28 +68,33 @@ namespace XULWin
     }
 
 
-    Button::Button(ElementPtr inParent, const ID & inID) :
-        Element(inParent,
-                Element::Type("button"),
-                inID,
+    Button::Button(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
                 NativeComponentPtr(new NativeButton(inParent->nativeComponent())))
     {
     }
 
 
-    CheckBox::CheckBox(ElementPtr inParent, const ID & inID) :
-        Element(inParent,
-                Element::Type("checkbox"),
-                inID,
+    CheckBox::CheckBox(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
                 NativeComponentPtr(new NativeCheckBox(inParent->nativeComponent())))
     {
     }
 
 
-    HBox::HBox(ElementPtr inParent, const ID & inID) :
-        Element(inParent,
-                Element::Type("hbox"),
-                inID,
+    HBox::HBox(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
+                NativeComponentPtr(new NativeHBox(inParent->nativeComponent())))
+    {
+    }
+
+
+    VBox::VBox(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
                 NativeComponentPtr(new NativeHBox(inParent->nativeComponent())))
     {
     }

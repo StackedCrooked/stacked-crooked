@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Window.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\WindowFactory.cpp"
 				>
 			</File>
@@ -198,6 +202,10 @@
 			</File>
 			<File
 				RelativePath=".\ElementFactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Window.h"
 				>
 			</File>
 			<File

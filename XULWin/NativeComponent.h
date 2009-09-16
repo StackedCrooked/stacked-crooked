@@ -95,6 +95,9 @@ namespace XULWin
         void showModal();
 
         virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
+
+    protected:
+        void applyAttribute(const std::string & inName, const std::string & inValue);
     };
 
 

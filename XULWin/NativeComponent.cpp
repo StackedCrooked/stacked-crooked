@@ -197,6 +197,34 @@ namespace XULWin
         }
     }
 
+    
+    void NativeWindow::applyAttribute(const std::string & inName, const std::string & inValue)
+    {
+        if (inName == "width")
+        {
+            try
+            {
+                int w = boost::lexical_cast<int>(inValue);
+                RECT rw;
+                ::GetWindowRect(handle(), &rw);
+                
+                int oldWidth = rw.right - rw.left;
+                int x = rw.left - (w - oldWidth)/2;
+                if (w < oldWidth)
+                {
+                    x = rw.left + (w - oldWidth)/2;
+                }
+                ::MoveWindow(handle(), x, rw.top, w, rw.bottom - rw.top, FALSE);
+                ::InvalidateRect(handle(), 0, FALSE);
+            }
+            catch (boost::bad_lexical_cast & e)
+            {
+                ThrowError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
+                return;
+            }
+        }
+    }
+
 
     LRESULT NativeWindow::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {

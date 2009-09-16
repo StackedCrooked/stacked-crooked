@@ -1,5 +1,5 @@
-#ifndef WINDOW_H_INCLUDED
-#define WINDOW_H_INCLUDED
+#ifndef NATIVECOMPONENT_H_INCLUDED
+#define NATIVECOMPONENT_H_INCLUDED
 
 
 #include <boost/shared_ptr.hpp>
@@ -152,4 +152,4 @@ namespace XULWin
 } // namespace XULWin
 
 
-#endif // WINDOW_H_INCLUDED
+#endif // NATIVECOMPONENT_H_INCLUDED

@@ -20,8 +20,6 @@ namespace XULWin
 
 		static void Finalize();
 
-		Element * create(Element * inParent, const Element::Type & inType, const Element::ID & inID);
-
 		Element * get(const Element::ID & inID) const;
 
 	private:

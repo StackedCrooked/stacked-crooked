@@ -1,59 +1,59 @@
 #include "Element.h"
 #include "Window.h"
 #include <windows.h>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
 
 using namespace XULWin;
 
+typedef boost::function<ElementPtr(ElementPtr, elid)> FactoryMethod;
+typedef std::map<eltype, FactoryMethod> FactoryMethods;
+FactoryMethods gFactoryMethods;
 
-LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
+
+template<class ElementType>
+void mapXUL(const eltype & inType)
 {
-    switch (inMessage)
-    {
-        case WM_COMMAND:
-        {
-            break;
-        }
-        case WM_CLOSE:
-        {
-            ::PostQuitMessage(0);
-            break;
-        }
-        case WM_SIZE:
-        {
-
-            break;
-        }
-        default:
-        {
-            break;
-        }
-
-    }
-    return DefWindowProc(hWnd, inMessage, wParam, lParam);
+    gFactoryMethods.insert(std::make_pair(inType, boost::bind(ElementType::Create, _1, _2)));
 }
-
 
 void registerTypes(HMODULE inModule)
 {
-    NativeWindow::Register(inModule, &MessageHandler);
+    NativeWindow::Register(inModule);
+    mapXUL<Window>(eltype("window"));
+    mapXUL<Button>(eltype("button"));
+    mapXUL<CheckBox>(eltype("checkbox"));
+    mapXUL<HBox>(eltype("hbox"));    
 }
 
 
 void runSample()
 {
-    ElementPtr window(new Window(Element::ID("Test")));
-    ElementPtr button1(new Button(window, Element::ID("btn1")));
-    ElementPtr button2(new Button(window, Element::ID("btn2")));
-
-    ::ShowWindow(window->nativeComponent()->handle(), SW_SHOW);
 }
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     registerTypes(hInstance);
-    runSample();
+   
+    ElementPtr noParent;
+    ElementPtr window(Window::Create(noParent, elid("Test")));
+    ElementPtr hbox(HBox::Create(window, elid("hbox1")));
+
+    ElementPtr check(CheckBox::Create(hbox, elid("chk1")));
+    check->Attributes["flex"] = "1";
+
+    ElementPtr button1(Button::Create(hbox, elid("btn1")));
+    button1->Attributes["flex"] = "2";
+
+    ElementPtr button2(Button::Create(hbox, elid("btn2")));
+    button2->Attributes["flex"] = "3";
+
+    ElementPtr check2(CheckBox::Create(hbox, elid("chk2")));
+    check2->Attributes["flex"] = "4";
+
+    ::ShowWindow(window->nativeComponent()->handle(), SW_SHOW);
 
     MSG message;
     while (GetMessage(&message, NULL, 0, 0))

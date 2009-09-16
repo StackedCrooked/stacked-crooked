@@ -175,19 +175,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ElementFactory.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Window.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\WindowFactory.cpp"
 				>
 			</File>
 		</Filter>
@@ -201,15 +193,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ElementFactory.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Window.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WindowFactory.h"
 				>
 			</File>
 		</Filter>

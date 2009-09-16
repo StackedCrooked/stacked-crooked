@@ -2,6 +2,8 @@
 #define ELEMENT_H_INCLUDED
 
 
+#include <boost/weak_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <set>
 #include <string>
 #include <windows.h>
@@ -10,76 +12,87 @@
 namespace XULWin
 {
 
-	class ElementFactory;
-	class NativeComponent;
+    class ElementFactory;
+    class NativeComponent;
 
-	/**
-	 * Represents a XUL element.
-	 */
-	class Element
-	{
-	public:
-		class Type;
-		class ID;
+    class Element;
 
-		Element(Element * inParent, const Type & inType, const ID & inID, NativeComponent * inNativeWindow);
+    // We use shared_ptr for children.
+    typedef boost::shared_ptr<Element> ElementPtr;
 
-		const Type & type() const;
+    // Using weak_ptr for reference from child to parent.
+    typedef boost::weak_ptr<Element> ElementWPtr;
 
-		const ID & id() const;
+    /**
+     * Represents a XUL element.
+     */
+    class Element
+    {
+    public:
+        class Type;
+        class ID;
 
-		NativeComponent * window() const;
+        const Type & type() const;
 
+        const ID & id() const;
 
-		class Type
-		{
-		public:
-			explicit Type(const std::string & inType) : mType(inType) {}
-
-			operator const std::string & () const { return mType; }
-
-			bool operator < (const Type & rhs) const { return this->mType < rhs.mType; }
-		private:
-			std::string mType;
-		};
-
-		class ID
-		{
-		public:
-			explicit ID(const std::string & inID) : mID(inID) {}
-
-			operator const std::string & () const { return mID; }
-
-			bool operator < (const ID & rhs) const { return this->mID < rhs.mID; }
-		private:
-			std::string mID;
-		};
-
-	private:
-		friend class ElementFactory;
-
-		void add(Element * inChild);
-
-		Element * mParent;
-		Type mType;
-		ID mID;
-		NativeComponent * mNativeWindow;
-		std::set<Element*> mChildren;
-	};
+        boost::shared_ptr<NativeComponent> nativeComponent() const;
 
 
-	class Window : public Element
-	{
-	public:
-		Window(const ID & inID);
-	};
+        class Type
+        {
+        public:
+            explicit Type(const std::string & inType) : mType(inType) {}
+
+            operator const std::string & () const { return mType; }
+
+            bool operator < (const Type & rhs) const { return this->mType < rhs.mType; }
+        private:
+            std::string mType;
+        };
+
+        class ID
+        {
+        public:
+            explicit ID(const std::string & inID) : mID(inID) {}
+
+            operator const std::string & () const { return mID; }
+
+            bool operator < (const ID & rhs) const { return this->mID < rhs.mID; }
+        private:
+            std::string mID;
+        };
+
+    protected:
+        Element(ElementPtr inParent, const Type & inType, const ID & inID, boost::shared_ptr<NativeComponent> inNativeComponent);
+
+        void add(ElementPtr inChild);
+
+    private:
+
+        friend class ElementFactory;
+        ElementWPtr mParent;
+        Type mType;
+        ID mID;
+        boost::shared_ptr<NativeComponent> mNativeComponent;
+        std::set<ElementPtr> mChildren;
+
+        
+    };
 
 
-	class Button : public Element
-	{
-	public:
-		Button(Element * inParent, const ID & inID);
-	};
+    class Window : public Element
+    {
+    public:
+        Window(const ID & inID);
+    };
+
+
+    class Button : public Element
+    {
+    public:
+        Button(ElementPtr inParent, const ID & inID);
+    };
 
 
 } // XULWin

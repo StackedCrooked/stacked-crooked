@@ -25,13 +25,6 @@ void registerTypes(HMODULE inModule)
 
 void runSample()
 {
-}
-
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-{
-    ErrorStack::Initialize();
-    registerTypes(hInstance);
 
 	Parser parser;
 	//parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACES, true);
@@ -44,10 +37,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	catch (Poco::Exception& e)
 	{
-		std::cerr << e.displayText() << std::endl;
-		return 2;
+		ThrowError(e.displayText());
+        return;
 	}
     static_cast<Window*>(parser.rootElement().get())->showModal();
-    ErrorStack::Finalize();
+}
+
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    ErrorReporter::Initialize();
+    registerTypes(hInstance);
+    runSample();
+    ErrorReporter::Finalize();
     return 0;
 }

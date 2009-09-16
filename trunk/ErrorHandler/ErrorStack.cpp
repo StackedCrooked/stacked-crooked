@@ -6,7 +6,7 @@ namespace CppToys
 {
 
 
-	ErrorStack * ErrorStack::sInstance = 0;
+	ErrorReporter * ErrorReporter::sInstance = 0;
 
 
 	Error::Error() :
@@ -50,7 +50,7 @@ namespace CppToys
 	ErrorCatcher::ErrorCatcher() :
 		mPropagate(false)
 	{
-		ErrorStack::Instance().push(this);
+		ErrorReporter::Instance().push(this);
 	}
 
 
@@ -58,9 +58,9 @@ namespace CppToys
 	{
 		if (mPropagate)
 		{
-			ErrorStack::Instance().rethrow(this);
+			ErrorReporter::Instance().rethrow(this);
 		}
-		ErrorStack::Instance().pop(this);
+		ErrorReporter::Instance().pop(this);
 	}
 
 
@@ -76,24 +76,24 @@ namespace CppToys
 	}
 
 
-	void ErrorStack::Initialize()
+	void ErrorReporter::Initialize()
 	{
 		assert(!sInstance);
 		if (!sInstance)
 		{
-			sInstance = new ErrorStack();
+			sInstance = new ErrorReporter();
 		}
 	}
 
 
-	ErrorStack & ErrorStack::Instance()
+	ErrorReporter & ErrorReporter::Instance()
 	{
 		assert(sInstance);
 		return *sInstance;
 	}
 
 
-	void ErrorStack::Finalize()
+	void ErrorReporter::Finalize()
 	{
 		assert(sInstance);
 		if (sInstance)
@@ -104,7 +104,7 @@ namespace CppToys
 	}
 
 
-	const Error & ErrorStack::lastError() const
+	const Error & ErrorReporter::lastError() const
 	{
 		if (!mStack.empty())
 		{
@@ -114,7 +114,7 @@ namespace CppToys
 	}
 
 
-	void ErrorStack::throwError(const Error & inError)
+	void ErrorReporter::reportError(const Error & inError)
 	{
 		if (!mStack.empty())
 		{
@@ -127,13 +127,13 @@ namespace CppToys
 	}
 
 
-	void ErrorStack::push(ErrorCatcher * inError)
+	void ErrorReporter::push(ErrorCatcher * inError)
 	{
 		mStack.push(inError);
 	}
 
 
-	void ErrorStack::pop(ErrorCatcher * inError)
+	void ErrorReporter::pop(ErrorCatcher * inError)
 	{
 		bool foundOnTop = mStack.top() == inError;
 		assert(foundOnTop);
@@ -144,7 +144,7 @@ namespace CppToys
 	}
 
 
-	void ErrorStack::rethrow(ErrorCatcher * inError)
+	void ErrorReporter::rethrow(ErrorCatcher * inError)
 	{
 		// Empty stack would mean that there are no ErrorCatcher objects in existence right now
 		assert (!mStack.empty());
@@ -167,19 +167,19 @@ namespace CppToys
 	
 	void ThrowError(int inErrorCode, const std::string & inErrorMessage)
 	{
-		ErrorStack::Instance().throwError(Error(inErrorCode, inErrorMessage));
+		ErrorReporter::Instance().reportError(Error(inErrorCode, inErrorMessage));
 	}
 	
 	
 	void ThrowError(const std::string & inErrorMessage)
 	{
-		ErrorStack::Instance().throwError(Error(inErrorMessage));
+		ErrorReporter::Instance().reportError(Error(inErrorMessage));
 	}
 
 
 	void ThrowError(int inErrorCode)
 	{
-		ErrorStack::Instance().throwError(Error(inErrorCode));
+		ErrorReporter::Instance().reportError(Error(inErrorCode));
 	}
 
 

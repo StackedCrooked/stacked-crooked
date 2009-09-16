@@ -47,7 +47,7 @@ namespace CppToys
 
 
 	/** Forward declaration */
-	class ErrorStack;
+	class ErrorReporter;
 
 
 	/**
@@ -84,23 +84,23 @@ namespace CppToys
 		 * Caught Errors will be disposed of on destruction of the ErrorCatcher object.
 		 * If this is not desirable then you can use 'rethrow' to forward the Error to
 		 * the nearest parent ErrorCatcher. If no parent ErrorCatcher is defined, then
-		 * the error is set as the ErrorStack's top level error.
+		 * the error is set as the ErrorReporter's top level error.
 		 * NOTE: No actual C++ exception is thrown here. So you still need to write a
 		 *       return statement if you want to return to caller.
 		 */
 		void rethrow();
 
 	private:
-		friend class ErrorStack;
+		friend class ErrorReporter;
 		Error mError;
 		bool mPropagate;
 	};
 
 
 	/**
-	 * ErrorStack serves as a global stack for ErrorCatcher objects.
+	 * ErrorReporter serves as a global stack for ErrorCatcher objects.
 	 */
-	class ErrorStack
+	class ErrorReporter
 	{
 	public:
 		/**
@@ -113,7 +113,7 @@ namespace CppToys
 		/**
 		 * Returns the singleton object.
 		 */
-		static ErrorStack & Instance();
+		static ErrorReporter & Instance();
 		
 		/**
 		 * Finalize should be called before shutting down your program.
@@ -127,7 +127,7 @@ namespace CppToys
 		 *       program flow will not be altered. If you want to return to
 		 *       the caller you still have to write a return statement.
 		 */
-		void throwError(const Error & inError);
+		void reportError(const Error & inError);
 
 		/**
 		 * Returns the last reported error. This means the error that is
@@ -148,13 +148,13 @@ namespace CppToys
 
 		Error mTopLevelError;
 		std::stack<ErrorCatcher*> mStack;
-		static ErrorStack * sInstance;
+		static ErrorReporter * sInstance;
 	};
 
 
 	/**
 	 * ThrowError and its overloads are shorter versions 
-	 * for ErrorStack::Instance().throwError(..) 
+	 * for ErrorReporter::Instance().reportError(..) 
 	 * NOTE: These functions don't throw an actual C++ exception. They only
 	 *       notify the nearest ErrorCatcher that an error has occured. So
 	 *       you still need to write the return statement (if returning

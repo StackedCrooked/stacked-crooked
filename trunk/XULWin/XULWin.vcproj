@@ -220,6 +220,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="_Notes"
+			>
+			<File
+				RelativePath=".\Todo.txt"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

@@ -215,6 +215,10 @@
 				RelativePath=".\Parser.h"
 				>
 			</File>
+			<File
+				RelativePath=".\test.xul"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

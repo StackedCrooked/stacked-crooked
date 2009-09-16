@@ -76,6 +76,14 @@ namespace XULWin
     }
 
 
+    Label::Label(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
+                NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
+    {
+    }
+
+
     CheckBox::CheckBox(const Type & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
@@ -95,7 +103,7 @@ namespace XULWin
     VBox::VBox(const Type & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
-                NativeComponentPtr(new NativeHBox(inParent->nativeComponent())))
+                NativeComponentPtr(new NativeVBox(inParent->nativeComponent())))
     {
     }
 

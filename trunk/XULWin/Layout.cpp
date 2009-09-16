@@ -41,7 +41,7 @@ namespace XULWin
     void LinearLayoutManager::getRects(const Rect & inRect, size_t inItemCount, std::vector<Rect> & outRects)
     {
         std::vector<int> portions;
-        GetPortions(inRect.width(), inItemCount, portions);
+        GetPortions(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inItemCount, portions);
         int xOffset = inRect.x();
         int yOffset = inRect.y();
         for (size_t idx = 0; idx != inItemCount; ++idx)
@@ -60,7 +60,7 @@ namespace XULWin
     void LinearLayoutManager::getRects(const Rect & inRect, const std::vector<int> & inProportions, std::vector<Rect> & outRects)
     {
         std::vector<int> portions;
-        GetPortions(inRect.width(), inProportions, portions);
+        GetPortions(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inProportions, portions);
         int xOffset = inRect.x();
         int yOffset = inRect.y();
         for (size_t idx = 0; idx != portions.size(); ++idx)

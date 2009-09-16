@@ -120,6 +120,19 @@ namespace XULWin
     };
 
 
+    class NativeLabel: public NativeControl
+    {
+    public:
+        NativeLabel(NativeComponentPtr inParent) :
+            NativeControl(inParent,
+                          TEXT("STATIC"),
+                          0, // exStyle
+                          0)
+        {
+        }
+    };
+
+
     class NativeCheckBox : public NativeControl
     {
     public:
@@ -137,6 +150,23 @@ namespace XULWin
     {
     public:
         NativeHBox(NativeComponentPtr inParent) :
+            NativeControl(inParent,
+                          TEXT("STATIC"),
+                          0, // exStyle
+                          0)
+        {
+        }
+
+        virtual void rebuildLayout();
+
+        virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
+    };
+
+
+    class NativeVBox : public NativeControl
+    {
+    public:
+        NativeVBox(NativeComponentPtr inParent) :
             NativeControl(inParent,
                           TEXT("STATIC"),
                           0, // exStyle

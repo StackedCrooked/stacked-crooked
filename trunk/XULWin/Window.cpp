@@ -1,8 +1,12 @@
 #include "Window.h"
 #include "Element.h"
 #include "Layout.h"
+#include "ErrorHandler/ErrorStack.h"
 #include <boost/lexical_cast.hpp>
 #include <string>
+
+
+using namespace CppToys;
 
 
 namespace XULWin
@@ -162,20 +166,29 @@ namespace XULWin
 
     LRESULT NativeWindow::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        if (inMessage == WM_SIZE)
+        switch(inMessage)
         {
-            Children::iterator it = owningElement()->children().begin();
-            if (it != owningElement()->children().end())
+            case WM_SIZE:
             {
-                RECT rc;
-                ::GetClientRect(handle(), &rc);
-                HWND childHandle = (*it)->nativeComponent()->handle();
-                ::MoveWindow(childHandle, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
-                ::InvalidateRect(childHandle, 0, FALSE);
-                rebuildChildLayouts();
+                Children::iterator it = owningElement()->children().begin();
+                if (it != owningElement()->children().end())
+                {
+                    RECT rc;
+                    ::GetClientRect(handle(), &rc);
+                    HWND childHandle = (*it)->nativeComponent()->handle();
+                    ::MoveWindow(childHandle, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+                    ::InvalidateRect(childHandle, 0, FALSE);
+                    rebuildChildLayouts();
+                }
+                ::InvalidateRect(handle(), 0, FALSE);
+                ::UpdateWindow(handle());
+                break;
             }
-            ::InvalidateRect(handle(), 0, FALSE);
-            ::UpdateWindow(handle());
+            case WM_CLOSE:
+            {
+                PostQuitMessage(0);
+                break;
+            }
         }
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
@@ -201,9 +214,10 @@ namespace XULWin
                 {
                     flexValue = boost::lexical_cast<int>(flex);
                 }
-                catch (const boost::bad_lexical_cast & inExc)
+                catch (const boost::bad_lexical_cast & )
                 {
-                    // do nothing, flexValue will be 0
+                    ThrowError("Lexical cast failed for value: " + flex + ".");
+                    // continue program flow
                 }
                 flexValues.push_back(flexValue);
             }

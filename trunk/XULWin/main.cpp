@@ -52,18 +52,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     ElementPtr check2(CheckBox::Create(hbox, elid("chk2")));
     check2->Attributes["flex"] = "4";
-
-    ::ShowWindow(window->nativeComponent()->handle(), SW_SHOW);
-
-    MSG message;
-    while (GetMessage(&message, NULL, 0, 0))
-    {
-        HWND hActive = GetActiveWindow();
-        if (! IsDialogMessage(hActive, &message))
-        {
-            TranslateMessage(&message);
-            DispatchMessage(&message);
-        }
-    }
+    static_cast<Window*>(window.get())->showModal();
     return 0;
 }

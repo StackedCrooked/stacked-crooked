@@ -8,16 +8,21 @@
 #include "Poco/SAX/Attributes.h"
 #include "Poco/SAX/Locator.h"
 #include "Poco/Exception.h"
+#include <stack>
 #include <string>
 
 
 namespace XULWin
 {
     
-    class Parser : public Poco::XML::ContentHandler
+    class Parser : public Poco::XML::SAXParser,
+                   public Poco::XML::ContentHandler
     {
     public:
-        Parser(const std::string & inFileName);
+        Parser();
+
+        // after parsing
+        ElementPtr rootElement() const;
 	
 	    // ContentHandler
         virtual void setDocumentLocator(const Poco::XML::Locator * inLocator);
@@ -29,11 +34,24 @@ namespace XULWin
 	    virtual void startElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname, const Poco::XML::Attributes& attributes);
     	
 	    virtual void endElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname);
+
+        virtual void characters(const Poco::XML::XMLChar ch[], int start, int length) {}
+	
+	    virtual void ignorableWhitespace(const Poco::XML::XMLChar ch[], int start, int length) {}
+	
+	    virtual void processingInstruction(const Poco::XML::XMLString& target, const Poco::XML::XMLString& data) {}
+	
+	    virtual void startPrefixMapping(const Poco::XML::XMLString& prefix, const Poco::XML::XMLString& uri) {}
+	
+        virtual void endPrefixMapping(const Poco::XML::XMLString& prefix) {}
+	
+        virtual void skippedEntity(const Poco::XML::XMLString& name) {}
 	
     private:
         const Poco::XML::Locator* mLocator;
+        std::stack<ElementPtr> mStack;
+        std::stack<bool> mIgnores;
         ElementPtr mRootElement;
-        ElementPtr mCurrentElement;
 
     };
 

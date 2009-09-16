@@ -127,6 +127,18 @@ namespace XULWin
     };
 
 
+    class Label : public Element
+    {
+    public:
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<Label>(inType, inParent); }
+    
+    private:
+        friend class Element;
+        Label(const Type & inType, ElementPtr inParent);
+    };
+
+
     class CheckBox : public Element
     {
     public:

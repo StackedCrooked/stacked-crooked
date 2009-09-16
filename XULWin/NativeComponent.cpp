@@ -255,5 +255,69 @@ namespace XULWin
     {
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
+    
+    
+    void NativeVBox::rebuildLayout()
+    {
+        if (NativeComponentPtr parent = mParent.lock())
+        {
+            RECT rc;
+            ::GetClientRect(handle(), &rc);
+
+            LinearLayoutManager layoutManager(VERTICAL);
+            
+            //
+            // Obtain the flex values
+            //
+            std::vector<int> flexValues;
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                std::string flex = mElement->children()[idx]->Attributes["flex"];
+
+                int flexValue = 0;
+                try
+                {
+                    flexValue = boost::lexical_cast<int>(flex);
+                }
+                catch (const boost::bad_lexical_cast & )
+                {
+                    ThrowError("Lexical cast failed for value: " + flex + ".");
+                    // continue program flow
+                }
+                flexValues.push_back(flexValue);
+            }
+            
+            //
+            // Use the flex values to obtain the child rectangles
+            //
+            std::vector<Rect> childRects;
+            layoutManager.getRects(
+                Rect(rc.left,
+                     rc.top,
+                     rc.right-rc.left,
+                     rc.bottom-rc.top),
+                flexValues,
+                childRects);
+
+            //
+            // Apply the new child rectangles
+            //
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                Rect & rect = childRects[idx];
+                HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
+                ::MoveWindow(childHandle, rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
+                ::InvalidateRect(childHandle, 0, FALSE);
+            }
+        }
+        rebuildChildLayouts();
+    }
+
+
+    LRESULT NativeVBox::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        return ::DefWindowProc(handle(), inMessage, wParam, lParam);
+    }
+
 
 } // namespace XULWin

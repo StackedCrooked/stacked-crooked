@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window id="amazWindow"
+	title=""
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	width="800"
+	height="600"
+	onload="main()"
+	type="mab:main"
+	persist="screenX screenY width height sizemode">
+
+	<!-- Tree -->
+	<hbox flex="1" id="main-box">
+    <vbox>
+      <label>vbox1</label>
+      <label>vbox1</label>
+    </vbox>
+    <vbox>
+      <label>vbox2</label>
+      <label>vbox2</label>
+      <label>vbox2</label>
+      <label>vbox2</label>
+    </vbox>
+	</hbox>
+</window>

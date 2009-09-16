@@ -1,5 +1,5 @@
 #include "Element.h"
-#include "Window.h"
+#include "NativeComponent.h"
 #include <windows.h>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>

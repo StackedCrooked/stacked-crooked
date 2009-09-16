@@ -53,18 +53,7 @@ namespace XULWin
 
     void Window::showModal()
     {
-        ::ShowWindow(nativeComponent()->handle(), SW_SHOW);
-
-        MSG message;
-        while (GetMessage(&message, NULL, 0, 0))
-        {
-            HWND hActive = GetActiveWindow();
-            if (! IsDialogMessage(hActive, &message))
-            {
-                TranslateMessage(&message);
-                DispatchMessage(&message);
-            }
-        }
+        static_cast<NativeWindow *>(nativeComponent().get())->showModal();
     }
 
 

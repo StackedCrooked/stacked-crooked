@@ -85,6 +85,8 @@ namespace XULWin
         {
         }
 
+        void showModal();
+
         virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
     };
 

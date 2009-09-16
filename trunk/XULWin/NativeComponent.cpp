@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "NativeComponent.h"
 #include "Element.h"
 #include "Layout.h"
 #include "ErrorHandler/ErrorStack.h"

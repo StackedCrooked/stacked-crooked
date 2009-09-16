@@ -1,5 +1,5 @@
 #include "Element.h"
-#include "Window.h"
+#include "NativeComponent.h"
 #include "ErrorHandler/ErrorStack.h"
 
 

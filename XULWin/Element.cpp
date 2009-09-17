@@ -132,7 +132,7 @@ namespace XULWin
     Window::Window(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
-                NativeComponentPtr(new NativeWindow))
+                NativeComponentPtr(new NativeWindow(gNullNativeComponent)))
     {
     }
 

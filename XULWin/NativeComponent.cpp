@@ -17,51 +17,13 @@ namespace XULWin
     
     NativeComponent::Components NativeComponent::sComponents;
 
-    NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+    NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID) :
         mParent(inParent ? inParent.get() : 0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandID(inCommandID),
         mMinimumWidth(0),
         mMinimumHeight(0)
     {
-        if (!mParent && (inStyle & WS_CHILD))
-        {
-            throw std::runtime_error("Invalid mParent");
-        }
-
-        int w = Defaults::windowWidth();
-        int h = Defaults::windowHeight();
-        int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
-        int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
-
-        if (mParent)
-        {
-            RECT rc;
-            ::GetClientRect(mParent->handle(), &rc);
-            x = 0;
-            y = 0;
-            w = rc.right - rc.left;
-            h = rc.bottom - rc.top;
-        }
-
-        
-        mHandle = ::CreateWindowEx
-        (
-            inExStyle, 
-            inClassName,
-            TEXT(""),            // title attribute can be set later
-            inStyle,
-            x, y, w, h,
-            mParent ? mParent->handle() : 0,
-            (HMENU)inCommandID.intValue(),
-            mModuleHandle,
-            0
-        );
-
-        // set default font
-        ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
-
-        sComponents.insert(std::make_pair(mHandle, this));
     }
 
 
@@ -182,6 +144,34 @@ namespace XULWin
     }
 
 
+    NativeWindow::NativeWindow(NativeComponentPtr inParent) :
+        NativeComponent(inParent, CommandID())
+    {
+        int w = Defaults::windowWidth();
+        int h = Defaults::windowHeight();
+        int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
+        int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
+        
+        mHandle = ::CreateWindowEx
+        (
+            0, 
+            TEXT("XULWin::Window"),
+            TEXT(""),
+            WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW,
+            x, y, w, h,
+            mParent ? mParent->handle() : 0,
+            (HMENU)0,
+            mModuleHandle,
+            0
+        );
+
+        // set default font
+        ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
+
+        sComponents.insert(std::make_pair(mHandle, this));
+    }
+
+
     void NativeWindow::showModal()
     {        
         ::ShowWindow(handle(), SW_SHOW);
@@ -255,6 +245,37 @@ namespace XULWin
             }
         }
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
+    }
+
+
+    NativeControl::NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+        NativeComponent(inParent, CommandID())
+    {
+        if (!mParent)
+        {
+            throw std::runtime_error("Invalid mParent");
+        }
+
+        RECT rc;
+        ::GetClientRect(inParent->handle(), &rc);
+        
+        mHandle = ::CreateWindowEx
+        (
+            0, 
+            inClassName,
+            TEXT(""),
+            inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
+            0, 0, rc.right - rc.left, rc.bottom - rc.top,
+            mParent ? mParent->handle() : 0,
+            (HMENU)mCommandID.intValue(),
+            mModuleHandle,
+            0
+        );
+
+        // set default font
+        ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
+
+        sComponents.insert(std::make_pair(mHandle, this));
     }
 
 

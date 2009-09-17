@@ -41,7 +41,7 @@ void runSample()
 	}
 	catch (Poco::Exception& e)
 	{
-		ThrowError(e.displayText());
+		ReportError(e.displayText());
         return;
 	}
     static_cast<Window*>(parser.rootElement().get())->showModal();

@@ -82,13 +82,13 @@ namespace Utils
 
 		/**
 		 * Caught Errors will be disposed of on destruction of the ErrorCatcher object.
-		 * If this is not desirable then you can use 'rethrow' to forward the Error to
+		 * If this is not desirable then you can use 'propagate' to forward the Error to
 		 * the nearest parent ErrorCatcher. If no parent ErrorCatcher is defined, then
 		 * the error is set as the ErrorReporter's top level error.
 		 * NOTE: No actual C++ exception is thrown here. So you still need to write a
 		 *       return statement if you want to return to caller.
 		 */
-		void rethrow();
+		void propagate();
 
 	private:
 		friend class ErrorReporter;
@@ -122,7 +122,7 @@ namespace Utils
 
 		/**
 		 * You can use this method to report an error, however
-		 * the ThrowError functions below are more convenient.
+		 * the ReportError functions below are more convenient.
 		 * NOTE: Calling this will not cause an exception to be thrown, so
 		 *       program flow will not be altered. If you want to return to
 		 *       the caller you still have to write a return statement.
@@ -144,7 +144,7 @@ namespace Utils
 
 		void pop(ErrorCatcher * inError);
 
-		void rethrow(ErrorCatcher * inError);
+		void propagate(ErrorCatcher * inError);
 
 		Error mTopLevelError;
 		std::stack<ErrorCatcher*> mStack;
@@ -153,26 +153,26 @@ namespace Utils
 
 
 	/**
-	 * ThrowError and its overloads are shorter versions 
+	 * ReportError and its overloads are shorter versions 
 	 * for ErrorReporter::Instance().reportError(..) 
 	 * NOTE: These functions don't throw an actual C++ exception. They only
 	 *       notify the nearest ErrorCatcher that an error has occured. So
 	 *       you still need to write the return statement (if returning
 	 *       is desired, of course).
 	 */
-	void ThrowError(int inErrorCode, const std::string & inErrorMessage);
+	void ReportError(int inErrorCode, const std::string & inErrorMessage);
 
 
 	/**
-	 * ThrowError by only passing a message. Default error code will be used (FAILED).
+	 * ReportError by only passing a message. Default error code will be used (FAILED).
 	 */
-	void ThrowError(const std::string & inErrorMessage);
+	void ReportError(const std::string & inErrorMessage);
 
 
 	/**
-	 * ThrowError by only passing an error code.
+	 * ReportError by only passing an error code.
 	 */
-	void ThrowError(int inErrorCode);
+	void ReportError(int inErrorCode);
 
 
 } // namespace Utils

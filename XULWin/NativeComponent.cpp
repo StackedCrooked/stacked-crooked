@@ -246,7 +246,7 @@ namespace XULWin
             }
             catch (boost::bad_lexical_cast & e)
             {
-                ThrowError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
+                ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
                 return;
             }
         }
@@ -317,7 +317,7 @@ namespace XULWin
             }
             else
             {
-                ThrowError("Invalid orientation: " + inValue);
+                ReportError("Invalid orientation: " + inValue);
             }
         }
     }
@@ -350,7 +350,7 @@ namespace XULWin
                 }
                 catch (const boost::bad_lexical_cast & )
                 {
-                    ThrowError("Lexical cast failed for value: " + flex + ".");
+                    ReportError("Lexical cast failed for value: " + flex + ".");
                     // continue program flow
                 }
                 flexValues.push_back(flexValue);

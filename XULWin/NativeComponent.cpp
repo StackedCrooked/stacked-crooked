@@ -343,7 +343,10 @@ namespace XULWin
                 int flexValue = Defaults::Attributes::flex();
                 try
                 {
-                    flexValue = boost::lexical_cast<int>(flex);
+                    if (!flex.empty())
+                    {
+                        flexValue = boost::lexical_cast<int>(flex);
+                    }
                 }
                 catch (const boost::bad_lexical_cast & )
                 {

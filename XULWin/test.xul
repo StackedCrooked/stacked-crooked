@@ -22,10 +22,12 @@
       </menulist>
     </box>
     <hbox>
-      <label value="Toevoegen aan deze set:" ></label>
+      <label value="Toevoegen aan deze set:"/>
+      <button label="Test"/>
     </hbox>
     <hbox>
       <label value="Tags:" ></label>
+      <checkbox label="Test"/>
     </hbox>
     <hbox>
       <label value="Show" ></label>

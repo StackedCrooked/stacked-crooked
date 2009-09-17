@@ -163,6 +163,18 @@ namespace XULWin
     };
 
 
+    class Box : public Element
+    {
+    public:
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<Box>(inType, inParent); }
+
+    private:
+        friend class Element;
+        Box(const Type & inType, ElementPtr inParent);
+    };
+
+
     class HBox : public Element
     {
     public:

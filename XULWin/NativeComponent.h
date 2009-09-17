@@ -2,6 +2,7 @@
 #define NATIVECOMPONENT_H_INCLUDED
 
 
+#include "Layout.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <windows.h>
@@ -164,37 +165,46 @@ namespace XULWin
     };
 
 
-    class NativeHBox : public NativeControl
+    class NativeBox : public NativeControl
     {
     public:
-        NativeHBox(NativeComponentPtr inParent) :
+        NativeBox(NativeComponentPtr inParent) :
             NativeControl(inParent,
                           TEXT("STATIC"),
                           0, // exStyle
-                          0)
+                          0),
+            mOrientation(HORIZONTAL)
         {
         }
 
         virtual void rebuildLayout();
 
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+    protected:
+        virtual void applyAttribute(const std::string & inName, const std::string & inValue);
+
+        Orientation mOrientation;
     };
 
 
-    class NativeVBox : public NativeControl
+    class NativeHBox : public NativeBox
+    {
+    public:
+        NativeHBox(NativeComponentPtr inParent) :
+            NativeBox(inParent)
+        {
+            mOrientation = HORIZONTAL;
+        }
+    };
+
+
+    class NativeVBox : public NativeBox
     {
     public:
         NativeVBox(NativeComponentPtr inParent) :
-            NativeControl(inParent,
-                          TEXT("STATIC"),
-                          0, // exStyle
-                          0)
+            NativeBox(inParent)
         {
+            mOrientation = VERTICAL;
         }
-
-        virtual void rebuildLayout();
-
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
     };
 
 

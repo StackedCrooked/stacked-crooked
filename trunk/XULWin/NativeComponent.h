@@ -70,7 +70,7 @@ namespace XULWin
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
-        virtual void applyAttribute(const std::string & inName, const std::string & inValue) {}
+        virtual void applyAttribute(const std::string & inName, const std::string & inValue);
 
         NativeComponentWPtr mParent;
         Element * mElement;

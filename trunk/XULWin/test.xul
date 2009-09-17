@@ -10,7 +10,7 @@
 
 	<!-- Tree -->
 	<vbox flex="1" id="main-box">
-    <hbox>
+    <box orientation="horizontal">
       <label value="Uploaden naar:" ></label>
       <menulist>
         <menupopup>
@@ -20,7 +20,7 @@
           <menuitem label="Polen" value="4"/>
         </menupopup>
       </menulist>
-    </hbox>
+    </box>
     <hbox>
       <label value="Toevoegen aan deze set:" ></label>
     </hbox>

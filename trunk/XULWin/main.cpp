@@ -20,6 +20,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<Label>(eltype("label"));
     ElementFactory::Instance().registerElement<HBox>(eltype("hbox"));
     ElementFactory::Instance().registerElement<VBox>(eltype("vbox"));
+    ElementFactory::Instance().registerElement<Box>(eltype("box"));
     ElementFactory::Instance().registerElement<MenuList>(eltype("menulist"));
     ElementFactory::Instance().registerElement<MenuPopup>(eltype("menupopup"));
     ElementFactory::Instance().registerElement<MenuItem>(eltype("menuitem"));

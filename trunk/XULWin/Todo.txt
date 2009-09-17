@@ -1,3 +1,4 @@
+- Get rid of 'applyAttribute' and opt for a more pull-based system.
 - Parser should not do any special init calls, because parser is not constructor nor factory
 - Pass Attributes to constructor of element so we don't need an extra applyAttributes after construction.
 - Add ErrorCatcher live reporter in a sep DOS window

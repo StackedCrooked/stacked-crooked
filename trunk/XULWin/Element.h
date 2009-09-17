@@ -212,6 +212,8 @@ namespace XULWin
 
         void addMenuItem(const MenuItem * inItem);
 
+        void removeMenuItem(const MenuItem * inItem);
+
     private:
         friend class Element;
         MenuList(const Type & inType, ElementPtr inParent);
@@ -226,6 +228,8 @@ namespace XULWin
 
         void addMenuItem(const MenuItem * inItem);
 
+        void removeMenuItem(const MenuItem * inItem);
+
     private:
         friend class Element;
         MenuPopup(const Type & inType, ElementPtr inParent);
@@ -237,6 +241,8 @@ namespace XULWin
     public:
         static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
         { return Element::Create<MenuItem>(inType, inParent, inAttr); }
+
+        virtual ~MenuItem();
 
         virtual void init();
 

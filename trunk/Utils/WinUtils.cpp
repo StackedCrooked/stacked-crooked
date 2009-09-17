@@ -10,6 +10,18 @@ namespace Utils
         ::SendMessage(inHandle, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)inString);
     }
 
+    
+    void deleteStringFromComboBox(HWND inHandle, int inIndex)
+    {
+        ::SendMessage(inHandle, CB_DELETESTRING, (WPARAM)inIndex, (LPARAM)0);
+    }
+
+    
+    int findStringInComboBox(HWND inHandle, const TCHAR * inString, int inOffset)
+    {
+        return ::SendMessage(inHandle, CB_FINDSTRING, (WPARAM)inOffset, (LPARAM)(LPTSTR)inString);
+    }
+
 
     int getComboBoxItemCount(HWND inHandle)
     {

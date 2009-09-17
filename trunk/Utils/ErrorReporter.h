@@ -5,7 +5,7 @@
 #include <stack>
 
 
-namespace CppToys
+namespace Utils
 {
 
 
@@ -175,7 +175,7 @@ namespace CppToys
 	void ThrowError(int inErrorCode);
 
 
-} // namespace CppToys
+} // namespace Utils
 
 
 #endif // ERRORSTACK_H

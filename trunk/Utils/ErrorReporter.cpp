@@ -1,8 +1,8 @@
-#include "ErrorStack.h"
+#include "ErrorReporter.h"
 #include <assert.h>
 
 
-namespace CppToys
+namespace Utils
 {
 
 
@@ -183,4 +183,4 @@ namespace CppToys
 	}
 
 
-} // namespace CppToys
+} // namespace Utils

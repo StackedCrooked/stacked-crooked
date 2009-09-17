@@ -1,8 +1,8 @@
 #include "ElementFactory.h"
-#include "ErrorHandler/ErrorStack.h"
+#include "Utils/ErrorReporter.h"
 
 
-using namespace CppToys;
+using namespace Utils;
 
 
 namespace XULWin

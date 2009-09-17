@@ -41,8 +41,6 @@ namespace XULWin
     {
         if (mIgnores.empty())
         {
-            ErrorCatcher errorCatcher;
-
             //
             // Get parent
             //
@@ -74,14 +72,12 @@ namespace XULWin
                     assert(!mRootElement);
                     mRootElement = element;
                 }
-                element->onStart();
                 mStack.push(element);
             }
             else
             {
                 mIgnores.push(true);
                 ReportError("Element is null and will be ignored.");
-                errorCatcher.propagate();
                 return;
             }
         }
@@ -99,7 +95,6 @@ namespace XULWin
             assert (match);
             if (match)
             {
-                mStack.top()->onEnd();
                 mStack.pop();
             }
         }

@@ -37,17 +37,9 @@ namespace XULWin
     class NativeComponent
     {
     public:
-        NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCWSTR inClassName, DWORD inExStyle, DWORD inStyle);
+        NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
 
         virtual ~NativeComponent();
-
-        // called by SAX parser on startElement and after construction
-        virtual void onStart();
-
-        // called by SAX parser on endElement. At this point the element
-        // and its children have been created, and the object is ready
-        // for use.
-        virtual void onEnd();
 
         int minimumWidth() const;
 
@@ -114,7 +106,7 @@ namespace XULWin
     class NativeControl : public NativeComponent
     {
     public:
-        NativeControl(NativeComponentPtr inParent, LPCWSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+        NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
             NativeComponent(inParent,
                             CommandID(),
                             inClassName,
@@ -214,8 +206,6 @@ namespace XULWin
                           CBS_DROPDOWNLIST)
         {
         }
-    
-        virtual void onEnd();
 
         void add(const std::string & inText);
     };

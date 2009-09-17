@@ -31,15 +31,10 @@ namespace XULWin
     {
     public:
         class Type;
-        class ID;     
+        class ID;
 
-        // called by SAX parser on startElement and after construction
-        virtual void onStart();
-
-        // called by SAX parser on endElement. At this point the element
-        // and its children have been created, and the object is ready
-        // for use.
-        virtual void onEnd();
+        // Override this method to add initialization code
+        virtual void init() {}
 
         const Type & type() const;
 
@@ -97,6 +92,7 @@ namespace XULWin
             ElementPtr result(new T(inType, inParent));
             inParent->addChild(result);
             result->setAttributes(inAttr);
+            result->init();
             return result;
         }   
 
@@ -205,13 +201,14 @@ namespace XULWin
     };
 
 
+    class MenuItem;
     class MenuList : public Element
     {
     public:
         static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
         { return Element::Create<MenuList>(inType, inParent, inAttr); }
 
-        virtual void onEnd();
+        void addMenuItem(const MenuItem * inItem);
 
     private:
         friend class Element;
@@ -225,6 +222,8 @@ namespace XULWin
         static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
         { return Element::Create<MenuPopup>(inType, inParent, inAttr); }
 
+        void addMenuItem(const MenuItem * inItem);
+
     private:
         friend class Element;
         MenuPopup(const Type & inType, ElementPtr inParent);
@@ -236,6 +235,8 @@ namespace XULWin
     public:
         static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
         { return Element::Create<MenuItem>(inType, inParent, inAttr); }
+
+        virtual void init();
 
     private:
         friend class Element;

@@ -173,6 +173,13 @@ namespace XULWin
         NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
         menuList->add(inItem->getAttribute("label"));
     }
+        
+    
+    void MenuList::removeMenuItem(const MenuItem * inItem)
+    {
+        NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
+        menuList->remove(inItem->getAttribute("label"));
+    }
 
     
     MenuPopup::MenuPopup(const Type & inType, ElementPtr inParent) :
@@ -196,10 +203,42 @@ namespace XULWin
         }
     }
 
+
+    void MenuPopup::removeMenuItem(const MenuItem * inItem)
+    {
+        if (ElementPtr parent = mParent.lock())
+        {
+            if (parent->type() == eltype("menulist"))
+            {
+                static_cast<MenuList*>(parent.get())->removeMenuItem(inItem);
+            }
+            else
+            {
+                ReportError("MenuPopup is located in non-compatible container.");
+            }
+        }
+    }
+
     
     MenuItem::MenuItem(const Type & inType, ElementPtr inParent) :
         Element(inType, inParent, gNullNativeComponent)
     {
+    }
+        
+    
+    MenuItem::~MenuItem()
+    {
+        if (ElementPtr parent = mParent.lock())
+        {
+            if (parent->type() == eltype("menupopup"))
+            {
+                static_cast<MenuPopup*>(parent.get())->removeMenuItem(this);
+            }
+            else
+            {
+                ReportError("MenuItem is located in non-compatible container.");
+            }
+        }
     }
 
 

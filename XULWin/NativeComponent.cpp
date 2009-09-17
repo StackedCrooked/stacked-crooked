@@ -389,4 +389,20 @@ namespace XULWin
     }
 
 
+    void NativeMenuList::remove(const std::string & inText)
+    {
+        int idx = Utils::findStringInComboBox(handle(), inText.c_str());
+        if (idx == CB_ERR)
+        {
+            ReportError("MenuList: remove failed because item not found: '" + inText + "'.");
+            return;
+        }
+
+        Utils::deleteStringFromComboBox(handle(), idx);
+		
+		// The height of a combobox defines the height of the dropdown menu + the height of the widget itself.
+        mMinimumHeight = Defaults::controlHeight() + Utils::getComboBoxItemCount(handle())*Defaults::dropDownListItemHeight();
+    }
+
+
 } // namespace XULWin

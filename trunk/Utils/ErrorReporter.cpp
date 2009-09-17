@@ -49,7 +49,8 @@ namespace Utils
 
 
 	ErrorCatcher::ErrorCatcher() :
-		mPropagate(false)
+		mPropagate(false),
+        mOwns(true) // the original object, created on the stack, must do the cleanup
 	{
 		ErrorReporter::Instance().push(this);
 	}
@@ -57,13 +58,24 @@ namespace Utils
 
 	ErrorCatcher::~ErrorCatcher()
 	{
-        ErrorReporter::Instance().pop(this);
-		if (mPropagate)
-		{
-            ErrorReporter::Instance().mStack.top()->setChild(this);
-		}
-		
+        if (mOwns)
+        {
+            ErrorReporter::Instance().pop(this);
+		    if (mPropagate)
+		    {
+                ErrorReporter::Instance().mStack.top()->setChild(this);
+            }
+        }
 	}
+
+    
+    ErrorCatcher::ErrorCatcher(const ErrorCatcher & rhs) :
+        mOwns(false), // copy is not responsible for cleanup
+        mErrors(rhs.mErrors),
+        mChild(rhs.mChild),
+		mPropagate(rhs.mPropagate)
+    {
+    }
 
 
 	bool ErrorCatcher::hasCaught() const
@@ -92,7 +104,6 @@ namespace Utils
     
     void ErrorCatcher::setChild(const ErrorCatcher * inErrorCatcher)
     {
-        assert(!mChild);
         mChild.reset(new ErrorCatcher(*inErrorCatcher));
     }
 
@@ -194,13 +205,12 @@ namespace Utils
                     const Error & error = inErrorCatcher.errors()[idx];
                     if (idx > 0)
                     {
-                        ss << "-> ";
+                        ss << "Therefore: ";
                     }
                     ss << error.message() << " (Code: " << error.code() << ")\n";
                 }
                 if (inErrorCatcher.child())
                 {
-                    ss << "Reason:\n";
                     GetErrorMessage(*inErrorCatcher.child(), ss);
                 }
             }

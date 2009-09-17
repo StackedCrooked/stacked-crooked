@@ -1,2 +1,5 @@
+- Parser should not do any special init calls, because parser is not constructor nor factory
+- Pass Attributes to constructor of element so we don't need an extra applyAttributes after construction.
 - Add ErrorCatcher live reporter in a sep DOS window
 - Add Unicode version
+- Make header file containing wrapper functions for common Win32 calls

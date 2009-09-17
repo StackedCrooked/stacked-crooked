@@ -10,6 +10,10 @@ namespace XULWin
         int windowWidth() { return 320; }
 
         int windowHeight() { return 240; }
+
+        int controlHeight() { return 20; }
+
+        int dropDownListItemHeight() { return 20; }
         
         namespace Attributes
         {

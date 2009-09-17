@@ -55,14 +55,14 @@ namespace XULWin
                     assert(!mRootElement);
                     mRootElement = element;
                 }
-                mStack.push(element);
                 for (int idx = 0; idx != attributes.getLength(); ++idx)
                 {
                     const Poco::XML::XMLString & name = attributes.getLocalName(idx);
                     const Poco::XML::XMLString & value = attributes.getValue(idx);
-                    mStack.top()->Attributes[name] = value;
+                    element->Attributes[name] = value;
                 }
-                element->applyAttributes();
+                element->onStart();
+                mStack.push(element);
             }
             else
             {
@@ -86,6 +86,7 @@ namespace XULWin
             assert (match);
             if (match)
             {
+                mStack.top()->onEnd();
                 mStack.pop();
             }
         }

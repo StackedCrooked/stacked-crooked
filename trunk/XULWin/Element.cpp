@@ -36,6 +36,21 @@ namespace XULWin
     }
 
 
+    void Element::removeChild(const Element * inChild)
+    {
+        Children::iterator it = std::find_if(mChildren.begin(), mChildren.end(), boost::bind(&ElementPtr::get, _1) == inChild);
+        if (it != mChildren.end())
+        {
+            mChildren.erase(it);
+            mNativeComponent->rebuildLayout();
+        }
+        else
+        {
+            ReportError("Remove child failed because it wasn't found.");
+        }
+    }
+
+
     void Element::setAttributes(const AttributesMapping & inAttributes)
     {
         mAttributes = inAttributes;

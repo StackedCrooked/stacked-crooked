@@ -1,3 +1,4 @@
+- Make sample program that illustrates DHTML-like behavior
 - Add Unicode
 - Try to make the Box layouts 'virtual' panes instead of real windows (reduce number of GDI objects).
 - Add ErrorCatcher live reporter in a sep DOS window

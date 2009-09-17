@@ -6,7 +6,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XULWin", "XULWin.vcproj", "
 		{85286E77-8679-422A-A839-C1D563D4441F} = {85286E77-8679-422A-A839-C1D563D4441F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ErrorHandler", "..\ErrorHandler\ErrorHandler.vcproj", "{85286E77-8679-422A-A839-C1D563D4441F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Utils", "..\Utils\Utils.vcproj", "{85286E77-8679-422A-A839-C1D563D4441F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

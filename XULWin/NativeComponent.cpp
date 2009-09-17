@@ -2,12 +2,12 @@
 #include "Defaults.h"
 #include "Element.h"
 #include "Layout.h"
-#include "ErrorHandler/ErrorStack.h"
+#include "Utils/ErrorReporter.h"
 #include <boost/lexical_cast.hpp>
 #include <string>
 
 
-using namespace CppToys;
+using namespace Utils;
 
 
 namespace XULWin

@@ -2,12 +2,12 @@
 #include "ElementFactory.h"
 #include "NativeComponent.h"
 #include "Parser.h"
-#include "ErrorHandler/ErrorStack.h"
+#include "Utils/ErrorReporter.h"
 #include <windows.h>
 
 
 using namespace XULWin;
-using namespace CppToys;
+using namespace Utils;
 
 
 

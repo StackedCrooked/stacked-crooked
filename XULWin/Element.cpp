@@ -1,6 +1,6 @@
 #include "Element.h"
 #include "NativeComponent.h"
-#include "ErrorHandler/ErrorStack.h"
+#include "Utils/ErrorReporter.h"
 #include <boost/bind.hpp>
 
 

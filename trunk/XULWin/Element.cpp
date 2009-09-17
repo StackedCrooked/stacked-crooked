@@ -1,10 +1,12 @@
 #include "Element.h"
 #include "NativeComponent.h"
 #include "ErrorHandler/ErrorStack.h"
+#include <boost/bind.hpp>
 
 
 namespace XULWin
 {
+    NativeComponentPtr gNullNativeComponent;
 
 
     Element::Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent) :
@@ -12,13 +14,28 @@ namespace XULWin
         mParent(inParent),
         mNativeComponent(inNativeComponent)
     {
-        mNativeComponent->setOwningElement(this);
+        if (mNativeComponent)
+        {
+            mNativeComponent->setOwningElement(this);
+        }
     }
 
     
-    void Element::init()
+    void Element::onStart()
     {
-        mNativeComponent->init();
+        if (mNativeComponent)
+        {
+            mNativeComponent->onStart();
+        }
+    }
+
+    
+    void Element::onEnd()
+    {
+        if (mNativeComponent)
+        {
+            mNativeComponent->onEnd();
+        }
     }
 
 
@@ -40,13 +57,7 @@ namespace XULWin
     }
     
     
-    void Element::applyAttributes() const
-    {
-        mNativeComponent->applyAttributes();
-    }
-    
-    
-    void Element::add(ElementPtr inChild)
+    void Element::addChild(ElementPtr inChild)
     {
         mChildren.push_back(inChild);
     }
@@ -102,6 +113,64 @@ namespace XULWin
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeVBox(inParent->nativeComponent())))
+    {
+    }
+
+
+    MenuList::MenuList(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
+                NativeComponentPtr(new NativeMenuList(inParent->nativeComponent())))
+    {
+    }
+
+
+    void MenuList::onEnd()
+    {
+        if (!mChildren.empty())
+        {
+            // Find an entry with name 'menupopup'
+            Children::iterator popupIt = std::find_if
+            (
+                mChildren.begin(),
+                mChildren.end(),
+                boost::bind
+                (
+                    &Element::type,
+                    boost::bind(&ElementPtr::get, _1)
+                ) == eltype("menupopup")
+            );
+
+            if (popupIt == mChildren.end())
+            {
+                return;
+            }
+
+            MenuPopup * popup = static_cast<MenuPopup*>(popupIt->get());
+            
+            // Find an entry with name 'menulist'
+            Children::iterator itemIt = popup->children().begin(), end = popup->children().end();
+            for (; itemIt != end; ++itemIt)
+            {
+                if (itemIt->get()->type() == eltype("menuitem"))
+                {
+                    MenuItem * item = static_cast<MenuItem *>(itemIt->get());
+                    NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
+                    menuList->add(item->Attributes["label"]);
+                }
+            }
+        }
+    }
+
+    
+    MenuPopup::MenuPopup(const Type & inType, ElementPtr inParent) :
+        Element(inType, inParent, gNullNativeComponent)
+    {
+    }
+
+    
+    MenuItem::MenuItem(const Type & inType, ElementPtr inParent) :
+        Element(inType, inParent, gNullNativeComponent)
     {
     }
 

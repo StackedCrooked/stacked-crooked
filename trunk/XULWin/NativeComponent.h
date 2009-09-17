@@ -40,10 +40,17 @@ namespace XULWin
 
         virtual ~NativeComponent();
 
-        // post-constructor initializer
-        virtual void init();
+        // called by SAX parser on startElement and after construction
+        virtual void onStart();
 
-        void applyAttributes();
+        // called by SAX parser on endElement. At this point the element
+        // and its children have been created, and the object is ready
+        // for use.
+        virtual void onEnd();
+
+        int minimumWidth() const;
+
+        int minimumHeight() const;
 
         void setOwningElement(Element * inElement);
 
@@ -59,13 +66,15 @@ namespace XULWin
 
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-        virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
         virtual void applyAttribute(const std::string & inName, const std::string & inValue) {}
 
         NativeComponentWPtr mParent;
         Element * mElement;
+        int mMinimumWidth;
+        int mMinimumHeight;
 
     private:
         typedef std::map<HWND, NativeComponent*> Components;
@@ -94,7 +103,7 @@ namespace XULWin
 
         void showModal();
 
-        virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
         void applyAttribute(const std::string & inName, const std::string & inValue);
@@ -168,7 +177,7 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
     };
 
 
@@ -185,7 +194,24 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual LRESULT handleMessage(UINT inMessaage, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+    };
+
+
+    class NativeMenuList : public NativeControl
+    {
+    public:
+        NativeMenuList(NativeComponentPtr inParent) :
+            NativeControl(inParent,
+                          TEXT("COMBOBOX"),
+                          0, // exStyle
+                          CBS_DROPDOWNLIST)
+        {
+        }
+    
+        virtual void onEnd();
+
+        void add(const std::string & inText);
     };
 
 } // namespace XULWin

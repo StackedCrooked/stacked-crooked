@@ -31,7 +31,15 @@ namespace XULWin
     {
     public:
         class Type;
-        class ID;
+        class ID;     
+
+        // called by SAX parser on startElement and after construction
+        virtual void onStart();
+
+        // called by SAX parser on endElement. At this point the element
+        // and its children have been created, and the object is ready
+        // for use.
+        virtual void onEnd();
 
         const Type & type() const;
 
@@ -47,8 +55,6 @@ namespace XULWin
 
         boost::shared_ptr<NativeComponent> nativeComponent() const;
 
-        void applyAttributes() const;
-
         class Type
         {
         public:
@@ -57,6 +63,9 @@ namespace XULWin
             operator const std::string & () const { return mType; }
 
             bool operator < (const Type & rhs) const { return this->mType < rhs.mType; }
+
+            bool operator == (const Type & rhs) const { return this->mType == rhs.mType; }
+
         private:
             std::string mType;
         };
@@ -73,7 +82,7 @@ namespace XULWin
             std::string mID;
         };
 
-        void add(ElementPtr inChild);
+        void addChild(ElementPtr inChild);
 
     protected:
         Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent);
@@ -82,12 +91,9 @@ namespace XULWin
         static ElementPtr Create(const Type & inType, ElementPtr inParent)
         {
             ElementPtr result(new T(inType, inParent));
-            inParent->add(result);
+            inParent->addChild(result);
             return result;
-        }        
-
-        // this method gets called after construction
-        virtual void init();
+        }   
 
         boost::weak_ptr<Element> mParent;
         Children mChildren;
@@ -178,6 +184,44 @@ namespace XULWin
     private:
         friend class Element;
         VBox(const Type & inType, ElementPtr inParent);
+    };
+
+
+    class MenuList : public Element
+    {
+    public:
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<MenuList>(inType, inParent); }
+
+        virtual void onEnd();
+
+    private:
+        friend class Element;
+        MenuList(const Type & inType, ElementPtr inParent);
+    };
+
+
+    class MenuPopup : public Element
+    {
+    public:
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<MenuPopup>(inType, inParent); }
+
+    private:
+        friend class Element;
+        MenuPopup(const Type & inType, ElementPtr inParent);
+    };
+
+
+    class MenuItem : public Element
+    {
+    public:
+        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        { return Element::Create<MenuItem>(inType, inParent); }
+
+    private:
+        friend class Element;
+        MenuItem(const Type & inType, ElementPtr inParent);
     };
 
 

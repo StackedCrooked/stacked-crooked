@@ -2,19 +2,33 @@
 <window id="amazWindow"
 	title=""
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	width="800"
+	width="320"
 	height="600"
 	onload="main()"
 	type="mab:main"
 	persist="screenX screenY width height sizemode">
 
 	<!-- Tree -->
-	<hbox flex="1" id="main-box">
-    <label value="hbox1" ></label>
-    <label value="hbox2" ></label>
-    <vbox>
-      <label value="vbox1" ></label>
-      <label value="vbox2" ></label>
-    </vbox>
-	</hbox>
+	<vbox flex="1" id="main-box">
+    <hbox>
+      <label value="Uploaden naar:" ></label>
+      <menulist>
+        <menupopup>
+          <menuitem label="Spanje" value="1"/>
+          <menuitem label="Italie" value="2"/>
+          <menuitem label="Praag" value="3"/>
+          <menuitem label="Polen" value="4"/>
+        </menupopup>
+      </menulist>
+    </hbox>
+    <hbox>
+      <label value="Toevoegen aan deze set:" ></label>
+    </hbox>
+    <hbox>
+      <label value="Tags:" ></label>
+    </hbox>
+    <hbox>
+      <label value="Show" ></label>
+    </hbox>
+	</vbox>
 </window>

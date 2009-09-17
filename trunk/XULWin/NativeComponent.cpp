@@ -19,7 +19,9 @@ namespace XULWin
     NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCWSTR inClassName, DWORD inExStyle, DWORD inStyle) :
         mParent(inParent),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
-        mCommandID(inCommandID)
+        mCommandID(inCommandID),
+        mMinimumWidth(0),
+        mMinimumHeight(0)
     {
         NativeComponentPtr parent = mParent.lock();
         if (!parent && (inStyle & WS_CHILD))
@@ -81,13 +83,20 @@ namespace XULWin
         ::DestroyWindow(mHandle);
     }
     
-
-    void NativeComponent::init()
+    
+    int NativeComponent::minimumWidth() const
     {
+        return mMinimumWidth;
     }
 
+    
+    int NativeComponent::minimumHeight() const
+    {
+        return mMinimumHeight;
+    }
+    
 
-    void NativeComponent::applyAttributes()
+    void NativeComponent::onStart()
     {
         AttributesMapping & attr = owningElement()->Attributes;
         AttributesMapping::iterator it = attr.begin(), end = attr.end();
@@ -95,6 +104,11 @@ namespace XULWin
         {
             applyAttribute(it->first, it->second);
         }
+    }
+    
+
+    void NativeComponent::onEnd()
+    {
     }
     
     
@@ -138,7 +152,11 @@ namespace XULWin
         Children::iterator it = mElement->children().begin(), end = mElement->children().end();
         for (; it != end; ++it)
         {
-            (*it)->nativeComponent()->rebuildLayout();
+            NativeComponent * nativeComp = (*it)->nativeComponent().get();
+            if (nativeComp)
+            {
+                nativeComp->rebuildLayout();
+            }
         }
     }
 
@@ -322,8 +340,19 @@ namespace XULWin
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
                 Rect & rect = childRects[idx];
+                int width = rect.width();
+                if (width < mElement->children()[idx]->nativeComponent()->minimumWidth())
+                {
+                    width = mElement->children()[idx]->nativeComponent()->minimumWidth();
+                }
+
+                int height = rect.height();
+                if (height < mElement->children()[idx]->nativeComponent()->minimumHeight())
+                {
+                    height = mElement->children()[idx]->nativeComponent()->minimumHeight();
+                }
                 HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
-                ::MoveWindow(childHandle, rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
+                ::MoveWindow(childHandle, rect.x(), rect.y(), width, height, FALSE);
                 ::InvalidateRect(childHandle, 0, FALSE);
             }
         }
@@ -385,8 +414,19 @@ namespace XULWin
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
                 Rect & rect = childRects[idx];
+                int width = rect.width();
+                if (width < mElement->children()[idx]->nativeComponent()->minimumWidth())
+                {
+                    width = mElement->children()[idx]->nativeComponent()->minimumWidth();
+                }
+
+                int height = rect.height();
+                if (height < mElement->children()[idx]->nativeComponent()->minimumHeight())
+                {
+                    height = mElement->children()[idx]->nativeComponent()->minimumHeight();
+                }
                 HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
-                ::MoveWindow(childHandle, rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
+                ::MoveWindow(childHandle, rect.x(), rect.y(), width, height, FALSE);
                 ::InvalidateRect(childHandle, 0, FALSE);
             }
         }
@@ -397,6 +437,39 @@ namespace XULWin
     LRESULT NativeVBox::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
+    }
+
+
+    void NativeMenuList::onEnd()
+    {
+        
+    }
+
+
+    void NativeMenuList::add(const std::string & inText)
+    {
+        ::SendMessageA
+		(
+			(HWND)handle(),
+			(UINT) CB_ADDSTRING,
+			(WPARAM)0,
+			(LPARAM)inText.c_str()
+		);
+        int count = ::SendMessage(handle(), CB_GETCOUNT, 0, 0);
+		
+		if (count == 1)
+		{
+			SendMessage
+			(
+				(HWND)handle(),
+				(UINT) CB_SETCURSEL,
+				(WPARAM)0, // -> select index 0
+				(LPARAM)0
+			);
+		}
+		
+		// The height of a combobox defines the height of the dropdown menu + the height of the widget itself.
+        mMinimumHeight = Defaults::controlHeight() + count*Defaults::dropDownListItemHeight();
     }
 
 

@@ -62,11 +62,10 @@ namespace XULWin
             0
         );
 
-        int a = 0;
-        int b = 0;
+        // set default font
+        ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
+
         sComponents.insert(std::make_pair(mHandle, this));
-        a++;
-        b++;
     }
 
 
@@ -104,6 +103,11 @@ namespace XULWin
         {
             applyAttribute(it->first, it->second);
         }
+    }
+    
+
+    void NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
+    {
     }
     
 
@@ -218,6 +222,7 @@ namespace XULWin
     
     void NativeWindow::applyAttribute(const std::string & inName, const std::string & inValue)
     {
+        NativeComponent::applyAttribute(inName, inValue);
         if (inName == "width")
         {
             try
@@ -285,6 +290,7 @@ namespace XULWin
         
     void NativeLabel::applyAttribute(const std::string & inName, const std::string & inValue)
     {
+        NativeComponent::applyAttribute(inName, inValue);
         if (inName == "value")
         {
             ::SetWindowTextA(handle(), inValue.c_str());
@@ -294,6 +300,7 @@ namespace XULWin
     
     void NativeBox::applyAttribute(const std::string & inName, const std::string & inValue)
     {
+        NativeComponent::applyAttribute(inName, inValue);
         if (inName == "orientation")
         {
             if (inValue == "horizontal")

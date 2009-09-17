@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Dropdown.xul"
+				>
+			</File>
+			<File
 				RelativePath=".\Element.cpp"
 				>
 			</File>

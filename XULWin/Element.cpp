@@ -98,9 +98,9 @@ namespace XULWin
     }
 
 
-    Window::Window(const Type & inType) :
+    Window::Window(const Type & inType, ElementPtr inParent) :
         Element(inType,
-                ElementPtr(),
+                inParent,
                 NativeComponentPtr(new NativeWindow))
     {
     }
@@ -124,6 +124,14 @@ namespace XULWin
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
+    {
+    }
+
+
+    TextBox::TextBox(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
+                NativeComponentPtr(new NativeTextBox(inParent->nativeComponent())))
     {
     }
 

@@ -212,23 +212,22 @@ namespace XULWin
         {
             try
             {
-                int w = boost::lexical_cast<int>(inValue);
-                RECT rw;
-                ::GetWindowRect(handle(), &rw);
-                
-                int oldWidth = rw.right - rw.left;
-                int x = rw.left - (w - oldWidth)/2;
-                if (w < oldWidth)
-                {
-                    x = rw.left + (w - oldWidth)/2;
-                }
-                ::MoveWindow(handle(), x, rw.top, w, rw.bottom - rw.top, FALSE);
-                ::InvalidateRect(handle(), 0, FALSE);
+                Utils::setWindowWidth(handle(), boost::lexical_cast<int>(inValue));
             }
             catch (boost::bad_lexical_cast & e)
             {
                 ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
-                return;
+            }
+        }
+        else if (inName == "height")
+        {
+            try
+            {
+                Utils::setWindowHeight(handle(), boost::lexical_cast<int>(inValue));
+            }
+            catch (boost::bad_lexical_cast & e)
+            {
+                ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
             }
         }
     }
@@ -248,6 +247,7 @@ namespace XULWin
                     HWND childHandle = (*it)->nativeComponent()->handle();
                     ::MoveWindow(childHandle, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
                     ::InvalidateRect(childHandle, 0, FALSE);
+                    ::UpdateWindow(childHandle);
                     rebuildChildLayouts();
                 }
                 ::InvalidateRect(handle(), 0, FALSE);
@@ -269,6 +269,25 @@ namespace XULWin
                       TEXT("STATIC"),
                       0, // exStyle
                       0)
+    {
+    }
+        
+        
+    void NativeTextBox::applyAttribute(const std::string & inName, const std::string & inValue)
+    {
+        NativeComponent::applyAttribute(inName, inValue);
+        if (inName == "value")
+        {
+            ::SetWindowTextA(handle(), inValue.c_str());
+        }
+    }
+
+
+    NativeTextBox::NativeTextBox(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("EDIT"),
+                      WS_EX_CLIENTEDGE, // exStyle
+                      ES_AUTOHSCROLL)
     {
     }
         
@@ -369,9 +388,12 @@ namespace XULWin
                 HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
                 ::MoveWindow(childHandle, rect.x(), rect.y(), width, height, FALSE);
                 ::InvalidateRect(childHandle, 0, FALSE);
+                ::UpdateWindow(childHandle);
             }
         }
         rebuildChildLayouts();
+        ::InvalidateRect(handle(), 0, FALSE);
+        ::UpdateWindow(handle());
     }
 
 

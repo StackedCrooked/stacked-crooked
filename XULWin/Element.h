@@ -88,7 +88,10 @@ namespace XULWin
         static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
         {
             ElementPtr result(new T(inType, inParent));
-            inParent->addChild(result);
+            if (inParent)
+            {
+                inParent->addChild(result);
+            }
             result->setAttributes(inAttr);
             result->init();
             return result;
@@ -117,17 +120,13 @@ namespace XULWin
     {
     public:
         static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        {
-            assert(!inParent);
-            ElementPtr result(new Window(inType));
-            return result;
-        }
+        { return Element::Create<Window>(inType, inParent, inAttr); }
 
         void showModal();
 
     private:
         friend class Element;
-        Window(const Type & inType);
+        Window(const Type & inType, ElementPtr inParent);
     };
 
 
@@ -152,6 +151,18 @@ namespace XULWin
     private:
         friend class Element;
         Label(const Type & inType, ElementPtr inParent);
+    };
+
+
+    class TextBox : public Element
+    {
+    public:
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TextBox>(inType, inParent, inAttr); }
+    
+    private:
+        friend class Element;
+        TextBox(const Type & inType, ElementPtr inParent);
     };
 
 

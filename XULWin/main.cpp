@@ -24,6 +24,30 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<MenuList>(eltype("menulist"));
     ElementFactory::Instance().registerElement<MenuPopup>(eltype("menupopup"));
     ElementFactory::Instance().registerElement<MenuItem>(eltype("menuitem"));
+    ElementFactory::Instance().registerElement<TextBox>(eltype("textbox"));
+}
+
+
+void runDropdownSample()
+{
+    ErrorCatcher errorCatcher;
+	Parser parser;
+	parser.setContentHandler(&parser);
+	
+	try
+	{
+		parser.parse("Dropdown.xul");
+	}
+	catch (Poco::Exception& e)
+	{
+		ReportError(e.displayText());
+        return;
+	}
+    if (errorCatcher.hasCaught())
+    {
+        errorCatcher.log();
+    }
+    static_cast<Window*>(parser.rootElement().get())->showModal();
 }
 
 
@@ -63,7 +87,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    runSample();
+    runDropdownSample();
     ErrorReporter::Finalize();
     return 0;
 }

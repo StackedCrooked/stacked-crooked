@@ -56,17 +56,18 @@ namespace Utils
 
 	ErrorCatcher::~ErrorCatcher()
 	{
+        ErrorReporter::Instance().pop(this);
 		if (mPropagate)
 		{
-			ErrorReporter::Instance().propagate(this);
+            ErrorReporter::Instance().mStack.top()->attach(this);
 		}
-		ErrorReporter::Instance().pop(this);
+		
 	}
 
 
 	bool ErrorCatcher::hasCaught() const
 	{
-		return mError.code() != 0;
+		return !mErrors.empty();
 	}
 
 
@@ -74,6 +75,18 @@ namespace Utils
 	{
 		mPropagate = true;
 	}
+    
+    
+    void ErrorCatcher::push(const Error & inError)
+    {
+        mErrors.push_back(inError);
+    }
+    
+    
+    void ErrorCatcher::attach(const ErrorCatcher * inErrorCatcher)
+    {
+        mChild.reset(new ErrorCatcher(*inErrorCatcher));
+    }
 
 
 	void ErrorReporter::Initialize()
@@ -82,6 +95,11 @@ namespace Utils
 		if (!sInstance)
 		{
 			sInstance = new ErrorReporter();
+
+            // this cannot be done the constructor
+            // because ErrorCatcher requires that
+            // sInstance has been set.
+            sInstance->mStack.push(new ErrorCatcher);
 		}
 	}
 
@@ -104,26 +122,38 @@ namespace Utils
 	}
 
 
-	const Error & ErrorReporter::lastError() const
-	{
-		if (!mStack.empty())
-		{
-			return mStack.top()->mError;
-		}
-		return mTopLevelError;
-	}
+    ErrorReporter::ErrorReporter()
+    {
+    }
+    
+    
+    ErrorReporter::~ErrorReporter()
+    {
+        assert(!mStack.empty());
+        if (!mStack.empty())
+        {
+            delete mStack.top();
+        }
+    }
+
+
+	//const Error & ErrorReporter::lastError() const
+	//{
+	//	if (!mStack.empty())
+	//	{
+	//		return mStack.top()->mError;
+	//	}
+	//	return mTopLevelErrorCatcher;
+	//}
 
 
 	void ErrorReporter::reportError(const Error & inError)
 	{
-		if (!mStack.empty())
-		{
-			mStack.top()->mError = inError;
-		}
-		else
-		{
-			mTopLevelError = inError;
-		}
+        assert (!mStack.empty());
+        if (!mStack.empty())
+        {
+            mStack.top()->push(inError);
+        }
 	}
 
 
@@ -144,25 +174,25 @@ namespace Utils
 	}
 
 
-	void ErrorReporter::propagate(ErrorCatcher * inError)
-	{
-		// Empty stack would mean that there are no ErrorCatcher objects in existence right now
-		assert (!mStack.empty());
+	//void ErrorReporter::propagate(ErrorCatcher * inError)
+	//{
+	//	// Empty stack would mean that there are no ErrorCatcher objects in existence right now
+	//	assert (!mStack.empty());
 
-		// If only one element is on the stack, then we propagate to top-level-error.
-		if (mStack.size() == 1)
-		{
-			mTopLevelError = inError->mError;
-		}
-		// Otherwise we overwrite the parent error
-		else
-		{
-			std::stack<ErrorCatcher*>::container_type::const_iterator target = mStack._Get_container().end();
-			--target; // make it point to the last object
-			--target; // make it point to the one but last object
-			**target = *inError;
-		}
-	}
+	//	// If only one element is on the stack, then we propagate to top-level-error.
+	//	if (mStack.size() == 1)
+	//	{
+	//		mTopLevelErrorCatcher = inError->mError;
+	//	}
+	//	// Otherwise we overwrite the parent error
+	//	else
+	//	{
+	//		std::stack<ErrorCatcher*>::container_type::const_iterator target = mStack._Get_container().end();
+	//		--target; // make it point to the last object
+	//		--target; // make it point to the one but last object
+	//		**target = *inError;
+	//	}
+	//}
 
 	
 	void ReportError(int inErrorCode, const std::string & inErrorMessage)

@@ -3,6 +3,8 @@
 
 
 #include <stack>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 
 namespace Utils
@@ -55,7 +57,7 @@ namespace Utils
 	 * A ErrorCatcher object should always be created on the stack, and usually at
 	 * the beginning of its surrounding scope.
 	 */
-	class ErrorCatcher
+    class ErrorCatcher
 	{
 	public:
 		ErrorCatcher();
@@ -68,17 +70,17 @@ namespace Utils
 		 */
 		bool hasCaught() const;
 
-		/**
-		 * Returns the error message
-		 */
-		const std::string & message() const
-		{ return mError.message(); }
+		///**
+		// * Returns the error message
+		// */
+		//const std::string & message() const
+		//{ return mError.message(); }
 
-		/**
-		 * Returns the error code. Zero means no error.
-		 */
-		int code() const
-		{ return mError.code(); }
+		///**
+		// * Returns the error code. Zero means no error.
+		// */
+		//int code() const
+		//{ return mError.code(); }
 
 		/**
 		 * Caught Errors will be disposed of on destruction of the ErrorCatcher object.
@@ -92,7 +94,13 @@ namespace Utils
 
 	private:
 		friend class ErrorReporter;
-		Error mError;
+        
+        void push(const Error & inError);
+
+        void attach(const ErrorCatcher * inErrorCatcher);
+
+        std::vector<Error> mErrors;
+        boost::shared_ptr<ErrorCatcher> mChild;
 		bool mPropagate;
 	};
 
@@ -135,18 +143,21 @@ namespace Utils
 		 * If no ErrorCatcher objects are currently defined the top level
 		 * error object is returned.
 		 */
-		const Error & lastError() const;
+		//const Error & lastError() const;
 
 	private:
 		friend class ErrorCatcher;
+
+        ErrorReporter();
+
+        ~ErrorReporter();
 
 		void push(ErrorCatcher * inError);
 
 		void pop(ErrorCatcher * inError);
 
-		void propagate(ErrorCatcher * inError);
+		//void propagate(ErrorCatcher * inError);
 
-		Error mTopLevelError;
 		std::stack<ErrorCatcher*> mStack;
 		static ErrorReporter * sInstance;
 	};

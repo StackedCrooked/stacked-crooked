@@ -171,14 +171,14 @@ namespace XULWin
     void MenuList::addMenuItem(const MenuItem * inItem)
     {
         NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
-        menuList->add(inItem->getAttribute("label"));
+        menuList->addMenuItem(inItem->getAttribute("label"));
     }
         
     
     void MenuList::removeMenuItem(const MenuItem * inItem)
     {
         NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
-        menuList->remove(inItem->getAttribute("label"));
+        menuList->removeMenuItem(inItem->getAttribute("label"));
     }
 
     

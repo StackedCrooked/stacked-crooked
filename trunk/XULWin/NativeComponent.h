@@ -207,9 +207,9 @@ namespace XULWin
         {
         }
 
-        void add(const std::string & inText);
+        void addMenuItem(const std::string & inText);
 
-        void remove(const std::string & inText);
+        void removeMenuItem(const std::string & inText);
     };
 
 } // namespace XULWin

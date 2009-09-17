@@ -375,7 +375,7 @@ namespace XULWin
     }
 
 
-    void NativeMenuList::add(const std::string & inText)
+    void NativeMenuList::addMenuItem(const std::string & inText)
     {
         Utils::addStringToComboBox(handle(), inText.c_str());
         int count = Utils::getComboBoxItemCount(handle());		
@@ -389,7 +389,7 @@ namespace XULWin
     }
 
 
-    void NativeMenuList::remove(const std::string & inText)
+    void NativeMenuList::removeMenuItem(const std::string & inText)
     {
         int idx = Utils::findStringInComboBox(handle(), inText.c_str());
         if (idx == CB_ERR)

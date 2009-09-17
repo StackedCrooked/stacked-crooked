@@ -18,6 +18,10 @@ namespace Utils
 
     void selectComboBoxItem(HWND inHandle, int inItemIndex);
 
+    void setWindowWidth(HWND inHandle, int inWidth);
+
+    void setWindowHeight(HWND inHandle, int inHeight);
+
 } // namespace Utils
 
 

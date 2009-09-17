@@ -28,6 +28,16 @@ void registerTypes(HMODULE inModule)
 }
 
 
+void addButtonPressed(Event * inEvent)
+{
+}
+
+
+void removeButtonPressed(Event * inEvent)
+{
+}
+
+
 void runDropdownSample()
 {
     ErrorCatcher errorCatcher;
@@ -47,6 +57,11 @@ void runDropdownSample()
     {
         errorCatcher.log();
     }
+    ElementPtr addButton = parser.rootElement()->getElementById("addbutton");
+    addButton->addEventListener("command", boost::bind(addButtonPressed, _1));
+
+    ElementPtr removeButton = parser.rootElement()->getElementById("removebutton");
+    removeButton->addEventListener("command", boost::bind(removeButtonPressed, _1));
     static_cast<Window*>(parser.rootElement().get())->showModal();
 }
 

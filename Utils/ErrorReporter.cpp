@@ -207,7 +207,14 @@ namespace Utils
                     {
                         ss << "Therefore: ";
                     }
-                    ss << error.message() << " (Code: " << error.code() << ")\n";
+                    ss << error.message();
+                    
+                    // show the error code, unless if it is the default
+                    if (error.code() != Error::FAILED)
+                    {
+                        ss << " (Code: " << error.code() << ")";
+                    }
+                    ss << "\n";
                 }
                 if (inErrorCatcher.child())
                 {

@@ -51,7 +51,11 @@ namespace XULWin
 
         boost::weak_ptr<Element> parent() const { return mParent; }
 
-        AttributesMapping Attributes;
+        void setAttributes(const AttributesMapping & inAttributes);
+
+        const std::string & getAttribute(const std::string & inName) const;
+
+        void setAttribute(const std::string & inName, const std::string & inValue);
 
         boost::shared_ptr<NativeComponent> nativeComponent() const;
 
@@ -92,7 +96,7 @@ namespace XULWin
         {
             ElementPtr result(new T(inType, inParent));
             inParent->addChild(result);
-            result->Attributes = inAttr;
+            result->setAttributes(inAttr);
             return result;
         }   
 
@@ -103,7 +107,8 @@ namespace XULWin
         friend class ElementFactory;
         Type mType;
         ID mID;
-        boost::shared_ptr<NativeComponent> mNativeComponent;       
+        AttributesMapping mAttributes;
+        boost::shared_ptr<NativeComponent> mNativeComponent;
     };
 
 

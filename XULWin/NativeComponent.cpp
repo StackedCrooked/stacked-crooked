@@ -93,12 +93,6 @@ namespace XULWin
 
     void NativeComponent::onStart()
     {
-        AttributesMapping & attr = owningElement()->Attributes;
-        AttributesMapping::iterator it = attr.begin(), end = attr.end();
-        for (; it != end; ++it)
-        {
-            applyAttribute(it->first, it->second);
-        }
     }
     
 
@@ -334,7 +328,7 @@ namespace XULWin
             std::vector<int> flexValues;
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
-                std::string flex = mElement->children()[idx]->Attributes["flex"];
+                std::string flex = mElement->children()[idx]->getAttribute("flex");
 
                 int flexValue = Defaults::Attributes::flex();
                 try

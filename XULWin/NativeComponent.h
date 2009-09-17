@@ -69,8 +69,9 @@ namespace XULWin
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-    protected:
         virtual void applyAttribute(const std::string & inName, const std::string & inValue);
+
+    protected:
 
         NativeComponentWPtr mParent;
         Element * mElement;
@@ -106,7 +107,6 @@ namespace XULWin
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-    protected:
         void applyAttribute(const std::string & inName, const std::string & inValue);
     };
 
@@ -147,7 +147,6 @@ namespace XULWin
     public:
         NativeLabel(NativeComponentPtr inParent);
 
-    protected:
         virtual void applyAttribute(const std::string & inName, const std::string & inValue);
     };
 
@@ -179,7 +178,6 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-    protected:
         virtual void applyAttribute(const std::string & inName, const std::string & inValue);
 
         Orientation mOrientation;

@@ -67,8 +67,8 @@ namespace XULWin
             else
             {
                 mIgnores.push(true);
-                ThrowError("Null element created and ignored! Reason: " + errorCatcher.message());
-                errorCatcher.rethrow();
+                ReportError("Null element created and ignored! Reason: " + errorCatcher.message());
+                errorCatcher.propagate();
                 return;
             }
         }

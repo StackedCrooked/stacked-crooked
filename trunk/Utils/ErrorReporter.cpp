@@ -58,7 +58,7 @@ namespace Utils
 	{
 		if (mPropagate)
 		{
-			ErrorReporter::Instance().rethrow(this);
+			ErrorReporter::Instance().propagate(this);
 		}
 		ErrorReporter::Instance().pop(this);
 	}
@@ -70,7 +70,7 @@ namespace Utils
 	}
 
 
-	void ErrorCatcher::rethrow()
+	void ErrorCatcher::propagate()
 	{
 		mPropagate = true;
 	}
@@ -144,12 +144,12 @@ namespace Utils
 	}
 
 
-	void ErrorReporter::rethrow(ErrorCatcher * inError)
+	void ErrorReporter::propagate(ErrorCatcher * inError)
 	{
 		// Empty stack would mean that there are no ErrorCatcher objects in existence right now
 		assert (!mStack.empty());
 
-		// If only one element is on the stack, then we rethrow to top-level-error.
+		// If only one element is on the stack, then we propagate to top-level-error.
 		if (mStack.size() == 1)
 		{
 			mTopLevelError = inError->mError;
@@ -165,19 +165,19 @@ namespace Utils
 	}
 
 	
-	void ThrowError(int inErrorCode, const std::string & inErrorMessage)
+	void ReportError(int inErrorCode, const std::string & inErrorMessage)
 	{
 		ErrorReporter::Instance().reportError(Error(inErrorCode, inErrorMessage));
 	}
 	
 	
-	void ThrowError(const std::string & inErrorMessage)
+	void ReportError(const std::string & inErrorMessage)
 	{
 		ErrorReporter::Instance().reportError(Error(inErrorMessage));
 	}
 
 
-	void ThrowError(int inErrorCode)
+	void ReportError(int inErrorCode)
 	{
 		ErrorReporter::Instance().reportError(Error(inErrorCode));
 	}

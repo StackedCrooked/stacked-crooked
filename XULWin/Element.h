@@ -3,7 +3,6 @@
 
 
 #include <boost/function.hpp>
-#include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <map>
 #include <string>
@@ -53,7 +52,7 @@ namespace XULWin
 
         void removeChild(const Element * inChild);
 
-        boost::weak_ptr<Element> parent() const { return mParent; }
+        Element * parent() const { return mParent; }
 
         void setAttributes(const AttributesMapping & inAttributes);
 
@@ -79,7 +78,7 @@ namespace XULWin
             return result;
         }   
 
-        boost::weak_ptr<Element> mParent;
+        Element * mParent;
         Children mChildren;
         std::map<std::string, std::vector<EventHandler> > mEventHandlers;
 

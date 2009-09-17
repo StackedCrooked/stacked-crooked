@@ -14,7 +14,7 @@ namespace XULWin
 
     Element::Element(const std::string & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent) :
         mType(inType),
-        mParent(inParent),
+        mParent(inParent ? inParent.get() : 0),
         mNativeComponent(inNativeComponent)
     {
         if (mNativeComponent)
@@ -229,32 +229,26 @@ namespace XULWin
 
     void MenuPopup::addMenuItem(const MenuItem * inItem)
     {
-        if (ElementPtr parent = mParent.lock())
+        if (mParent->type() == "menulist")
         {
-            if (parent->type() == "menulist")
-            {
-                static_cast<MenuList*>(parent.get())->addMenuItem(inItem);
-            }
-            else
-            {
-                ReportError("MenuPopup is located in non-compatible container.");
-            }
+            static_cast<MenuList*>(mParent)->addMenuItem(inItem);
+        }
+        else
+        {
+            ReportError("MenuPopup is located in non-compatible container.");
         }
     }
 
 
     void MenuPopup::removeMenuItem(const MenuItem * inItem)
     {
-        if (ElementPtr parent = mParent.lock())
+        if (mParent->type() == "menulist")
         {
-            if (parent->type() == "menulist")
-            {
-                static_cast<MenuList*>(parent.get())->removeMenuItem(inItem);
-            }
-            else
-            {
-                ReportError("MenuPopup is located in non-compatible container.");
-            }
+            static_cast<MenuList*>(mParent)->removeMenuItem(inItem);
+        }
+        else
+        {
+            ReportError("MenuPopup is located in non-compatible container.");
         }
     }
 
@@ -267,32 +261,26 @@ namespace XULWin
     
     MenuItem::~MenuItem()
     {
-        if (ElementPtr parent = mParent.lock())
+        if (mParent->type() == "menupopup")
         {
-            if (parent->type() == "menupopup")
-            {
-                static_cast<MenuPopup*>(parent.get())->removeMenuItem(this);
-            }
-            else
-            {
-                ReportError("MenuItem is located in non-compatible container.");
-            }
+            static_cast<MenuPopup*>(mParent)->removeMenuItem(this);
+        }
+        else
+        {
+            ReportError("MenuItem is located in non-compatible container.");
         }
     }
 
 
     void MenuItem::init()
     {
-        if (ElementPtr parent = mParent.lock())
+        if (mParent->type() == "menupopup")
         {
-            if (parent->type() == "menupopup")
-            {
-                static_cast<MenuPopup*>(parent.get())->addMenuItem(this);
-            }
-            else
-            {
-                ReportError("MenuItem is located in non-compatible container.");
-            }
+            static_cast<MenuPopup*>(mParent)->addMenuItem(this);
+        }
+        else
+        {
+            ReportError("MenuItem is located in non-compatible container.");
         }
     }
 

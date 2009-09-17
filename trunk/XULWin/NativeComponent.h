@@ -35,7 +35,7 @@ namespace XULWin
     class NativeComponent
     {
     public:
-        NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
+        NativeComponent(NativeComponentPtr inParent, CommandID inCommandID);
 
         virtual ~NativeComponent();
 
@@ -65,15 +65,13 @@ namespace XULWin
 
         NativeComponent * mParent;
         Element * mElement;
+        HWND mHandle;
+        CommandID mCommandID;
         int mMinimumWidth;
         int mMinimumHeight;
-
-    private:
         typedef std::map<HWND, NativeComponent*> Components;
         static Components sComponents;
-        CommandID mCommandID;
         HMODULE mModuleHandle;
-        HWND mHandle;
     };
 
 
@@ -82,16 +80,7 @@ namespace XULWin
     public:
         static void Register(HMODULE inModuleHandle);
 
-        NativeWindow() :
-            NativeComponent(
-                NativeComponentPtr(),
-                CommandID(0), // command id is hmenu id for Window
-                TEXT("XULWin::Window"),
-                0, // exStyle
-                WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW
-            )
-        {
-        }
+        NativeWindow(NativeComponentPtr inParent);
 
         void showModal();
 
@@ -104,18 +93,7 @@ namespace XULWin
     class NativeControl : public NativeComponent
     {
     public:
-        NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
-            NativeComponent(inParent,
-                            CommandID(),
-                            inClassName,
-                            inExStyle,
-                            inStyle | WS_TABSTOP
-                                    | WS_CHILD
-                                    | WS_CLIPSIBLINGS
-                                    | WS_CLIPCHILDREN
-                                    | WS_VISIBLE)
-        {
-        }
+        NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
     };
 
 

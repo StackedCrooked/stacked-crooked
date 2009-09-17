@@ -2,6 +2,7 @@
 #define ELEMENT_H_INCLUDED
 
 
+#include <boost/function.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <map>
@@ -24,6 +25,14 @@ namespace XULWin
 
     typedef std::map<std::string, std::string> AttributesMapping;
 
+    class Event
+    {
+    public:
+        
+    };
+
+    typedef boost::function<void(Event*)> EventHandler;
+
     /**
      * Represents a XUL element.
      */
@@ -38,7 +47,11 @@ namespace XULWin
 
         const Type & type() const;
 
-        const ID & id() const;
+        //const ID & id() const;
+
+        void addEventListener(const std::string & inEvent, const EventHandler & inEventHandler);
+
+        ElementPtr getElementById(const std::string & inID);
 
         const Children & children() const { return mChildren; }
 
@@ -69,17 +82,17 @@ namespace XULWin
             std::string mType;
         };
 
-        class ID
-        {
-        public:
-            explicit ID(const std::string & inID = "") : mID(inID) {}
+        //class ID
+        //{
+        //public:
+        //    explicit ID(const std::string & inID = "") : mID(inID) {}
 
-            operator const std::string & () const { return mID; }
+        //    operator const std::string & () const { return mID; }
 
-            bool operator < (const ID & rhs) const { return this->mID < rhs.mID; }
-        private:
-            std::string mID;
-        };
+        //    bool operator < (const ID & rhs) const { return this->mID < rhs.mID; }
+        //private:
+        //    std::string mID;
+        //};
 
     protected:
         Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent);
@@ -99,6 +112,7 @@ namespace XULWin
 
         boost::weak_ptr<Element> mParent;
         Children mChildren;
+        std::map<std::string, std::vector<EventHandler> > mEventHandlers;
 
     private:
 
@@ -107,7 +121,6 @@ namespace XULWin
 
         friend class ElementFactory;
         Type mType;
-        ID mID;
         AttributesMapping mAttributes;
         boost::shared_ptr<NativeComponent> mNativeComponent;
     };

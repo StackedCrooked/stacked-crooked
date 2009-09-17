@@ -3,7 +3,7 @@
 	title=""
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	width="320"
-	height="100"
+	height="120"
 	onload="main()"
 	type="mab:main"
 	persist="screenX screenY width height sizemode">
@@ -22,8 +22,14 @@
       </menulist>
     </hbox>
     <hbox>
-      <textbox id="your-name" value="John"/>
-      <button label="Add"/>
+      <vbox>
+        <textbox id="your-name" value="John"/>
+        <label value="filler"></label>
+      </vbox>
+      <vbox>
+        <button label="Add" id="addbutton"/>
+        <button label="Remove" id="removebutton"/>
+      </vbox>
     </hbox>
 	</vbox>
 </window>

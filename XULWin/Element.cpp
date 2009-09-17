@@ -30,9 +30,46 @@ namespace XULWin
     }
 
 
-    const Element::ID & Element::id() const
+    //const Element::ID & Element::id() const
+    //{
+    //    return elid(getAttribute("id"));
+    //}
+
+
+    void Element::addEventListener(const std::string & inEvent, const EventHandler & inEventHandler)
     {
-        return mID;
+        mEventHandlers[inEvent].push_back(inEventHandler);
+    }
+
+    
+    ElementPtr Element::getElementById(const std::string & inID)
+    {
+        struct Helper
+        {
+            static ElementPtr findChild(const Children & inChildren, const std::string & inID)
+            {
+                ElementPtr result;
+                for (size_t idx = 0; idx != inChildren.size(); ++idx)
+                {
+                    ElementPtr child = inChildren[idx];
+                    if (child->getAttribute("id") == inID)
+                    {
+                        result = child;
+                        break;
+                    }
+                    else
+                    {
+                        result = findChild(child->children(), inID);
+                        if (result)
+                        {
+                            break;
+                        }
+                    }
+                }
+                return result;
+            }
+        };
+        return Helper::findChild(children(), inID);
     }
 
 

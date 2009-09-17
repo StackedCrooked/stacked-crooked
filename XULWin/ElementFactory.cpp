@@ -31,7 +31,7 @@ namespace XULWin
         }
         else
         {
-            ReportError("No mapping found for XUL type " + std::string(inType));
+            ReportError("No mapping found for XUL type '" + std::string(inType) + "'");
         }
         return result;
     }

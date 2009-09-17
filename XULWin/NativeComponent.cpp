@@ -3,6 +3,7 @@
 #include "Element.h"
 #include "Layout.h"
 #include "Utils/ErrorReporter.h"
+#include "Utils/WinUtils.h"
 #include <boost/lexical_cast.hpp>
 #include <string>
 
@@ -16,7 +17,7 @@ namespace XULWin
     
     NativeComponent::Components NativeComponent::sComponents;
 
-    NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCWSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+    NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
         mParent(inParent),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandID(inCommandID),
@@ -49,7 +50,7 @@ namespace XULWin
         (
             inExStyle, 
             inClassName,
-            L"",            // title attribute can be set later
+            TEXT(""),            // title attribute can be set later
             inStyle,
             x, y, w, h,
             parent ? parent->handle() : 0,
@@ -91,22 +92,12 @@ namespace XULWin
     }
     
 
-    void NativeComponent::onStart()
-    {
-    }
-    
-
     void NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
     {
         if (inName == "label")
         {
             ::SetWindowTextA(handle(), inValue.c_str());
         }
-    }
-    
-
-    void NativeComponent::onEnd()
-    {
     }
     
     
@@ -384,32 +375,13 @@ namespace XULWin
     }
 
 
-    void NativeMenuList::onEnd()
-    {
-        
-    }
-
-
     void NativeMenuList::add(const std::string & inText)
     {
-        ::SendMessageA
-		(
-			(HWND)handle(),
-			(UINT) CB_ADDSTRING,
-			(WPARAM)0,
-			(LPARAM)inText.c_str()
-		);
-        int count = ::SendMessage(handle(), CB_GETCOUNT, 0, 0);
-		
+        Utils::addStringToComboBox(handle(), inText.c_str());
+        int count = Utils::getComboBoxItemCount(handle());		
 		if (count == 1)
 		{
-			SendMessage
-			(
-				(HWND)handle(),
-				(UINT) CB_SETCURSEL,
-				(WPARAM)0, // -> select index 0
-				(LPARAM)0
-			);
+            Utils::selectComboBoxItem(handle(), 0);
 		}
 		
 		// The height of a combobox defines the height of the dropdown menu + the height of the widget itself.

@@ -23,24 +23,6 @@ namespace XULWin
         }
     }
 
-    
-    void Element::onStart()
-    {
-        if (mNativeComponent)
-        {
-            mNativeComponent->onStart();
-        }
-    }
-
-    
-    void Element::onEnd()
-    {
-        if (mNativeComponent)
-        {
-            mNativeComponent->onEnd();
-        }
-    }
-
 
     const Element::Type & Element::type() const
     {
@@ -77,7 +59,7 @@ namespace XULWin
             return it->second;
         }
 
-        ReportError("Attribute '" + inName + "' was not found in Element.");
+        ReportError("Attribute '" + inName + "' was not found in Element");
         static std::string fNotFound;
         return fNotFound;
     }
@@ -169,43 +151,12 @@ namespace XULWin
                 NativeComponentPtr(new NativeMenuList(inParent->nativeComponent())))
     {
     }
-
-
-    void MenuList::onEnd()
+        
+    
+    void MenuList::addMenuItem(const MenuItem * inItem)
     {
-        if (!mChildren.empty())
-        {
-            // Find an entry with name 'menupopup'
-            Children::iterator popupIt = std::find_if
-            (
-                mChildren.begin(),
-                mChildren.end(),
-                boost::bind
-                (
-                    &Element::type,
-                    boost::bind(&ElementPtr::get, _1)
-                ) == eltype("menupopup")
-            );
-
-            if (popupIt == mChildren.end())
-            {
-                return;
-            }
-
-            MenuPopup * popup = static_cast<MenuPopup*>(popupIt->get());
-            
-            // Find an entry with name 'menulist'
-            Children::iterator itemIt = popup->children().begin(), end = popup->children().end();
-            for (; itemIt != end; ++itemIt)
-            {
-                if (itemIt->get()->type() == eltype("menuitem"))
-                {
-                    MenuItem * item = static_cast<MenuItem *>(itemIt->get());
-                    NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
-                    menuList->add(item->getAttribute("label"));
-                }
-            }
-        }
+        NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
+        menuList->add(inItem->getAttribute("label"));
     }
 
     
@@ -214,10 +165,42 @@ namespace XULWin
     {
     }
 
+
+    void MenuPopup::addMenuItem(const MenuItem * inItem)
+    {
+        if (ElementPtr parent = mParent.lock())
+        {
+            if (parent->type() == eltype("menulist"))
+            {
+                static_cast<MenuList*>(parent.get())->addMenuItem(inItem);
+            }
+            else
+            {
+                ReportError("MenuPopup is located in non-compatible container.");
+            }
+        }
+    }
+
     
     MenuItem::MenuItem(const Type & inType, ElementPtr inParent) :
         Element(inType, inParent, gNullNativeComponent)
     {
+    }
+
+
+    void MenuItem::init()
+    {
+        if (ElementPtr parent = mParent.lock())
+        {
+            if (parent->type() == eltype("menupopup"))
+            {
+                static_cast<MenuPopup*>(parent.get())->addMenuItem(this);
+            }
+            else
+            {
+                ReportError("MenuItem is located in non-compatible container.");
+            }
+        }
     }
 
 

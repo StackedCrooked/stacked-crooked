@@ -20,7 +20,7 @@
 			OutputDirectory="$(SolutionDir)..\Output\Windows\$(ConfigurationName)\$(ProjectName)\"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="4"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -159,6 +159,14 @@
 			</File>
 			<File
 				RelativePath=".\ErrorReporter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WinUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WinUtils.h"
 				>
 			</File>
 		</Filter>

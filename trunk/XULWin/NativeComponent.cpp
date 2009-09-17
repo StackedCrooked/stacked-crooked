@@ -29,9 +29,10 @@ namespace XULWin
             throw std::runtime_error("Invalid parent");
         }
 
-        int x = 0, y = 0;
         int w = Defaults::windowWidth();
         int h = Defaults::windowHeight();
+        int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
+        int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
 
         if (parent)
         {
@@ -41,11 +42,6 @@ namespace XULWin
             y = 0;
             w = rc.right - rc.left;
             h = rc.bottom - rc.top;
-        }
-        else
-        {
-            x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
-            y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         }
 
         

@@ -108,6 +108,10 @@ namespace XULWin
 
     void NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
     {
+        if (inName == "label")
+        {
+            ::SetWindowTextA(handle(), inValue.c_str());
+        }
     }
     
 

@@ -101,6 +101,14 @@ namespace XULWin
     }
 
 
+    Box::Box(const Type & inType, ElementPtr inParent) :
+        Element(inType,
+                inParent,
+                NativeComponentPtr(new NativeBox(inParent->nativeComponent())))
+    {
+    }
+
+
     HBox::HBox(const Type & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,

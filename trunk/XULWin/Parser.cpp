@@ -80,7 +80,7 @@ namespace XULWin
             else
             {
                 mIgnores.push(true);
-                ReportError("Element is null => Ignore");
+                ReportError("Element is null and will be ignored.");
                 errorCatcher.propagate();
                 return;
             }

@@ -4,6 +4,9 @@
 #include <boost/bind.hpp>
 
 
+using namespace Utils;
+
+
 namespace XULWin
 {
     NativeComponentPtr gNullNativeComponent;
@@ -48,6 +51,41 @@ namespace XULWin
     const Element::ID & Element::id() const
     {
         return mID;
+    }
+
+
+    void Element::setAttributes(const AttributesMapping & inAttributes)
+    {
+        mAttributes = inAttributes;
+        
+        if (mNativeComponent)
+        {
+            AttributesMapping::iterator it = mAttributes.begin(), end = mAttributes.end();
+            for (; it != end; ++it)
+            {
+                mNativeComponent->applyAttribute(it->first, it->second);
+            }
+        }
+    }
+
+    
+    const std::string & Element::getAttribute(const std::string & inName) const
+    {
+        AttributesMapping::const_iterator it = mAttributes.find(inName);
+        if (it!= mAttributes.end())
+        {
+            return it->second;
+        }
+
+        ReportError("Attribute '" + inName + "' was not found in Element.");
+        static std::string fNotFound;
+        return fNotFound;
+    }
+
+    
+    void Element::setAttribute(const std::string & inName, const std::string & inValue)
+    {
+        mAttributes[inName] = inValue;
     }
     
     
@@ -164,7 +202,7 @@ namespace XULWin
                 {
                     MenuItem * item = static_cast<MenuItem *>(itemIt->get());
                     NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
-                    menuList->add(item->Attributes["label"]);
+                    menuList->add(item->getAttribute("label"));
                 }
             }
         }

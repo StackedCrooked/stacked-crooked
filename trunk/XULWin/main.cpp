@@ -14,17 +14,17 @@ using namespace Utils;
 void registerTypes(HMODULE inModule)
 {
     NativeWindow::Register(inModule);
-    ElementFactory::Instance().registerElement<Window>(eltype("window"));
-    ElementFactory::Instance().registerElement<Button>(eltype("button"));
-    ElementFactory::Instance().registerElement<CheckBox>(eltype("checkbox"));
-    ElementFactory::Instance().registerElement<Label>(eltype("label"));
-    ElementFactory::Instance().registerElement<HBox>(eltype("hbox"));
-    ElementFactory::Instance().registerElement<VBox>(eltype("vbox"));
-    ElementFactory::Instance().registerElement<Box>(eltype("box"));
-    ElementFactory::Instance().registerElement<MenuList>(eltype("menulist"));
-    ElementFactory::Instance().registerElement<MenuPopup>(eltype("menupopup"));
-    ElementFactory::Instance().registerElement<MenuItem>(eltype("menuitem"));
-    ElementFactory::Instance().registerElement<TextBox>(eltype("textbox"));
+    ElementFactory::Instance().registerElement<Window>("window");
+    ElementFactory::Instance().registerElement<Button>("button");
+    ElementFactory::Instance().registerElement<CheckBox>("checkbox");
+    ElementFactory::Instance().registerElement<Label>("label");
+    ElementFactory::Instance().registerElement<HBox>("hbox");
+    ElementFactory::Instance().registerElement<VBox>("vbox");
+    ElementFactory::Instance().registerElement<Box>("box");
+    ElementFactory::Instance().registerElement<MenuList>("menulist");
+    ElementFactory::Instance().registerElement<MenuPopup>("menupopup");
+    ElementFactory::Instance().registerElement<MenuItem>("menuitem");
+    ElementFactory::Instance().registerElement<TextBox>("textbox");
 }
 
 

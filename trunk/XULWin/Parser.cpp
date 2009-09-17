@@ -64,7 +64,7 @@ namespace XULWin
             //
             // Create the element
             //
-            ElementPtr element = ElementFactory::Instance().createElement(eltype(localName), parent, attr);
+            ElementPtr element = ElementFactory::Instance().createElement(std::string(localName), parent, attr);
             if (element)
             {
                 if (mStack.empty())

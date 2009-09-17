@@ -22,14 +22,16 @@
       </menulist>
     </hbox>
     <hbox>
-      <vbox>
+      <hbox>
         <textbox id="your-name" value="John"/>
-        <label value="filler"></label>
-      </vbox>
-      <vbox>
         <button label="Add" id="addbutton"/>
+      </hbox>
+    </hbox>
+    <hbox>
+      <hbox>
+        <label value="filler"></label>
         <button label="Remove" id="removebutton"/>
-      </vbox>
+      </hbox>
     </hbox>
 	</vbox>
 </window>

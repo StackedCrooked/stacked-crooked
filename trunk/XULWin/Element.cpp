@@ -12,7 +12,7 @@ namespace XULWin
     NativeComponentPtr gNullNativeComponent;
 
 
-    Element::Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent) :
+    Element::Element(const std::string & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent) :
         mType(inType),
         mParent(inParent),
         mNativeComponent(inNativeComponent)
@@ -24,16 +24,10 @@ namespace XULWin
     }
 
 
-    const Element::Type & Element::type() const
+    const std::string & Element::type() const
     {
         return mType;
     }
-
-
-    //const Element::ID & Element::id() const
-    //{
-    //    return elid(getAttribute("id"));
-    //}
 
 
     void Element::addEventListener(const std::string & inEvent, const EventHandler & inEventHandler)
@@ -135,7 +129,7 @@ namespace XULWin
     }
 
 
-    Window::Window(const Type & inType, ElementPtr inParent) :
+    Window::Window(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeWindow))
@@ -149,7 +143,7 @@ namespace XULWin
     }
 
 
-    Button::Button(const Type & inType, ElementPtr inParent) :
+    Button::Button(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeButton(inParent->nativeComponent())))
@@ -157,7 +151,7 @@ namespace XULWin
     }
 
 
-    Label::Label(const Type & inType, ElementPtr inParent) :
+    Label::Label(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
@@ -165,7 +159,7 @@ namespace XULWin
     }
 
 
-    TextBox::TextBox(const Type & inType, ElementPtr inParent) :
+    TextBox::TextBox(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeTextBox(inParent->nativeComponent())))
@@ -173,7 +167,7 @@ namespace XULWin
     }
 
 
-    CheckBox::CheckBox(const Type & inType, ElementPtr inParent) :
+    CheckBox::CheckBox(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeCheckBox(inParent->nativeComponent())))
@@ -181,7 +175,7 @@ namespace XULWin
     }
 
 
-    Box::Box(const Type & inType, ElementPtr inParent) :
+    Box::Box(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeBox(inParent->nativeComponent())))
@@ -189,7 +183,7 @@ namespace XULWin
     }
 
 
-    HBox::HBox(const Type & inType, ElementPtr inParent) :
+    HBox::HBox(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeHBox(inParent->nativeComponent())))
@@ -197,7 +191,7 @@ namespace XULWin
     }
 
 
-    VBox::VBox(const Type & inType, ElementPtr inParent) :
+    VBox::VBox(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeVBox(inParent->nativeComponent())))
@@ -205,7 +199,7 @@ namespace XULWin
     }
 
 
-    MenuList::MenuList(const Type & inType, ElementPtr inParent) :
+    MenuList::MenuList(const std::string & inType, ElementPtr inParent) :
         Element(inType,
                 inParent,
                 NativeComponentPtr(new NativeMenuList(inParent->nativeComponent())))
@@ -227,7 +221,7 @@ namespace XULWin
     }
 
     
-    MenuPopup::MenuPopup(const Type & inType, ElementPtr inParent) :
+    MenuPopup::MenuPopup(const std::string & inType, ElementPtr inParent) :
         Element(inType, inParent, gNullNativeComponent)
     {
     }
@@ -237,7 +231,7 @@ namespace XULWin
     {
         if (ElementPtr parent = mParent.lock())
         {
-            if (parent->type() == eltype("menulist"))
+            if (parent->type() == "menulist")
             {
                 static_cast<MenuList*>(parent.get())->addMenuItem(inItem);
             }
@@ -253,7 +247,7 @@ namespace XULWin
     {
         if (ElementPtr parent = mParent.lock())
         {
-            if (parent->type() == eltype("menulist"))
+            if (parent->type() == "menulist")
             {
                 static_cast<MenuList*>(parent.get())->removeMenuItem(inItem);
             }
@@ -265,7 +259,7 @@ namespace XULWin
     }
 
     
-    MenuItem::MenuItem(const Type & inType, ElementPtr inParent) :
+    MenuItem::MenuItem(const std::string & inType, ElementPtr inParent) :
         Element(inType, inParent, gNullNativeComponent)
     {
     }
@@ -275,7 +269,7 @@ namespace XULWin
     {
         if (ElementPtr parent = mParent.lock())
         {
-            if (parent->type() == eltype("menupopup"))
+            if (parent->type() == "menupopup")
             {
                 static_cast<MenuPopup*>(parent.get())->removeMenuItem(this);
             }
@@ -291,7 +285,7 @@ namespace XULWin
     {
         if (ElementPtr parent = mParent.lock())
         {
-            if (parent->type() == eltype("menupopup"))
+            if (parent->type() == "menupopup")
             {
                 static_cast<MenuPopup*>(parent.get())->addMenuItem(this);
             }

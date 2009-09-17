@@ -65,6 +65,9 @@ namespace Utils
 
 		~ErrorCatcher();
 
+        ErrorCatcher(const ErrorCatcher & inErrorCatcher);
+        
+
 		/**
 		 * Returns true if an error was reported during the lifetime of this object
 		 * and not caught by a deeper nested ErrorCatcher object.
@@ -92,11 +95,13 @@ namespace Utils
 
 	private:
 		friend class ErrorReporter;
+        ErrorCatcher & operator =(const ErrorCatcher & inErrorCatcher);
         
         void push(const Error & inError);
 
         void setChild(const ErrorCatcher * inErrorCatcher);
 
+        bool mOwns;
         std::vector<Error> mErrors;
         boost::shared_ptr<ErrorCatcher> mChild;
 		bool mPropagate;

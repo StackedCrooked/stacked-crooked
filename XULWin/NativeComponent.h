@@ -168,12 +168,12 @@ namespace XULWin
     class NativeBox : public NativeControl
     {
     public:
-        NativeBox(NativeComponentPtr inParent) :
+        NativeBox(NativeComponentPtr inParent, Orientation inOrientation = HORIZONTAL) :
             NativeControl(inParent,
                           TEXT("STATIC"),
                           0, // exStyle
                           0),
-            mOrientation(HORIZONTAL)
+            mOrientation(inOrientation)
         {
         }
 
@@ -190,9 +190,8 @@ namespace XULWin
     {
     public:
         NativeHBox(NativeComponentPtr inParent) :
-            NativeBox(inParent)
+            NativeBox(inParent, HORIZONTAL)
         {
-            mOrientation = HORIZONTAL;
         }
     };
 
@@ -201,9 +200,8 @@ namespace XULWin
     {
     public:
         NativeVBox(NativeComponentPtr inParent) :
-            NativeBox(inParent)
+            NativeBox(inParent, VERTICAL)
         {
-            mOrientation = VERTICAL;
         }
     };
 

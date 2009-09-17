@@ -1,7 +1,3 @@
-- Parser should not do any special init calls, because parser is not constructor nor factory
 - Add Unicode
-- Get rid of 'applyAttribute' and opt for a more pull-based system.
 - Try to make the Box layouts 'virtual' panes instead of real windows (reduce number of GDI objects).
-
-- Make header file containing wrapper functions for common Win32 calls
 - Add ErrorCatcher live reporter in a sep DOS window

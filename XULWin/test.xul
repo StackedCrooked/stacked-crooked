@@ -24,11 +24,11 @@
     </box>
     <hbox>
       <label value="Toevoegen aan deze set:"/>
-      <button label="Test"/>
+      <button label="Delete me"/>
     </hbox>
     <hbox>
       <label value="Tags:" ></label>
-      <checkbox label="Test"/>
+      <checkbox label="Delete me"/>
     </hbox>
     <hbox>
       <label value="Show" ></label>

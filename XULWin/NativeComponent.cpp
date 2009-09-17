@@ -138,7 +138,7 @@ namespace XULWin
     
     void NativeComponent::rebuildChildLayouts()
     {
-        Children::iterator it = mElement->children().begin(), end = mElement->children().end();
+        Children::const_iterator it = mElement->children().begin(), end = mElement->children().end();
         for (; it != end; ++it)
         {
             NativeComponent * nativeComp = (*it)->nativeComponent().get();
@@ -240,7 +240,7 @@ namespace XULWin
         {
             case WM_SIZE:
             {
-                Children::iterator it = owningElement()->children().begin();
+                Children::const_iterator it = owningElement()->children().begin();
                 if (it != owningElement()->children().end())
                 {
                     RECT rc;

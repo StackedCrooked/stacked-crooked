@@ -42,7 +42,7 @@ namespace XULWin
 
         const Children & children() const { return mChildren; }
 
-        Children & children() { return mChildren; }
+        void removeChild(const Element * inChild);
 
         boost::weak_ptr<Element> parent() const { return mParent; }
 
@@ -81,8 +81,6 @@ namespace XULWin
             std::string mID;
         };
 
-        void addChild(ElementPtr inChild);
-
     protected:
         Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent);
 
@@ -100,6 +98,10 @@ namespace XULWin
         Children mChildren;
 
     private:
+
+        // you don't to call this, the factory method takes care of it
+        void addChild(ElementPtr inChild);
+
         friend class ElementFactory;
         Type mType;
         ID mID;

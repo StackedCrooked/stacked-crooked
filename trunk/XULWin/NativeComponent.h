@@ -143,6 +143,15 @@ namespace XULWin
     };
 
 
+    class NativeTextBox : public NativeControl
+    {
+    public:
+        NativeTextBox(NativeComponentPtr inParent);
+
+        virtual void applyAttribute(const std::string & inName, const std::string & inValue);
+    };
+
+
     class NativeCheckBox : public NativeControl
     {
     public:

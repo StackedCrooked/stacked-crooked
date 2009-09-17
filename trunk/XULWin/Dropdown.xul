@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window id="amazWindow"
+	title=""
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	width="320"
+	height="100"
+	onload="main()"
+	type="mab:main"
+	persist="screenX screenY width height sizemode">
+
+	<!-- Tree -->
+	<vbox flex="1" id="main-box">
+    <hbox>
+      <label value="Items:"></label>
+      <menulist flex="2">
+        <menupopup>
+          <menuitem label="Spanje" value="1"/>
+          <menuitem label="Italie" value="2"/>
+          <menuitem label="Praag" value="3"/>
+          <menuitem label="Polen" value="4"/>
+        </menupopup>
+      </menulist>
+    </hbox>
+    <hbox>
+      <textbox id="your-name" value="John"/>
+      <button label="Add"/>
+    </hbox>
+	</vbox>
+</window>

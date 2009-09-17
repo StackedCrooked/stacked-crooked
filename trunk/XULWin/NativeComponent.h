@@ -4,7 +4,6 @@
 
 #include "Layout.h"
 #include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 #include <windows.h>
 #include <map>
 
@@ -29,7 +28,6 @@ namespace XULWin
     class Element;
     class NativeComponent;
     typedef boost::shared_ptr<NativeComponent> NativeComponentPtr;
-    typedef boost::weak_ptr<NativeComponent> NativeComponentWPtr;
 
     /**
      * NativeComponent is base class for all native UI elements.
@@ -49,7 +47,7 @@ namespace XULWin
 
         Element * owningElement() const;
 
-        NativeComponentPtr parent() const;
+        NativeComponent * parent() const;
 
         HWND handle() const;
 
@@ -65,7 +63,7 @@ namespace XULWin
 
     protected:
 
-        NativeComponentWPtr mParent;
+        NativeComponent * mParent;
         Element * mElement;
         int mMinimumWidth;
         int mMinimumHeight;

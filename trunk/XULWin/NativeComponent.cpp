@@ -18,16 +18,15 @@ namespace XULWin
     NativeComponent::Components NativeComponent::sComponents;
 
     NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
-        mParent(inParent),
+        mParent(inParent ? inParent.get() : 0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandID(inCommandID),
         mMinimumWidth(0),
         mMinimumHeight(0)
     {
-        NativeComponentPtr parent = mParent.lock();
-        if (!parent && (inStyle & WS_CHILD))
+        if (!mParent && (inStyle & WS_CHILD))
         {
-            throw std::runtime_error("Invalid parent");
+            throw std::runtime_error("Invalid mParent");
         }
 
         int w = Defaults::windowWidth();
@@ -35,10 +34,10 @@ namespace XULWin
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
 
-        if (parent)
+        if (mParent)
         {
             RECT rc;
-            ::GetClientRect(parent->handle(), &rc);
+            ::GetClientRect(mParent->handle(), &rc);
             x = 0;
             y = 0;
             w = rc.right - rc.left;
@@ -53,7 +52,7 @@ namespace XULWin
             TEXT(""),            // title attribute can be set later
             inStyle,
             x, y, w, h,
-            parent ? parent->handle() : 0,
+            mParent ? mParent->handle() : 0,
             (HMENU)inCommandID.intValue(),
             mModuleHandle,
             0
@@ -113,14 +112,9 @@ namespace XULWin
     }
 
 
-    NativeComponentPtr NativeComponent::parent() const
+    NativeComponent * NativeComponent::parent() const
     {
-        NativeComponentPtr result;
-        if (NativeComponentPtr parent = mParent.lock())
-        {
-            result = parent;
-        }
-        return result;
+        return mParent;
     }
 
 
@@ -325,71 +319,68 @@ namespace XULWin
     
     void NativeBox::rebuildLayout()
     {
-        if (NativeComponentPtr parent = mParent.lock())
+        RECT rc;
+        ::GetClientRect(handle(), &rc);
+
+        LinearLayoutManager layoutManager(mOrientation);
+        
+        //
+        // Obtain the flex values
+        //
+        std::vector<int> flexValues;
+        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
-            RECT rc;
-            ::GetClientRect(handle(), &rc);
+            std::string flex = mElement->children()[idx]->getAttribute("flex");
 
-            LinearLayoutManager layoutManager(mOrientation);
-            
-            //
-            // Obtain the flex values
-            //
-            std::vector<int> flexValues;
-            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            int flexValue = Defaults::Attributes::flex();
+            try
             {
-                std::string flex = mElement->children()[idx]->getAttribute("flex");
-
-                int flexValue = Defaults::Attributes::flex();
-                try
+                if (!flex.empty())
                 {
-                    if (!flex.empty())
-                    {
-                        flexValue = boost::lexical_cast<int>(flex);
-                    }
+                    flexValue = boost::lexical_cast<int>(flex);
                 }
-                catch (const boost::bad_lexical_cast & )
-                {
-                    ReportError("Lexical cast failed for value: " + flex + ".");
-                    // continue program flow
-                }
-                flexValues.push_back(flexValue);
             }
-            
-            //
-            // Use the flex values to obtain the child rectangles
-            //
-            std::vector<Rect> childRects;
-            layoutManager.getRects(
-                Rect(rc.left,
-                     rc.top,
-                     rc.right-rc.left,
-                     rc.bottom-rc.top),
-                flexValues,
-                childRects);
-
-            //
-            // Apply the new child rectangles
-            //
-            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            catch (const boost::bad_lexical_cast & )
             {
-                Rect & rect = childRects[idx];
-                int width = rect.width();
-                if (width < mElement->children()[idx]->nativeComponent()->minimumWidth())
-                {
-                    width = mElement->children()[idx]->nativeComponent()->minimumWidth();
-                }
-
-                int height = rect.height();
-                if (height < mElement->children()[idx]->nativeComponent()->minimumHeight())
-                {
-                    height = mElement->children()[idx]->nativeComponent()->minimumHeight();
-                }
-                HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
-                ::MoveWindow(childHandle, rect.x(), rect.y(), width, height, FALSE);
-                ::InvalidateRect(childHandle, 0, FALSE);
-                ::UpdateWindow(childHandle);
+                ReportError("Lexical cast failed for value: " + flex + ".");
+                // continue program flow
             }
+            flexValues.push_back(flexValue);
+        }
+        
+        //
+        // Use the flex values to obtain the child rectangles
+        //
+        std::vector<Rect> childRects;
+        layoutManager.getRects(
+            Rect(rc.left,
+                 rc.top,
+                 rc.right-rc.left,
+                 rc.bottom-rc.top),
+            flexValues,
+            childRects);
+
+        //
+        // Apply the new child rectangles
+        //
+        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+        {
+            Rect & rect = childRects[idx];
+            int width = rect.width();
+            if (width < mElement->children()[idx]->nativeComponent()->minimumWidth())
+            {
+                width = mElement->children()[idx]->nativeComponent()->minimumWidth();
+            }
+
+            int height = rect.height();
+            if (height < mElement->children()[idx]->nativeComponent()->minimumHeight())
+            {
+                height = mElement->children()[idx]->nativeComponent()->minimumHeight();
+            }
+            HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
+            ::MoveWindow(childHandle, rect.x(), rect.y(), width, height, FALSE);
+            ::InvalidateRect(childHandle, 0, FALSE);
+            ::UpdateWindow(childHandle);
         }
         rebuildChildLayouts();
         ::InvalidateRect(handle(), 0, FALSE);

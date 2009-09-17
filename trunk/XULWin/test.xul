@@ -20,6 +20,7 @@
           <menuitem label="Polen" value="4"/>
         </menupopup>
       </menulist>
+      <bla></bla>
     </box>
     <hbox>
       <label value="Toevoegen aan deze set:"/>

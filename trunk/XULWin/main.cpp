@@ -29,7 +29,7 @@ void registerTypes(HMODULE inModule)
 
 void runSample()
 {
-
+    ErrorCatcher errorCatcher;
 	Parser parser;
 	//parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACES, true);
 	//parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACE_PREFIXES, true);
@@ -44,13 +44,24 @@ void runSample()
 		ReportError(e.displayText());
         return;
 	}
+    if (errorCatcher.hasCaught())
+    {
+        errorCatcher.log();
+    }
     static_cast<Window*>(parser.rootElement().get())->showModal();
+}
+
+
+void log(const std::string & inMessage)
+{
+    MessageBoxA(0, inMessage.c_str(), "XULWin Logger", MB_OK);
 }
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     ErrorReporter::Initialize();
+    ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
     runSample();
     ErrorReporter::Finalize();

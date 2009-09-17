@@ -1,4 +1,5 @@
 #include "ErrorReporter.h"
+#include <sstream>
 #include <assert.h>
 
 
@@ -59,7 +60,7 @@ namespace Utils
         ErrorReporter::Instance().pop(this);
 		if (mPropagate)
 		{
-            ErrorReporter::Instance().mStack.top()->attach(this);
+            ErrorReporter::Instance().mStack.top()->setChild(this);
 		}
 		
 	}
@@ -67,8 +68,14 @@ namespace Utils
 
 	bool ErrorCatcher::hasCaught() const
 	{
-		return !mErrors.empty();
+		return mChild || !mErrors.empty();
 	}
+
+
+    void ErrorCatcher::log()
+    {
+        ErrorReporter::Instance().log(this);
+    }
 
 
 	void ErrorCatcher::propagate()
@@ -83,8 +90,9 @@ namespace Utils
     }
     
     
-    void ErrorCatcher::attach(const ErrorCatcher * inErrorCatcher)
+    void ErrorCatcher::setChild(const ErrorCatcher * inErrorCatcher)
     {
+        assert(!mChild);
         mChild.reset(new ErrorCatcher(*inErrorCatcher));
     }
 
@@ -96,7 +104,7 @@ namespace Utils
 		{
 			sInstance = new ErrorReporter();
 
-            // this cannot be done the constructor
+            // this cannot be done in the constructor
             // because ErrorCatcher requires that
             // sInstance has been set.
             sInstance->mStack.push(new ErrorCatcher);
@@ -137,14 +145,10 @@ namespace Utils
     }
 
 
-	//const Error & ErrorReporter::lastError() const
-	//{
-	//	if (!mStack.empty())
-	//	{
-	//		return mStack.top()->mError;
-	//	}
-	//	return mTopLevelErrorCatcher;
-	//}
+    void ErrorReporter::setLogger(const LogFunction & inLogFunction)
+    {
+        mLogFunction = inLogFunction;
+    }
 
 
 	void ErrorReporter::reportError(const Error & inError)
@@ -172,27 +176,39 @@ namespace Utils
 			mStack.pop();
 		}
 	}
+    
+    
+    void ErrorReporter::log(ErrorCatcher * inErrorCatcher)
+    {
+        if (!mLogFunction)
+        {
+            return;
+        }
 
-
-	//void ErrorReporter::propagate(ErrorCatcher * inError)
-	//{
-	//	// Empty stack would mean that there are no ErrorCatcher objects in existence right now
-	//	assert (!mStack.empty());
-
-	//	// If only one element is on the stack, then we propagate to top-level-error.
-	//	if (mStack.size() == 1)
-	//	{
-	//		mTopLevelErrorCatcher = inError->mError;
-	//	}
-	//	// Otherwise we overwrite the parent error
-	//	else
-	//	{
-	//		std::stack<ErrorCatcher*>::container_type::const_iterator target = mStack._Get_container().end();
-	//		--target; // make it point to the last object
-	//		--target; // make it point to the one but last object
-	//		**target = *inError;
-	//	}
-	//}
+        struct Helper
+        {
+            static void GetErrorMessage(const ErrorCatcher & inErrorCatcher, std::stringstream & ss)
+            {
+                for (size_t idx = 0; idx != inErrorCatcher.errors().size(); ++idx)
+                {
+                    const Error & error = inErrorCatcher.errors()[idx];
+                    if (idx > 0)
+                    {
+                        ss << "-> ";
+                    }
+                    ss << error.message() << " (Code: " << error.code() << ")\n";
+                }
+                if (inErrorCatcher.child())
+                {
+                    ss << "Reason:\n";
+                    GetErrorMessage(*inErrorCatcher.child(), ss);
+                }
+            }
+        };
+        std::stringstream ss;
+        Helper::GetErrorMessage(*inErrorCatcher, ss);
+        mLogFunction(ss.str());
+    }
 
 	
 	void ReportError(int inErrorCode, const std::string & inErrorMessage)

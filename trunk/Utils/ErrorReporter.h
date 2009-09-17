@@ -4,6 +4,7 @@
 
 #include <stack>
 #include <vector>
+#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 
 
@@ -70,17 +71,10 @@ namespace Utils
 		 */
 		bool hasCaught() const;
 
-		///**
-		// * Returns the error message
-		// */
-		//const std::string & message() const
-		//{ return mError.message(); }
-
-		///**
-		// * Returns the error code. Zero means no error.
-		// */
-		//int code() const
-		//{ return mError.code(); }
+        /**
+         * Log the error message using the callback set on the ErrorReporter.
+         */
+        void log();
 
 		/**
 		 * Caught Errors will be disposed of on destruction of the ErrorCatcher object.
@@ -92,12 +86,16 @@ namespace Utils
 		 */
 		void propagate();
 
+        const std::vector<Error> & errors() const { return mErrors; }
+
+        const ErrorCatcher * child() const { return mChild.get(); }
+
 	private:
 		friend class ErrorReporter;
         
         void push(const Error & inError);
 
-        void attach(const ErrorCatcher * inErrorCatcher);
+        void setChild(const ErrorCatcher * inErrorCatcher);
 
         std::vector<Error> mErrors;
         boost::shared_ptr<ErrorCatcher> mChild;
@@ -128,6 +126,10 @@ namespace Utils
 		 */
 		static void Finalize();
 
+        typedef boost::function<void(const std::string &)> LogFunction;
+
+        void setLogger(const LogFunction & inLogFunction);
+
 		/**
 		 * You can use this method to report an error, however
 		 * the ReportError functions below are more convenient.
@@ -136,14 +138,6 @@ namespace Utils
 		 *       the caller you still have to write a return statement.
 		 */
 		void reportError(const Error & inError);
-
-		/**
-		 * Returns the last reported error. This means the error that is
-		 * currently held by the most deeply nested ErrorCatcher object.
-		 * If no ErrorCatcher objects are currently defined the top level
-		 * error object is returned.
-		 */
-		//const Error & lastError() const;
 
 	private:
 		friend class ErrorCatcher;
@@ -156,9 +150,10 @@ namespace Utils
 
 		void pop(ErrorCatcher * inError);
 
-		//void propagate(ErrorCatcher * inError);
+        void log(ErrorCatcher * inError);
 
 		std::stack<ErrorCatcher*> mStack;
+        LogFunction mLogFunction;
 		static ErrorReporter * sInstance;
 	};
 

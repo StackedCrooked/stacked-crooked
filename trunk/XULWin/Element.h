@@ -88,10 +88,11 @@ namespace XULWin
         Element(const Type & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent);
 
         template<class T>
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
         {
             ElementPtr result(new T(inType, inParent));
             inParent->addChild(result);
+            result->Attributes = inAttr;
             return result;
         }   
 
@@ -112,7 +113,7 @@ namespace XULWin
     class Window : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
         {
             assert(!inParent);
             ElementPtr result(new Window(inType));
@@ -130,8 +131,8 @@ namespace XULWin
     class Button : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<Button>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Button>(inType, inParent, inAttr); }
     
     private:
         friend class Element;
@@ -142,8 +143,8 @@ namespace XULWin
     class Label : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<Label>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Label>(inType, inParent, inAttr); }
     
     private:
         friend class Element;
@@ -154,8 +155,8 @@ namespace XULWin
     class CheckBox : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<CheckBox>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<CheckBox>(inType, inParent, inAttr); }
 
     private:
         friend class Element;
@@ -166,8 +167,8 @@ namespace XULWin
     class Box : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<Box>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Box>(inType, inParent, inAttr); }
 
     private:
         friend class Element;
@@ -178,8 +179,8 @@ namespace XULWin
     class HBox : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<HBox>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<HBox>(inType, inParent, inAttr); }
 
     private:
         friend class Element;
@@ -190,8 +191,8 @@ namespace XULWin
     class VBox : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<VBox>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<VBox>(inType, inParent, inAttr); }
 
     private:
         friend class Element;
@@ -202,8 +203,8 @@ namespace XULWin
     class MenuList : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<MenuList>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<MenuList>(inType, inParent, inAttr); }
 
         virtual void onEnd();
 
@@ -216,8 +217,8 @@ namespace XULWin
     class MenuPopup : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<MenuPopup>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<MenuPopup>(inType, inParent, inAttr); }
 
     private:
         friend class Element;
@@ -228,8 +229,8 @@ namespace XULWin
     class MenuItem : public Element
     {
     public:
-        static ElementPtr Create(const Type & inType, ElementPtr inParent)
-        { return Element::Create<MenuItem>(inType, inParent); }
+        static ElementPtr Create(const Type & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<MenuItem>(inType, inParent, inAttr); }
 
     private:
         friend class Element;

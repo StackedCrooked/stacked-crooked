@@ -42,24 +42,37 @@ namespace XULWin
         if (mIgnores.empty())
         {
             ErrorCatcher errorCatcher;
+
+            //
+            // Get parent
+            //
             ElementPtr parent;
             if (!mStack.empty())
             {
                 parent = mStack.top();
             }
-            ElementPtr element = ElementFactory::Instance().createElement(eltype(localName), parent);
+
+            //
+            // Get attributes
+            //
+            XULWin::AttributesMapping attr;
+            for (int idx = 0; idx != attributes.getLength(); ++idx)
+            {
+                const Poco::XML::XMLString & name = attributes.getLocalName(idx);
+                const Poco::XML::XMLString & value = attributes.getValue(idx);
+                attr[name] = value;
+            }
+
+            //
+            // Create the element
+            //
+            ElementPtr element = ElementFactory::Instance().createElement(eltype(localName), parent, attr);
             if (element)
             {
                 if (mStack.empty())
                 {
                     assert(!mRootElement);
                     mRootElement = element;
-                }
-                for (int idx = 0; idx != attributes.getLength(); ++idx)
-                {
-                    const Poco::XML::XMLString & name = attributes.getLocalName(idx);
-                    const Poco::XML::XMLString & value = attributes.getValue(idx);
-                    element->Attributes[name] = value;
                 }
                 element->onStart();
                 mStack.push(element);

@@ -150,8 +150,8 @@ namespace XULWin
     }
 
 
-    Window::Window(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    Window::Window(ElementPtr inParent) :
+        Element(Window::Type(),
                 inParent,
                 NativeComponentPtr(new NativeWindow(gNullNativeComponent)))
     {
@@ -164,64 +164,64 @@ namespace XULWin
     }
 
 
-    Button::Button(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    Button::Button(ElementPtr inParent) :
+        Element(Button::Type(),
                 inParent,
                 NativeComponentPtr(new NativeButton(inParent->nativeComponent())))
     {
     }
 
 
-    Label::Label(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    Label::Label(ElementPtr inParent) :
+        Element(Label::Type(),
                 inParent,
                 NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
     {
     }
 
 
-    TextBox::TextBox(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    TextBox::TextBox(ElementPtr inParent) :
+        Element(TextBox::Type(),
                 inParent,
                 NativeComponentPtr(new NativeTextBox(inParent->nativeComponent())))
     {
     }
 
 
-    CheckBox::CheckBox(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    CheckBox::CheckBox(ElementPtr inParent) :
+        Element(CheckBox::Type(),
                 inParent,
                 NativeComponentPtr(new NativeCheckBox(inParent->nativeComponent())))
     {
     }
 
 
-    Box::Box(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    Box::Box(ElementPtr inParent) :
+        Element(Box::Type(),
                 inParent,
                 NativeComponentPtr(new NativeBox(inParent->nativeComponent())))
     {
     }
 
 
-    HBox::HBox(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    HBox::HBox(ElementPtr inParent) :
+        Element(HBox::Type(),
                 inParent,
                 NativeComponentPtr(new NativeHBox(inParent->nativeComponent())))
     {
     }
 
 
-    VBox::VBox(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    VBox::VBox(ElementPtr inParent) :
+        Element(VBox::Type(),
                 inParent,
                 NativeComponentPtr(new NativeVBox(inParent->nativeComponent())))
     {
     }
 
 
-    MenuList::MenuList(const std::string & inType, ElementPtr inParent) :
-        Element(inType,
+    MenuList::MenuList(ElementPtr inParent) :
+        Element(MenuList::Type(),
                 inParent,
                 NativeComponentPtr(new NativeMenuList(inParent->nativeComponent())))
     {
@@ -242,8 +242,8 @@ namespace XULWin
     }
 
     
-    MenuPopup::MenuPopup(const std::string & inType, ElementPtr inParent) :
-        Element(inType, inParent, gNullNativeComponent)
+    MenuPopup::MenuPopup(ElementPtr inParent) :
+        Element(MenuPopup::Type(), inParent, gNullNativeComponent)
     {
     }
 
@@ -274,8 +274,8 @@ namespace XULWin
     }
 
     
-    MenuItem::MenuItem(const std::string & inType, ElementPtr inParent) :
-        Element(inType, inParent, gNullNativeComponent)
+    MenuItem::MenuItem(ElementPtr inParent) :
+        Element(MenuItem::Type(), inParent, gNullNativeComponent)
     {
     }
         

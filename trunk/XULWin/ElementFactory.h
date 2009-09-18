@@ -9,8 +9,8 @@
 
 namespace XULWin
 {
-    
-    
+            
+   
     class ElementFactory
     {
     public:
@@ -23,12 +23,12 @@ namespace XULWin
         void registerElement(const std::string & inType)
         {
             mFactoryMethods.insert(
-                std::make_pair(inType, boost::bind(ElementType::Create, _1, _2, _3)));
+                std::make_pair(inType, boost::bind(ElementType::Create, _1, _2)));
         }
     
     private:
         ElementFactory();
-        typedef boost::function<ElementPtr(std::string, ElementPtr, const AttributesMapping &)> FactoryMethod;
+        typedef boost::function<ElementPtr(ElementPtr, const AttributesMapping &)> FactoryMethod;
         typedef std::map<std::string, FactoryMethod> FactoryMethods;
         FactoryMethods mFactoryMethods;
     };

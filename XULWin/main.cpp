@@ -60,7 +60,7 @@ public:
         {
             AttributesMapping attr;
             attr["label"] = input->getAttribute("value");
-            ElementFactory::Instance().createElement("menuitem", popup, attr);
+            MenuItem::Create(popup, attr);
         }
     }
 

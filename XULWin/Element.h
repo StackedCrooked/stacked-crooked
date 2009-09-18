@@ -67,11 +67,10 @@ namespace XULWin
         Element(const std::string & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent);
 
         template<class T>
-        static ElementPtr Create(const std::string & inType,
-                                 ElementPtr inParent,
+        static ElementPtr Create(ElementPtr inParent,
                                  const AttributesMapping & inAttr)
         {
-            ElementPtr result(new T(inType, inParent));
+            ElementPtr result(new T(inParent));
             if (inParent)
             {
                 inParent->addChild(result);
@@ -100,98 +99,114 @@ namespace XULWin
     class Window : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<Window>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Window>(inParent, inAttr); }
+
+        static const char * Type() { return "window"; }
 
         void showModal();
 
     private:
         friend class Element;
-        Window(const std::string & inType, ElementPtr inParent);
+        Window(ElementPtr inParent);
     };
 
 
     class Button : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<Button>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Button>(inParent, inAttr); }
+
+        static const char * Type() { return "button"; }
     
     private:
         friend class Element;
-        Button(const std::string & inType, ElementPtr inParent);
+        Button(ElementPtr inParent);
     };
 
 
     class Label : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<Label>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Label>(inParent, inAttr); }
+
+        static const char * Type() { return "label"; }
     
     private:
         friend class Element;
-        Label(const std::string & inType, ElementPtr inParent);
+        Label(ElementPtr inParent);
     };
 
 
     class TextBox : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<TextBox>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TextBox>(inParent, inAttr); }
+
+        static const char * Type() { return "textbox"; }
     
     private:
         friend class Element;
-        TextBox(const std::string & inType, ElementPtr inParent);
+        TextBox(ElementPtr inParent);
     };
 
 
     class CheckBox : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<CheckBox>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<CheckBox>(inParent, inAttr); }
+
+        static const char * Type() { return "checkbox"; }
 
     private:
         friend class Element;
-        CheckBox(const std::string & inType, ElementPtr inParent);
+        CheckBox(ElementPtr inParent);
     };
 
 
     class Box : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<Box>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Box>(inParent, inAttr); }
+
+        static const char * Type() { return "box"; }
 
     private:
         friend class Element;
-        Box(const std::string & inType, ElementPtr inParent);
+        Box(ElementPtr inParent);
     };
 
 
     class HBox : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<HBox>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<HBox>(inParent, inAttr); }
+
+        static const char * Type() { return "hbox"; }
 
     private:
         friend class Element;
-        HBox(const std::string & inType, ElementPtr inParent);
+        HBox(ElementPtr inParent);
     };
 
 
     class VBox : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<VBox>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<VBox>(inParent, inAttr); }
+
+        static const char * Type() { return "vbox"; }
 
     private:
         friend class Element;
-        VBox(const std::string & inType, ElementPtr inParent);
+        VBox(ElementPtr inParent);
     };
 
 
@@ -199,8 +214,10 @@ namespace XULWin
     class MenuList : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<MenuList>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<MenuList>(inParent, inAttr); }
+
+        static const char * Type() { return "menulist"; }
 
         void addMenuItem(const MenuItem * inItem);
 
@@ -208,15 +225,17 @@ namespace XULWin
 
     private:
         friend class Element;
-        MenuList(const std::string & inType, ElementPtr inParent);
+        MenuList(ElementPtr inParent);
     };
 
 
     class MenuPopup : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<MenuPopup>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<MenuPopup>(inParent, inAttr); }
+
+        static const char * Type() { return "menupopup"; }
 
         void addMenuItem(const MenuItem * inItem);
 
@@ -224,15 +243,17 @@ namespace XULWin
 
     private:
         friend class Element;
-        MenuPopup(const std::string & inType, ElementPtr inParent);
+        MenuPopup(ElementPtr inParent);
     };
 
 
     class MenuItem : public Element
     {
     public:
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
-        { return Element::Create<MenuItem>(inType, inParent, inAttr); }
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<MenuItem>(inParent, inAttr); }
+
+        static const char * Type() { return "menuitem"; }
 
         virtual ~MenuItem();
 
@@ -240,7 +261,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        MenuItem(const std::string & inType, ElementPtr inParent);
+        MenuItem(ElementPtr inParent);
     };
 
 

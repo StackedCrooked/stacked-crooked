@@ -14,17 +14,17 @@ using namespace Utils;
 void registerTypes(HMODULE inModule)
 {
     NativeWindow::Register(inModule);
-    ElementFactory::Instance().registerElement<Window>("window");
-    ElementFactory::Instance().registerElement<Button>("button");
-    ElementFactory::Instance().registerElement<CheckBox>("checkbox");
-    ElementFactory::Instance().registerElement<Label>("label");
-    ElementFactory::Instance().registerElement<HBox>("hbox");
-    ElementFactory::Instance().registerElement<VBox>("vbox");
-    ElementFactory::Instance().registerElement<Box>("box");
-    ElementFactory::Instance().registerElement<MenuList>("menulist");
-    ElementFactory::Instance().registerElement<MenuPopup>("menupopup");
-    ElementFactory::Instance().registerElement<MenuItem>("menuitem");
-    ElementFactory::Instance().registerElement<TextBox>("textbox");
+    ElementFactory::Instance().registerElement<Window>();
+    ElementFactory::Instance().registerElement<Button>();
+    ElementFactory::Instance().registerElement<CheckBox>();
+    ElementFactory::Instance().registerElement<Label>();
+    ElementFactory::Instance().registerElement<HBox>();
+    ElementFactory::Instance().registerElement<VBox>();
+    ElementFactory::Instance().registerElement<Box>();
+    ElementFactory::Instance().registerElement<MenuList>();
+    ElementFactory::Instance().registerElement<MenuPopup>();
+    ElementFactory::Instance().registerElement<MenuItem>();
+    ElementFactory::Instance().registerElement<TextBox>();
 }
 
 

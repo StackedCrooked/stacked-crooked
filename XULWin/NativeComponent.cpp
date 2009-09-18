@@ -125,7 +125,7 @@ namespace XULWin
         wndClass.cbWndExtra = 0;
         wndClass.hInstance = inModuleHandle;
         wndClass.hIcon = 0;
-        wndClass.hCursor = LoadCursor(NULL, IdC_ARROW);
+        wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
         wndClass.hbrBackground = 0; // covered by content pane so no color needed (reduces flicker)
         wndClass.lpszMenuName = NULL;
         wndClass.lpszClassName = TEXT("XULWin::Window");

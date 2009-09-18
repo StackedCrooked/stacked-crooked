@@ -136,6 +136,10 @@ namespace XULWin
         NativeLabel(NativeComponentPtr inParent);
 
         virtual void applyAttribute(const std::string & inName, const std::string & inValue);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 

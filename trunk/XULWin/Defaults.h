@@ -21,7 +21,7 @@ namespace XULWin
         
         namespace Attributes
         {
-            int flex() { return 1; }            
+            int flex() { return 0; }            
         } // namespace Attributes
 
     } // namespace Defaults

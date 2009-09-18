@@ -64,5 +64,23 @@ namespace Utils
         ::MoveWindow(inHandle, rw.left, y, rw.right - rw.left, inHeight, FALSE);
     }
 
+    
+    HFONT GetFont(HWND inHandle)
+    {
+	    return (HFONT)SendMessage(inHandle, WM_GETFONT, 0, 0);
+    }
+    
+    
+    SIZE GetTextSize(HWND inHandle, const TCHAR * inText, size_t inTextLength)
+    {
+	    // get the size in pixels for the given text and font
+        SIZE result = {0, 0};    	
+	    HDC hDC = GetDC(inHandle);
+	    SelectObject(hDC, GetFont(inHandle));
+	    GetTextExtentPoint32(hDC, inText, (int)inTextLength, &result);
+	    ReleaseDC(inHandle, hDC);
+	    return result;
+    }
+
 
 } // namespace Utils

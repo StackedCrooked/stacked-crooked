@@ -91,12 +91,7 @@ namespace XULWin
     {
         if (mIgnores.empty())
         {
-            bool match = std::string(mStack.top()->type()) == localName;
-            assert (match);
-            if (match)
-            {
-                mStack.pop();
-            }
+            mStack.pop();
         }
         else
         {

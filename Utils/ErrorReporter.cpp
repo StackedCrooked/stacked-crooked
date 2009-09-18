@@ -65,6 +65,10 @@ namespace Utils
 		    {
                 ErrorReporter::Instance().mStack.top()->setChild(this);
             }
+            else
+            {
+                log();
+            }
         }
 	}
 

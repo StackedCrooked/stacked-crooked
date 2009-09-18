@@ -74,19 +74,11 @@ namespace Utils
 		 */
 		bool hasCaught() const;
 
-        /**
-         * Log the error message using the callback set on the ErrorReporter.
-         */
-        void log();
-
 		/**
-		 * Caught Errors will be disposed of on destruction of the ErrorCatcher object.
-		 * If this is not desirable then you can use 'propagate' to forward the Error to
-		 * the nearest parent ErrorCatcher. If no parent ErrorCatcher is defined, then
-		 * the error is set as the ErrorReporter's top level error.
-		 * NOTE: No actual C++ exception is thrown here. So you still need to write a
-		 *       return statement if you want to return to caller.
-		 */
+		 * On destruction the ErrorCatcher will log its error information.
+         * However, you can also propagate the error, so that ErrorCatcher
+         * higher in the hierarchy will deal with it.
+         */
 		void propagate();
 
         const std::vector<Error> & errors() const { return mErrors; }
@@ -96,6 +88,11 @@ namespace Utils
 	private:
 		friend class ErrorReporter;
         ErrorCatcher & operator =(const ErrorCatcher & inErrorCatcher);
+
+        /**
+         * Log the error message using the callback set on the ErrorReporter.
+         */
+        void log();
         
         void push(const Error & inError);
 

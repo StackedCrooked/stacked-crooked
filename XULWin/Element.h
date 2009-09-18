@@ -36,6 +36,7 @@ namespace XULWin
     class Element
     {
     public:
+        ~Element();
 
         // Override this method to add initialization code
         virtual void init() {}

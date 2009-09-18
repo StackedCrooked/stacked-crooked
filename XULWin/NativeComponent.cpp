@@ -270,7 +270,7 @@ namespace XULWin
         
         mHandle = ::CreateWindowEx
         (
-            0, 
+            inExStyle, 
             inClassName,
             TEXT(""),
             inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,

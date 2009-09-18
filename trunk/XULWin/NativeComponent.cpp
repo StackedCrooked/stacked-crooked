@@ -39,6 +39,15 @@ namespace XULWin
             sComponentsByHandle.erase(it);
         }
 
+
+        ComponentsById::iterator itById = sComponentsById.find(mCommandId.intValue());
+        bool foundById = itById != sComponentsById.end();
+        assert(found);
+        if (found)
+        {
+            sComponentsById.erase(itById);
+        }
+
         ::DestroyWindow(mHandle);
     }
     

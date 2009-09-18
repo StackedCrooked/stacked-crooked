@@ -71,9 +71,6 @@ namespace XULWin
 
         typedef std::map<HWND, NativeComponent*> Components;
         static Components sComponentsByHandle;
-
-        typedef std::map<int, NativeComponent*> ComponentsById;
-        static ComponentsById sComponentsById;
     };
 
 
@@ -103,10 +100,20 @@ namespace XULWin
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
+        /**
+         * Override this method if you want your control to handle its own command events.
+         * (Normally the parent control handles them through the WM_COMMAND message.)
+         */
+        virtual void handleCommand(WPARAM wParam, LPARAM lParam) {}
+
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     private:
         WNDPROC mOrigProc;
+
+    protected:
+        typedef std::map<int, NativeControl*> ControlsById;
+        static ControlsById sControlsById;
     };
 
 
@@ -138,6 +145,8 @@ namespace XULWin
         NativeTextBox(NativeComponentPtr inParent);
 
         virtual void applyAttribute(const std::string & inName, const std::string & inValue);
+
+        virtual void handleCommand(WPARAM wParam, LPARAM lParam);
     };
 
 

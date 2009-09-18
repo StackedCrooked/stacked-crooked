@@ -3,7 +3,9 @@
 
 
 #include <boost/function.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/signal.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -28,22 +30,22 @@ namespace XULWin
     {
     };
 
-    typedef boost::function<void(Event*)> EventHandler;
+    typedef boost::signal<void(Event*)> EventHandler;
 
     /**
      * Represents a XUL element.
      */
-    class Element
+    class Element : private boost::noncopyable
     {
     public:
         ~Element();
+
+        EventHandler OnCommand;
 
         // Override this method to add initialization code
         virtual void init() {}
 
         const std::string & type() const;
-
-        void addEventListener(const std::string & inEvent, const EventHandler & inEventHandler);
 
         void handleEvent(const std::string & inEvent);
 
@@ -58,8 +60,6 @@ namespace XULWin
         void setAttributes(const AttributesMapping & inAttributes);
 
         const std::string & getAttribute(const std::string & inName) const;
-
-        void setAttribute(const std::string & inName, const std::string & inValue);
 
         boost::shared_ptr<NativeComponent> nativeComponent() const;
 
@@ -147,6 +147,8 @@ namespace XULWin
         { return Element::Create<TextBox>(inParent, inAttr); }
 
         static const char * Type() { return "textbox"; }
+
+        EventHandler OnChanged;
     
     private:
         friend class Element;

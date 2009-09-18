@@ -16,7 +16,8 @@ namespace XULWin
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
     
     NativeComponent::Components NativeComponent::sComponentsByHandle;
-    NativeComponent::ComponentsById NativeComponent::sComponentsById;
+    
+    NativeControl::ControlsById NativeControl::sControlsById;
 
     NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandId inCommandId) :
         mParent(inParent ? inParent.get() : 0),
@@ -37,15 +38,6 @@ namespace XULWin
         if (found)
         {
             sComponentsByHandle.erase(it);
-        }
-
-
-        ComponentsById::iterator itById = sComponentsById.find(mCommandId.intValue());
-        bool foundById = itById != sComponentsById.end();
-        assert(found);
-        if (found)
-        {
-            sComponentsById.erase(itById);
         }
 
         ::DestroyWindow(mHandle);
@@ -171,7 +163,6 @@ namespace XULWin
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
         sComponentsByHandle.insert(std::make_pair(mHandle, this));
-        sComponentsById.insert(std::make_pair(mCommandId.intValue(), this));
     }
 
 
@@ -224,11 +215,6 @@ namespace XULWin
     {
         switch(inMessage)
         {
-            case WM_COMMAND:
-            {
-                assert(false); // should prob not come here
-                break;
-            }
             case WM_SIZE:
             {
                 Children::const_iterator it = owningElement()->children().begin();
@@ -295,7 +281,7 @@ namespace XULWin
         mOrigProc = (WNDPROC)(LONG_PTR)::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)&NativeControl::MessageHandler);
 
         sComponentsByHandle.insert(std::make_pair(mHandle, this));
-        sComponentsById.insert(std::make_pair(mCommandId.intValue(), this));
+        sControlsById.insert(std::make_pair(mCommandId.intValue(), this));
     }
 
 
@@ -306,27 +292,29 @@ namespace XULWin
             ::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)mOrigProc);
             mOrigProc = 0;
         }
+
+        ControlsById::iterator itById = sControlsById.find(mCommandId.intValue());
+        bool foundById = itById != sControlsById.end();
+        assert(foundById);
+        if (foundById)
+        {
+            sControlsById.erase(itById);
+        }
     }
 
 
     LRESULT NativeControl::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        switch(inMessage)
+        switch (inMessage)
         {
             case WM_COMMAND:
-            {					
-                ComponentsById::iterator it = sComponentsById.find(LOWORD(wParam));
-                if (it != sComponentsById.end())
+            {
+                ControlsById::iterator it = sControlsById.find(LOWORD(wParam));
+                if (it != sControlsById.end())
                 {
-                    if (HIWORD(wParam) == EN_CHANGE)
-                    {
-                        TCHAR str[1024];
-                        ::GetWindowTextA(it->second->handle(), &str[0], 1024);
-                        it->second->owningElement()->setAttribute("value", str);
-                    }
-                    it->second->owningElement()->handleEvent("command");
+                    it->second->handleCommand(wParam, lParam);
+                    it->second->owningElement()->OnCommand(0);
                 }
-
                 break;
             }
         }
@@ -357,7 +345,16 @@ namespace XULWin
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
-                      WS_BORDER)
+                      0)
+    {
+    }
+
+
+    NativeTextBox::NativeTextBox(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("EDIT"),
+                      WS_EX_CLIENTEDGE, // exStyle
+                      ES_AUTOHSCROLL)
     {
     }
         
@@ -372,12 +369,12 @@ namespace XULWin
     }
 
 
-    NativeTextBox::NativeTextBox(NativeComponentPtr inParent) :
-        NativeControl(inParent,
-                      TEXT("EDIT"),
-                      WS_EX_CLIENTEDGE, // exStyle
-                      ES_AUTOHSCROLL)
+    void NativeTextBox::handleCommand(WPARAM wParam, LPARAM lParam)
     {
+        if (HIWORD(wParam) == EN_CHANGE)
+        {
+            static_cast<TextBox*>(owningElement())->OnChanged(0);
+        }
     }
         
         

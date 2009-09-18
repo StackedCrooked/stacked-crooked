@@ -31,6 +31,7 @@ void registerTypes(HMODULE inModule)
 class TestDropDown
 {
 public:
+    std::vector<boost::signals::connection> mConnections;
     void run()
     {
     	mParser.parse("Dropdown.xul");
@@ -39,13 +40,13 @@ public:
             ElementPtr addButton = mParser.rootElement()->getElementById("addbutton");
             if (addButton)
             {
-                addButton->addEventListener("command", boost::bind(&TestDropDown::addButtonPressed, this, _1));
+                mConnections.push_back(addButton->OnCommand.connect(boost::bind(&TestDropDown::addButtonPressed, this, _1)));
             }
 
             ElementPtr removeButton = mParser.rootElement()->getElementById("removebutton");
             if (removeButton)
             {
-                removeButton->addEventListener("command", boost::bind(&TestDropDown::removeButtonPressed, this, _1));
+                mConnections.push_back(removeButton->OnCommand.connect(boost::bind(&TestDropDown::removeButtonPressed, this, _1)));
             }
             static_cast<Window*>(mParser.rootElement().get())->showModal();
         }

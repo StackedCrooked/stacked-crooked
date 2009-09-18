@@ -38,12 +38,6 @@ namespace XULWin
     }
 
 
-    void Element::addEventListener(const std::string & inEvent, const EventHandler & inEventHandler)
-    {
-        mEventHandlers[inEvent].push_back(inEventHandler);
-    }
-
-
     void Element::handleEvent(const std::string & inEvent)
     {
         EventHandlers::iterator it = mEventHandlers.find(inEvent);
@@ -129,12 +123,6 @@ namespace XULWin
 
         static std::string fNotFound;
         return fNotFound;
-    }
-
-    
-    void Element::setAttribute(const std::string & inName, const std::string & inValue)
-    {
-        mAttributes[inName] = inValue;
     }
     
     

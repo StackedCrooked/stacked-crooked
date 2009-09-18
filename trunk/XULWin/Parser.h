@@ -31,9 +31,14 @@ namespace XULWin
     	
 	    virtual void endDocument();
     	
-	    virtual void startElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname, const Poco::XML::Attributes& attributes);
+	    virtual void startElement(const Poco::XML::XMLString& uri,
+                                  const Poco::XML::XMLString& localName,
+                                  const Poco::XML::XMLString& qname,
+                                  const Poco::XML::Attributes& attributes);
     	
-	    virtual void endElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname);
+	    virtual void endElement(const Poco::XML::XMLString& uri,
+                                const Poco::XML::XMLString& localName,
+                                const Poco::XML::XMLString& qname);
 
         virtual void characters(const Poco::XML::XMLChar ch[], int start, int length) {}
 	

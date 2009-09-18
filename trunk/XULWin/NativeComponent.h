@@ -10,18 +10,18 @@
 
 namespace XULWin
 {
-    class CommandID
+    class CommandId
     {
     public:
-        CommandID() : mID(sID++) {}
+        CommandId() : mId(sId++) {}
 
-        CommandID(int inID) : mID(inID) {}
+        CommandId(int inId) : mId(inId) {}
 
-        int intValue() const { return mID; }
+        int intValue() const { return mId; }
 
     private:
-        int mID;
-        static int sID;
+        int mId;
+        static int sId;
     };
 
 
@@ -35,7 +35,7 @@ namespace XULWin
     class NativeComponent
     {
     public:
-        NativeComponent(NativeComponentPtr inParent, CommandID inCommandID);
+        NativeComponent(NativeComponentPtr inParent, CommandId inCommandId);
 
         virtual ~NativeComponent() = 0;
 
@@ -63,16 +63,17 @@ namespace XULWin
 
         NativeComponent * mParent;
         Element * mElement;
+        HMODULE mModuleHandle;
         HWND mHandle;
-        CommandID mCommandID;
+        CommandId mCommandId;
         int mMinimumWidth;
         int mMinimumHeight;
-        typedef std::map<HWND, NativeComponent*> Components;
-        static Components sComponents;
-        HMODULE mModuleHandle;
 
-        typedef std::map<int, NativeComponent*> ComponentsByID;
-        static ComponentsByID sComponentsByID;
+        typedef std::map<HWND, NativeComponent*> Components;
+        static Components sComponentsByHandle;
+
+        typedef std::map<int, NativeComponent*> ComponentsById;
+        static ComponentsById sComponentsById;
     };
 
 

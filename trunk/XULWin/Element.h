@@ -26,11 +26,6 @@ namespace XULWin
 
     class Event
     {
-    //public:
-    //    Event(Element * inRootElement) : mRootElement(inRootElement) {}
-    //    Element * rootElement() { return mRootElement; }
-    //private:
-    //    Element * mRootElement;
     };
 
     typedef boost::function<void(Event*)> EventHandler;
@@ -71,7 +66,9 @@ namespace XULWin
         Element(const std::string & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent);
 
         template<class T>
-        static ElementPtr Create(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+        static ElementPtr Create(const std::string & inType,
+                                 ElementPtr inParent,
+                                 const AttributesMapping & inAttr)
         {
             ElementPtr result(new T(inType, inParent));
             if (inParent)

@@ -20,10 +20,10 @@ namespace XULWin
         ElementPtr createElement(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr);
 
         template<class ElementType>
-        void registerElement(const std::string & inType)
+        void registerElement()
         {
-            mFactoryMethods.insert(
-                std::make_pair(inType, boost::bind(ElementType::Create, _1, _2)));
+            mFactoryMethods.insert(std::make_pair(ElementType::Type(),
+                                   boost::bind(ElementType::Create, _1, _2)));
         }
     
     private:

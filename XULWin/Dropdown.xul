@@ -12,8 +12,8 @@
 	<vbox flex="1" id="main-box">
     <hbox>
       <label value="Items:"></label>
-      <menulist flex="2">
-        <menupopup>
+      <menulist flex="2" id="dropdown">
+        <menupopup id="popup">
           <menuitem label="Spanje" value="1"/>
           <menuitem label="Italie" value="2"/>
           <menuitem label="Praag" value="3"/>
@@ -23,7 +23,7 @@
     </hbox>
     <hbox>
       <hbox>
-        <textbox id="your-name" value="John"/>
+        <textbox value="John" id="input"/>
         <button label="Add" id="addbutton"/>
       </hbox>
     </hbox>

@@ -37,7 +37,7 @@ namespace XULWin
     public:
         NativeComponent(NativeComponentPtr inParent, CommandID inCommandID);
 
-        virtual ~NativeComponent();
+        virtual ~NativeComponent() = 0;
 
         int minimumWidth() const;
 
@@ -55,9 +55,7 @@ namespace XULWin
 
         virtual void rebuildChildLayouts();
 
-        static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
-
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
 
         virtual void applyAttribute(const std::string & inName, const std::string & inValue);
 
@@ -72,6 +70,9 @@ namespace XULWin
         typedef std::map<HWND, NativeComponent*> Components;
         static Components sComponents;
         HMODULE mModuleHandle;
+
+        typedef std::map<int, NativeComponent*> ComponentsByID;
+        static ComponentsByID sComponentsByID;
     };
 
 
@@ -84,9 +85,11 @@ namespace XULWin
 
         void showModal();
 
+        void applyAttribute(const std::string & inName, const std::string & inValue);
+
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-        void applyAttribute(const std::string & inName, const std::string & inValue);
+        static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
     };
 
 
@@ -94,6 +97,15 @@ namespace XULWin
     {
     public:
         NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
+
+        virtual ~NativeControl();
+
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+
+        static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
+
+    private:
+        WNDPROC mOrigProc;
     };
 
 

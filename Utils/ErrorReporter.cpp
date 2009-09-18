@@ -224,7 +224,12 @@ namespace Utils
         };
         std::stringstream ss;
         Helper::GetErrorMessage(*inErrorCatcher, ss);
-        mLogFunction(ss.str());
+
+        std::string message(ss.str());
+        if (!message.empty())
+        {
+            mLogFunction(ss.str());
+        }
     }
 
 	

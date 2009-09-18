@@ -22,6 +22,10 @@ namespace Utils
 
     void setWindowHeight(HWND inHandle, int inHeight);
 
+    HFONT GetFont(HWND inHandle);
+
+    SIZE GetTextSize(HWND inHandle, const TCHAR * inText, size_t inTextLength);
+
 } // namespace Utils
 
 

@@ -9,28 +9,10 @@
 	persist="screenX screenY width height sizemode">
 
 	<!-- Tree -->
-	<vbox flex="1" id="main-box">
-    <box orientation="horizontal">
-      <label value="Uploaden naar:" ></label>
-      <menulist>
-        <menupopup>
-          <menuitem label="Spanje" value="1"/>
-          <menuitem label="Italie" value="2"/>
-          <menuitem label="Praag" value="3"/>
-          <menuitem label="Polen" value="4"/>
-        </menupopup>
-      </menulist>
-    </box>
-    <hbox>
-      <label value="Toevoegen aan deze set:"/>
-      <button label="Delete me"/>
-    </hbox>
-    <hbox>
-      <label value="Tags:" ></label>
-      <checkbox label="Delete me"/>
-    </hbox>
-    <hbox>
-      <label value="Show" ></label>
-    </hbox>
-	</vbox>
+  <hbox>
+    <label flex="0" value="test1"></label>
+    <label flex="1" value="test2"></label>
+    <label flex="0" value="test3"></label>
+    <label flex="0" value="test4"></label>
+  </hbox>
 </window>

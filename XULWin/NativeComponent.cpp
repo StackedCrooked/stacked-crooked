@@ -386,6 +386,20 @@ namespace XULWin
             ::SetWindowTextA(handle(), inValue.c_str());
         }
     }
+
+
+    int NativeLabel::minimumWidth() const
+    {
+        std::string text = owningElement()->getAttribute("value");
+        SIZE size = Utils::GetTextSize(mHandle, text.c_str(), text.size());
+        return size.cx;
+    }
+
+    
+    int NativeLabel::minimumHeight() const
+    {
+        return Defaults::controlHeight();
+    }
     
     
     void NativeBox::applyAttribute(const std::string & inName, const std::string & inValue)

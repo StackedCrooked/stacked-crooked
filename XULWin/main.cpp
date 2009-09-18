@@ -75,11 +75,18 @@ private:
 };
 
 
-void runSample()
+void runTestSample()
 {
 	Parser parser;
     parser.parse("test.xul");
     static_cast<Window*>(parser.rootElement().get())->showModal();
+}
+
+
+void runDropDownSample()
+{
+    TestDropDown t;
+    t.run();
 }
 
 
@@ -94,10 +101,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    {
-        TestDropDown t;
-        t.run();
-    }
+    //runTestSample();
+    runDropDownSample();
     ErrorReporter::Finalize();
     return 0;
 }

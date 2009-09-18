@@ -39,9 +39,9 @@ namespace XULWin
 
         virtual ~NativeComponent() = 0;
 
-        int minimumWidth() const;
+        virtual int minimumWidth() const;
 
-        int minimumHeight() const;
+        virtual int minimumHeight() const;
 
         void setOwningElement(Element * inElement);
 
@@ -181,6 +181,10 @@ namespace XULWin
             NativeBox(inParent, HORIZONTAL)
         {
         }
+            
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 
@@ -191,6 +195,10 @@ namespace XULWin
             NativeBox(inParent, VERTICAL)
         {
         }
+            
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 

@@ -14,6 +14,7 @@ namespace XULWin
         }
     }
 
+
     void LinearLayoutManager::GetPortions(int inLength, const std::vector<int> & inProportions, std::vector<int> & outPortions)
     {
         assert(outPortions.empty());

@@ -10,9 +10,9 @@
 
 	<!-- Tree -->
 	<vbox flex="1" id="main-box">
-    <hbox>
-      <label value="Items:"></label>
-      <menulist flex="2" id="dropdown">
+    <hbox flex="1">
+      <label flex="0" value="Items:"></label>
+      <menulist flex="1" id="dropdown">
         <menupopup id="popup">
           <menuitem label="Spanje" value="1"/>
           <menuitem label="Italie" value="2"/>
@@ -21,13 +21,13 @@
         </menupopup>
       </menulist>
     </hbox>
-    <hbox>
+    <hbox flex="1">
       <hbox>
         <textbox value="John" id="input"/>
         <button label="Add" id="addbutton"/>
       </hbox>
     </hbox>
-    <hbox>
+    <hbox flex="1">
       <hbox>
         <label value="filler"></label>
         <button label="Remove" id="removebutton"/>

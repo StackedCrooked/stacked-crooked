@@ -294,7 +294,11 @@ namespace XULWin
 
     NativeControl::~NativeControl()
     {
-        ::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)mOrigProc);
+        if (mOrigProc)
+        {
+            ::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)mOrigProc);
+            mOrigProc = 0;
+        }
     }
 
 

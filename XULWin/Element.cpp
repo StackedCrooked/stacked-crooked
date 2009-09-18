@@ -50,24 +50,24 @@ namespace XULWin
     }
 
     
-    ElementPtr Element::getElementById(const std::string & inID)
+    ElementPtr Element::getElementById(const std::string & inId)
     {
         struct Helper
         {
-            static ElementPtr findChild(const Children & inChildren, const std::string & inID)
+            static ElementPtr findChildById(const Children & inChildren, const std::string & inId)
             {
                 ElementPtr result;
                 for (size_t idx = 0; idx != inChildren.size(); ++idx)
                 {
                     ElementPtr child = inChildren[idx];
-                    if (child->getAttribute("id") == inID)
+                    if (child->getAttribute("id") == inId)
                     {
                         result = child;
                         break;
                     }
                     else
                     {
-                        result = findChild(child->children(), inID);
+                        result = findChildById(child->children(), inId);
                         if (result)
                         {
                             break;
@@ -77,7 +77,7 @@ namespace XULWin
                 return result;
             }
         };
-        return Helper::findChild(children(), inID);
+        return Helper::findChildById(children(), inId);
     }
 
 

@@ -1,3 +1,4 @@
+- Replace throw with ReportError
 - Fix resize behavor for flex=0 (static parts in the UI should be possible)
 - Make sample program that illustrates DHTML-like behavior
 - Add Unicode

@@ -13,16 +13,16 @@ using namespace Utils;
 
 namespace XULWin
 {
-    int CommandID::sID = 101; // start command IDs at 101 to avoid conflicts with Windows predefined values
+    int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
     
-    NativeComponent::Components NativeComponent::sComponents;
-    NativeComponent::ComponentsByID NativeComponent::sComponentsByID;
+    NativeComponent::Components NativeComponent::sComponentsByHandle;
+    NativeComponent::ComponentsById NativeComponent::sComponentsById;
 
-    NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID) :
+    NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandId inCommandId) :
         mParent(inParent ? inParent.get() : 0),
         mHandle(0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
-        mCommandID(inCommandID),
+        mCommandId(inCommandId),
         mMinimumWidth(0),
         mMinimumHeight(0)
     {
@@ -31,12 +31,12 @@ namespace XULWin
 
     NativeComponent::~NativeComponent()
     {
-        Components::iterator it = sComponents.find(mHandle);
-        bool found = it != sComponents.end();
+        Components::iterator it = sComponentsByHandle.find(mHandle);
+        bool found = it != sComponentsByHandle.end();
         assert(found);
         if (found)
         {
-            sComponents.erase(it);
+            sComponentsByHandle.erase(it);
         }
 
         ::DestroyWindow(mHandle);
@@ -125,7 +125,7 @@ namespace XULWin
         wndClass.cbWndExtra = 0;
         wndClass.hInstance = inModuleHandle;
         wndClass.hIcon = 0;
-        wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wndClass.hCursor = LoadCursor(NULL, IdC_ARROW);
         wndClass.hbrBackground = 0; // covered by content pane so no color needed (reduces flicker)
         wndClass.lpszMenuName = NULL;
         wndClass.lpszClassName = TEXT("XULWin::Window");
@@ -138,7 +138,7 @@ namespace XULWin
 
 
     NativeWindow::NativeWindow(NativeComponentPtr inParent) :
-        NativeComponent(inParent, CommandID())
+        NativeComponent(inParent, CommandId())
     {
         int w = Defaults::windowWidth();
         int h = Defaults::windowHeight();
@@ -160,8 +160,8 @@ namespace XULWin
 
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
-        sComponents.insert(std::make_pair(mHandle, this));
-        sComponentsByID.insert(std::make_pair(mCommandID.intValue(), this));
+        sComponentsByHandle.insert(std::make_pair(mHandle, this));
+        sComponentsById.insert(std::make_pair(mCommandId.intValue(), this));
     }
 
 
@@ -248,8 +248,8 @@ namespace XULWin
     
     LRESULT CALLBACK NativeWindow::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        Components::iterator it = sComponents.find(hWnd);
-        if (it != sComponents.end())
+        Components::iterator it = sComponentsByHandle.find(hWnd);
+        if (it != sComponentsByHandle.end())
         {
             return it->second->handleMessage(inMessage, wParam, lParam);
         }
@@ -258,7 +258,7 @@ namespace XULWin
 
 
     NativeControl::NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
-        NativeComponent(inParent, CommandID())
+        NativeComponent(inParent, CommandId())
     {
         if (!mParent)
         {
@@ -276,7 +276,7 @@ namespace XULWin
             inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
             0, 0, rc.right - rc.left, rc.bottom - rc.top,
             mParent ? mParent->handle() : 0,
-            (HMENU)mCommandID.intValue(),
+            (HMENU)mCommandId.intValue(),
             mModuleHandle,
             0
         );
@@ -287,8 +287,8 @@ namespace XULWin
         // subclass
         mOrigProc = (WNDPROC)(LONG_PTR)::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)&NativeControl::MessageHandler);
 
-        sComponents.insert(std::make_pair(mHandle, this));
-        sComponentsByID.insert(std::make_pair(mCommandID.intValue(), this));
+        sComponentsByHandle.insert(std::make_pair(mHandle, this));
+        sComponentsById.insert(std::make_pair(mCommandId.intValue(), this));
     }
 
 
@@ -308,8 +308,8 @@ namespace XULWin
         {
             case WM_COMMAND:
             {					
-                ComponentsByID::iterator it = sComponentsByID.find(LOWORD(wParam));
-                if (it != sComponentsByID.end())
+                ComponentsById::iterator it = sComponentsById.find(LOWORD(wParam));
+                if (it != sComponentsById.end())
                 {
                     if (HIWORD(wParam) == EN_CHANGE)
                     {
@@ -337,8 +337,8 @@ namespace XULWin
     
     LRESULT CALLBACK NativeControl::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        Components::iterator it = sComponents.find(hWnd);
-        if (it != sComponents.end())
+        Components::iterator it = sComponentsByHandle.find(hWnd);
+        if (it != sComponentsByHandle.end())
         {
             return it->second->handleMessage(inMessage, wParam, lParam);
         }

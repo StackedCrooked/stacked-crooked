@@ -51,7 +51,7 @@ namespace XULWin
 
         void handleEvent(const std::string & inEvent);
 
-        ElementPtr getElementById(const std::string & inID);
+        ElementPtr getElementById(const std::string & inId);
 
         const Children & children() const { return mChildren; }
 

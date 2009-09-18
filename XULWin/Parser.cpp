@@ -25,11 +25,13 @@ namespace XULWin
         mLocator = inLocator;
     }
 
+
     void Parser::startDocument()
     {
         assert(mStack.empty());
         assert(mIgnores.empty());
     }
+
 
     void Parser::endDocument()
     {
@@ -37,7 +39,11 @@ namespace XULWin
         assert(mIgnores.empty());
     }
 
-    void Parser::startElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname, const Poco::XML::Attributes& attributes)
+
+    void Parser::startElement(const Poco::XML::XMLString& uri,
+                              const Poco::XML::XMLString& localName,
+                              const Poco::XML::XMLString& qname,
+                              const Poco::XML::Attributes& attributes)
     {
         if (mIgnores.empty())
         {
@@ -87,7 +93,10 @@ namespace XULWin
         }
     }
 
-    void Parser::endElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname)
+
+    void Parser::endElement(const Poco::XML::XMLString& uri,
+                            const Poco::XML::XMLString& localName,
+                            const Poco::XML::XMLString& qname)
     {
         if (mIgnores.empty())
         {

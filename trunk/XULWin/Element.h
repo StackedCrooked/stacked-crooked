@@ -26,8 +26,11 @@ namespace XULWin
 
     class Event
     {
-    public:
-        
+    //public:
+    //    Event(Element * inRootElement) : mRootElement(inRootElement) {}
+    //    Element * rootElement() { return mRootElement; }
+    //private:
+    //    Element * mRootElement;
     };
 
     typedef boost::function<void(Event*)> EventHandler;
@@ -45,6 +48,8 @@ namespace XULWin
         const std::string & type() const;
 
         void addEventListener(const std::string & inEvent, const EventHandler & inEventHandler);
+
+        void handleEvent(const std::string & inEvent);
 
         ElementPtr getElementById(const std::string & inID);
 
@@ -80,7 +85,8 @@ namespace XULWin
 
         Element * mParent;
         Children mChildren;
-        std::map<std::string, std::vector<EventHandler> > mEventHandlers;
+        typedef std::map<std::string, std::vector<EventHandler> > EventHandlers;
+        EventHandlers mEventHandlers;
 
     private:
 

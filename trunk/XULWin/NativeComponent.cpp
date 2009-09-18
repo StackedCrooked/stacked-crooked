@@ -16,9 +16,11 @@ namespace XULWin
     int CommandID::sID = 101; // start command IDs at 101 to avoid conflicts with Windows predefined values
     
     NativeComponent::Components NativeComponent::sComponents;
+    NativeComponent::ComponentsByID NativeComponent::sComponentsByID;
 
     NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandID inCommandID) :
         mParent(inParent ? inParent.get() : 0),
+        mHandle(0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandID(inCommandID),
         mMinimumWidth(0),
@@ -105,29 +107,20 @@ namespace XULWin
         }
     }
 
-    
-    LRESULT CALLBACK NativeComponent::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
-    {
-        Components::iterator it = sComponents.find(hWnd);
-        if (it != sComponents.end())
-        {
-            return it->second->handleMessage(inMessage, wParam, lParam);
-        }
-        return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
-    }
-
 
     LRESULT NativeComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
+        assert(false); // should not come here
+        return FALSE;
     }
+
 
     void NativeWindow::Register(HMODULE inModuleHandle)
     {
         WNDCLASSEX wndClass;
         wndClass.cbSize = sizeof(wndClass);
         wndClass.style = 0;
-        wndClass.lpfnWndProc = &NativeComponent::MessageHandler;
+        wndClass.lpfnWndProc = &NativeWindow::MessageHandler;
         wndClass.cbClsExtra = 0;
         wndClass.cbWndExtra = 0;
         wndClass.hInstance = inModuleHandle;
@@ -167,8 +160,8 @@ namespace XULWin
 
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
-
         sComponents.insert(std::make_pair(mHandle, this));
+        sComponentsByID.insert(std::make_pair(mCommandID.intValue(), this));
     }
 
 
@@ -221,6 +214,11 @@ namespace XULWin
     {
         switch(inMessage)
         {
+            case WM_COMMAND:
+            {
+                assert(false); // should prob not come here
+                break;
+            }
             case WM_SIZE:
             {
                 Children::const_iterator it = owningElement()->children().begin();
@@ -245,6 +243,17 @@ namespace XULWin
             }
         }
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
+    }
+
+    
+    LRESULT CALLBACK NativeWindow::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        Components::iterator it = sComponents.find(hWnd);
+        if (it != sComponents.end())
+        {
+            return it->second->handleMessage(inMessage, wParam, lParam);
+        }
+        return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
     }
 
 
@@ -275,7 +284,61 @@ namespace XULWin
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
 
+        // subclass
+        mOrigProc = (WNDPROC)(LONG_PTR)::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)&NativeControl::MessageHandler);
+
         sComponents.insert(std::make_pair(mHandle, this));
+        sComponentsByID.insert(std::make_pair(mCommandID.intValue(), this));
+    }
+
+
+    NativeControl::~NativeControl()
+    {
+        ::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)mOrigProc);
+    }
+
+
+    LRESULT NativeControl::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        switch(inMessage)
+        {
+            case WM_COMMAND:
+            {					
+                ComponentsByID::iterator it = sComponentsByID.find(LOWORD(wParam));
+                if (it != sComponentsByID.end())
+                {
+                    if (HIWORD(wParam) == EN_CHANGE)
+                    {
+                        TCHAR str[1024];
+                        ::GetWindowTextA(it->second->handle(), &str[0], 1024);
+                        it->second->owningElement()->setAttribute("value", str);
+                    }
+                    it->second->owningElement()->handleEvent("command");
+                }
+
+                break;
+            }
+        }
+
+        if (mOrigProc)
+		{
+			return ::CallWindowProc(mOrigProc, mHandle, inMessage, wParam, lParam);
+		}
+		else
+		{
+			return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
+		}
+    }
+
+    
+    LRESULT CALLBACK NativeControl::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        Components::iterator it = sComponents.find(hWnd);
+        if (it != sComponents.end())
+        {
+            return it->second->handleMessage(inMessage, wParam, lParam);
+        }
+        return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
     }
 
 

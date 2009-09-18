@@ -28,42 +28,56 @@ void registerTypes(HMODULE inModule)
 }
 
 
-void addButtonPressed(Event * inEvent)
+class TestDropDown
 {
-}
-
-
-void removeButtonPressed(Event * inEvent)
-{
-}
-
-
-void runDropdownSample()
-{
-    ErrorCatcher errorCatcher;
-	Parser parser;
-	parser.setContentHandler(&parser);
-	
-	try
-	{
-		parser.parse("Dropdown.xul");
-	}
-	catch (Poco::Exception& e)
-	{
-		ReportError(e.displayText());
-        return;
-	}
-    if (errorCatcher.hasCaught())
+public:
+    void run()
     {
-        errorCatcher.log();
-    }
-    ElementPtr addButton = parser.rootElement()->getElementById("addbutton");
-    addButton->addEventListener("command", boost::bind(addButtonPressed, _1));
+        ErrorCatcher errorCatcher;
+	    mParser.setContentHandler(&mParser);
+    	
+	    try
+	    {
+		    mParser.parse("Dropdown.xul");
+	    }
+	    catch (Poco::Exception& e)
+	    {
+		    ReportError(e.displayText());
+            return;
+	    }
+        if (errorCatcher.hasCaught())
+        {
+            errorCatcher.log();
+        }
+        ElementPtr addButton = mParser.rootElement()->getElementById("addbutton");
+        addButton->addEventListener("command", boost::bind(&TestDropDown::addButtonPressed, this, _1));
 
-    ElementPtr removeButton = parser.rootElement()->getElementById("removebutton");
-    removeButton->addEventListener("command", boost::bind(removeButtonPressed, _1));
-    static_cast<Window*>(parser.rootElement().get())->showModal();
-}
+        ElementPtr removeButton = mParser.rootElement()->getElementById("removebutton");
+        removeButton->addEventListener("command", boost::bind(&TestDropDown::removeButtonPressed, this, _1));
+        static_cast<Window*>(mParser.rootElement().get())->showModal();
+    }
+
+
+    void addButtonPressed(Event * inEvent)
+    {
+        ElementPtr popup = mParser.rootElement()->getElementById("popup");
+        ElementPtr input = mParser.rootElement()->getElementById("input");
+        if (popup && input)
+        {
+            AttributesMapping attr;
+            attr["label"] = input->getAttribute("value");
+            ElementFactory::Instance().createElement("menuitem", popup, attr);
+        }
+    }
+
+
+    void removeButtonPressed(Event * inEvent)
+    {
+    }
+
+private:
+    Parser mParser;
+};
 
 
 void runSample()
@@ -102,7 +116,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    runDropdownSample();
+    {
+        TestDropDown t;
+        t.run();
+    }
     ErrorReporter::Finalize();
     return 0;
 }

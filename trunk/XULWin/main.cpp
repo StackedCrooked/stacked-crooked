@@ -37,10 +37,16 @@ public:
         if (mParser.rootElement())
         {
             ElementPtr addButton = mParser.rootElement()->getElementById("addbutton");
-            addButton->addEventListener("command", boost::bind(&TestDropDown::addButtonPressed, this, _1));
+            if (addButton)
+            {
+                addButton->addEventListener("command", boost::bind(&TestDropDown::addButtonPressed, this, _1));
+            }
 
             ElementPtr removeButton = mParser.rootElement()->getElementById("removebutton");
-            removeButton->addEventListener("command", boost::bind(&TestDropDown::removeButtonPressed, this, _1));
+            if (removeButton)
+            {
+                removeButton->addEventListener("command", boost::bind(&TestDropDown::removeButtonPressed, this, _1));
+            }
             static_cast<Window*>(mParser.rootElement().get())->showModal();
         }
     }

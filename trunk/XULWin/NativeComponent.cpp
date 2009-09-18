@@ -23,8 +23,8 @@ namespace XULWin
         mHandle(0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandId(inCommandId),
-        mMinimumWidth(0),
-        mMinimumHeight(0)
+        mMinimumWidth(Defaults::componentMinimumWidth()),
+        mMinimumHeight(Defaults::componentMinimumHeight())
     {
     }
 
@@ -90,7 +90,8 @@ namespace XULWin
 
     void NativeComponent::rebuildLayout()
     {
-        rebuildChildLayouts();
+        rebuildChildLayouts();        
+        ::InvalidateRect(handle(), 0, FALSE);
     }
 
     
@@ -228,12 +229,8 @@ namespace XULWin
                     ::GetClientRect(handle(), &rc);
                     HWND childHandle = (*it)->nativeComponent()->handle();
                     ::MoveWindow(childHandle, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
-                    ::InvalidateRect(childHandle, 0, FALSE);
-                    ::UpdateWindow(childHandle);
-                    rebuildChildLayouts();
+                    rebuildLayout();
                 }
-                ::InvalidateRect(handle(), 0, FALSE);
-                ::UpdateWindow(handle());
                 break;
             }
             case WM_CLOSE:
@@ -275,7 +272,7 @@ namespace XULWin
             inClassName,
             TEXT(""),
             inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
-            0, 0, rc.right - rc.left, rc.bottom - rc.top,
+            0, 0, mMinimumWidth, mMinimumHeight,
             mParent ? mParent->handle() : 0,
             (HMENU)mCommandId.intValue(),
             mModuleHandle,
@@ -351,7 +348,7 @@ namespace XULWin
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
-                      0)
+                      WS_BORDER)
     {
     }
         
@@ -408,72 +405,153 @@ namespace XULWin
     
     void NativeBox::rebuildLayout()
     {
-        RECT rc;
-        ::GetClientRect(handle(), &rc);
 
         LinearLayoutManager layoutManager(mOrientation);
         
         //
         // Obtain the flex values
         //
-        std::vector<int> flexValues;
+        std::vector<int> allFlexValues;
+        std::vector<int> nonZeroFlexValues;
+        RECT rc;
+        ::GetClientRect(handle(), &rc);
+        int availableSpace = rc.right - rc.left;
+        if (mOrientation == VERTICAL)
+        {
+            availableSpace = rc.bottom - rc.top;
+        }
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
-            std::string flex = mElement->children()[idx]->getAttribute("flex");
+            ElementPtr child = mElement->children()[idx];
+            std::string flex = child->getAttribute("flex");
 
             int flexValue = Defaults::Attributes::flex();
-            try
+            if (!flex.empty())
             {
-                if (!flex.empty())
+                try
                 {
                     flexValue = boost::lexical_cast<int>(flex);
                 }
+                catch (const boost::bad_lexical_cast & )
+                {
+                    // TODO: this should be logged as warning instead of error reporting.
+                    ReportError("Lexical cast failed for value: " + flex + ".");
+                }
             }
-            catch (const boost::bad_lexical_cast & )
+            if (flexValue != 0)
             {
-                ReportError("Lexical cast failed for value: " + flex + ".");
-                // continue program flow
+                nonZeroFlexValues.push_back(flexValue);
             }
-            flexValues.push_back(flexValue);
+            else
+            {
+                RECT rw;
+                ::GetWindowRect(child->nativeComponent()->handle(), &rw);
+                if (mOrientation == HORIZONTAL)
+                {
+                    availableSpace -= child->nativeComponent()->minimumWidth();
+                }
+                else
+                {
+                    availableSpace -= child->nativeComponent()->minimumHeight();
+                }
+            }
+            allFlexValues.push_back(flexValue);
         }
         
         //
         // Use the flex values to obtain the child rectangles
         //
-        std::vector<Rect> childRects;
-        layoutManager.getRects(
-            Rect(rc.left,
-                 rc.top,
-                 rc.right-rc.left,
-                 rc.bottom-rc.top),
-            flexValues,
-            childRects);
+        std::vector<int> portions;
+        layoutManager.GetPortions(availableSpace, nonZeroFlexValues.size(), portions);
 
         //
         // Apply the new child rectangles
         //
+        int offsetX = 0;
+        int offsetY = 0;
+        int portionIdx = 0;
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
-            Rect & rect = childRects[idx];
-            int width = rect.width();
-            if (width < mElement->children()[idx]->nativeComponent()->minimumWidth())
+            ElementPtr child = mElement->children()[idx];
+            HWND childHandle = child->nativeComponent()->handle();
+            int width = child->nativeComponent()->minimumWidth();
+            int height = child->nativeComponent()->minimumHeight();
+            if (allFlexValues[idx] != 0)
             {
-                width = mElement->children()[idx]->nativeComponent()->minimumWidth();
+                if (mOrientation == HORIZONTAL)
+                {
+                    width = portions[portionIdx];
+                }
+                else
+                {
+                    height = portions[portionIdx];
+                }
+                portionIdx++;
             }
+            ::MoveWindow(childHandle, offsetX, offsetY, width, height, FALSE);
 
-            int height = rect.height();
-            if (height < mElement->children()[idx]->nativeComponent()->minimumHeight())
+            if (mOrientation == HORIZONTAL)
             {
-                height = mElement->children()[idx]->nativeComponent()->minimumHeight();
+                offsetX += width;
             }
-            HWND childHandle = mElement->children()[idx]->nativeComponent()->handle();
-            ::MoveWindow(childHandle, rect.x(), rect.y(), width, height, FALSE);
-            ::InvalidateRect(childHandle, 0, FALSE);
-            ::UpdateWindow(childHandle);
+            if (mOrientation == VERTICAL)
+            {
+                offsetY += height;
+            }
         }
         rebuildChildLayouts();
-        ::InvalidateRect(handle(), 0, FALSE);
-        ::UpdateWindow(handle());
+    }
+
+            
+    int NativeHBox::minimumWidth() const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+        {
+            result += mElement->children()[idx]->nativeComponent()->minimumWidth();
+        }
+        return result;
+    }
+
+
+    int NativeHBox::minimumHeight() const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+        {
+            int height = mElement->children()[idx]->nativeComponent()->minimumHeight();
+            if (height > result)
+            {
+                result = height;
+            }
+        }
+        return result;
+    }
+
+            
+    int NativeVBox::minimumWidth() const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+        {
+            int width = mElement->children()[idx]->nativeComponent()->minimumWidth();
+            if (width > result)
+            {
+                result = width;
+            }
+        }
+        return result;
+    }
+
+
+    int NativeVBox::minimumHeight() const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+        {
+            result += mElement->children()[idx]->nativeComponent()->minimumHeight();
+        }
+        return result;
     }
 
 

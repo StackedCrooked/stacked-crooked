@@ -24,6 +24,14 @@ namespace XULWin
     }
 
 
+    Element::~Element()
+    {
+        // Children require parent access while destructing.
+        // So we destruct them while parent still alive.
+        mChildren.clear();
+    }
+
+
     const std::string & Element::type() const
     {
         return mType;

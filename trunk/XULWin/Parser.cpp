@@ -46,6 +46,7 @@ namespace XULWin
                               const Poco::XML::XMLString& qname,
                               const Poco::XML::Attributes& attributes)
     {
+        ErrorCatcher errorCatcher;
         try
         {
             if (mIgnores.empty())

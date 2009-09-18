@@ -33,23 +33,15 @@ class TestDropDown
 public:
     void run()
     {
-        ErrorCatcher errorCatcher;
     	mParser.parse("Dropdown.xul");
-        if (errorCatcher.hasCaught())
-        {
-            errorCatcher.log();
-        }
-
         if (mParser.rootElement())
         {
-            ErrorCatcher errorCatcher;
             ElementPtr addButton = mParser.rootElement()->getElementById("addbutton");
             addButton->addEventListener("command", boost::bind(&TestDropDown::addButtonPressed, this, _1));
 
             ElementPtr removeButton = mParser.rootElement()->getElementById("removebutton");
             removeButton->addEventListener("command", boost::bind(&TestDropDown::removeButtonPressed, this, _1));
             static_cast<Window*>(mParser.rootElement().get())->showModal();
-            errorCatcher.log();
         }
     }
 
@@ -78,25 +70,8 @@ private:
 
 void runSample()
 {
-    ErrorCatcher errorCatcher;
 	Parser parser;
-	//parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACES, true);
-	//parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACE_PREFIXES, true);
-	parser.setContentHandler(&parser);
-	
-	try
-	{
-		parser.parse("test.xul");
-	}
-	catch (Poco::Exception& e)
-	{
-		ReportError(e.displayText());
-        return;
-	}
-    if (errorCatcher.hasCaught())
-    {
-        errorCatcher.log();
-    }
+    parser.parse("test.xul");
     static_cast<Window*>(parser.rootElement().get())->showModal();
 }
 

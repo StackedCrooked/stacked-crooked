@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window id="amazWindow"
-	title=""
-	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	width="320"
-	height="120"
-	onload="main()"
-	type="mab:main"
-	persist="screenX screenY width height sizemode">
+	      title=""
+	      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	      width="320"
+	      height="120">
 
 	<!-- Tree -->
 	<vbox flex="1" id="main-box">
     <hbox flex="1">
-      <label flex="0" value="Items:"></label>
+      <label flex="0" value="Hiragana: ひらがな"></label>
       <menulist flex="1" id="dropdown">
         <menupopup id="popup">
           <menuitem label="Spanje" value="1"/>

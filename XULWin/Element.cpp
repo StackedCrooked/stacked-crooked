@@ -119,7 +119,6 @@ namespace XULWin
             return it->second;
         }
 
-        ReportError("Attribute '" + inName + "' was not found in Element");
         static std::string fNotFound;
         return fNotFound;
     }

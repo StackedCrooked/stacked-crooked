@@ -3,12 +3,12 @@
 #include "NativeComponent.h"
 #include "Parser.h"
 #include "Utils/ErrorReporter.h"
+#include <boost/scoped_ptr.hpp>
 #include <windows.h>
 
 
 using namespace XULWin;
 using namespace Utils;
-
 
 
 void registerTypes(HMODULE inModule)
@@ -34,27 +34,23 @@ public:
     void run()
     {
         ErrorCatcher errorCatcher;
-	    mParser.setContentHandler(&mParser);
-    	
-	    try
-	    {
-		    mParser.parse("Dropdown.xul");
-	    }
-	    catch (Poco::Exception& e)
-	    {
-		    ReportError(e.displayText());
-            return;
-	    }
+    	mParser.parse("Dropdown.xul");
         if (errorCatcher.hasCaught())
         {
             errorCatcher.log();
         }
-        ElementPtr addButton = mParser.rootElement()->getElementById("addbutton");
-        addButton->addEventListener("command", boost::bind(&TestDropDown::addButtonPressed, this, _1));
 
-        ElementPtr removeButton = mParser.rootElement()->getElementById("removebutton");
-        removeButton->addEventListener("command", boost::bind(&TestDropDown::removeButtonPressed, this, _1));
-        static_cast<Window*>(mParser.rootElement().get())->showModal();
+        if (mParser.rootElement())
+        {
+            ErrorCatcher errorCatcher;
+            ElementPtr addButton = mParser.rootElement()->getElementById("addbutton");
+            addButton->addEventListener("command", boost::bind(&TestDropDown::addButtonPressed, this, _1));
+
+            ElementPtr removeButton = mParser.rootElement()->getElementById("removebutton");
+            removeButton->addEventListener("command", boost::bind(&TestDropDown::removeButtonPressed, this, _1));
+            static_cast<Window*>(mParser.rootElement().get())->showModal();
+            errorCatcher.log();
+        }
     }
 
 

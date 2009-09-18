@@ -11,6 +11,7 @@ namespace XULWin
 
     Parser::Parser()
     {
+        setContentHandler(this);
     }
     
     
@@ -45,51 +46,58 @@ namespace XULWin
                               const Poco::XML::XMLString& qname,
                               const Poco::XML::Attributes& attributes)
     {
-        if (mIgnores.empty())
+        try
         {
-            //
-            // Get parent
-            //
-            ElementPtr parent;
-            if (!mStack.empty())
+            if (mIgnores.empty())
             {
-                parent = mStack.top();
-            }
-
-            //
-            // Get attributes
-            //
-            XULWin::AttributesMapping attr;
-            for (int idx = 0; idx != attributes.getLength(); ++idx)
-            {
-                const Poco::XML::XMLString & name = attributes.getLocalName(idx);
-                const Poco::XML::XMLString & value = attributes.getValue(idx);
-                attr[name] = value;
-            }
-
-            //
-            // Create the element
-            //
-            ElementPtr element = ElementFactory::Instance().createElement(localName, parent, attr);
-            if (element)
-            {
-                if (mStack.empty())
+                //
+                // Get parent
+                //
+                ElementPtr parent;
+                if (!mStack.empty())
                 {
-                    assert(!mRootElement);
-                    mRootElement = element;
+                    parent = mStack.top();
                 }
-                mStack.push(element);
+
+                //
+                // Get attributes
+                //
+                XULWin::AttributesMapping attr;
+                for (int idx = 0; idx != attributes.getLength(); ++idx)
+                {
+                    const Poco::XML::XMLString & name = attributes.getLocalName(idx);
+                    const Poco::XML::XMLString & value = attributes.getValue(idx);
+                    attr[name] = value;
+                }
+
+                //
+                // Create the element
+                //
+                ElementPtr element = ElementFactory::Instance().createElement(localName, parent, attr);
+                if (element)
+                {
+                    if (mStack.empty())
+                    {
+                        assert(!mRootElement);
+                        mRootElement = element;
+                    }
+                    mStack.push(element);
+                }
+                else
+                {
+                    mIgnores.push(true);
+                    ReportError("Element is null and will be ignored.");
+                    return;
+                }
             }
             else
             {
                 mIgnores.push(true);
-                ReportError("Element is null and will be ignored.");
-                return;
             }
         }
-        else
+        catch (const Poco::Exception & inExc)
         {
-            mIgnores.push(true);
+            ReportError(inExc.displayText());
         }
     }
 

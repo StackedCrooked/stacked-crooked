@@ -132,7 +132,7 @@ namespace XULWin
         wndClass.hIconSm = 0;
         if (! RegisterClassEx(&wndClass))
         {
-            throw std::runtime_error(std::string("Could not register Windows class."));
+            ReportError("Could not register XUL::Window class.");
         }
     }
 
@@ -262,7 +262,8 @@ namespace XULWin
     {
         if (!mParent)
         {
-            throw std::runtime_error("Invalid mParent");
+            ReportError("NativeControl constructor failed because parent is NULL.");
+            return;
         }
 
         RECT rc;

@@ -55,12 +55,10 @@ namespace XULWin
     private:
         const Poco::XML::Locator* mLocator;
         
-        // needed to know which one is the parent element (top)
+        // needed to know which one is the parent element
         std::stack<ElementPtr> mStack; 
         
-        // unknown elements are simply ignored
-        // this stack helps to remember that we are
-        // currently ignoring an item
+        // depth of ignoration
         int mIgnores;
         ElementPtr mRootElement;
 

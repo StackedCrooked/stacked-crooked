@@ -3,16 +3,24 @@
 
 
 #include <windows.h>
+#include <string>
 
 
 namespace Utils
 {
-    void addStringToComboBox(HWND inHandle, const TCHAR * inString);
+
+#ifdef UNICODE
+    typedef std::wstring String;
+#else
+    typedef std::string String;
+#endif
+
+    void addStringToComboBox(HWND inHandle, const String & inString);
 
     void deleteStringFromComboBox(HWND inHandle, int inIndex);
 
     // returns CB_ERR if not found
-    int findStringInComboBox(HWND inHandle, const TCHAR * inString, int inOffset = -1);
+    int findStringInComboBox(HWND inHandle, const String & inString, int inOffset = -1);
 
     int getComboBoxItemCount(HWND inHandle);
 
@@ -24,7 +32,7 @@ namespace Utils
 
     HFONT GetFont(HWND inHandle);
 
-    SIZE GetTextSize(HWND inHandle, const TCHAR * inText, size_t inTextLength);
+    SIZE GetTextSize(HWND inHandle, const String & inText);
 
 } // namespace Utils
 

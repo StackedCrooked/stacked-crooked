@@ -400,7 +400,7 @@ namespace XULWin
         std::string text = owningElement()->getAttribute("value");
         std::wstring utf16Text;
         Poco::UnicodeConverter::toUTF16(text, utf16Text);
-        SIZE size = Utils::GetTextSize(mHandle, utf16Text.c_str(), utf16Text.size());
+        SIZE size = Utils::GetTextSize(mHandle, utf16Text);
         return size.cx;
     }
 

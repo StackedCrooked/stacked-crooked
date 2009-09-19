@@ -63,9 +63,17 @@ namespace Utils
 	public:
 		ErrorCatcher();
 
+        ErrorCatcher(const ErrorCatcher & inErrorCatcher);
+
 		~ErrorCatcher();
 
-        ErrorCatcher(const ErrorCatcher & inErrorCatcher);
+        /**
+         * Logging is enabled by default and will occur on destruction
+         * of the ErrorCatcher object. This call allows you to disable
+         * this behavior.
+         * This is handy for creating a 'error silencer' object.
+         */
+        void disableLogging(bool inDisable);
         
 
 		/**
@@ -102,6 +110,7 @@ namespace Utils
         std::vector<Error> mErrors;
         boost::shared_ptr<ErrorCatcher> mChild;
 		bool mPropagate;
+        bool mDisableLogging;
 	};
 
 

@@ -119,7 +119,11 @@ namespace XULWin
             AttributesMapping::iterator it = mAttributes.begin(), end = mAttributes.end();
             for (; it != end; ++it)
             {
-                mNativeComponent->applyAttribute(it->first, it->second);
+                // ignore error reports about failure to apply attributes
+                // it's unlikely to be an issue here
+                ErrorCatcher errorIgnorer;
+                errorIgnorer.disableLogging(true);
+                setAttribute(it->first, it->second, true);
             }
         }
     }
@@ -128,7 +132,7 @@ namespace XULWin
     const std::string & Element::getAttribute(const std::string & inName) const
     {
         AttributesMapping::const_iterator it = mAttributes.find(inName);
-        if (it!= mAttributes.end())
+        if (it != mAttributes.end())
         {
             return it->second;
         }

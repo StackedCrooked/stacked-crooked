@@ -9,7 +9,8 @@ using namespace Utils;
 namespace XULWin
 {
 
-    Parser::Parser()
+    Parser::Parser() :
+        mIgnores(0)
     {
         setContentHandler(this);
     }
@@ -30,14 +31,14 @@ namespace XULWin
     void Parser::startDocument()
     {
         assert(mStack.empty());
-        assert(mIgnores.empty());
+        assert(mIgnores == 0);
     }
 
 
     void Parser::endDocument()
     {
         assert(mStack.empty());
-        assert(mIgnores.empty());
+        assert(mIgnores == 0);
     }
 
 
@@ -49,7 +50,7 @@ namespace XULWin
         ErrorCatcher errorCatcher;
         try
         {
-            if (mIgnores.empty())
+            if (mIgnores == 0)
             {
                 //
                 // Get parent
@@ -86,14 +87,14 @@ namespace XULWin
                 }
                 else
                 {
-                    mIgnores.push(true);
+                    mIgnores++;
                     ReportError("Element is null and will be ignored.");
                     return;
                 }
             }
             else
             {
-                mIgnores.push(true);
+                mIgnores++;
             }
         }
         catch (const Poco::Exception & inExc)
@@ -107,13 +108,13 @@ namespace XULWin
                             const Poco::XML::XMLString& localName,
                             const Poco::XML::XMLString& qname)
     {
-        if (mIgnores.empty())
+        if (mIgnores == 0)
         {
             mStack.pop();
         }
         else
         {
-            mIgnores.pop();
+            mIgnores--;
         }
     }
 

@@ -45,7 +45,27 @@ namespace XULWin
         // Override this method to add initialization code
         virtual void init() {}
 
-        const std::string & type() const;        
+        const std::string & type() const;
+
+        template<class ElementType>
+        const ElementType * downcast() const
+        {
+            if (type() == ElementType::Type())
+            {
+                return static_cast<ElementType*>(this);
+            }
+            return 0;
+        }
+
+        template<class ElementType>
+        ElementType * downcast()
+        {
+            if (type() == ElementType::Type())
+            {
+                return static_cast<ElementType*>(this);
+            }
+            return 0;
+        }
 
         const std::string & label() const;
 

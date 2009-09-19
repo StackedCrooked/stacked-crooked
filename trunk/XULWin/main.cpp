@@ -48,7 +48,12 @@ public:
             {
                 mConnections.push_back(removeButton->OnCommand.connect(boost::bind(&TestDropDown::removeButtonPressed, this, _1)));
             }
-            static_cast<Window*>(mParser.rootElement().get())->showModal();
+
+            Window * window = mParser.rootElement()->downcast<Window>();
+            if (window)
+            {
+                window->showModal();
+            }
         }
     }
 

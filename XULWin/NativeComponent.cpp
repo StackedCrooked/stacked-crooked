@@ -109,6 +109,12 @@ namespace XULWin
     }
     
     
+    void NativeComponent::move(int x, int y, int w, int h)
+    {
+        ::MoveWindow(handle(), x, y, w, h, FALSE);
+    }       
+    
+    
     bool NativeComponent::getAttribute(const std::string & inName, std::string & outValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
@@ -347,8 +353,7 @@ namespace XULWin
                 {
                     RECT rc;
                     ::GetClientRect(handle(), &rc);
-                    HWND childHandle = (*it)->nativeComponent()->handle();
-                    ::MoveWindow(childHandle, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+                    (*it)->nativeComponent()->move(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
                     rebuildLayout();
                 }
                 break;
@@ -700,7 +705,7 @@ namespace XULWin
                 }
                 portionIdx++;
             }
-            ::MoveWindow(childHandle, offsetX, offsetY, width, height, FALSE);
+            child->nativeComponent()->move(offsetX, offsetY, width, height);
 
             if (mOrientation == HORIZONTAL)
             {
@@ -765,6 +770,13 @@ namespace XULWin
         }
         return result;
     }
+    
+    
+    void NativeMenuList::move(int x, int y, int w, int h)
+    {
+        h = h + Utils::getComboBoxItemCount(handle()) * Defaults::dropDownListItemHeight();
+        NativeComponent::move(x, y, w, h);
+    }
 
 
     void NativeMenuList::addMenuItem(const std::string & inText)
@@ -779,7 +791,7 @@ namespace XULWin
 		}
 		
 		// The height of a combobox defines the height of the dropdown menu + the height of the widget itself.
-        mMinimumHeight = Defaults::controlHeight() + count*Defaults::dropDownListItemHeight();
+        //mMinimumHeight = Defaults::controlHeight() + count*Defaults::dropDownListItemHeight();
     }
 
 

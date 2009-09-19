@@ -45,6 +45,8 @@ namespace XULWin
 
         virtual int minimumHeight() const;
 
+        virtual void move(int x, int y, int w, int h);
+
         void setOwningElement(Element * inElement);
 
         Element * owningElement() const;
@@ -237,6 +239,8 @@ namespace XULWin
                           CBS_DROPDOWNLIST)
         {
         }
+
+        virtual void move(int x, int y, int w, int h);
 
         void addMenuItem(const std::string & inText);
 

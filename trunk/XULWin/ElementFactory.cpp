@@ -27,7 +27,7 @@ namespace XULWin
         if (it != mFactoryMethods.end())
         {
             result = it->second(inParent, inAttr);
-            // WARNING: don't add any custom code here, use Element::Create or override Element::init.
+            // NOTE TO SELF: don't add any custom code here, use Element::Create or override Element::init.
         }
         else
         {

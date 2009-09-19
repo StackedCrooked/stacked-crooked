@@ -50,7 +50,8 @@ namespace Utils
 
 	ErrorCatcher::ErrorCatcher() :
 		mPropagate(false),
-        mOwns(true) // the original object, created on the stack, must do the cleanup
+        mOwns(true), // the original object, created on the stack, must do the cleanup
+        mDisableLogging(false)
 	{
 		ErrorReporter::Instance().push(this);
 	}
@@ -65,9 +66,12 @@ namespace Utils
 		    {
                 ErrorReporter::Instance().mStack.top()->setChild(this);
             }
-            else
+            else 
             {
-                log();
+                if (!mDisableLogging)
+                {
+                    log();
+                }
             }
         }
 	}
@@ -79,6 +83,12 @@ namespace Utils
         mChild(rhs.mChild),
 		mPropagate(rhs.mPropagate)
     {
+    }
+        
+        
+    void ErrorCatcher::disableLogging(bool inDisableLogging)
+    {
+        mDisableLogging = inDisableLogging;
     }
 
 

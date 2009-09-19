@@ -30,8 +30,8 @@ void registerTypes(HMODULE inModule)
 
 class TestDropDown
 {
+    std::vector<boost::signals::scoped_connection> mConnections;
 public:
-    std::vector<boost::signals::connection> mConnections;
     void run()
     {
     	mParser.parse("Dropdown.xul");

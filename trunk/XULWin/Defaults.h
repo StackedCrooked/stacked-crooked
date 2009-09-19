@@ -13,7 +13,7 @@ namespace XULWin
 
         int controlHeight() { return 20; }
 
-        int dropDownListItemHeight() { return 20; }
+        int dropDownListItemHeight() { return 14; }
 
         int componentMinimumWidth() { return 80; }
 

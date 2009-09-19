@@ -5,9 +5,9 @@ namespace Utils
 {
 
 
-    void addStringToComboBox(HWND inHandle, const TCHAR * inString)
+    void addStringToComboBox(HWND inHandle, const String & inString)
     {
-        ::SendMessage(inHandle, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)inString);
+        ::SendMessage(inHandle, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)inString.c_str());
     }
 
     
@@ -17,9 +17,9 @@ namespace Utils
     }
 
     
-    int findStringInComboBox(HWND inHandle, const TCHAR * inString, int inOffset)
+    int findStringInComboBox(HWND inHandle, const String & inString, int inOffset)
     {
-        return ::SendMessage(inHandle, CB_FINDSTRING, (WPARAM)inOffset, (LPARAM)(LPTSTR)inString);
+        return ::SendMessage(inHandle, CB_FINDSTRING, (WPARAM)inOffset, (LPARAM)(LPTSTR)inString.c_str());
     }
 
 
@@ -71,13 +71,13 @@ namespace Utils
     }
     
     
-    SIZE GetTextSize(HWND inHandle, const TCHAR * inText, size_t inTextLength)
+    SIZE GetTextSize(HWND inHandle, const String & inText)
     {
 	    // get the size in pixels for the given text and font
         SIZE result = {0, 0};    	
 	    HDC hDC = GetDC(inHandle);
 	    SelectObject(hDC, GetFont(inHandle));
-	    GetTextExtentPoint32(hDC, inText, (int)inTextLength, &result);
+        ::GetTextExtentPoint32(hDC, inText.c_str(), (int)inText.size(), &result);
 	    ReleaseDC(inHandle, hDC);
 	    return result;
     }

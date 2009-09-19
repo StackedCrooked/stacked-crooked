@@ -26,6 +26,10 @@ namespace Utils
 
     void selectComboBoxItem(HWND inHandle, int inItemIndex);
 
+    int getWindowWidth(HWND inHandle);
+
+    int getWindowHeight(HWND inHandle);
+
     void setWindowWidth(HWND inHandle, int inWidth);
 
     void setWindowHeight(HWND inHandle, int inHeight);
@@ -36,7 +40,7 @@ namespace Utils
 
     String getWindowText(HWND inHandle);
 
-    //void setWindowText(HWND inHandle, const String & inText);
+    void setWindowText(HWND inHandle, const String & inText);
 
 } // namespace Utils
 

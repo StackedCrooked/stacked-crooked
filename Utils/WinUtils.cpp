@@ -29,6 +29,22 @@ namespace Utils
     }
 
 
+    int getWindowWidth(HWND inHandle)
+    {
+        RECT rw;
+        ::GetWindowRect(inHandle, &rw);
+        return rw.right - rw.left;
+    }
+
+
+    int getWindowHeight(HWND inHandle)
+    {
+        RECT rw;
+        ::GetWindowRect(inHandle, &rw);
+        return rw.bottom - rw.top;
+    }
+
+
     void selectComboBoxItem(HWND inHandle, int inItemIndex)
     {
         ::SendMessage(inHandle, (UINT)CB_SETCURSEL, (WPARAM)inItemIndex, (LPARAM)0);
@@ -98,9 +114,10 @@ namespace Utils
     }
 
     
-    //void setWindowText(HWND inHandle, const String & inText)
-    //{
-    //}
+    void setWindowText(HWND inHandle, const String & inText)
+    {
+        ::SetWindowText(inHandle, inText.c_str());
+    }
 
 
 } // namespace Utils

@@ -38,7 +38,7 @@ namespace XULWin
     }
 
 
-    const std::string & Element::label() const
+    std::string Element::label() const
     {
         return getAttribute("label");
     }
@@ -46,7 +46,7 @@ namespace XULWin
     
     void Element::setLabel(const std::string & inLabel)
     {
-        setAttribute("label", inLabel, true);
+        setAttribute("label", inLabel);
     }
 
 
@@ -123,34 +123,32 @@ namespace XULWin
                 // it's unlikely to be an issue here
                 ErrorCatcher errorIgnorer;
                 errorIgnorer.disableLogging(true);
-                setAttribute(it->first, it->second, true);
+                setAttribute(it->first, it->second);
             }
         }
     }
 
     
-    const std::string & Element::getAttribute(const std::string & inName) const
+    std::string Element::getAttribute(const std::string & inName) const
     {
-        AttributesMapping::const_iterator it = mAttributes.find(inName);
-        if (it != mAttributes.end())
+        std::string result;
+        if (!mNativeComponent || !mNativeComponent->getAttribute(inName, result))
         {
-            return it->second;
-        }
-
-        static std::string fNotFound;
-        return fNotFound;
-    }
-    
-    
-    void Element::setAttribute(const std::string & inName, const std::string & inValue, bool inApplyToNativeComponent)
-    {
-        mAttributes[inName] = inValue;
-        if (inApplyToNativeComponent)
-        {
-            if (!mNativeComponent->applyAttribute(inName, inValue))
+            AttributesMapping::const_iterator it = mAttributes.find(inName);
+            if (it != mAttributes.end())
             {
-                ReportError("Failed to apply the attribute with name '" + inName + "' and value '" + inValue + "'.");
+                result = it->second;
             }
+        }
+        return result;
+    }
+    
+    
+    void Element::setAttribute(const std::string & inName, const std::string & inValue)
+    {
+        if (!mNativeComponent->setAttribute(inName, inValue))
+        {
+            mAttributes[inName] = inValue;
         }
     }
     
@@ -197,7 +195,7 @@ namespace XULWin
     }
 
 
-    const std::string & Label::value() const
+    std::string Label::value() const
     {
         return getAttribute("value");
     }
@@ -329,13 +327,13 @@ namespace XULWin
     }
 
     
-    const std::string & MenuItem::label() const
+    std::string MenuItem::label() const
     {
         return getAttribute("label");
     }
 
     
-    const std::string & MenuItem::value() const
+    std::string MenuItem::value() const
     {
         return getAttribute("value");
     }

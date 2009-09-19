@@ -87,6 +87,9 @@ namespace XULWin
             AttributeGetter getter;
             AttributeSetter setter;
         };
+
+        void setAttributeController(const std::string & inAttr, const AttributeController & inController);
+
         typedef std::map<std::string, AttributeController> AttributeControllers;
         AttributeControllers mAttributeControllers;
 
@@ -141,13 +144,7 @@ namespace XULWin
     class NativeButton : public NativeControl
     {
     public:
-        NativeButton(NativeComponentPtr inParent) :
-            NativeControl(inParent,
-                          TEXT("BUTTON"),
-                          0, // exStyle
-                          BS_PUSHBUTTON)
-        {
-        }
+        NativeButton(NativeComponentPtr inParent);
     };
 
 

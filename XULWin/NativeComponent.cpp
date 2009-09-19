@@ -80,23 +80,6 @@ namespace XULWin
         mMinimumWidth(Defaults::componentMinimumWidth()),
         mMinimumHeight(Defaults::componentMinimumHeight())
     {
-        {
-            AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
-            AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
-            mAttributeControllers.insert(std::make_pair("height", AttributeController(heightGetter, heightSetter)));
-        }
-
-        {
-            AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
-            AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
-            mAttributeControllers.insert(std::make_pair("width", AttributeController(widthGetter, widthSetter)));
-        }
-
-        {
-            AttributeGetter labelGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
-            AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
-            mAttributeControllers.insert(std::make_pair("label", AttributeController(labelGetter, labelSetter)));
-        }
     }
 
 
@@ -157,6 +140,23 @@ namespace XULWin
             }
         }
         return false;
+    }
+
+
+    void NativeComponent::setAttributeController(const std::string & inAttr, const AttributeController & inController)
+    {
+        // Attribute controllers are set in the constructor. Order of construction is A then B if class B inherits class A.
+        // So constructor of NativeComponent will always occur before the construction of any of its subclasses.
+        // However, this poses a problem if the subclass wants to replace an existing AttributeController for a certain attribute value
+        // with its own because the stl map::insert method doesn't overwrite previously existing values.
+        // So what we need to do then is remove the existing value first, and then insert the new one.
+        // This method does just that.
+        AttributeControllers::iterator it = mAttributeControllers.find(inAttr);
+        if (it != mAttributeControllers.end())
+        {
+            mAttributeControllers.erase(it);
+        }
+        mAttributeControllers.insert(std::make_pair(inAttr, inController));
     }
     
 
@@ -250,6 +250,19 @@ namespace XULWin
     NativeWindow::NativeWindow(NativeComponentPtr inParent) :
         NativeComponent(inParent, CommandId())
     {
+        
+        {
+            AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
+            AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
+            setAttributeController("height", AttributeController(heightGetter, heightSetter));
+        }
+
+        {
+            AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
+            AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
+            setAttributeController("width", AttributeController(widthGetter, widthSetter));
+        }
+
         int w = Defaults::windowWidth();
         int h = Defaults::windowHeight();
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
@@ -450,6 +463,18 @@ namespace XULWin
             return it->second->handleMessage(inMessage, wParam, lParam);
         }
         return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
+    }    
+    
+    
+    NativeButton::NativeButton(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("BUTTON"),
+                      0, // exStyle
+                      BS_PUSHBUTTON)
+    {
+        AttributeGetter labelGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
+        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
+        setAttributeController("label", AttributeController(labelGetter, labelSetter));
     }
 
 
@@ -459,6 +484,9 @@ namespace XULWin
                       0, // exStyle
                       0)
     {
+        AttributeGetter valueGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
+        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
+        setAttributeController("value", AttributeController(valueGetter, valueSetter));
     }
 
 
@@ -472,7 +500,7 @@ namespace XULWin
         {
             AttributeGetter valueGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
             AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
-            mAttributeControllers.insert(std::make_pair("value", AttributeController(valueGetter, valueSetter)));
+            setAttributeController("value", AttributeController(valueGetter, valueSetter));
         }
     }
         
@@ -571,7 +599,7 @@ namespace XULWin
         };
         AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
         AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
-        mAttributeControllers.insert(std::make_pair("orientation", AttributeController(orientationGetter, orientationSetter)));
+        setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
     }
 
 

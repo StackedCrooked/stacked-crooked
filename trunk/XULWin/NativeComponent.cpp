@@ -4,6 +4,7 @@
 #include "Layout.h"
 #include "Utils/ErrorReporter.h"
 #include "Utils/WinUtils.h"
+#include "Poco/UnicodeConverter.h"
 #include <boost/lexical_cast.hpp>
 #include <string>
 
@@ -60,7 +61,9 @@ namespace XULWin
     {
         if (inName == "label")
         {
-            ::SetWindowTextA(handle(), inValue.c_str());
+            std::wstring utf16Text;
+            Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
+            ::SetWindowText(handle(), utf16Text.c_str());
         }
     }
     
@@ -364,7 +367,9 @@ namespace XULWin
         NativeComponent::applyAttribute(inName, inValue);
         if (inName == "value")
         {
-            ::SetWindowTextA(handle(), inValue.c_str());
+            std::wstring text;
+            Poco::UnicodeConverter::toUTF16(inValue, text);
+            ::SetWindowText(handle(), text.c_str());
         }
     }
 
@@ -383,7 +388,9 @@ namespace XULWin
         NativeComponent::applyAttribute(inName, inValue);
         if (inName == "value")
         {
-            ::SetWindowTextA(handle(), inValue.c_str());
+            std::wstring utf16Text;
+            Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
+            ::SetWindowText(handle(), utf16Text.c_str());
         }
     }
 
@@ -391,7 +398,9 @@ namespace XULWin
     int NativeLabel::minimumWidth() const
     {
         std::string text = owningElement()->getAttribute("value");
-        SIZE size = Utils::GetTextSize(mHandle, text.c_str(), text.size());
+        std::wstring utf16Text;
+        Poco::UnicodeConverter::toUTF16(text, utf16Text);
+        SIZE size = Utils::GetTextSize(mHandle, utf16Text.c_str(), utf16Text.size());
         return size.cx;
     }
 
@@ -577,7 +586,9 @@ namespace XULWin
 
     void NativeMenuList::addMenuItem(const std::string & inText)
     {
-        Utils::addStringToComboBox(handle(), inText.c_str());
+        std::wstring utf16Text;
+        Poco::UnicodeConverter::toUTF16(inText, utf16Text);
+        Utils::addStringToComboBox(handle(), utf16Text.c_str());
         int count = Utils::getComboBoxItemCount(handle());		
 		if (count == 1)
 		{
@@ -591,7 +602,9 @@ namespace XULWin
 
     void NativeMenuList::removeMenuItem(const std::string & inText)
     {
-        int idx = Utils::findStringInComboBox(handle(), inText.c_str());
+        std::wstring utf16String;
+        Poco::UnicodeConverter::toUTF16(inText, utf16String);
+        int idx = Utils::findStringInComboBox(handle(), utf16String.c_str());
         if (idx == CB_ERR)
         {
             ReportError("MenuList: remove failed because item not found: '" + inText + "'.");

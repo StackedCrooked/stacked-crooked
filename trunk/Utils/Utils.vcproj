@@ -20,7 +20,7 @@
 			OutputDirectory="$(SolutionDir)..\Output\Windows\$(ConfigurationName)\$(ProjectName)\"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="4"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"

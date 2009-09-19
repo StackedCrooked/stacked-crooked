@@ -49,22 +49,6 @@ namespace XULWin
     }
 
 
-    //std::string WString2String(const std::wstring & inText)
-    //{
-    //    std::string result;
-    //    Poco::UnicodeConverter::toUTF8(inText, result);
-    //    return result;
-    //}
-
-
-    //std::wstring String2WString(const std::string & inText)
-    //{
-    //    std::wstring result;
-    //    Poco::UnicodeConverter::toUTF16(inText, result);
-    //    return result;
-    //}
-
-
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
     
     NativeComponent::Components NativeComponent::sComponentsByHandle;

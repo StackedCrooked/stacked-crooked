@@ -8,19 +8,12 @@
 
 namespace Utils
 {
-
-#ifdef UNICODE
-    typedef std::wstring String;
-#else
-    typedef std::string String;
-#endif
-
-    void addStringToComboBox(HWND inHandle, const String & inString);
+    void addStringToComboBox(HWND inHandle, const std::string & inString);
 
     void deleteStringFromComboBox(HWND inHandle, int inIndex);
 
     // returns CB_ERR (-1) if not found
-    int findStringInComboBox(HWND inHandle, const String & inString, int inOffset = -1);
+    int findStringInComboBox(HWND inHandle, const std::string & inString, int inOffset = -1);
 
     int getComboBoxItemCount(HWND inHandle);
 
@@ -36,11 +29,11 @@ namespace Utils
 
     HFONT getFont(HWND inHandle);
 
-    SIZE getTextSize(HWND inHandle, const String & inText);
+    SIZE getTextSize(HWND inHandle, const std::string & inText);
 
-    String getWindowText(HWND inHandle);
+    std::string getWindowText(HWND inHandle);
 
-    void setWindowText(HWND inHandle, const String & inText);
+    void setWindowText(HWND inHandle, const std::string & inText);
 
 } // namespace Utils
 

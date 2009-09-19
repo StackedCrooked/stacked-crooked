@@ -1,13 +1,29 @@
 #include "WinUtils.h"
+#include "Poco/UnicodeConverter.h"
 
 
 namespace Utils
 {
-
-
-    void addStringToComboBox(HWND inHandle, const String & inString)
+    
+    std::string ToUTF8(const std::wstring & inText)
     {
-        ::SendMessage(inHandle, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)inString.c_str());
+        std::string result;
+        Poco::UnicodeConverter::toUTF8(inText, result);
+        return result;
+    }
+
+
+    std::wstring ToUTF16(const std::string & inText)
+    {
+        std::wstring result;
+        Poco::UnicodeConverter::toUTF16(inText, result);
+        return result;
+    }
+
+
+    void addStringToComboBox(HWND inHandle, const std::string & inString)
+    {
+        ::SendMessage(inHandle, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)ToUTF16(inString).c_str());
     }
 
     
@@ -17,9 +33,9 @@ namespace Utils
     }
 
     
-    int findStringInComboBox(HWND inHandle, const String & inString, int inOffset)
+    int findStringInComboBox(HWND inHandle, const std::string & inString, int inOffset)
     {
-        return ::SendMessage(inHandle, CB_FINDSTRING, (WPARAM)inOffset, (LPARAM)(LPTSTR)inString.c_str());
+        return ::SendMessage(inHandle, CB_FINDSTRING, (WPARAM)inOffset, (LPARAM)(LPTSTR)ToUTF16(inString).c_str());
     }
 
 
@@ -87,36 +103,37 @@ namespace Utils
     }
     
     
-    SIZE getTextSize(HWND inHandle, const String & inText)
+    SIZE getTextSize(HWND inHandle, const std::string & inText)
     {
 	    // get the size in pixels for the given text and font
         SIZE result = {0, 0};    	
 	    HDC hDC = GetDC(inHandle);
 	    SelectObject(hDC, getFont(inHandle));
-        ::GetTextExtentPoint32(hDC, inText.c_str(), (int)inText.size(), &result);
+        std::wstring utf16Text(ToUTF16(inText));
+        ::GetTextExtentPoint32(hDC, utf16Text.c_str(), (int)utf16Text.size(), &result);
 	    ReleaseDC(inHandle, hDC);
 	    return result;
     }
 
 
-    String getWindowText(HWND inHandle)
+    std::string getWindowText(HWND inHandle)
     {
-		String result;
+		std::string result;
 		int length = ::GetWindowTextLength(inHandle);
 		if (length > 0)
 		{
 			TCHAR * buffer = new TCHAR[length+1];
 			::GetWindowText(inHandle, buffer, length+1);
-			result = String(buffer);
+			result = ToUTF8(buffer);
 			delete [] buffer;
 		}
 		return result;
     }
 
     
-    void setWindowText(HWND inHandle, const String & inText)
+    void setWindowText(HWND inHandle, const std::string & inText)
     {
-        ::SetWindowText(inHandle, inText.c_str());
+        ::SetWindowText(inHandle, ToUTF16(inText).c_str());
     }
 
 

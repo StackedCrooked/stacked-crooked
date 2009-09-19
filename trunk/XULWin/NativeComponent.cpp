@@ -5,8 +5,8 @@
 #include "Utils/ErrorReporter.h"
 #include "Utils/WinUtils.h"
 #include "Poco/UnicodeConverter.h"
+#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
-#include <string>
 
 
 using namespace Utils;
@@ -14,6 +14,58 @@ using namespace Utils;
 
 namespace XULWin
 {
+    template<class T>
+    std::string ToString(const T & inValue)
+    {
+        try
+        {
+            return boost::lexical_cast<std::string>(inValue);
+        }
+        catch (boost::bad_lexical_cast &)
+        {
+            ReportError("String2Int: lexical cast failed");
+            return "";
+        }
+    }
+
+
+    std::string Int2String(int inValue)
+    {
+        return ToString(inValue);
+    }
+
+
+    int String2Int(const std::string & inValue)
+    {
+        int result = 0;
+        try
+        {
+            boost::lexical_cast<int>(inValue);
+        }
+        catch (std::exception &)
+        {
+            ReportError("Int2String: lexical cast failed");
+        }
+        return result;
+    }
+
+
+    std::string WString2String(const std::wstring & inText)
+    {
+        std::string result;
+        Poco::UnicodeConverter::toUTF8(inText, result);
+        return result;
+    }
+
+
+    std::wstring String2WString(const std::string & inText)
+    {
+        std::wstring result;
+        Poco::UnicodeConverter::toUTF16(inText, result);
+        return result;
+    }
+
+
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
     
     NativeComponent::Components NativeComponent::sComponentsByHandle;
@@ -28,6 +80,23 @@ namespace XULWin
         mMinimumWidth(Defaults::componentMinimumWidth()),
         mMinimumHeight(Defaults::componentMinimumHeight())
     {
+        {
+            AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
+            AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
+            mAttributeControllers.insert(std::make_pair("height", AttributeController(heightGetter, heightSetter)));
+        }
+
+        {
+            AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
+            AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
+            mAttributeControllers.insert(std::make_pair("width", AttributeController(widthGetter, widthSetter)));
+        }
+
+        {
+            AttributeGetter labelGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
+            AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
+            mAttributeControllers.insert(std::make_pair("label", AttributeController(labelGetter, labelSetter)));
+        }
     }
 
 
@@ -56,18 +125,52 @@ namespace XULWin
         return mMinimumHeight;
     }
     
-
-    bool NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
+    
+    bool NativeComponent::getAttribute(const std::string & inName, std::string & outValue)
     {
-        if (inName == "label")
+        AttributeControllers::iterator it = mAttributeControllers.find(inName);
+        if (it != mAttributeControllers.end())
         {
-            std::wstring utf16Text;
-            Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
-            ::SetWindowText(handle(), utf16Text.c_str());
-            return true;
+            const AttributeController & controller = it->second;
+            const AttributeGetter & getter = controller.getter;
+            if (getter)
+            {
+                outValue = getter();
+                return true;
+            }
         }
         return false;
     }
+    
+    
+    bool NativeComponent::setAttribute(const std::string & inName, const std::string & inValue)
+    {
+        AttributeControllers::iterator it = mAttributeControllers.find(inName);
+        if (it != mAttributeControllers.end())
+        {
+            const AttributeController & controller = it->second;
+            const AttributeSetter & setter = controller.setter;
+            if (setter)
+            {
+                setter(inValue);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+
+    //bool NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
+    //{
+    //    if (inName == "label")
+    //    {
+    //        std::wstring utf16Text;
+    //        Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
+    //        ::SetWindowText(handle(), utf16Text.c_str());
+    //        return true;
+    //    }
+    //    return false;
+    //}
     
     
     void NativeComponent::setOwningElement(Element * inElement)
@@ -188,36 +291,36 @@ namespace XULWin
     }
 
     
-    bool NativeWindow::applyAttribute(const std::string & inName, const std::string & inValue)
-    {
-        if (inName == "width")
-        {
-            try
-            {
-                Utils::setWindowWidth(handle(), boost::lexical_cast<int>(inValue));
-                return true;
-            }
-            catch (boost::bad_lexical_cast & e)
-            {
-                ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
-                return false;
-            }
-        }
-        else if (inName == "height")
-        {
-            try
-            {
-                Utils::setWindowHeight(handle(), boost::lexical_cast<int>(inValue));
-                return true;
-            }
-            catch (boost::bad_lexical_cast & e)
-            {
-                ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
-                return false;
-            }
-        }
-        return NativeComponent::applyAttribute(inName, inValue);
-    }
+    //bool NativeWindow::applyAttribute(const std::string & inName, const std::string & inValue)
+    //{
+    //    if (inName == "width")
+    //    {
+    //        try
+    //        {
+    //            Utils::setWindowWidth(handle(), boost::lexical_cast<int>(inValue));
+    //            return true;
+    //        }
+    //        catch (boost::bad_lexical_cast & e)
+    //        {
+    //            ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
+    //            return false;
+    //        }
+    //    }
+    //    else if (inName == "height")
+    //    {
+    //        try
+    //        {
+    //            Utils::setWindowHeight(handle(), boost::lexical_cast<int>(inValue));
+    //            return true;
+    //        }
+    //        catch (boost::bad_lexical_cast & e)
+    //        {
+    //            ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
+    //            return false;
+    //        }
+    //    }
+    //    return NativeComponent::applyAttribute(inName, inValue);
+    //}
 
 
     LRESULT NativeWindow::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
@@ -365,47 +468,53 @@ namespace XULWin
                       WS_EX_CLIENTEDGE, // exStyle
                       ES_AUTOHSCROLL)
     {
-    }
         
-        
-    bool NativeTextBox::applyAttribute(const std::string & inName, const std::string & inValue)
-    {
-        if (inName == "value")
         {
-            std::wstring text;
-            Poco::UnicodeConverter::toUTF16(inValue, text);
-            ::SetWindowText(handle(), text.c_str());
-            return true;
+            AttributeGetter valueGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
+            AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
+            mAttributeControllers.insert(std::make_pair("value", AttributeController(valueGetter, valueSetter)));
         }
-        return NativeComponent::applyAttribute(inName, inValue);
     }
+        
+        
+    //bool NativeTextBox::applyAttribute(const std::string & inName, const std::string & inValue)
+    //{
+    //    if (inName == "value")
+    //    {
+    //        std::wstring text;
+    //        Poco::UnicodeConverter::toUTF16(inValue, text);
+    //        ::SetWindowText(handle(), text.c_str());
+    //        return true;
+    //    }
+    //    return NativeComponent::applyAttribute(inName, inValue);
+    //}
 
 
     void NativeTextBox::handleCommand(WPARAM wParam, LPARAM lParam)
     {
-        if (HIWORD(wParam) == EN_CHANGE)
-        {
-            Utils::String utf16Text = Utils::getWindowText(handle());
-            std::string utf8Text;
-            Poco::UnicodeConverter::toUTF8(utf16Text, utf8Text);
-            owningElement()->setAttribute("value", utf8Text, false);
+        //if (HIWORD(wParam) == EN_CHANGE)
+        //{
+        //    Utils::String utf16Text = Utils::getWindowText(handle());
+        //    std::string utf8Text;
+        //    Poco::UnicodeConverter::toUTF8(utf16Text, utf8Text);
+        //    owningElement()->setAttribute("value", utf8Text, false);
 
-            static_cast<TextBox*>(owningElement())->OnChanged(0);
-        }
+        //    static_cast<TextBox*>(owningElement())->OnChanged(0);
+        //}
     }
         
         
-    bool NativeLabel::applyAttribute(const std::string & inName, const std::string & inValue)
-    {
-        if (inName == "value")
-        {
-            std::wstring utf16Text;
-            Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
-            ::SetWindowText(handle(), utf16Text.c_str());
-            return true;
-        }
-        return NativeComponent::applyAttribute(inName, inValue);
-    }
+    //bool NativeLabel::applyAttribute(const std::string & inName, const std::string & inValue)
+    //{
+    //    if (inName == "value")
+    //    {
+    //        std::wstring utf16Text;
+    //        Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
+    //        ::SetWindowText(handle(), utf16Text.c_str());
+    //        return true;
+    //    }
+    //    return NativeComponent::applyAttribute(inName, inValue);
+    //}
 
 
     int NativeLabel::minimumWidth() const
@@ -424,29 +533,59 @@ namespace XULWin
     }
     
     
-    bool NativeBox::applyAttribute(const std::string & inName, const std::string & inValue)
-    {
-        if (inName == "orientation")
-        {
-            if (inValue == "horizontal")
-            {
-                mOrientation = HORIZONTAL;
-                return true;
-            }
-            else if (inValue == "vertical")
-            {
-                mOrientation = VERTICAL;
-                return true;
-            }
-            else
-            {
-                ReportError("Invalid orientation: " + inValue);
-                return false;
-            }
-        }
-        return NativeComponent::applyAttribute(inName, inValue);
+    NativeHBox::NativeHBox(NativeComponentPtr inParent) :
+        NativeBox(inParent, HORIZONTAL)
+    {   
     }
+        
+        
+    NativeBox::NativeBox(NativeComponentPtr inParent, Orientation inOrientation) :
+        NativeControl(inParent,
+                      TEXT("STATIC"),
+                      0, // exStyle
+                      0),
+        mOrientation(inOrientation)
+    {
+        struct Helper
+        {
+            static Orientation String2Orientation(const std::string & inValue)
+            {
+                Orientation result = VERTICAL;
+                if (inValue == "horizontal")
+                {
+                    result = HORIZONTAL;
+                }
+                return result;
+            }
+            static std::string Orientation2String(Orientation inOrientation)
+            {
+                if (inOrientation == HORIZONTAL)
+                {
+                    return "horizontal";
+                }
+                else
+                {
+                    return "vertical";
+                }
+            }
+        };
+        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
+        AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
+        mAttributeControllers.insert(std::make_pair("orientation", AttributeController(orientationGetter, orientationSetter)));
+    }
+
+
+    void NativeBox::setOrientation(Orientation inOrientation)
+    {
+        mOrientation = inOrientation;
+    }
+
     
+    Orientation NativeBox::getOrientation()
+    {
+        return mOrientation;
+    }
+
     
     void NativeBox::rebuildLayout()
     {

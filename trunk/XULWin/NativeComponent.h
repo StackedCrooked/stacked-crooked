@@ -3,8 +3,10 @@
 
 
 #include "Layout.h"
+#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <windows.h>
+#include <string>
 #include <map>
 
 
@@ -57,7 +59,11 @@ namespace XULWin
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
 
-        virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
+        bool getAttribute(const std::string & inName, std::string & outValue);
+
+        bool setAttribute(const std::string & inName, const std::string & inValue);
+
+        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
 
     protected:
 
@@ -68,6 +74,21 @@ namespace XULWin
         CommandId mCommandId;
         int mMinimumWidth;
         int mMinimumHeight;
+        
+        typedef boost::function<std::string()> AttributeGetter;
+        typedef boost::function<void(const std::string &)> AttributeSetter;
+        struct AttributeController
+        {
+            AttributeController(AttributeGetter & inGetter, AttributeSetter & inSetter) :
+                getter(inGetter),
+                setter(inSetter)
+            {
+            }
+            AttributeGetter getter;
+            AttributeSetter setter;
+        };
+        typedef std::map<std::string, AttributeController> AttributeControllers;
+        AttributeControllers mAttributeControllers;
 
         typedef std::map<HWND, NativeComponent*> Components;
         static Components sComponentsByHandle;
@@ -83,7 +104,7 @@ namespace XULWin
 
         void showModal();
 
-        bool applyAttribute(const std::string & inName, const std::string & inValue);
+        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -135,7 +156,7 @@ namespace XULWin
     public:
         NativeLabel(NativeComponentPtr inParent);
 
-        virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
+        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
 
         virtual int minimumWidth() const;
 
@@ -148,7 +169,7 @@ namespace XULWin
     public:
         NativeTextBox(NativeComponentPtr inParent);
 
-        virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
+        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
 
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
     };
@@ -170,19 +191,16 @@ namespace XULWin
     class NativeBox : public NativeControl
     {
     public:
-        NativeBox(NativeComponentPtr inParent, Orientation inOrientation = HORIZONTAL) :
-            NativeControl(inParent,
-                          TEXT("STATIC"),
-                          0, // exStyle
-                          0),
-            mOrientation(inOrientation)
-        {
-        }
+        NativeBox(NativeComponentPtr inParent, Orientation inOrientation = HORIZONTAL);
 
         virtual void rebuildLayout();
 
-        virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
+        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
 
+        void setOrientation(Orientation inOrientation);
+
+        Orientation getOrientation();
+    private:
         Orientation mOrientation;
     };
 
@@ -190,10 +208,7 @@ namespace XULWin
     class NativeHBox : public NativeBox
     {
     public:
-        NativeHBox(NativeComponentPtr inParent) :
-            NativeBox(inParent, HORIZONTAL)
-        {
-        }
+        NativeHBox(NativeComponentPtr inParent);
             
         virtual int minimumWidth() const;
 

@@ -67,7 +67,7 @@ namespace XULWin
             return 0;
         }
 
-        const std::string & label() const;
+        std::string label() const;
 
         void setLabel(const std::string & inLabel);
 
@@ -81,9 +81,9 @@ namespace XULWin
 
         Element * parent() const { return mParent; }
 
-        const std::string & getAttribute(const std::string & inName) const;
+        std::string getAttribute(const std::string & inName) const;
 
-        void setAttribute(const std::string & inName, const std::string & inValue, bool inApplyToNativeComponent);
+        void setAttribute(const std::string & inName, const std::string & inValue);
 
         void setAttributes(const AttributesMapping & inAttributes);
 
@@ -160,7 +160,7 @@ namespace XULWin
 
         static const char * Type() { return "label"; }
 
-        const std::string & value() const;
+        std::string value() const;
     
     private:
         friend class Element;
@@ -289,9 +289,9 @@ namespace XULWin
 
         virtual void init();
 
-        const std::string & label() const;
+        std::string label() const;
 
-        const std::string & value() const;
+        std::string value() const;
 
     private:
         friend class Element;

@@ -4,7 +4,6 @@
 #include "Layout.h"
 #include "Utils/ErrorReporter.h"
 #include "Utils/WinUtils.h"
-#include "Poco/UnicodeConverter.h"
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -50,20 +49,20 @@ namespace XULWin
     }
 
 
-    std::string WString2String(const std::wstring & inText)
-    {
-        std::string result;
-        Poco::UnicodeConverter::toUTF8(inText, result);
-        return result;
-    }
+    //std::string WString2String(const std::wstring & inText)
+    //{
+    //    std::string result;
+    //    Poco::UnicodeConverter::toUTF8(inText, result);
+    //    return result;
+    //}
 
 
-    std::wstring String2WString(const std::string & inText)
-    {
-        std::wstring result;
-        Poco::UnicodeConverter::toUTF16(inText, result);
-        return result;
-    }
+    //std::wstring String2WString(const std::string & inText)
+    //{
+    //    std::wstring result;
+    //    Poco::UnicodeConverter::toUTF16(inText, result);
+    //    return result;
+    //}
 
 
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
@@ -477,8 +476,8 @@ namespace XULWin
                       0, // exStyle
                       BS_PUSHBUTTON)
     {
-        AttributeGetter labelGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
-        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
+        AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("label", AttributeController(labelGetter, labelSetter));
     }
 
@@ -489,8 +488,8 @@ namespace XULWin
                       0, // exStyle
                       0)
     {
-        AttributeGetter valueGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
-        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
+        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
     }
 
@@ -503,8 +502,8 @@ namespace XULWin
     {
         
         {
-            AttributeGetter valueGetter = boost::bind(&WString2String, boost::bind(&Utils::getWindowText, handle()));
-            AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), boost::bind(&String2WString, _1));
+            AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
+            AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
             setAttributeController("value", AttributeController(valueGetter, valueSetter));
         }
     }
@@ -552,10 +551,7 @@ namespace XULWin
 
     int NativeLabel::minimumWidth() const
     {
-        std::string text = owningElement()->getAttribute("value");
-        std::wstring utf16Text;
-        Poco::UnicodeConverter::toUTF16(text, utf16Text);
-        SIZE size = Utils::getTextSize(mHandle, utf16Text);
+        SIZE size = Utils::getTextSize(mHandle, owningElement()->getAttribute("value"));
         return size.cx;
     }
 
@@ -774,6 +770,7 @@ namespace XULWin
     
     void NativeMenuList::move(int x, int y, int w, int h)
     {
+        // The height of a combobox in Win32 is the height of the dropdown menu + the height of the widget itself.
         h = h + Utils::getComboBoxItemCount(handle()) * Defaults::dropDownListItemHeight();
         NativeComponent::move(x, y, w, h);
     }
@@ -781,25 +778,18 @@ namespace XULWin
 
     void NativeMenuList::addMenuItem(const std::string & inText)
     {
-        std::wstring utf16Text;
-        Poco::UnicodeConverter::toUTF16(inText, utf16Text);
-        Utils::addStringToComboBox(handle(), utf16Text.c_str());
+        Utils::addStringToComboBox(handle(), inText);
         int count = Utils::getComboBoxItemCount(handle());		
 		if (count == 1)
 		{
             Utils::selectComboBoxItem(handle(), 0);
 		}
-		
-		// The height of a combobox defines the height of the dropdown menu + the height of the widget itself.
-        //mMinimumHeight = Defaults::controlHeight() + count*Defaults::dropDownListItemHeight();
     }
 
 
     void NativeMenuList::removeMenuItem(const std::string & inText)
     {
-        std::wstring utf16String;
-        Poco::UnicodeConverter::toUTF16(inText, utf16String);
-        int idx = Utils::findStringInComboBox(handle(), utf16String.c_str());
+        int idx = Utils::findStringInComboBox(handle(), inText);
         if (idx == CB_ERR)
         {
             ReportError("MenuList: remove failed because item not found: '" + inText + "'.");
@@ -807,9 +797,6 @@ namespace XULWin
         }
 
         Utils::deleteStringFromComboBox(handle(), idx);
-		
-		// The height of a combobox defines the height of the dropdown menu + the height of the widget itself.
-        mMinimumHeight = Defaults::controlHeight() + Utils::getComboBoxItemCount(handle())*Defaults::dropDownListItemHeight();
     }
 
 

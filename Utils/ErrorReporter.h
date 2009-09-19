@@ -84,8 +84,8 @@ namespace Utils
 
 		/**
 		 * On destruction the ErrorCatcher will log its error information.
-         * However, you can also propagate the error, so that ErrorCatcher
-         * higher in the hierarchy will deal with it.
+         * However, you can also propagate the error, so that the next
+         * ErrorCatcher up in the hierarchy will deal with it.
          */
 		void propagate();
 

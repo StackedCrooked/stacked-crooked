@@ -30,7 +30,7 @@ void registerTypes(HMODULE inModule)
 
 class TestDropDown
 {
-    std::vector<boost::signals::scoped_connection> mConnections;
+    std::vector<boost::signals::connection> mConnections;
 public:
     void run()
     {

@@ -38,6 +38,18 @@ namespace XULWin
     }
 
 
+    const std::string & Element::label() const
+    {
+        return getAttribute("label");
+    }
+
+    
+    void Element::setLabel(const std::string & inLabel)
+    {
+        setAttribute("label", inLabel, true);
+    }
+
+
     void Element::handleEvent(const std::string & inEvent)
     {
         EventHandlers::iterator it = mEventHandlers.find(inEvent);
@@ -126,6 +138,19 @@ namespace XULWin
     }
     
     
+    void Element::setAttribute(const std::string & inName, const std::string & inValue, bool inApplyToNativeComponent)
+    {
+        mAttributes[inName] = inValue;
+        if (inApplyToNativeComponent)
+        {
+            if (!mNativeComponent->applyAttribute(inName, inValue))
+            {
+                ReportError("Failed to apply the attribute with name '" + inName + "' and value '" + inValue + "'.");
+            }
+        }
+    }
+    
+    
     boost::shared_ptr<NativeComponent> Element::nativeComponent() const
     {
         return mNativeComponent;
@@ -165,6 +190,12 @@ namespace XULWin
                 inParent,
                 NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
     {
+    }
+
+
+    const std::string & Label::value() const
+    {
+        return getAttribute("value");
     }
 
 
@@ -218,15 +249,15 @@ namespace XULWin
     
     void MenuList::addMenuItem(const MenuItem * inItem)
     {
-        NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
-        menuList->addMenuItem(inItem->getAttribute("label"));
+        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent().get());
+        nativeMenuList->addMenuItem(inItem->label());
     }
         
     
     void MenuList::removeMenuItem(const MenuItem * inItem)
     {
-        NativeMenuList * menuList = static_cast<NativeMenuList *>(nativeComponent().get());
-        menuList->removeMenuItem(inItem->getAttribute("label"));
+        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent().get());
+        nativeMenuList->removeMenuItem(inItem->label());
     }
 
     
@@ -291,6 +322,18 @@ namespace XULWin
         {
             ReportError("MenuItem is located in non-compatible container.");
         }
+    }
+
+    
+    const std::string & MenuItem::label() const
+    {
+        return getAttribute("label");
+    }
+
+    
+    const std::string & MenuItem::value() const
+    {
+        return getAttribute("value");
     }
 
 

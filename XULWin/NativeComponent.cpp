@@ -57,14 +57,16 @@ namespace XULWin
     }
     
 
-    void NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
+    bool NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
     {
         if (inName == "label")
         {
             std::wstring utf16Text;
             Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
             ::SetWindowText(handle(), utf16Text.c_str());
+            return true;
         }
+        return false;
     }
     
     
@@ -186,18 +188,19 @@ namespace XULWin
     }
 
     
-    void NativeWindow::applyAttribute(const std::string & inName, const std::string & inValue)
+    bool NativeWindow::applyAttribute(const std::string & inName, const std::string & inValue)
     {
-        NativeComponent::applyAttribute(inName, inValue);
         if (inName == "width")
         {
             try
             {
                 Utils::setWindowWidth(handle(), boost::lexical_cast<int>(inValue));
+                return true;
             }
             catch (boost::bad_lexical_cast & e)
             {
                 ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
+                return false;
             }
         }
         else if (inName == "height")
@@ -205,12 +208,15 @@ namespace XULWin
             try
             {
                 Utils::setWindowHeight(handle(), boost::lexical_cast<int>(inValue));
+                return true;
             }
             catch (boost::bad_lexical_cast & e)
             {
                 ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
+                return false;
             }
         }
+        return NativeComponent::applyAttribute(inName, inValue);
     }
 
 
@@ -362,15 +368,16 @@ namespace XULWin
     }
         
         
-    void NativeTextBox::applyAttribute(const std::string & inName, const std::string & inValue)
+    bool NativeTextBox::applyAttribute(const std::string & inName, const std::string & inValue)
     {
-        NativeComponent::applyAttribute(inName, inValue);
         if (inName == "value")
         {
             std::wstring text;
             Poco::UnicodeConverter::toUTF16(inValue, text);
             ::SetWindowText(handle(), text.c_str());
+            return true;
         }
+        return NativeComponent::applyAttribute(inName, inValue);
     }
 
 
@@ -378,20 +385,26 @@ namespace XULWin
     {
         if (HIWORD(wParam) == EN_CHANGE)
         {
+            Utils::String utf16Text = Utils::getWindowText(handle());
+            std::string utf8Text;
+            Poco::UnicodeConverter::toUTF8(utf16Text, utf8Text);
+            owningElement()->setAttribute("value", utf8Text, false);
+
             static_cast<TextBox*>(owningElement())->OnChanged(0);
         }
     }
         
         
-    void NativeLabel::applyAttribute(const std::string & inName, const std::string & inValue)
+    bool NativeLabel::applyAttribute(const std::string & inName, const std::string & inValue)
     {
-        NativeComponent::applyAttribute(inName, inValue);
         if (inName == "value")
         {
             std::wstring utf16Text;
             Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
             ::SetWindowText(handle(), utf16Text.c_str());
+            return true;
         }
+        return NativeComponent::applyAttribute(inName, inValue);
     }
 
 
@@ -400,7 +413,7 @@ namespace XULWin
         std::string text = owningElement()->getAttribute("value");
         std::wstring utf16Text;
         Poco::UnicodeConverter::toUTF16(text, utf16Text);
-        SIZE size = Utils::GetTextSize(mHandle, utf16Text);
+        SIZE size = Utils::getTextSize(mHandle, utf16Text);
         return size.cx;
     }
 
@@ -411,24 +424,27 @@ namespace XULWin
     }
     
     
-    void NativeBox::applyAttribute(const std::string & inName, const std::string & inValue)
+    bool NativeBox::applyAttribute(const std::string & inName, const std::string & inValue)
     {
-        NativeComponent::applyAttribute(inName, inValue);
         if (inName == "orientation")
         {
             if (inValue == "horizontal")
             {
                 mOrientation = HORIZONTAL;
+                return true;
             }
             else if (inValue == "vertical")
             {
                 mOrientation = VERTICAL;
+                return true;
             }
             else
             {
                 ReportError("Invalid orientation: " + inValue);
+                return false;
             }
         }
+        return NativeComponent::applyAttribute(inName, inValue);
     }
     
     

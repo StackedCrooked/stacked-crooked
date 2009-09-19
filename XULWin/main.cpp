@@ -60,7 +60,8 @@ public:
         if (popup && input)
         {
             AttributesMapping attr;
-            attr["label"] = input->getAttribute("value");
+            std::string value = input->getAttribute("value");
+            attr["label"] = value;
             MenuItem::Create(popup, attr);
         }
     }

@@ -19,7 +19,7 @@ namespace Utils
 
     void deleteStringFromComboBox(HWND inHandle, int inIndex);
 
-    // returns CB_ERR if not found
+    // returns CB_ERR (-1) if not found
     int findStringInComboBox(HWND inHandle, const String & inString, int inOffset = -1);
 
     int getComboBoxItemCount(HWND inHandle);
@@ -30,9 +30,13 @@ namespace Utils
 
     void setWindowHeight(HWND inHandle, int inHeight);
 
-    HFONT GetFont(HWND inHandle);
+    HFONT getFont(HWND inHandle);
 
-    SIZE GetTextSize(HWND inHandle, const String & inText);
+    SIZE getTextSize(HWND inHandle, const String & inText);
+
+    String getWindowText(HWND inHandle);
+
+    //void setWindowText(HWND inHandle, const String & inText);
 
 } // namespace Utils
 

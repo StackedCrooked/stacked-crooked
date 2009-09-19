@@ -65,22 +65,42 @@ namespace Utils
     }
 
     
-    HFONT GetFont(HWND inHandle)
+    HFONT getFont(HWND inHandle)
     {
 	    return (HFONT)SendMessage(inHandle, WM_GETFONT, 0, 0);
     }
     
     
-    SIZE GetTextSize(HWND inHandle, const String & inText)
+    SIZE getTextSize(HWND inHandle, const String & inText)
     {
 	    // get the size in pixels for the given text and font
         SIZE result = {0, 0};    	
 	    HDC hDC = GetDC(inHandle);
-	    SelectObject(hDC, GetFont(inHandle));
+	    SelectObject(hDC, getFont(inHandle));
         ::GetTextExtentPoint32(hDC, inText.c_str(), (int)inText.size(), &result);
 	    ReleaseDC(inHandle, hDC);
 	    return result;
     }
+
+
+    String getWindowText(HWND inHandle)
+    {
+		String result;
+		int length = ::GetWindowTextLength(inHandle);
+		if (length > 0)
+		{
+			TCHAR * buffer = new TCHAR[length+1];
+			::GetWindowText(inHandle, buffer, length+1);
+			result = String(buffer);
+			delete [] buffer;
+		}
+		return result;
+    }
+
+    
+    //void setWindowText(HWND inHandle, const String & inText)
+    //{
+    //}
 
 
 } // namespace Utils

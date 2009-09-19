@@ -45,7 +45,11 @@ namespace XULWin
         // Override this method to add initialization code
         virtual void init() {}
 
-        const std::string & type() const;
+        const std::string & type() const;        
+
+        const std::string & label() const;
+
+        void setLabel(const std::string & inLabel);
 
         void handleEvent(const std::string & inEvent);
 
@@ -60,6 +64,8 @@ namespace XULWin
         void setAttributes(const AttributesMapping & inAttributes);
 
         const std::string & getAttribute(const std::string & inName) const;
+
+        void setAttribute(const std::string & inName, const std::string & inValue, bool inApplyToNativeComponent);
 
         boost::shared_ptr<NativeComponent> nativeComponent() const;
 
@@ -133,6 +139,8 @@ namespace XULWin
         { return Element::Create<Label>(inParent, inAttr); }
 
         static const char * Type() { return "label"; }
+
+        const std::string & value() const;
     
     private:
         friend class Element;
@@ -260,6 +268,10 @@ namespace XULWin
         virtual ~MenuItem();
 
         virtual void init();
+
+        const std::string & label() const;
+
+        const std::string & value() const;
 
     private:
         friend class Element;

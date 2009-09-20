@@ -379,7 +379,7 @@ namespace XULWin
             inExStyle, 
             inClassName,
             TEXT(""),
-            inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
+            WS_BORDER | inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
             0, 0, mMinimumWidth, mMinimumHeight,
             mParent ? mParent->handle() : 0,
             (HMENU)mCommandId.intValue(),
@@ -557,7 +557,8 @@ namespace XULWin
                       TEXT("STATIC"),
                       0, // exStyle
                       0),
-        mOrientation(inOrientation)
+        mOrientation(inOrientation),
+        mAlign(Start)
     {
         struct Helper
         {
@@ -581,10 +582,58 @@ namespace XULWin
                     return "vertical";
                 }
             }
+            static Align String2Align(const std::string & inValue)
+            {
+                Align result = Start;
+                if (inValue == "center")
+                {
+                    result = Center;
+                }
+                else if (inValue == "end")
+                {
+                    result = End;
+                }
+                else if (inValue == "stretch")
+                {
+                    result = Stretch;
+                }
+                return result;
+            }
+            static std::string Align2String(Align inAlign)
+            {
+                if (inAlign == Start)
+                {
+                    return "start";
+                }
+                else if (inAlign == Center)
+                {
+                    return "center";
+                }
+                else if (inAlign == End)
+                {
+                    return "end";
+                }
+                else if (inAlign == Stretch)
+                {
+                    return "stretch";
+                }
+                else
+                {
+                    assert(!"Invalid Align");
+                    return "";
+                }
+            }
         };
-        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
-        AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
-        setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
+        {
+            AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
+            AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
+            setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
+        }
+        {
+            AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&Helper::String2Align, _1));
+            AttributeGetter alignGetter = boost::bind(&Helper::Align2String, boost::bind(&NativeBox::getAlignment, this));
+            setAttributeController("align", AttributeController(alignGetter, alignSetter));
+        }
     }
 
 
@@ -597,6 +646,18 @@ namespace XULWin
     Orientation NativeBox::getOrientation()
     {
         return mOrientation;
+    }
+        
+        
+    void NativeBox::setAlignment(Align inAlign)
+    {
+        mAlign = inAlign;
+    }
+
+    
+    NativeBox::Align NativeBox::getAlignment() const
+    {
+        return mAlign;
     }
 
     
@@ -638,8 +699,9 @@ namespace XULWin
             if (flexValue != 0)
             {
                 nonZeroFlexValues.push_back(
-                    LinearLayoutManager::Portion(child->nativeComponent()->minimumWidth(),
-                                                 flexValue));
+                    LinearLayoutManager::Portion(flexValue,
+                                                 mOrientation == HORIZONTAL ? child->nativeComponent()->minimumWidth() :
+                                                                              child->nativeComponent()->minimumHeight()));
             }
             else
             {
@@ -661,51 +723,102 @@ namespace XULWin
         // Use the flex values to obtain the child rectangles
         //
         std::vector<int> portions;
-        layoutManager.GetPortions(availableSpace, nonZeroFlexValues.size(), portions);
+        layoutManager.GetPortions(availableSpace, nonZeroFlexValues, portions);
 
         //
         // Apply the new child rectangles
         //
-        int offsetX = 0;
-        int offsetY = 0;
+        int offsetBoxX = 0;
+        int offsetChildX = 0;
+        int offsetBoxY = 0;
+        int offsetChildY = 0;
         int portionIdx = 0;
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
             ElementPtr child = mElement->children()[idx];
             HWND childHandle = child->nativeComponent()->handle();
             int minWidth = child->nativeComponent()->minimumWidth();
-            int width = minWidth;
+            int childWidth = minWidth;
+            int boxWidth = minWidth;
             int minHeight = child->nativeComponent()->minimumHeight();
-            int height = minHeight;
+            int childHeight = minHeight;
+            int boxHeight = minHeight;
             if (allFlexValues[idx] != 0)
             {
                 if (mOrientation == HORIZONTAL)
                 {
-                    width = portions[portionIdx];
-                    if (width < minWidth)
+                    boxWidth = portions[portionIdx];
+                    if (boxWidth < minWidth)
                     {
-                        width = minWidth;
+                        boxWidth = minWidth;
                     }
+                    if (boxWidth > minWidth)
+                    {
+                        if (mAlign == Start)
+                        {
+                            // ok do nothing
+                        }
+                        else if (mAlign == Center)
+                        {
+                            offsetChildX += (boxWidth - childWidth)/2;
+                        }
+                        else if (mAlign == End)
+                        {
+                            offsetChildX += boxWidth - childWidth;
+                        }
+                    }
+                    childWidth = boxWidth;
                 }
                 else
                 {
-                    height = portions[portionIdx];
-                    if (height < minHeight)
+                    boxHeight = portions[portionIdx];
+                    if (boxHeight < minHeight)
                     {
-                        height = minHeight;
+                        boxHeight = minHeight;
                     }
+                    if (boxHeight > minHeight)
+                    {
+                        if (mAlign == Start)
+                        {
+                            // ok do nothing
+                        }
+                        else if (mAlign == Center)
+                        {
+                            offsetChildY += (boxHeight - childHeight)/2;
+                        }
+                        else if (mAlign == End)
+                        {
+                            offsetChildY += boxHeight - childHeight;
+                        }
+                    }
+                    childHeight = boxHeight;
                 }
                 portionIdx++;
             }
-            child->nativeComponent()->move(offsetX, offsetY, width, height);
+            
+            if (mAlign == Stretch)
+            {
+                if (mOrientation == HORIZONTAL)
+                {
+                    childHeight = rc.bottom - rc.top;
+                }
+                else
+                {
+                    childWidth = rc.right - rc.left;
+                }
+            }
+
+            child->nativeComponent()->move(offsetChildX, offsetChildY, childWidth, childHeight);
 
             if (mOrientation == HORIZONTAL)
             {
-                offsetX += width;
+                offsetBoxX += boxWidth;
+                offsetChildX = offsetBoxX;
             }
             if (mOrientation == VERTICAL)
             {
-                offsetY += height;
+                offsetBoxY += boxHeight;
+                offsetChildY = offsetBoxY;
             }
         }
         rebuildChildLayouts();

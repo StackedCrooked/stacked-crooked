@@ -54,7 +54,7 @@ namespace XULWin
             {
                 length = (int)(0.5 + (float)inLength*(float)inProportions[idx].Flex/(float)sumOfProportions);
             }
-            int minLength = length < inProportions[idx].MinSize;
+            int minLength = inProportions[idx].MinSize;
             if (length < minLength)
             {
                 length = minLength;

@@ -5,8 +5,10 @@
 	      width="320"
 	      height="120">
 
-	<!-- Tree -->
-	<box orientation="vertical" flex="1" id="main-box">
+	<box id="main-box"
+       orientation="vertical"
+       flex="1"
+       align="stretch">
     <label flex="0" value="Hiragana: ひらがな"></label>
     <hbox flex="0">
       <label flex="0" value="Target:"></label>
@@ -20,16 +22,12 @@
       </menulist>
     </hbox>
     <hbox flex="1">
-      <hbox>
-        <textbox value="John" id="input"/>
+        <textbox value="John" id="input" flex="1"/>
         <button label="Add" id="addbutton"/>
-      </hbox>
     </hbox>
     <hbox flex="0">
-      <hbox>
-        <label value="filler"></label>
-        <button label="Remove" id="removebutton"/>
-      </hbox>
+      <label value="filler"></label>
+      <button label="Remove" id="removebutton"/>
     </hbox>
 	</box>
 </window>

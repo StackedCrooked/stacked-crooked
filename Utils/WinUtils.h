@@ -8,6 +8,8 @@
 
 namespace Utils
 {
+    std::string getLastError(DWORD lastError);
+
     void addStringToComboBox(HWND inHandle, const std::string & inString);
 
     void deleteStringFromComboBox(HWND inHandle, int inIndex);

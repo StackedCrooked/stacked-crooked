@@ -6,6 +6,7 @@
 #include "Utils/WinUtils.h"
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
+#include <CommCtrl.h>
 
 
 using namespace Utils;
@@ -69,15 +70,18 @@ namespace XULWin
 
     NativeComponent::~NativeComponent()
     {
-        Components::iterator it = sComponentsByHandle.find(mHandle);
-        bool found = it != sComponentsByHandle.end();
-        assert(found);
-        if (found)
+        if (mHandle)
         {
-            sComponentsByHandle.erase(it);
-        }
+            Components::iterator it = sComponentsByHandle.find(mHandle);
+            bool found = it != sComponentsByHandle.end();
+            assert(found);
+            if (found)
+            {
+                sComponentsByHandle.erase(it);
+            }
 
-        ::DestroyWindow(mHandle);
+            ::DestroyWindow(mHandle);
+        }
     }
     
     
@@ -348,6 +352,11 @@ namespace XULWin
             mModuleHandle,
             0
         );
+
+        if (!mHandle)
+        {
+            MessageBoxA(0, Utils::getLastError(::GetLastError()).c_str(), "XULWin Error", MB_OK);
+        }
 
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
@@ -903,6 +912,43 @@ namespace XULWin
     int NativeSeparator::minimumHeight() const
     {
         return 1;
+    }
+
+
+    NativeMenuButton::NativeMenuButton(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TOOLBARCLASSNAME,
+                      0, // exStyle
+                      0)
+    {
+        ::SendMessage(handle(), TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0); 
+
+        CommandId id;
+        // add to toolbar
+        std::wstring itemText = L"test";
+        TBBUTTON theToolBarButton;
+        theToolBarButton.idCommand = id.intValue();
+        theToolBarButton.fsState = TBSTATE_ENABLED;
+        theToolBarButton.fsStyle = BTNS_BUTTON | BTNS_DROPDOWN | BTNS_SHOWTEXT;
+        theToolBarButton.dwData = 0; 
+        theToolBarButton.iString = (INT_PTR)itemText.c_str();
+        theToolBarButton.iBitmap = I_IMAGENONE;
+
+        SendMessage(handle(), TB_ADDBUTTONS, 1, (LPARAM)(LPTBBUTTON)&theToolBarButton); 
+        SendMessage(handle(), TB_AUTOSIZE, 0, 0);
+        ShowWindow(handle(), SW_SHOW); 
+    }
+        
+        
+    int NativeMenuButton::minimumWidth() const
+    {
+        return 200;
+    }
+
+    
+    int NativeMenuButton::minimumHeight() const
+    {
+        return 100;
     }
 
 

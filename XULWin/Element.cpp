@@ -372,4 +372,17 @@ namespace XULWin
     }
 
 
+    MenuButton::MenuButton(ElementPtr inParent) :
+        Element(MenuButton::Type(),
+                inParent,
+                NativeComponentPtr(new NativeMenuButton(inParent->nativeComponent())))
+    {
+    }
+
+
+    MenuButton::~MenuButton()
+    {
+    }
+
+
 } // XULWin

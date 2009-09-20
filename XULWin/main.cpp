@@ -5,6 +5,7 @@
 #include "Utils/ErrorReporter.h"
 #include <boost/scoped_ptr.hpp>
 #include <windows.h>
+#include <commctrl.h>
 
 
 using namespace XULWin;
@@ -27,6 +28,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<MenuItem>();
     ElementFactory::Instance().registerElement<TextBox>();
     ElementFactory::Instance().registerElement<Separator>();
+    ElementFactory::Instance().registerElement<MenuButton>();
 }
 
 
@@ -106,6 +108,17 @@ void log(const std::string & inMessage)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    // Ensure that the common control DLL is loaded. 
+	INITCOMMONCONTROLSEX icex;
+	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+	icex.dwICC  = ICC_WIN95_CLASSES
+					| ICC_DATE_CLASSES
+					| ICC_USEREX_CLASSES
+					| ICC_COOL_CLASSES
+					| ICC_BAR_CLASSES;;
+	BOOL ok = InitCommonControlsEx(&icex);
+    assert(ok);
+
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);

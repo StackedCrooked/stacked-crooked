@@ -196,8 +196,6 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
-
         void setOrientation(Orientation inOrientation);
 
         Orientation getOrientation();

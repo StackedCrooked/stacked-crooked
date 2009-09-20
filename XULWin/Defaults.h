@@ -18,6 +18,8 @@ namespace XULWin
         int componentMinimumWidth() { return 80; }
 
         int componentMinimumHeight() { return 20; }
+
+        int textBoxMinimumWidth() { return 2; }
         
         namespace Attributes
         {

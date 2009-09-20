@@ -379,7 +379,7 @@ namespace XULWin
             inExStyle, 
             inClassName,
             TEXT(""),
-            WS_BORDER | inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
+            inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
             0, 0, mMinimumWidth, mMinimumHeight,
             mParent ? mParent->handle() : 0,
             (HMENU)mCommandId.intValue(),
@@ -470,7 +470,7 @@ namespace XULWin
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
-                      0)
+                      SS_LEFT | SS_CENTERIMAGE)
     {
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);

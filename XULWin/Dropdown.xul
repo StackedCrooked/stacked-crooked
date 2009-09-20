@@ -51,12 +51,7 @@
   </script>
   <vbox>
   <hbox align="center">
-    <text class="label" value="Foo Label 1:" for="nerp1"/>
-    <textbox flex="1" id="nerp1" disabled="true" value="disabled"/>
-    <button label="Test Property APIs" oncommand="testProperty('nerp1');"/>
-  </hbox>
-  <hbox align="center">
-    <text class="label" value="Foo Label 2:" for="nerp2"/>
+    <text class="label" value="Foo Label 1:" for="nerp2"/>
     <textbox flex="1" id="nerp2" readonly="true" value="readonly"/>
     <button label="Test Property APIs" oncommand="testProperty('nerp2');"/>
   </hbox>

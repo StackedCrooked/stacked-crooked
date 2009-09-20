@@ -15,6 +15,8 @@ namespace XULWin
 
         int textPadding() { return 6; }
 
+        int spacing() { return 2; }
+
         int dropDownListItemHeight() { return 14; }
 
         int componentMinimumWidth() { return 80; }

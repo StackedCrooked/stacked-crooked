@@ -625,6 +625,7 @@ namespace XULWin
         {
             availableSpace = rc.bottom - rc.top;
         }
+        availableSpace -= (1 + mElement->children().size())*Defaults::spacing();
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
             ElementPtr child = mElement->children()[idx];
@@ -690,57 +691,71 @@ namespace XULWin
             int minHeight = child->nativeComponent()->minimumHeight();
             int childHeight = minHeight;
             int boxHeight = minHeight;
+            int portion = 0;
             if (allFlexValues[idx] != 0)
-            {
-                if (mOrientation == HORIZONTAL)
-                {
-                    boxWidth = portions[portionIdx];
-                    if (boxWidth < minWidth)
-                    {
-                        boxWidth = minWidth;
-                    }
-                    if (boxWidth > minWidth)
-                    {
-                        if (mAlign == Start)
-                        {
-                            // ok do nothing
-                        }
-                        else if (mAlign == Center)
-                        {
-                            offsetChildX += (boxWidth - childWidth)/2;
-                        }
-                        else if (mAlign == End)
-                        {
-                            offsetChildX += boxWidth - childWidth;
-                        }
-                    }
-                    childWidth = boxWidth;
-                }
-                else
-                {
-                    boxHeight = portions[portionIdx];
-                    if (boxHeight < minHeight)
-                    {
-                        boxHeight = minHeight;
-                    }
-                    if (boxHeight > minHeight)
-                    {
-                        if (mAlign == Start)
-                        {
-                            // ok do nothing
-                        }
-                        else if (mAlign == Center)
-                        {
-                            offsetChildY += (boxHeight - childHeight)/2;
-                        }
-                        else if (mAlign == End)
-                        {
-                            offsetChildY += boxHeight - childHeight;
-                        }
-                    }
-                    childHeight = boxHeight;
-                }
+            {     
+                portion = allFlexValues[idx];
                 portionIdx++;
+            }
+            else
+            {
+                portion = 2*Defaults::spacing() + mOrientation == HORIZONTAL ? minWidth : minHeight;
+            }
+            struct Helper
+            {
+                static void calculateLengths(NativeBox::Align inAlignment,
+                                             int portion,
+                                             int minLength,
+                                             int & boxLength,
+                                             int & childLength, 
+                                             int & childOffset, 
+                                             int & childOffset2)
+                {
+                    boxLength = portion;
+                    if (boxLength < minLength)
+                    {
+                        boxLength = minLength;
+                    }
+                    childLength = boxLength;
+                    boxLength += 2*Defaults::spacing();
+                    if (boxLength > minLength)
+                    {
+                        if (inAlignment == Center)
+                        {
+                            childOffset2 += (boxLength - childLength)/2;
+                        }
+                        else if (inAlignment == End)
+                        {
+                            childOffset += boxLength - childLength;
+                        }
+                    }
+                }
+            };
+            if (mOrientation == HORIZONTAL)
+            {
+                Helper::calculateLengths(mAlign,
+                                         portion,
+                                         minWidth,
+                                         boxWidth,
+                                         childWidth,
+                                         offsetChildX,
+                                         offsetChildY);
+            }
+            else
+            {
+                Helper::calculateLengths(mAlign,
+                                         portion,
+                                         minHeight,
+                                         boxHeight,
+                                         childHeight,
+                                         offsetChildY,
+                                         offsetChildX);
+            }
+            
+            if (mAlign == Start)
+            {
+                offsetChildX += Defaults::spacing();
+                offsetChildY += Defaults::spacing();
             }
             
             if (mAlign == Stretch || child->nativeComponent()->expansive())
@@ -754,17 +769,20 @@ namespace XULWin
                     childWidth = rc.right - rc.left;
                 }
             }
-
-            child->nativeComponent()->move(offsetChildX, offsetChildY, childWidth, childHeight);
+            child->nativeComponent()->move(offsetChildX,
+                                           offsetChildY,
+                                           childWidth, childHeight);
 
             if (mOrientation == HORIZONTAL)
             {
                 offsetBoxX += boxWidth;
                 offsetChildX = offsetBoxX;
+                offsetChildY = 0;
             }
             if (mOrientation == VERTICAL)
             {
                 offsetBoxY += boxHeight;
+                offsetChildX = 0;
                 offsetChildY = offsetBoxY;
             }
         }
@@ -779,6 +797,7 @@ namespace XULWin
         {
             result += mElement->children()[idx]->nativeComponent()->minimumWidth();
         }
+        result += (1 + mElement->children().size())*Defaults::spacing();
         return result;
     }
 
@@ -794,6 +813,7 @@ namespace XULWin
                 result = height;
             }
         }
+        result += 2*Defaults::spacing();
         return result;
     }
 
@@ -809,6 +829,7 @@ namespace XULWin
                 result = width;
             }
         }
+        result += 2*Defaults::spacing();
         return result;
     }
 
@@ -820,6 +841,7 @@ namespace XULWin
         {
             result += mElement->children()[idx]->nativeComponent()->minimumHeight();
         }
+        result += (1 + mElement->children().size())*Defaults::spacing();
         return result;
     }
     

@@ -9,10 +9,26 @@
 	persist="screenX screenY width height sizemode">
 
 	<!-- Tree -->
-  <hbox>
-    <label flex="0" value="test1"></label>
-    <label flex="1" value="test2"></label>
-    <label flex="0" value="test3"></label>
-    <label flex="0" value="test4"></label>
-  </hbox>
+  <grid>
+    <columns>
+      <column flex="1"/>
+      <column flex="2"/>
+    </columns>
+    <rows>
+      <row>
+        <label value="User name"/>
+        <textbox id="user"/>
+      </row>
+      <row>
+        <label value="Group"/>
+        <menulist>
+          <menupopup>
+            <menuitem label="Accounts"/>
+            <menuitem label="Sales" selected="true"/>
+            <menuitem label="Support"/>
+          </menupopup>
+        </menulist>
+      </row>
+    </rows>
+  </grid>
 </window>

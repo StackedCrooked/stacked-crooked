@@ -1,6 +1,5 @@
 #include "NativeComponent.h"
 #include "Defaults.h"
-#include "Element.h"
 #include "Layout.h"
 #include "Utils/ErrorReporter.h"
 #include "Utils/WinUtils.h"
@@ -949,6 +948,42 @@ namespace XULWin
     int NativeMenuButton::minimumHeight() const
     {
         return 100;
+    }
+
+
+    NativeGrid::NativeGrid(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("STATIC"),
+                      0, // exStyle
+                      WS_BORDER)
+    {
+        AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+        setAttributeController("label", AttributeController(labelGetter, labelSetter));
+    }
+        
+        
+    int NativeGrid::minimumWidth() const
+    {
+        return 100;
+    }
+
+    
+    int NativeGrid::minimumHeight() const
+    {
+        return 100;
+    }
+    
+    
+    void NativeGrid::setRows(const Rows & inRows)
+    {
+        //mRows = inRows;
+    }
+
+     
+    void NativeGrid::setColumns(const Columns & inColumns)
+    {
+        //mColumn = inColumns;
     }
 
 

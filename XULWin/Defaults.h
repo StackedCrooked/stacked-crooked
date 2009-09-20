@@ -13,7 +13,7 @@ namespace XULWin
 
         int controlHeight() { return 20; }
 
-        int textPadding() { return 6; }
+        int textPadding() { return 12; }
 
         int spacing() { return 2; }
 

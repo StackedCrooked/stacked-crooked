@@ -2,6 +2,7 @@
 #define NATIVECOMPONENT_H_INCLUDED
 
 
+#include "Element.h"
 #include "Layout.h"
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
@@ -276,6 +277,21 @@ namespace XULWin
     {
     public:
         NativeMenuButton(NativeComponentPtr inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+    };
+
+
+    class NativeGrid : public NativeControl
+    {
+    public:
+        NativeGrid(NativeComponentPtr inParent);
+
+        void setRows(const Rows & inRows);
+
+        void setColumns(const Columns & inColumns);
 
         virtual int minimumWidth() const;
 

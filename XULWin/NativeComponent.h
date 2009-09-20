@@ -199,8 +199,21 @@ namespace XULWin
         void setOrientation(Orientation inOrientation);
 
         Orientation getOrientation();
+
+        enum Align
+        {
+            Start,
+            Center,
+            End,
+            Stretch
+        };
+
+        void setAlignment(Align inAlign);
+
+        Align getAlignment() const;
     private:
         Orientation mOrientation;
+        Align mAlign;
     };
 
 

@@ -200,12 +200,11 @@ namespace XULWin
 
     class Box : public Element
     {
-    public:
+    public: 
         static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
         { return Element::Create<Box>(inParent, inAttr); }
 
         static const char * Type() { return "box"; }
-
     private:
         friend class Element;
         Box(ElementPtr inParent);

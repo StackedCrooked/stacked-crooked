@@ -264,8 +264,15 @@ namespace XULWin
 
     
     MenuPopup::MenuPopup(ElementPtr inParent) :
-        Element(MenuPopup::Type(), inParent, gNullNativeComponent)
+        Element(MenuPopup::Type(), inParent, gNullNativeComponent),
+        mDestructing(false)
     {
+    }
+
+    
+    MenuPopup::~MenuPopup()
+    {
+        mDestructing = true;
     }
 
 
@@ -284,6 +291,11 @@ namespace XULWin
 
     void MenuPopup::removeMenuItem(const MenuItem * inItem)
     {
+        if (mDestructing)
+        {
+            return;
+        }
+
         if (mParent->type() == "menulist")
         {
             static_cast<MenuList*>(mParent)->removeMenuItem(inItem);

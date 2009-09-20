@@ -147,20 +147,7 @@ namespace XULWin
         }
         mAttributeControllers.insert(std::make_pair(inAttr, inController));
     }
-    
 
-    //bool NativeComponent::applyAttribute(const std::string & inName, const std::string & inValue)
-    //{
-    //    if (inName == "label")
-    //    {
-    //        std::wstring utf16Text;
-    //        Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
-    //        ::SetWindowText(handle(), utf16Text.c_str());
-    //        return true;
-    //    }
-    //    return false;
-    //}
-    
     
     void NativeComponent::setOwningElement(Element * inElement)
     {
@@ -291,38 +278,6 @@ namespace XULWin
             }
         }
     }
-
-    
-    //bool NativeWindow::applyAttribute(const std::string & inName, const std::string & inValue)
-    //{
-    //    if (inName == "width")
-    //    {
-    //        try
-    //        {
-    //            Utils::setWindowWidth(handle(), boost::lexical_cast<int>(inValue));
-    //            return true;
-    //        }
-    //        catch (boost::bad_lexical_cast & e)
-    //        {
-    //            ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
-    //            return false;
-    //        }
-    //    }
-    //    else if (inName == "height")
-    //    {
-    //        try
-    //        {
-    //            Utils::setWindowHeight(handle(), boost::lexical_cast<int>(inValue));
-    //            return true;
-    //        }
-    //        catch (boost::bad_lexical_cast & e)
-    //        {
-    //            ReportError(std::string("Failed to apply 'width' attribute to Window. Reason: ") + e.what());
-    //            return false;
-    //        }
-    //    }
-    //    return NativeComponent::applyAttribute(inName, inValue);
-    //}
 
 
     LRESULT NativeWindow::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
@@ -464,6 +419,15 @@ namespace XULWin
         AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("label", AttributeController(labelGetter, labelSetter));
     }
+    
+    
+    int NativeButton::minimumWidth() const
+    {
+        std::string text = Utils::getWindowText(handle());
+        int width = Utils::getTextSize(handle(), text).cx;
+        width += Defaults::textPadding();
+        return width;
+    }
 
 
     NativeLabel::NativeLabel(NativeComponentPtr inParent) :
@@ -495,7 +459,10 @@ namespace XULWin
     
     int NativeTextBox::minimumWidth() const
     {
-        return Defaults::textBoxMinimumWidth();
+        std::string text = Utils::getWindowText(handle());
+        int width = Utils::getTextSize(handle(), text).cx;
+        width += Defaults::textPadding();
+        return width;
     }
 
 
@@ -506,8 +473,10 @@ namespace XULWin
 
     int NativeLabel::minimumWidth() const
     {
-        SIZE size = Utils::getTextSize(mHandle, owningElement()->getAttribute("value"));
-        return size.cx;
+        std::string text = Utils::getWindowText(handle());
+        int width = Utils::getTextSize(handle(), text).cx;
+        width += Defaults::textPadding();
+        return width;
     }
 
     
@@ -883,6 +852,27 @@ namespace XULWin
 
         // size needs to be updated
         mParent->rebuildLayout();
+    }
+
+
+    NativeSeparator::NativeSeparator(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("STATIC"),
+                      0, // exStyle
+                      WS_BORDER)
+    {
+    }
+        
+        
+    int NativeSeparator::minimumWidth() const
+    {
+        return 100;
+    }
+
+    
+    int NativeSeparator::minimumHeight() const
+    {
+        return 1;
     }
 
 

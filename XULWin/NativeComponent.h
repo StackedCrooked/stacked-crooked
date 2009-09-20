@@ -147,6 +147,8 @@ namespace XULWin
     {
     public:
         NativeButton(NativeComponentPtr inParent);
+
+        virtual int minimumWidth() const;
     };
 
 
@@ -256,6 +258,17 @@ namespace XULWin
         void addMenuItem(const std::string & inText);
 
         void removeMenuItem(const std::string & inText);
+    };
+
+
+    class NativeSeparator : public NativeControl
+    {
+    public:
+        NativeSeparator(NativeComponentPtr inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 } // namespace XULWin

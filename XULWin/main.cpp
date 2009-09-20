@@ -18,6 +18,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<Button>();
     ElementFactory::Instance().registerElement<CheckBox>();
     ElementFactory::Instance().registerElement<Label>();
+    ElementFactory::Instance().registerElement<Text>();
     ElementFactory::Instance().registerElement<HBox>();
     ElementFactory::Instance().registerElement<VBox>();
     ElementFactory::Instance().registerElement<Box>();
@@ -25,6 +26,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<MenuPopup>();
     ElementFactory::Instance().registerElement<MenuItem>();
     ElementFactory::Instance().registerElement<TextBox>();
+    ElementFactory::Instance().registerElement<Separator>();
 }
 
 
@@ -98,7 +100,7 @@ void runDropDownSample()
 
 void log(const std::string & inMessage)
 {
-    MessageBoxA(0, inMessage.c_str(), "XULWin Logger", MB_OK);
+    //MessageBoxA(0, inMessage.c_str(), "XULWin Logger", MB_OK);
 }
 
 

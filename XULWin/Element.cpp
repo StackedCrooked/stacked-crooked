@@ -201,6 +201,14 @@ namespace XULWin
     }
 
 
+    Text::Text(ElementPtr inParent) :
+        Element(Text::Type(),
+                inParent,
+                NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
+    {
+    }
+
+
     TextBox::TextBox(ElementPtr inParent) :
         Element(TextBox::Type(),
                 inParent,
@@ -348,6 +356,19 @@ namespace XULWin
     std::string MenuItem::value() const
     {
         return getAttribute("value");
+    }
+
+
+    Separator::Separator(ElementPtr inParent) :
+        Element(Separator::Type(),
+                inParent,
+                NativeComponentPtr(new NativeSeparator(inParent->nativeComponent())))
+    {
+    }
+
+
+    Separator::~Separator()
+    {
     }
 
 

@@ -168,6 +168,21 @@ namespace XULWin
     };
 
 
+    // Text is the same as label
+    class Text : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Text>(inParent, inAttr); }
+
+        static const char * Type() { return "text"; }
+    
+    private:
+        friend class Element;
+        Text(ElementPtr inParent);
+    };
+
+
     class TextBox : public Element
     {
     public:
@@ -304,6 +319,22 @@ namespace XULWin
     private:
         friend class Element;
         MenuItem(ElementPtr inParent);
+    };
+
+
+    class Separator : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Separator>(inParent, inAttr); }
+
+        static const char * Type() { return "separator"; }
+
+        virtual ~Separator();
+
+    private:
+        friend class Element;
+        Separator(ElementPtr inParent);
     };
 
 

@@ -1,3 +1,5 @@
+- Use XP theme
+- Remove boost signal and use listener system
 - Remove attributes, and use methods instead. Only consider attributes from XUL file.
 - Compare against Gecko engine when testing
 - Make sample program that illustrates DHTML-like behavior

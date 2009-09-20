@@ -694,12 +694,12 @@ namespace XULWin
             int portion = 0;
             if (allFlexValues[idx] != 0)
             {     
-                portion = allFlexValues[idx];
+                portion = portions[portionIdx];
                 portionIdx++;
             }
             else
             {
-                portion = 2*Defaults::spacing() + mOrientation == HORIZONTAL ? minWidth : minHeight;
+                portion = mOrientation == HORIZONTAL ? minWidth : minHeight;
             }
             struct Helper
             {

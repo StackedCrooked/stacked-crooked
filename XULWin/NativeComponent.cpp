@@ -251,11 +251,6 @@ namespace XULWin
             AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
             setAttributeController("width", AttributeController(widthGetter, widthSetter));
         }
-
-        int w = Defaults::windowWidth();
-        int h = Defaults::windowHeight();
-        int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
-        int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         
         mHandle = ::CreateWindowEx
         (
@@ -263,7 +258,7 @@ namespace XULWin
             TEXT("XULWin::Window"),
             TEXT(""),
             WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW,
-            x, y, w, h,
+            1, 1, 1, 1,
             mParent ? mParent->handle() : 0,
             (HMENU)0,
             mModuleHandle,
@@ -277,7 +272,12 @@ namespace XULWin
 
 
     void NativeWindow::showModal()
-    {        
+    {      
+        int w = Defaults::windowWidth();
+        int h = Defaults::windowHeight();
+        int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
+        int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
+        move(x, y, w, h);
         ::ShowWindow(handle(), SW_SHOW);
 
         MSG message;
@@ -609,7 +609,7 @@ namespace XULWin
         // Obtain the flex values
         //
         std::vector<int> allFlexValues;
-        std::vector<int> nonZeroFlexValues;
+        std::vector<LinearLayoutManager::Portion> nonZeroFlexValues;
         RECT rc;
         ::GetClientRect(handle(), &rc);
         int availableSpace = rc.right - rc.left;
@@ -637,7 +637,9 @@ namespace XULWin
             }
             if (flexValue != 0)
             {
-                nonZeroFlexValues.push_back(flexValue);
+                nonZeroFlexValues.push_back(
+                    LinearLayoutManager::Portion(child->nativeComponent()->minimumWidth(),
+                                                 flexValue));
             }
             else
             {
@@ -671,17 +673,27 @@ namespace XULWin
         {
             ElementPtr child = mElement->children()[idx];
             HWND childHandle = child->nativeComponent()->handle();
-            int width = child->nativeComponent()->minimumWidth();
-            int height = child->nativeComponent()->minimumHeight();
+            int minWidth = child->nativeComponent()->minimumWidth();
+            int width = minWidth;
+            int minHeight = child->nativeComponent()->minimumHeight();
+            int height = minHeight;
             if (allFlexValues[idx] != 0)
             {
                 if (mOrientation == HORIZONTAL)
                 {
                     width = portions[portionIdx];
+                    if (width < minWidth)
+                    {
+                        width = minWidth;
+                    }
                 }
                 else
                 {
                     height = portions[portionIdx];
+                    if (height < minHeight)
+                    {
+                        height = minHeight;
+                    }
                 }
                 portionIdx++;
             }

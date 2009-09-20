@@ -37,6 +37,33 @@ namespace XULWin
     }
 
 
+    void LinearLayoutManager::GetPortions(int inLength, const std::vector<Portion> & inProportions, std::vector<int> & outPortions)
+    {
+        assert(outPortions.empty());
+        
+        int sumOfProportions = 0;
+        for (size_t idx = 0; idx != inProportions.size(); ++idx)
+        {
+            sumOfProportions += inProportions[idx].Flex;
+        }
+
+        for (size_t idx = 0; idx != inProportions.size(); ++idx)
+        {
+            int length = 0;
+            if (sumOfProportions != 0)
+            {
+                length = (int)(0.5 + (float)inLength*(float)inProportions[idx].Flex/(float)sumOfProportions);
+            }
+            int minLength = length < inProportions[idx].MinSize;
+            if (length < minLength)
+            {
+                length = minLength;
+            }
+            outPortions.push_back(length);
+        }
+    }
+
+
     LinearLayoutManager::LinearLayoutManager(Orientation inOrientation) :
         mOrientation(inOrientation)
     {

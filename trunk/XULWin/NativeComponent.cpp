@@ -495,7 +495,7 @@ namespace XULWin
     
     int NativeTextBox::minimumWidth() const
     {
-        return 2;
+        return Defaults::textBoxMinimumWidth();
     }
 
 

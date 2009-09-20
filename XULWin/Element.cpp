@@ -388,7 +388,7 @@ namespace XULWin
     Grid::Grid(ElementPtr inParent) :
         Element(Grid::Type(),
                 inParent,
-                NativeComponentPtr(gNullNativeComponent))
+                NativeComponentPtr(new NativeGrid(inParent->nativeComponent())))
     {
     }
 

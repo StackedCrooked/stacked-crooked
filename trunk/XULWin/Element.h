@@ -354,6 +354,104 @@ namespace XULWin
     };
 
 
+    class Rows;
+    class Columns;
+    class Grid : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Grid>(inParent, inAttr); }
+
+        static const char * Type() { return "grid"; }
+
+        virtual ~Grid();
+
+        void setRows(const Rows & inRows);
+
+        void setColumns(const Columns & inColumns);
+
+    private:
+        friend class Element;
+        Grid(ElementPtr inParent);
+    };
+
+
+    class Row;
+    class Rows : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Rows>(inParent, inAttr); }
+
+        static const char * Type() { return "rows"; }
+
+        virtual ~Rows();
+
+        void addRow(const Row & inRow);
+
+    private:
+        friend class Element;
+        Rows(ElementPtr inParent);
+    };
+
+
+    class Column;
+    class Columns : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Columns>(inParent, inAttr); }
+
+        static const char * Type() { return "columns"; }
+
+        virtual ~Columns();
+
+        void addColumn(const Column & inColumn);
+
+    private:
+        friend class Element;
+        Columns(ElementPtr inParent);
+    };
+
+
+    class Row : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Row>(inParent, inAttr); }
+
+        static const char * Type() { return "row"; }
+
+        virtual ~Row();
+
+        virtual void init();
+
+    private:
+        friend class Element;
+        Row(ElementPtr inParent);
+    };
+
+
+    class Column : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Column>(inParent, inAttr); }
+
+        static const char * Type() { return "column"; }
+
+        virtual ~Column();
+
+        virtual void init();
+
+        void addColumn(const Row & inRow);
+
+    private:
+        friend class Element;
+        Column(ElementPtr inParent);
+    };
+
+
 } // XULWin
 
 

@@ -49,14 +49,8 @@
 
   ]]>
   </script>
-  <vbox>
-    <menubutton label="regular menubutton">
-      <menupopup>
-        <menuitem label="foo 1"/>
-        <menuitem label="foo 2"/>
-        <menuitem label="foo 3"/>
-      </menupopup>
-    </menubutton>
-  </vbox>
+  <hbox>
+    <grid label="test"></grid>
+  </hbox>
 
 </window>

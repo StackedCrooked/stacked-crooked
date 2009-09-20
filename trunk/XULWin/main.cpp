@@ -29,6 +29,11 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<TextBox>();
     ElementFactory::Instance().registerElement<Separator>();
     ElementFactory::Instance().registerElement<MenuButton>();
+    ElementFactory::Instance().registerElement<Grid>();
+    ElementFactory::Instance().registerElement<Rows>();
+    ElementFactory::Instance().registerElement<Row>();
+    ElementFactory::Instance().registerElement<Columns>();
+    ElementFactory::Instance().registerElement<Column>();
 }
 
 

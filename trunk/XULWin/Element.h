@@ -264,6 +264,8 @@ namespace XULWin
         static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
         { return Element::Create<MenuPopup>(inParent, inAttr); }
 
+        virtual ~MenuPopup();
+
         static const char * Type() { return "menupopup"; }
 
         void addMenuItem(const MenuItem * inItem);
@@ -273,6 +275,13 @@ namespace XULWin
     private:
         friend class Element;
         MenuPopup(ElementPtr inParent);
+
+        // This flag is set to true when destructor is called.
+        // It is used to prevent that the destruction of
+        // child menu items would trigger the 'removeMenuItem' call
+        // which is not needed when destructing and it could
+        // cause crashes is certain situations.
+        bool mDestructing;
     };
 
 

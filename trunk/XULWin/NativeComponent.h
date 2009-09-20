@@ -155,8 +155,6 @@ namespace XULWin
     public:
         NativeLabel(NativeComponentPtr inParent);
 
-        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
-
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
@@ -168,7 +166,7 @@ namespace XULWin
     public:
         NativeTextBox(NativeComponentPtr inParent);
 
-        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
+        virtual int minimumWidth() const;
 
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
     };

@@ -491,46 +491,17 @@ namespace XULWin
             setAttributeController("value", AttributeController(valueGetter, valueSetter));
         }
     }
-        
-        
-    //bool NativeTextBox::applyAttribute(const std::string & inName, const std::string & inValue)
-    //{
-    //    if (inName == "value")
-    //    {
-    //        std::wstring text;
-    //        Poco::UnicodeConverter::toUTF16(inValue, text);
-    //        ::SetWindowText(handle(), text.c_str());
-    //        return true;
-    //    }
-    //    return NativeComponent::applyAttribute(inName, inValue);
-    //}
+
+    
+    int NativeTextBox::minimumWidth() const
+    {
+        return 2;
+    }
 
 
     void NativeTextBox::handleCommand(WPARAM wParam, LPARAM lParam)
     {
-        //if (HIWORD(wParam) == EN_CHANGE)
-        //{
-        //    Utils::String utf16Text = Utils::getWindowText(handle());
-        //    std::string utf8Text;
-        //    Poco::UnicodeConverter::toUTF8(utf16Text, utf8Text);
-        //    owningElement()->setAttribute("value", utf8Text, false);
-
-        //    static_cast<TextBox*>(owningElement())->OnChanged(0);
-        //}
     }
-        
-        
-    //bool NativeLabel::applyAttribute(const std::string & inName, const std::string & inValue)
-    //{
-    //    if (inName == "value")
-    //    {
-    //        std::wstring utf16Text;
-    //        Poco::UnicodeConverter::toUTF16(inValue, utf16Text);
-    //        ::SetWindowText(handle(), utf16Text.c_str());
-    //        return true;
-    //    }
-    //    return NativeComponent::applyAttribute(inName, inValue);
-    //}
 
 
     int NativeLabel::minimumWidth() const
@@ -893,6 +864,9 @@ namespace XULWin
 		{
             Utils::selectComboBoxItem(handle(), 0);
 		}
+
+        // size needs to be updated
+        mParent->rebuildLayout();
     }
 
 
@@ -906,6 +880,9 @@ namespace XULWin
         }
 
         Utils::deleteStringFromComboBox(handle(), idx);
+
+        // size needs to be updated
+        mParent->rebuildLayout();
     }
 
 

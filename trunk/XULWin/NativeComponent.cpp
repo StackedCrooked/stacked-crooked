@@ -61,7 +61,8 @@ namespace XULWin
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandId(inCommandId),
         mMinimumWidth(Defaults::componentMinimumWidth()),
-        mMinimumHeight(Defaults::componentMinimumHeight())
+        mMinimumHeight(Defaults::componentMinimumHeight()),
+        mExpansive(false)
     {
     }
 
@@ -89,6 +90,12 @@ namespace XULWin
     int NativeComponent::minimumHeight() const
     {
         return mMinimumHeight;
+    }
+    
+    
+    bool NativeComponent::expansive() const
+    {
+        return mExpansive;
     }
     
     
@@ -559,7 +566,7 @@ namespace XULWin
                 }
                 else
                 {
-                    assert(!"Invalid Align");
+                    ReportError("Invalid alignment");
                     return "";
                 }
             }
@@ -859,14 +866,15 @@ namespace XULWin
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
-                      WS_BORDER)
+                      SS_GRAYFRAME)
     {
+        mExpansive = true;
     }
         
         
     int NativeSeparator::minimumWidth() const
     {
-        return 100;
+        return 1;
     }
 
     

@@ -45,6 +45,8 @@ namespace XULWin
 
         virtual int minimumHeight() const;
 
+        bool expansive() const;
+
         virtual void move(int x, int y, int w, int h);
 
         void setOwningElement(Element * inElement);
@@ -68,7 +70,6 @@ namespace XULWin
         //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
 
     protected:
-
         NativeComponent * mParent;
         Element * mElement;
         HMODULE mModuleHandle;
@@ -76,6 +77,7 @@ namespace XULWin
         CommandId mCommandId;
         int mMinimumWidth;
         int mMinimumHeight;
+        bool mExpansive;
         
         typedef boost::function<std::string()> AttributeGetter;
         typedef boost::function<void(const std::string &)> AttributeSetter;

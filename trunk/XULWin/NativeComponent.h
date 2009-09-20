@@ -271,6 +271,17 @@ namespace XULWin
         virtual int minimumHeight() const;
     };
 
+
+    class NativeMenuButton : public NativeControl
+    {
+    public:
+        NativeMenuButton(NativeComponentPtr inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+    };
+
 } // namespace XULWin
 
 

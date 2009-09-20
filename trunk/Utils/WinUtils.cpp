@@ -1,5 +1,7 @@
 #include "WinUtils.h"
 #include "Poco/UnicodeConverter.h"
+#include "ErrorReporter.h"
+#include <boost/lexical_cast.hpp>
 
 
 namespace Utils
@@ -134,6 +136,45 @@ namespace Utils
     void setWindowText(HWND inHandle, const std::string & inText)
     {
         ::SetWindowText(inHandle, ToUTF16(inText).c_str());
+    }
+
+
+    std::string getLastError(DWORD lastError)
+    {
+	    LPVOID lpMsgBuf;
+	    ::FormatMessage
+	    (
+		    FORMAT_MESSAGE_ALLOCATE_BUFFER
+		    | FORMAT_MESSAGE_FROM_SYSTEM
+		    | FORMAT_MESSAGE_IGNORE_INSERTS,
+		    NULL,
+		    lastError,
+		    MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
+		    (LPTSTR)&lpMsgBuf,
+		    0,
+		    NULL
+	    );
+	    if (lpMsgBuf)
+	    {
+            std::wstring errorString = (LPTSTR)lpMsgBuf;
+		    LocalFree(lpMsgBuf);
+		    if (errorString.empty())
+		    {
+			    try
+			    {
+                    errorString = boost::lexical_cast<std::wstring>(lastError);
+			    }
+			    catch(...)
+			    {
+				    ReportError("Bad cast!");
+			    }
+		    }
+		    return ToUTF8(errorString);
+	    }
+	    else
+	    {
+		    return "";
+	    }
     }
 
 

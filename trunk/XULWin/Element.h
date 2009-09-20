@@ -338,6 +338,22 @@ namespace XULWin
     };
 
 
+    class MenuButton : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<MenuButton>(inParent, inAttr); }
+
+        static const char * Type() { return "menubutton"; }
+
+        virtual ~MenuButton();
+
+    private:
+        friend class Element;
+        MenuButton(ElementPtr inParent);
+    };
+
+
 } // XULWin
 
 

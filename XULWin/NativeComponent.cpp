@@ -743,7 +743,7 @@ namespace XULWin
                 portionIdx++;
             }
             
-            if (mAlign == Stretch)
+            if (mAlign == Stretch || child->nativeComponent()->expansive())
             {
                 if (mOrientation == HORIZONTAL)
                 {

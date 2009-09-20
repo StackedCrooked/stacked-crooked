@@ -151,6 +151,14 @@ namespace XULWin
 
         static void GetPortions(int inLength, const std::vector<int> & inProportions, std::vector<int> & outPortions);
 
+        struct Portion
+        {
+            Portion(int inFlex, int inMinSize) : Flex(inFlex), MinSize(inMinSize){}
+            int Flex;
+            int MinSize;
+        };
+        static void GetPortions(int inLength, const std::vector<Portion> & inProportions, std::vector<int> & outPortions);
+
         LinearLayoutManager(Orientation inOrientation);
 
         void getRects(const Rect & inRect, size_t inItemCount, std::vector<Rect> & outRects);

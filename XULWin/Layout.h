@@ -2,6 +2,7 @@
 #define LAYOUT_H_INCLUDED
 
 
+#include "Utils/GenericGrid.h"
 #include <vector>
 
 
@@ -143,7 +144,15 @@ namespace XULWin
         VERTICAL
     };
 
-    
+
+    struct Proportion
+    {
+        Proportion(int inFlex, int inMinSize) : Flex(inFlex), MinSize(inMinSize){}
+        int Flex;
+        int MinSize;
+    };
+
+
     class LinearLayoutManager
     {
     public:
@@ -151,13 +160,7 @@ namespace XULWin
 
         static void GetPortions(int inLength, const std::vector<int> & inProportions, std::vector<int> & outPortions);
 
-        struct Portion
-        {
-            Portion(int inFlex, int inMinSize) : Flex(inFlex), MinSize(inMinSize){}
-            int Flex;
-            int MinSize;
-        };
-        static void GetPortions(int inLength, const std::vector<Portion> & inProportions, std::vector<int> & outPortions);
+        static void GetPortions(int inLength, const std::vector<Proportion> & inProportions, std::vector<int> & outPortions);
 
         LinearLayoutManager(Orientation inOrientation);
 
@@ -167,6 +170,15 @@ namespace XULWin
 
     private:
         Orientation mOrientation;
+    };
+
+    
+    class GridLayoutManager
+    {
+    public:
+        static void GetRects(const Rect & inRect,
+                             const Utils::GenericGrid<Proportion> & inProportions,
+                             Utils::GenericGrid<Rect> & outRects);
     };
 
 } // namespace XULWin

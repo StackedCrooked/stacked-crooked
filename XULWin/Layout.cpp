@@ -1,5 +1,9 @@
 #include "Layout.h"
+#include "Utils/ErrorReporter.h"
 #include <assert.h>
+
+
+using namespace Utils;
 
 
 namespace XULWin
@@ -37,7 +41,7 @@ namespace XULWin
     }
 
 
-    void LinearLayoutManager::GetPortions(int inLength, const std::vector<Portion> & inProportions, std::vector<int> & outPortions)
+    void LinearLayoutManager::GetPortions(int inLength, const std::vector<Proportion> & inProportions, std::vector<int> & outPortions)
     {
         assert(outPortions.empty());
         
@@ -104,6 +108,59 @@ namespace XULWin
             xOffset += width;
             yOffset += height;
             outRects.push_back(Rect(x, y, width, height));
+        }
+    }
+
+    
+    void GridLayoutManager::GetRects(const Rect & inRect,
+                                     const Utils::GenericGrid<Proportion> & inProportions,
+                                     Utils::GenericGrid<Rect> & outRects)
+    {
+        if (inProportions.numRows() == 0 || inProportions.numColumns() == 0)
+        {
+            ReportError("GridLayoutManager: number of columns or rows of inProportions is zero.");
+            return;
+        }
+
+        assert(inProportions.numRows() == outRects.numRows());
+        assert(inProportions.numColumns() == outRects.numColumns());
+        
+        std::vector<int> horizontalSizes;
+        std::vector<int> verticalSizes;
+
+        // Get horizontal sizes
+        {   
+            std::vector<Proportion> horizontalProportions;         
+            for (size_t colIdx = 0; colIdx != inProportions.numColumns(); ++colIdx)
+            {
+                horizontalProportions.push_back(inProportions.get(0, colIdx));
+            }
+            LinearLayoutManager::GetPortions(inRect.width(), horizontalProportions, horizontalSizes);
+        }
+
+        // Get vertical sizes
+        {      
+            std::vector<Proportion> verticalProportions;
+            for (size_t rowIdx = 0; rowIdx != inProportions.numRows(); ++rowIdx)
+            {
+                verticalProportions.push_back(inProportions.get(0, rowIdx));
+            }
+            LinearLayoutManager::GetPortions(inRect.height(), verticalProportions, verticalSizes);
+        }
+        
+        int offsetX = 0;
+        int offsetY = 0;
+        for (size_t colIdx = 0; colIdx != outRects.numColumns(); ++colIdx)
+        {
+            int width = horizontalSizes[colIdx];
+            for (size_t rowIdx = 0; rowIdx != outRects.numRows(); ++rowIdx)
+            {
+                int height = verticalSizes[rowIdx];
+                outRects.set(rowIdx, colIdx, Rect(offsetX, offsetY, width, height));
+                offsetY += height;
+            }
+            offsetX += width;
+            offsetY = 0;
         }
     }
 

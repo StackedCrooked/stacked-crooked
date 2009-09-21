@@ -42,6 +42,8 @@ namespace XULWin
 
         virtual ~NativeComponent() = 0;
 
+        int commandId() const { return mCommandId.intValue(); }
+
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
@@ -298,10 +300,6 @@ namespace XULWin
     public:
         NativeGrid(NativeComponentPtr inParent);
 
-        //void setRows(const Rows & inRows);
-
-        //void setColumns(const Columns & inColumns);
-
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
@@ -321,6 +319,10 @@ namespace XULWin
     {
     public:
         NativeRow(NativeComponentPtr inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 
@@ -335,6 +337,10 @@ namespace XULWin
     {
     public:
         NativeColumn(NativeComponentPtr inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 

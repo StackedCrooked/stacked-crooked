@@ -62,7 +62,7 @@
       </row>
       <row>
         <label value=""></label>
-        <label value="Use comma's to separate tags. For example: humour, videos, computer"></label>
+        <label flex="1" value="Use comma's to separate tags. For example: humour, videos, computer"></label>
       </row>
       <row>
         <label value="Show"></label>

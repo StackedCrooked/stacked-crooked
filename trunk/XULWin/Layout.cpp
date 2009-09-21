@@ -46,24 +46,39 @@ namespace XULWin
         assert(outPortions.empty());
         
         int sumOfProportions = 0;
+        int availableLength = inLength;
+        std::vector<int> flexValues;
         for (size_t idx = 0; idx != inProportions.size(); ++idx)
         {
-            sumOfProportions += inProportions[idx].Flex;
+            if (inProportions[idx].Flex != 0)
+            {
+                flexValues.push_back(inProportions[idx].Flex);
+            }
+            else
+            {
+                availableLength -= inProportions[idx].MinSize;
+            }
         }
+        std::vector<int> sizes;
+        GetPortions(availableLength, flexValues, sizes);
 
+        int sizesIdx = 0;
         for (size_t idx = 0; idx != inProportions.size(); ++idx)
         {
-            int length = 0;
-            if (sumOfProportions != 0)
+            if (inProportions[idx].Flex != 0)
             {
-                length = (int)(0.5 + (float)inLength*(float)inProportions[idx].Flex/(float)sumOfProportions);
+                int size = sizes[sizesIdx];
+                if (size < inProportions[idx].MinSize)
+                {
+                    size = inProportions[idx].MinSize;
+                }
+                outPortions.push_back(size);
+                sizesIdx++;
             }
-            int minLength = inProportions[idx].MinSize;
-            if (length < minLength)
+            else
             {
-                length = minLength;
+                outPortions.push_back(inProportions[idx].MinSize);
             }
-            outPortions.push_back(length);
         }
     }
 

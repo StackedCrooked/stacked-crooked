@@ -49,23 +49,24 @@
 
   ]]>
   </script>
-  <hbox>
-    <grid>
-      <columns>
-        <column flex="1"/>
-        <column flex="2"/>
-      </columns>
-      <rows>
-        <row>
-          <label value="Een twee"/>
-          <textbox value="r1c2"/>
-        </row>
-        <row>
-          <label value="Een twee drie vier"/>
-          <textbox value="r2c2"/>
-        </row>
-      </rows>
-    </grid>
-  </hbox>
+  <vbox align="stretch">
+    <label value="test"></label>
+  <grid>
+    <columns>
+      <column flex="0"/>
+      <column flex="0"/>
+    </columns>
+    <rows>
+      <row>
+        <label value="TweeTweeTweeTweeTweeTwee"/>
+        <label value="TweeTweeTweeTweeTweeTwee"/>
+      </row>
+      <row>
+        <label value="TweeTweeTweeTweeTweeTwee"/>
+        <label value="TweeTweeTweeTweeTweeTwee"/>
+      </row>
+    </rows>
+  </grid>
+  </vbox>
 
 </window>

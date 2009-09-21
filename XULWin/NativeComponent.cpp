@@ -378,7 +378,7 @@ namespace XULWin
             inExStyle, 
             inClassName,
             TEXT(""),
-            inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
+			inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
             0, 0, mMinimumWidth, mMinimumHeight,
             mParent ? mParent->handle() : 0,
             (HMENU)mCommandId.intValue(),
@@ -999,13 +999,88 @@ namespace XULWin
         
     int NativeGrid::minimumWidth() const
     {
-        return 100;
+        int result = 0;
+        ElementPtr rows;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (child->type() == Rows::Type())
+            {
+                rows = child;
+                break;
+            }
+        }
+
+        if (!rows)
+        {
+            ReportError("Rows element not found in grid!");
+            return 0;
+        }
+
+        for (size_t idx = 0; idx != rows->children().size(); ++idx)
+        {
+            ElementPtr el = rows->children()[idx];
+            if (el->type() == Row::Type())
+            {
+                int w = 0;
+                Row * row = static_cast<Row*>(el.get());
+                const Children & children = row->children();
+                for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
+                {
+                    ElementPtr child = children[childIdx];
+                    w += child->nativeComponent()->minimumWidth();
+                }
+                if (w > result)
+                {
+                    result = w;
+                }
+            }
+        }
+        return result;
     }
 
     
     int NativeGrid::minimumHeight() const
     {
-        return 100;
+        int result = 0;
+        ElementPtr rows;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (child->type() == Rows::Type())
+            {
+                rows = child;
+                break;
+            }
+        }
+
+        if (!rows)
+        {
+            ReportError("Rows element not found in grid!");
+            return 0;
+        }
+
+        for (size_t idx = 0; idx != rows->children().size(); ++idx)
+        {
+            ElementPtr el = rows->children()[idx];
+            if (el->type() == Row::Type())
+            {
+                int maxHeight = 0;
+                Row * row = static_cast<Row*>(el.get());
+                const Children & children = row->children();
+                for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
+                {
+                    ElementPtr child = children[childIdx];
+                    int h = child->nativeComponent()->minimumHeight();
+                    if (h > maxHeight)
+                    {
+                        maxHeight = h;
+                    }
+                }
+                result += maxHeight;
+            }
+        }
+        return result;
     }
 
 

@@ -497,18 +497,6 @@ namespace XULWin
     }
 
 
-    NativeLabel::NativeLabel(NativeComponentPtr inParent) :
-        NativeControl(inParent,
-                      TEXT("STATIC"),
-                      0, // exStyle
-                      SS_LEFT | SS_CENTERIMAGE)
-    {
-        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setAttributeController("value", AttributeController(valueGetter, valueSetter));
-    }
-
-
     NativeTextBox::NativeTextBox(NativeComponentPtr inParent) :
         NativeControl(inParent,
                       TEXT("EDIT"),
@@ -535,6 +523,18 @@ namespace XULWin
 
     void NativeTextBox::handleCommand(WPARAM wParam, LPARAM lParam)
     {
+    }
+
+
+    NativeLabel::NativeLabel(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("STATIC"),
+                      0, // exStyle
+                      SS_LEFT | SS_CENTERIMAGE)
+    {
+        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+        setAttributeController("value", AttributeController(valueGetter, valueSetter));
     }
 
 
@@ -1135,27 +1135,20 @@ namespace XULWin
             return;
         }
 
-        GenericGrid<GridProportion> proportions
-        (
-            numRows,
-            numCols,
-            GridProportion
-            (
-                Proportion(Defaults::Attributes::flex(), 20),
-                Proportion(Defaults::Attributes::flex(), Defaults::controlHeight())
-            )
-        );
-        for (size_t colIdx = 0; colIdx != proportions.numColumns(); ++colIdx)
+        GenericGrid<GridProportion> proportions(numRows, numCols, GridProportion(Proportion(Defaults::Attributes::flex(), 1), Proportion(Defaults::Attributes::flex(), 1)));
+        for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
         {
-            for (size_t rowIdx = 0; rowIdx != proportions.numRows(); ++rowIdx)
+            for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
             {
+                NativeRow * row = static_cast<NativeRow*>(rows->children()[rowIdx]->nativeComponent().get());
+                NativeColumn * column = static_cast<NativeColumn*>(columns->children()[colIdx]->nativeComponent().get());
                 ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
                 if (child)
                 {
                     int hflex = 0;
                     try
                     {
-                        std::string flex = child->getAttribute("flex");
+                        std::string flex = column->owningElement()->getAttribute("flex");
                         if (!flex.empty())
                         {
                             hflex = boost::lexical_cast<int>(flex);
@@ -1169,7 +1162,7 @@ namespace XULWin
                     int vflex = 0;
                     try
                     {
-                        std::string flex = child->getAttribute("flex");
+                        std::string flex = row->owningElement()->getAttribute("flex");
                         if (!flex.empty())
                         {
                             vflex = boost::lexical_cast<int>(flex);
@@ -1184,9 +1177,9 @@ namespace XULWin
                         rowIdx,
                         colIdx,
                         GridProportion(Proportion(hflex,
-                                                  child->nativeComponent()->minimumWidth()),
+                                                  column->minimumWidth()),
                                        Proportion(vflex,
-                                                  child->nativeComponent()->minimumHeight())));
+                                                  row->minimumHeight())));
                 }
             }
         }
@@ -1222,10 +1215,106 @@ namespace XULWin
     {
     }
 
+    
+    int NativeRow::minimumWidth() const
+    {
+        int res = 0;
+        const Children & children = owningElement()->children();
+        for (size_t idx = 0; idx != children.size(); ++idx)
+        {
+            ElementPtr child = children[idx];
+            res += child->nativeComponent()->minimumWidth();
+        }
+        return res;
+    }
+
+
+    int NativeRow::minimumHeight() const
+    {
+        int res = 0;
+        const Children & children = owningElement()->children();
+        for (size_t idx = 0; idx != children.size(); ++idx)
+        {
+            ElementPtr child = children[idx];
+            int h = child->nativeComponent()->minimumHeight();
+            if (h > res)
+            {
+                res = h;
+            }
+        }
+        return res;
+    }
+
 
     NativeColumn::NativeColumn(NativeComponentPtr inParent) :
         VirtualControl(inParent)
     {
+    }
+
+    
+    int NativeColumn::minimumWidth() const
+    {
+        ElementPtr rows;
+        int ownIndex = -1;
+        Element * grid = owningElement()->parent()->parent();
+        for (size_t idx = 0; idx != grid->children().size(); ++idx)
+        {
+            ElementPtr child = grid->children()[idx];
+            if (child->type() == Rows::Type())
+            {
+                rows = child;
+            }
+            else if (child->type() == Columns::Type())
+            {
+                for (size_t ownI = 0; ownI != child->children().size(); ++ownI)
+                {
+                    if (child->children()[ownI]->nativeComponent()->commandId() == commandId())
+                    {
+                        ownIndex = idx;
+                    }
+                }
+            }
+            if (rows && ownIndex != -1)
+            {
+                break;
+            }
+        }
+        if (!rows)
+        {
+            ReportError("Could not find 'rows' element in Grid.");
+            return 0;
+        }
+        if (ownIndex == -1)
+        {
+            ReportError("Column was unable to find itself in its parent container.");
+            return 0;
+        }
+
+        int res = 0;
+        for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
+        {
+
+            ElementPtr row = rows->children()[rowIdx];
+            int w = row->children()[ownIndex]->nativeComponent()->minimumWidth();
+            if (w > res)
+            {
+                res = w;
+            }
+        }
+        return res;
+    }
+
+
+    int NativeColumn::minimumHeight() const
+    {
+        int res = 0;
+        const Children & children = owningElement()->children();
+        for (size_t idx = 0; idx != children.size(); ++idx)
+        {
+            ElementPtr child = children[idx];
+            res += child->nativeComponent()->minimumHeight();
+        }
+        return res;
     }
 
 

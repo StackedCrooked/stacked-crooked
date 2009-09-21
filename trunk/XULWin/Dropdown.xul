@@ -31,170 +31,48 @@
         class="dialog"
         style="width: 250px;"
         orient="vertical">
-
-  <script>
-    <![CDATA[
-
-  function testProperty( aID )
-  {
-    var element = document.getElementById( aID );
-    if (!element)
-      return false;
-
-    var pValPair = prompt("Enter property,value:","").split(",");
-    var property = pValPair[0];
-    var value = pValPair[1];
-    element[property] = value;
-  }
-
-  ]]>
-  </script>
-  <vbox>
-    <hbox align="center">
-      <text class="label" value="Foo Label 1:" for="nerp1"/>
-      <textbox flex="1" id="nerp1" disabled="true" value="disabled"/>
-      <button label="Test Property APIs" oncommand="testProperty('nerp1');"/>
-    </hbox>
-    <hbox align="center">
-      <text class="label" value="Foo Label 2:" for="nerp2"/>
-      <textbox flex="1" id="nerp2" readonly="true" value="readonly"/>
-      <button label="Test Property APIs" oncommand="testProperty('nerp2');"/>
-    </hbox>
-    <hbox align="center">
-      <text class="label" value="Foo Label 2:" for="nerp2r"/>
-      <textbox flex="1" id="nerp2r" readonly="true" disabled="true" value="readonly disabled"/>
-      <button label="Test Property APIs" oncommand="testProperty('nerp2r');"/>
-    </hbox>
-    <hbox align="center">
-      <text class="label" value="Foo Label 3:" for="nerp3"/>
-      <textbox flex="1" id="nerp3" value="regular"/>
-      <button label="Test Property APIs" oncommand="testProperty('nerp3');"/>
-    </hbox>
-    <hbox align="center">
-      <text class="label" value="Foo Label 5:" for="nerp4"/>
-      <menubutton label="regular menubutton">
-        <menupopup>
-          <menuitem label="foo 1"/>
-          <menuitem label="foo 2"/>
-          <menuitem label="foo 3"/>
-        </menupopup>
-      </menubutton>
-      <menubutton label="disabled menubutton" disabled="true">
-        <menupopup>
-          <menuitem label="foo 1"/>
-          <menuitem label="foo 2"/>
-          <menuitem label="foo 3"/>
-        </menupopup>
-      </menubutton>
-    </hbox>
-
-    <hbox align="center">
-      <text class="label" value="Foo Label 5:" for="nerp4"/>
-      <menulist label="regular menulist">
-        <menupopup>
-          <menuitem label="foo 1"/>
-          <menuitem label="foo 2"/>
-          <menuitem label="foo 3"/>
-        </menupopup>
-      </menulist>
-      <menulist label="disabled menulist" disabled="true">
-        <menupopup>
-          <menuitem label="foo 1"/>
-          <menuitem label="foo 2"/>
-          <menuitem label="foo 3"/>
-        </menupopup>
-      </menulist>
-    </hbox>
-
-    <hbox>
-      <text class="label" value="Foo Label 4:"/>
-      <vbox flex="1">
-        <textbox flex="1"/>
-        <vbox align="center">
-          <hbox flex="1">
-            <checkbox label="Checkbox 1" id="checkbox1"/>
-            <spacer flex="1"/>
-            <button label="Test Property APIs" oncommand="testProperty('checkbox1');"/>
-          </hbox>
-          <checkbox label="Checkbox 2" disabled="true" checked="true"/>
-          <checkbox label="Checkbox 3"/>
-        </vbox>
-        <separator class="groove"/>
-        <radiogroup id="group" orient="vertical">
-          <hbox>
-            <radio group="group" label="Radio 1" id="radio1"/>
-            <spacer flex="1"/>
-            <button label="Test Property APIs" oncommand="testProperty('radio1');"/>
-          </hbox>
-          <radio group="group" label="Radio 2"/>
-          <radio group="group" label="Radio 3" disabled="true" checked="true"/>
-        </radiogroup>
-      </vbox>
-    </hbox>
-
-    <separator/>
-
-    <hbox align="center">
-      <text class="label" value="Foo Label 7:"/>
-      <button label="Standard XUL Button"/>
-      <button class="dialog" label="Dialog XUL Button"/>
-      <button class="dialog" disabled="true" default="true" label="Disabled Button"/>
-    </hbox>
-
-    <separator/>
-
-    <hbox>
-      <vbox>
-        <text class="label" value="Foo Label 6:"/>
-        <spacer flex="1"/>
-      </vbox>
-      <textbox id="textarea" rows="3" multiline="true" value="Regular multiline textbox"/>
-      <vbox>
-        <button label="Test Property APIs" oncommand="testProperty('textarea');"/>
-        <spacer flex="1"/>
-      </vbox>
-    </hbox>
-
-    <hbox>
-      <vbox>
-        <text class="label" value="Foo Label 6:"/>
-        <spacer flex="1"/>
-      </vbox>
-      <textbox rows="3" multiline="true" disabled="true" value="Disabled multiline textbox"/>
-    </hbox>
-
-    <separator/>
-
-    <progressmeter mode="undetermined" flex="1"/>
-
-    <script>
-      <![CDATA[
-    function advanceProgress()
-    {
-      var progressMeter = document.getElementById("normal");
-      if(progressMeter.getAttribute('value') <= 100) {
-        var newvalue = parseInt(progressMeter.getAttribute('value')) + 10;
-        progressMeter.setAttribute('value', newvalue);
-        setTimeout("advanceProgress()", 100);
-      }
-      else {
-        progressMeter.setAttribute('value', 0);
-        setTimeout("advanceProgress()", 100);
-      }
-    }
-
-  ]]>
-    </script>
-
-
-    <hbox align="center">
-      <progressmeter id="normal" mode="normal" flex="1"/>
-      <button label="Advance Progress" oncommand="advanceProgress();"/>
-    </hbox>
-
-    <separator/>
-
-    <scrollbar orient="horizontal"/>
-  </vbox>
-
+  <grid flex="1">
+    <columns>
+      <column flex="0"></column>
+      <column flex="1"></column>
+    </columns>
+    <rows>
+      <row>
+        <label flex="0" value="Upload to:"/>
+        <menulist>
+          <menupopup>
+            <menuitem label="StackedCrooked" />
+            <menuitem label="My group1" />
+            <menuitem label="My group2" />
+          </menupopup>
+        </menulist>
+      </row>
+      <row>
+        <label value="Add pictures to this set:"></label>
+        <menulist>
+          <menupopup>
+            <menuitem label="School" />
+            <menuitem label="Family" />
+          </menupopup>
+        </menulist>
+      </row>
+      <row>
+        <label value="Tags:"></label>
+        <textbox flex="1"></textbox>
+      </row>
+      <row>
+        <label value=""></label>
+        <label value="Use comma's to separate tags. For example: humour, videos, computer"></label>
+      </row>
+      <row>
+        <label value="Show"></label>
+        <menulist>
+          <menupopup>
+            <menuitem label="to everyone"></menuitem>
+            <menuitem label="only to friends"></menuitem>
+          </menupopup>
+        </menulist>
+      </row>
+    </rows>
+  </grid>  
 </window>

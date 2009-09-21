@@ -1152,12 +1152,40 @@ namespace XULWin
                 ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
                 if (child)
                 {
+                    int hflex = 0;
+                    try
+                    {
+                        std::string flex = child->getAttribute("flex");
+                        if (!flex.empty())
+                        {
+                            hflex = boost::lexical_cast<int>(flex);
+                        }
+                    }
+                    catch (const boost::bad_lexical_cast & )
+                    {
+                        ReportError("Bad lexical cast for flex.");
+                    }
+
+                    int vflex = 0;
+                    try
+                    {
+                        std::string flex = child->getAttribute("flex");
+                        if (!flex.empty())
+                        {
+                            vflex = boost::lexical_cast<int>(flex);
+                        }
+                    }
+                    catch (const boost::bad_lexical_cast & )
+                    {
+                        ReportError("Bad lexical cast for flex.");
+                    }
+
                     proportions.set(
                         rowIdx,
                         colIdx,
-                        GridProportion(Proportion(1,
+                        GridProportion(Proportion(hflex,
                                                   child->nativeComponent()->minimumWidth()),
-                                       Proportion(1,
+                                       Proportion(vflex,
                                                   child->nativeComponent()->minimumHeight())));
                 }
             }

@@ -9,75 +9,75 @@ using namespace Utils;
 namespace XULWin
 {
 
-    void LinearLayoutManager::GetPortions(int inLength, size_t inItemCount, std::vector<int> & outPortions)
+    void LinearLayoutManager::GetSizes(int inLength, size_t inItemCount, std::vector<int> & outSizes)
     {
-        assert(outPortions.empty());
+        assert(outSizes.empty());
         for (size_t idx = 0; idx != inItemCount; ++idx)
         {
-            outPortions.push_back((int)(0.5 + (float)inLength/(float)inItemCount));
+            outSizes.push_back((int)(0.5 + (float)inLength/(float)inItemCount));
         }
     }
 
 
-    void LinearLayoutManager::GetPortions(int inLength, const std::vector<int> & inProportions, std::vector<int> & outPortions)
+    void LinearLayoutManager::GetSizes(int inLength, const std::vector<int> & inFlexValues, std::vector<int> & outSizes)
     {
-        assert(outPortions.empty());
+        assert(outSizes.empty());
         
         int sumOfProportions = 0;
-        for (size_t idx = 0; idx != inProportions.size(); ++idx)
+        for (size_t idx = 0; idx != inFlexValues.size(); ++idx)
         {
-            sumOfProportions += inProportions[idx];
+            sumOfProportions += inFlexValues[idx];
         }
 
-        for (size_t idx = 0; idx != inProportions.size(); ++idx)
+        for (size_t idx = 0; idx != inFlexValues.size(); ++idx)
         {
             int proportion = 0;
-            if (inProportions[idx] != 0 && sumOfProportions != 0)
+            if (inFlexValues[idx] != 0 && sumOfProportions != 0)
             {
-                proportion = (int)(0.5 + (float)inLength*(float)inProportions[idx]/(float)sumOfProportions);
+                proportion = (int)(0.5 + (float)inLength*(float)inFlexValues[idx]/(float)sumOfProportions);
             }
-            outPortions.push_back(proportion);
+            outSizes.push_back(proportion);
         }
     }
 
 
-    void LinearLayoutManager::GetPortions(int inLength, const std::vector<Proportion> & inProportions, std::vector<int> & outPortions)
+    void LinearLayoutManager::GetSizes(int inLength, const std::vector<SizeInfo> & inFlexValues, std::vector<int> & outSizes)
     {
-        assert(outPortions.empty());
+        assert(outSizes.empty());
         
         int sumOfProportions = 0;
         int availableLength = inLength;
         std::vector<int> flexValues;
-        for (size_t idx = 0; idx != inProportions.size(); ++idx)
+        for (size_t idx = 0; idx != inFlexValues.size(); ++idx)
         {
-            if (inProportions[idx].Flex != 0)
+            if (inFlexValues[idx].Flex != 0)
             {
-                flexValues.push_back(inProportions[idx].Flex);
+                flexValues.push_back(inFlexValues[idx].Flex);
             }
             else
             {
-                availableLength -= inProportions[idx].MinSize;
+                availableLength -= inFlexValues[idx].MinSize;
             }
         }
         std::vector<int> sizes;
-        GetPortions(availableLength, flexValues, sizes);
+        GetSizes(availableLength, flexValues, sizes);
 
         int sizesIdx = 0;
-        for (size_t idx = 0; idx != inProportions.size(); ++idx)
+        for (size_t idx = 0; idx != inFlexValues.size(); ++idx)
         {
-            if (inProportions[idx].Flex != 0)
+            if (inFlexValues[idx].Flex != 0)
             {
                 int size = sizes[sizesIdx];
-                if (size < inProportions[idx].MinSize)
+                if (size < inFlexValues[idx].MinSize)
                 {
-                    size = inProportions[idx].MinSize;
+                    size = inFlexValues[idx].MinSize;
                 }
-                outPortions.push_back(size);
+                outSizes.push_back(size);
                 sizesIdx++;
             }
             else
             {
-                outPortions.push_back(inProportions[idx].MinSize);
+                outSizes.push_back(inFlexValues[idx].MinSize);
             }
         }
     }
@@ -92,7 +92,7 @@ namespace XULWin
     void LinearLayoutManager::getRects(const Rect & inRect, size_t inItemCount, std::vector<Rect> & outRects)
     {
         std::vector<int> portions;
-        GetPortions(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inItemCount, portions);
+        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inItemCount, portions);
         int xOffset = inRect.x();
         int yOffset = inRect.y();
         for (size_t idx = 0; idx != inItemCount; ++idx)
@@ -108,10 +108,10 @@ namespace XULWin
     }
 
      
-    void LinearLayoutManager::getRects(const Rect & inRect, const std::vector<int> & inProportions, std::vector<Rect> & outRects)
+    void LinearLayoutManager::getRects(const Rect & inRect, const std::vector<int> & inFlexValues, std::vector<Rect> & outRects)
     {
         std::vector<int> portions;
-        GetPortions(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inProportions, portions);
+        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inFlexValues, portions);
         int xOffset = inRect.x();
         int yOffset = inRect.y();
         for (size_t idx = 0; idx != portions.size(); ++idx)
@@ -128,39 +128,39 @@ namespace XULWin
 
     
     void GridLayoutManager::GetRects(const Rect & inRect,
-                                     const Utils::GenericGrid<GridProportion> & inProportions,
+                                     const Utils::GenericGrid<GridProportion> & inFlexValues,
                                      Utils::GenericGrid<Rect> & outRects)
     {
-        if (inProportions.numRows() == 0 || inProportions.numColumns() == 0)
+        if (inFlexValues.numRows() == 0 || inFlexValues.numColumns() == 0)
         {
-            ReportError("GridLayoutManager: number of columns or rows of inProportions is zero.");
+            ReportError("GridLayoutManager: number of columns or rows of inFlexValues is zero.");
             return;
         }
 
-        assert(inProportions.numRows() == outRects.numRows());
-        assert(inProportions.numColumns() == outRects.numColumns());
+        assert(inFlexValues.numRows() == outRects.numRows());
+        assert(inFlexValues.numColumns() == outRects.numColumns());
         
         std::vector<int> horizontalSizes;
         std::vector<int> verticalSizes;
 
         // Get horizontal sizes
         {   
-            std::vector<Proportion> horizontalProportions;         
-            for (size_t colIdx = 0; colIdx != inProportions.numColumns(); ++colIdx)
+            std::vector<SizeInfo> horizontalProportions;         
+            for (size_t colIdx = 0; colIdx != inFlexValues.numColumns(); ++colIdx)
             {
-                horizontalProportions.push_back(inProportions.get(0, colIdx).Horizontal);
+                horizontalProportions.push_back(inFlexValues.get(0, colIdx).Horizontal);
             }
-            LinearLayoutManager::GetPortions(inRect.width(), horizontalProportions, horizontalSizes);
+            LinearLayoutManager::GetSizes(inRect.width(), horizontalProportions, horizontalSizes);
         }
 
         // Get vertical sizes
         {      
-            std::vector<Proportion> verticalProportions;
-            for (size_t rowIdx = 0; rowIdx != inProportions.numRows(); ++rowIdx)
+            std::vector<SizeInfo> verticalProportions;
+            for (size_t rowIdx = 0; rowIdx != inFlexValues.numRows(); ++rowIdx)
             {
-                verticalProportions.push_back(inProportions.get(rowIdx, 0).Vertical);
+                verticalProportions.push_back(inFlexValues.get(rowIdx, 0).Vertical);
             }
-            LinearLayoutManager::GetPortions(inRect.height(), verticalProportions, verticalSizes);
+            LinearLayoutManager::GetSizes(inRect.height(), verticalProportions, verticalSizes);
         }
         
         int offsetX = 0;

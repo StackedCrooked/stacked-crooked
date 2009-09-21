@@ -677,7 +677,7 @@ namespace XULWin
         // Obtain the flex values
         //
         std::vector<int> allFlexValues;
-        std::vector<Proportion> nonZeroFlexValues;
+        std::vector<SizeInfo> nonZeroFlexValues;
         RECT rc;
         ::GetClientRect(handle(), &rc);
         int availableSpace = rc.right - rc.left;
@@ -706,10 +706,9 @@ namespace XULWin
             }
             if (flexValue != 0)
             {
-                nonZeroFlexValues.push_back(
-                    Proportion(flexValue,
-                                                 mOrientation == HORIZONTAL ? child->nativeComponent()->minimumWidth() :
-                                                                              child->nativeComponent()->minimumHeight()));
+                nonZeroFlexValues.push_back(SizeInfo(flexValue,
+                                                       mOrientation == HORIZONTAL ? child->nativeComponent()->minimumWidth() :
+                                                                                    child->nativeComponent()->minimumHeight()));
             }
             else
             {
@@ -731,7 +730,7 @@ namespace XULWin
         // Use the flex values to obtain the child rectangles
         //
         std::vector<int> portions;
-        layoutManager.GetPortions(availableSpace, nonZeroFlexValues, portions);
+        layoutManager.GetSizes(availableSpace, nonZeroFlexValues, portions);
 
         //
         // Apply the new child rectangles
@@ -1135,7 +1134,7 @@ namespace XULWin
             return;
         }
 
-        GenericGrid<GridProportion> proportions(numRows, numCols, GridProportion(Proportion(Defaults::Attributes::flex(), 1), Proportion(Defaults::Attributes::flex(), 1)));
+        GenericGrid<GridProportion> proportions(numRows, numCols, GridProportion(SizeInfo(Defaults::Attributes::flex(), 1), SizeInfo(Defaults::Attributes::flex(), 1)));
         for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
         {
             for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
@@ -1178,17 +1177,23 @@ namespace XULWin
                     }
 
                     proportions.set(
-                        rowIdx,
-                        colIdx,
-                        GridProportion(Proportion(hflex,
-                                                  column->minimumWidth()),
-                                       Proportion(vflex,
-                                                  row->minimumHeight())));
+                        rowIdx, colIdx,
+                        GridProportion(
+                            SizeInfo(hflex, column->minimumWidth()),
+                            SizeInfo(vflex, row->minimumHeight())
+                        )
+                    );
                 }
             }
         }
         GenericGrid<Rect> rects(numRows, numCols);
-        GridLayoutManager::GetRects(windowRect, proportions, rects);
+        Rect rectMinusPadding(
+            windowRect.x(),
+            windowRect.y(),
+            windowRect.width() - (numCols + 1)*Defaults::spacing(),
+            windowRect.height() - (numRows + 1)*Defaults::spacing()
+        );
+        GridLayoutManager::GetRects(rectMinusPadding, proportions, rects);
 
         for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
         {
@@ -1196,7 +1201,12 @@ namespace XULWin
             {
                 Rect & childRect = rects.get(rowIdx, colIdx);
                 ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-                child->nativeComponent()->move(childRect.x(), childRect.y(), childRect.width(), childRect.height());
+                child->nativeComponent()->move(
+                    childRect.x() + (colIdx + 1)*Defaults::spacing(),
+                    childRect.y() + (rowIdx + 1)*Defaults::spacing(),
+                    childRect.width(),
+                    childRect.height()
+                );
             }
         }
     }

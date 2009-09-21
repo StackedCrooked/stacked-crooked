@@ -172,12 +172,22 @@ namespace XULWin
         Orientation mOrientation;
     };
 
+
+    struct GridProportion
+    {
+        GridProportion(const Proportion & inHorizontal, const Proportion & inVertical) :
+            Horizontal(inHorizontal), Vertical(inVertical) {}
+
+        Proportion Horizontal;
+        Proportion Vertical;
+    };
+
     
     class GridLayoutManager
     {
     public:
         static void GetRects(const Rect & inRect,
-                             const Utils::GenericGrid<Proportion> & inProportions,
+                             const Utils::GenericGrid<GridProportion> & inProportions,
                              Utils::GenericGrid<Rect> & outRects);
     };
 

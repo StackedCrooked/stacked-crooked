@@ -105,7 +105,7 @@ namespace XULWin
     void NativeComponent::move(int x, int y, int w, int h)
     {
         ::MoveWindow(handle(), x, y, w, h, FALSE);
-    }       
+    }
     
     
     bool NativeComponent::getAttribute(const std::string & inName, std::string & outValue)
@@ -325,6 +325,40 @@ namespace XULWin
         }
         return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
     }
+
+
+    VirtualControl::VirtualControl(NativeComponentPtr inParent) :
+        NativeComponent(inParent, CommandId())
+    {
+        if (!mParent)
+        {
+            ReportError("NativeControl constructor failed because parent is NULL.");
+            return;
+        }
+    }
+        
+        
+    HWND VirtualControl::handle() const
+    {
+        if (mParent)
+        {
+            return mParent->handle();
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+
+    void VirtualControl::move(int x, int y, int w, int h)
+    {
+        if (mParent)
+        {
+            mParent->move(x, y, w, y);
+        }
+    }
+
 
 
     NativeControl::NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
@@ -973,17 +1007,104 @@ namespace XULWin
     {
         return 100;
     }
-    
-    
-    void NativeGrid::setRows(const Rows & inRows)
+
+
+    void NativeGrid::rebuildLayout()
     {
-        //mRows = inRows;
+        RECT rw;
+        ::GetWindowRect(handle(), &rw);
+        Rect windowRect(0, 0, rw.right - rw.left, rw.bottom - rw.top);
+        int numCols = 0;
+        int numRows = 0;
+        ElementPtr columns;
+        ElementPtr rows;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (child->type() == Rows::Type())
+            {
+                rows = child;
+                numRows = rows->children().size();
+            }
+            else if (child->type() == Columns::Type())
+            {
+                columns = child;
+                numCols = columns->children().size();
+            }
+            else
+            {
+                ReportError("Grid contains incompatible child element: '" + child->type() + "'");
+            }
+        }
+        if (!rows || !columns)
+        {
+            ReportError("Grid has no rows or no columns!");
+            return;
+        }
+
+        GenericGrid<GridProportion> proportions
+        (
+            numRows,
+            numCols,
+            GridProportion
+            (
+                Proportion(Defaults::Attributes::flex(), 20),
+                Proportion(Defaults::Attributes::flex(), Defaults::controlHeight())
+            )
+        );
+        for (size_t colIdx = 0; colIdx != proportions.numColumns(); ++colIdx)
+        {
+            for (size_t rowIdx = 0; rowIdx != proportions.numRows(); ++rowIdx)
+            {
+                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
+                if (child)
+                {
+                    proportions.set(
+                        rowIdx,
+                        colIdx,
+                        GridProportion(Proportion(1,
+                                                  child->nativeComponent()->minimumWidth()),
+                                       Proportion(1,
+                                                  child->nativeComponent()->minimumHeight())));
+                }
+            }
+        }
+        GenericGrid<Rect> rects(numRows, numCols);
+        GridLayoutManager::GetRects(windowRect, proportions, rects);
+
+        for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
+        {
+            for (size_t rowIdx = 0; rowIdx != rects.numRows(); ++rowIdx)
+            {
+                Rect & childRect = rects.get(rowIdx, colIdx);
+                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
+                child->nativeComponent()->move(childRect.x(), childRect.y(), childRect.width(), childRect.height());
+            }
+        }
     }
 
-     
-    void NativeGrid::setColumns(const Columns & inColumns)
+
+    NativeRows::NativeRows(NativeComponentPtr inParent) :
+        VirtualControl(inParent)
     {
-        //mColumn = inColumns;
+    }
+
+
+    NativeColumns::NativeColumns(NativeComponentPtr inParent) :
+        VirtualControl(inParent)
+    {
+    }
+
+
+    NativeRow::NativeRow(NativeComponentPtr inParent) :
+        VirtualControl(inParent)
+    {
+    }
+
+
+    NativeColumn::NativeColumn(NativeComponentPtr inParent) :
+        VirtualControl(inParent)
+    {
     }
 
 

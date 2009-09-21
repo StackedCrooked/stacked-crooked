@@ -50,7 +50,22 @@
   ]]>
   </script>
   <hbox>
-    <grid label="test"></grid>
+    <grid>
+      <columns>
+        <column flex="1"/>
+        <column flex="2"/>
+      </columns>
+      <rows>
+        <row>
+          <label value="Een twee"/>
+          <textbox value="r1c2"/>
+        </row>
+        <row>
+          <label value="Een twee drie vier"/>
+          <textbox value="r2c2"/>
+        </row>
+      </rows>
+    </grid>
   </hbox>
 
 </window>

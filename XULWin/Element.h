@@ -366,9 +366,9 @@ namespace XULWin
 
         virtual ~Grid();
 
-        void setRows(const Rows & inRows);
+        //void setRows(const Rows & inRows);
 
-        void setColumns(const Columns & inColumns);
+        //void setColumns(const Columns & inColumns);
 
     private:
         friend class Element;
@@ -387,7 +387,7 @@ namespace XULWin
 
         virtual ~Rows();
 
-        void addRow(const Row & inRow);
+        //void addRow(const Row & inRow);
 
     private:
         friend class Element;
@@ -406,7 +406,7 @@ namespace XULWin
 
         virtual ~Columns();
 
-        void addColumn(const Column & inColumn);
+        //void addColumn(const Column & inColumn);
 
     private:
         friend class Element;
@@ -424,8 +424,6 @@ namespace XULWin
 
         virtual ~Row();
 
-        virtual void init();
-
     private:
         friend class Element;
         Row(ElementPtr inParent);
@@ -441,10 +439,6 @@ namespace XULWin
         static const char * Type() { return "column"; }
 
         virtual ~Column();
-
-        virtual void init();
-
-        void addColumn(const Row & inRow);
 
     private:
         friend class Element;

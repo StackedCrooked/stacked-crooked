@@ -56,19 +56,17 @@ namespace XULWin
 
         NativeComponent * parent() const;
 
-        HWND handle() const;
+        virtual HWND handle() const;
 
         virtual void rebuildLayout();
 
         virtual void rebuildChildLayouts();
 
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
         bool getAttribute(const std::string & inName, std::string & outValue);
 
         bool setAttribute(const std::string & inName, const std::string & inValue);
-
-        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
 
     protected:
         NativeComponent * mParent;
@@ -112,8 +110,6 @@ namespace XULWin
 
         void showModal();
 
-        //virtual bool applyAttribute(const std::string & inName, const std::string & inValue);
-
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
@@ -143,6 +139,19 @@ namespace XULWin
     protected:
         typedef std::map<int, NativeControl*> ControlsById;
         static ControlsById sControlsById;
+    };
+
+
+    class VirtualControl : public NativeComponent
+    {
+    public:
+        VirtualControl(NativeComponentPtr inParent);
+
+        virtual ~VirtualControl(){}
+        
+        virtual HWND handle() const;
+
+        virtual void move(int x, int y, int w, int h);
     };
 
 
@@ -289,14 +298,45 @@ namespace XULWin
     public:
         NativeGrid(NativeComponentPtr inParent);
 
-        void setRows(const Rows & inRows);
+        //void setRows(const Rows & inRows);
 
-        void setColumns(const Columns & inColumns);
+        //void setColumns(const Columns & inColumns);
 
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
+
+        virtual void rebuildLayout();
     };
+
+
+    class NativeRows : public VirtualControl
+    {
+    public:
+        NativeRows(NativeComponentPtr inParent);
+    };
+
+
+    class NativeRow : public VirtualControl
+    {
+    public:
+        NativeRow(NativeComponentPtr inParent);
+    };
+
+
+    class NativeColumns : public VirtualControl
+    {
+    public:
+        NativeColumns(NativeComponentPtr inParent);
+    };
+
+
+    class NativeColumn : public VirtualControl
+    {
+    public:
+        NativeColumn(NativeComponentPtr inParent);
+    };
+
 
 } // namespace XULWin
 

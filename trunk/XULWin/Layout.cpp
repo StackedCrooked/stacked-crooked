@@ -113,7 +113,7 @@ namespace XULWin
 
     
     void GridLayoutManager::GetRects(const Rect & inRect,
-                                     const Utils::GenericGrid<Proportion> & inProportions,
+                                     const Utils::GenericGrid<GridProportion> & inProportions,
                                      Utils::GenericGrid<Rect> & outRects)
     {
         if (inProportions.numRows() == 0 || inProportions.numColumns() == 0)
@@ -133,7 +133,7 @@ namespace XULWin
             std::vector<Proportion> horizontalProportions;         
             for (size_t colIdx = 0; colIdx != inProportions.numColumns(); ++colIdx)
             {
-                horizontalProportions.push_back(inProportions.get(0, colIdx));
+                horizontalProportions.push_back(inProportions.get(0, colIdx).Horizontal);
             }
             LinearLayoutManager::GetPortions(inRect.width(), horizontalProportions, horizontalSizes);
         }
@@ -143,7 +143,7 @@ namespace XULWin
             std::vector<Proportion> verticalProportions;
             for (size_t rowIdx = 0; rowIdx != inProportions.numRows(); ++rowIdx)
             {
-                verticalProportions.push_back(inProportions.get(0, rowIdx));
+                verticalProportions.push_back(inProportions.get(0, rowIdx).Vertical);
             }
             LinearLayoutManager::GetPortions(inRect.height(), verticalProportions, verticalSizes);
         }

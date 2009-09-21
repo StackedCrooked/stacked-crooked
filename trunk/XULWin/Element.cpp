@@ -396,24 +396,12 @@ namespace XULWin
     Grid::~Grid()
     {
     }
-    
-    
-    void Grid::setRows(const Rows & inRows)
-    {
-        static_cast<NativeGrid*>(nativeComponent().get())->setRows(inRows);
-    }
-
-     
-    void Grid::setColumns(const Columns & inColumns)
-    {
-        static_cast<NativeGrid*>(nativeComponent().get())->setColumns(inColumns);
-    }
 
 
     Rows::Rows(ElementPtr inParent) :
         Element(Rows::Type(),
                 inParent,
-                NativeComponentPtr(gNullNativeComponent))
+                NativeComponentPtr(new NativeRows(inParent->nativeComponent())))
     {
     }
 
@@ -421,43 +409,12 @@ namespace XULWin
     Rows::~Rows()
     {
     }
-    
-    
-    void Rows::addRow(const Row & inRow)
-    {
-    }
-
-
-    Row::Row(ElementPtr inParent) :
-        Element(Row::Type(),
-                inParent,
-                NativeComponentPtr(gNullNativeComponent))
-    {
-    }
-
-
-    Row::~Row()
-    {
-    }
-    
-    
-    void Row::init()
-    {
-        if (mParent->type() == "rows")
-        {
-            static_cast<Rows*>(mParent)->addRow(*this);
-        }
-        else
-        {
-            ReportError("Row is located in non-compatible container.");
-        }
-    }
 
 
     Columns::Columns(ElementPtr inParent) :
         Element(Columns::Type(),
                 inParent,
-                NativeComponentPtr(gNullNativeComponent))
+                NativeComponentPtr(new NativeColumns(inParent->nativeComponent())))
     {
     }
 
@@ -467,7 +424,15 @@ namespace XULWin
     }
 
 
-    void Columns::addColumn(const Column & inColumn)
+    Row::Row(ElementPtr inParent) :
+        Element(Row::Type(),
+                inParent,
+                NativeComponentPtr(new NativeRow(inParent->nativeComponent())))
+    {
+    }
+
+
+    Row::~Row()
     {
     }
 
@@ -475,26 +440,13 @@ namespace XULWin
     Column::Column(ElementPtr inParent) :
         Element(Column::Type(),
                 inParent,
-                NativeComponentPtr(gNullNativeComponent))
+                NativeComponentPtr(new NativeColumn(inParent->nativeComponent())))
     {
     }
 
 
     Column::~Column()
     {
-    }
-    
-    
-    void Column::init()
-    {
-        if (mParent->type() == "columns")
-        {
-            static_cast<Columns*>(mParent)->addColumn(*this);
-        }
-        else
-        {
-            ReportError("Column is located in non-compatible container.");
-        }
     }
 
 

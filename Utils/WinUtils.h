@@ -37,6 +37,10 @@ namespace Utils
 
     void setWindowText(HWND inHandle, const std::string & inText);
 
+    bool isWindowDisabled(HWND inHandle);
+
+    void disableWindow(HWND inHandle, bool inDisable);
+
 } // namespace Utils
 
 

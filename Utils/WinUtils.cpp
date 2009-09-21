@@ -177,5 +177,17 @@ namespace Utils
 	    }
     }
 
+    
+    bool isWindowDisabled(HWND inHandle)
+    {
+        return !::IsWindowEnabled(inHandle);
+    }
+
+
+    void disableWindow(HWND inHandle, bool inDisable)
+    {
+        ::EnableWindow(inHandle, inDisable ? FALSE : TRUE);
+    }
+
 
 } // namespace Utils

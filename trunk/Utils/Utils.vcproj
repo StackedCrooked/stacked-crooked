@@ -162,6 +162,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GenericGrid.h"
+				>
+			</File>
+			<File
 				RelativePath=".\WinUtils.cpp"
 				>
 			</File>

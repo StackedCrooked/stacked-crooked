@@ -625,7 +625,7 @@ namespace XULWin
         // Obtain the flex values
         //
         std::vector<int> allFlexValues;
-        std::vector<LinearLayoutManager::Portion> nonZeroFlexValues;
+        std::vector<Proportion> nonZeroFlexValues;
         RECT rc;
         ::GetClientRect(handle(), &rc);
         int availableSpace = rc.right - rc.left;
@@ -655,7 +655,7 @@ namespace XULWin
             if (flexValue != 0)
             {
                 nonZeroFlexValues.push_back(
-                    LinearLayoutManager::Portion(flexValue,
+                    Proportion(flexValue,
                                                  mOrientation == HORIZONTAL ? child->nativeComponent()->minimumWidth() :
                                                                               child->nativeComponent()->minimumHeight()));
             }

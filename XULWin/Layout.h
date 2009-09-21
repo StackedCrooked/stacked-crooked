@@ -145,9 +145,9 @@ namespace XULWin
     };
 
 
-    struct Proportion
+    struct SizeInfo
     {
-        Proportion(int inFlex, int inMinSize) : Flex(inFlex), MinSize(inMinSize){}
+        SizeInfo(int inFlex, int inMinSize) : Flex(inFlex), MinSize(inMinSize){}
         int Flex;
         int MinSize;
     };
@@ -156,17 +156,17 @@ namespace XULWin
     class LinearLayoutManager
     {
     public:
-        static void GetPortions(int inLength, size_t inItemCount, std::vector<int> & outPortions);
+        static void GetSizes(int inLength, size_t inItemCount, std::vector<int> & outSizes);
 
-        static void GetPortions(int inLength, const std::vector<int> & inProportions, std::vector<int> & outPortions);
+        static void GetSizes(int inLength, const std::vector<int> & inFlexValues, std::vector<int> & outSizes);
 
-        static void GetPortions(int inLength, const std::vector<Proportion> & inProportions, std::vector<int> & outPortions);
+        static void GetSizes(int inLength, const std::vector<SizeInfo> & inFlexValues, std::vector<int> & outSizes);
 
         LinearLayoutManager(Orientation inOrientation);
 
         void getRects(const Rect & inRect, size_t inItemCount, std::vector<Rect> & outRects);
 
-        void getRects(const Rect & inRect, const std::vector<int> & inProportions, std::vector<Rect> & outRects);
+        void getRects(const Rect & inRect, const std::vector<int> & inFlexValues, std::vector<Rect> & outRects);
 
     private:
         Orientation mOrientation;
@@ -175,11 +175,11 @@ namespace XULWin
 
     struct GridProportion
     {
-        GridProportion(const Proportion & inHorizontal, const Proportion & inVertical) :
+        GridProportion(const SizeInfo & inHorizontal, const SizeInfo & inVertical) :
             Horizontal(inHorizontal), Vertical(inVertical) {}
 
-        Proportion Horizontal;
-        Proportion Vertical;
+        SizeInfo Horizontal;
+        SizeInfo Vertical;
     };
 
     
@@ -187,7 +187,7 @@ namespace XULWin
     {
     public:
         static void GetRects(const Rect & inRect,
-                             const Utils::GenericGrid<GridProportion> & inProportions,
+                             const Utils::GenericGrid<GridProportion> & inFlexValues,
                              Utils::GenericGrid<Rect> & outRects);
     };
 

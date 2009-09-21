@@ -1,3 +1,4 @@
+- Find out why menu items are not always added to MenuList objects
 - Use XP theme
 - Enable label multiline attribute
 - Add textfield with multiline

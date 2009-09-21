@@ -1053,6 +1053,21 @@ namespace XULWin
                 }
             }
         }
+        
+        ElementPtr columns;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (child->type() == Columns::Type())
+            {
+                columns = child;
+                break;
+            }
+        }
+        if (columns)
+        {
+            result += (1 + columns->children().size())*Defaults::spacing();
+        }
         return result;
     }
 
@@ -1097,6 +1112,7 @@ namespace XULWin
                 result += maxHeight;
             }
         }
+        result += (1 + rows->children().size())*Defaults::spacing();
         return result;
     }
 

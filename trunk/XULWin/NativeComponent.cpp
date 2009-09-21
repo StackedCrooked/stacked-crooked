@@ -1141,7 +1141,11 @@ namespace XULWin
             for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
             {
                 NativeRow * row = static_cast<NativeRow*>(rows->children()[rowIdx]->nativeComponent().get());
+                assert(row->owningElement()->type() == Row::Type());
+
                 NativeColumn * column = static_cast<NativeColumn*>(columns->children()[colIdx]->nativeComponent().get());
+                assert(column->owningElement()->type() == Column::Type());
+
                 ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
                 if (child)
                 {

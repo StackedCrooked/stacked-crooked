@@ -38,7 +38,7 @@
     </columns>
     <rows>
       <row>
-        <label flex="0" value="Upload to:"/>
+        <label value="Upload to:"/>
         <menulist>
           <menupopup>
             <menuitem label="StackedCrooked" />
@@ -58,11 +58,11 @@
       </row>
       <row>
         <label value="Tags:"></label>
-        <textbox flex="1"></textbox>
+        <textbox ></textbox>
       </row>
-      <row>
+      <row flex="1">
         <label value=""></label>
-        <label flex="1" value="Use comma's to separate tags. For example: humour, videos, computer"></label>
+        <label value="Use comma's to separate tags. For example: humour, videos, computer"></label>
       </row>
       <row>
         <label value="Show"></label>

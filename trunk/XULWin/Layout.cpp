@@ -158,7 +158,7 @@ namespace XULWin
             std::vector<Proportion> verticalProportions;
             for (size_t rowIdx = 0; rowIdx != inProportions.numRows(); ++rowIdx)
             {
-                verticalProportions.push_back(inProportions.get(0, rowIdx).Vertical);
+                verticalProportions.push_back(inProportions.get(rowIdx, 0).Vertical);
             }
             LinearLayoutManager::GetPortions(inRect.height(), verticalProportions, verticalSizes);
         }

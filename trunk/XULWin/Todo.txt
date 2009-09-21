@@ -1,5 +1,6 @@
 - Use XP theme
-- Implement minimumWidth & Height on rows, columns down to row and column level. And aggregate the results to get value for Grid.
+- Enable label multiline attribute
+- Add textfield with multiline
 - Remove boost signal and use listener system
 - Remove attributes, and use methods instead. Only consider attributes from XUL file.
 - Compare against Gecko engine when testing

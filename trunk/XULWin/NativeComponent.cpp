@@ -399,6 +399,24 @@ namespace XULWin
 
         sComponentsByHandle.insert(std::make_pair(mHandle, this));
         sControlsById.insert(std::make_pair(mCommandId.intValue(), this));
+        
+        // Set attribute controllers
+        {
+            struct Helper
+            {
+                static std::string Bool2String(bool inValue)
+                {
+                    return inValue ? "true" : "false";
+                }
+                static bool String2Bool(const std::string & inString)
+                {
+                    return inString == "true" ? true : false;
+                }
+            };
+            AttributeGetter disabledGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isWindowDisabled, handle()));
+            AttributeSetter disabledSetter = boost::bind(&Utils::disableWindow, handle(), boost::bind(&Helper::String2Bool, _1));
+            setAttributeController("disabled", AttributeController(disabledGetter, disabledSetter));
+        }
     }
 
 
@@ -466,7 +484,7 @@ namespace XULWin
     {
         AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setAttributeController("label", AttributeController(labelGetter, labelSetter));
+        setAttributeController("label", AttributeController(labelGetter, labelSetter));        
     }
     
     

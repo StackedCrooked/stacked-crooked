@@ -328,10 +328,6 @@ namespace XULWin
     {
     public:
         NativeHBox(NativeComponent * inParent);
-            
-        virtual int minimumWidth() const;
-
-        virtual int minimumHeight() const;
     };
 
 
@@ -342,10 +338,6 @@ namespace XULWin
             NativeBox(inParent, VERTICAL)
         {
         }
-            
-        virtual int minimumWidth() const;
-
-        virtual int minimumHeight() const;
     };
 
 
@@ -454,16 +446,10 @@ namespace XULWin
     };
 
 
-    class NativeRadioGroup : public VirtualControl
+    class NativeRadioGroup : public NativeBox
     {
     public:
         NativeRadioGroup(NativeComponent * inParent);
-
-        virtual void rebuildLayout();
-
-        virtual int minimumWidth() const;
-
-        virtual int minimumHeight() const;
     };
 
 

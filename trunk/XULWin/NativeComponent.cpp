@@ -876,6 +876,7 @@ namespace XULWin
         };
         AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
         AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
+        setAttributeController("orient", AttributeController(orientationGetter, orientationSetter));
         setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
 
         AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&Helper::String2Align, _1));
@@ -889,11 +890,25 @@ namespace XULWin
     {
         if (mOrientation == HORIZONTAL)
         {
-            return static_cast<const NativeHBox*>(this)->minimumWidth();
+            int result = 0;
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                result += mElement->children()[idx]->nativeComponent()->minimumWidth();
+            }
+            return result;
         }
         else if (mOrientation == VERTICAL)
         {
-            return static_cast<const NativeVBox*>(this)->minimumWidth();
+            int result = 0;
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                int width = mElement->children()[idx]->nativeComponent()->minimumWidth();
+                if (width > result)
+                {
+                    result = width;
+                }
+            }
+            return result;
         }
         else
         {
@@ -907,11 +922,25 @@ namespace XULWin
     {
         if (mOrientation == HORIZONTAL)
         {
-            return static_cast<const NativeHBox*>(this)->minimumHeight();
+            int result = 0;
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                int height = mElement->children()[idx]->nativeComponent()->minimumHeight();
+                if (height > result)
+                {
+                    result = height;
+                }
+            }
+            return result;
         }
         else if (mOrientation == VERTICAL)
         {
-            return static_cast<const NativeVBox*>(this)->minimumHeight();
+            int result = 0;
+            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            {
+                result += mElement->children()[idx]->nativeComponent()->minimumHeight();
+            }
+            return result;
         }
         else
         {
@@ -1114,58 +1143,6 @@ namespace XULWin
             }
         }
         rebuildChildLayouts();
-    }
-
-            
-    int NativeHBox::minimumWidth() const
-    {
-        int result = 0;
-        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
-        {
-            result += mElement->children()[idx]->nativeComponent()->minimumWidth();
-        }
-        return result;
-    }
-
-
-    int NativeHBox::minimumHeight() const
-    {
-        int result = 0;
-        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
-        {
-            int height = mElement->children()[idx]->nativeComponent()->minimumHeight();
-            if (height > result)
-            {
-                result = height;
-            }
-        }
-        return result;
-    }
-
-            
-    int NativeVBox::minimumWidth() const
-    {
-        int result = 0;
-        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
-        {
-            int width = mElement->children()[idx]->nativeComponent()->minimumWidth();
-            if (width > result)
-            {
-                result = width;
-            }
-        }
-        return result;
-    }
-
-
-    int NativeVBox::minimumHeight() const
-    {
-        int result = 0;
-        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
-        {
-            result += mElement->children()[idx]->nativeComponent()->minimumHeight();
-        }
-        return result;
     }
     
     
@@ -1624,35 +1601,8 @@ namespace XULWin
 
     
     NativeRadioGroup::NativeRadioGroup(NativeComponent * inParent) :
-        VirtualControl(inParent)
+        NativeBox(inParent)
     {
-    }
-
-
-    void NativeRadioGroup::rebuildLayout()
-    {
-        owningElement()->children().begin()->get()->nativeComponent()->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
-        rebuildChildLayouts();
-    }
-        
-        
-    int NativeRadioGroup::minimumWidth() const
-    {
-        if (!owningElement()->children().empty())
-        {
-            return owningElement()->children().begin()->get()->nativeComponent()->minimumWidth();
-        }
-        return 0;
-    }
-
-    
-    int NativeRadioGroup::minimumHeight() const
-    {
-        if (!owningElement()->children().empty())
-        {
-            return owningElement()->children().begin()->get()->nativeComponent()->minimumHeight();
-        }
-        return 0;
     }
 
     

@@ -47,7 +47,7 @@ class TestDropDown
 public:
     void run()
     {
-    	mParser.parse("Dropdown.xul");
+    	mParser.parse("widgets.xul");
         if (mParser.rootElement())
         {
             Window * window = mParser.rootElement()->downcast<Window>();

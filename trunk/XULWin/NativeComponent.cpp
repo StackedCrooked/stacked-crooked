@@ -551,6 +551,33 @@ namespace XULWin
     {
         return Defaults::controlHeight();
     }
+
+
+    NativeDescription::NativeDescription(NativeComponentPtr inParent) :
+        NativeControl(inParent,
+                      TEXT("STATIC"),
+                      0, // exStyle
+                      SS_LEFT)
+    {
+        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+        setAttributeController("value", AttributeController(valueGetter, valueSetter));
+    }
+
+
+    int NativeDescription::minimumWidth() const
+    {
+        std::string text = Utils::getWindowText(handle());
+        int width = Utils::getTextSize(handle(), text).cx;
+        width += Defaults::textPadding();
+        return width;
+    }
+
+    
+    int NativeDescription::minimumHeight() const
+    {
+        return Defaults::controlHeight();
+    }
     
     
     NativeHBox::NativeHBox(NativeComponentPtr inParent) :

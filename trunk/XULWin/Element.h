@@ -168,6 +168,20 @@ namespace XULWin
     };
 
 
+    class Description : public Element
+    {
+    public:
+        static ElementPtr Create(ElementPtr inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Description>(inParent, inAttr); }
+
+        static const char * Type() { return "description"; }
+    
+    private:
+        friend class Element;
+        Description(ElementPtr inParent);
+    };
+
+
     // Text is the same as label
     class Text : public Element
     {

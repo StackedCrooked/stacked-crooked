@@ -1,4 +1,3 @@
-- Use XP theme
 - Enable label multiline attribute
 - Add textfield with multiline
 - Remove boost signal and use listener system

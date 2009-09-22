@@ -34,6 +34,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<Row>();
     ElementFactory::Instance().registerElement<Columns>();
     ElementFactory::Instance().registerElement<Column>();
+    ElementFactory::Instance().registerElement<Description>();
 }
 
 

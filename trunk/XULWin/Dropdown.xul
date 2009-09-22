@@ -53,6 +53,7 @@
           <menupopup>
             <menuitem label="School" />
             <menuitem label="Family" />
+            <menuitem label="Friends" />
           </menupopup>
         </menulist>
       </row>

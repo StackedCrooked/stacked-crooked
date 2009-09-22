@@ -116,6 +116,8 @@ namespace XULWin
 
         void showModal();
 
+        virtual void rebuildLayout();
+
         virtual Rect clientRect() const;
 
         virtual bool setAttributeControllers();

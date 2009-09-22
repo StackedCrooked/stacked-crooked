@@ -209,8 +209,7 @@ namespace XULWin
 
     void NativeComponent::rebuildLayout()
     {
-        rebuildChildLayouts();        
-        ::InvalidateRect(handle(), 0, FALSE);
+        rebuildChildLayouts();
     }
 
     
@@ -304,6 +303,13 @@ namespace XULWin
         return Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
     }
 
+    
+    void NativeWindow::rebuildLayout()
+    {     
+        rebuildChildLayouts();
+        ::InvalidateRect(handle(), 0, FALSE);
+    }
+
 
     void NativeWindow::showModal()
     {      
@@ -312,9 +318,8 @@ namespace XULWin
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         move(x, y, w, h);
-        rebuildLayout();
-
         ::ShowWindow(handle(), SW_SHOW);
+        rebuildLayout();
 
         MSG message;
         while (GetMessage(&message, NULL, 0, 0))

@@ -72,7 +72,7 @@ namespace XULWin
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
-        virtual bool setAttributeControllers();
+        virtual bool initAttributeControllers();
 
     protected:
         NativeComponent * mParent;
@@ -120,7 +120,7 @@ namespace XULWin
 
         virtual Rect clientRect() const;
 
-        virtual bool setAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -185,7 +185,7 @@ namespace XULWin
 
         virtual void move(int x, int y, int w, int h);
 
-        virtual bool setAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
@@ -233,7 +233,7 @@ namespace XULWin
     public:
         NativeLabel(NativeComponent * inParent);
 
-        virtual bool setAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual int minimumWidth() const;
 
@@ -246,7 +246,7 @@ namespace XULWin
     public:
         NativeDescription(NativeComponent * inParent);
 
-        virtual bool setAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual int minimumWidth() const;
 
@@ -259,7 +259,7 @@ namespace XULWin
     public:
         NativeTextBox(NativeComponent * inParent);
 
-        virtual bool setAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual int minimumWidth() const;
 
@@ -285,7 +285,7 @@ namespace XULWin
     public:
         NativeBox(NativeComponent * inParent, Orientation inOrientation = HORIZONTAL);
 
-        virtual bool setAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual void rebuildLayout();
 

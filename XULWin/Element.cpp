@@ -38,18 +38,6 @@ namespace XULWin
     }
 
 
-    std::string Element::label() const
-    {
-        return getAttribute("label");
-    }
-
-    
-    void Element::setLabel(const std::string & inLabel)
-    {
-        setAttribute("label", inLabel);
-    }
-
-
     void Element::handleEvent(const std::string & inEvent)
     {
         EventHandlers::iterator it = mEventHandlers.find(inEvent);
@@ -129,11 +117,11 @@ namespace XULWin
     }
 
 
-    void Element::setAttributeControllers()
+    void Element::initAttributeControllers()
     {
         if (mNativeComponent)
         {
-            mNativeComponent->setAttributeControllers();
+            mNativeComponent->initAttributeControllers();
         }
     }
 

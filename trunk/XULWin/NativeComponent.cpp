@@ -451,55 +451,55 @@ namespace XULWin
     }
 
 
-    VirtualPadding::VirtualPadding(NativeComponent * inSubject) :
+    PaddingProxy::PaddingProxy(NativeComponent * inSubject) :
         VirtualProxy(inSubject)
     {
     }
 
 
-    VirtualPadding::~VirtualPadding()
+    PaddingProxy::~PaddingProxy()
     {
     }
     
     
-    void VirtualPadding::move(int x, int y, int w, int h)
+    void PaddingProxy::move(int x, int y, int w, int h)
     {
         mRect = Rect(x + paddingLeft(), y + paddingTop(), w - paddingLeft() - paddingRight(), h - paddingTop() - paddingBottom());
         mSubject->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
     }
 
 
-    int VirtualPadding::paddingTop() const
+    int PaddingProxy::paddingTop() const
     {
         return 4;
     }
 
     
-    int VirtualPadding::paddingLeft() const
+    int PaddingProxy::paddingLeft() const
     {
         return 4;
     }
 
     
-    int VirtualPadding::paddingRight() const
+    int PaddingProxy::paddingRight() const
     {
         return 4;
     }
 
     
-    int VirtualPadding::paddingBottom() const
+    int PaddingProxy::paddingBottom() const
     {
         return 4;
     }
     
     
-    int VirtualPadding::minimumWidth() const
+    int PaddingProxy::minimumWidth() const
     {
         return paddingLeft() + mSubject->minimumWidth() + paddingRight();
     }
 
     
-    int VirtualPadding::minimumHeight() const
+    int PaddingProxy::minimumHeight() const
     {
         return paddingTop() + mSubject->minimumHeight() + paddingBottom();
     }
@@ -1139,26 +1139,26 @@ namespace XULWin
 
     NativeMenuButton::NativeMenuButton(NativeComponent * inParent) :
         NativeControl(inParent,
-                      TOOLBARCLASSNAME,
+                      TEXT("BUTTON"),
                       0, // exStyle
-                      0)
+                      BS_PUSHBUTTON)
     {
-        ::SendMessage(handle(), TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0); 
+        //::SendMessage(handle(), TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0); 
 
-        CommandId id;
-        // add to toolbar
-        std::wstring itemText = L"test";
-        TBBUTTON theToolBarButton;
-        theToolBarButton.idCommand = id.intValue();
-        theToolBarButton.fsState = TBSTATE_ENABLED;
-        theToolBarButton.fsStyle = BTNS_BUTTON | BTNS_DROPDOWN | BTNS_SHOWTEXT;
-        theToolBarButton.dwData = 0; 
-        theToolBarButton.iString = (INT_PTR)itemText.c_str();
-        theToolBarButton.iBitmap = I_IMAGENONE;
+        //CommandId id;
+        //// add to toolbar
+        //std::wstring itemText = L"test";
+        //TBBUTTON theToolBarButton;
+        //theToolBarButton.idCommand = id.intValue();
+        //theToolBarButton.fsState = TBSTATE_ENABLED;
+        //theToolBarButton.fsStyle = BTNS_BUTTON | BTNS_DROPDOWN | BTNS_SHOWTEXT;
+        //theToolBarButton.dwData = 0; 
+        //theToolBarButton.iString = (INT_PTR)itemText.c_str();
+        //theToolBarButton.iBitmap = I_IMAGENONE;
 
-        SendMessage(handle(), TB_ADDBUTTONS, 1, (LPARAM)(LPTBBUTTON)&theToolBarButton); 
-        SendMessage(handle(), TB_AUTOSIZE, 0, 0);
-        ShowWindow(handle(), SW_SHOW); 
+        //SendMessage(handle(), TB_ADDBUTTONS, 1, (LPARAM)(LPTBBUTTON)&theToolBarButton); 
+        //SendMessage(handle(), TB_AUTOSIZE, 0, 0);
+        //ShowWindow(handle(), SW_SHOW); 
     }
         
         

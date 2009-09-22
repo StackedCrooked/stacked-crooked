@@ -45,21 +45,9 @@ class TestDropDown
 public:
     void run()
     {
-    	mParser.parse("Dropdown.xul");
+    	mParser.parse("widgets.xul");
         if (mParser.rootElement())
         {
-            Element * addButton = mParser.rootElement()->getElementById("addbutton");
-            if (addButton)
-            {
-                //mConnections.push_back(addButton->OnCommand.connect(boost::bind(&TestDropDown::addButtonPressed, this, _1)));
-            }
-
-            Element * removeButton = mParser.rootElement()->getElementById("removebutton");
-            if (removeButton)
-            {
-                //mConnections.push_back(removeButton->OnCommand.connect(boost::bind(&TestDropDown::removeButtonPressed, this, _1)));
-            }
-
             Window * window = mParser.rootElement()->downcast<Window>();
             if (window)
             {

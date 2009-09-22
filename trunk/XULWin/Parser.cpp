@@ -55,7 +55,7 @@ namespace XULWin
                 //
                 // Get parent
                 //
-                ElementPtr parent;
+                Element * parent(0);
                 if (!mStack.empty())
                 {
                     parent = mStack.top();
@@ -83,7 +83,7 @@ namespace XULWin
                         assert(!mRootElement);
                         mRootElement = element;
                     }
-                    mStack.push(element);
+                    mStack.push(element.get());
                 }
                 else
                 {

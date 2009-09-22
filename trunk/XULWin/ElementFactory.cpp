@@ -20,7 +20,7 @@ namespace XULWin
     }
 
 
-    ElementPtr ElementFactory::createElement(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr)
+    ElementPtr ElementFactory::createElement(const std::string & inType, Element * inParent, const AttributesMapping & inAttr)
     {
         ElementPtr result;
         FactoryMethods::iterator it = mFactoryMethods.find(inType);

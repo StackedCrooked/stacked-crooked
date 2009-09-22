@@ -47,13 +47,13 @@ public:
     	mParser.parse("Dropdown.xul");
         if (mParser.rootElement())
         {
-            ElementPtr addButton = mParser.rootElement()->getElementById("addbutton");
+            Element * addButton = mParser.rootElement()->getElementById("addbutton");
             if (addButton)
             {
                 mConnections.push_back(addButton->OnCommand.connect(boost::bind(&TestDropDown::addButtonPressed, this, _1)));
             }
 
-            ElementPtr removeButton = mParser.rootElement()->getElementById("removebutton");
+            Element * removeButton = mParser.rootElement()->getElementById("removebutton");
             if (removeButton)
             {
                 mConnections.push_back(removeButton->OnCommand.connect(boost::bind(&TestDropDown::removeButtonPressed, this, _1)));
@@ -70,8 +70,8 @@ public:
 
     void addButtonPressed(Event * inEvent)
     {
-        ElementPtr popup = mParser.rootElement()->getElementById("popup");
-        ElementPtr input = mParser.rootElement()->getElementById("input");
+        Element * popup = mParser.rootElement()->getElementById("popup");
+        Element * input = mParser.rootElement()->getElementById("input");
         if (popup && input)
         {
             AttributesMapping attr;

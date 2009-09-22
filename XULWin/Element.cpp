@@ -150,7 +150,7 @@ namespace XULWin
     }
     
     
-    ElementImpl * Element::nativeComponent() const
+    ElementImpl * Element::getImpl() const
     {
         return mNativeComponent.get();
     }
@@ -165,21 +165,21 @@ namespace XULWin
     Window::Window(Element * inParent) :
         Element(Window::Type(),
                 inParent,
-                new NativeWindow(gNullNativeComponent))
+                new NativeWindow())
     {
     }
 
 
     void Window::showModal()
     {
-        static_cast<NativeWindow *>(nativeComponent())->showModal();
+        static_cast<NativeWindow *>(getImpl())->showModal();
     }
 
 
     Button::Button(Element * inParent) :
         Element(Button::Type(),
                 inParent,
-                new PaddingProxy(new NativeButton(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeButton(inParent->getImpl())))
     {
     }
 
@@ -187,7 +187,7 @@ namespace XULWin
     Label::Label(Element * inParent) :
         Element(Label::Type(),
                 inParent,
-                new PaddingProxy(new NativeLabel(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeLabel(inParent->getImpl())))
     {
     }
 
@@ -201,7 +201,7 @@ namespace XULWin
     Description::Description(Element * inParent) :
         Element(Description::Type(),
                 inParent,
-                new PaddingProxy(new NativeDescription(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeDescription(inParent->getImpl())))
     {
     }
 
@@ -209,7 +209,7 @@ namespace XULWin
     Text::Text(Element * inParent) :
         Element(Text::Type(),
                 inParent,
-                new PaddingProxy(new NativeLabel(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeLabel(inParent->getImpl())))
     {
     }
 
@@ -217,7 +217,7 @@ namespace XULWin
     TextBox::TextBox(Element * inParent) :
         Element(TextBox::Type(),
                 inParent,
-                new PaddingProxy(new NativeTextBox(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeTextBox(inParent->getImpl())))
     {
     }
 
@@ -225,7 +225,7 @@ namespace XULWin
     CheckBox::CheckBox(Element * inParent) :
         Element(CheckBox::Type(),
                 inParent,
-                new PaddingProxy(new NativeCheckBox(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeCheckBox(inParent->getImpl())))
     {
     }
 
@@ -233,7 +233,7 @@ namespace XULWin
     Box::Box(Element * inParent) :
         Element(Box::Type(),
                 inParent,
-                new NativeBox(inParent->nativeComponent()))
+                new NativeBox(inParent->getImpl()))
     {
     }
 
@@ -241,7 +241,7 @@ namespace XULWin
     HBox::HBox(Element * inParent) :
         Element(HBox::Type(),
                 inParent,
-                new NativeHBox(inParent->nativeComponent()))
+                new NativeHBox(inParent->getImpl()))
     {
     }
 
@@ -249,7 +249,7 @@ namespace XULWin
     VBox::VBox(Element * inParent) :
         Element(VBox::Type(),
                 inParent,
-                new NativeVBox(inParent->nativeComponent()))
+                new NativeVBox(inParent->getImpl()))
     {
     }
 
@@ -257,21 +257,23 @@ namespace XULWin
     MenuList::MenuList(Element * inParent) :
         Element(MenuList::Type(),
                 inParent,
-                new PaddingProxy(new NativeMenuList(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeMenuList(inParent->getImpl())))
     {
     }
         
     
     void MenuList::addMenuItem(const MenuItem * inItem)
     {
-        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent());
-        nativeMenuList->addMenuItem(inItem->label());
+        if (NativeMenuList * nativeMenuList = getImpl()->downcast<NativeMenuList>())
+        {
+            nativeMenuList->addMenuItem(inItem->label());
+        }
     }
         
     
     void MenuList::removeMenuItem(const MenuItem * inItem)
     {
-        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent());
+        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(getImpl());
         nativeMenuList->removeMenuItem(inItem->label());
     }
 
@@ -297,7 +299,7 @@ namespace XULWin
         }
         else if (mParent->type() == "menubutton")
         {
-            static_cast<MenuList*>(mParent)->addMenuItem(inItem);
+            //static_cast<MenuButton*>(mParent)->addMenuItem(inItem);
         }
         else
         {
@@ -371,7 +373,7 @@ namespace XULWin
     Separator::Separator(Element * inParent) :
         Element(Separator::Type(),
                 inParent,
-                new PaddingProxy(new NativeSeparator(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeSeparator(inParent->getImpl())))
     {
     }
 
@@ -384,7 +386,7 @@ namespace XULWin
     Spacer::Spacer(Element * inParent) :
         Element(Spacer::Type(),
                 inParent,
-                new NativeSpacer(inParent->nativeComponent()))
+                new NativeSpacer(inParent->getImpl()))
     {
     }
 
@@ -397,7 +399,7 @@ namespace XULWin
     MenuButton::MenuButton(Element * inParent) :
         Element(MenuButton::Type(),
                 inParent,
-                new PaddingProxy(new NativeMenuButton(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeMenuButton(inParent->getImpl())))
     {
     }
 
@@ -410,7 +412,7 @@ namespace XULWin
     Grid::Grid(Element * inParent) :
         Element(Grid::Type(),
                 inParent,
-                new NativeGrid(inParent->nativeComponent()))
+                new NativeGrid(inParent->getImpl()))
     {
     }
 
@@ -423,7 +425,7 @@ namespace XULWin
     Rows::Rows(Element * inParent) :
         Element(Rows::Type(),
                 inParent,
-                new NativeRows(inParent->nativeComponent()))
+                new NativeRows(inParent->getImpl()))
     {
     }
 
@@ -436,7 +438,7 @@ namespace XULWin
     Columns::Columns(Element * inParent) :
         Element(Columns::Type(),
                 inParent,
-                new NativeColumns(inParent->nativeComponent()))
+                new NativeColumns(inParent->getImpl()))
     {
     }
 
@@ -449,7 +451,7 @@ namespace XULWin
     Row::Row(Element * inParent) :
         Element(Row::Type(),
                 inParent,
-                new NativeRow(inParent->nativeComponent()))
+                new NativeRow(inParent->getImpl()))
     {
     }
 
@@ -462,7 +464,7 @@ namespace XULWin
     Column::Column(Element * inParent) :
         Element(Column::Type(),
                 inParent,
-                new NativeColumn(inParent->nativeComponent()))
+                new NativeColumn(inParent->getImpl()))
     {
     }
 
@@ -475,7 +477,7 @@ namespace XULWin
     RadioGroup::RadioGroup(Element * inParent) :
         Element(RadioGroup::Type(),
                 inParent,
-                new NativeRadioGroup(inParent->nativeComponent()))
+                new NativeRadioGroup(inParent->getImpl()))
     {
     }
 
@@ -488,7 +490,7 @@ namespace XULWin
     Radio::Radio(Element * inParent) :
         Element(Radio::Type(),
                 inParent,
-                new PaddingProxy(new NativeRadio(inParent->nativeComponent())))
+                new PaddingDecorator(new NativeRadio(inParent->getImpl())))
     {
     }
 

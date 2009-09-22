@@ -83,7 +83,7 @@ namespace XULWin
 
         void initAttributeControllers();
 
-        ElementImpl * nativeComponent() const;
+        ElementImpl * getImpl() const;
 
     protected:
         Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);

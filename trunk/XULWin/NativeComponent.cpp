@@ -338,6 +338,12 @@ namespace XULWin
             AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
             setAttributeController("width", AttributeController(widthGetter, widthSetter));
         }
+
+        {
+            AttributeGetter titleGetter = boost::bind(&Utils::getWindowText, handle());
+            AttributeSetter titleSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+            setAttributeController("title", AttributeController(titleGetter, titleSetter));
+        }
         return NativeComponent::initAttributeControllers();
     }
     
@@ -385,13 +391,24 @@ namespace XULWin
 
     void NativeWindow::showModal()
     {      
-        SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-        int w = minimumWidth() + sizeDiff.cx;
-        int h = minimumHeight() + sizeDiff.cy;
-        int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
-        int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
-        move(x, y, w, h);
-        rebuildLayout();
+        {
+            SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
+            int w = minimumWidth() + sizeDiff.cx;
+            int h = minimumHeight() + sizeDiff.cy;
+            int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
+            int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
+            move(x, y, w, h);
+            rebuildLayout();
+        }   
+        {
+            SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
+            int w = minimumWidth() + sizeDiff.cx;
+            int h = minimumHeight() + sizeDiff.cy;
+            int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
+            int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
+            move(x, y, w, h);
+            rebuildLayout();
+        }
         ::ShowWindow(handle(), SW_SHOW);
         ::UpdateWindow(handle());
 
@@ -879,7 +896,7 @@ namespace XULWin
     NativeBox::NativeBox(ElementImpl * inParent, Orientation inOrientation) :
         VirtualControl(inParent),
         mOrientation(inOrientation),
-        mAlign(Start)
+        mAlign(inOrientation == HORIZONTAL ? Center : Stretch)
     {
     }
 

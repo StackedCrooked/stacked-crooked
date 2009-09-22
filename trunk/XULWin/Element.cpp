@@ -472,4 +472,30 @@ namespace XULWin
     }
 
 
+    RadioGroup::RadioGroup(Element * inParent) :
+        Element(RadioGroup::Type(),
+                inParent,
+                new NativeRadioGroup(inParent->nativeComponent()))
+    {
+    }
+
+
+    RadioGroup::~RadioGroup()
+    {
+    }
+
+
+    Radio::Radio(Element * inParent) :
+        Element(Radio::Type(),
+                inParent,
+                new PaddingProxy(new NativeRadio(inParent->nativeComponent())))
+    {
+    }
+
+
+    Radio::~Radio()
+    {
+    }
+
+
 } // XULWin

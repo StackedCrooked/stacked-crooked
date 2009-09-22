@@ -8,27 +8,14 @@
 	type="mab:main"
 	persist="screenX screenY width height sizemode">
 
-	<!-- Tree -->
-  <grid>
-    <columns>
-      <column flex="1"/>
-      <column flex="2"/>
-    </columns>
-    <rows>
-      <row>
-        <label value="User name"/>
-        <textbox id="user"/>
-      </row>
-      <row>
-        <label value="Group"/>
-        <menulist>
-          <menupopup>
-            <menuitem label="Accounts"/>
-            <menuitem label="Sales" selected="true"/>
-            <menuitem label="Support"/>
-          </menupopup>
-        </menulist>
-      </row>
-    </rows>
-  </grid>
+  <vbox>
+    <label value="Radio test"></label>
+    <radiogroup>
+      <hbox>
+        <radio label="een"></radio>
+        <radio label="twee"></radio>
+        <radio label="drie"></radio>
+      </hbox>
+    </radiogroup>
+  </vbox>
 </window>

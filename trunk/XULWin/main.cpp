@@ -36,6 +36,8 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<Column>();
     ElementFactory::Instance().registerElement<Description>();
     ElementFactory::Instance().registerElement<Spacer>();
+    ElementFactory::Instance().registerElement<RadioGroup>();
+    ElementFactory::Instance().registerElement<Radio>();
 }
 
 
@@ -45,7 +47,7 @@ class TestDropDown
 public:
     void run()
     {
-    	mParser.parse("widgets.xul");
+    	mParser.parse("Dropdown.xul");
         if (mParser.rootElement())
         {
             Window * window = mParser.rootElement()->downcast<Window>();
@@ -117,7 +119,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    //runTestSample();
+    runTestSample();
     runDropDownSample();
     ErrorReporter::Finalize();
     return 0;

@@ -44,9 +44,9 @@ namespace XULWin
 
         int commandId() const { return mCommandId.intValue(); }
 
-        virtual int minimumWidth() const;
+        virtual int minimumWidth() const = 0;
 
-        virtual int minimumHeight() const;
+        virtual int minimumHeight() const = 0;
 
         bool expansive() const;
 
@@ -80,8 +80,6 @@ namespace XULWin
         HMODULE mModuleHandle;
         HWND mHandle;
         CommandId mCommandId;
-        int mMinimumWidth;
-        int mMinimumHeight;
         bool mExpansive;
         
         typedef boost::function<std::string()> AttributeGetter;
@@ -116,9 +114,13 @@ namespace XULWin
 
         void showModal();
 
-        virtual void rebuildLayout();
-
         virtual Rect clientRect() const;
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+
+        virtual void rebuildLayout();
 
         virtual bool initAttributeControllers();
 
@@ -163,6 +165,10 @@ namespace XULWin
 
         virtual ~VirtualControl(){}
 
+        virtual int minimumWidth() const { return 0; }
+
+        virtual int minimumHeight() const { return 0; }
+
         virtual Rect clientRect() const;
         
         virtual HWND handle() const;
@@ -177,19 +183,24 @@ namespace XULWin
     class VirtualProxy : public VirtualControl
     {
     public:
-        VirtualProxy(NativeComponent * inSubject);
+        VirtualProxy(bool inIsElement, NativeComponent * inParent);
+
+        VirtualProxy(bool inIsElement, NativeComponent * inParent, NativeComponent * inSubject);
 
         virtual ~VirtualProxy();
+
+        void setSubject(NativeComponentPtr inSubject);
+
+        NativeComponent * subject() const;
         
         virtual HWND handle() const;
-
-        virtual void move(int x, int y, int w, int h);
 
         virtual bool initAttributeControllers();
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
     protected:
+        bool mIsElement;
         NativeComponentPtr mSubject;
     };
 
@@ -263,6 +274,8 @@ namespace XULWin
 
         virtual int minimumWidth() const;
 
+        virtual int minimumHeight() const;
+
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
     };
 
@@ -273,6 +286,10 @@ namespace XULWin
         NativeCheckBox(NativeComponent * inParent);
 
         virtual bool initAttributeControllers();
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 
@@ -284,6 +301,10 @@ namespace XULWin
         virtual bool initAttributeControllers();
 
         virtual void rebuildLayout();
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
 
         void setOrientation(Orientation inOrientation);
 
@@ -341,6 +362,10 @@ namespace XULWin
                           CBS_DROPDOWNLIST)
         {
         }
+            
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -365,6 +390,10 @@ namespace XULWin
     {
     public:
         NativeSpacer(NativeComponent * inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 
@@ -421,6 +450,28 @@ namespace XULWin
     {
     public:
         NativeColumn(NativeComponent * inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+    };
+
+
+    class NativeRadioGroup : public VirtualProxy
+    {
+    public:
+        NativeRadioGroup(NativeComponent * inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+    };
+
+
+    class NativeRadio : public NativeControl
+    {
+    public:
+        NativeRadio(NativeComponent * inParent);
 
         virtual int minimumWidth() const;
 

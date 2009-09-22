@@ -100,12 +100,6 @@ namespace XULWin
     }
     
     
-    void NativeComponent::move(int x, int y, int w, int h)
-    {
-        ::MoveWindow(handle(), x, y, w, h, FALSE);
-    }
-    
-    
     bool NativeComponent::getAttribute(const std::string & inName, std::string & outValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
@@ -320,6 +314,12 @@ namespace XULWin
         }
         return 0;
     }
+    
+    
+    void NativeWindow::move(int x, int y, int w, int h)
+    {
+        ::MoveWindow(handle(), x, y, w, h, FALSE);
+    }
 
     
     void NativeWindow::rebuildLayout()
@@ -532,8 +532,7 @@ namespace XULWin
             return;
         }
 
-        RECT rc;
-        ::GetClientRect(inParent->handle(), &rc);
+        Rect clientRect = inParent->clientRect();
         
         mHandle = ::CreateWindowEx
         (
@@ -579,6 +578,12 @@ namespace XULWin
         {
             sControlsById.erase(itById);
         }
+    }
+    
+    
+    void NativeControl::move(int x, int y, int w, int h)
+    {
+        ::MoveWindow(handle(), x, y, w, h, FALSE);
     }
     
     
@@ -1162,7 +1167,7 @@ namespace XULWin
     {
         // The height of a combobox in Win32 is the height of the dropdown menu + the height of the widget itself.
         h = h + Utils::getComboBoxItemCount(handle()) * Defaults::dropDownListItemHeight();
-        NativeComponent::move(x, y, w, h);
+        NativeControl::move(x, y, w, h);
     }
 
 

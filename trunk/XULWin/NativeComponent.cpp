@@ -142,7 +142,7 @@ namespace XULWin
     }
     
     
-    bool NativeComponent::setAttributeControllers()
+    bool NativeComponent::initAttributeControllers()
     {    
         struct Helper
         {
@@ -279,7 +279,7 @@ namespace XULWin
     }
 
 
-    bool NativeWindow::setAttributeControllers()
+    bool NativeWindow::initAttributeControllers()
     {        
         {
             AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
@@ -292,7 +292,7 @@ namespace XULWin
             AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
             setAttributeController("width", AttributeController(widthGetter, widthSetter));
         }
-        return NativeComponent::setAttributeControllers();
+        return NativeComponent::initAttributeControllers();
     }
     
     
@@ -431,13 +431,13 @@ namespace XULWin
     }
 
 
-    bool VirtualProxy::setAttributeControllers()
+    bool VirtualProxy::initAttributeControllers()
     {
         if (mSubject)
         {
-            return mSubject->setAttributeControllers();
+            return mSubject->initAttributeControllers();
         }
-        return NativeComponent::setAttributeControllers();
+        return NativeComponent::initAttributeControllers();
     }
     
     
@@ -643,12 +643,12 @@ namespace XULWin
     }
 
     
-    bool NativeTextBox::setAttributeControllers()
+    bool NativeTextBox::initAttributeControllers()
     {
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
-        return NativeComponent::setAttributeControllers();
+        return NativeComponent::initAttributeControllers();
     }
 
 
@@ -675,12 +675,12 @@ namespace XULWin
     }
         
     
-    bool NativeLabel::setAttributeControllers()
+    bool NativeLabel::initAttributeControllers()
     {
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
-        return NativeComponent::setAttributeControllers();
+        return NativeComponent::initAttributeControllers();
     }
 
 
@@ -708,12 +708,12 @@ namespace XULWin
     }
 
 
-    bool NativeDescription::setAttributeControllers()
+    bool NativeDescription::initAttributeControllers()
     {
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
-        return NativeComponent::setAttributeControllers();
+        return NativeComponent::initAttributeControllers();
     }
 
 
@@ -746,7 +746,7 @@ namespace XULWin
     }
 
 
-    bool NativeBox::setAttributeControllers()
+    bool NativeBox::initAttributeControllers()
     {        
         struct Helper
         {
@@ -819,7 +819,7 @@ namespace XULWin
         AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&Helper::String2Align, _1));
         AttributeGetter alignGetter = boost::bind(&Helper::Align2String, boost::bind(&NativeBox::getAlignment, this));
         setAttributeController("align", AttributeController(alignGetter, alignSetter));
-        return NativeComponent::setAttributeControllers();
+        return NativeComponent::initAttributeControllers();
     }
 
 

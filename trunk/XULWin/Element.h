@@ -65,10 +65,6 @@ namespace XULWin
             return 0;
         }
 
-        std::string label() const;
-
-        void setLabel(const std::string & inLabel);
-
         void handleEvent(const std::string & inEvent);
 
         Element * getElementById(const std::string & inId);
@@ -85,7 +81,7 @@ namespace XULWin
 
         void setAttributes(const AttributesMapping & inAttributes);
 
-        void setAttributeControllers();
+        void initAttributeControllers();
 
         NativeComponent * nativeComponent() const;
 
@@ -101,7 +97,7 @@ namespace XULWin
             {
                 inParent->addChild(result);
             }
-            result.get()->setAttributeControllers();
+            result.get()->initAttributeControllers();
             result->setAttributes(inAttr);
             result->init();
             return result;

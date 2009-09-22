@@ -216,4 +216,28 @@ namespace Utils
     }
 
 
+    void setCheckBoxState(HWND inHandle, CheckState inState)
+    {
+        ::SendMessage(inHandle, BM_SETCHECK, (WPARAM)inState, 0);
+    }
+
+    
+    CheckState getCheckBoxState(HWND inHandle)
+    {
+        return static_cast<CheckState>(::SendMessage(inHandle, BM_GETCHECK, 0, 0));
+    }
+
+
+    bool isCheckBoxChecked(HWND inHandle)
+    {
+        return getCheckBoxState(inHandle) != UNCHECKED;
+    }
+
+    
+    void setCheckBoxChecked(HWND inHandle, bool inChecked)
+    {
+        setCheckBoxState(inHandle, inChecked ? Utils::CHECKED : Utils::UNCHECKED);
+    }
+
+
 } // namespace Utils

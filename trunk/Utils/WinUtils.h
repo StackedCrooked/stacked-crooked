@@ -43,6 +43,21 @@ namespace Utils
 
     int getMultilineTextHeight(HWND inHandle);
 
+    enum CheckState
+    {
+        CHECKED = BST_CHECKED,
+        UNCHECKED = BST_UNCHECKED,
+        PARTIALLY_CHECKED = BST_INDETERMINATE
+    };
+
+    void setCheckBoxState(HWND inHandle, CheckState inState);
+
+    CheckState getCheckBoxState(HWND inHandle);
+
+    bool isCheckBoxChecked(HWND inHandle);
+
+    void setCheckBoxChecked(HWND inHandle, bool inChecked);
+
 } // namespace Utils
 
 

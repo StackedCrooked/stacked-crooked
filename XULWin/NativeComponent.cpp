@@ -416,6 +416,10 @@ namespace XULWin
             AttributeGetter disabledGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isWindowDisabled, handle()));
             AttributeSetter disabledSetter = boost::bind(&Utils::disableWindow, handle(), boost::bind(&Helper::String2Bool, _1));
             setAttributeController("disabled", AttributeController(disabledGetter, disabledSetter));
+            
+            AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
+            AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+            setAttributeController("label", AttributeController(labelGetter, labelSetter));     
         }
     }
 
@@ -481,10 +485,13 @@ namespace XULWin
                       TEXT("BUTTON"),
                       0, // exStyle
                       BS_PUSHBUTTON)
+    {   
+    }
+    
+    
+    int NativeButton::minimumHeight() const
     {
-        AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setAttributeController("label", AttributeController(labelGetter, labelSetter));        
+        return Defaults::buttonHeight();
     }
     
     
@@ -1035,9 +1042,6 @@ namespace XULWin
                       0, // exStyle
                       WS_BORDER)
     {
-        AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setAttributeController("label", AttributeController(labelGetter, labelSetter));
     }
         
         
@@ -1252,6 +1256,7 @@ namespace XULWin
                 );
             }
         }
+        rebuildChildLayouts();
     }
 
 

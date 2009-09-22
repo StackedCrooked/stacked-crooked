@@ -163,6 +163,8 @@ namespace XULWin
         NativeButton(NativeComponentPtr inParent);
 
         virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
     };
 
 

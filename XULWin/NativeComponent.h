@@ -166,10 +166,21 @@ namespace XULWin
     };
 
 
-    class NativeLabel: public NativeControl
+    class NativeLabel : public NativeControl
     {
     public:
         NativeLabel(NativeComponentPtr inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+    };
+
+
+    class NativeDescription : public NativeControl
+    {
+    public:
+        NativeDescription(NativeComponentPtr inParent);
 
         virtual int minimumWidth() const;
 

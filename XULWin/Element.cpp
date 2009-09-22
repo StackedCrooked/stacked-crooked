@@ -201,6 +201,14 @@ namespace XULWin
     }
 
 
+    Description::Description(ElementPtr inParent) :
+        Element(Description::Type(),
+                inParent,
+                NativeComponentPtr(new NativeDescription(inParent->nativeComponent())))
+    {
+    }
+
+
     Text::Text(ElementPtr inParent) :
         Element(Text::Type(),
                 inParent,

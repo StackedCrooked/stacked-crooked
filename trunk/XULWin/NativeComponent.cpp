@@ -246,7 +246,7 @@ namespace XULWin
         wndClass.hInstance = inModuleHandle;
         wndClass.hIcon = 0;
         wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-        wndClass.hbrBackground = 0; // covered by content pane so no color needed (reduces flicker)
+        wndClass.hbrBackground = (HBRUSH)(COLOR_BTNFACE+1);
         wndClass.lpszMenuName = NULL;
         wndClass.lpszClassName = TEXT("XULWin::Window");
         wndClass.hIconSm = 0;
@@ -295,6 +295,14 @@ namespace XULWin
         }
         return NativeComponent::setAttributeControllers();
     }
+    
+    
+    Rect NativeWindow::clientRect() const
+    {
+        RECT rc;
+        ::GetClientRect(handle(), &rc);
+        return Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+    }
 
 
     void NativeWindow::showModal()
@@ -328,9 +336,8 @@ namespace XULWin
                 Children::const_iterator it = owningElement()->children().begin();
                 if (it != owningElement()->children().end())
                 {
-                    RECT rc;
-                    ::GetClientRect(handle(), &rc);
-                    (*it)->nativeComponent()->move(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+                    Rect clientRect(clientRect());
+                    (*it)->nativeComponent()->move(clientRect.x(), clientRect.y(), clientRect.width(), clientRect.height());
                     rebuildLayout();
                 }
                 break;
@@ -378,14 +385,17 @@ namespace XULWin
             return 0;
         }
     }
+    
+    
+    Rect VirtualControl::clientRect() const
+    {
+        return mRect;
+    }
 
 
     void VirtualControl::move(int x, int y, int w, int h)
     {
-        if (mParent)
-        {
-            mParent->move(x, y, w, y);
-        }
+        mRect = Rect(x, y, w, h);
     }
 
 
@@ -429,7 +439,8 @@ namespace XULWin
     
     void VirtualPadding::move(int x, int y, int w, int h)
     {
-        mSubject->move(x + paddingLeft(), y + paddingTop(), w - paddingLeft() - paddingRight(), h - paddingTop() - paddingBottom());
+        mRect = Rect(x + paddingLeft(), y + paddingTop(), w - paddingLeft() - paddingRight(), h - paddingTop() - paddingBottom());
+        mSubject->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
     }
 
 
@@ -526,6 +537,14 @@ namespace XULWin
             sControlsById.erase(itById);
         }
     }
+    
+    
+    Rect NativeControl::clientRect() const
+    {
+        RECT rc;
+        ::GetClientRect(handle(), &rc);
+        return Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+    }
 
 
     LRESULT NativeControl::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
@@ -538,7 +557,7 @@ namespace XULWin
                 if (it != sControlsById.end())
                 {
                     it->second->handleCommand(wParam, lParam);
-                    it->second->owningElement()->OnCommand(0);
+                    //it->second->owningElement()->OnCommand(0);
                 }
                 break;
             }
@@ -695,10 +714,7 @@ namespace XULWin
         
         
     NativeBox::NativeBox(NativeComponent * inParent, Orientation inOrientation) :
-        NativeControl(inParent,
-                      TEXT("STATIC"),
-                      0, // exStyle
-                      0),
+        VirtualControl(inParent),
         mOrientation(inOrientation),
         mAlign(Start)
     {
@@ -816,12 +832,11 @@ namespace XULWin
         //
         std::vector<int> allFlexValues;
         std::vector<SizeInfo> nonZeroFlexValues;
-        RECT rc;
-        ::GetClientRect(handle(), &rc);
-        int availableSpace = rc.right - rc.left;
+        Rect clientRect(clientRect());
+        int availableSpace = clientRect.width();
         if (mOrientation == VERTICAL)
         {
-            availableSpace = rc.bottom - rc.top;
+            availableSpace = clientRect.height();
         }
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
@@ -951,15 +966,15 @@ namespace XULWin
             {
                 if (mOrientation == HORIZONTAL)
                 {
-                    childHeight = rc.bottom - rc.top;
+                    childHeight = clientRect.height();
                 }
                 else
                 {
-                    childWidth = rc.right - rc.left;
+                    childWidth = clientRect.width();
                 }
             }
-            child->nativeComponent()->move(offsetChildX,
-                                           offsetChildY,
+            child->nativeComponent()->move(clientRect.x() + offsetChildX,
+                                           clientRect.y() + offsetChildY,
                                            childWidth, childHeight);
 
             if (mOrientation == HORIZONTAL)
@@ -1091,6 +1106,12 @@ namespace XULWin
     }
 
 
+    NativeSpacer::NativeSpacer(NativeComponent * inParent) :
+        VirtualControl(inParent)
+    {
+    }
+
+
     NativeMenuButton::NativeMenuButton(NativeComponent * inParent) :
         NativeControl(inParent,
                       TOOLBARCLASSNAME,
@@ -1129,10 +1150,7 @@ namespace XULWin
 
 
     NativeGrid::NativeGrid(NativeComponent * inParent) :
-        NativeControl(inParent,
-                      TEXT("STATIC"),
-                      0, // exStyle
-                      WS_BORDER)
+        VirtualControl(inParent)
     {
     }
         
@@ -1237,9 +1255,6 @@ namespace XULWin
 
     void NativeGrid::rebuildLayout()
     {
-        RECT rw;
-        ::GetWindowRect(handle(), &rw);
-        Rect windowRect(0, 0, rw.right - rw.left, rw.bottom - rw.top);
         int numCols = 0;
         int numRows = 0;
         ElementPtr columns;
@@ -1321,7 +1336,7 @@ namespace XULWin
             }
         }
         GenericGrid<Rect> rects(numRows, numCols);
-        GridLayoutManager::GetRects(windowRect, proportions, rects);
+        GridLayoutManager::GetRects(clientRect(), proportions, rects);
 
         for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
         {

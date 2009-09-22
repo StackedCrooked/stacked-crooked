@@ -35,6 +35,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<Columns>();
     ElementFactory::Instance().registerElement<Column>();
     ElementFactory::Instance().registerElement<Description>();
+    ElementFactory::Instance().registerElement<Spacer>();
 }
 
 
@@ -50,13 +51,13 @@ public:
             Element * addButton = mParser.rootElement()->getElementById("addbutton");
             if (addButton)
             {
-                mConnections.push_back(addButton->OnCommand.connect(boost::bind(&TestDropDown::addButtonPressed, this, _1)));
+                //mConnections.push_back(addButton->OnCommand.connect(boost::bind(&TestDropDown::addButtonPressed, this, _1)));
             }
 
             Element * removeButton = mParser.rootElement()->getElementById("removebutton");
             if (removeButton)
             {
-                mConnections.push_back(removeButton->OnCommand.connect(boost::bind(&TestDropDown::removeButtonPressed, this, _1)));
+                //mConnections.push_back(removeButton->OnCommand.connect(boost::bind(&TestDropDown::removeButtonPressed, this, _1)));
             }
 
             Window * window = mParser.rootElement()->downcast<Window>();

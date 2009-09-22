@@ -59,7 +59,7 @@
         <textbox ></textbox>
       </row>
       <row>
-        <label value=""></label>
+        <spacer></spacer>
         <description value="Use comma's to separate tags. For example: humour, videos, computer"></description>
       </row>
       <row>
@@ -72,16 +72,16 @@
         </menulist>
       </row>
       <row>
-        <label value=""></label>
+        <spacer></spacer>
         <hbox>
           <checkbox flex="1" label="Allow ratings?"></checkbox>
           <checkbox flex="1" label="Allow comments?"></checkbox>
         </hbox>
       </row>
       <row>
-        <label value=""></label>
+        <spacer ></spacer>
         <hbox align="center">
-          <label value="" flex="1"></label>
+          <spacer flex="1"></spacer>
           <button label="Upload"></button>
           <button label="Cancel"></button>
         </hbox>

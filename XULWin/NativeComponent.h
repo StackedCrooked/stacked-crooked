@@ -172,18 +172,32 @@ namespace XULWin
     };
 
 
-    class VirtualPadding : public VirtualControl
+    class VirtualProxy : public VirtualControl
+    {
+    public:
+        VirtualProxy(NativeComponent * inSubject);
+
+        virtual ~VirtualProxy();
+        
+        virtual HWND handle() const;
+
+        virtual void move(int x, int y, int w, int h);
+
+        virtual bool setAttributeControllers();
+
+        virtual bool setAttribute(const std::string & inName, const std::string & inValue);
+
+    protected:
+        NativeComponentPtr mSubject;
+    };
+
+
+    class VirtualPadding : public VirtualProxy
     {
     public:
         VirtualPadding(NativeComponent * inSubject);
 
         virtual ~VirtualPadding();
-
-        virtual bool setAttributeControllers();
-
-        virtual bool setAttribute(const std::string & inName, const std::string & inValue);
-        
-        virtual HWND handle() const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -198,9 +212,6 @@ namespace XULWin
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
-
-    private:
-        NativeComponentPtr mSubject;
     };
 
 

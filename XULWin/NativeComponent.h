@@ -44,6 +44,7 @@ namespace XULWin
 
         virtual ~ElementImpl() = 0;
 
+        // Downcast that also resolves decorators.
         template<class Type> Type * downcast()
         {
             if (Type * obj = dynamic_cast<Type*>(this))
@@ -57,6 +58,12 @@ namespace XULWin
             return 0;
         }
 
+        // Gets a NativeComponent object from this object. This
+        // is only needed in constructors of NativeComponents, because
+        // they need to know which is their native parent handle object.
+        // If this is a NativeComponent, return this.
+        // If this is a VirtualControl, return first parent NativeComponent.
+        // If this is a Decorator, resolve until a NativeComponent is found.
         NativeComponent * toNativeParent();
 
         int commandId() const { return mCommandId.intValue(); }
@@ -499,6 +506,19 @@ namespace XULWin
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
+    };
+
+
+    class NativeProgressMeter : public NativeControl
+    {
+    public:
+        NativeProgressMeter(ElementImpl * inParent);
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+
+        bool initAttributeControllers();
     };
 
 

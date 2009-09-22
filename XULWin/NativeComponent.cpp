@@ -385,13 +385,15 @@ namespace XULWin
 
     void NativeWindow::showModal()
     {      
-        int w = Utils::getWindowWidth(handle());
-        int h = Utils::getWindowHeight(handle());
+        SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
+        int w = minimumWidth() + sizeDiff.cx;
+        int h = minimumHeight() + sizeDiff.cy;
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         move(x, y, w, h);
-        ::ShowWindow(handle(), SW_SHOW);
         rebuildLayout();
+        ::ShowWindow(handle(), SW_SHOW);
+        ::UpdateWindow(handle());
 
         MSG message;
         while (GetMessage(&message, NULL, 0, 0))
@@ -426,6 +428,14 @@ namespace XULWin
                 PostQuitMessage(0);
                 break;
             }
+			case WM_GETMINMAXINFO:
+			{
+                SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
+				MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
+                minMaxInfo->ptMinTrackSize.x = minimumWidth() + sizeDiff.cx;
+                minMaxInfo->ptMinTrackSize.y = minimumHeight() + sizeDiff.cy;
+                break;
+			}
         }
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
@@ -1335,13 +1345,13 @@ namespace XULWin
         
     int NativeMenuButton::minimumWidth() const
     {
-        return 200;
+        return Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx + Defaults::textPadding()*2;
     }
 
     
     int NativeMenuButton::minimumHeight() const
     {
-        return 100;
+        return Defaults::buttonHeight();
     }
 
 
@@ -1696,6 +1706,37 @@ namespace XULWin
     int NativeRadio::minimumHeight() const
     {
         return Defaults::controlHeight();
+    }
+
+    
+    NativeProgressMeter::NativeProgressMeter(ElementImpl * inParent) :
+        NativeControl(inParent,
+                      PROGRESS_CLASS,
+                      0, // exStyle
+                      PBS_SMOOTH)
+    {
+        Utils::initializeProgressMeter(mHandle, 100);
+    }
+
+
+    int NativeProgressMeter::minimumWidth() const
+    {
+        return 80;
+    }
+
+    
+    int NativeProgressMeter::minimumHeight() const
+    {
+        return 21;
+    }
+
+
+    bool NativeProgressMeter::initAttributeControllers()
+    {
+        AttributeSetter orientationSetter = boost::bind(&Utils::setProgressMeterProgress, handle(), boost::bind(&String2Int, _1));
+        AttributeGetter orientationGetter = boost::bind(&Int2String, boost::bind(&Utils::getProgressMeterProgress, handle()));
+        setAttributeController("value", AttributeController(orientationGetter, orientationSetter));
+        return NativeComponent::initAttributeControllers();
     }
 
 

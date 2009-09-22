@@ -2,6 +2,7 @@
 #include "Poco/UnicodeConverter.h"
 #include "ErrorReporter.h"
 #include <boost/lexical_cast.hpp>
+#include <commctrl.h>
 
 
 namespace Utils
@@ -12,6 +13,27 @@ namespace Utils
         std::string result;
         Poco::UnicodeConverter::toUTF8(inText, result);
         return result;
+    }
+    
+    
+    SIZE GetSizeDifference_WindowRect_ClientRect(HWND inHandle)
+    {
+	    RECT rc;
+	    GetClientRect(inHandle, &rc);
+    	
+	    RECT rw;
+	    GetWindowRect(inHandle, &rw);
+    	
+	    int rc_w = rc.right-rc.left;
+	    int rc_h = rc.bottom-rc.top;
+	    int rw_w = rw.right-rw.left;
+	    int rw_h = rw.bottom-rw.top;
+    	
+	    SIZE theDifference;
+	    theDifference.cx = rw_w-rc_w;
+	    theDifference.cy = rw_h-rc_h;
+    	
+	    return theDifference;
     }
 
 
@@ -239,5 +261,27 @@ namespace Utils
         setCheckBoxState(inHandle, inChecked ? Utils::CHECKED : Utils::UNCHECKED);
     }
 
+    
+    void initializeProgressMeter(HWND inHandle, int inLimit)
+    {
+        ::SendMessage(inHandle, PBM_SETRANGE, 0, MAKELPARAM(0, inLimit));	
+        ::SendMessage(inHandle, PBM_SETSTEP, 1, 0);
+        ::SendMessage(inHandle, PBM_SETPOS, 0, 0);
+    }
 
+    void advanceProgressMeter(HWND inHandle)
+	{
+		::SendMessage(inHandle, PBM_STEPIT, 0, 0);
+	}
+		
+	void setProgressMeterProgress(HWND inHandle, int inProgress)
+	{
+		::SendMessage(inHandle, PBM_SETPOS, (WPARAM)inProgress, (LPARAM)0);
+	}
+
+    int getProgressMeterProgress(HWND inHandle)
+    {
+        return (int)::SendMessage(inHandle, PBM_GETPOS, (WPARAM)0, (LPARAM)0);
+    }
+    
 } // namespace Utils

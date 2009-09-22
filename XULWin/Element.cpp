@@ -500,4 +500,17 @@ namespace XULWin
     }
 
 
+    ProgressMeter::ProgressMeter(Element * inParent) :
+        Element(ProgressMeter::Type(),
+                inParent,
+                new PaddingDecorator(new NativeProgressMeter(inParent->getImpl())))
+    {
+    }
+
+
+    ProgressMeter::~ProgressMeter()
+    {
+    }
+
+
 } // XULWin

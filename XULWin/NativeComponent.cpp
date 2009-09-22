@@ -39,7 +39,7 @@ namespace XULWin
         int result = 0;
         try
         {
-            boost::lexical_cast<int>(inValue);
+            result = boost::lexical_cast<int>(inValue);
         }
         catch (std::exception &)
         {
@@ -307,8 +307,8 @@ namespace XULWin
 
     void NativeWindow::showModal()
     {      
-        int w = Defaults::windowWidth();
-        int h = Defaults::windowHeight();
+        int w = Utils::getWindowWidth(handle());
+        int h = Utils::getWindowHeight(handle());
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         move(x, y, w, h);

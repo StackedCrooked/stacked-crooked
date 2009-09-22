@@ -1,8 +1,7 @@
-- Enable label multiline attribute
+- Box and Grid should be virtual panes
 - Add textfield with multiline
 - Remove boost signal and use listener system
 - Remove attributes, and use methods instead. Only consider attributes from XUL file.
 - Compare against Gecko engine when testing
 - Make sample program that illustrates DHTML-like behavior
-- Try to make the Box layouts 'virtual' panes instead of real windows (reduce number of GDI objects).
 - Add ErrorCatcher live reporter in a sep DOS window

@@ -38,6 +38,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<Spacer>();
     ElementFactory::Instance().registerElement<RadioGroup>();
     ElementFactory::Instance().registerElement<Radio>();
+    ElementFactory::Instance().registerElement<ProgressMeter>();
 }
 
 
@@ -47,7 +48,7 @@ class TestDropDown
 public:
     void run()
     {
-    	mParser.parse("widgets.xul");
+    	mParser.parse("Dropdown.xul");
         if (mParser.rootElement())
         {
             Window * window = mParser.rootElement()->downcast<Window>();

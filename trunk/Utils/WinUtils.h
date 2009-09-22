@@ -10,6 +10,8 @@ namespace Utils
 {
     std::string getLastError(DWORD lastError);
 
+    SIZE GetSizeDifference_WindowRect_ClientRect(HWND inHandle);
+
     void addStringToComboBox(HWND inHandle, const std::string & inString);
 
     void deleteStringFromComboBox(HWND inHandle, int inIndex);
@@ -57,6 +59,15 @@ namespace Utils
     bool isCheckBoxChecked(HWND inHandle);
 
     void setCheckBoxChecked(HWND inHandle, bool inChecked);
+
+    void initializeProgressMeter(HWND inHandle, int inLimit);
+    
+    void advanceProgressMeter(HWND inHandle);
+		
+	void setProgressMeterProgress(HWND inHandle, int inProgress);
+
+    int getProgressMeterProgress(HWND inHandle);
+
 
 } // namespace Utils
 

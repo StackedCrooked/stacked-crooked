@@ -507,6 +507,22 @@ namespace XULWin
     };
 
 
+    class ProgressMeter : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<ProgressMeter>(inParent, inAttr); }
+
+        static const char * Type() { return "progressmeter"; }
+
+        virtual ~ProgressMeter();
+
+    private:
+        friend class Element;
+        ProgressMeter(Element * inParent);
+    };
+
+
 } // XULWin
 
 

@@ -189,7 +189,7 @@
 
 
   <hbox align="center">
-    <progressmeter id="normal" mode="normal" flex="1"/>
+    <progressmeter id="normal" mode="normal" flex="1" value="50"/>
     <button label="Advance Progress" oncommand="advanceProgress();"/>
   </hbox>
 

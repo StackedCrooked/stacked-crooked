@@ -26,12 +26,8 @@
 
 <?xml-stylesheet href="chrome://navigator/skin/navigator.css" type="text/css"?>
 
-<window id="openLocation"
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        class="dialog"
-        width="511"
-        height="263"
-        orient="vertical">
+<window >
+
   <grid flex="1">
     <columns>
       <column flex="0"></column>
@@ -84,7 +80,7 @@
       </row>
       <row>
         <label value=""></label>
-        <hbox>
+        <hbox align="center">
           <label value="" flex="1"></label>
           <button label="Upload"></button>
           <button label="Cancel"></button>

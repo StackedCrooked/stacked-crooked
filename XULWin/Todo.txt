@@ -1,3 +1,4 @@
+- Add spacer
 - Box and Grid should be virtual panes
 - Add textfield with multiline
 - Remove boost signal and use listener system

@@ -55,8 +55,8 @@ namespace XULWin
     
     NativeControl::ControlsById NativeControl::sControlsById;
 
-    NativeComponent::NativeComponent(NativeComponentPtr inParent, CommandId inCommandId) :
-        mParent(inParent ? inParent.get() : 0),
+    NativeComponent::NativeComponent(NativeComponent * inParent, CommandId inCommandId) :
+        mParent(inParent),
         mHandle(0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandId(inCommandId),
@@ -140,6 +140,30 @@ namespace XULWin
         }
         return false;
     }
+    
+    
+    bool NativeComponent::setAttributeControllers()
+    {    
+        struct Helper
+        {
+            static std::string Bool2String(bool inValue)
+            {
+                return inValue ? "true" : "false";
+            }
+            static bool String2Bool(const std::string & inString)
+            {
+                return inString == "true" ? true : false;
+            }
+        };
+        AttributeGetter disabledGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isWindowDisabled, handle()));
+        AttributeSetter disabledSetter = boost::bind(&Utils::disableWindow, handle(), boost::bind(&Helper::String2Bool, _1));
+        setAttributeController("disabled", AttributeController(disabledGetter, disabledSetter));
+        
+        AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+        setAttributeController("label", AttributeController(labelGetter, labelSetter));
+        return true;
+    }
 
 
     void NativeComponent::setAttributeController(const std::string & inAttr, const AttributeController & inController)
@@ -195,7 +219,7 @@ namespace XULWin
         Children::const_iterator it = mElement->children().begin(), end = mElement->children().end();
         for (; it != end; ++it)
         {
-            NativeComponent * nativeComp = (*it)->nativeComponent().get();
+            NativeComponent * nativeComp = (*it)->nativeComponent();
             if (nativeComp)
             {
                 nativeComp->rebuildLayout();
@@ -233,21 +257,9 @@ namespace XULWin
     }
 
 
-    NativeWindow::NativeWindow(NativeComponentPtr inParent) :
+    NativeWindow::NativeWindow(NativeComponent * inParent) :
         NativeComponent(inParent, CommandId())
     {
-        
-        {
-            AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
-            AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
-            setAttributeController("height", AttributeController(heightGetter, heightSetter));
-        }
-
-        {
-            AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
-            AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
-            setAttributeController("width", AttributeController(widthGetter, widthSetter));
-        }
         
         mHandle = ::CreateWindowEx
         (
@@ -265,6 +277,23 @@ namespace XULWin
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
         sComponentsByHandle.insert(std::make_pair(mHandle, this));
+    }
+
+
+    bool NativeWindow::setAttributeControllers()
+    {        
+        {
+            AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
+            AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
+            setAttributeController("height", AttributeController(heightGetter, heightSetter));
+        }
+
+        {
+            AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
+            AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
+            setAttributeController("width", AttributeController(widthGetter, widthSetter));
+        }
+        return NativeComponent::setAttributeControllers();
     }
 
 
@@ -327,7 +356,7 @@ namespace XULWin
     }
 
 
-    VirtualControl::VirtualControl(NativeComponentPtr inParent) :
+    VirtualControl::VirtualControl(NativeComponent * inParent) :
         NativeComponent(inParent, CommandId())
     {
         if (!mParent)
@@ -360,8 +389,87 @@ namespace XULWin
     }
 
 
+    VirtualPadding::VirtualPadding(NativeComponent * inSubject) :
+        VirtualControl(inSubject->parent()),
+        mSubject(inSubject)
+    {
+    }
 
-    NativeControl::NativeControl(NativeComponentPtr inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+
+    VirtualPadding::~VirtualPadding()
+    {
+    }
+
+
+    bool VirtualPadding::setAttributeControllers()
+    {
+        if (mSubject)
+        {
+            return mSubject->setAttributeControllers();
+        }
+        return NativeComponent::setAttributeControllers();
+    }
+    
+    
+    bool VirtualPadding::setAttribute(const std::string & inName, const std::string & inValue)
+    {
+        if (mSubject)
+        {
+            return mSubject->setAttribute(inName, inValue);
+        }
+        return false;
+    }
+
+    
+    HWND VirtualPadding::handle() const
+    {
+        return mSubject->handle();
+    }
+    
+    
+    void VirtualPadding::move(int x, int y, int w, int h)
+    {
+        mSubject->move(x + paddingLeft(), y + paddingTop(), w - paddingLeft() - paddingRight(), h - paddingTop() - paddingBottom());
+    }
+
+
+    int VirtualPadding::paddingTop() const
+    {
+        return 4;
+    }
+
+    
+    int VirtualPadding::paddingLeft() const
+    {
+        return 4;
+    }
+
+    
+    int VirtualPadding::paddingRight() const
+    {
+        return 4;
+    }
+
+    
+    int VirtualPadding::paddingBottom() const
+    {
+        return 4;
+    }
+    
+    
+    int VirtualPadding::minimumWidth() const
+    {
+        return paddingLeft() + mSubject->minimumWidth() + paddingRight();
+    }
+
+    
+    int VirtualPadding::minimumHeight() const
+    {
+        return paddingTop() + mSubject->minimumHeight() + paddingBottom();
+    }
+
+
+    NativeControl::NativeControl(NativeComponent * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
         NativeComponent(inParent, CommandId())
     {
         if (!mParent)
@@ -399,28 +507,6 @@ namespace XULWin
 
         sComponentsByHandle.insert(std::make_pair(mHandle, this));
         sControlsById.insert(std::make_pair(mCommandId.intValue(), this));
-        
-        // Set attribute controllers
-        {
-            struct Helper
-            {
-                static std::string Bool2String(bool inValue)
-                {
-                    return inValue ? "true" : "false";
-                }
-                static bool String2Bool(const std::string & inString)
-                {
-                    return inString == "true" ? true : false;
-                }
-            };
-            AttributeGetter disabledGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isWindowDisabled, handle()));
-            AttributeSetter disabledSetter = boost::bind(&Utils::disableWindow, handle(), boost::bind(&Helper::String2Bool, _1));
-            setAttributeController("disabled", AttributeController(disabledGetter, disabledSetter));
-            
-            AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
-            AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-            setAttributeController("label", AttributeController(labelGetter, labelSetter));     
-        }
     }
 
 
@@ -480,7 +566,7 @@ namespace XULWin
     }    
     
     
-    NativeButton::NativeButton(NativeComponentPtr inParent) :
+    NativeButton::NativeButton(NativeComponent * inParent) :
         NativeControl(inParent,
                       TEXT("BUTTON"),
                       0, // exStyle
@@ -504,21 +590,24 @@ namespace XULWin
     }
 
 
-    NativeTextBox::NativeTextBox(NativeComponentPtr inParent) :
+    NativeTextBox::NativeTextBox(NativeComponent * inParent) :
         NativeControl(inParent,
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
                       ES_AUTOHSCROLL)
     {
-        
-        {
-            AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
-            AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-            setAttributeController("value", AttributeController(valueGetter, valueSetter));
-        }
     }
 
     
+    bool NativeTextBox::setAttributeControllers()
+    {
+        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+        setAttributeController("value", AttributeController(valueGetter, valueSetter));
+        return NativeComponent::setAttributeControllers();
+    }
+
+
     int NativeTextBox::minimumWidth() const
     {
         std::string text = Utils::getWindowText(handle());
@@ -533,15 +622,21 @@ namespace XULWin
     }
 
 
-    NativeLabel::NativeLabel(NativeComponentPtr inParent) :
+    NativeLabel::NativeLabel(NativeComponent * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
                       SS_LEFT | SS_CENTERIMAGE)
     {
+    }
+        
+    
+    bool NativeLabel::setAttributeControllers()
+    {
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
+        return NativeComponent::setAttributeControllers();
     }
 
 
@@ -560,15 +655,21 @@ namespace XULWin
     }
 
 
-    NativeDescription::NativeDescription(NativeComponentPtr inParent) :
+    NativeDescription::NativeDescription(NativeComponent * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
                       SS_LEFT)
     {
+    }
+
+
+    bool NativeDescription::setAttributeControllers()
+    {
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
+        return NativeComponent::setAttributeControllers();
     }
 
 
@@ -587,13 +688,13 @@ namespace XULWin
     }
     
     
-    NativeHBox::NativeHBox(NativeComponentPtr inParent) :
+    NativeHBox::NativeHBox(NativeComponent * inParent) :
         NativeBox(inParent, HORIZONTAL)
     {   
     }
         
         
-    NativeBox::NativeBox(NativeComponentPtr inParent, Orientation inOrientation) :
+    NativeBox::NativeBox(NativeComponent * inParent, Orientation inOrientation) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -601,6 +702,11 @@ namespace XULWin
         mOrientation(inOrientation),
         mAlign(Start)
     {
+    }
+
+
+    bool NativeBox::setAttributeControllers()
+    {        
         struct Helper
         {
             static Orientation String2Orientation(const std::string & inValue)
@@ -665,16 +771,14 @@ namespace XULWin
                 }
             }
         };
-        {
-            AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
-            AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
-            setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
-        }
-        {
-            AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&Helper::String2Align, _1));
-            AttributeGetter alignGetter = boost::bind(&Helper::Align2String, boost::bind(&NativeBox::getAlignment, this));
-            setAttributeController("align", AttributeController(alignGetter, alignSetter));
-        }
+        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
+        AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
+        setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
+
+        AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&Helper::String2Align, _1));
+        AttributeGetter alignGetter = boost::bind(&Helper::Align2String, boost::bind(&NativeBox::getAlignment, this));
+        setAttributeController("align", AttributeController(alignGetter, alignSetter));
+        return NativeComponent::setAttributeControllers();
     }
 
 
@@ -719,7 +823,6 @@ namespace XULWin
         {
             availableSpace = rc.bottom - rc.top;
         }
-        availableSpace -= (1 + mElement->children().size())*Defaults::spacing();
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
             ElementPtr child = mElement->children()[idx];
@@ -810,7 +913,6 @@ namespace XULWin
                         boxLength = minLength;
                     }
                     childLength = boxLength;
-                    boxLength += 2*Defaults::spacing();
                     if (boxLength > minLength)
                     {
                         if (inAlignment == Center)
@@ -843,12 +945,6 @@ namespace XULWin
                                          childHeight,
                                          offsetChildY,
                                          offsetChildX);
-            }
-            
-            if (mAlign == Start)
-            {
-                offsetChildX += Defaults::spacing();
-                offsetChildY += Defaults::spacing();
             }
             
             if (mAlign == Stretch || child->nativeComponent()->expansive())
@@ -890,7 +986,6 @@ namespace XULWin
         {
             result += mElement->children()[idx]->nativeComponent()->minimumWidth();
         }
-        result += (1 + mElement->children().size())*Defaults::spacing();
         return result;
     }
 
@@ -906,7 +1001,6 @@ namespace XULWin
                 result = height;
             }
         }
-        result += 2*Defaults::spacing();
         return result;
     }
 
@@ -922,7 +1016,6 @@ namespace XULWin
                 result = width;
             }
         }
-        result += 2*Defaults::spacing();
         return result;
     }
 
@@ -934,7 +1027,6 @@ namespace XULWin
         {
             result += mElement->children()[idx]->nativeComponent()->minimumHeight();
         }
-        result += (1 + mElement->children().size())*Defaults::spacing();
         return result;
     }
     
@@ -977,7 +1069,7 @@ namespace XULWin
     }
 
 
-    NativeSeparator::NativeSeparator(NativeComponentPtr inParent) :
+    NativeSeparator::NativeSeparator(NativeComponent * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -999,7 +1091,7 @@ namespace XULWin
     }
 
 
-    NativeMenuButton::NativeMenuButton(NativeComponentPtr inParent) :
+    NativeMenuButton::NativeMenuButton(NativeComponent * inParent) :
         NativeControl(inParent,
                       TOOLBARCLASSNAME,
                       0, // exStyle
@@ -1036,7 +1128,7 @@ namespace XULWin
     }
 
 
-    NativeGrid::NativeGrid(NativeComponentPtr inParent) :
+    NativeGrid::NativeGrid(NativeComponent * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -1095,10 +1187,6 @@ namespace XULWin
                 break;
             }
         }
-        if (columns)
-        {
-            result += (1 + columns->children().size())*Defaults::spacing();
-        }
         return result;
     }
 
@@ -1143,7 +1231,6 @@ namespace XULWin
                 result += maxHeight;
             }
         }
-        result += (1 + rows->children().size())*Defaults::spacing();
         return result;
     }
 
@@ -1186,10 +1273,10 @@ namespace XULWin
         {
             for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
             {
-                NativeRow * row = static_cast<NativeRow*>(rows->children()[rowIdx]->nativeComponent().get());
+                NativeRow * row = static_cast<NativeRow*>(rows->children()[rowIdx]->nativeComponent());
                 assert(row->owningElement()->type() == Row::Type());
 
-                NativeColumn * column = static_cast<NativeColumn*>(columns->children()[colIdx]->nativeComponent().get());
+                NativeColumn * column = static_cast<NativeColumn*>(columns->children()[colIdx]->nativeComponent());
                 assert(column->owningElement()->type() == Column::Type());
 
                 ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
@@ -1234,13 +1321,7 @@ namespace XULWin
             }
         }
         GenericGrid<Rect> rects(numRows, numCols);
-        Rect rectMinusPadding(
-            windowRect.x(),
-            windowRect.y(),
-            windowRect.width() - (numCols + 1)*Defaults::spacing(),
-            windowRect.height() - (numRows + 1)*Defaults::spacing()
-        );
-        GridLayoutManager::GetRects(rectMinusPadding, proportions, rects);
+        GridLayoutManager::GetRects(windowRect, proportions, rects);
 
         for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
         {
@@ -1249,8 +1330,8 @@ namespace XULWin
                 Rect & childRect = rects.get(rowIdx, colIdx);
                 ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
                 child->nativeComponent()->move(
-                    childRect.x() + (colIdx + 1)*Defaults::spacing(),
-                    childRect.y() + (rowIdx + 1)*Defaults::spacing(),
+                    childRect.x(),
+                    childRect.y(),
                     childRect.width(),
                     childRect.height()
                 );
@@ -1260,19 +1341,19 @@ namespace XULWin
     }
 
 
-    NativeRows::NativeRows(NativeComponentPtr inParent) :
+    NativeRows::NativeRows(NativeComponent * inParent) :
         VirtualControl(inParent)
     {
     }
 
 
-    NativeColumns::NativeColumns(NativeComponentPtr inParent) :
+    NativeColumns::NativeColumns(NativeComponent * inParent) :
         VirtualControl(inParent)
     {
     }
 
 
-    NativeRow::NativeRow(NativeComponentPtr inParent) :
+    NativeRow::NativeRow(NativeComponent * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1308,7 +1389,7 @@ namespace XULWin
     }
 
 
-    NativeColumn::NativeColumn(NativeComponentPtr inParent) :
+    NativeColumn::NativeColumn(NativeComponent * inParent) :
         VirtualControl(inParent)
     {
     }

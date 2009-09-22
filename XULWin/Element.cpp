@@ -9,12 +9,12 @@ using namespace Utils;
 
 namespace XULWin
 {
-    NativeComponentPtr gNullNativeComponent;
+    NativeComponent * gNullNativeComponent(0);
 
 
-    Element::Element(const std::string & inType, ElementPtr inParent, boost::shared_ptr<NativeComponent> inNativeComponent) :
+    Element::Element(const std::string & inType, Element * inParent, NativeComponent * inNativeComponent) :
         mType(inType),
-        mParent(inParent ? inParent.get() : 0),
+        mParent(inParent),
         mNativeComponent(inNativeComponent)
     {
         if (mNativeComponent)
@@ -64,19 +64,19 @@ namespace XULWin
     }
 
     
-    ElementPtr Element::getElementById(const std::string & inId)
+    Element * Element::getElementById(const std::string & inId)
     {
         struct Helper
         {
-            static ElementPtr findChildById(const Children & inChildren, const std::string & inId)
+            static Element * findChildById(const Children & inChildren, const std::string & inId)
             {
-                ElementPtr result;
+                Element * result(0);
                 for (size_t idx = 0; idx != inChildren.size(); ++idx)
                 {
                     ElementPtr child = inChildren[idx];
                     if (child->getAttribute("id") == inId)
                     {
-                        result = child;
+                        result = child.get();
                         break;
                     }
                     else
@@ -128,6 +128,15 @@ namespace XULWin
         }
     }
 
+
+    void Element::setAttributeControllers()
+    {
+        if (mNativeComponent)
+        {
+            mNativeComponent->setAttributeControllers();
+        }
+    }
+
     
     std::string Element::getAttribute(const std::string & inName) const
     {
@@ -146,16 +155,16 @@ namespace XULWin
     
     void Element::setAttribute(const std::string & inName, const std::string & inValue)
     {
-        if (!mNativeComponent->setAttribute(inName, inValue))
+        if (!mNativeComponent || !mNativeComponent->setAttribute(inName, inValue))
         {
             mAttributes[inName] = inValue;
         }
     }
     
     
-    boost::shared_ptr<NativeComponent> Element::nativeComponent() const
+    NativeComponent * Element::nativeComponent() const
     {
-        return mNativeComponent;
+        return mNativeComponent.get();
     }
     
     
@@ -165,32 +174,32 @@ namespace XULWin
     }
 
 
-    Window::Window(ElementPtr inParent) :
+    Window::Window(Element * inParent) :
         Element(Window::Type(),
                 inParent,
-                NativeComponentPtr(new NativeWindow(gNullNativeComponent)))
+                new NativeWindow(gNullNativeComponent))
     {
     }
 
 
     void Window::showModal()
     {
-        static_cast<NativeWindow *>(nativeComponent().get())->showModal();
+        static_cast<NativeWindow *>(nativeComponent())->showModal();
     }
 
 
-    Button::Button(ElementPtr inParent) :
+    Button::Button(Element * inParent) :
         Element(Button::Type(),
                 inParent,
-                NativeComponentPtr(new NativeButton(inParent->nativeComponent())))
+                new VirtualPadding(new NativeButton(inParent->nativeComponent())))
     {
     }
 
 
-    Label::Label(ElementPtr inParent) :
+    Label::Label(Element * inParent) :
         Element(Label::Type(),
                 inParent,
-                NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
+                new VirtualPadding(new NativeLabel(inParent->nativeComponent())))
     {
     }
 
@@ -201,85 +210,85 @@ namespace XULWin
     }
 
 
-    Description::Description(ElementPtr inParent) :
+    Description::Description(Element * inParent) :
         Element(Description::Type(),
                 inParent,
-                NativeComponentPtr(new NativeDescription(inParent->nativeComponent())))
+                new VirtualPadding(new NativeDescription(inParent->nativeComponent())))
     {
     }
 
 
-    Text::Text(ElementPtr inParent) :
+    Text::Text(Element * inParent) :
         Element(Text::Type(),
                 inParent,
-                NativeComponentPtr(new NativeLabel(inParent->nativeComponent())))
+                new VirtualPadding(new NativeLabel(inParent->nativeComponent())))
     {
     }
 
 
-    TextBox::TextBox(ElementPtr inParent) :
+    TextBox::TextBox(Element * inParent) :
         Element(TextBox::Type(),
                 inParent,
-                NativeComponentPtr(new NativeTextBox(inParent->nativeComponent())))
+                new VirtualPadding(new NativeTextBox(inParent->nativeComponent())))
     {
     }
 
 
-    CheckBox::CheckBox(ElementPtr inParent) :
+    CheckBox::CheckBox(Element * inParent) :
         Element(CheckBox::Type(),
                 inParent,
-                NativeComponentPtr(new NativeCheckBox(inParent->nativeComponent())))
+                new VirtualPadding(new NativeCheckBox(inParent->nativeComponent())))
     {
     }
 
 
-    Box::Box(ElementPtr inParent) :
+    Box::Box(Element * inParent) :
         Element(Box::Type(),
                 inParent,
-                NativeComponentPtr(new NativeBox(inParent->nativeComponent())))
+                new NativeBox(inParent->nativeComponent()))
     {
     }
 
 
-    HBox::HBox(ElementPtr inParent) :
+    HBox::HBox(Element * inParent) :
         Element(HBox::Type(),
                 inParent,
-                NativeComponentPtr(new NativeHBox(inParent->nativeComponent())))
+                new NativeHBox(inParent->nativeComponent()))
     {
     }
 
 
-    VBox::VBox(ElementPtr inParent) :
+    VBox::VBox(Element * inParent) :
         Element(VBox::Type(),
                 inParent,
-                NativeComponentPtr(new NativeVBox(inParent->nativeComponent())))
+                new NativeVBox(inParent->nativeComponent()))
     {
     }
 
 
-    MenuList::MenuList(ElementPtr inParent) :
+    MenuList::MenuList(Element * inParent) :
         Element(MenuList::Type(),
                 inParent,
-                NativeComponentPtr(new NativeMenuList(inParent->nativeComponent())))
+                new VirtualPadding(new NativeMenuList(inParent->nativeComponent())))
     {
     }
         
     
     void MenuList::addMenuItem(const MenuItem * inItem)
     {
-        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent().get());
+        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent());
         nativeMenuList->addMenuItem(inItem->label());
     }
         
     
     void MenuList::removeMenuItem(const MenuItem * inItem)
     {
-        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent().get());
+        NativeMenuList * nativeMenuList = static_cast<NativeMenuList *>(nativeComponent());
         nativeMenuList->removeMenuItem(inItem->label());
     }
 
     
-    MenuPopup::MenuPopup(ElementPtr inParent) :
+    MenuPopup::MenuPopup(Element * inParent) :
         Element(MenuPopup::Type(), inParent, gNullNativeComponent),
         mDestructing(false)
     {
@@ -323,7 +332,7 @@ namespace XULWin
     }
 
     
-    MenuItem::MenuItem(ElementPtr inParent) :
+    MenuItem::MenuItem(Element * inParent) :
         Element(MenuItem::Type(), inParent, gNullNativeComponent)
     {
     }
@@ -367,10 +376,10 @@ namespace XULWin
     }
 
 
-    Separator::Separator(ElementPtr inParent) :
+    Separator::Separator(Element * inParent) :
         Element(Separator::Type(),
                 inParent,
-                NativeComponentPtr(new NativeSeparator(inParent->nativeComponent())))
+                new VirtualPadding(new NativeSeparator(inParent->nativeComponent())))
     {
     }
 
@@ -380,10 +389,10 @@ namespace XULWin
     }
 
 
-    MenuButton::MenuButton(ElementPtr inParent) :
+    MenuButton::MenuButton(Element * inParent) :
         Element(MenuButton::Type(),
                 inParent,
-                NativeComponentPtr(new NativeMenuButton(inParent->nativeComponent())))
+                new VirtualPadding(new NativeMenuButton(inParent->nativeComponent())))
     {
     }
 
@@ -393,10 +402,10 @@ namespace XULWin
     }
 
 
-    Grid::Grid(ElementPtr inParent) :
+    Grid::Grid(Element * inParent) :
         Element(Grid::Type(),
                 inParent,
-                NativeComponentPtr(new NativeGrid(inParent->nativeComponent())))
+                new NativeGrid(inParent->nativeComponent()))
     {
     }
 
@@ -406,10 +415,10 @@ namespace XULWin
     }
 
 
-    Rows::Rows(ElementPtr inParent) :
+    Rows::Rows(Element * inParent) :
         Element(Rows::Type(),
                 inParent,
-                NativeComponentPtr(new NativeRows(inParent->nativeComponent())))
+                new NativeRows(inParent->nativeComponent()))
     {
     }
 
@@ -419,10 +428,10 @@ namespace XULWin
     }
 
 
-    Columns::Columns(ElementPtr inParent) :
+    Columns::Columns(Element * inParent) :
         Element(Columns::Type(),
                 inParent,
-                NativeComponentPtr(new NativeColumns(inParent->nativeComponent())))
+                new NativeColumns(inParent->nativeComponent()))
     {
     }
 
@@ -432,10 +441,10 @@ namespace XULWin
     }
 
 
-    Row::Row(ElementPtr inParent) :
+    Row::Row(Element * inParent) :
         Element(Row::Type(),
                 inParent,
-                NativeComponentPtr(new NativeRow(inParent->nativeComponent())))
+                new NativeRow(inParent->nativeComponent()))
     {
     }
 
@@ -445,10 +454,10 @@ namespace XULWin
     }
 
 
-    Column::Column(ElementPtr inParent) :
+    Column::Column(Element * inParent) :
         Element(Column::Type(),
                 inParent,
-                NativeComponentPtr(new NativeColumn(inParent->nativeComponent())))
+                new NativeColumn(inParent->nativeComponent()))
     {
     }
 

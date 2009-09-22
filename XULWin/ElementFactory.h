@@ -17,7 +17,7 @@ namespace XULWin
 
         static ElementFactory & Instance();
 
-        ElementPtr createElement(const std::string & inType, ElementPtr inParent, const AttributesMapping & inAttr);
+        ElementPtr createElement(const std::string & inType, Element * inParent, const AttributesMapping & inAttr);
 
         template<class ElementType>
         void registerElement()
@@ -28,7 +28,7 @@ namespace XULWin
     
     private:
         ElementFactory();
-        typedef boost::function<ElementPtr(ElementPtr, const AttributesMapping &)> FactoryMethod;
+        typedef boost::function<ElementPtr(Element*, const AttributesMapping &)> FactoryMethod;
         typedef std::map<std::string, FactoryMethod> FactoryMethods;
         FactoryMethods mFactoryMethods;
     };

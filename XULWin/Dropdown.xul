@@ -29,7 +29,8 @@
 <window id="openLocation"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         class="dialog"
-        style="width: 250px;"
+        width="511"
+        height="263"
         orient="vertical">
   <grid flex="1">
     <columns>
@@ -61,7 +62,7 @@
         <label value="Tags:"></label>
         <textbox ></textbox>
       </row>
-      <row flex="1">
+      <row>
         <label value=""></label>
         <description value="Use comma's to separate tags. For example: humour, videos, computer"></description>
       </row>
@@ -74,6 +75,21 @@
           </menupopup>
         </menulist>
       </row>
+      <row>
+        <label value=""></label>
+        <hbox>
+          <checkbox flex="1" label="Allow ratings?"></checkbox>
+          <checkbox flex="1" label="Allow comments?"></checkbox>
+        </hbox>
+      </row>
+      <row>
+        <label value=""></label>
+        <hbox>
+          <label value="" flex="1"></label>
+          <button label="Upload"></button>
+          <button label="Cancel"></button>
+        </hbox>
+      </row>
     </rows>
-  </grid>  
+  </grid>
 </window>

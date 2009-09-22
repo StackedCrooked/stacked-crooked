@@ -17,13 +17,19 @@ namespace XULWin
 
         int textPadding() { return 12; }
 
+        int dropDownListMinimumWidth() { return 24; }
+
         int dropDownListItemHeight() { return 16; }
 
         int componentMinimumWidth() { return 80; }
 
         int componentMinimumHeight() { return 20; }
 
+        int radioButtonMinimumWidth() { return 20; }
+
         int textBoxMinimumWidth() { return textPadding(); }
+
+        int checkBoxMinimumWidth() { return 20; }
         
         namespace Attributes
         {

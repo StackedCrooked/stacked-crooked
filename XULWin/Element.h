@@ -473,6 +473,40 @@ namespace XULWin
     };
 
 
+
+    class RadioGroup : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<RadioGroup>(inParent, inAttr); }
+
+        static const char * Type() { return "radiogroup"; }
+
+        virtual ~RadioGroup();
+
+    private:
+        friend class Element;
+        RadioGroup(Element * inParent);
+    };
+
+
+
+    class Radio : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Radio>(inParent, inAttr); }
+
+        static const char * Type() { return "radio"; }
+
+        virtual ~Radio();
+
+    private:
+        friend class Element;
+        Radio(Element * inParent);
+    };
+
+
 } // XULWin
 
 

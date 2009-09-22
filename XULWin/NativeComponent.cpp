@@ -58,10 +58,9 @@ namespace XULWin
     NativeComponent::NativeComponent(NativeComponent * inParent, CommandId inCommandId) :
         mParent(inParent),
         mHandle(0),
+        mElement(0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandId(inCommandId),
-        mMinimumWidth(Defaults::componentMinimumWidth()),
-        mMinimumHeight(Defaults::componentMinimumHeight()),
         mExpansive(false)
     {
     }
@@ -81,18 +80,6 @@ namespace XULWin
 
             ::DestroyWindow(mHandle);
         }
-    }
-    
-    
-    int NativeComponent::minimumWidth() const
-    {
-        return mMinimumWidth;
-    }
-
-    
-    int NativeComponent::minimumHeight() const
-    {
-        return mMinimumHeight;
     }
     
     
@@ -302,6 +289,26 @@ namespace XULWin
         ::GetClientRect(handle(), &rc);
         return Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
     }
+    
+    
+    int NativeWindow::minimumWidth() const
+    {
+        if (!owningElement()->children().empty())
+        {
+            return owningElement()->children().begin()->get()->nativeComponent()->minimumWidth();
+        }
+        return 0;
+    }
+    
+    
+    int NativeWindow::minimumHeight() const
+    {
+        if (!owningElement()->children().empty())
+        {
+            return owningElement()->children().begin()->get()->nativeComponent()->minimumHeight();
+        }
+        return 0;
+    }
 
     
     void NativeWindow::rebuildLayout()
@@ -383,14 +390,13 @@ namespace XULWin
         
     HWND VirtualControl::handle() const
     {
-        if (mParent)
-        {
-            return mParent->handle();
-        }
-        else
-        {
-            return 0;
-        }
+        return 0;
+    }
+
+
+    void VirtualControl::move(int x, int y, int w, int h)
+    {
+        mRect = Rect(x, y, w, h);
     }
     
     
@@ -400,15 +406,17 @@ namespace XULWin
     }
 
 
-    void VirtualControl::move(int x, int y, int w, int h)
+    VirtualProxy::VirtualProxy(bool inIsElement, NativeComponent * inParent) :
+        VirtualControl(inParent),
+        mIsElement(inIsElement)
     {
-        mRect = Rect(x, y, w, h);
     }
 
 
-    VirtualProxy::VirtualProxy(NativeComponent * inSubject) :
-        VirtualControl(inSubject->parent()),
-        mSubject(inSubject)
+    VirtualProxy::VirtualProxy(bool inIsElement, NativeComponent * inParent, NativeComponent * inSubject) :
+        VirtualControl(inParent),
+        mSubject(inSubject),
+        mIsElement(inIsElement)
     {
     }
 
@@ -418,16 +426,37 @@ namespace XULWin
     }
 
     
-    HWND VirtualProxy::handle() const
+    void VirtualProxy::setSubject(NativeComponentPtr inSubject)
     {
-        return mSubject->handle();
+        mSubject = inSubject;
     }
 
-
-    void VirtualProxy::move(int x, int y, int w, int h)
+    
+    NativeComponent * VirtualProxy::subject() const
     {
-        mRect = Rect(x, y, w, h);
-        mSubject->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
+        if (mSubject)
+        {
+            return mSubject.get();
+        }
+        else if (mIsElement)
+        {
+            if (!owningElement()->children().empty())
+            {
+                return owningElement()->children().begin()->get()->nativeComponent();
+            }
+        }
+        return 0;
+    }
+
+    
+    HWND VirtualProxy::handle() const
+    {
+        //NativeComponent * subj = subject();
+        //if (subj)
+        //{
+        //    return subj->handle();
+        //}
+        return 0;
     }
 
 
@@ -452,7 +481,7 @@ namespace XULWin
 
 
     PaddingProxy::PaddingProxy(NativeComponent * inSubject) :
-        VirtualProxy(inSubject)
+        VirtualProxy(false, inSubject->parent(), inSubject)
     {
     }
 
@@ -523,7 +552,7 @@ namespace XULWin
             inClassName,
             TEXT(""),
 			inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
-            0, 0, mMinimumWidth, mMinimumHeight,
+            0, 0, 0, 0,
             mParent ? mParent->handle() : 0,
             (HMENU)mCommandId.intValue(),
             mModuleHandle,
@@ -638,6 +667,18 @@ namespace XULWin
         NativeControl(inParent, TEXT("BUTTON"), 0, BS_AUTOCHECKBOX)
     {
     }
+    
+    
+    int NativeCheckBox::minimumHeight() const
+    {
+        return Defaults::controlHeight();
+    }
+    
+    
+    int NativeCheckBox::minimumWidth() const
+    {
+        return Defaults::checkBoxMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
+    }
 
     
     bool NativeCheckBox::initAttributeControllers()
@@ -684,6 +725,12 @@ namespace XULWin
         int width = Utils::getTextSize(handle(), text).cx;
         width += Defaults::textPadding();
         return width;
+    }
+
+
+    int NativeTextBox::minimumHeight() const
+    {
+        return Defaults::controlHeight();
     }
 
 
@@ -846,6 +893,42 @@ namespace XULWin
         AttributeGetter alignGetter = boost::bind(&Helper::Align2String, boost::bind(&NativeBox::getAlignment, this));
         setAttributeController("align", AttributeController(alignGetter, alignSetter));
         return NativeComponent::initAttributeControllers();
+    }
+
+
+    int NativeBox::minimumWidth() const
+    {
+        if (mOrientation == HORIZONTAL)
+        {
+            return static_cast<const NativeHBox*>(this)->minimumWidth();
+        }
+        else if (mOrientation == VERTICAL)
+        {
+            return static_cast<const NativeVBox*>(this)->minimumWidth();
+        }
+        else
+        {
+            ReportError("Invalid orientation in NativeBox"); 
+            return 0;
+        }
+    }
+
+
+    int NativeBox::minimumHeight() const
+    {
+        if (mOrientation == HORIZONTAL)
+        {
+            return static_cast<const NativeHBox*>(this)->minimumHeight();
+        }
+        else if (mOrientation == VERTICAL)
+        {
+            return static_cast<const NativeVBox*>(this)->minimumHeight();
+        }
+        else
+        {
+            ReportError("Invalid orientation in NativeBox");
+            return 0;
+        }
     }
 
 
@@ -1097,6 +1180,18 @@ namespace XULWin
     }
     
     
+    int NativeMenuList::minimumWidth() const
+    {
+        return Defaults::dropDownListMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
+    }
+
+
+    int NativeMenuList::minimumHeight() const
+    {
+        return Defaults::controlHeight();
+    }
+
+
     void NativeMenuList::move(int x, int y, int w, int h)
     {
         // The height of a combobox in Win32 is the height of the dropdown menu + the height of the widget itself.
@@ -1160,6 +1255,18 @@ namespace XULWin
     NativeSpacer::NativeSpacer(NativeComponent * inParent) :
         VirtualControl(inParent)
     {
+    }
+
+        
+    int NativeSpacer::minimumWidth() const
+    {
+        return 0;
+    }
+
+     
+    int NativeSpacer::minimumHeight() const
+    {
+        return 0;
     }
 
 
@@ -1524,6 +1631,53 @@ namespace XULWin
             res += child->nativeComponent()->minimumHeight();
         }
         return res;
+    }
+
+    
+    NativeRadioGroup::NativeRadioGroup(NativeComponent * inParent) :
+        VirtualProxy(true, inParent, 0)
+    {
+    }
+        
+        
+    int NativeRadioGroup::minimumWidth() const
+    {
+        if (!owningElement()->children().empty())
+        {
+            return owningElement()->children().begin()->get()->nativeComponent()->minimumWidth();
+        }
+        return 0;
+    }
+
+    
+    int NativeRadioGroup::minimumHeight() const
+    {
+        if (!owningElement()->children().empty())
+        {
+            return owningElement()->children().begin()->get()->nativeComponent()->minimumHeight();
+        }
+        return 0;
+    }
+
+    
+    NativeRadio::NativeRadio(NativeComponent * inParent) :
+        NativeControl(inParent,
+                      TEXT("BUTTON"),
+                      0, // exStyle
+                      BS_RADIOBUTTON)
+    {
+    }
+
+
+    int NativeRadio::minimumWidth() const
+    {
+        return Defaults::radioButtonMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
+    }
+
+    
+    int NativeRadio::minimumHeight() const
+    {
+        return Defaults::controlHeight();
     }
 
 

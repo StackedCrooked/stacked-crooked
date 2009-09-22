@@ -29,18 +29,18 @@ namespace XULWin
 
 
     class Element;
-    class NativeComponent;
-    typedef boost::shared_ptr<NativeComponent> NativeComponentPtr;
+    class ElementImpl;
+    typedef boost::shared_ptr<ElementImpl> NativeComponentPtr;
 
     /**
-     * NativeComponent is base class for all native UI elements.
+     * ElementImpl is base class for all native UI elements.
      */
-    class NativeComponent
+    class ElementImpl
     {
     public:
-        NativeComponent(NativeComponent * inParent, CommandId inCommandId);
+        ElementImpl(ElementImpl * inParent);
 
-        virtual ~NativeComponent() = 0;
+        virtual ~ElementImpl() = 0;
 
         int commandId() const { return mCommandId.intValue(); }
 
@@ -58,7 +58,7 @@ namespace XULWin
 
         Element * owningElement() const;
 
-        NativeComponent * parent() const;
+        ElementImpl * parent() const;
 
         virtual HWND handle() const;
 
@@ -75,7 +75,7 @@ namespace XULWin
         virtual bool initAttributeControllers();
 
     protected:
-        NativeComponent * mParent;
+        ElementImpl * mParent;
         Element * mElement;
         HMODULE mModuleHandle;
         HWND mHandle;
@@ -102,8 +102,15 @@ namespace XULWin
         typedef std::map<std::string, AttributeController> AttributeControllers;
         AttributeControllers mAttributeControllers;
 
-        typedef std::map<HWND, NativeComponent*> Components;
+        typedef std::map<HWND, ElementImpl*> Components;
         static Components sComponentsByHandle;
+    };
+
+
+    class NativeComponent : public ElementImpl
+    {
+    public:
+        NativeComponent(ElementImpl * inParent);
     };
 
 
@@ -112,7 +119,7 @@ namespace XULWin
     public:
         static void Register(HMODULE inModuleHandle);
 
-        NativeWindow(NativeComponent * inParent);
+        NativeWindow(ElementImpl * inParent);
 
         void showModal();
 
@@ -137,7 +144,7 @@ namespace XULWin
     class NativeControl : public NativeComponent
     {
     public:
-        NativeControl(NativeComponent * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
+        NativeControl(ElementImpl * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
 
         virtual ~NativeControl();
 
@@ -164,10 +171,10 @@ namespace XULWin
     };
 
 
-    class VirtualControl : public NativeComponent
+    class VirtualControl : public ElementImpl
     {
     public:
-        VirtualControl(NativeComponent * inParent);
+        VirtualControl(ElementImpl * inParent);
 
         virtual ~VirtualControl(){}
 
@@ -189,7 +196,7 @@ namespace XULWin
     class VirtualProxy : public VirtualControl
     {
     public:
-        VirtualProxy(NativeComponent * inSubject);
+        VirtualProxy(ElementImpl * inSubject);
 
         virtual ~VirtualProxy();
         
@@ -209,7 +216,7 @@ namespace XULWin
     class PaddingProxy : public VirtualProxy
     {
     public:
-        PaddingProxy(NativeComponent * inSubject);
+        PaddingProxy(ElementImpl * inSubject);
 
         virtual ~PaddingProxy();
 
@@ -232,7 +239,7 @@ namespace XULWin
     class NativeButton : public NativeControl
     {
     public:
-        NativeButton(NativeComponent * inParent);
+        NativeButton(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 
@@ -243,7 +250,7 @@ namespace XULWin
     class NativeLabel : public NativeControl
     {
     public:
-        NativeLabel(NativeComponent * inParent);
+        NativeLabel(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
 
@@ -256,7 +263,7 @@ namespace XULWin
     class NativeDescription : public NativeControl
     {
     public:
-        NativeDescription(NativeComponent * inParent);
+        NativeDescription(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
 
@@ -269,7 +276,7 @@ namespace XULWin
     class NativeTextBox : public NativeControl
     {
     public:
-        NativeTextBox(NativeComponent * inParent);
+        NativeTextBox(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
 
@@ -284,7 +291,7 @@ namespace XULWin
     class NativeCheckBox : public NativeControl
     {
     public:
-        NativeCheckBox(NativeComponent * inParent);
+        NativeCheckBox(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
 
@@ -297,7 +304,7 @@ namespace XULWin
     class NativeBox : public VirtualControl
     {
     public:
-        NativeBox(NativeComponent * inParent, Orientation inOrientation = HORIZONTAL);
+        NativeBox(ElementImpl * inParent, Orientation inOrientation = HORIZONTAL);
 
         virtual bool initAttributeControllers();
 
@@ -331,14 +338,14 @@ namespace XULWin
     class NativeHBox : public NativeBox
     {
     public:
-        NativeHBox(NativeComponent * inParent);
+        NativeHBox(ElementImpl * inParent);
     };
 
 
     class NativeVBox : public NativeBox
     {
     public:
-        NativeVBox(NativeComponent * inParent) :
+        NativeVBox(ElementImpl * inParent) :
             NativeBox(inParent, VERTICAL)
         {
         }
@@ -348,7 +355,7 @@ namespace XULWin
     class NativeMenuList : public NativeControl
     {
     public:
-        NativeMenuList(NativeComponent * inParent) :
+        NativeMenuList(ElementImpl * inParent) :
             NativeControl(inParent,
                           TEXT("COMBOBOX"),
                           0, // exStyle
@@ -371,7 +378,7 @@ namespace XULWin
     class NativeSeparator : public NativeControl
     {
     public:
-        NativeSeparator(NativeComponent * inParent);
+        NativeSeparator(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 
@@ -382,7 +389,7 @@ namespace XULWin
     class NativeSpacer : public VirtualControl
     {
     public:
-        NativeSpacer(NativeComponent * inParent);
+        NativeSpacer(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 
@@ -393,7 +400,7 @@ namespace XULWin
     class NativeMenuButton : public NativeControl
     {
     public:
-        NativeMenuButton(NativeComponent * inParent);
+        NativeMenuButton(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 
@@ -404,7 +411,7 @@ namespace XULWin
     class NativeGrid : public VirtualControl
     {
     public:
-        NativeGrid(NativeComponent * inParent);
+        NativeGrid(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 
@@ -417,14 +424,14 @@ namespace XULWin
     class NativeRows : public VirtualControl
     {
     public:
-        NativeRows(NativeComponent * inParent);
+        NativeRows(ElementImpl * inParent);
     };
 
 
     class NativeRow : public VirtualControl
     {
     public:
-        NativeRow(NativeComponent * inParent);
+        NativeRow(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 
@@ -435,14 +442,14 @@ namespace XULWin
     class NativeColumns : public VirtualControl
     {
     public:
-        NativeColumns(NativeComponent * inParent);
+        NativeColumns(ElementImpl * inParent);
     };
 
 
     class NativeColumn : public VirtualControl
     {
     public:
-        NativeColumn(NativeComponent * inParent);
+        NativeColumn(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 
@@ -453,14 +460,14 @@ namespace XULWin
     class NativeRadioGroup : public NativeBox
     {
     public:
-        NativeRadioGroup(NativeComponent * inParent);
+        NativeRadioGroup(ElementImpl * inParent);
     };
 
 
     class NativeRadio : public NativeControl
     {
     public:
-        NativeRadio(NativeComponent * inParent);
+        NativeRadio(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
 

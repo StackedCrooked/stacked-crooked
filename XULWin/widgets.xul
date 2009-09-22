@@ -27,6 +27,7 @@
 <?xml-stylesheet href="chrome://navigator/skin/navigator.css" type="text/css"?>
 
 <window id="openLocation"
+        title="XUL Widgets"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         class="dialog"
         width="800"
@@ -50,7 +51,7 @@
 
   ]]>
   </script>
-<vbox>
+<vbox align="stretch">
   <hbox align="center">
     <text class="label" value="Foo Label 1:" for="nerp1"/>
     <textbox flex="1" id="nerp1" disabled="true" value="disabled"/>

@@ -241,6 +241,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Resources"
+			>
+			<File
+				RelativePath=".\XULWin.exe.manifest"
+				>
+			</File>
+			<File
+				RelativePath=".\XULWin.rc"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

@@ -58,7 +58,6 @@ namespace XULWin
     NativeComponent::NativeComponent(NativeComponent * inParent, CommandId inCommandId) :
         mParent(inParent),
         mHandle(0),
-        mElement(0),
         mModuleHandle(::GetModuleHandle(0)), // TODO: Fix this hacky thingy!
         mCommandId(inCommandId),
         mExpansive(false)
@@ -80,6 +79,18 @@ namespace XULWin
 
             ::DestroyWindow(mHandle);
         }
+    }
+    
+    
+    int NativeComponent::minimumWidth() const
+    {
+        return mMinimumWidth;
+    }
+
+    
+    int NativeComponent::minimumHeight() const
+    {
+        return mMinimumHeight;
     }
     
     
@@ -390,7 +401,14 @@ namespace XULWin
         
     HWND VirtualControl::handle() const
     {
-        return 0;
+        if (mParent)
+        {
+            return mParent->handle();
+        }
+        else
+        {
+            return 0;
+        }
     }
 
 
@@ -406,17 +424,9 @@ namespace XULWin
     }
 
 
-    VirtualProxy::VirtualProxy(bool inIsElement, NativeComponent * inParent) :
-        VirtualControl(inParent),
-        mIsElement(inIsElement)
-    {
-    }
-
-
-    VirtualProxy::VirtualProxy(bool inIsElement, NativeComponent * inParent, NativeComponent * inSubject) :
-        VirtualControl(inParent),
-        mSubject(inSubject),
-        mIsElement(inIsElement)
+    VirtualProxy::VirtualProxy(NativeComponent * inSubject) :
+        VirtualControl(inSubject->parent()),
+        mSubject(inSubject)
     {
     }
 
@@ -426,37 +436,16 @@ namespace XULWin
     }
 
     
-    void VirtualProxy::setSubject(NativeComponentPtr inSubject)
-    {
-        mSubject = inSubject;
-    }
-
-    
-    NativeComponent * VirtualProxy::subject() const
-    {
-        if (mSubject)
-        {
-            return mSubject.get();
-        }
-        else if (mIsElement)
-        {
-            if (!owningElement()->children().empty())
-            {
-                return owningElement()->children().begin()->get()->nativeComponent();
-            }
-        }
-        return 0;
-    }
-
-    
     HWND VirtualProxy::handle() const
     {
-        //NativeComponent * subj = subject();
-        //if (subj)
-        //{
-        //    return subj->handle();
-        //}
-        return 0;
+        return mSubject->handle();
+    }
+
+
+    void VirtualProxy::move(int x, int y, int w, int h)
+    {
+        mRect = Rect(x, y, w, h);
+        mSubject->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
     }
 
 
@@ -481,7 +470,7 @@ namespace XULWin
 
 
     PaddingProxy::PaddingProxy(NativeComponent * inSubject) :
-        VirtualProxy(false, inSubject->parent(), inSubject)
+        VirtualProxy(inSubject)
     {
     }
 
@@ -1190,8 +1179,8 @@ namespace XULWin
     {
         return Defaults::controlHeight();
     }
-
-
+    
+    
     void NativeMenuList::move(int x, int y, int w, int h)
     {
         // The height of a combobox in Win32 is the height of the dropdown menu + the height of the widget itself.
@@ -1635,8 +1624,15 @@ namespace XULWin
 
     
     NativeRadioGroup::NativeRadioGroup(NativeComponent * inParent) :
-        VirtualProxy(true, inParent, 0)
+        VirtualControl(inParent)
     {
+    }
+
+
+    void NativeRadioGroup::rebuildLayout()
+    {
+        owningElement()->children().begin()->get()->nativeComponent()->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
+        rebuildChildLayouts();
     }
         
         

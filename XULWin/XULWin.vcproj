@@ -177,6 +177,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Dropdown.xul"
+				>
+			</File>
+			<File
 				RelativePath=".\Element.cpp"
 				>
 			</File>
@@ -220,6 +224,10 @@
 				RelativePath=".\Parser.h"
 				>
 			</File>
+			<File
+				RelativePath=".\test.xul"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="_Notes"
@@ -248,14 +256,6 @@
 		<Filter
 			Name="Samples"
 			>
-			<File
-				RelativePath=".\Dropdown.xul"
-				>
-			</File>
-			<File
-				RelativePath=".\test.xul"
-				>
-			</File>
 			<File
 				RelativePath=".\widgets.xul"
 				>

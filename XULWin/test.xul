@@ -8,8 +8,9 @@
 	type="mab:main"
 	persist="screenX screenY width height sizemode">
 
+	<!-- Tree -->
   <vbox>
-    <label value="Radio test"></label>
+    <label value="test1"></label>
     <radiogroup>
       <hbox>
         <radio label="een"></radio>
@@ -17,5 +18,6 @@
         <radio label="drie"></radio>
       </hbox>
     </radiogroup>
+    <label value="test2"></label>
   </vbox>
 </window>

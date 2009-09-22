@@ -194,12 +194,12 @@ namespace XULWin
     };
 
 
-    class VirtualPadding : public VirtualProxy
+    class PaddingProxy : public VirtualProxy
     {
     public:
-        VirtualPadding(NativeComponent * inSubject);
+        PaddingProxy(NativeComponent * inSubject);
 
-        virtual ~VirtualPadding();
+        virtual ~PaddingProxy();
 
         virtual void move(int x, int y, int w, int h);
 

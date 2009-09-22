@@ -191,7 +191,7 @@ namespace XULWin
     Button::Button(Element * inParent) :
         Element(Button::Type(),
                 inParent,
-                new VirtualPadding(new NativeButton(inParent->nativeComponent())))
+                new PaddingProxy(new NativeButton(inParent->nativeComponent())))
     {
     }
 
@@ -199,7 +199,7 @@ namespace XULWin
     Label::Label(Element * inParent) :
         Element(Label::Type(),
                 inParent,
-                new VirtualPadding(new NativeLabel(inParent->nativeComponent())))
+                new PaddingProxy(new NativeLabel(inParent->nativeComponent())))
     {
     }
 
@@ -213,7 +213,7 @@ namespace XULWin
     Description::Description(Element * inParent) :
         Element(Description::Type(),
                 inParent,
-                new VirtualPadding(new NativeDescription(inParent->nativeComponent())))
+                new PaddingProxy(new NativeDescription(inParent->nativeComponent())))
     {
     }
 
@@ -221,7 +221,7 @@ namespace XULWin
     Text::Text(Element * inParent) :
         Element(Text::Type(),
                 inParent,
-                new VirtualPadding(new NativeLabel(inParent->nativeComponent())))
+                new PaddingProxy(new NativeLabel(inParent->nativeComponent())))
     {
     }
 
@@ -229,7 +229,7 @@ namespace XULWin
     TextBox::TextBox(Element * inParent) :
         Element(TextBox::Type(),
                 inParent,
-                new VirtualPadding(new NativeTextBox(inParent->nativeComponent())))
+                new PaddingProxy(new NativeTextBox(inParent->nativeComponent())))
     {
     }
 
@@ -237,7 +237,7 @@ namespace XULWin
     CheckBox::CheckBox(Element * inParent) :
         Element(CheckBox::Type(),
                 inParent,
-                new VirtualPadding(new NativeCheckBox(inParent->nativeComponent())))
+                new PaddingProxy(new NativeCheckBox(inParent->nativeComponent())))
     {
     }
 
@@ -269,7 +269,7 @@ namespace XULWin
     MenuList::MenuList(Element * inParent) :
         Element(MenuList::Type(),
                 inParent,
-                new VirtualPadding(new NativeMenuList(inParent->nativeComponent())))
+                new PaddingProxy(new NativeMenuList(inParent->nativeComponent())))
     {
     }
         
@@ -379,7 +379,7 @@ namespace XULWin
     Separator::Separator(Element * inParent) :
         Element(Separator::Type(),
                 inParent,
-                new VirtualPadding(new NativeSeparator(inParent->nativeComponent())))
+                new PaddingProxy(new NativeSeparator(inParent->nativeComponent())))
     {
     }
 
@@ -405,7 +405,7 @@ namespace XULWin
     MenuButton::MenuButton(Element * inParent) :
         Element(MenuButton::Type(),
                 inParent,
-                new VirtualPadding(new NativeMenuButton(inParent->nativeComponent())))
+                new PaddingProxy(new NativeMenuButton(inParent->nativeComponent())))
     {
     }
 

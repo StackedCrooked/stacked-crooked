@@ -253,6 +253,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Samples"
+			>
+			<File
+				RelativePath=".\widgets.xul"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

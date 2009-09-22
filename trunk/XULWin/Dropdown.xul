@@ -26,7 +26,7 @@
 
 <?xml-stylesheet href="chrome://navigator/skin/navigator.css" type="text/css"?>
 
-<window >
+<window width="480" height="300">
 
   <grid flex="1">
     <columns>
@@ -71,7 +71,7 @@
           </menupopup>
         </menulist>
       </row>
-      <row>
+      <row flex="1">
         <spacer></spacer>
         <hbox>
           <checkbox flex="1" label="Allow ratings?"></checkbox>

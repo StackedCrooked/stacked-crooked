@@ -576,7 +576,7 @@ namespace XULWin
     
     int NativeDescription::minimumHeight() const
     {
-        return Defaults::controlHeight();
+        return Utils::getMultilineTextHeight(handle());
     }
     
     

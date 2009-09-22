@@ -41,6 +41,8 @@ namespace Utils
 
     void disableWindow(HWND inHandle, bool inDisable);
 
+    int getMultilineTextHeight(HWND inHandle);
+
 } // namespace Utils
 
 

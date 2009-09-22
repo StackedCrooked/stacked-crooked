@@ -190,4 +190,30 @@ namespace Utils
     }
 
 
+    int getMultilineTextHeight(HWND inHandle)
+    {    
+        
+        HDC deviceContext(::GetDC(inHandle));
+
+        HFONT font = (HFONT)::SendMessage(inHandle, WM_GETFONT, 0, 0);
+		if (font)
+        {
+			::SelectObject(deviceContext, font);
+        }
+        
+        RECT rw;
+        ::GetWindowRect(inHandle, &rw);
+
+        RECT bounds;
+		bounds.left = 0;
+		bounds.top = 0;
+		bounds.right = rw.right - rw.left;
+		bounds.bottom = 1000;
+
+        std::wstring textUTF16 = ToUTF16(getWindowText(inHandle));
+        
+        return ::DrawText(deviceContext, textUTF16.c_str(), (int)textUTF16.size(), &bounds, DT_CALCRECT | DT_WORDBREAK | DT_EDITCONTROL);
+    }
+
+
 } // namespace Utils

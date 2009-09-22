@@ -632,6 +632,32 @@ namespace XULWin
         width += Defaults::textPadding();
         return width;
     }
+    
+    
+    NativeCheckBox::NativeCheckBox(NativeComponent * inParent) :
+        NativeControl(inParent, TEXT("BUTTON"), 0, BS_AUTOCHECKBOX)
+    {
+    }
+
+    
+    bool NativeCheckBox::initAttributeControllers()
+    {
+        struct Helper
+        {
+            static std::string Bool2String(bool inValue)
+            {
+                return inValue ? "true" : "false";
+            }
+            static bool String2Bool(const std::string & inString)
+            {
+                return inString == "false" ? false : true;
+            }
+        };
+        AttributeGetter checkedGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isCheckBoxChecked, handle()));
+        AttributeSetter checkedSetter = boost::bind(&Utils::setCheckBoxChecked, handle(), boost::bind(&Helper::String2Bool, _1));
+        setAttributeController("checked", AttributeController(checkedGetter, checkedSetter));
+        return NativeComponent::initAttributeControllers();
+    }
 
 
     NativeTextBox::NativeTextBox(NativeComponent * inParent) :

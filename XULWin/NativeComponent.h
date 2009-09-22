@@ -270,13 +270,9 @@ namespace XULWin
     class NativeCheckBox : public NativeControl
     {
     public:
-        NativeCheckBox(NativeComponent * inParent) :
-            NativeControl(inParent,
-                          TEXT("BUTTON"),
-                          0, // exStyle
-                          BS_AUTOCHECKBOX)
-        {
-        }
+        NativeCheckBox(NativeComponent * inParent);
+
+        virtual bool initAttributeControllers();
     };
 
 

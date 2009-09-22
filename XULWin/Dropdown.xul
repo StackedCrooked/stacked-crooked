@@ -77,8 +77,8 @@
       <row flex="1">
         <spacer></spacer>
         <hbox>
-          <checkbox flex="1" label="Allow ratings?"></checkbox>
-          <checkbox flex="1" label="Allow comments?"></checkbox>
+          <checkbox flex="1" checked="true" label="Allow ratings?"></checkbox>
+          <checkbox flex="1" checked="true" label="Allow comments?"></checkbox>
         </hbox>
       </row>
       <row>

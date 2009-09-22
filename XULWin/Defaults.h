@@ -11,7 +11,7 @@ namespace XULWin
 
         int windowHeight() { return 240; }
 
-        int controlHeight() { return 20; }
+        int controlHeight() { return 21; }
 
         int textPadding() { return 12; }
 

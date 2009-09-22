@@ -30,6 +30,8 @@ namespace XULWin
 
     class Element;
     class ElementImpl;
+    class Decorator;
+    class NativeComponent;
     typedef boost::shared_ptr<ElementImpl> NativeComponentPtr;
 
     /**
@@ -41,6 +43,21 @@ namespace XULWin
         ElementImpl(ElementImpl * inParent);
 
         virtual ~ElementImpl() = 0;
+
+        template<class Type> Type * downcast()
+        {
+            if (Type * obj = dynamic_cast<Type*>(this))
+            {
+                return obj;
+            }
+            else if (Decorator * obj = dynamic_cast<Decorator*>(this))
+            {
+                return obj->decoratedElement()->downcast<Type>();
+            }
+            return 0;
+        }
+
+        NativeComponent * toNativeParent();
 
         int commandId() const { return mCommandId.intValue(); }
 
@@ -60,8 +77,6 @@ namespace XULWin
 
         ElementImpl * parent() const;
 
-        virtual HWND handle() const;
-
         virtual void rebuildLayout();
 
         virtual void rebuildChildLayouts();
@@ -72,13 +87,11 @@ namespace XULWin
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
-        virtual bool initAttributeControllers();
+        virtual bool initAttributeControllers() = 0;
 
     protected:
         ElementImpl * mParent;
         Element * mElement;
-        HMODULE mModuleHandle;
-        HWND mHandle;
         CommandId mCommandId;
         int mMinimumWidth;
         int mMinimumHeight;
@@ -111,6 +124,21 @@ namespace XULWin
     {
     public:
         NativeComponent(ElementImpl * inParent);
+
+        virtual ~NativeComponent();
+
+        static void SetModuleHandle(HMODULE inModule);
+
+        virtual HWND handle() const;
+
+        virtual bool initAttributeControllers();
+
+    protected:
+        HWND mHandle;
+        HMODULE mModuleHandle;
+
+    private:
+        static HMODULE sModuleHandle;
     };
 
 
@@ -119,7 +147,7 @@ namespace XULWin
     public:
         static void Register(HMODULE inModuleHandle);
 
-        NativeWindow(ElementImpl * inParent);
+        NativeWindow();
 
         void showModal();
 
@@ -178,13 +206,13 @@ namespace XULWin
 
         virtual ~VirtualControl(){}
 
+        virtual bool initAttributeControllers() { return true; }
+
         virtual int minimumWidth() const { return 0; }
 
         virtual int minimumHeight() const { return 0; }
 
         virtual Rect clientRect() const;
-        
-        virtual HWND handle() const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -193,32 +221,37 @@ namespace XULWin
     };
 
 
-    class VirtualProxy : public VirtualControl
+    class Decorator : public ElementImpl
     {
     public:
-        VirtualProxy(ElementImpl * inSubject);
+        Decorator(ElementImpl * inDecoratedElement);
 
-        virtual ~VirtualProxy();
-        
-        virtual HWND handle() const;
+        virtual ~Decorator();
+
+        ElementImpl * decoratedElement();
+
+        const ElementImpl * decoratedElement() const;
+
+        virtual bool initAttributeControllers();
 
         virtual void move(int x, int y, int w, int h);
 
-        virtual bool initAttributeControllers();
+        virtual Rect clientRect() const;
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
     protected:
-        NativeComponentPtr mSubject;
+        NativeComponentPtr mDecoratedElement;
+        Rect mRect;
     };
 
 
-    class PaddingProxy : public VirtualProxy
+    class PaddingDecorator : public Decorator
     {
     public:
-        PaddingProxy(ElementImpl * inSubject);
+        PaddingDecorator(ElementImpl * inDecoratedElement);
 
-        virtual ~PaddingProxy();
+        virtual ~PaddingDecorator();
 
         virtual void move(int x, int y, int w, int h);
 
@@ -355,13 +388,7 @@ namespace XULWin
     class NativeMenuList : public NativeControl
     {
     public:
-        NativeMenuList(ElementImpl * inParent) :
-            NativeControl(inParent,
-                          TEXT("COMBOBOX"),
-                          0, // exStyle
-                          CBS_DROPDOWNLIST)
-        {
-        }
+        NativeMenuList(ElementImpl * inParent);
             
         virtual int minimumWidth() const;
 

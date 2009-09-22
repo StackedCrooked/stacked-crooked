@@ -50,7 +50,7 @@ namespace XULWin
 
         bool expansive() const;
 
-        virtual void move(int x, int y, int w, int h);
+        virtual void move(int x, int y, int w, int h) = 0;
 
         virtual Rect clientRect() const = 0;
 
@@ -116,6 +116,8 @@ namespace XULWin
 
         void showModal();
 
+        virtual void move(int x, int y, int w, int h);
+
         virtual void rebuildLayout();
 
         virtual int minimumWidth() const;
@@ -140,6 +142,8 @@ namespace XULWin
         virtual ~NativeControl();
 
         virtual Rect clientRect() const;
+
+        virtual void move(int x, int y, int w, int h);
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 

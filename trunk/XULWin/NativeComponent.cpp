@@ -312,6 +312,8 @@ namespace XULWin
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         move(x, y, w, h);
+        rebuildLayout();
+
         ::ShowWindow(handle(), SW_SHOW);
 
         MSG message;
@@ -399,19 +401,32 @@ namespace XULWin
     }
 
 
-    VirtualPadding::VirtualPadding(NativeComponent * inSubject) :
+    VirtualProxy::VirtualProxy(NativeComponent * inSubject) :
         VirtualControl(inSubject->parent()),
         mSubject(inSubject)
     {
     }
 
 
-    VirtualPadding::~VirtualPadding()
+    VirtualProxy::~VirtualProxy()
     {
     }
 
+    
+    HWND VirtualProxy::handle() const
+    {
+        return mSubject->handle();
+    }
 
-    bool VirtualPadding::setAttributeControllers()
+
+    void VirtualProxy::move(int x, int y, int w, int h)
+    {
+        mRect = Rect(x, y, w, h);
+        mSubject->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
+    }
+
+
+    bool VirtualProxy::setAttributeControllers()
     {
         if (mSubject)
         {
@@ -421,7 +436,7 @@ namespace XULWin
     }
     
     
-    bool VirtualPadding::setAttribute(const std::string & inName, const std::string & inValue)
+    bool VirtualProxy::setAttribute(const std::string & inName, const std::string & inValue)
     {
         if (mSubject)
         {
@@ -430,10 +445,15 @@ namespace XULWin
         return false;
     }
 
-    
-    HWND VirtualPadding::handle() const
+
+    VirtualPadding::VirtualPadding(NativeComponent * inSubject) :
+        VirtualProxy(inSubject)
     {
-        return mSubject->handle();
+    }
+
+
+    VirtualPadding::~VirtualPadding()
+    {
     }
     
     

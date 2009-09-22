@@ -295,6 +295,10 @@ namespace XULWin
         {
             static_cast<MenuList*>(mParent)->addMenuItem(inItem);
         }
+        else if (mParent->type() == "menubutton")
+        {
+            static_cast<MenuList*>(mParent)->addMenuItem(inItem);
+        }
         else
         {
             ReportError("MenuPopup is located in non-compatible container.");

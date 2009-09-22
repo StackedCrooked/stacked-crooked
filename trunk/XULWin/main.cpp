@@ -45,7 +45,7 @@ class TestDropDown
 public:
     void run()
     {
-    	mParser.parse("Dropdown.xul");
+    	mParser.parse("widgets.xul");
         if (mParser.rootElement())
         {
             Window * window = mParser.rootElement()->downcast<Window>();
@@ -97,7 +97,7 @@ void runDropDownSample()
 
 void log(const std::string & inMessage)
 {
-    //MessageBoxA(0, inMessage.c_str(), "XULWin Logger", MB_OK);
+    MessageBoxA(0, inMessage.c_str(), "XULWin Logger", MB_OK);
 }
 
 

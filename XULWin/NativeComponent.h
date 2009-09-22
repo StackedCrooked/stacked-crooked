@@ -52,6 +52,8 @@ namespace XULWin
 
         virtual void move(int x, int y, int w, int h);
 
+        virtual Rect clientRect() const = 0;
+
         void setOwningElement(Element * inElement);
 
         Element * owningElement() const;
@@ -114,6 +116,8 @@ namespace XULWin
 
         void showModal();
 
+        virtual Rect clientRect() const;
+
         virtual bool setAttributeControllers();
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
@@ -128,6 +132,8 @@ namespace XULWin
         NativeControl(NativeComponent * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
 
         virtual ~NativeControl();
+
+        virtual Rect clientRect() const;
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -154,10 +160,15 @@ namespace XULWin
         VirtualControl(NativeComponent * inParent);
 
         virtual ~VirtualControl(){}
+
+        virtual Rect clientRect() const;
         
         virtual HWND handle() const;
 
         virtual void move(int x, int y, int w, int h);
+
+    protected:
+        Rect mRect;
     };
 
 
@@ -256,7 +267,7 @@ namespace XULWin
     };
 
 
-    class NativeBox : public NativeControl
+    class NativeBox : public VirtualControl
     {
     public:
         NativeBox(NativeComponent * inParent, Orientation inOrientation = HORIZONTAL);
@@ -341,6 +352,13 @@ namespace XULWin
     };
 
 
+    class NativeSpacer : public VirtualControl
+    {
+    public:
+        NativeSpacer(NativeComponent * inParent);
+    };
+
+
     class NativeMenuButton : public NativeControl
     {
     public:
@@ -352,7 +370,7 @@ namespace XULWin
     };
 
 
-    class NativeGrid : public NativeControl
+    class NativeGrid : public VirtualControl
     {
     public:
         NativeGrid(NativeComponent * inParent);

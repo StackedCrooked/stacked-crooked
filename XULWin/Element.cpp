@@ -389,6 +389,19 @@ namespace XULWin
     }
 
 
+    Spacer::Spacer(Element * inParent) :
+        Element(Spacer::Type(),
+                inParent,
+                new NativeSpacer(inParent->nativeComponent()))
+    {
+    }
+
+
+    Spacer::~Spacer()
+    {
+    }
+
+
     MenuButton::MenuButton(Element * inParent) :
         Element(MenuButton::Type(),
                 inParent,

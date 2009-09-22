@@ -40,8 +40,6 @@ namespace XULWin
     public:
         ~Element();
 
-        EventHandler OnCommand;
-
         // Override this method to add initialization code
         virtual void init() {}
 
@@ -352,6 +350,22 @@ namespace XULWin
     private:
         friend class Element;
         Separator(Element * inParent);
+    };
+
+
+    class Spacer : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Spacer>(inParent, inAttr); }
+
+        static const char * Type() { return "spacer"; }
+
+        virtual ~Spacer();
+
+    private:
+        friend class Element;
+        Spacer(Element * inParent);
     };
 
 

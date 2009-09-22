@@ -44,9 +44,9 @@ namespace XULWin
 
         int commandId() const { return mCommandId.intValue(); }
 
-        virtual int minimumWidth() const = 0;
+        virtual int minimumWidth() const;
 
-        virtual int minimumHeight() const = 0;
+        virtual int minimumHeight() const;
 
         bool expansive() const;
 
@@ -80,6 +80,8 @@ namespace XULWin
         HMODULE mModuleHandle;
         HWND mHandle;
         CommandId mCommandId;
+        int mMinimumWidth;
+        int mMinimumHeight;
         bool mExpansive;
         
         typedef boost::function<std::string()> AttributeGetter;
@@ -114,13 +116,13 @@ namespace XULWin
 
         void showModal();
 
-        virtual Rect clientRect() const;
+        virtual void rebuildLayout();
 
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
 
-        virtual void rebuildLayout();
+        virtual Rect clientRect() const;
 
         virtual bool initAttributeControllers();
 
@@ -183,24 +185,19 @@ namespace XULWin
     class VirtualProxy : public VirtualControl
     {
     public:
-        VirtualProxy(bool inIsElement, NativeComponent * inParent);
-
-        VirtualProxy(bool inIsElement, NativeComponent * inParent, NativeComponent * inSubject);
+        VirtualProxy(NativeComponent * inSubject);
 
         virtual ~VirtualProxy();
-
-        void setSubject(NativeComponentPtr inSubject);
-
-        NativeComponent * subject() const;
         
         virtual HWND handle() const;
+
+        virtual void move(int x, int y, int w, int h);
 
         virtual bool initAttributeControllers();
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
     protected:
-        bool mIsElement;
         NativeComponentPtr mSubject;
     };
 
@@ -457,10 +454,12 @@ namespace XULWin
     };
 
 
-    class NativeRadioGroup : public VirtualProxy
+    class NativeRadioGroup : public VirtualControl
     {
     public:
         NativeRadioGroup(NativeComponent * inParent);
+
+        virtual void rebuildLayout();
 
         virtual int minimumWidth() const;
 

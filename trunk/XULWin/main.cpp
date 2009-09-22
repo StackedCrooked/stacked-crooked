@@ -119,7 +119,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    runTestSample();
+    //runTestSample();
     runDropDownSample();
     ErrorReporter::Finalize();
     return 0;

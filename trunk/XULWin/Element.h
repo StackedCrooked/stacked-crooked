@@ -5,7 +5,6 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/signal.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -16,21 +15,17 @@ namespace XULWin
 
     class ElementFactory;
     class NativeElement;
-
     class Element;
-
-    // We use shared_ptr for children.
     typedef boost::shared_ptr<Element> ElementPtr;
-
     typedef std::vector<ElementPtr> Children;
-
     typedef std::map<std::string, std::string> AttributesMapping;
 
-    class Event
+    class Event;
+    class EventHandler
     {
+    public:
+        virtual void handle(Event * inEvent) {}
     };
-
-    typedef boost::signal<void(Event*)> EventHandler;
 
     /**
      * Represents a XUL element.
@@ -105,7 +100,7 @@ namespace XULWin
 
         Element * mParent;
         Children mChildren;
-        typedef std::map<std::string, std::vector<EventHandler> > EventHandlers;
+        typedef std::map<std::string, std::vector<EventHandler*> > EventHandlers;
         EventHandlers mEventHandlers;
 
     private:
@@ -201,8 +196,6 @@ namespace XULWin
         { return Element::Create<TextBox>(inParent, inAttr); }
 
         static const char * Type() { return "textbox"; }
-
-        EventHandler OnChanged;
     
     private:
         friend class Element;

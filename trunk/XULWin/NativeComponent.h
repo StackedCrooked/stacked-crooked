@@ -78,7 +78,7 @@ namespace XULWin
 
         virtual Rect clientRect() const = 0;
 
-        void setOwningElement(Element * inElement);
+        virtual void setOwningElement(Element * inElement);
 
         Element * owningElement() const;
 
@@ -252,6 +252,8 @@ namespace XULWin
 
         const NativeElement * decoratedElement() const;
 
+        virtual void setOwningElement(Element * inElement);
+
         virtual bool initAttributeControllers();
 
         virtual bool initStyleControllers();
@@ -261,6 +263,8 @@ namespace XULWin
         virtual Rect clientRect() const;
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
+
+        virtual bool setStyle(const std::string & inName, const std::string & inValue);
 
     protected:
         NativeComponentPtr mDecoratedElement;

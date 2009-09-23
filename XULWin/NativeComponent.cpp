@@ -123,7 +123,6 @@ namespace XULWin
     
     bool NativeElement::setStyle(const std::string & inName, const std::string & inValue)
     {
-        std::string type = owningElement()->type();
         StyleControllers::iterator it = mStyleControllers.find(inName);
         if (it != mStyleControllers.end())
         {
@@ -518,6 +517,16 @@ namespace XULWin
     Decorator::~Decorator()
     {
     }
+
+    
+    void Decorator::setOwningElement(Element * inElement)
+    {
+        mElement = inElement;
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setOwningElement(inElement);
+        }
+    }
     
     
     NativeElement * Decorator::decoratedElement()
@@ -570,6 +579,16 @@ namespace XULWin
         if (mDecoratedElement)
         {
             return mDecoratedElement->setAttribute(inName, inValue);
+        }
+        return false;
+    }
+    
+    
+    bool Decorator::setStyle(const std::string & inName, const std::string & inValue)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->setStyle(inName, inValue);
         }
         return false;
     }

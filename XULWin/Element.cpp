@@ -239,7 +239,7 @@ namespace XULWin
     Label::Label(Element * inParent) :
         Element(Label::Type(),
                 inParent,
-                new NativeLabel(inParent->impl()))
+                new PaddingDecorator(new NativeLabel(inParent->impl())))
     {
     }
 

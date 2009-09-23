@@ -66,24 +66,6 @@ namespace XULWin
     NativeElement::~NativeElement()
     {
     }
-
-
-    NativeComponent * NativeElement::toNativeParent()
-    {
-        if (NativeComponent * obj = dynamic_cast<NativeComponent*>(this))
-        {
-            return obj;
-        }
-        else if (Decorator * obj = dynamic_cast<Decorator*>(this))
-        {
-            return obj->decoratedElement()->toNativeParent();
-        }
-        else if (VirtualControl * obj = dynamic_cast<VirtualControl*>(this))
-        {
-            return obj->parent()->toNativeParent();
-        }
-        return 0;
-    }
     
     
     bool NativeElement::expansive() const
@@ -609,7 +591,11 @@ namespace XULWin
 
 
     PaddingDecorator::PaddingDecorator(NativeElement * inDecoratedElement) :
-        Decorator(inDecoratedElement)
+        Decorator(inDecoratedElement),
+        mTop(4),
+        mLeft(4),
+        mRight(4),
+        mBottom(4)
     {
     }
 
@@ -628,25 +614,25 @@ namespace XULWin
 
     int PaddingDecorator::paddingTop() const
     {
-        return 4;
+        return mTop;
     }
 
     
     int PaddingDecorator::paddingLeft() const
     {
-        return 4;
+        return mLeft;
     }
 
     
     int PaddingDecorator::paddingRight() const
     {
-        return 4;
+        return mRight;
     }
 
     
     int PaddingDecorator::paddingBottom() const
     {
-        return 4;
+        return mBottom;
     }
     
     
@@ -673,7 +659,7 @@ namespace XULWin
 
         Rect clientRect = inParent->clientRect();
 
-        NativeComponent * nativeParent = inParent->toNativeParent();
+        NativeComponent * nativeParent = GetNativeParent(inParent);
         if (!nativeParent)
         {
             ReportError("NativeControl constructor failed because no native parent was found.");
@@ -783,7 +769,25 @@ namespace XULWin
             return it->second->handleMessage(inMessage, wParam, lParam);
         }
         return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
-    }    
+    } 
+    
+    
+    NativeComponent * NativeControl::GetNativeParent(NativeElement * inNativeElement)
+    {
+        if (NativeComponent * obj = dynamic_cast<NativeComponent*>(inNativeElement))
+        {
+            return obj;
+        }
+        else if (Decorator * obj = dynamic_cast<Decorator*>(inNativeElement))
+        {
+            return GetNativeParent(obj->decoratedElement());
+        }
+        else if (VirtualControl * obj = dynamic_cast<VirtualControl*>(inNativeElement))
+        {
+            return GetNativeParent(obj->parent());
+        }
+        return 0;
+    }
     
     
     NativeButton::NativeButton(NativeElement * inParent) :

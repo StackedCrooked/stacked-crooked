@@ -58,14 +58,6 @@ namespace XULWin
             return 0;
         }
 
-        // Gets a NativeComponent object from this object. This
-        // is only needed in constructors of NativeComponents, because
-        // they need to know which is their native parent handle object.
-        // If this is a NativeComponent, return this.
-        // If this is a VirtualControl, return first parent NativeComponent.
-        // If this is a Decorator, resolve until a NativeComponent is found.
-        NativeComponent * toNativeParent();
-
         int commandId() const { return mCommandId.intValue(); }
 
         virtual int minimumWidth() const = 0;
@@ -214,12 +206,22 @@ namespace XULWin
 
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-    private:
-        WNDPROC mOrigProc;
-
     protected:
+
         typedef std::map<int, NativeControl*> ControlsById;
         static ControlsById sControlsById;
+
+    private:
+
+        // Gets a NativeComponent object from this object. This
+        // is only needed in constructors of NativeComponents, because
+        // they need to know which is their native parent handle object.
+        // If this is a NativeComponent, return this.
+        // If this is a VirtualControl, return first parent that is a NativeComponent.
+        // If this is a Decorator, resolve until a NativeComponent is found.
+        NativeComponent * GetNativeParent(NativeElement * inNativeElement);
+
+        WNDPROC mOrigProc;
     };
 
 
@@ -306,6 +308,9 @@ namespace XULWin
         virtual int minimumWidth() const;
 
         virtual int minimumHeight() const;
+
+    private:
+        int mTop, mLeft, mRight, mBottom;
     };
 
 

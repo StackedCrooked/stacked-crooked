@@ -38,20 +38,6 @@ namespace XULWin
         return mType;
     }
 
-
-    void Element::handleEvent(const std::string & inEvent)
-    {
-        EventHandlers::iterator it = mEventHandlers.find(inEvent);
-        if (it != mEventHandlers.end())
-        {
-            std::vector<EventHandler*> & handlers = it->second;
-            for (size_t idx = 0; idx != handlers.size(); ++idx)
-            {
-                handlers[idx]->handle(0);
-            }
-        }
-    }
-
     
     Element * Element::getElementById(const std::string & inId)
     {

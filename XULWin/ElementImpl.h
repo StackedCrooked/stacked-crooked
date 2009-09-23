@@ -46,7 +46,11 @@ namespace XULWin
         virtual ~ElementImpl() = 0;
 
         // Downcast that also resolves decorators.
-        template<class Type> Type * downcast()
+        // Use this instead of manual cast, because
+        // you may get a decorator instead of the 
+        // actual element.
+        template<class Type>
+        Type * downcast()
         {
             if (Type * obj = dynamic_cast<Type*>(this))
             {
@@ -65,6 +69,7 @@ namespace XULWin
 
         virtual int minimumHeight() const = 0;
 
+        // Tendency to expand, used for separators.
         bool expansive() const;
 
         virtual void move(int x, int y, int w, int h) = 0;

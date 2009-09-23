@@ -1,6 +1,6 @@
+- Make window with toolbar, status-bar, contentpant with scrollbar
 - Add scrollbar
 - Add textfield with multiline
-- Remove boost signal and use listener system
 - Compare against Gecko engine when testing
 - Make sample program that illustrates DHTML-like behavior
 - Add ErrorCatcher live reporter in a sep DOS window

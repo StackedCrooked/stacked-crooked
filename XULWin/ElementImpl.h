@@ -89,9 +89,9 @@ namespace XULWin
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
-        virtual bool initAttributeControllers() = 0;
+        virtual bool initAttributeControllers();
 
-        virtual bool initStyleControllers() = 0;
+        virtual bool initStyleControllers();
 
     protected:
         ElementImpl * mParent;
@@ -134,6 +134,8 @@ namespace XULWin
     class NativeComponent : public ElementImpl
     {
     public:
+        typedef ElementImpl Super;
+
         NativeComponent(ElementImpl * inParent);
 
         virtual ~NativeComponent();
@@ -158,6 +160,8 @@ namespace XULWin
     class NativeWindow : public NativeComponent
     {
     public:
+        typedef NativeComponent Super;
+
         static void Register(HMODULE inModuleHandle);
 
         NativeWindow();
@@ -187,6 +191,8 @@ namespace XULWin
     class NativeControl : public NativeComponent
     {
     public:
+        typedef NativeComponent Super;
+
         NativeControl(ElementImpl * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
 
         virtual ~NativeControl();
@@ -228,13 +234,23 @@ namespace XULWin
     class VirtualControl : public ElementImpl
     {
     public:
+        typedef ElementImpl Super;
+
         VirtualControl(ElementImpl * inParent);
 
-        virtual ~VirtualControl(){}
+        virtual ~VirtualControl();
 
-        virtual bool initAttributeControllers() { return true; }
+        virtual bool initAttributeControllers();
 
-        virtual bool initStyleControllers() { return true; }
+        virtual bool initStyleControllers();
+
+        int width() const;
+
+        void setWidth(int inWidth);
+
+        int height() const;
+
+        void setHeight(int inHeight);
 
         virtual int minimumWidth() const { return 0; }
 
@@ -250,12 +266,15 @@ namespace XULWin
 
     protected:
         Rect mRect;
+        int mWidth, mHeight;
     };
 
 
     class Decorator : public ElementImpl
     {
     public:
+        typedef ElementImpl Super;
+
         Decorator(ElementImpl * inDecoratedElement);
 
         virtual ~Decorator();
@@ -291,6 +310,8 @@ namespace XULWin
     class PaddingDecorator : public Decorator
     {
     public:
+        typedef Decorator Super;
+
         PaddingDecorator(ElementImpl * inDecoratedElement);
 
         virtual ~PaddingDecorator();
@@ -317,6 +338,8 @@ namespace XULWin
     class NativeButton : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeButton(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -328,6 +351,8 @@ namespace XULWin
     class NativeLabel : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeLabel(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
@@ -343,6 +368,8 @@ namespace XULWin
     class NativeDescription : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeDescription(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
@@ -356,6 +383,8 @@ namespace XULWin
     class NativeTextBox : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeTextBox(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
@@ -371,6 +400,8 @@ namespace XULWin
     class NativeCheckBox : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeCheckBox(ElementImpl * inParent);
 
         virtual bool initAttributeControllers();
@@ -384,6 +415,8 @@ namespace XULWin
     class NativeBox : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeBox(ElementImpl * inParent, Orientation inOrientation = HORIZONTAL);
 
         virtual bool initAttributeControllers();
@@ -418,6 +451,8 @@ namespace XULWin
     class NativeHBox : public NativeBox
     {
     public:
+        typedef NativeBox Super;
+
         NativeHBox(ElementImpl * inParent);
     };
 
@@ -534,6 +569,8 @@ namespace XULWin
     class NativeRadioGroup : public NativeBox
     {
     public:
+        typedef NativeBox Super;
+
         NativeRadioGroup(ElementImpl * inParent);
     };
 
@@ -541,6 +578,8 @@ namespace XULWin
     class NativeRadio : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeRadio(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -552,6 +591,8 @@ namespace XULWin
     class NativeProgressMeter : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeProgressMeter(ElementImpl * inParent);
 
         virtual int minimumWidth() const;

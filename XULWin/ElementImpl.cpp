@@ -125,6 +125,18 @@ namespace XULWin
     }
 
 
+    bool ElementImpl::initAttributeControllers()
+    {
+        return true;
+    }
+
+
+    bool ElementImpl::initStyleControllers()
+    {
+        return true;
+    }
+
+
     void ElementImpl::setStyleController(const std::string & inAttr, const StyleController & inController)
     {
         StyleControllers::iterator it = mStyleControllers.find(inAttr);
@@ -138,18 +150,11 @@ namespace XULWin
 
     void ElementImpl::setAttributeController(const std::string & inAttr, const AttributeController & inController)
     {
-        // Attribute controllers are set in the constructor. Order of construction is A then B if class B inherits class A.
-        // So constructor of ElementImpl will always occur before the construction of any of its subclasses.
-        // However, this poses a problem if the subclass wants to replace an existing AttributeController for a certain attribute value
-        // with its own because the stl map::insert method doesn't overwrite previously existing values.
-        // So what we need to do then is remove the existing value first, and then insert the new one.
-        // This method does just that.
         AttributeControllers::iterator it = mAttributeControllers.find(inAttr);
-        if (it != mAttributeControllers.end())
+        if (it == mAttributeControllers.end())
         {
-            mAttributeControllers.erase(it);
+            mAttributeControllers.insert(std::make_pair(inAttr, inController));
         }
-        mAttributeControllers.insert(std::make_pair(inAttr, inController));
     }
 
     
@@ -227,7 +232,7 @@ namespace XULWin
 
     bool NativeComponent::initStyleControllers()
     {
-        return true;
+        return Super::initStyleControllers();
     }
     
     
@@ -244,6 +249,15 @@ namespace XULWin
                 return inString == "true" ? true : false;
             }
         };
+
+        AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
+        AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
+        setAttributeController("height", AttributeController(heightGetter, heightSetter));
+
+        AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
+        AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
+        setAttributeController("width", AttributeController(widthGetter, widthSetter));
+
         AttributeGetter disabledGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isWindowDisabled, handle()));
         AttributeSetter disabledSetter = boost::bind(&Utils::disableWindow, handle(), boost::bind(&Helper::String2Bool, _1));
         setAttributeController("disabled", AttributeController(disabledGetter, disabledSetter));
@@ -251,7 +265,7 @@ namespace XULWin
         AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("label", AttributeController(labelGetter, labelSetter));
-        return true;
+        return Super::initAttributeControllers();
     }
 
 
@@ -301,30 +315,16 @@ namespace XULWin
 
     bool NativeWindow::initStyleControllers()
     {  
-        return NativeComponent::initStyleControllers();
+        return Super::initStyleControllers();
     }
 
 
     bool NativeWindow::initAttributeControllers()
-    {        
-        {
-            AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
-            AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
-            setAttributeController("height", AttributeController(heightGetter, heightSetter));
-        }
-
-        {
-            AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
-            AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
-            setAttributeController("width", AttributeController(widthGetter, widthSetter));
-        }
-
-        {
-            AttributeGetter titleGetter = boost::bind(&Utils::getWindowText, handle());
-            AttributeSetter titleSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-            setAttributeController("title", AttributeController(titleGetter, titleSetter));
-        }
-        return NativeComponent::initAttributeControllers();
+    {
+        AttributeGetter titleGetter = boost::bind(&Utils::getWindowText, handle());
+        AttributeSetter titleSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+        setAttributeController("title", AttributeController(titleGetter, titleSetter));
+        return Super::initAttributeControllers();
     }
     
     
@@ -450,13 +450,64 @@ namespace XULWin
 
 
     VirtualControl::VirtualControl(ElementImpl * inParent) :
-        ElementImpl(inParent)
+        ElementImpl(inParent),
+        mWidth(0),
+        mHeight(0)
     {
         if (!mParent)
         {
             ReportError("NativeControl constructor failed because parent is NULL.");
             return;
         }
+    }
+        
+        
+    VirtualControl::~VirtualControl()
+    {
+
+    }
+
+        
+    int VirtualControl::width() const
+    {
+        return mWidth;
+    }
+
+
+    void VirtualControl::setWidth(int inWidth)
+    {
+        mWidth = inWidth;
+    }
+
+
+    int VirtualControl::height() const
+    {
+        return mHeight;
+    }
+
+
+    void VirtualControl::setHeight(int inHeight)
+    {
+        mHeight = inHeight;
+    }
+
+     
+    bool VirtualControl::initAttributeControllers()
+    {
+        AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&VirtualControl::height, this));
+        AttributeSetter heightSetter = boost::bind(&VirtualControl::setHeight, this, boost::bind(&String2Int, _1));
+        setAttributeController("height", AttributeController(heightGetter, heightSetter));
+
+        AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&VirtualControl::width, this));
+        AttributeSetter widthSetter = boost::bind(&VirtualControl::setWidth, this, boost::bind(&String2Int, _1));
+        setAttributeController("width", AttributeController(widthGetter, widthSetter));
+        return Super::initAttributeControllers();
+    }
+
+
+    bool VirtualControl::initStyleControllers()
+    {
+        return Super::initStyleControllers();
     }
 
 
@@ -848,7 +899,7 @@ namespace XULWin
         AttributeGetter checkedGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isCheckBoxChecked, handle()));
         AttributeSetter checkedSetter = boost::bind(&Utils::setCheckBoxChecked, handle(), boost::bind(&Helper::String2Bool, _1));
         setAttributeController("checked", AttributeController(checkedGetter, checkedSetter));
-        return NativeComponent::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
 
 
@@ -866,7 +917,7 @@ namespace XULWin
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
-        return NativeComponent::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
 
 
@@ -904,7 +955,7 @@ namespace XULWin
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
-        return NativeComponent::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
     
     
@@ -936,7 +987,7 @@ namespace XULWin
         StyleGetter textAlignGetter; // no getter
         StyleSetter textAlignSetter = boost::bind(&Utils::addWindowStyle, handle(), boost::bind(&Helper::String2TextAlign, _1));
         setStyleController("text-align", StyleController(textAlignGetter, textAlignSetter));
-        return NativeComponent::initStyleControllers();
+        return Super::initStyleControllers();
     }
 
 
@@ -968,7 +1019,7 @@ namespace XULWin
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
-        return NativeComponent::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
 
 
@@ -1075,7 +1126,7 @@ namespace XULWin
         AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&Helper::String2Align, _1));
         AttributeGetter alignGetter = boost::bind(&Helper::Align2String, boost::bind(&NativeBox::getAlignment, this));
         setAttributeController("align", AttributeController(alignGetter, alignSetter));
-        return VirtualControl::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
 
 
@@ -1861,7 +1912,7 @@ namespace XULWin
         AttributeSetter orientationSetter = boost::bind(&Utils::setProgressMeterProgress, handle(), boost::bind(&String2Int, _1));
         AttributeGetter orientationGetter = boost::bind(&Int2String, boost::bind(&Utils::getProgressMeterProgress, handle()));
         setAttributeController("value", AttributeController(orientationGetter, orientationSetter));
-        return NativeComponent::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
 
     
@@ -1941,7 +1992,7 @@ namespace XULWin
         AttributeSetter orientationSetter = boost::bind(&NativeDeck::setSelectedIndex, this, boost::bind(&String2Int, _1));
         AttributeGetter orientationGetter = boost::bind(&Int2String, boost::bind(&NativeDeck::selectedIndex, this));
         setAttributeController("selectedIndex", AttributeController(orientationGetter, orientationSetter));
-        return VirtualControl::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
 
 

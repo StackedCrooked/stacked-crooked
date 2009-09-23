@@ -1,12 +1,8 @@
 <?xml version="1.0"?>
 <!--<!DOCTYPE window SYSTEM "file:///C:/svn/Google Project Hosting/stacked-crooked/XULWin/Dropdown.dtd">-->
-<!DOCTYPE window SYSTEM "chrome://TestApp/locale/Dropdown.dtd">
+<!DOCTYPE window SYSTEM "chrome://locale/Dropdown.dtd">
 <window title="Config Panel" width="480" height="300">
-  <hbox>
-    <label value="&UPLOAD_TO;"></label>
-    <label value="&UPLOAD_TO;"></label>
-  </hbox>
-  <!--<grid flex="1">
+  <grid flex="1">
     <columns>
       <column flex="0"></column>
       <column flex="1"></column>
@@ -17,13 +13,11 @@
         <menulist>
           <menupopup>
             <menuitem label="StackedCrooked" />
-            <menuitem label="My group1" />
-            <menuitem label="My group2" />
           </menupopup>
         </menulist>
       </row>
       <row>
-        <label style="text-align:right" value="Add pictures to this set:"></label>
+        <label style="text-align:right" value="&ADD_TO_SET;"></label>
         <hbox align="center">
           <menulist flex="1">
             <menupopup>
@@ -32,16 +26,16 @@
               <menuitem label="Friends" />
             </menupopup>
           </menulist>
-          <button label="New set..."></button>
+          <button label="&NEW_SET;"></button>
         </hbox>
       </row>
       <row>
-        <label style="text-align:right" value="Tags:"></label>
+        <label style="text-align:right" value="&TAGS;"></label>
         <textbox ></textbox>
       </row>
       <row>
         <spacer></spacer>
-        <description value="Use comma's to separate tags. For example: humour, videos, computer"></description>
+        <description value="&TAGS_DESCRIPTION;"></description>
       </row>
       <row>
         <label style="text-align:right" value="Show"></label>
@@ -68,5 +62,5 @@
         </hbox>
       </row>
     </rows>
-  </grid>-->
+  </grid>
 </window>

@@ -237,14 +237,6 @@
 			Name="Samples"
 			>
 			<File
-				RelativePath=".\Dropdown.dtd"
-				>
-			</File>
-			<File
-				RelativePath=".\Dropdown.xul"
-				>
-			</File>
-			<File
 				RelativePath=".\test.xul"
 				>
 			</File>
@@ -264,6 +256,30 @@
 				RelativePath=".\XULWin.rc"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="chrome"
+			>
+			<Filter
+				Name="locale"
+				>
+				<Filter
+					Name="en"
+					>
+					<File
+						RelativePath=".\chrome\locale\en\Dropdown.dtd"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="content"
+				>
+				<File
+					RelativePath=".\chrome\content\Dropdown.xul"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

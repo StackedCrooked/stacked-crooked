@@ -51,11 +51,11 @@ namespace XULWin
 
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
     
-    NativeElement::Components NativeElement::sComponentsByHandle;
+    ElementImpl::Components ElementImpl::sComponentsByHandle;
     
     NativeControl::ControlsById NativeControl::sControlsById;
 
-    NativeElement::NativeElement(NativeElement * inParent) :
+    ElementImpl::ElementImpl(ElementImpl * inParent) :
         mParent(inParent),
         mCommandId(),
         mExpansive(false)
@@ -63,18 +63,18 @@ namespace XULWin
     }
 
 
-    NativeElement::~NativeElement()
+    ElementImpl::~ElementImpl()
     {
     }
     
     
-    bool NativeElement::expansive() const
+    bool ElementImpl::expansive() const
     {
         return mExpansive;
     }
     
     
-    bool NativeElement::getAttribute(const std::string & inName, std::string & outValue)
+    bool ElementImpl::getAttribute(const std::string & inName, std::string & outValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
         if (it != mAttributeControllers.end())
@@ -91,7 +91,7 @@ namespace XULWin
     }
     
     
-    bool NativeElement::setStyle(const std::string & inName, const std::string & inValue)
+    bool ElementImpl::setStyle(const std::string & inName, const std::string & inValue)
     {
         StyleControllers::iterator it = mStyleControllers.find(inName);
         if (it != mStyleControllers.end())
@@ -108,7 +108,7 @@ namespace XULWin
     }
     
     
-    bool NativeElement::setAttribute(const std::string & inName, const std::string & inValue)
+    bool ElementImpl::setAttribute(const std::string & inName, const std::string & inValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
         if (it != mAttributeControllers.end())
@@ -125,7 +125,7 @@ namespace XULWin
     }
 
 
-    void NativeElement::setStyleController(const std::string & inAttr, const StyleController & inController)
+    void ElementImpl::setStyleController(const std::string & inAttr, const StyleController & inController)
     {
         StyleControllers::iterator it = mStyleControllers.find(inAttr);
         if (it != mStyleControllers.end())
@@ -136,10 +136,10 @@ namespace XULWin
     }
 
 
-    void NativeElement::setAttributeController(const std::string & inAttr, const AttributeController & inController)
+    void ElementImpl::setAttributeController(const std::string & inAttr, const AttributeController & inController)
     {
         // Attribute controllers are set in the constructor. Order of construction is A then B if class B inherits class A.
-        // So constructor of NativeElement will always occur before the construction of any of its subclasses.
+        // So constructor of ElementImpl will always occur before the construction of any of its subclasses.
         // However, this poses a problem if the subclass wants to replace an existing AttributeController for a certain attribute value
         // with its own because the stl map::insert method doesn't overwrite previously existing values.
         // So what we need to do then is remove the existing value first, and then insert the new one.
@@ -153,30 +153,30 @@ namespace XULWin
     }
 
     
-    void NativeElement::setOwningElement(Element * inElement)
+    void ElementImpl::setOwningElement(Element * inElement)
     {
         mElement = inElement;
     }
 
     
-    Element * NativeElement::owningElement() const
+    Element * ElementImpl::owningElement() const
     {
         return mElement;
     }
 
 
-    NativeElement * NativeElement::parent() const
+    ElementImpl * ElementImpl::parent() const
     {
         return mParent;
     }
 
     
-    void NativeElement::rebuildChildLayouts()
+    void ElementImpl::rebuildChildLayouts()
     {
         Children::const_iterator it = mElement->children().begin(), end = mElement->children().end();
         for (; it != end; ++it)
         {
-            NativeElement * nativeComp = (*it)->impl();
+            ElementImpl * nativeComp = (*it)->impl();
             if (nativeComp)
             {
                 nativeComp->rebuildLayout();
@@ -188,8 +188,8 @@ namespace XULWin
     HMODULE NativeComponent::sModuleHandle(0);
 
 
-    NativeComponent::NativeComponent(NativeElement * inParent) :
-        NativeElement(inParent),
+    NativeComponent::NativeComponent(ElementImpl * inParent) :
+        ElementImpl(inParent),
         mHandle(0),
         mModuleHandle(sModuleHandle ? sModuleHandle : ::GetModuleHandle(0))
     {
@@ -449,8 +449,8 @@ namespace XULWin
     }
 
 
-    VirtualControl::VirtualControl(NativeElement * inParent) :
-        NativeElement(inParent)
+    VirtualControl::VirtualControl(ElementImpl * inParent) :
+        ElementImpl(inParent)
     {
         if (!mParent)
         {
@@ -484,8 +484,8 @@ namespace XULWin
     }
 
 
-    Decorator::Decorator(NativeElement * inDecoratedElement) :
-        NativeElement(inDecoratedElement->parent()),
+    Decorator::Decorator(ElementImpl * inDecoratedElement) :
+        ElementImpl(inDecoratedElement->parent()),
         mDecoratedElement(inDecoratedElement)
     {
     }
@@ -506,13 +506,13 @@ namespace XULWin
     }
     
     
-    NativeElement * Decorator::decoratedElement()
+    ElementImpl * Decorator::decoratedElement()
     {
         return mDecoratedElement.get();
     }
 
     
-    const NativeElement * Decorator::decoratedElement() const
+    const ElementImpl * Decorator::decoratedElement() const
     {
         return mDecoratedElement.get();
     }
@@ -590,7 +590,7 @@ namespace XULWin
     }
 
 
-    PaddingDecorator::PaddingDecorator(NativeElement * inDecoratedElement) :
+    PaddingDecorator::PaddingDecorator(ElementImpl * inDecoratedElement) :
         Decorator(inDecoratedElement),
         mTop(4),
         mLeft(4),
@@ -648,7 +648,7 @@ namespace XULWin
     }
 
 
-    NativeControl::NativeControl(NativeElement * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+    NativeControl::NativeControl(ElementImpl * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
         NativeComponent(inParent)
     {
         if (!mParent)
@@ -772,17 +772,17 @@ namespace XULWin
     } 
     
     
-    NativeComponent * NativeControl::GetNativeParent(NativeElement * inNativeElement)
+    NativeComponent * NativeControl::GetNativeParent(ElementImpl * inElementImpl)
     {
-        if (NativeComponent * obj = dynamic_cast<NativeComponent*>(inNativeElement))
+        if (NativeComponent * obj = dynamic_cast<NativeComponent*>(inElementImpl))
         {
             return obj;
         }
-        else if (Decorator * obj = dynamic_cast<Decorator*>(inNativeElement))
+        else if (Decorator * obj = dynamic_cast<Decorator*>(inElementImpl))
         {
             return GetNativeParent(obj->decoratedElement());
         }
-        else if (VirtualControl * obj = dynamic_cast<VirtualControl*>(inNativeElement))
+        else if (VirtualControl * obj = dynamic_cast<VirtualControl*>(inElementImpl))
         {
             return GetNativeParent(obj->parent());
         }
@@ -790,7 +790,7 @@ namespace XULWin
     }
     
     
-    NativeButton::NativeButton(NativeElement * inParent) :
+    NativeButton::NativeButton(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("BUTTON"),
                       0, // exStyle
@@ -814,7 +814,7 @@ namespace XULWin
     }
     
     
-    NativeCheckBox::NativeCheckBox(NativeElement * inParent) :
+    NativeCheckBox::NativeCheckBox(ElementImpl * inParent) :
         NativeControl(inParent, TEXT("BUTTON"), 0, BS_AUTOCHECKBOX)
     {
     }
@@ -852,7 +852,7 @@ namespace XULWin
     }
 
 
-    NativeTextBox::NativeTextBox(NativeElement * inParent) :
+    NativeTextBox::NativeTextBox(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
@@ -890,7 +890,7 @@ namespace XULWin
     }
 
 
-    NativeLabel::NativeLabel(NativeElement * inParent) :
+    NativeLabel::NativeLabel(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -954,7 +954,7 @@ namespace XULWin
     }
 
 
-    NativeDescription::NativeDescription(NativeElement * inParent) :
+    NativeDescription::NativeDescription(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -987,13 +987,13 @@ namespace XULWin
     }
     
     
-    NativeHBox::NativeHBox(NativeElement * inParent) :
+    NativeHBox::NativeHBox(ElementImpl * inParent) :
         NativeBox(inParent, HORIZONTAL)
     {   
     }
         
         
-    NativeBox::NativeBox(NativeElement * inParent, Orientation inOrientation) :
+    NativeBox::NativeBox(ElementImpl * inParent, Orientation inOrientation) :
         VirtualControl(inParent),
         mOrientation(inOrientation),
         mAlign(inOrientation == HORIZONTAL ? Center : Stretch)
@@ -1336,7 +1336,7 @@ namespace XULWin
     }
     
     
-    NativeMenuList::NativeMenuList(NativeElement * inParent) :
+    NativeMenuList::NativeMenuList(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("COMBOBOX"),
                       0, // exStyle
@@ -1395,7 +1395,7 @@ namespace XULWin
     }
 
 
-    NativeSeparator::NativeSeparator(NativeElement * inParent) :
+    NativeSeparator::NativeSeparator(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -1417,7 +1417,7 @@ namespace XULWin
     }
 
 
-    NativeSpacer::NativeSpacer(NativeElement * inParent) :
+    NativeSpacer::NativeSpacer(ElementImpl * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1435,7 +1435,7 @@ namespace XULWin
     }
 
 
-    NativeMenuButton::NativeMenuButton(NativeElement * inParent) :
+    NativeMenuButton::NativeMenuButton(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("BUTTON"),
                       0, // exStyle
@@ -1472,7 +1472,7 @@ namespace XULWin
     }
 
 
-    NativeGrid::NativeGrid(NativeElement * inParent) :
+    NativeGrid::NativeGrid(ElementImpl * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1687,19 +1687,19 @@ namespace XULWin
     }
 
 
-    NativeRows::NativeRows(NativeElement * inParent) :
+    NativeRows::NativeRows(ElementImpl * inParent) :
         VirtualControl(inParent)
     {
     }
 
 
-    NativeColumns::NativeColumns(NativeElement * inParent) :
+    NativeColumns::NativeColumns(ElementImpl * inParent) :
         VirtualControl(inParent)
     {
     }
 
 
-    NativeRow::NativeRow(NativeElement * inParent) :
+    NativeRow::NativeRow(ElementImpl * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1735,7 +1735,7 @@ namespace XULWin
     }
 
 
-    NativeColumn::NativeColumn(NativeElement * inParent) :
+    NativeColumn::NativeColumn(ElementImpl * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1807,13 +1807,13 @@ namespace XULWin
     }
 
     
-    NativeRadioGroup::NativeRadioGroup(NativeElement * inParent) :
+    NativeRadioGroup::NativeRadioGroup(ElementImpl * inParent) :
         NativeBox(inParent)
     {
     }
 
     
-    NativeRadio::NativeRadio(NativeElement * inParent) :
+    NativeRadio::NativeRadio(ElementImpl * inParent) :
         NativeControl(inParent,
                       TEXT("BUTTON"),
                       0, // exStyle
@@ -1834,7 +1834,7 @@ namespace XULWin
     }
 
     
-    NativeProgressMeter::NativeProgressMeter(NativeElement * inParent) :
+    NativeProgressMeter::NativeProgressMeter(ElementImpl * inParent) :
         NativeControl(inParent,
                       PROGRESS_CLASS,
                       0, // exStyle
@@ -1865,7 +1865,7 @@ namespace XULWin
     }
 
     
-    NativeDeck::NativeDeck(NativeElement * inParent) :
+    NativeDeck::NativeDeck(ElementImpl * inParent) :
         VirtualControl(inParent),
         mSelectedIndex(0)
     {
@@ -1885,7 +1885,7 @@ namespace XULWin
             if (visible)
             {
                 Rect rect = clientRect();
-                NativeElement * n = element->impl();
+                ElementImpl * n = element->impl();
                 n->move(rect.x(), rect.y(), rect.width(), rect.height());
             }
         }

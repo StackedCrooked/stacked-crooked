@@ -1863,7 +1863,7 @@ namespace XULWin
 
     
     NativeDeck::NativeDeck(NativeElement * inParent) :
-        NativeHBox(inParent),
+        VirtualControl(inParent),
         mSelectedIndex(0)
     {
     }
@@ -1882,9 +1882,11 @@ namespace XULWin
             if (visible)
             {
                 Rect rect = clientRect();
-                element->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
+                NativeElement * n = element->impl();
+                n->move(rect.x(), rect.y(), rect.width(), rect.height());
             }
         }
+        rebuildChildLayouts();
     }
 
 

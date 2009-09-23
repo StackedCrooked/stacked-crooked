@@ -36,10 +36,19 @@ namespace XULWin
     public:
         ~Element();
 
-        // Override this method to add initialization code
-        virtual void init() {}
-
         const std::string & type() const;
+
+        Element * parent() const { return mParent; }
+
+        std::string getAttribute(const std::string & inName) const;
+
+        void setAttribute(const std::string & inName, const std::string & inValue);
+
+        Element * getElementById(const std::string & inId);
+
+        const Children & children() const { return mChildren; }
+
+        ElementImpl * impl() const;
 
         template<class ElementType>
         const ElementType * downcast() const
@@ -61,32 +70,6 @@ namespace XULWin
             return 0;
         }
 
-        void handleEvent(const std::string & inEvent);
-
-        Element * getElementById(const std::string & inId);
-
-        const Children & children() const { return mChildren; }
-
-        void removeChild(const Element * inChild);
-
-        Element * parent() const { return mParent; }
-
-        std::string getAttribute(const std::string & inName) const;
-
-        void setAttribute(const std::string & inName, const std::string & inValue);
-
-        void setAttributes(const AttributesMapping & inAttributes);
-
-        void setStyle(const std::string & inName, const std::string & inValue);
-
-        void setStyles(const AttributesMapping & inAttributes);
-
-        void initAttributeControllers();
-
-        void initStyleControllers();
-
-        ElementImpl * impl() const;
-
     protected:
         Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);
 
@@ -107,12 +90,26 @@ namespace XULWin
             return result;
         }   
 
+        virtual void init() {}
+
         Element * mParent;
         Children mChildren;
         typedef std::map<std::string, std::vector<EventHandler*> > EventHandlers;
         EventHandlers mEventHandlers;
 
     private:
+        void removeChild(const Element * inChild);
+
+        void setAttributes(const AttributesMapping & inAttributes);
+
+        void setStyle(const std::string & inName, const std::string & inValue);
+
+        void setStyles(const AttributesMapping & inAttributes);
+
+        void initAttributeControllers();
+
+        void initStyleControllers();
+
         // you don't need to call this, the factory method takes care of it
         void addChild(ElementPtr inChild);
 

@@ -113,8 +113,7 @@ namespace XULWin
         EventHandlers mEventHandlers;
 
     private:
-
-        // you don't to call this, the factory method takes care of it
+        // you don't need to call this, the factory method takes care of it
         void addChild(ElementPtr inChild);
 
         friend class ElementFactory;

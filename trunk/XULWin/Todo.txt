@@ -1,4 +1,5 @@
 - use corrent notation for paths: chrome://myapp/content/myapp.xul
+- Implement width and height attr for image, box...
 - Make window with toolbar, status-bar, contentpant with scrollbar
 - Add scrollbar
 - Add textfield with multiline

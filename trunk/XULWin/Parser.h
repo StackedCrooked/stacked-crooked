@@ -4,9 +4,8 @@
 
 #include "Element.h"
 #include "Poco/SAX/SAXParser.h"
-#include "Poco/SAX/Attributes.h"
 #include "Poco/SAX/ContentHandler.h"
-#include "Poco/SAX/LexicalHandler.h"
+#include "Poco/SAX/EntityResolver.h"
 #include "Poco/SAX/Locator.h"
 #include "Poco/Exception.h"
 #include <stack>
@@ -18,7 +17,7 @@ namespace XULWin
     
     class Parser : public Poco::XML::SAXParser,
                    public Poco::XML::ContentHandler,
-                   public Poco::XML::LexicalHandler
+                   public Poco::XML::EntityResolver
     {
     public:
         Parser();
@@ -54,18 +53,13 @@ namespace XULWin
 	
         virtual void skippedEntity(const Poco::XML::XMLString& name) {}
 
-        virtual void startDTD(const Poco::XML::XMLString& name, const Poco::XML::XMLString& publicId, const Poco::XML::XMLString& systemId);
-        virtual void endDTD();
-        virtual void startEntity(const Poco::XML::XMLString& name);
-        virtual void endEntity(const Poco::XML::XMLString& name);
-        virtual void startCDATA();
-        virtual void endCDATA();
-        virtual void comment(const Poco::XML::XMLChar ch[], int start, int length);
-
+        virtual Poco::XML::InputSource* resolveEntity(const Poco::XML::XMLString* publicId, const Poco::XML::XMLString& systemId);
+        
+virtual void releaseInputSource(Poco::XML::InputSource* pSource);
 	
     private:
         const Poco::XML::Locator* mLocator;
-        LexicalHandler * mLexicalHandler;
+        std::string mLanguage;
         
         // needed to know which one is the parent element
         std::stack<Element*> mStack; 

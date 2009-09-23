@@ -1,6 +1,8 @@
 #include "Parser.h"
 #include "ElementFactory.h"
 #include "Utils/ErrorReporter.h"
+#include "Poco/SAX/Attributes.h"
+#include "Poco/SAX/EntityResolverImpl.h"
 
 
 using namespace Utils;
@@ -13,9 +15,13 @@ namespace XULWin
 
     Parser::Parser() :
         mIgnores(0),
-        mLexicalHandler(0)
+        mLanguage("en")
     {
+        setFeature(FEATURE_EXTERNAL_GENERAL_ENTITIES, true);
+        setFeature(FEATURE_EXTERNAL_PARAMETER_ENTITIES, true);
+        
         setContentHandler(this);
+        setEntityResolver(this);
     }
     
     
@@ -28,11 +34,6 @@ namespace XULWin
     void Parser::setDocumentLocator(const Poco::XML::Locator * inLocator)
     {
         mLocator = inLocator;
-        if (const Poco::XML::ParserEngine * parserEngine = dynamic_cast<const Poco::XML::ParserEngine*>(inLocator))
-        {
-            mLexicalHandler = parserEngine->getLexicalHandler();
-            const_cast<Poco::XML::ParserEngine*>(parserEngine)->setLexicalHandler(this);
-        }
     }
 
 
@@ -127,66 +128,33 @@ namespace XULWin
     }
 
 
-    void Parser::startDTD(const XMLString& name, const XMLString& publicId, const XMLString& systemId)
+    InputSource* Parser::resolveEntity(const XMLString* publicId, const XMLString& systemId)
     {
-        if (mLexicalHandler)
+        const std::string cChrome = "chrome://";
+        const std::string cLocale = "/locale";
+        std::string::size_type chromeIdx = systemId.find(cChrome);
+        if (chromeIdx == std::string::npos)
         {
-            mLexicalHandler->startDTD(name, publicId, systemId);
+            return 0;
         }
+        std::string path = systemId;
+        path.replace(chromeIdx, cChrome.size(), "");
+
+        std::string::size_type localeIdx = path.find(cLocale);
+        if (localeIdx != std::string::npos)
+        {
+            path.insert(localeIdx + cLocale.size(), "/" + mLanguage);
+            EntityResolverImpl entityResolverImpl;
+            return entityResolverImpl.resolveEntity(publicId, path);
+        }
+        return 0;
     }
 
 
-    void Parser::endDTD()
+    void Parser::releaseInputSource(InputSource* pSource)
     {
-        if (mLexicalHandler)
-        {
-            mLexicalHandler->endDTD();
-        }
-    }
-
-
-    void Parser::startEntity(const XMLString& name)
-    {
-        if (mLexicalHandler)
-        {
-            mLexicalHandler->startEntity(name);
-        }
-    }
-
-
-    void Parser::endEntity(const XMLString& name)
-    {
-        if (mLexicalHandler)
-        {
-            mLexicalHandler->endEntity(name);
-        }
-    }
-
-
-    void Parser::startCDATA()
-    {
-        if (mLexicalHandler)
-        {
-            mLexicalHandler->startCDATA();
-        }
-    }
-
-
-    void Parser::endCDATA()
-    {
-        if (mLexicalHandler)
-        {
-            mLexicalHandler->endCDATA();
-        }
-    }
-
-
-    void Parser::comment(const XMLChar ch[], int start, int length)
-    {
-        if (mLexicalHandler)
-        {
-            mLexicalHandler->comment(ch, start, length);
-        }
+        EntityResolverImpl entityResolverImpl;
+        return entityResolverImpl.releaseInputSource(pSource);
     }
 
 

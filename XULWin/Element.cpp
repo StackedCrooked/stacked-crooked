@@ -579,4 +579,17 @@ namespace XULWin
     }
 
 
+    Deck::Deck(Element * inParent) :
+        Element(Deck::Type(),
+                inParent,
+                new NativeDeck(inParent->impl()))
+    {
+    }
+
+
+    Deck::~Deck()
+    {
+    }
+
+
 } // XULWin

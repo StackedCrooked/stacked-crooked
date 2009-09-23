@@ -557,6 +557,28 @@ namespace XULWin
     };
 
 
+    class NativeDeck : public NativeHBox
+    {
+    public:
+        NativeDeck(NativeElement * inParent);
+
+        virtual void rebuildLayout();
+
+        virtual int minimumWidth() const;
+
+        virtual int minimumHeight() const;
+
+        void setSelectedIndex(int inSelectedIndex);
+
+        int selectedIndex() const;
+
+        bool initAttributeControllers();
+
+    private:
+        int mSelectedIndex;
+    };
+
+
 } // namespace XULWin
 
 

@@ -1861,5 +1861,83 @@ namespace XULWin
         return NativeComponent::initAttributeControllers();
     }
 
+    
+    NativeDeck::NativeDeck(NativeElement * inParent) :
+        NativeHBox(inParent),
+        mSelectedIndex(0)
+    {
+    }
+        
+        
+    void NativeDeck::rebuildLayout()
+    {
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr element = owningElement()->children()[idx];
+            bool visible = idx == mSelectedIndex;
+            if (NativeControl * nativeControl = element->impl()->downcast<NativeControl>())
+            {
+                Utils::setWindowVisible(nativeControl->handle(), visible);
+            }
+            if (visible)
+            {
+                Rect rect = clientRect();
+                element->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
+            }
+        }
+    }
+
+
+    int NativeDeck::minimumWidth() const
+    {
+        int res = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            int w = owningElement()->children()[idx]->impl()->minimumWidth();
+            if (w > res)
+            {
+                res = w;
+            }
+        }
+        return res;
+    }
+
+    
+    int NativeDeck::minimumHeight() const
+    {
+        int res = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            int h = owningElement()->children()[idx]->impl()->minimumHeight();
+            if (h > res)
+            {
+                res = h;
+            }
+        }
+        return res;
+    }
+
+    
+    void NativeDeck::setSelectedIndex(int inSelectedIndex)
+    {
+        mSelectedIndex = inSelectedIndex;
+        rebuildLayout();
+    }
+
+    
+    int NativeDeck::selectedIndex() const
+    {
+        return mSelectedIndex;
+    }
+
+
+    bool NativeDeck::initAttributeControllers()
+    {
+        AttributeSetter orientationSetter = boost::bind(&NativeDeck::setSelectedIndex, this, boost::bind(&String2Int, _1));
+        AttributeGetter orientationGetter = boost::bind(&Int2String, boost::bind(&NativeDeck::selectedIndex, this));
+        setAttributeController("selectedIndex", AttributeController(orientationGetter, orientationSetter));
+        return VirtualControl::initAttributeControllers();
+    }
+
 
 } // namespace XULWin

@@ -526,6 +526,22 @@ namespace XULWin
     };
 
 
+    class Deck : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Deck>(inParent, inAttr); }
+
+        static const char * Type() { return "deck"; }
+
+        virtual ~Deck();
+
+    private:
+        friend class Element;
+        Deck(Element * inParent);
+    };
+
+
 } // XULWin
 
 

@@ -3,31 +3,10 @@
 
 <window >
   <hbox>
-    <box style="padding:4px;">
-      <image
-        id="NetlogToolbar-ShoutDialog-Image"
-        src=""/>
-    </box>
-    <vbox>
-      <textbox
-        id="NetlogToolbar-ShoutBox"
-        oninput="NetlogToolbar.onShoutTextBoxInput();"
-        onkeypress="if (event.keyCode == event.DOM_VK_RETURN) NetlogToolbar.onShoutConfirm();"
-        flex="1"
-          />
-      <hbox flex="2">
-        <checkbox
-          id="NetlogToolbar-ShoutDialog-CheckBox"
-          label="Show in spotlight"
-          flex="1"
-          />
-        <button
-          id="NetlogToolbar-ShoutDialog-ShoutButton"
-          label="Shout!"
-          disabled="true"
-          oncommand="NetlogToolbar.onShoutConfirm();"
-            />
-      </hbox>
-    </vbox>
+    <deck selectedIndex="0">
+      <label value="een"></label>
+      <label value="twee"></label>
+      <label value="drie"></label>
+    </deck>
   </hbox>
 </window>

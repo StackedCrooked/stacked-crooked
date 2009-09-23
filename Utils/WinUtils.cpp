@@ -303,5 +303,11 @@ namespace Utils
     {
         return (::GetWindowLong(inHandle, GWL_STYLE) & WS_CLIPCHILDREN) != 0;
     }
+
+
+    void setWindowVisible(HWND inHandle, bool inVisible)
+    {
+        ::ShowWindow(inHandle, inVisible ? SW_SHOW : SW_HIDE);
+    }
     
 } // namespace Utils

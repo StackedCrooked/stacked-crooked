@@ -6,7 +6,7 @@
     <box style="padding:4px;">
       <image
         id="NetlogToolbar-ShoutDialog-Image"
-        src=""
+        src="chrome/skin/icons/shout.jpg"
         />
     </box>
     <vbox>

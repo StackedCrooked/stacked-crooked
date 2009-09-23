@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib"
+				AdditionalDependencies="comctl32.lib GdiPlus.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -195,6 +195,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Image.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Image.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Layout.cpp"
 				>
 			</File>
@@ -238,6 +246,10 @@
 		<Filter
 			Name="Samples"
 			>
+			<File
+				RelativePath=".\Shout.xul"
+				>
+			</File>
 			<File
 				RelativePath=".\test.xul"
 				>

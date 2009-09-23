@@ -266,6 +266,12 @@ namespace XULWin
     {
         return mHandle;
     }
+
+
+    bool NativeComponent::initStyleControllers()
+    {
+        return true;
+    }
     
     
     bool NativeComponent::initAttributeControllers()
@@ -288,10 +294,6 @@ namespace XULWin
         AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("label", AttributeController(labelGetter, labelSetter));
-        
-        //AttributeGetter styleGetter = boost::bind(&Utils::getWindowText, handle());
-        //AttributeSetter styleSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        //setAttributeController("style", AttributeController(styleGetter, styleSetter));
         return true;
     }
 
@@ -337,6 +339,12 @@ namespace XULWin
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
         sComponentsByHandle.insert(std::make_pair(mHandle, this));
+    }
+
+
+    bool NativeWindow::initStyleControllers()
+    {  
+        return NativeComponent::initStyleControllers();
     }
 
 
@@ -912,7 +920,7 @@ namespace XULWin
         StyleGetter textAlignGetter; // no getter
         StyleSetter textAlignSetter = boost::bind(&Utils::addWindowStyle, handle(), boost::bind(&Helper::String2TextAlign, _1));
         setStyleController("text-align", StyleController(textAlignGetter, textAlignSetter));
-        return NativeElement::initStyleControllers();
+        return NativeComponent::initStyleControllers();
     }
 
 

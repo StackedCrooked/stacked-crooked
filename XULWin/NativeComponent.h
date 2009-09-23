@@ -98,7 +98,7 @@ namespace XULWin
 
         virtual bool initAttributeControllers() = 0;
 
-        virtual bool initStyleControllers(){ return true; }
+        virtual bool initStyleControllers() = 0;
 
     protected:
         NativeElement * mParent;
@@ -153,6 +153,8 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
+        virtual bool initStyleControllers();
+
     protected:
         HWND mHandle;
         HMODULE mModuleHandle;
@@ -182,6 +184,8 @@ namespace XULWin
         virtual Rect clientRect() const;
 
         virtual bool initAttributeControllers();
+
+        virtual bool initStyleControllers();
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -227,6 +231,8 @@ namespace XULWin
         virtual ~VirtualControl(){}
 
         virtual bool initAttributeControllers() { return true; }
+
+        virtual bool initStyleControllers() { return true; }
 
         virtual int minimumWidth() const { return 0; }
 

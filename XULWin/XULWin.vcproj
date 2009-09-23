@@ -195,6 +195,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ElementImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ElementImpl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Image.cpp"
 				>
 			</File>
@@ -212,14 +220,6 @@
 			</File>
 			<File
 				RelativePath=".\main.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\NativeComponent.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\NativeComponent.h"
 				>
 			</File>
 			<File

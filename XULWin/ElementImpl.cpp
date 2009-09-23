@@ -1,4 +1,4 @@
-#include "NativeComponent.h"
+#include "ElementImpl.h"
 #include "Defaults.h"
 #include "Layout.h"
 #include "Utils/ErrorReporter.h"

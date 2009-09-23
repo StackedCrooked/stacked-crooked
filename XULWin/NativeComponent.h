@@ -557,7 +557,7 @@ namespace XULWin
     };
 
 
-    class NativeDeck : public NativeHBox
+    class NativeDeck : public VirtualControl
     {
     public:
         NativeDeck(NativeElement * inParent);

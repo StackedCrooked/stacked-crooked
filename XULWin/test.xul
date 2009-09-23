@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 
-<window >
+<window>
   <hbox>
-    <deck selectedIndex="0">
-      <label value="een"></label>
-      <label value="twee"></label>
-      <label value="drie"></label>
+    <deck selectedIndex="2">
+      <label value="This is the first page"/>
+      <button label="This is the second page"/>
+      <box>
+        <label value="This is the third page"/>
+        <button label="This is also the third page"/>
+      </box>
     </deck>
   </hbox>
 </window>

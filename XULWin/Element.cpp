@@ -43,10 +43,10 @@ namespace XULWin
         EventHandlers::iterator it = mEventHandlers.find(inEvent);
         if (it != mEventHandlers.end())
         {
-            std::vector<EventHandler> & handlers = it->second;
+            std::vector<EventHandler*> & handlers = it->second;
             for (size_t idx = 0; idx != handlers.size(); ++idx)
             {
-                handlers[idx](0);
+                handlers[idx]->handle(0);
             }
         }
     }

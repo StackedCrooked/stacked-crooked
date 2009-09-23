@@ -3,7 +3,6 @@
 #include "NativeComponent.h"
 #include "Parser.h"
 #include "Utils/ErrorReporter.h"
-#include <boost/scoped_ptr.hpp>
 #include <windows.h>
 #include <commctrl.h>
 
@@ -44,7 +43,6 @@ void registerTypes(HMODULE inModule)
 
 class TestDropDown
 {
-    std::vector<boost::signals::connection> mConnections;
 public:
     void run()
     {
@@ -86,7 +84,7 @@ private:
 void runTestSample()
 {
 	Parser parser;
-    parser.parse("widgets.xul");
+    parser.parse("test.xul");
     if (Window * window = parser.rootElement()->downcast<Window>())
     {
         window->showModal();
@@ -98,6 +96,37 @@ void runDropDownSample()
 {
     TestDropDown t;
     t.run();
+}
+
+
+void runNoXULSample()
+{
+    AttributesMapping attr;
+    ElementPtr window = Window::Create(0, attr);
+    ElementPtr vbox = VBox::Create(window.get(), attr);
+
+    ElementPtr hbox1 = HBox::Create(vbox.get(), attr);
+
+    attr["value"] = "Username:";
+    ElementPtr label = Label::Create(hbox1.get(), attr);
+    attr.clear();
+
+    attr["flex"] = "1";
+    ElementPtr text = TextBox::Create(hbox1.get(), attr);
+    attr.clear();
+
+    ElementPtr hbox2 = HBox::Create(vbox.get(), attr);
+
+    attr["value"] = "Password:";
+    ElementPtr passLabel = Label::Create(hbox2.get(), attr);
+    attr.clear();
+
+    attr["flex"] = "1";
+    ElementPtr passText = TextBox::Create(hbox2.get(), attr);
+    attr.clear();
+
+    window->downcast<Window>()->showModal();
+    
 }
 
 
@@ -125,6 +154,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     registerTypes(hInstance);
     //runTestSample();
     runDropDownSample();
+    //runNoXULSample();
     ErrorReporter::Finalize();
     return 0;
 }

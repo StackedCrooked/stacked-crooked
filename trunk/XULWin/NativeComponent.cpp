@@ -86,18 +86,6 @@ namespace XULWin
     }
     
     
-    int NativeElement::minimumWidth() const
-    {
-        return mMinimumWidth;
-    }
-
-    
-    int NativeElement::minimumHeight() const
-    {
-        return mMinimumHeight;
-    }
-    
-    
     bool NativeElement::expansive() const
     {
         return mExpansive;
@@ -199,12 +187,6 @@ namespace XULWin
     {
         return mParent;
     }
-    
-
-    void NativeElement::rebuildLayout()
-    {
-        rebuildChildLayouts();
-    }
 
     
     void NativeElement::rebuildChildLayouts()
@@ -218,13 +200,6 @@ namespace XULWin
                 nativeComp->rebuildLayout();
             }
         }
-    }
-
-
-    LRESULT NativeElement::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
-    {
-        assert(false); // should not come here
-        return FALSE;
     }
 
     
@@ -507,11 +482,23 @@ namespace XULWin
     {
         mRect = Rect(x, y, w, h);
     }
+
+
+    void VirtualControl::rebuildLayout()
+    {
+        rebuildChildLayouts();
+    }
     
     
     Rect VirtualControl::clientRect() const
     {
         return mRect;
+    }
+
+    
+    LRESULT VirtualControl::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        return FALSE;
     }
 
 
@@ -580,6 +567,15 @@ namespace XULWin
         }
         return true;
     }
+
+
+    void Decorator::rebuildLayout()
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->rebuildLayout();
+        }
+    }
     
     
     bool Decorator::setAttribute(const std::string & inName, const std::string & inValue)
@@ -599,6 +595,16 @@ namespace XULWin
             return mDecoratedElement->setStyle(inName, inValue);
         }
         return false;
+    }
+
+
+    LRESULT Decorator::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->handleMessage(inMessage, wParam, lParam);
+        }
+        return FALSE;
     }
 
 
@@ -719,6 +725,12 @@ namespace XULWin
         {
             sControlsById.erase(itById);
         }
+    }
+
+
+    void NativeControl::rebuildLayout()
+    {
+        rebuildChildLayouts();
     }
     
     

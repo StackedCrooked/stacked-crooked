@@ -87,7 +87,10 @@ void runTestSample()
 {
 	Parser parser;
     parser.parse("widgets.xul");
-    static_cast<Window*>(parser.rootElement().get())->showModal();
+    if (Window * window = parser.rootElement()->downcast<Window>())
+    {
+        window->showModal();
+    }
 }
 
 

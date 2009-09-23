@@ -51,11 +51,11 @@ namespace XULWin
 
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
     
-    ElementImpl::Components ElementImpl::sComponentsByHandle;
+    NativeElement::Components NativeElement::sComponentsByHandle;
     
     NativeControl::ControlsById NativeControl::sControlsById;
 
-    ElementImpl::ElementImpl(ElementImpl * inParent) :
+    NativeElement::NativeElement(NativeElement * inParent) :
         mParent(inParent),
         mCommandId(),
         mExpansive(false)
@@ -63,12 +63,12 @@ namespace XULWin
     }
 
 
-    ElementImpl::~ElementImpl()
+    NativeElement::~NativeElement()
     {
     }
 
 
-    NativeComponent * ElementImpl::toNativeParent()
+    NativeComponent * NativeElement::toNativeParent()
     {
         if (NativeComponent * obj = dynamic_cast<NativeComponent*>(this))
         {
@@ -86,25 +86,25 @@ namespace XULWin
     }
     
     
-    int ElementImpl::minimumWidth() const
+    int NativeElement::minimumWidth() const
     {
         return mMinimumWidth;
     }
 
     
-    int ElementImpl::minimumHeight() const
+    int NativeElement::minimumHeight() const
     {
         return mMinimumHeight;
     }
     
     
-    bool ElementImpl::expansive() const
+    bool NativeElement::expansive() const
     {
         return mExpansive;
     }
     
     
-    bool ElementImpl::getAttribute(const std::string & inName, std::string & outValue)
+    bool NativeElement::getAttribute(const std::string & inName, std::string & outValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
         if (it != mAttributeControllers.end())
@@ -121,7 +121,7 @@ namespace XULWin
     }
     
     
-    bool ElementImpl::setAttribute(const std::string & inName, const std::string & inValue)
+    bool NativeElement::setAttribute(const std::string & inName, const std::string & inValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
         if (it != mAttributeControllers.end())
@@ -138,10 +138,10 @@ namespace XULWin
     }
 
 
-    void ElementImpl::setAttributeController(const std::string & inAttr, const AttributeController & inController)
+    void NativeElement::setAttributeController(const std::string & inAttr, const AttributeController & inController)
     {
         // Attribute controllers are set in the constructor. Order of construction is A then B if class B inherits class A.
-        // So constructor of ElementImpl will always occur before the construction of any of its subclasses.
+        // So constructor of NativeElement will always occur before the construction of any of its subclasses.
         // However, this poses a problem if the subclass wants to replace an existing AttributeController for a certain attribute value
         // with its own because the stl map::insert method doesn't overwrite previously existing values.
         // So what we need to do then is remove the existing value first, and then insert the new one.
@@ -155,36 +155,36 @@ namespace XULWin
     }
 
     
-    void ElementImpl::setOwningElement(Element * inElement)
+    void NativeElement::setOwningElement(Element * inElement)
     {
         mElement = inElement;
     }
 
     
-    Element * ElementImpl::owningElement() const
+    Element * NativeElement::owningElement() const
     {
         return mElement;
     }
 
 
-    ElementImpl * ElementImpl::parent() const
+    NativeElement * NativeElement::parent() const
     {
         return mParent;
     }
     
 
-    void ElementImpl::rebuildLayout()
+    void NativeElement::rebuildLayout()
     {
         rebuildChildLayouts();
     }
 
     
-    void ElementImpl::rebuildChildLayouts()
+    void NativeElement::rebuildChildLayouts()
     {
         Children::const_iterator it = mElement->children().begin(), end = mElement->children().end();
         for (; it != end; ++it)
         {
-            ElementImpl * nativeComp = (*it)->getImpl();
+            NativeElement * nativeComp = (*it)->impl();
             if (nativeComp)
             {
                 nativeComp->rebuildLayout();
@@ -193,7 +193,7 @@ namespace XULWin
     }
 
 
-    LRESULT ElementImpl::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    LRESULT NativeElement::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         assert(false); // should not come here
         return FALSE;
@@ -203,8 +203,8 @@ namespace XULWin
     HMODULE NativeComponent::sModuleHandle(0);
 
 
-    NativeComponent::NativeComponent(ElementImpl * inParent) :
-        ElementImpl(inParent),
+    NativeComponent::NativeComponent(NativeElement * inParent) :
+        NativeElement(inParent),
         mHandle(0),
         mModuleHandle(sModuleHandle ? sModuleHandle : ::GetModuleHandle(0))
     {
@@ -226,23 +226,6 @@ namespace XULWin
             ::DestroyWindow(mHandle);
         }
     }
-
-
-    //NativeComponent * NativeComponent::GetNativeParent(ElementImpl * inElement)
-    //{
-    //    if (NativeComponent * native = inElement->downcast<NativeComponent>())
-    //    {
-    //        return native;
-    //    }
-    //    else if (inElement->parent())
-    //    {
-    //        return GetNativeParent(inElement->parent());
-    //    }
-    //    else
-    //    {
-    //        return 0;
-    //    }
-    //}
         
     
     void NativeComponent::SetModuleHandle(HMODULE inModule)
@@ -360,7 +343,7 @@ namespace XULWin
     {
         if (!owningElement()->children().empty())
         {
-            return owningElement()->children().begin()->get()->getImpl()->minimumWidth();
+            return owningElement()->children().begin()->get()->impl()->minimumWidth();
         }
         return 0;
     }
@@ -370,7 +353,7 @@ namespace XULWin
     {
         if (!owningElement()->children().empty())
         {
-            return owningElement()->children().begin()->get()->getImpl()->minimumHeight();
+            return owningElement()->children().begin()->get()->impl()->minimumHeight();
         }
         return 0;
     }
@@ -435,7 +418,7 @@ namespace XULWin
                 if (it != owningElement()->children().end())
                 {
                     Rect clientRect(clientRect());
-                    (*it)->getImpl()->move(clientRect.x(), clientRect.y(), clientRect.width(), clientRect.height());
+                    (*it)->impl()->move(clientRect.x(), clientRect.y(), clientRect.width(), clientRect.height());
                     rebuildLayout();
                 }
                 break;
@@ -469,8 +452,8 @@ namespace XULWin
     }
 
 
-    VirtualControl::VirtualControl(ElementImpl * inParent) :
-        ElementImpl(inParent)
+    VirtualControl::VirtualControl(NativeElement * inParent) :
+        NativeElement(inParent)
     {
         if (!mParent)
         {
@@ -492,8 +475,8 @@ namespace XULWin
     }
 
 
-    Decorator::Decorator(ElementImpl * inDecoratedElement) :
-        ElementImpl(inDecoratedElement->parent()),
+    Decorator::Decorator(NativeElement * inDecoratedElement) :
+        NativeElement(inDecoratedElement->parent()),
         mDecoratedElement(inDecoratedElement)
     {
     }
@@ -504,13 +487,13 @@ namespace XULWin
     }
     
     
-    ElementImpl * Decorator::decoratedElement()
+    NativeElement * Decorator::decoratedElement()
     {
         return mDecoratedElement.get();
     }
 
     
-    const ElementImpl * Decorator::decoratedElement() const
+    const NativeElement * Decorator::decoratedElement() const
     {
         return mDecoratedElement.get();
     }
@@ -549,7 +532,7 @@ namespace XULWin
     }
 
 
-    PaddingDecorator::PaddingDecorator(ElementImpl * inDecoratedElement) :
+    PaddingDecorator::PaddingDecorator(NativeElement * inDecoratedElement) :
         Decorator(inDecoratedElement)
     {
     }
@@ -603,7 +586,7 @@ namespace XULWin
     }
 
 
-    NativeControl::NativeControl(ElementImpl * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+    NativeControl::NativeControl(NativeElement * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
         NativeComponent(inParent)
     {
         if (!mParent)
@@ -721,7 +704,7 @@ namespace XULWin
     }    
     
     
-    NativeButton::NativeButton(ElementImpl * inParent) :
+    NativeButton::NativeButton(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("BUTTON"),
                       0, // exStyle
@@ -745,7 +728,7 @@ namespace XULWin
     }
     
     
-    NativeCheckBox::NativeCheckBox(ElementImpl * inParent) :
+    NativeCheckBox::NativeCheckBox(NativeElement * inParent) :
         NativeControl(inParent, TEXT("BUTTON"), 0, BS_AUTOCHECKBOX)
     {
     }
@@ -783,7 +766,7 @@ namespace XULWin
     }
 
 
-    NativeTextBox::NativeTextBox(ElementImpl * inParent) :
+    NativeTextBox::NativeTextBox(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
@@ -821,7 +804,7 @@ namespace XULWin
     }
 
 
-    NativeLabel::NativeLabel(ElementImpl * inParent) :
+    NativeLabel::NativeLabel(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -854,7 +837,7 @@ namespace XULWin
     }
 
 
-    NativeDescription::NativeDescription(ElementImpl * inParent) :
+    NativeDescription::NativeDescription(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -887,13 +870,13 @@ namespace XULWin
     }
     
     
-    NativeHBox::NativeHBox(ElementImpl * inParent) :
+    NativeHBox::NativeHBox(NativeElement * inParent) :
         NativeBox(inParent, HORIZONTAL)
     {   
     }
         
         
-    NativeBox::NativeBox(ElementImpl * inParent, Orientation inOrientation) :
+    NativeBox::NativeBox(NativeElement * inParent, Orientation inOrientation) :
         VirtualControl(inParent),
         mOrientation(inOrientation),
         mAlign(inOrientation == HORIZONTAL ? Center : Stretch)
@@ -986,7 +969,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
-                result += mElement->children()[idx]->getImpl()->minimumWidth();
+                result += mElement->children()[idx]->impl()->minimumWidth();
             }
             return result;
         }
@@ -995,7 +978,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
-                int width = mElement->children()[idx]->getImpl()->minimumWidth();
+                int width = mElement->children()[idx]->impl()->minimumWidth();
                 if (width > result)
                 {
                     result = width;
@@ -1018,7 +1001,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
-                int height = mElement->children()[idx]->getImpl()->minimumHeight();
+                int height = mElement->children()[idx]->impl()->minimumHeight();
                 if (height > result)
                 {
                     result = height;
@@ -1031,7 +1014,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != mElement->children().size(); ++idx)
             {
-                result += mElement->children()[idx]->getImpl()->minimumHeight();
+                result += mElement->children()[idx]->impl()->minimumHeight();
             }
             return result;
         }
@@ -1104,18 +1087,18 @@ namespace XULWin
             if (flexValue != 0)
             {
                 nonZeroFlexValues.push_back(SizeInfo(flexValue,
-                                                       mOrientation == HORIZONTAL ? child->getImpl()->minimumWidth() :
-                                                                                    child->getImpl()->minimumHeight()));
+                                                       mOrientation == HORIZONTAL ? child->impl()->minimumWidth() :
+                                                                                    child->impl()->minimumHeight()));
             }
             else
             {
                 if (mOrientation == HORIZONTAL)
                 {
-                    availableSpace -= child->getImpl()->minimumWidth();
+                    availableSpace -= child->impl()->minimumWidth();
                 }
                 else
                 {
-                    availableSpace -= child->getImpl()->minimumHeight();
+                    availableSpace -= child->impl()->minimumHeight();
                 }
             }
             allFlexValues.push_back(flexValue);
@@ -1138,10 +1121,10 @@ namespace XULWin
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
             ElementPtr child = mElement->children()[idx];
-            int minWidth = child->getImpl()->minimumWidth();
+            int minWidth = child->impl()->minimumWidth();
             int childWidth = minWidth;
             int boxWidth = minWidth;
-            int minHeight = child->getImpl()->minimumHeight();
+            int minHeight = child->impl()->minimumHeight();
             int childHeight = minHeight;
             int boxHeight = minHeight;
             int portion = 0;
@@ -1204,7 +1187,7 @@ namespace XULWin
                                          offsetChildX);
             }
             
-            if (mAlign == Stretch || child->getImpl()->expansive())
+            if (mAlign == Stretch || child->impl()->expansive())
             {
                 if (mOrientation == HORIZONTAL)
                 {
@@ -1215,7 +1198,7 @@ namespace XULWin
                     childWidth = clientRect.width();
                 }
             }
-            child->getImpl()->move(clientRect.x() + offsetChildX,
+            child->impl()->move(clientRect.x() + offsetChildX,
                                            clientRect.y() + offsetChildY,
                                            childWidth, childHeight);
 
@@ -1236,7 +1219,7 @@ namespace XULWin
     }
     
     
-    NativeMenuList::NativeMenuList(ElementImpl * inParent) :
+    NativeMenuList::NativeMenuList(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("COMBOBOX"),
                       0, // exStyle
@@ -1295,7 +1278,7 @@ namespace XULWin
     }
 
 
-    NativeSeparator::NativeSeparator(ElementImpl * inParent) :
+    NativeSeparator::NativeSeparator(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
@@ -1317,7 +1300,7 @@ namespace XULWin
     }
 
 
-    NativeSpacer::NativeSpacer(ElementImpl * inParent) :
+    NativeSpacer::NativeSpacer(NativeElement * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1335,7 +1318,7 @@ namespace XULWin
     }
 
 
-    NativeMenuButton::NativeMenuButton(ElementImpl * inParent) :
+    NativeMenuButton::NativeMenuButton(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("BUTTON"),
                       0, // exStyle
@@ -1372,7 +1355,7 @@ namespace XULWin
     }
 
 
-    NativeGrid::NativeGrid(ElementImpl * inParent) :
+    NativeGrid::NativeGrid(NativeElement * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1404,16 +1387,18 @@ namespace XULWin
             if (el->type() == Row::Type())
             {
                 int w = 0;
-                Row * row = static_cast<Row*>(el.get());
-                const Children & children = row->children();
-                for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
+                if (Row * row = el->downcast<Row>())
                 {
-                    ElementPtr child = children[childIdx];
-                    w += child->getImpl()->minimumWidth();
-                }
-                if (w > result)
-                {
-                    result = w;
+                    const Children & children = row->children();
+                    for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
+                    {
+                        ElementPtr child = children[childIdx];
+                        w += child->impl()->minimumWidth();
+                    }
+                    if (w > result)
+                    {
+                        result = w;
+                    }
                 }
             }
         }
@@ -1458,18 +1443,20 @@ namespace XULWin
             if (el->type() == Row::Type())
             {
                 int maxHeight = 0;
-                Row * row = static_cast<Row*>(el.get());
-                const Children & children = row->children();
-                for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
+                if (Row * row = el->downcast<Row>())
                 {
-                    ElementPtr child = children[childIdx];
-                    int h = child->getImpl()->minimumHeight();
-                    if (h > maxHeight)
+                    const Children & children = row->children();
+                    for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
                     {
-                        maxHeight = h;
+                        ElementPtr child = children[childIdx];
+                        int h = child->impl()->minimumHeight();
+                        if (h > maxHeight)
+                        {
+                            maxHeight = h;
+                        }
                     }
+                    result += maxHeight;
                 }
-                result += maxHeight;
             }
         }
         return result;
@@ -1511,50 +1498,54 @@ namespace XULWin
         {
             for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
             {
-                NativeRow * row = static_cast<NativeRow*>(rows->children()[rowIdx]->getImpl());
-                assert(row->owningElement()->type() == Row::Type());
-
-                NativeColumn * column = static_cast<NativeColumn*>(columns->children()[colIdx]->getImpl());
-                assert(column->owningElement()->type() == Column::Type());
-
-                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-                if (child)
+                if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
                 {
-                    int hflex = 0;
-                    try
+                    assert(row->owningElement()->type() == Row::Type());
+
+                    if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
                     {
-                        std::string flex = column->owningElement()->getAttribute("flex");
-                        if (!flex.empty())
+                        assert(column->owningElement()->type() == Column::Type());
+
+                        ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
+                        if (child)
                         {
-                            hflex = boost::lexical_cast<int>(flex);
+                            int hflex = 0;
+                            try
+                            {
+                                std::string flex = column->owningElement()->getAttribute("flex");
+                                if (!flex.empty())
+                                {
+                                    hflex = boost::lexical_cast<int>(flex);
+                                }
+                            }
+                            catch (const boost::bad_lexical_cast & )
+                            {
+                                ReportError("Bad lexical cast for flex.");
+                            }
+
+                            int vflex = 0;
+                            try
+                            {
+                                std::string flex = row->owningElement()->getAttribute("flex");
+                                if (!flex.empty())
+                                {
+                                    vflex = boost::lexical_cast<int>(flex);
+                                }
+                            }
+                            catch (const boost::bad_lexical_cast & )
+                            {
+                                ReportError("Bad lexical cast for flex.");
+                            }
+
+                            proportions.set(
+                                rowIdx, colIdx,
+                                GridProportion(
+                                    SizeInfo(hflex, column->minimumWidth()),
+                                    SizeInfo(vflex, row->minimumHeight())
+                                )
+                            );
                         }
                     }
-                    catch (const boost::bad_lexical_cast & )
-                    {
-                        ReportError("Bad lexical cast for flex.");
-                    }
-
-                    int vflex = 0;
-                    try
-                    {
-                        std::string flex = row->owningElement()->getAttribute("flex");
-                        if (!flex.empty())
-                        {
-                            vflex = boost::lexical_cast<int>(flex);
-                        }
-                    }
-                    catch (const boost::bad_lexical_cast & )
-                    {
-                        ReportError("Bad lexical cast for flex.");
-                    }
-
-                    proportions.set(
-                        rowIdx, colIdx,
-                        GridProportion(
-                            SizeInfo(hflex, column->minimumWidth()),
-                            SizeInfo(vflex, row->minimumHeight())
-                        )
-                    );
                 }
             }
         }
@@ -1567,7 +1558,7 @@ namespace XULWin
             {
                 Rect & childRect = rects.get(rowIdx, colIdx);
                 ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-                child->getImpl()->move(
+                child->impl()->move(
                     childRect.x(),
                     childRect.y(),
                     childRect.width(),
@@ -1579,19 +1570,19 @@ namespace XULWin
     }
 
 
-    NativeRows::NativeRows(ElementImpl * inParent) :
+    NativeRows::NativeRows(NativeElement * inParent) :
         VirtualControl(inParent)
     {
     }
 
 
-    NativeColumns::NativeColumns(ElementImpl * inParent) :
+    NativeColumns::NativeColumns(NativeElement * inParent) :
         VirtualControl(inParent)
     {
     }
 
 
-    NativeRow::NativeRow(ElementImpl * inParent) :
+    NativeRow::NativeRow(NativeElement * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1604,7 +1595,7 @@ namespace XULWin
         for (size_t idx = 0; idx != children.size(); ++idx)
         {
             ElementPtr child = children[idx];
-            res += child->getImpl()->minimumWidth();
+            res += child->impl()->minimumWidth();
         }
         return res;
     }
@@ -1617,7 +1608,7 @@ namespace XULWin
         for (size_t idx = 0; idx != children.size(); ++idx)
         {
             ElementPtr child = children[idx];
-            int h = child->getImpl()->minimumHeight();
+            int h = child->impl()->minimumHeight();
             if (h > res)
             {
                 res = h;
@@ -1627,7 +1618,7 @@ namespace XULWin
     }
 
 
-    NativeColumn::NativeColumn(ElementImpl * inParent) :
+    NativeColumn::NativeColumn(NativeElement * inParent) :
         VirtualControl(inParent)
     {
     }
@@ -1649,7 +1640,7 @@ namespace XULWin
             {
                 for (size_t ownI = 0; ownI != child->children().size(); ++ownI)
                 {
-                    if (child->children()[ownI]->getImpl()->commandId() == commandId())
+                    if (child->children()[ownI]->impl()->commandId() == commandId())
                     {
                         ownIndex = idx;
                     }
@@ -1676,7 +1667,7 @@ namespace XULWin
         {
 
             ElementPtr row = rows->children()[rowIdx];
-            int w = row->children()[ownIndex]->getImpl()->minimumWidth();
+            int w = row->children()[ownIndex]->impl()->minimumWidth();
             if (w > res)
             {
                 res = w;
@@ -1693,19 +1684,19 @@ namespace XULWin
         for (size_t idx = 0; idx != children.size(); ++idx)
         {
             ElementPtr child = children[idx];
-            res += child->getImpl()->minimumHeight();
+            res += child->impl()->minimumHeight();
         }
         return res;
     }
 
     
-    NativeRadioGroup::NativeRadioGroup(ElementImpl * inParent) :
+    NativeRadioGroup::NativeRadioGroup(NativeElement * inParent) :
         NativeBox(inParent)
     {
     }
 
     
-    NativeRadio::NativeRadio(ElementImpl * inParent) :
+    NativeRadio::NativeRadio(NativeElement * inParent) :
         NativeControl(inParent,
                       TEXT("BUTTON"),
                       0, // exStyle
@@ -1726,7 +1717,7 @@ namespace XULWin
     }
 
     
-    NativeProgressMeter::NativeProgressMeter(ElementImpl * inParent) :
+    NativeProgressMeter::NativeProgressMeter(NativeElement * inParent) :
         NativeControl(inParent,
                       PROGRESS_CLASS,
                       0, // exStyle

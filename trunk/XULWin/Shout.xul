@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 
-<window >
+<window title="Shout!">
   <hbox>
     <box style="padding:4px;">
       <image
         id="NetlogToolbar-ShoutDialog-Image"
-        src=""/>
+        src=""
+        />
     </box>
     <vbox>
       <textbox

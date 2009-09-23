@@ -131,14 +131,14 @@ namespace XULWin
     InputSource* Parser::resolveEntity(const XMLString* publicId, const XMLString& systemId)
     {
         const std::string cChrome = "chrome://";
-        const std::string cLocale = "/locale";
+        const std::string cLocale = "locale";
         std::string::size_type chromeIdx = systemId.find(cChrome);
         if (chromeIdx == std::string::npos)
         {
             return 0;
         }
         std::string path = systemId;
-        path.replace(chromeIdx, cChrome.size(), "");
+        path.replace(chromeIdx, cChrome.size(), "chrome/");
 
         std::string::size_type localeIdx = path.find(cLocale);
         if (localeIdx != std::string::npos)

@@ -1,5 +1,6 @@
 #include "Element.h"
 #include "ElementFactory.h"
+#include "Image.h"
 #include "NativeComponent.h"
 #include "Parser.h"
 #include "Utils/ErrorReporter.h"
@@ -40,6 +41,7 @@ void registerTypes(HMODULE inModule)
     ElementFactory::Instance().registerElement<Radio>();
     ElementFactory::Instance().registerElement<ProgressMeter>();
     ElementFactory::Instance().registerElement<Deck>();
+    ElementFactory::Instance().registerElement<Image>();
 }
 
 
@@ -154,7 +156,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    runXUL("test.xul");
+    runXUL("Shout.xul");
     //runDropDownSample();
     //runNoXULSample();
 

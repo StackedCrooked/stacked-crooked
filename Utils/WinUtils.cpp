@@ -270,12 +270,12 @@ namespace Utils
 
     void advanceProgressMeter(HWND inHandle)
 	{
-		::SendMessage(inHandle, PBM_STEPIT, 0, 0);
+        ::SendMessage(inHandle, PBM_STEPIT, 0, 0);
 	}
 		
 	void setProgressMeterProgress(HWND inHandle, int inProgress)
 	{
-		::SendMessage(inHandle, PBM_SETPOS, (WPARAM)inProgress, (LPARAM)0);
+        ::SendMessage(inHandle, PBM_SETPOS, (WPARAM)inProgress, (LPARAM)0);
 	}
 
     int getProgressMeterProgress(HWND inHandle)
@@ -283,14 +283,19 @@ namespace Utils
         return (int)::SendMessage(inHandle, PBM_GETPOS, (WPARAM)0, (LPARAM)0);
     }
 
-    void addWindowStyle(HWND inHandle, LONG inStyle)
+    void addWindowStyle(HWND inHandle, LONG inStyle) 
     {
-        ::SetWindowLong(inHandle, GWL_STYLE, ::GetWindowLong(inHandle, GWL_STYLE) | WS_CLIPCHILDREN);
+        ::SetWindowLong(inHandle, GWL_STYLE, ::GetWindowLong(inHandle, GWL_STYLE) | inStyle);
     }
 
     void removeWindowStyle(HWND inHandle, LONG inStyle)
     {
         ::SetWindowLong(inHandle, GWL_STYLE, ::GetWindowLong(inHandle, GWL_STYLE) & ~WS_CLIPCHILDREN);
+    }
+
+    bool hasWindowStyle(HWND inHandle, LONG inStyle)
+    {
+        return (::GetWindowLong(inHandle, GWL_STYLE) & WS_CLIPCHILDREN) != 0;
     }
     
 } // namespace Utils

@@ -19,6 +19,7 @@ namespace XULWin
     typedef boost::shared_ptr<Element> ElementPtr;
     typedef std::vector<ElementPtr> Children;
     typedef std::map<std::string, std::string> AttributesMapping;
+    typedef std::map<std::string, std::string> StylesMapping;
 
     class Event;
     class EventHandler
@@ -76,7 +77,13 @@ namespace XULWin
 
         void setAttributes(const AttributesMapping & inAttributes);
 
+        void setStyle(const std::string & inName, const std::string & inValue);
+
+        void setStyles(const AttributesMapping & inAttributes);
+
         void initAttributeControllers();
+
+        void initStyleControllers();
 
         NativeElement * impl() const;
 
@@ -92,8 +99,10 @@ namespace XULWin
             {
                 inParent->addChild(result);
             }
-            result.get()->initAttributeControllers();
+            result->initAttributeControllers();
             result->setAttributes(inAttr);
+            result->initStyleControllers();
+            result->setStyles(inAttr);
             result->init();
             return result;
         }   
@@ -111,6 +120,7 @@ namespace XULWin
         friend class ElementFactory;
         std::string mType;
         AttributesMapping mAttributes;
+        StylesMapping mStyles;
         boost::shared_ptr<NativeElement> mImpl;
     };
 

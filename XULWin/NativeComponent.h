@@ -68,9 +68,9 @@ namespace XULWin
 
         int commandId() const { return mCommandId.intValue(); }
 
-        virtual int minimumWidth() const;
+        virtual int minimumWidth() const = 0;
 
-        virtual int minimumHeight() const;
+        virtual int minimumHeight() const = 0;
 
         bool expansive() const;
 
@@ -84,11 +84,11 @@ namespace XULWin
 
         NativeElement * parent() const;
 
-        virtual void rebuildLayout();
+        virtual void rebuildLayout() = 0;
 
-        virtual void rebuildChildLayouts();
+        void rebuildChildLayouts();
 
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
 
         bool getAttribute(const std::string & inName, std::string & outValue);
 
@@ -104,8 +104,6 @@ namespace XULWin
         NativeElement * mParent;
         Element * mElement;
         CommandId mCommandId;
-        int mMinimumWidth;
-        int mMinimumHeight;
         bool mExpansive;
         
         typedef boost::function<std::string()> Getter;
@@ -200,6 +198,8 @@ namespace XULWin
 
         virtual ~NativeControl();
 
+        virtual void rebuildLayout();
+
         virtual Rect clientRect() const;
 
         virtual void move(int x, int y, int w, int h);
@@ -238,9 +238,13 @@ namespace XULWin
 
         virtual int minimumHeight() const { return 0; }
 
+        virtual void rebuildLayout();
+
         virtual Rect clientRect() const;
 
         virtual void move(int x, int y, int w, int h);
+
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
         Rect mRect;
@@ -264,6 +268,8 @@ namespace XULWin
 
         virtual bool initStyleControllers();
 
+        virtual void rebuildLayout();
+
         virtual void move(int x, int y, int w, int h);
 
         virtual Rect clientRect() const;
@@ -271,6 +277,8 @@ namespace XULWin
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
         virtual bool setStyle(const std::string & inName, const std::string & inValue);
+
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
         NativeComponentPtr mDecoratedElement;

@@ -25,9 +25,8 @@
 -->
 
 <?xml-stylesheet href="chrome://navigator/skin/navigator.css" type="text/css"?>
-
+<!DOCTYPE window SYSTEM "chrome://XULWin/locale/dropdown.dtd">
 <window title="Config Panel" width="480" height="300">
-
   <grid flex="1">
     <columns>
       <column flex="0"></column>

@@ -4,13 +4,16 @@
 
 
 using namespace Utils;
+using namespace Poco;
+using namespace Poco::XML;
 
 
 namespace XULWin
 {
 
     Parser::Parser() :
-        mIgnores(0)
+        mIgnores(0),
+        mLexicalHandler(0)
     {
         setContentHandler(this);
     }
@@ -25,6 +28,11 @@ namespace XULWin
     void Parser::setDocumentLocator(const Poco::XML::Locator * inLocator)
     {
         mLocator = inLocator;
+        if (const Poco::XML::ParserEngine * parserEngine = dynamic_cast<const Poco::XML::ParserEngine*>(inLocator))
+        {
+            mLexicalHandler = parserEngine->getLexicalHandler();
+            const_cast<Poco::XML::ParserEngine*>(parserEngine)->setLexicalHandler(this);
+        }
     }
 
 
@@ -117,6 +125,71 @@ namespace XULWin
             mIgnores--;
         }
     }
+
+
+    void Parser::startDTD(const XMLString& name, const XMLString& publicId, const XMLString& systemId)
+    {
+        if (mLexicalHandler)
+        {
+            mLexicalHandler->startDTD(name, publicId, systemId);
+        }
+    }
+
+
+    void Parser::endDTD()
+    {
+        if (mLexicalHandler)
+        {
+            mLexicalHandler->endDTD();
+        }
+    }
+
+
+    void Parser::startEntity(const XMLString& name)
+    {
+        if (mLexicalHandler)
+        {
+            mLexicalHandler->startEntity(name);
+        }
+    }
+
+
+    void Parser::endEntity(const XMLString& name)
+    {
+        if (mLexicalHandler)
+        {
+            mLexicalHandler->endEntity(name);
+        }
+    }
+
+
+    void Parser::startCDATA()
+    {
+        if (mLexicalHandler)
+        {
+            mLexicalHandler->startCDATA();
+        }
+    }
+
+
+    void Parser::endCDATA()
+    {
+        if (mLexicalHandler)
+        {
+            mLexicalHandler->endCDATA();
+        }
+    }
+
+
+    void Parser::comment(const XMLChar ch[], int start, int length)
+    {
+        if (mLexicalHandler)
+        {
+            mLexicalHandler->comment(ch, start, length);
+        }
+    }
+
+
 
 
 } // namespace XULWin

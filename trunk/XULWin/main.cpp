@@ -156,9 +156,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    runXUL("Shout.xul");
-    //runDropDownSample();
-    //runNoXULSample();
+    runXUL("widgets.xul");
+    runXUL("shout.xul");
 
 
 

@@ -5,6 +5,7 @@
 #include "Element.h"
 #include "Layout.h"
 #include <boost/function.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <windows.h>
 #include <string>
@@ -37,7 +38,7 @@ namespace XULWin
     /**
      * ElementImpl is base class for all native UI elements.
      */
-    class ElementImpl
+    class ElementImpl : boost::noncopyable
     {
     public:
         ElementImpl(ElementImpl * inParent);

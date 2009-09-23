@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<window>
-  <hbox>
-    <deck selectedIndex="2">
-      <label value="This is the first page"/>
-      <button label="This is the second page"/>
-      <box>
-        <label value="This is the third page"/>
-        <button label="This is also the third page"/>
-      </box>
-    </deck>
+<window title="Megafoon">
+  <hbox flex="1" align="stretch">
+    <vbox>
+      <label value="Megafoon:" style="text-align:right"></label>
+      <spacer flex="1"></spacer>
+    </vbox>
+    <image flex="1" src="chrome/skin/icons/shout.jpg"></image>
+
   </hbox>
 </window>

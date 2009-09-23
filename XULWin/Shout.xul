@@ -1,31 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-
 <window title="Shout!">
-  <hbox>
-    <box style="padding:4px;">
-      <image id="NetlogToolbar-ShoutDialog-Image"
-             src="chrome/skin/icons/shout.jpg"/>
-    </box>
-    <vbox>
-      <textbox
-        id="NetlogToolbar-ShoutBox"
-        oninput="NetlogToolbar.onShoutTextBoxInput();"
-        onkeypress="if (event.keyCode == event.DOM_VK_RETURN) NetlogToolbar.onShoutConfirm();"
-        flex="1"
-          />
-      <hbox flex="2">
+  <hbox align="stretch">
+    <image id="NetlogToolbar-ShoutDialog-Image"
+           src="chrome/skin/icons/shout.jpg"/>
+    <vbox align="stretch" flex="1">
+      <textbox id="NetlogToolbar-ShoutBox"
+               oninput="NetlogToolbar.onShoutTextBoxInput();"
+               onkeypress="if (event.keyCode == event.DOM_VK_RETURN) NetlogToolbar.onShoutConfirm();"/>
+      <spacer flex="1"></spacer>
+      <hbox>
         <checkbox
           id="NetlogToolbar-ShoutDialog-CheckBox"
           label="Show in spotlight"
-          flex="1"
-          />
+          flex="1"/>
         <button
           id="NetlogToolbar-ShoutDialog-ShoutButton"
           label="Shout!"
           disabled="true"
-          oncommand="NetlogToolbar.onShoutConfirm();"
-            />
+          oncommand="NetlogToolbar.onShoutConfirm();"/>
       </hbox>
     </vbox>
   </hbox>

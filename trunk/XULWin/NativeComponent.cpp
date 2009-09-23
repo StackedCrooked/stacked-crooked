@@ -121,6 +121,24 @@ namespace XULWin
     }
     
     
+    bool NativeElement::setStyle(const std::string & inName, const std::string & inValue)
+    {
+        std::string type = owningElement()->type();
+        StyleControllers::iterator it = mStyleControllers.find(inName);
+        if (it != mStyleControllers.end())
+        {
+            const StyleController & controller = it->second;
+            const StyleSetter & setter = controller.setter;
+            if (setter)
+            {
+                setter(inValue);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    
     bool NativeElement::setAttribute(const std::string & inName, const std::string & inValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
@@ -135,6 +153,17 @@ namespace XULWin
             }
         }
         return false;
+    }
+
+
+    void NativeElement::setStyleController(const std::string & inAttr, const StyleController & inController)
+    {
+        StyleControllers::iterator it = mStyleControllers.find(inAttr);
+        if (it != mStyleControllers.end())
+        {
+            mStyleControllers.erase(it);
+        }
+        mStyleControllers.insert(std::make_pair(inAttr, inController));
     }
 
 
@@ -260,6 +289,10 @@ namespace XULWin
         AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("label", AttributeController(labelGetter, labelSetter));
+        
+        //AttributeGetter styleGetter = boost::bind(&Utils::getWindowText, handle());
+        //AttributeSetter styleSetter = boost::bind(&Utils::setWindowText, handle(), _1);
+        //setAttributeController("style", AttributeController(styleGetter, styleSetter));
         return true;
     }
 
@@ -517,6 +550,16 @@ namespace XULWin
         if (mDecoratedElement)
         {
             return mDecoratedElement->initAttributeControllers();
+        }
+        return true;
+    }
+
+
+    bool Decorator::initStyleControllers()
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->initStyleControllers();
         }
         return true;
     }
@@ -819,6 +862,38 @@ namespace XULWin
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
         return NativeComponent::initAttributeControllers();
+    }
+    
+    
+    bool NativeLabel::initStyleControllers()
+    {
+        struct Helper
+        {
+            static LONG String2TextAlign(const std::string & inTextAlign)
+            {
+                if (inTextAlign == "left")
+                {
+                    return SS_LEFT;
+                }
+                else if (inTextAlign == "center")
+                {
+                    return SS_CENTER;
+                }
+                else if (inTextAlign == "right")
+                {
+                    return SS_RIGHT;
+                }
+                else
+                {
+                    ReportError("Unrecognized value for text-align style property: '" + inTextAlign + "'");
+                }
+                return 0;
+            }
+        };
+        StyleGetter textAlignGetter; // no getter
+        StyleSetter textAlignSetter = boost::bind(&Utils::addWindowStyle, handle(), boost::bind(&Helper::String2TextAlign, _1));
+        setStyleController("text-align", StyleController(textAlignGetter, textAlignSetter));
+        return NativeElement::initStyleControllers();
     }
 
 

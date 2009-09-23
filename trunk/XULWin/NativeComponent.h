@@ -92,9 +92,13 @@ namespace XULWin
 
         bool getAttribute(const std::string & inName, std::string & outValue);
 
+        virtual bool setStyle(const std::string & inName, const std::string & inValue);
+
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
         virtual bool initAttributeControllers() = 0;
+
+        virtual bool initStyleControllers(){ return true; }
 
     protected:
         NativeElement * mParent;
@@ -104,23 +108,32 @@ namespace XULWin
         int mMinimumHeight;
         bool mExpansive;
         
-        typedef boost::function<std::string()> AttributeGetter;
-        typedef boost::function<void(const std::string &)> AttributeSetter;
-        struct AttributeController
+        typedef boost::function<std::string()> Getter;
+        typedef boost::function<void(const std::string &)> Setter;
+        struct Controller
         {
-            AttributeController(AttributeGetter & inGetter, AttributeSetter & inSetter) :
+            Controller(Getter & inGetter, Setter & inSetter) :
                 getter(inGetter),
                 setter(inSetter)
             {
             }
-            AttributeGetter getter;
-            AttributeSetter setter;
+            Getter getter;
+            Setter setter;
         };
 
+        typedef Getter AttributeGetter;
+        typedef Setter AttributeSetter;        
+        typedef Controller AttributeController;
         void setAttributeController(const std::string & inAttr, const AttributeController & inController);
-
         typedef std::map<std::string, AttributeController> AttributeControllers;
         AttributeControllers mAttributeControllers;
+        
+        typedef Getter StyleGetter;
+        typedef Setter StyleSetter;
+        typedef Controller StyleController;
+        void setStyleController(const std::string & inAttr, const StyleController & inController);
+        typedef std::map<std::string, StyleController> StyleControllers;
+        StyleControllers mStyleControllers;
 
         typedef std::map<HWND, NativeElement*> Components;
         static Components sComponentsByHandle;
@@ -241,6 +254,8 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
+        virtual bool initStyleControllers();
+
         virtual void move(int x, int y, int w, int h);
 
         virtual Rect clientRect() const;
@@ -293,6 +308,8 @@ namespace XULWin
         NativeLabel(NativeElement * inParent);
 
         virtual bool initAttributeControllers();
+
+        virtual bool initStyleControllers();
 
         virtual int minimumWidth() const;
 

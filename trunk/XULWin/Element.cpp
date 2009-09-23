@@ -1,6 +1,7 @@
 #include "Element.h"
 #include "NativeComponent.h"
 #include "Utils/ErrorReporter.h"
+#include "Poco/StringTokenizer.h"
 #include <boost/bind.hpp>
 
 
@@ -98,6 +99,35 @@ namespace XULWin
     }
 
 
+    void Element::setStyles(const AttributesMapping & inAttributes)
+    {
+        AttributesMapping::const_iterator it = inAttributes.find("style");
+        if (it != inAttributes.end())
+        {
+            Poco::StringTokenizer tok(it->second, ";:",
+                                      Poco::StringTokenizer::TOK_IGNORE_EMPTY
+                                      | Poco::StringTokenizer::TOK_TRIM);
+
+            Poco::StringTokenizer::Iterator it = tok.begin(), end = tok.end();
+            std::string key, value;
+            int counter = 0;
+            for (; it != end; ++it)
+            {
+                if (counter%2 == 0)
+                {
+                    key = *it;
+                }
+                else
+                {
+                    value = *it;
+                    setStyle(key, value);
+                }
+                counter++;
+            }
+        }
+    }
+
+
     void Element::setAttributes(const AttributesMapping & inAttributes)
     {
         mAttributes = inAttributes;
@@ -125,6 +155,15 @@ namespace XULWin
         }
     }
 
+
+    void Element::initStyleControllers()
+    {
+        if (mImpl)
+        {
+            mImpl->initStyleControllers();
+        }
+    }
+
     
     std::string Element::getAttribute(const std::string & inName) const
     {
@@ -138,6 +177,16 @@ namespace XULWin
             }
         }
         return result;
+    }
+    
+    
+    void Element::setStyle(const std::string & inName, const std::string & inValue)
+    {
+        std::string type = this->type();
+        if (!mImpl || !mImpl->setStyle(inName, inValue))
+        {
+            mStyles[inName] = inValue;
+        }
     }
     
     
@@ -190,7 +239,7 @@ namespace XULWin
     Label::Label(Element * inParent) :
         Element(Label::Type(),
                 inParent,
-                new PaddingDecorator(new NativeLabel(inParent->impl())))
+                new NativeLabel(inParent->impl()))
     {
     }
 

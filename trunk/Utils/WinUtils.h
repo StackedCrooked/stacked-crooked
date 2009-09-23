@@ -72,6 +72,8 @@ namespace Utils
 
     void removeWindowStyle(HWND inHandle, LONG inStyle);
 
+    bool hasWindowStyle(HWND inHandle, LONG inStyle);
+
 
 } // namespace Utils
 

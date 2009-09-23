@@ -3,6 +3,7 @@
 #include "NativeComponent.h"
 #include "Parser.h"
 #include "Utils/ErrorReporter.h"
+#include "Poco/StringTokenizer.h"
 #include <windows.h>
 #include <commctrl.h>
 
@@ -46,7 +47,7 @@ class TestDropDown
 public:
     void run()
     {
-    	mParser.parse("widgets.xul");
+    	mParser.parse("Dropdown.xul");
         if (mParser.rootElement())
         {
             Window * window = mParser.rootElement()->downcast<Window>();
@@ -152,9 +153,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    //runTestSample();
-    runDropDownSample();
+    runTestSample();
+    //runDropDownSample();
     //runNoXULSample();
+
+
+
     ErrorReporter::Finalize();
     return 0;
 }

@@ -35,7 +35,7 @@
     </columns>
     <rows>
       <row>
-        <label value="Upload to:"/>
+        <label style="text-align:right" value="Upload to:"/>
         <menulist>
           <menupopup>
             <menuitem label="StackedCrooked" />

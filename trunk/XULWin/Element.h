@@ -15,7 +15,7 @@ namespace XULWin
 {
 
     class ElementFactory;
-    class ElementImpl;
+    class NativeElement;
 
     class Element;
 
@@ -83,10 +83,10 @@ namespace XULWin
 
         void initAttributeControllers();
 
-        ElementImpl * getImpl() const;
+        NativeElement * impl() const;
 
     protected:
-        Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);
+        Element(const std::string & inType, Element * inParent, NativeElement * inNativeComponent);
 
         template<class T>
         static ElementPtr Create(Element * inParent,
@@ -116,7 +116,7 @@ namespace XULWin
         friend class ElementFactory;
         std::string mType;
         AttributesMapping mAttributes;
-        boost::shared_ptr<ElementImpl> mNativeComponent;
+        boost::shared_ptr<NativeElement> mImpl;
     };
 
     class Window : public Element

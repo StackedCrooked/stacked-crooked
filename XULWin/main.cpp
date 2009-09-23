@@ -82,10 +82,10 @@ private:
 };
 
 
-void runTestSample()
+void runXUL(const std::string & inFileName)
 {
 	Parser parser;
-    parser.parse("test.xul");
+    parser.parse(inFileName);
     if (Window * window = parser.rootElement()->downcast<Window>())
     {
         window->showModal();
@@ -153,8 +153,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    //runTestSample();
-    runDropDownSample();
+    runXUL("Shout.xul");
+    //runDropDownSample();
     //runNoXULSample();
 
 

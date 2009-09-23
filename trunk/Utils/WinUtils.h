@@ -74,6 +74,7 @@ namespace Utils
 
     bool hasWindowStyle(HWND inHandle, LONG inStyle);
 
+    void setWindowVisible(HWND inHandle, bool inVisible);
 
 } // namespace Utils
 

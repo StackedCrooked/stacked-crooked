@@ -68,6 +68,10 @@ namespace Utils
 
     int getProgressMeterProgress(HWND inHandle);
 
+    void addWindowStyle(HWND inHandle, LONG inStyle);
+
+    void removeWindowStyle(HWND inHandle, LONG inStyle);
+
 
 } // namespace Utils
 

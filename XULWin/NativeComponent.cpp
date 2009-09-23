@@ -940,7 +940,6 @@ namespace XULWin
     {
         std::string text = Utils::getWindowText(handle());
         int width = Utils::getTextSize(handle(), text).cx;
-        width += Defaults::textPadding();
         return width;
     }
 

@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-<!--<!DOCTYPE window SYSTEM "file:///C:/svn/Google Project Hosting/stacked-crooked/XULWin/Dropdown.dtd">-->
 <!DOCTYPE window SYSTEM "chrome://locale/Dropdown.dtd">
 <window title="Config Panel" width="480" height="300">
   <grid flex="1">

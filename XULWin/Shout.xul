@@ -4,10 +4,8 @@
 <window title="Shout!">
   <hbox>
     <box style="padding:4px;">
-      <image
-        id="NetlogToolbar-ShoutDialog-Image"
-        src="chrome/skin/icons/shout.jpg"
-        />
+      <image id="NetlogToolbar-ShoutDialog-Image"
+             src="chrome/skin/icons/shout.jpg"/>
     </box>
     <vbox>
       <textbox

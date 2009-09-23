@@ -10,10 +10,10 @@ using namespace Utils;
 
 namespace XULWin
 {
-    NativeElement * gNullNativeComponent(0);
+    ElementImpl * gNullNativeComponent(0);
 
 
-    Element::Element(const std::string & inType, Element * inParent, NativeElement * inNativeComponent) :
+    Element::Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent) :
         mType(inType),
         mParent(inParent),
         mImpl(inNativeComponent)
@@ -199,7 +199,7 @@ namespace XULWin
     }
     
     
-    NativeElement * Element::impl() const
+    ElementImpl * Element::impl() const
     {
         return mImpl.get();
     }

@@ -41,7 +41,7 @@
         <label style="text-align:right" value="Show"></label>
         <menulist>
           <menupopup>
-            <menuitem label="to everyone"></menuitem>
+            <menuitem label="&TO_EVERYONE;"></menuitem>
             <menuitem label="only to friends"></menuitem>
           </menupopup>
         </menulist>

@@ -282,5 +282,15 @@ namespace Utils
     {
         return (int)::SendMessage(inHandle, PBM_GETPOS, (WPARAM)0, (LPARAM)0);
     }
+
+    void addWindowStyle(HWND inHandle, LONG inStyle)
+    {
+        ::SetWindowLong(inHandle, GWL_STYLE, ::GetWindowLong(inHandle, GWL_STYLE) | WS_CLIPCHILDREN);
+    }
+
+    void removeWindowStyle(HWND inHandle, LONG inStyle)
+    {
+        ::SetWindowLong(inHandle, GWL_STYLE, ::GetWindowLong(inHandle, GWL_STYLE) & ~WS_CLIPCHILDREN);
+    }
     
 } // namespace Utils

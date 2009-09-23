@@ -1,7 +1,7 @@
 #include "Element.h"
+#include "ElementImpl.h"
 #include "ElementFactory.h"
 #include "Image.h"
-#include "NativeComponent.h"
 #include "Parser.h"
 #include "Utils/ErrorReporter.h"
 #include "Poco/StringTokenizer.h"

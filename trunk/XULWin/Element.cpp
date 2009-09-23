@@ -1,5 +1,5 @@
 #include "Element.h"
-#include "NativeComponent.h"
+#include "ElementImpl.h"
 #include "Utils/ErrorReporter.h"
 #include "Poco/StringTokenizer.h"
 #include <boost/bind.hpp>

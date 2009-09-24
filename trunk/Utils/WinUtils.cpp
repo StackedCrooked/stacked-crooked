@@ -14,6 +14,28 @@ namespace Utils
         Poco::UnicodeConverter::toUTF8(inText, result);
         return result;
     }
+
+
+    std::wstring ToUTF16(const std::string & inText)
+    {
+        std::wstring result;
+        Poco::UnicodeConverter::toUTF16(inText, result);
+        return result;
+    }
+    
+
+    CurrentDirectoryChanger::CurrentDirectoryChanger(const std::string & inTargetDir)
+	{
+		::GetCurrentDirectoryW(MAX_PATH, mOldDir);
+        std::wstring newDir = ToUTF16(inTargetDir);
+		::SetCurrentDirectoryW(newDir.c_str());
+	}
+
+
+	CurrentDirectoryChanger::~CurrentDirectoryChanger()
+	{
+		::SetCurrentDirectoryW(mOldDir);
+	}
     
     
     SIZE GetSizeDifference_WindowRect_ClientRect(HWND inHandle)
@@ -34,14 +56,6 @@ namespace Utils
 	    theDifference.cy = rw_h-rc_h;
     	
 	    return theDifference;
-    }
-
-
-    std::wstring ToUTF16(const std::string & inText)
-    {
-        std::wstring result;
-        Poco::UnicodeConverter::toUTF16(inText, result);
-        return result;
     }
 
 

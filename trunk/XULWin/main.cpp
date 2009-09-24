@@ -2,8 +2,10 @@
 #include "ElementImpl.h"
 #include "ElementFactory.h"
 #include "Image.h"
-#include "Parser.h"
+#include "XULRunner.h"
 #include "Utils/ErrorReporter.h"
+#include "Utils/WinUtils.h"
+#include "Poco/Path.h"
 #include "Poco/StringTokenizer.h"
 #include <windows.h>
 #include <commctrl.h>
@@ -45,61 +47,17 @@ void registerTypes(HMODULE inModule)
 }
 
 
-class TestDropDown
-{
-public:
-    void run()
-    {
-    	mParser.parse("chrome/content/Dropdown.xul");
-        if (mParser.rootElement())
-        {
-            Window * window = mParser.rootElement()->downcast<Window>();
-            if (window)
-            {
-                window->showModal();
-            }
-        }
-    }
-
-
-    void addButtonPressed(Event * inEvent)
-    {
-        Element * popup = mParser.rootElement()->getElementById("popup");
-        Element * input = mParser.rootElement()->getElementById("input");
-        if (popup && input)
-        {
-            AttributesMapping attr;
-            std::string value = input->getAttribute("value");
-            attr["label"] = value;
-            MenuItem::Create(popup, attr);
-        }
-    }
-
-
-    void removeButtonPressed(Event * inEvent)
-    {
-    }
-
-private:
-    Parser mParser;
-};
 
 
 void runXUL(const std::string & inFileName)
 {
-	Parser parser;
-    parser.parse(inFileName);
-    if (Window * window = parser.rootElement()->downcast<Window>())
-    {
-        window->showModal();
-    }
-}
-
-
-void runDropDownSample()
-{
-    TestDropDown t;
-    t.run();
+    CurrentDirectoryChanger curdir("../xulrunnersamples");
+	XULRunner runner;
+    TCHAR buffer[MAX_PATH];
+    ::GetCurrentDirectory(MAX_PATH, &buffer[0]);
+    Poco::Path iniPath(inFileName);
+    iniPath.append("application.ini");
+    runner.run(iniPath.toString());    
 }
 
 
@@ -156,11 +114,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
-    runXUL("widgets.xul");
-    runXUL("shout.xul");
-    runDropDownSample();
-
-
+    runXUL("widgets");
+    runXUL("configpanel");
     ErrorReporter::Finalize();
     return 0;
 }

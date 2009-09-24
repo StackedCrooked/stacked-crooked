@@ -23,13 +23,13 @@ namespace XULWin
         static const std::string cLocale = "locale";
 
         // Change this pattern: chrome://myapp/skin/icons/myimg.jpg
-        // Into this pattern:   chrome/skin/icons/myimg.jpg
+        // Into this pattern:   myapp/chrome/skin/icons/myimg.jpg
         std::string result;
         result = mURL.substr(cChrome.size(), mURL.size() - cChrome.size());
         size_t slashIdx = result.find("/");
         if (slashIdx != std::string::npos)
         {
-            result = "chrome/" + result.substr(slashIdx + 1, result.size() - slashIdx - 1);
+            result.insert(slashIdx + 1, "chrome/");
         }
 
         size_t localeIdx = result.find(cLocale);

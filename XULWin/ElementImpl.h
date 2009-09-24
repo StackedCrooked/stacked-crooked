@@ -465,6 +465,8 @@ namespace XULWin
     class NativeVBox : public NativeBox
     {
     public:
+        typedef NativeBox Super;
+
         NativeVBox(ElementImpl * inParent) :
             NativeBox(inParent, VERTICAL)
         {
@@ -475,6 +477,8 @@ namespace XULWin
     class NativeMenuList : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeMenuList(ElementImpl * inParent);
             
         virtual int minimumWidth() const;
@@ -492,6 +496,8 @@ namespace XULWin
     class NativeSeparator : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeSeparator(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -503,6 +509,8 @@ namespace XULWin
     class NativeSpacer : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeSpacer(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -514,6 +522,8 @@ namespace XULWin
     class NativeMenuButton : public NativeControl
     {
     public:
+        typedef NativeControl Super;
+
         NativeMenuButton(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -525,6 +535,8 @@ namespace XULWin
     class NativeGrid : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeGrid(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -538,6 +550,8 @@ namespace XULWin
     class NativeRows : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeRows(ElementImpl * inParent);
     };
 
@@ -545,6 +559,8 @@ namespace XULWin
     class NativeRow : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeRow(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -556,6 +572,8 @@ namespace XULWin
     class NativeColumns : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeColumns(ElementImpl * inParent);
     };
 
@@ -563,6 +581,8 @@ namespace XULWin
     class NativeColumn : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeColumn(ElementImpl * inParent);
 
         virtual int minimumWidth() const;
@@ -611,6 +631,8 @@ namespace XULWin
     class NativeDeck : public VirtualControl
     {
     public:
+        typedef VirtualControl Super;
+
         NativeDeck(ElementImpl * inParent);
 
         virtual void rebuildLayout();

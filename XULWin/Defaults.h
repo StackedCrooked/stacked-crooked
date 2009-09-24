@@ -7,33 +7,38 @@ namespace XULWin
 
     namespace Defaults
     {
-        int windowWidth() { return 320; }
+        static std::string locale() { return "en"; }
 
-        int windowHeight() { return 240; }
+        static int windowWidth() { return 320; }
 
-        int controlHeight() { return 21; }
+        static int windowHeight() { return 240; }
 
-        int buttonHeight() { return 23; }
+        static int controlHeight() { return 21; }
 
-        int textPadding() { return 12; }
+        static int buttonHeight() { return 23; }
 
-        int dropDownListMinimumWidth() { return 24; }
+        static int textPadding() { return 12; }
 
-        int dropDownListItemHeight() { return 16; }
+        static int dropDownListMinimumWidth() { return 24; }
 
-        int componentMinimumWidth() { return 80; }
+        static int dropDownListItemHeight() { return 16; }
 
-        int componentMinimumHeight() { return 20; }
+        static int componentMinimumWidth() { return 80; }
 
-        int radioButtonMinimumWidth() { return 20; }
+        static int componentMinimumHeight() { return 20; }
 
-        int textBoxMinimumWidth() { return textPadding(); }
+        static int radioButtonMinimumWidth() { return 20; }
 
-        int checkBoxMinimumWidth() { return 20; }
-        
+        static int textBoxMinimumWidth() { return textPadding(); }
+
+        static int checkBoxMinimumWidth() { return 20; }
+
+
         namespace Attributes
         {
-            int flex() { return 0; }            
+
+            static int flex() { return 0; }
+
         } // namespace Attributes
 
     } // namespace Defaults

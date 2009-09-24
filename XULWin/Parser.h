@@ -55,7 +55,7 @@ namespace XULWin
 
         virtual Poco::XML::InputSource* resolveEntity(const Poco::XML::XMLString* publicId, const Poco::XML::XMLString& systemId);
         
-virtual void releaseInputSource(Poco::XML::InputSource* pSource);
+        virtual void releaseInputSource(Poco::XML::InputSource* pSource);
 	
     private:
         const Poco::XML::Locator* mLocator;

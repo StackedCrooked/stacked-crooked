@@ -18,8 +18,8 @@ namespace XULTest
 
         system("run.bat");
 
-        //XULRunner runner;
-        //runner.run("application.ini");
+        XULRunner runner;
+        runner.run("application.ini");
     }
 
 

@@ -51,7 +51,6 @@
 
   ]]>
   </script>
-<vbox align="stretch">
   <hbox align="center">
     <text class="label" value="Foo Label 1:" for="nerp1"/>
     <textbox flex="1" id="nerp1" disabled="true" value="disabled"/>
@@ -197,5 +196,4 @@
   <separator/>
 
   <scrollbar orient="horizontal"/>
-</vbox>
  </window>

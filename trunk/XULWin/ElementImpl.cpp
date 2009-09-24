@@ -945,7 +945,7 @@ namespace XULWin
         NativeControl(inParent,
                       TEXT("STATIC"),
                       0, // exStyle
-                      SS_LEFT | SS_CENTERIMAGE)
+                      SS_LEFT)
     {
     }
         
@@ -1076,9 +1076,9 @@ namespace XULWin
                     return "vertical";
                 }
             }
-            static Align String2Align(const std::string & inValue)
+            static Alignment String2Align(const std::string & inValue)
             {
-                Align result = Start;
+                Alignment result = Start;
                 if (inValue == "center")
                 {
                     result = Center;
@@ -1093,7 +1093,7 @@ namespace XULWin
                 }
                 return result;
             }
-            static std::string Align2String(Align inAlign)
+            static std::string Align2String(Alignment inAlign)
             {
                 if (inAlign == Start)
                 {
@@ -1206,13 +1206,13 @@ namespace XULWin
     }
         
         
-    void NativeBox::setAlignment(Align inAlign)
+    void NativeBox::setAlignment(Alignment inAlign)
     {
         mAlign = inAlign;
     }
 
     
-    NativeBox::Align NativeBox::getAlignment() const
+    Alignment NativeBox::getAlignment() const
     {
         return mAlign;
     }
@@ -1220,169 +1220,29 @@ namespace XULWin
     
     void NativeBox::rebuildLayout()
     {
-
-        LinearLayoutManager layoutManager(mOrientation);
+        LinearLayoutManager layout(mOrientation);
+        bool horizontal = mOrientation == HORIZONTAL;
         
-        //
-        // Obtain the flex values
-        //
-        std::vector<int> allFlexValues;
-        std::vector<SizeInfo> nonZeroFlexValues;
-        Rect clientRect(clientRect());
-        int availableSpace = clientRect.width();
-        if (mOrientation == VERTICAL)
+        std::vector<SizeInfo> sizeInfos;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            availableSpace = clientRect.height();
-        }
-        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
-        {
-            ElementPtr child = mElement->children()[idx];
-            std::string flex = child->getAttribute("flex");
-
-            int flexValue = Defaults::Attributes::flex();
-            if (!flex.empty())
-            {
-                try
-                {
-                    flexValue = boost::lexical_cast<int>(flex);
-                }
-                catch (const boost::bad_lexical_cast & )
-                {
-                    // TODO: this should be logged as warning instead of error reporting.
-                    ReportError("Lexical cast failed for value: " + flex + ".");
-                }
-            }
-            if (flexValue != 0)
-            {
-                nonZeroFlexValues.push_back(SizeInfo(flexValue,
-                                                       mOrientation == HORIZONTAL ? child->impl()->minimumWidth() :
-                                                                                    child->impl()->minimumHeight()));
-            }
-            else
-            {
-                if (mOrientation == HORIZONTAL)
-                {
-                    availableSpace -= child->impl()->minimumWidth();
-                }
-                else
-                {
-                    availableSpace -= child->impl()->minimumHeight();
-                }
-            }
-            allFlexValues.push_back(flexValue);
+            ElementPtr child = owningElement()->children()[idx];
+            int flexValue = String2Int(child->getAttribute("flex"));
+            int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
+            int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
+            sizeInfos.push_back(SizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
         }
         
-        //
-        // Use the flex values to obtain the child rectangles
-        //
-        std::vector<int> portions;
-        layoutManager.GetSizes(availableSpace, nonZeroFlexValues, portions);
+        std::vector<Rect> childRects;
+        layout.getRects(clientRect(), sizeInfos, childRects);
 
-        //
-        // Apply the new child rectangles
-        //
-        int offsetBoxX = 0;
-        int offsetChildX = 0;
-        int offsetBoxY = 0;
-        int offsetChildY = 0;
-        int portionIdx = 0;
-        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            ElementPtr child = mElement->children()[idx];
-            int minWidth = child->impl()->minimumWidth();
-            int childWidth = minWidth;
-            int boxWidth = minWidth;
-            int minHeight = child->impl()->minimumHeight();
-            int childHeight = minHeight;
-            int boxHeight = minHeight;
-            int portion = 0;
-            if (allFlexValues[idx] != 0)
-            {     
-                portion = portions[portionIdx];
-                portionIdx++;
-            }
-            else
-            {
-                portion = mOrientation == HORIZONTAL ? minWidth : minHeight;
-            }
-            struct Helper
-            {
-                static void calculateLengths(NativeBox::Align inAlignment,
-                                             int portion,
-                                             int minLength,
-                                             int & boxLength,
-                                             int & childLength, 
-                                             int & childOffset, 
-                                             int & childOffset2)
-                {
-                    boxLength = portion;
-                    if (boxLength < minLength)
-                    {
-                        boxLength = minLength;
-                    }
-                    childLength = boxLength;
-                    if (boxLength > minLength)
-                    {
-                        if (inAlignment == Center)
-                        {
-                            childOffset2 += (boxLength - childLength)/2;
-                        }
-                        else if (inAlignment == End)
-                        {
-                            childOffset += boxLength - childLength;
-                        }
-                    }
-                }
-            };
-            if (mOrientation == HORIZONTAL)
-            {
-                Helper::calculateLengths(mAlign,
-                                         portion,
-                                         minWidth,
-                                         boxWidth,
-                                         childWidth,
-                                         offsetChildX,
-                                         offsetChildY);
-            }
-            else
-            {
-                Helper::calculateLengths(mAlign,
-                                         portion,
-                                         minHeight,
-                                         boxHeight,
-                                         childHeight,
-                                         offsetChildY,
-                                         offsetChildX);
-            }
-            
-            if (mAlign == Stretch || child->impl()->expansive())
-            {
-                if (mOrientation == HORIZONTAL)
-                {
-                    childHeight = clientRect.height();
-                }
-                else
-                {
-                    childWidth = clientRect.width();
-                }
-            }
-            child->impl()->move(clientRect.x() + offsetChildX,
-                                           clientRect.y() + offsetChildY,
-                                           childWidth, childHeight);
-
-            if (mOrientation == HORIZONTAL)
-            {
-                offsetBoxX += boxWidth;
-                offsetChildX = offsetBoxX;
-                offsetChildY = 0;
-            }
-            if (mOrientation == VERTICAL)
-            {
-                offsetBoxY += boxHeight;
-                offsetChildX = 0;
-                offsetChildY = offsetBoxY;
-            }
+            ElementPtr child = owningElement()->children()[idx];
+            const Rect & rect = childRects[idx];
+            child->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
         }
+
         rebuildChildLayouts();
     }
     
@@ -1633,107 +1493,107 @@ namespace XULWin
 
     void NativeGrid::rebuildLayout()
     {
-        int numCols = 0;
-        int numRows = 0;
-        ElementPtr columns;
-        ElementPtr rows;
-        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
-        {
-            ElementPtr child = owningElement()->children()[idx];
-            if (child->type() == Rows::Type())
-            {
-                rows = child;
-                numRows = rows->children().size();
-            }
-            else if (child->type() == Columns::Type())
-            {
-                columns = child;
-                numCols = columns->children().size();
-            }
-            else
-            {
-                ReportError("Grid contains incompatible child element: '" + child->type() + "'");
-            }
-        }
-        if (!rows || !columns)
-        {
-            ReportError("Grid has no rows or no columns!");
-            return;
-        }
+        //int numCols = 0;
+        //int numRows = 0;
+        //ElementPtr columns;
+        //ElementPtr rows;
+        //for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        //{
+        //    ElementPtr child = owningElement()->children()[idx];
+        //    if (child->type() == Rows::Type())
+        //    {
+        //        rows = child;
+        //        numRows = rows->children().size();
+        //    }
+        //    else if (child->type() == Columns::Type())
+        //    {
+        //        columns = child;
+        //        numCols = columns->children().size();
+        //    }
+        //    else
+        //    {
+        //        ReportError("Grid contains incompatible child element: '" + child->type() + "'");
+        //    }
+        //}
+        //if (!rows || !columns)
+        //{
+        //    ReportError("Grid has no rows or no columns!");
+        //    return;
+        //}
 
-        GenericGrid<GridProportion> proportions(numRows, numCols, GridProportion(SizeInfo(Defaults::Attributes::flex(), 1), SizeInfo(Defaults::Attributes::flex(), 1)));
-        for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
-        {
-            for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
-            {
-                if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
-                {
-                    assert(row->owningElement()->type() == Row::Type());
+        //GenericGrid<GridProportion> proportions(numRows, numCols, GridProportion(SizeInfo(Defaults::Attributes::flex(), 1), SizeInfo(Defaults::Attributes::flex(), 1)));
+        //for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
+        //{
+        //    for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
+        //    {
+        //        if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+        //        {
+        //            assert(row->owningElement()->type() == Row::Type());
 
-                    if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
-                    {
-                        assert(column->owningElement()->type() == Column::Type());
+        //            if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
+        //            {
+        //                assert(column->owningElement()->type() == Column::Type());
 
-                        ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-                        if (child)
-                        {
-                            int hflex = 0;
-                            try
-                            {
-                                std::string flex = column->owningElement()->getAttribute("flex");
-                                if (!flex.empty())
-                                {
-                                    hflex = boost::lexical_cast<int>(flex);
-                                }
-                            }
-                            catch (const boost::bad_lexical_cast & )
-                            {
-                                ReportError("Bad lexical cast for flex.");
-                            }
+        //                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
+        //                if (child)
+        //                {
+        //                    int hflex = 0;
+        //                    try
+        //                    {
+        //                        std::string flex = column->owningElement()->getAttribute("flex");
+        //                        if (!flex.empty())
+        //                        {
+        //                            hflex = boost::lexical_cast<int>(flex);
+        //                        }
+        //                    }
+        //                    catch (const boost::bad_lexical_cast & )
+        //                    {
+        //                        ReportError("Bad lexical cast for flex.");
+        //                    }
 
-                            int vflex = 0;
-                            try
-                            {
-                                std::string flex = row->owningElement()->getAttribute("flex");
-                                if (!flex.empty())
-                                {
-                                    vflex = boost::lexical_cast<int>(flex);
-                                }
-                            }
-                            catch (const boost::bad_lexical_cast & )
-                            {
-                                ReportError("Bad lexical cast for flex.");
-                            }
+        //                    int vflex = 0;
+        //                    try
+        //                    {
+        //                        std::string flex = row->owningElement()->getAttribute("flex");
+        //                        if (!flex.empty())
+        //                        {
+        //                            vflex = boost::lexical_cast<int>(flex);
+        //                        }
+        //                    }
+        //                    catch (const boost::bad_lexical_cast & )
+        //                    {
+        //                        ReportError("Bad lexical cast for flex.");
+        //                    }
 
-                            proportions.set(
-                                rowIdx, colIdx,
-                                GridProportion(
-                                    SizeInfo(hflex, column->minimumWidth()),
-                                    SizeInfo(vflex, row->minimumHeight())
-                                )
-                            );
-                        }
-                    }
-                }
-            }
-        }
-        GenericGrid<Rect> rects(numRows, numCols);
-        GridLayoutManager::GetRects(clientRect(), proportions, rects);
+        //                    proportions.set(
+        //                        rowIdx, colIdx,
+        //                        GridProportion(
+        //                            SizeInfo(hflex, column->minimumWidth()),
+        //                            SizeInfo(vflex, row->minimumHeight())
+        //                        )
+        //                    );
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+        //GenericGrid<Rect> rects(numRows, numCols);
+        //GridLayoutManager::GetRects(clientRect(), proportions, rects);
 
-        for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
-        {
-            for (size_t rowIdx = 0; rowIdx != rects.numRows(); ++rowIdx)
-            {
-                Rect & childRect = rects.get(rowIdx, colIdx);
-                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-                child->impl()->move(
-                    childRect.x(),
-                    childRect.y(),
-                    childRect.width(),
-                    childRect.height()
-                );
-            }
-        }
+        //for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
+        //{
+        //    for (size_t rowIdx = 0; rowIdx != rects.numRows(); ++rowIdx)
+        //    {
+        //        Rect & childRect = rects.get(rowIdx, colIdx);
+        //        ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
+        //        child->impl()->move(
+        //            childRect.x(),
+        //            childRect.y(),
+        //            childRect.width(),
+        //            childRect.height()
+        //        );
+        //    }
+        //}
         rebuildChildLayouts();
     }
 

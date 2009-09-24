@@ -9,14 +9,14 @@ using namespace Utils;
 namespace XULWin
 {
 
-    void LinearLayoutManager::GetSizes(int inLength, size_t inItemCount, std::vector<int> & outSizes)
-    {
-        assert(outSizes.empty());
-        for (size_t idx = 0; idx != inItemCount; ++idx)
-        {
-            outSizes.push_back((int)(0.5 + (float)inLength/(float)inItemCount));
-        }
-    }
+    //void LinearLayoutManager::GetSizes(int inLength, size_t inItemCount, std::vector<int> & outSizes)
+    //{
+    //    assert(outSizes.empty());
+    //    for (size_t idx = 0; idx != inItemCount; ++idx)
+    //    {
+    //        outSizes.push_back((int)(0.5 + (float)inLength/(float)inItemCount));
+    //    }
+    //}
 
 
     void LinearLayoutManager::GetSizes(int inLength, const std::vector<int> & inFlexValues, std::vector<int> & outSizes)
@@ -89,94 +89,144 @@ namespace XULWin
     }
 
     
-    void LinearLayoutManager::getRects(const Rect & inRect, size_t inItemCount, std::vector<Rect> & outRects)
+    void LinearLayoutManager::getRects(const Rect & inRect,
+                                       const std::vector<SizeInfo> & inSizeInfos,
+                                       std::vector<Rect> & outRects)
     {
-        std::vector<int> portions;
-        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inItemCount, portions);
+        std::vector<int> sizes;
+        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(),
+                 inSizeInfos,
+                 sizes);
         int xOffset = inRect.x();
         int yOffset = inRect.y();
-        for (size_t idx = 0; idx != inItemCount; ++idx)
+        bool horizontal = mOrientation == HORIZONTAL;
+        bool vertical = mOrientation == VERTICAL;
+        for (size_t idx = 0; idx != inSizeInfos.size(); ++idx)
         {
-            int x = mOrientation == HORIZONTAL ? xOffset : inRect.x();
-            int y = mOrientation  == VERTICAL ? yOffset : inRect.y();
-            int width = mOrientation  == HORIZONTAL ? portions[idx] : inRect.width();
-            int height = mOrientation  == VERTICAL ? portions[idx] : inRect.height();
-            xOffset += width;
-            yOffset += height;
-            outRects.push_back(Rect(x, y, width, height));
+            int x = horizontal ? xOffset : inRect.x();
+            int y = vertical   ? yOffset : inRect.y();
+            int w = horizontal ? sizes[idx] : inRect.width();
+            int h = vertical   ? sizes[idx] : inRect.height();
+            if (inSizeInfos[idx].Align == Start)
+            {
+                if (horizontal)
+                {
+                    y = inRect.y();
+                }
+                else if (vertical)
+                {
+                    x = inRect.x();
+                }
+            }
+            if (inSizeInfos[idx].Align == Center)
+            {
+                if (horizontal)
+                {
+                    y = (inRect.height() - inSizeInfos[idx].MinSizeOpposite)/2;
+                }
+                else if (vertical)
+                {
+                    x = (inRect.width() - inSizeInfos[idx].MinSizeOpposite)/2;
+                }
+            }
+            if (inSizeInfos[idx].Align == End)
+            {
+                if (horizontal)
+                {
+                    y = inRect.height() - inSizeInfos[idx].MinSizeOpposite;
+                }
+                else if (vertical)
+                {
+                    x = inRect.width() - inSizeInfos[idx].MinSizeOpposite;
+                }
+            }
+            else if (inSizeInfos[idx].Align == Stretch)
+            {
+                if (horizontal)
+                {
+                    h = inRect.height();
+                }
+                else if (vertical)
+                {
+                    w = inRect.width();
+                }
+            }
+            outRects.push_back(Rect(x, y, w, h));
+            xOffset += w;
+            yOffset += h;
         }
     }
 
-     
-    void LinearLayoutManager::getRects(const Rect & inRect, const std::vector<int> & inFlexValues, std::vector<Rect> & outRects)
-    {
-        std::vector<int> portions;
-        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inFlexValues, portions);
-        int xOffset = inRect.x();
-        int yOffset = inRect.y();
-        for (size_t idx = 0; idx != portions.size(); ++idx)
-        {
-            int x = mOrientation == HORIZONTAL ? xOffset : inRect.x();
-            int y = mOrientation  == VERTICAL ? yOffset : inRect.y();
-            int width = mOrientation  == HORIZONTAL ? portions[idx] : inRect.width();
-            int height = mOrientation  == VERTICAL ? portions[idx] : inRect.height();
-            xOffset += width;
-            yOffset += height;
-            outRects.push_back(Rect(x, y, width, height));
-        }
-    }
+    // 
+    //void LinearLayoutManager::getRects(const Rect & inRect, const std::vector<int> & inFlexValues, std::vector<Rect> & outRects)
+    //{
+    //    std::vector<int> portions;
+    //    GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inFlexValues, portions);
+    //    int xOffset = inRect.x();
+    //    int yOffset = inRect.y();
+    //    for (size_t idx = 0; idx != portions.size(); ++idx)
+    //    {
+    //        int x = mOrientation == HORIZONTAL ? xOffset : inRect.x();
+    //        int y = mOrientation  == VERTICAL ? yOffset : inRect.y();
+    //        int width = mOrientation  == HORIZONTAL ? portions[idx] : inRect.width();
+    //        int height = mOrientation  == VERTICAL ? portions[idx] : inRect.height();
+    //        xOffset += width;
+    //        yOffset += height;
+    //        outRects.push_back(Rect(x, y, width, height));
+    //    }
+    //}
 
     
     void GridLayoutManager::GetRects(const Rect & inRect,
                                      const Utils::GenericGrid<GridProportion> & inFlexValues,
                                      Utils::GenericGrid<Rect> & outRects)
     {
-        if (inFlexValues.numRows() == 0 || inFlexValues.numColumns() == 0)
-        {
-            ReportError("GridLayoutManager: number of columns or rows of inFlexValues is zero.");
-            return;
-        }
+        //if (inFlexValues.numRows() == 0 || inFlexValues.numColumns() == 0)
+        //{
+        //    ReportError("GridLayoutManager: number of columns or rows of inFlexValues is zero.");
+        //    return;
+        //}
 
-        assert(inFlexValues.numRows() == outRects.numRows());
-        assert(inFlexValues.numColumns() == outRects.numColumns());
-        
-        std::vector<int> horizontalSizes;
-        std::vector<int> verticalSizes;
+        //assert(inFlexValues.numRows() == outRects.numRows());
+        //assert(inFlexValues.numColumns() == outRects.numColumns());
+        //
+        //std::vector<int> horizontalSizes;
+        //std::vector<int> verticalSizes;
 
-        // Get horizontal sizes
-        {   
-            std::vector<SizeInfo> horizontalProportions;         
-            for (size_t colIdx = 0; colIdx != inFlexValues.numColumns(); ++colIdx)
-            {
-                horizontalProportions.push_back(inFlexValues.get(0, colIdx).Horizontal);
-            }
-            LinearLayoutManager::GetSizes(inRect.width(), horizontalProportions, horizontalSizes);
-        }
+        //// Get horizontal sizes
+        //{   
+        //    std::vector<SizeInfo> horizontalProportions;         
+        //    for (size_t colIdx = 0; colIdx != inFlexValues.numColumns(); ++colIdx)
+        //    {
+        //        horizontalProportions.push_back(inFlexValues.get(0, colIdx).Horizontal);
+        //    }
+        //    LinearLayoutManager::GetSizes(inRect.width(), horizontalProportions, horizontalSizes);
+        //}
 
-        // Get vertical sizes
-        {      
-            std::vector<SizeInfo> verticalProportions;
-            for (size_t rowIdx = 0; rowIdx != inFlexValues.numRows(); ++rowIdx)
-            {
-                verticalProportions.push_back(inFlexValues.get(rowIdx, 0).Vertical);
-            }
-            LinearLayoutManager::GetSizes(inRect.height(), verticalProportions, verticalSizes);
-        }
-        
-        int offsetX = 0;
-        int offsetY = 0;
-        for (size_t colIdx = 0; colIdx != outRects.numColumns(); ++colIdx)
-        {
-            int width = horizontalSizes[colIdx];
-            for (size_t rowIdx = 0; rowIdx != outRects.numRows(); ++rowIdx)
-            {
-                int height = verticalSizes[rowIdx];
-                outRects.set(rowIdx, colIdx, Rect(offsetX, offsetY, width, height));
-                offsetY += height;
-            }
-            offsetX += width;
-            offsetY = 0;
-        }
+        //// Get vertical sizes
+        //{      
+        //    std::vector<SizeInfo> verticalProportions;
+        //    for (size_t rowIdx = 0; rowIdx != inFlexValues.numRows(); ++rowIdx)
+        //    {
+        //        verticalProportions.push_back(inFlexValues.get(rowIdx, 0).Vertical);
+        //    }
+        //    LinearLayoutManager::GetSizes(inRect.height(), verticalProportions, verticalSizes);
+        //}
+        //
+        //int offsetX = 0;
+        //int offsetY = 0;
+        //for (size_t colIdx = 0; colIdx != outRects.numColumns(); ++colIdx)
+        //{
+        //    int width = horizontalSizes[colIdx];
+        //    for (size_t rowIdx = 0; rowIdx != outRects.numRows(); ++rowIdx)
+        //    {
+        //        int height = verticalSizes[rowIdx];
+        //        outRects.set(rowIdx, colIdx, Rect(offsetX, offsetY, width, height));
+        //        offsetY += height;
+        //    }
+        //    offsetX += width;
+        //    offsetY = 0;
+        //}
     }
 
 

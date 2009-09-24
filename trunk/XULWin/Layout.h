@@ -138,6 +138,7 @@ namespace XULWin
 		int mBottom;
 	};
 
+
     enum Orientation
     {
         HORIZONTAL,
@@ -145,30 +146,37 @@ namespace XULWin
     };
 
 
+    enum Alignment
+    {
+        Start,
+        Center,
+        End,
+        Stretch
+    };
+
+
     struct SizeInfo
     {
-        SizeInfo(int inFlex, int inMinSize) : Flex(inFlex), MinSize(inMinSize){}
+        SizeInfo(int inFlex, int inMinSize, int inMinSizeOpposite, bool inExpansive) :
+            Flex(inFlex), MinSize(inMinSize), MinSizeOpposite(inMinSizeOpposite), Expansive(inExpansive) {}
         int Flex;
         int MinSize;
+        int MinSizeOpposite;
+        bool Expansive;
+        Alignment Align;
     };
 
 
     class LinearLayoutManager
     {
     public:
-        static void GetSizes(int inLength, size_t inItemCount, std::vector<int> & outSizes);
-
-        static void GetSizes(int inLength, const std::vector<int> & inFlexValues, std::vector<int> & outSizes);
-
-        static void GetSizes(int inLength, const std::vector<SizeInfo> & inFlexValues, std::vector<int> & outSizes);
-
         LinearLayoutManager(Orientation inOrientation);
 
-        void getRects(const Rect & inRect, size_t inItemCount, std::vector<Rect> & outRects);
-
-        void getRects(const Rect & inRect, const std::vector<int> & inFlexValues, std::vector<Rect> & outRects);
+        void getRects(const Rect & inRect, const std::vector<SizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
 
     private:
+        static void GetSizes(int inLength, const std::vector<SizeInfo> & inSizeInfos, std::vector<int> & outSizes);
+        static void GetSizes(int inLength, const std::vector<int> & inSizeInfos, std::vector<int> & outSizes);        
         Orientation mOrientation;
     };
 

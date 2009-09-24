@@ -1234,7 +1234,7 @@ namespace XULWin
         }
         
         std::vector<Rect> childRects;
-        layout.getRects(clientRect(), sizeInfos, childRects);
+        layout.getRects(clientRect(), getAlignment(), sizeInfos, childRects);
 
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
@@ -1493,107 +1493,79 @@ namespace XULWin
 
     void NativeGrid::rebuildLayout()
     {
-        //int numCols = 0;
-        //int numRows = 0;
-        //ElementPtr columns;
-        //ElementPtr rows;
-        //for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
-        //{
-        //    ElementPtr child = owningElement()->children()[idx];
-        //    if (child->type() == Rows::Type())
-        //    {
-        //        rows = child;
-        //        numRows = rows->children().size();
-        //    }
-        //    else if (child->type() == Columns::Type())
-        //    {
-        //        columns = child;
-        //        numCols = columns->children().size();
-        //    }
-        //    else
-        //    {
-        //        ReportError("Grid contains incompatible child element: '" + child->type() + "'");
-        //    }
-        //}
-        //if (!rows || !columns)
-        //{
-        //    ReportError("Grid has no rows or no columns!");
-        //    return;
-        //}
+        int numCols = 0;
+        int numRows = 0;
+        ElementPtr columns;
+        ElementPtr rows;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (child->type() == Rows::Type())
+            {
+                rows = child;
+                numRows = rows->children().size();
+            }
+            else if (child->type() == Columns::Type())
+            {
+                columns = child;
+                numCols = columns->children().size();
+            }
+            else
+            {
+                ReportError("Grid contains incompatible child element: '" + child->type() + "'");
+            }
+        }
+        if (!rows || !columns)
+        {
+            ReportError("Grid has no rows or no columns!");
+            return;
+        }
 
-        //GenericGrid<GridProportion> proportions(numRows, numCols, GridProportion(SizeInfo(Defaults::Attributes::flex(), 1), SizeInfo(Defaults::Attributes::flex(), 1)));
-        //for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
-        //{
-        //    for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
-        //    {
-        //        if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
-        //        {
-        //            assert(row->owningElement()->type() == Row::Type());
+        GenericGrid<GridSizeInfo> proportions(numRows, numCols,
+                                              GridSizeInfo(SizeInfo(Defaults::Attributes::flex(), 1, 1, false),   // just some random value will
+                                                           SizeInfo(Defaults::Attributes::flex(), 1, 1, false))); // be overwritten inside loop
+        for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
+        {
+            for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
+            {
+                if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+                {
+                    assert(row->owningElement()->type() == Row::Type());
 
-        //            if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
-        //            {
-        //                assert(column->owningElement()->type() == Column::Type());
+                    if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
+                    {
+                        assert(column->owningElement()->type() == Column::Type());
 
-        //                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-        //                if (child)
-        //                {
-        //                    int hflex = 0;
-        //                    try
-        //                    {
-        //                        std::string flex = column->owningElement()->getAttribute("flex");
-        //                        if (!flex.empty())
-        //                        {
-        //                            hflex = boost::lexical_cast<int>(flex);
-        //                        }
-        //                    }
-        //                    catch (const boost::bad_lexical_cast & )
-        //                    {
-        //                        ReportError("Bad lexical cast for flex.");
-        //                    }
+                        ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
+                        if (child)
+                        {
+                            ErrorCatcher ignoreBadCast;
+                            int hflex = String2Int(column->owningElement()->getAttribute("flex"));
+                            int vflex = String2Int(row->owningElement()->getAttribute("flex"));
+                            proportions.set(
+                                rowIdx, colIdx,
+                                GridSizeInfo(SizeInfo(hflex, column->minimumWidth(), column->minimumHeight(), false),
+                                             SizeInfo(vflex, row->minimumHeight(), row->minimumWidth(), false)));
+                        }
+                    }
+                }
+            }
+        }
 
-        //                    int vflex = 0;
-        //                    try
-        //                    {
-        //                        std::string flex = row->owningElement()->getAttribute("flex");
-        //                        if (!flex.empty())
-        //                        {
-        //                            vflex = boost::lexical_cast<int>(flex);
-        //                        }
-        //                    }
-        //                    catch (const boost::bad_lexical_cast & )
-        //                    {
-        //                        ReportError("Bad lexical cast for flex.");
-        //                    }
-
-        //                    proportions.set(
-        //                        rowIdx, colIdx,
-        //                        GridProportion(
-        //                            SizeInfo(hflex, column->minimumWidth()),
-        //                            SizeInfo(vflex, row->minimumHeight())
-        //                        )
-        //                    );
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-        //GenericGrid<Rect> rects(numRows, numCols);
-        //GridLayoutManager::GetRects(clientRect(), proportions, rects);
-
-        //for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
-        //{
-        //    for (size_t rowIdx = 0; rowIdx != rects.numRows(); ++rowIdx)
-        //    {
-        //        Rect & childRect = rects.get(rowIdx, colIdx);
-        //        ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-        //        child->impl()->move(
-        //            childRect.x(),
-        //            childRect.y(),
-        //            childRect.width(),
-        //            childRect.height()
-        //        );
-        //    }
-        //}
+        GenericGrid<Rect> rects(numRows, numCols);
+        GridLayoutManager::GetRects(clientRect(), proportions, rects);
+        for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
+        {
+            for (size_t rowIdx = 0; rowIdx != rects.numRows(); ++rowIdx)
+            {
+                Rect & childRect = rects.get(rowIdx, colIdx);
+                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
+                child->impl()->move(childRect.x(),
+                                    childRect.y(),
+                                    childRect.width(),
+                                    childRect.height());
+            }
+        }
         rebuildChildLayouts();
     }
 

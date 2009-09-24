@@ -158,12 +158,16 @@ namespace XULWin
     struct SizeInfo
     {
         SizeInfo(int inFlex, int inMinSize, int inMinSizeOpposite, bool inExpansive) :
-            Flex(inFlex), MinSize(inMinSize), MinSizeOpposite(inMinSizeOpposite), Expansive(inExpansive) {}
+            Flex(inFlex),
+            MinSize(inMinSize),
+            MinSizeOpposite(inMinSizeOpposite),
+            Expansive(inExpansive)
+        {
+        }
         int Flex;
         int MinSize;
         int MinSizeOpposite;
         bool Expansive;
-        Alignment Align;
     };
 
 
@@ -172,18 +176,18 @@ namespace XULWin
     public:
         LinearLayoutManager(Orientation inOrientation);
 
-        void getRects(const Rect & inRect, const std::vector<SizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
-
-    private:
+        void getRects(const Rect & inRect, Alignment inAlign, const std::vector<SizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
         static void GetSizes(int inLength, const std::vector<SizeInfo> & inSizeInfos, std::vector<int> & outSizes);
         static void GetSizes(int inLength, const std::vector<int> & inSizeInfos, std::vector<int> & outSizes);        
+
+    private:
         Orientation mOrientation;
     };
 
 
-    struct GridProportion
+    struct GridSizeInfo
     {
-        GridProportion(const SizeInfo & inHorizontal, const SizeInfo & inVertical) :
+        GridSizeInfo(const SizeInfo & inHorizontal, const SizeInfo & inVertical) :
             Horizontal(inHorizontal), Vertical(inVertical) {}
 
         SizeInfo Horizontal;
@@ -195,7 +199,7 @@ namespace XULWin
     {
     public:
         static void GetRects(const Rect & inRect,
-                             const Utils::GenericGrid<GridProportion> & inFlexValues,
+                             const Utils::GenericGrid<GridSizeInfo> & inSizeInfos,
                              Utils::GenericGrid<Rect> & outRects);
     };
 

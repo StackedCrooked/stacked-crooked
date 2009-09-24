@@ -1,15 +1,7 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
-<window id="main" title="Hello" width="300" height="300"
-xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <hbox>
-    <spacer flex="1"></spacer>
-    <vbox>
-      <label value="a"></label>
-      <label value="twee"></label>
-      <label value="drie"></label>
-    </vbox>
-    <spacer flex="1"></spacer>
-  </hbox>
+<window id="main" title="Hello"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+  <button label="hello"></button>
 </window>

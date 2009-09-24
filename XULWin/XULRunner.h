@@ -11,6 +11,10 @@ namespace XULWin
     class XULRunner
     {
     public:
+        /**
+         * Params:
+         * inApplicationIniFile: path to ini file
+         */
         void run(const std::string & inApplicationIniFile);
     
     };

@@ -21,6 +21,8 @@ namespace Utils
 	    TCHAR mOldDir[MAX_PATH];
     };
 
+    std::string getCurrentDirectory();
+
     std::string getLastError(DWORD lastError);
 
     SIZE GetSizeDifference_WindowRect_ClientRect(HWND inHandle);

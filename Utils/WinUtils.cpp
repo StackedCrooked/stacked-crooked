@@ -36,6 +36,14 @@ namespace Utils
 	{
 		::SetCurrentDirectoryW(mOldDir);
 	}
+
+
+    std::string getCurrentDirectory()
+    {
+        TCHAR buffer[MAX_PATH];
+        ::GetCurrentDirectory(sizeof(buffer), &buffer[0]);
+        return std::string(ToUTF8(buffer)) + "/";
+    }
     
     
     SIZE GetSizeDifference_WindowRect_ClientRect(HWND inHandle)

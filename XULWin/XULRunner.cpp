@@ -1,8 +1,9 @@
 #include "XULRunner.h"
 #include "ChromeURL.h"
 #include "Defaults.h"
-#include "Utils/ErrorReporter.h"
 #include "Parser.h"
+#include "Utils/ErrorReporter.h"
+#include "Utils/WinUtils.h"
 #include "Poco/Path.h"
 #include "Poco/String.h"
 
@@ -76,12 +77,11 @@ namespace XULWin
     
     std::string getMainXULFile(const Poco::Path & inTopLevelAppDir)
     {
-        static const std::string cPrefsFile = "{appname}/defaults/preferences/prefs.js";
+        static const std::string cPrefsFile = "defaults/preferences/prefs.js";
         std::string appName = inTopLevelAppDir.directory(inTopLevelAppDir.depth() - 1);
-        std::string prefsFile = Poco::replace(cPrefsFile, std::string("{appname}"), appName);
 
         Prefs prefs;
-        if (!getPrefs(prefsFile, prefs))
+        if (!getPrefs(cPrefsFile, prefs))
         {
             ReportError("Could not parse prefs file.");
             return "";
@@ -100,9 +100,9 @@ namespace XULWin
 
 
     void XULRunner::run(const std::string & inApplicationIniFile)
-    {       
+    {
 	    Parser parser;
-        Poco::Path topLevelAppDir = Poco::Path(inApplicationIniFile).parent();
+        Poco::Path topLevelAppDir = Utils::getCurrentDirectory();
         std::string mainXULFile = getMainXULFile(topLevelAppDir);
         parser.parse(mainXULFile);
         if (Window * window = parser.rootElement()->downcast<Window>())

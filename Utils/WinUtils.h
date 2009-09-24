@@ -8,6 +8,19 @@
 
 namespace Utils
 {
+    class CurrentDirectoryChanger
+    {
+    public:
+	    CurrentDirectoryChanger(const std::string & inTargetDir);
+
+	    ~CurrentDirectoryChanger();
+
+    private:
+        CurrentDirectoryChanger(const CurrentDirectoryChanger &);
+        CurrentDirectoryChanger & operator=(const CurrentDirectoryChanger &);
+	    TCHAR mOldDir[MAX_PATH];
+    };
+
     std::string getLastError(DWORD lastError);
 
     SIZE GetSizeDifference_WindowRect_ClientRect(HWND inHandle);

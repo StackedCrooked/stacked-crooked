@@ -132,7 +132,8 @@ namespace XULWin
 
     InputSource* Parser::resolveEntity(const XMLString* publicId, const XMLString& systemId)
     {
-        if (systemId.find("chrome://") != std::string::npos)
+        size_t idx = systemId.find("chrome://");
+        if (idx != std::string::npos)
         {
             ChromeURL url(systemId, Defaults::locale());
             std::string path = url.convertToLocalPath();

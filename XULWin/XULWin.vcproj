@@ -238,6 +238,14 @@
 				RelativePath=".\Parser.h"
 				>
 			</File>
+			<File
+				RelativePath=".\XULRunner.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\XULRunner.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="_Notes"
@@ -256,10 +264,6 @@
 			>
 			<File
 				RelativePath=".\XULWin.exe.manifest"
-				>
-			</File>
-			<File
-				RelativePath=".\XULWin.rc"
 				>
 			</File>
 		</Filter>

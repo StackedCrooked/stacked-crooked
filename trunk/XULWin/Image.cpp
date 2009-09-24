@@ -1,5 +1,7 @@
 #include "Image.h"
 #include "ElementImpl.h"
+#include "ChromeURL.h"
+#include "Defaults.h"
 #include "Poco/Path.h"
 #include "Poco/UnicodeConverter.h"
 #include <boost/bind.hpp>
@@ -54,9 +56,9 @@ namespace XULWin
 
         bool initAttributeControllers();
 
-        void setSource(const std::string & inSource);
+        void setSrc(const std::string & inSrc);
 
-        const std::string & source() const;
+        const std::string & src() const;
         
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -64,7 +66,7 @@ namespace XULWin
         void paintImage(HDC inHDC, const RECT & rc);
 
         boost::scoped_ptr<Gdiplus::Bitmap> mImage;
-        std::string mSource;
+        std::string mSrc;
     };
 
 
@@ -102,26 +104,12 @@ namespace XULWin
     }
 
     
-    void NativeImage::setSource(const std::string & inSource)
+    void NativeImage::setSrc(const std::string & inSrc)
     {
-        static const std::string cChrome = "chrome://";
-        if (inSource.find(cChrome) == 0)
-        {
-            // Change this pattern: chrome://myapp/skin/icons/myimg.jpg
-            // Into this pattern:   chrome/skin/icons/myimg.jpg
-            mSource = inSource.substr(cChrome.size(), mSource.size() - cChrome.size());
-            size_t slashIdx = mSource.find("/");
-            if (slashIdx != std::string::npos)
-            {
-                mSource = "chrome/" + mSource.substr(slashIdx + 1, mSource.size() - slashIdx - 1);
-            }
-        }
-        else
-        {
-            mSource = inSource;
-        }
+        ChromeURL url(inSrc, Defaults::locale());
+        mSrc = url.convertToLocalPath();
         std::wstring utf16Path;
-        Poco::UnicodeConverter::toUTF16(mSource, utf16Path);
+        Poco::UnicodeConverter::toUTF16(mSrc, utf16Path);
         Gdiplus::Bitmap * img = new Gdiplus::Bitmap(utf16Path.c_str());
         mImage.reset(img);
         if (mImage->GetLastStatus() != Gdiplus::Ok)
@@ -131,16 +119,16 @@ namespace XULWin
     }
 
     
-    const std::string & NativeImage::source() const
+    const std::string & NativeImage::src() const
     {
-        return mSource;
+        return mSrc;
     }
 
 
     bool NativeImage::initAttributeControllers()
     {
-        AttributeGetter srcGetter = boost::bind(&NativeImage::source, this);
-        AttributeSetter srcSetter = boost::bind(&NativeImage::setSource, this, _1);
+        AttributeGetter srcGetter = boost::bind(&NativeImage::src, this);
+        AttributeSetter srcSetter = boost::bind(&NativeImage::setSrc, this, _1);
         setAttributeController("src", AttributeController(srcGetter, srcSetter));
         return NativeControl::initAttributeControllers();
     }

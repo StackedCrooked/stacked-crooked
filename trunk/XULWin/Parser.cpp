@@ -1,5 +1,7 @@
 #include "Parser.h"
 #include "ElementFactory.h"
+#include "ChromeURL.h"
+#include "Defaults.h"
 #include "Utils/ErrorReporter.h"
 #include "Poco/SAX/Attributes.h"
 #include "Poco/SAX/EntityResolverImpl.h"
@@ -130,20 +132,10 @@ namespace XULWin
 
     InputSource* Parser::resolveEntity(const XMLString* publicId, const XMLString& systemId)
     {
-        const std::string cChrome = "chrome://";
-        const std::string cLocale = "locale";
-        std::string::size_type chromeIdx = systemId.find(cChrome);
-        if (chromeIdx == std::string::npos)
+        if (systemId.find("chrome://") != std::string::npos)
         {
-            return 0;
-        }
-        std::string path = systemId;
-        path.replace(chromeIdx, cChrome.size(), "chrome/");
-
-        std::string::size_type localeIdx = path.find(cLocale);
-        if (localeIdx != std::string::npos)
-        {
-            path.insert(localeIdx + cLocale.size(), "/" + mLanguage);
+            ChromeURL url(systemId, Defaults::locale());
+            std::string path = url.convertToLocalPath();
             EntityResolverImpl entityResolverImpl;
             return entityResolverImpl.resolveEntity(publicId, path);
         }

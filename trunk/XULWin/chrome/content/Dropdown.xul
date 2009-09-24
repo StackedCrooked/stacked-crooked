@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE window SYSTEM "chrome://locale/Dropdown.dtd">
+<!DOCTYPE window SYSTEM "chrome://XULWin/locale/Dropdown.dtd">
 <window title="Config Panel" width="480" height="300">
   <grid flex="1">
     <columns>

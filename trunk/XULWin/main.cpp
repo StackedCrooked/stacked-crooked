@@ -158,7 +158,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     registerTypes(hInstance);
     runXUL("widgets.xul");
     runXUL("shout.xul");
-
+    runDropDownSample();
 
 
     ErrorReporter::Finalize();

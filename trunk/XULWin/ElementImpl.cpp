@@ -643,10 +643,10 @@ namespace XULWin
 
     PaddingDecorator::PaddingDecorator(ElementImpl * inDecoratedElement) :
         Decorator(inDecoratedElement),
-        mTop(4),
+        mTop(2),
         mLeft(4),
         mRight(4),
-        mBottom(4)
+        mBottom(2)
     {
     }
 

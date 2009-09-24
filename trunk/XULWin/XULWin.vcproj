@@ -242,10 +242,6 @@
 		<Filter
 			Name="Resources"
 			>
-			<File
-				RelativePath=".\XULWin.exe.manifest"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

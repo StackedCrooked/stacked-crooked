@@ -1,7 +1,15 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
-<window id="main" title="Hello"
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
-  <button label="hello"></button>
+<window id="main"
+        title="Hello"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+>
+  <hbox align="stretch">
+  <button label="The button is not clicked"></button>
+  <vbox>
+    <button label="The button is not clicked"></button>
+    <button label="The button is not clicked"></button>      
+  </vbox>
+  </hbox>
 </window>

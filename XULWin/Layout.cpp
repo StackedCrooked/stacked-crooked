@@ -88,6 +88,12 @@ namespace XULWin
     {
     }
 
+
+    Orientation LinearLayoutManager::orientation() const
+    {
+        return mOrientation;
+    }
+
     
     void LinearLayoutManager::getRects(const Rect & inRect,
                                        Alignment inAlign, 
@@ -123,22 +129,22 @@ namespace XULWin
             {
                 if (horizontal)
                 {
-                    y = (inRect.height() - inSizeInfos[idx].MinSizeOpposite)/2;
+                    y = yOffset + (inRect.height() - inSizeInfos[idx].MinSizeOpposite)/2;
                 }
                 else if (vertical)
                 {
-                    x = (inRect.width() - inSizeInfos[idx].MinSizeOpposite)/2;
+                    x = xOffset + (inRect.width() - inSizeInfos[idx].MinSizeOpposite)/2;
                 }
             }
             if (inAlign == End)
             {
                 if (horizontal)
                 {
-                    y = inRect.height() - inSizeInfos[idx].MinSizeOpposite;
+                    y = yOffset + inRect.height() - inSizeInfos[idx].MinSizeOpposite;
                 }
                 else if (vertical)
                 {
-                    x = inRect.width() - inSizeInfos[idx].MinSizeOpposite;
+                    x = xOffset + inRect.width() - inSizeInfos[idx].MinSizeOpposite;
                 }
             }
             else if (inAlign == Stretch)
@@ -153,8 +159,14 @@ namespace XULWin
                 }
             }
             outRects.push_back(Rect(x, y, w, h));
-            xOffset += w;
-            yOffset += h;
+            if (horizontal)
+            {
+                xOffset += w;
+            }
+            else
+            {
+                yOffset += h;
+            }
         }
     }
 

@@ -49,6 +49,75 @@ namespace XULWin
     }
 
 
+    Orientation String2Orientation(const std::string & inValue)
+    {
+        Orientation result = VERTICAL;
+        if (inValue == "horizontal")
+        {
+            result = HORIZONTAL;
+        }
+        return result;
+    }
+
+
+    std::string Orientation2String(Orientation inOrientation)
+    {
+        if (inOrientation == HORIZONTAL)
+        {
+            return "horizontal";
+        }
+        else
+        {
+            return "vertical";
+        }
+    }
+
+    
+    Alignment String2Align(const std::string & inValue, Alignment inDefault)
+    {
+        Alignment result = inDefault;
+        if (inValue == "center")
+        {
+            result = Center;
+        }
+        else if (inValue == "end")
+        {
+            result = End;
+        }
+        else if (inValue == "stretch")
+        {
+            result = Stretch;
+        }
+        return result;
+    }
+
+
+    std::string Align2String(Alignment inAlign)
+    {
+        if (inAlign == Start)
+        {
+            return "start";
+        }
+        else if (inAlign == Center)
+        {
+            return "center";
+        }
+        else if (inAlign == End)
+        {
+            return "end";
+        }
+        else if (inAlign == Stretch)
+        {
+            return "stretch";
+        }
+        else
+        {
+            ReportError("Invalid alignment");
+            return "";
+        }
+    }
+
+
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
     
     ElementImpl::Components ElementImpl::sComponentsByHandle;
@@ -178,10 +247,9 @@ namespace XULWin
     
     void ElementImpl::rebuildChildLayouts()
     {
-        Children::const_iterator it = mElement->children().begin(), end = mElement->children().end();
-        for (; it != end; ++it)
+        for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
-            ElementImpl * nativeComp = (*it)->impl();
+            ElementImpl * nativeComp = mElement->children()[idx]->impl();
             if (nativeComp)
             {
                 nativeComp->rebuildLayout();
@@ -338,21 +406,43 @@ namespace XULWin
     
     int NativeWindow::minimumWidth() const
     {
-        if (!owningElement()->children().empty())
+        int result = 0;
+        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"));
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            return owningElement()->children().begin()->get()->impl()->minimumWidth();
+            ElementPtr child(owningElement()->children()[idx]);
+            int minWidth = child->impl()->minimumWidth();
+            if (orient == HORIZONTAL)
+            {
+                result += minWidth;
+            }
+            else if (minWidth > result)
+            {
+                result = minWidth;
+            }
         }
-        return 0;
+        return result;
     }
     
     
     int NativeWindow::minimumHeight() const
     {
-        if (!owningElement()->children().empty())
+        int result = 0;
+        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"));
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            return owningElement()->children().begin()->get()->impl()->minimumHeight();
+            ElementPtr child(owningElement()->children()[idx]);
+            int minHeight = child->impl()->minimumHeight();
+            if (orient == VERTICAL)
+            {
+                result += minHeight;
+            }
+            else if (minHeight > result)
+            {
+                result = minHeight;
+            }
         }
-        return 0;
+        return result;
     }
     
     
@@ -363,7 +453,30 @@ namespace XULWin
 
     
     void NativeWindow::rebuildLayout()
-    {     
+    {        
+        LinearLayoutManager layout(String2Orientation(owningElement()->getAttribute("orient")));
+        bool horizontal = layout.orientation() == HORIZONTAL;
+        
+        std::vector<SizeInfo> sizeInfos;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            int flexValue = String2Int(child->getAttribute("flex"));
+            int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
+            int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
+            sizeInfos.push_back(SizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
+        }
+        
+        std::vector<Rect> childRects;
+        layout.getRects(clientRect(), String2Align(owningElement()->getAttribute("align"), Stretch), sizeInfos, childRects);
+
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            const Rect & rect = childRects[idx];
+            child->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
+        }
+
         rebuildChildLayouts();
         ::InvalidateRect(handle(), 0, FALSE);
     }
@@ -1001,7 +1114,7 @@ namespace XULWin
     
     int NativeLabel::minimumHeight() const
     {
-        return Defaults::controlHeight();
+        return Utils::getTextSize(handle(), Utils::getWindowText(handle())).cy;
     }
 
 
@@ -1047,84 +1160,20 @@ namespace XULWin
     NativeBox::NativeBox(ElementImpl * inParent, Orientation inOrientation) :
         VirtualControl(inParent),
         mOrientation(inOrientation),
-        mAlign(inOrientation == HORIZONTAL ? Center : Stretch)
+        mAlign(inOrientation == HORIZONTAL ? Start : Stretch)
     {
     }
 
 
     bool NativeBox::initAttributeControllers()
     {        
-        struct Helper
-        {
-            static Orientation String2Orientation(const std::string & inValue)
-            {
-                Orientation result = VERTICAL;
-                if (inValue == "horizontal")
-                {
-                    result = HORIZONTAL;
-                }
-                return result;
-            }
-            static std::string Orientation2String(Orientation inOrientation)
-            {
-                if (inOrientation == HORIZONTAL)
-                {
-                    return "horizontal";
-                }
-                else
-                {
-                    return "vertical";
-                }
-            }
-            static Alignment String2Align(const std::string & inValue)
-            {
-                Alignment result = Start;
-                if (inValue == "center")
-                {
-                    result = Center;
-                }
-                else if (inValue == "end")
-                {
-                    result = End;
-                }
-                else if (inValue == "stretch")
-                {
-                    result = Stretch;
-                }
-                return result;
-            }
-            static std::string Align2String(Alignment inAlign)
-            {
-                if (inAlign == Start)
-                {
-                    return "start";
-                }
-                else if (inAlign == Center)
-                {
-                    return "center";
-                }
-                else if (inAlign == End)
-                {
-                    return "end";
-                }
-                else if (inAlign == Stretch)
-                {
-                    return "stretch";
-                }
-                else
-                {
-                    ReportError("Invalid alignment");
-                    return "";
-                }
-            }
-        };
-        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&Helper::String2Orientation, _1));
-        AttributeGetter orientationGetter = boost::bind(&Helper::Orientation2String, boost::bind(&NativeBox::getOrientation, this));
+        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&String2Orientation, _1));
+        AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&NativeBox::getOrientation, this));
         setAttributeController("orient", AttributeController(orientationGetter, orientationSetter));
         setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
 
-        AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&Helper::String2Align, _1));
-        AttributeGetter alignGetter = boost::bind(&Helper::Align2String, boost::bind(&NativeBox::getAlignment, this));
+        AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&String2Align, _1, Start));
+        AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&NativeBox::getAlignment, this));
         setAttributeController("align", AttributeController(alignGetter, alignSetter));
         return Super::initAttributeControllers();
     }

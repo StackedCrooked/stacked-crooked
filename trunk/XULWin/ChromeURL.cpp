@@ -1,4 +1,5 @@
-#include "ChromeURL.h"        
+#include "ChromeURL.h"
+#include "Poco/String.h"
 
 
 namespace XULWin
@@ -19,19 +20,24 @@ namespace XULWin
 
     std::string ChromeURL::convertToLocalPath()
     {
-        static const std::string cChrome = "chrome://";
-        static const std::string cLocale = "locale";
 
         // Change this pattern: chrome://myapp/skin/icons/myimg.jpg
-        // Into this pattern:   myapp/chrome/skin/icons/myimg.jpg
+        // Into this pattern:   chrome/skin/icons/myimg.jpg
         std::string result;
+        
+        // remove "chrome://"
+        static const std::string cChrome = "chrome://";
         result = mURL.substr(cChrome.size(), mURL.size() - cChrome.size());
-        size_t slashIdx = result.find("/");
-        if (slashIdx != std::string::npos)
-        {
-            result.insert(slashIdx + 1, "chrome/");
-        }
 
+        // remove myapp
+        size_t slashIdx = result.find("/");
+        result = result.substr(slashIdx, result.size() - slashIdx);
+
+        // prepend "chrome"
+        result = "chrome" + result;
+
+        // replace 'locale' with 'local/en-US' (or whatever locale is selected)
+        static const std::string cLocale = "locale";
         size_t localeIdx = result.find(cLocale);
         if (localeIdx != std::string::npos)
         {

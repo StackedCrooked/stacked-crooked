@@ -49,15 +49,15 @@ void registerTypes(HMODULE inModule)
 
 
 
-void runXUL(const std::string & inFileName)
+void runXUL(const std::string & inAppName)
 {
-    CurrentDirectoryChanger curdir("../xulrunnersamples");
-	XULRunner runner;
-    TCHAR buffer[MAX_PATH];
-    ::GetCurrentDirectory(MAX_PATH, &buffer[0]);
-    Poco::Path iniPath(inFileName);
-    iniPath.append("application.ini");
-    runner.run(iniPath.toString());    
+    std::string chdir = "../xulrunnersamples/" + inAppName + "/";
+    CurrentDirectoryChanger curdir(chdir);
+
+    system("run.bat");
+
+    XULRunner runner;
+    runner.run("application.ini");
 }
 
 
@@ -114,6 +114,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ErrorReporter::Initialize();
     ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
     registerTypes(hInstance);
+    runXUL("hello");
     runXUL("widgets");
     runXUL("configpanel");
     ErrorReporter::Finalize();

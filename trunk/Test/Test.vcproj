@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="XULWin"
-	ProjectGUID="{D623C05B-BDD9-4D6E-8E51-E3275608DEBE}"
-	RootNamespace="XULWin"
+	Name="Test"
+	ProjectGUID="{01FEEDB4-2408-444E-B274-8BE629148C66}"
+	RootNamespace="Test"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,7 +20,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)..\Output\Windows\$(ConfigurationName)\$(ProjectName)\"
 			IntermediateDirectory="$(OutDir)\Intermediate"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="1"
 			>
 			<Tool
@@ -60,10 +60,18 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				AdditionalDependencies="comctl32.lib GdiPlus.lib"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -75,6 +83,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -82,7 +93,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)..\Output\Windows\$(ConfigurationName)\$(ProjectName)\"
 			IntermediateDirectory="$(OutDir)\Intermediate"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -123,10 +134,20 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				AdditionalDependencies="comctl32.lib GdiPlus.lib"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -136,6 +157,9 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -151,101 +175,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\ChromeURL.cpp"
+				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ChromeURL.h"
+				RelativePath=".\Tester.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Defaults.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Element.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Element.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ElementFactory.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ElementFactory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ElementImpl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ElementImpl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Image.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Image.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Initializer.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Initializer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Layout.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Layout.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Parser.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Parser.h"
-				>
-			</File>
-			<File
-				RelativePath=".\XULRunner.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\XULRunner.h"
+				RelativePath=".\Tester.h"
 				>
 			</File>
 		</Filter>
 		<Filter
-			Name="_Notes"
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
-			<File
-				RelativePath=".\configpanel.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Todo.txt"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resources"
-			>
-			<File
-				RelativePath=".\XULWin.exe.manifest"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

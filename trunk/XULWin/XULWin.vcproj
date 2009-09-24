@@ -252,22 +252,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Samples"
-			>
-			<File
-				RelativePath=".\Shout.xul"
-				>
-			</File>
-			<File
-				RelativePath=".\test.xul"
-				>
-			</File>
-			<File
-				RelativePath=".\widgets.xul"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Resources"
 			>
 			<File
@@ -278,30 +262,6 @@
 				RelativePath=".\XULWin.rc"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="chrome"
-			>
-			<Filter
-				Name="locale"
-				>
-				<Filter
-					Name="en"
-					>
-					<File
-						RelativePath=".\chrome\locale\en\Dropdown.dtd"
-						>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="content"
-				>
-				<File
-					RelativePath=".\chrome\content\Dropdown.xul"
-					>
-				</File>
-			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

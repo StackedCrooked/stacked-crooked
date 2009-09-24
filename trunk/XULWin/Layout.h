@@ -180,6 +180,8 @@ namespace XULWin
         static void GetSizes(int inLength, const std::vector<SizeInfo> & inSizeInfos, std::vector<int> & outSizes);
         static void GetSizes(int inLength, const std::vector<int> & inSizeInfos, std::vector<int> & outSizes);        
 
+        Orientation orientation() const;
+
     private:
         Orientation mOrientation;
     };

@@ -90,6 +90,7 @@ namespace XULWin
 
     
     void LinearLayoutManager::getRects(const Rect & inRect,
+                                       Alignment inAlign, 
                                        const std::vector<SizeInfo> & inSizeInfos,
                                        std::vector<Rect> & outRects)
     {
@@ -105,9 +106,9 @@ namespace XULWin
         {
             int x = horizontal ? xOffset : inRect.x();
             int y = vertical   ? yOffset : inRect.y();
-            int w = horizontal ? sizes[idx] : inRect.width();
-            int h = vertical   ? sizes[idx] : inRect.height();
-            if (inSizeInfos[idx].Align == Start)
+            int w = horizontal ? sizes[idx] : inSizeInfos[idx].MinSizeOpposite;
+            int h = vertical   ? sizes[idx] : inSizeInfos[idx].MinSizeOpposite;
+            if (inAlign == Start)
             {
                 if (horizontal)
                 {
@@ -118,7 +119,7 @@ namespace XULWin
                     x = inRect.x();
                 }
             }
-            if (inSizeInfos[idx].Align == Center)
+            if (inAlign == Center)
             {
                 if (horizontal)
                 {
@@ -129,7 +130,7 @@ namespace XULWin
                     x = (inRect.width() - inSizeInfos[idx].MinSizeOpposite)/2;
                 }
             }
-            if (inSizeInfos[idx].Align == End)
+            if (inAlign == End)
             {
                 if (horizontal)
                 {
@@ -140,7 +141,7 @@ namespace XULWin
                     x = inRect.width() - inSizeInfos[idx].MinSizeOpposite;
                 }
             }
-            else if (inSizeInfos[idx].Align == Stretch)
+            else if (inAlign == Stretch)
             {
                 if (horizontal)
                 {
@@ -178,55 +179,46 @@ namespace XULWin
 
     
     void GridLayoutManager::GetRects(const Rect & inRect,
-                                     const Utils::GenericGrid<GridProportion> & inFlexValues,
+                                     const Utils::GenericGrid<GridSizeInfo> & inSizeInfos,
                                      Utils::GenericGrid<Rect> & outRects)
     {
-        //if (inFlexValues.numRows() == 0 || inFlexValues.numColumns() == 0)
-        //{
-        //    ReportError("GridLayoutManager: number of columns or rows of inFlexValues is zero.");
-        //    return;
-        //}
+        std::vector<int> horizontalSizes;
+        std::vector<int> verticalSizes;
 
-        //assert(inFlexValues.numRows() == outRects.numRows());
-        //assert(inFlexValues.numColumns() == outRects.numColumns());
-        //
-        //std::vector<int> horizontalSizes;
-        //std::vector<int> verticalSizes;
+        // Get horizontal sizes
+        {   
+            std::vector<SizeInfo> horizontalProportions;         
+            for (size_t colIdx = 0; colIdx != inSizeInfos.numColumns(); ++colIdx)
+            {
+                horizontalProportions.push_back(inSizeInfos.get(0, colIdx).Horizontal);
+            }
+            LinearLayoutManager::GetSizes(inRect.width(), horizontalProportions, horizontalSizes);
+        }
 
-        //// Get horizontal sizes
-        //{   
-        //    std::vector<SizeInfo> horizontalProportions;         
-        //    for (size_t colIdx = 0; colIdx != inFlexValues.numColumns(); ++colIdx)
-        //    {
-        //        horizontalProportions.push_back(inFlexValues.get(0, colIdx).Horizontal);
-        //    }
-        //    LinearLayoutManager::GetSizes(inRect.width(), horizontalProportions, horizontalSizes);
-        //}
-
-        //// Get vertical sizes
-        //{      
-        //    std::vector<SizeInfo> verticalProportions;
-        //    for (size_t rowIdx = 0; rowIdx != inFlexValues.numRows(); ++rowIdx)
-        //    {
-        //        verticalProportions.push_back(inFlexValues.get(rowIdx, 0).Vertical);
-        //    }
-        //    LinearLayoutManager::GetSizes(inRect.height(), verticalProportions, verticalSizes);
-        //}
-        //
-        //int offsetX = 0;
-        //int offsetY = 0;
-        //for (size_t colIdx = 0; colIdx != outRects.numColumns(); ++colIdx)
-        //{
-        //    int width = horizontalSizes[colIdx];
-        //    for (size_t rowIdx = 0; rowIdx != outRects.numRows(); ++rowIdx)
-        //    {
-        //        int height = verticalSizes[rowIdx];
-        //        outRects.set(rowIdx, colIdx, Rect(offsetX, offsetY, width, height));
-        //        offsetY += height;
-        //    }
-        //    offsetX += width;
-        //    offsetY = 0;
-        //}
+        // Get vertical sizes
+        {      
+            std::vector<SizeInfo> verticalProportions;
+            for (size_t rowIdx = 0; rowIdx != inSizeInfos.numRows(); ++rowIdx)
+            {
+                verticalProportions.push_back(inSizeInfos.get(rowIdx, 0).Vertical);
+            }
+            LinearLayoutManager::GetSizes(inRect.height(), verticalProportions, verticalSizes);
+        }
+        
+        int offsetX = 0;
+        int offsetY = 0;
+        for (size_t colIdx = 0; colIdx != outRects.numColumns(); ++colIdx)
+        {
+            int width = horizontalSizes[colIdx];
+            for (size_t rowIdx = 0; rowIdx != outRects.numRows(); ++rowIdx)
+            {
+                int height = verticalSizes[rowIdx];
+                outRects.set(rowIdx, colIdx, Rect(offsetX, offsetY, width, height));
+                offsetY += height;
+            }
+            offsetX += width;
+            offsetY = 0;
+        }
     }
 
 

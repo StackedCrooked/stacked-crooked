@@ -8,6 +8,7 @@
 
 namespace Utils
 {
+
     class CurrentDirectoryChanger
     {
     public:
@@ -19,6 +20,19 @@ namespace Utils
         CurrentDirectoryChanger(const CurrentDirectoryChanger &);
         CurrentDirectoryChanger & operator=(const CurrentDirectoryChanger &);
 	    TCHAR mOldDir[MAX_PATH];
+    };
+
+
+    // Initializes Windows Common Controls
+    class CommonControlsInitializer
+    {
+    public:
+        CommonControlsInitializer();
+
+        bool ok() const;
+
+    private:
+        bool mSuccess;
     };
 
     std::string getCurrentDirectory();

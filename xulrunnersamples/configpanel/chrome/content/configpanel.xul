@@ -2,18 +2,19 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://configpanel/locale/configpanel.dtd">
 <window title="Config Panel"
-		width="480"
-		height="300"
-		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
-		>
-		<grid flex="1"> 
+		    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+>
+  <grid flex="1">
     <columns>
       <column flex="0"></column>
       <column flex="1"></column>
     </columns>
     <rows>
       <row>
-        <label style="text-align: right" value="&UPLOAD_TO;"/>
+        <hbox align="center">
+          <spacer flex="1"/>
+          <label value="&UPLOAD_TO;"/>
+        </hbox>
         <menulist>
           <menupopup>
             <menuitem label="StackedCrooked" />
@@ -21,7 +22,10 @@
         </menulist>
       </row>
       <row>
-        <label style="text-align:right" value="&ADD_TO_SET;"></label>
+        <hbox align="center">
+          <spacer flex="1" />
+          <label value="&ADD_TO_SET;" />
+        </hbox>
         <hbox align="center">
           <menulist flex="1">
             <menupopup>
@@ -34,15 +38,21 @@
         </hbox>
       </row>
       <row>
-        <label style="text-align:right" value="&TAGS;"></label>
-        <textbox ></textbox>
+        <hbox align="center">
+          <spacer flex="1" />
+          <label value="&TAGS;" />
+        </hbox>
+        <textbox />
       </row>
       <row>
-        <spacer></spacer>
-        <description value="&TAGS_DESCRIPTION;"></description>
+        <spacer/>
+        <description>&TAGS_DESCRIPTION;</description>
       </row>
       <row>
-        <label style="text-align:right" value="&SHOW_TO;"></label>
+        <hbox align="center">
+          <spacer flex="1" />
+          <label value="&SHOW_TO;" />
+        </hbox>
         <menulist>
           <menupopup>
             <menuitem label="&TO_EVERYONE;"></menuitem>
@@ -50,20 +60,23 @@
           </menupopup>
         </menulist>
       </row>
-      <row flex="1">
-        <spacer></spacer>
+      <row>
+        <spacer/>
         <hbox>
           <checkbox flex="1" checked="true" label="Allow ratings?"></checkbox>
           <checkbox flex="1" checked="true" label="Allow comments?"></checkbox>
         </hbox>
       </row>
-      <row>
-        <spacer ></spacer>
-        <hbox align="center">
-          <spacer flex="2"></spacer>
-          <button flex="1" label="Upload"></button>
-          <button flex="1" label="Cancel"></button>
-        </hbox>
+      <row flex="1">
+        <spacer/>
+        <vbox>
+          <spacer flex="1" />
+          <hbox align="center">
+            <spacer flex="2"></spacer>
+            <button flex="1" label="Upload"></button>
+            <button flex="1" label="Cancel"></button>
+          </hbox>
+        </vbox>
       </row>
     </rows>
   </grid>

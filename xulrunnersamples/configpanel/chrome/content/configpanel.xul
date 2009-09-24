@@ -46,7 +46,7 @@
       </row>
       <row>
         <spacer/>
-        <description>&TAGS_DESCRIPTION;</description>
+        <description value="&TAGS_DESCRIPTION;">&TAGS_DESCRIPTION;</description>
       </row>
       <row>
         <hbox align="center">

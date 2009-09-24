@@ -3,5 +3,13 @@
 
 <window id="main" title="Hello" width="300" height="300"
 xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <caption label="Hello World"/>
+  <hbox>
+    <spacer flex="1"></spacer>
+    <vbox>
+      <label value="a"></label>
+      <label value="twee"></label>
+      <label value="drie"></label>
+    </vbox>
+    <spacer flex="1"></spacer>
+  </hbox>
 </window>

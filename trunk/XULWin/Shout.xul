@@ -2,7 +2,7 @@
 <window title="Shout!">
   <hbox align="stretch">
     <image id="NetlogToolbar-ShoutDialog-Image"
-           src="chrome/skin/icons/shout.jpg"/>
+           src="chrome://XULWin/skin/icons/shout.jpg"/>
     <vbox align="stretch" flex="1">
       <textbox id="NetlogToolbar-ShoutBox"
                oninput="NetlogToolbar.onShoutTextBoxInput();"

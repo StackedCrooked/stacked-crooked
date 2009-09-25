@@ -166,6 +166,18 @@ namespace XULWin
     }
     
     
+    std::string Element::getDocumentAttribute(const std::string & inName) const
+    {
+        std::string result;
+        AttributesMapping::const_iterator it = mAttributes.find(inName);
+        if (it != mAttributes.end())
+        {
+            result = it->second;
+        }
+        return result;
+    }
+    
+    
     void Element::setStyle(const std::string & inName, const std::string & inValue)
     {
         std::string type = this->type();

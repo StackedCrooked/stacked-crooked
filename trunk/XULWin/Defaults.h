@@ -37,6 +37,8 @@ namespace XULWin
 
         static int checkBoxMinimumWidth() { return 20; }
 
+        static int scrollbarWidth() { return 17; }
+
 
         namespace Attributes
         {

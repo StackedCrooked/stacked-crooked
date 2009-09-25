@@ -675,6 +675,24 @@ namespace XULWin
     };
 
 
+    class NativeScrollbar : public NativeControl
+    {
+    public:
+        typedef NativeControl Super;
+
+        NativeScrollbar(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateMinimumWidth() const;
+
+        virtual int calculateMinimumHeight() const;
+
+        bool initAttributeControllers();
+
+    private:
+        static DWORD GetFlags(const AttributesMapping & inAttributesMapping);
+    };
+
+
 } // namespace XULWin
 
 

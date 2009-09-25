@@ -2120,4 +2120,64 @@ namespace XULWin
     }
 
 
+    DWORD NativeScrollbar::GetFlags(const AttributesMapping & inAttributesMapping)
+    {
+        DWORD flags = 0;
+        AttributesMapping::const_iterator it = inAttributesMapping.find("orient");
+        if (it != inAttributesMapping.end())
+        {
+            const std::string & orient = it->second;
+            if (orient == "horizontal")
+            {
+                flags |= SBS_HORZ | SBS_RIGHTALIGN;
+            }
+            else if (orient == "vertical")
+            {
+                flags |= SBS_VERT | SBS_BOTTOMALIGN;
+            }
+            else
+            {
+                ReportError("Invalid orient found for scrollbar!");
+            }
+        }
+        return flags;
+    }
+    
+    
+    NativeScrollbar::NativeScrollbar(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping,
+                      TEXT("SCROLLBAR"),
+                      0, // exStyle
+                      GetFlags(inAttributesMapping))
+    {
+        mExpansive = true;
+    }
+
+
+    int NativeScrollbar::calculateMinimumWidth() const
+    {
+        return Defaults::scrollbarWidth();
+    }
+
+    
+    int NativeScrollbar::calculateMinimumHeight() const
+    {
+        return Defaults::scrollbarWidth();
+    }
+
+
+    bool NativeScrollbar::initAttributeControllers()
+    {
+        // TODO: implement!
+        //<scrollbar
+        //id="identifier"
+        //orient="horizontal"
+        //curpos="20"
+        //maxpos="100"
+        //increment="1"
+        //pageincrement="10"/>
+        return Super::initAttributeControllers();
+    }
+
+
 } // namespace XULWin

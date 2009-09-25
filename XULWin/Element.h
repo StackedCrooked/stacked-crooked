@@ -544,6 +544,22 @@ namespace XULWin
     };
 
 
+    class Scrollbar : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Scrollbar>(inParent, inAttr); }
+
+        static const char * Type() { return "scrollbar"; }
+
+        virtual ~Scrollbar();
+
+    private:
+        friend class Element;
+        Scrollbar(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
 } // XULWin
 
 

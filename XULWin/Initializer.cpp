@@ -40,6 +40,7 @@ namespace XULWin
         ElementFactory::Instance().registerElement<ProgressMeter>();
         ElementFactory::Instance().registerElement<Deck>();
         ElementFactory::Instance().registerElement<Image>();
+        ElementFactory::Instance().registerElement<Scrollbar>();
     }
 
 

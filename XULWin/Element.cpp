@@ -606,4 +606,17 @@ namespace XULWin
     }
 
 
+    Scrollbar::Scrollbar(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Scrollbar::Type(),
+                inParent,
+                new Decorator(new NativeScrollbar(inParent->impl(), inAttributesMapping)))
+    {
+    }
+
+
+    Scrollbar::~Scrollbar()
+    {
+    }
+
+
 } // XULWin

@@ -1,0 +1,1 @@
+pref("toolkit.defaultChromeURI", "chrome://login/content/login.xul");

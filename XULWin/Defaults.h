@@ -15,6 +15,10 @@ namespace XULWin
 
         static int controlHeight() { return 21; }
 
+        // default control width is rarely used since
+        // we usually calculate the minimum width
+        static int controlWidth() { return 40; }        
+
         static int buttonHeight() { return 23; }
 
         static int textPadding() { return 12; }

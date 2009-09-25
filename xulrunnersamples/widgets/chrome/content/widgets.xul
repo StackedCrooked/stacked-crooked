@@ -30,7 +30,7 @@
 <window id="openLocation"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         class="dialog"
-        style="width: 250px;"
+        style="width: 480px; height:320px"
         orient="vertical">
 
   <script>

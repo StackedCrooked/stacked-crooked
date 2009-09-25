@@ -3,6 +3,7 @@
 #include "Layout.h"
 #include "Utils/ErrorReporter.h"
 #include "Utils/WinUtils.h"
+#include "Poco/String.h"
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <CommCtrl.h>
@@ -168,6 +169,16 @@ namespace XULWin
             return "";
         }
     }
+    
+    
+    int CssString2Size(const std::string & inString, int inDefault)
+    {
+        if (inString.rfind("px") != std::string::npos)
+        {
+            return String2Int(Poco::replace(inString, "px", ""), inDefault);
+        }
+        return String2Int(inString, inDefault);
+    }
 
 
     int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
@@ -208,6 +219,23 @@ namespace XULWin
     bool ElementImpl::expansive() const
     {
         return mExpansive;
+    }
+    
+    
+    bool ElementImpl::getStyle(const std::string & inName, std::string & outValue)
+    {
+        StyleControllers::iterator it = mStyleControllers.find(inName);
+        if (it != mStyleControllers.end())
+        {
+            const StyleController & controller = it->second;
+            const StyleGetter & getter = controller.getter;
+            if (getter)
+            {
+                outValue = getter();
+                return true;
+            }
+        }
+        return false;
     }
     
     
@@ -270,6 +298,36 @@ namespace XULWin
 
     bool ElementImpl::initStyleControllers()
     {
+        struct Helper
+        {
+            static void SetWidth(ElementImpl * inEl, int inWidth)
+            {
+                Rect r = inEl->clientRect();
+                inEl->move(r.x(), r.y(), inWidth, r.height());
+            }
+
+            static int GetWidth(ElementImpl * inEl)
+            {
+                return inEl->clientRect().width();
+            }
+            static void SetHeight(ElementImpl * inEl, int inHeight)
+            {
+                Rect r = inEl->clientRect();
+                inEl->move(r.x(), r.y(), r.width(), inHeight);
+            }
+
+            static int GetHeight(ElementImpl * inEl)
+            {
+                return inEl->clientRect().height();
+            }
+        };
+        StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
+        StyleSetter cssWidthSetter = boost::bind(&Helper::SetWidth, this, boost::bind(&CssString2Size, _1, Defaults::controlWidth()));
+        setStyleController("width", StyleController(cssWidthGetter, cssWidthSetter));
+
+        StyleGetter cssHeightGetter = boost::bind(&Int2String, boost::bind(&Helper::GetHeight, this));
+        StyleSetter cssHeightSetter = boost::bind(&Helper::SetHeight, this, boost::bind(&CssString2Size, _1, Defaults::controlHeight()));
+        setStyleController("height", StyleController(cssHeightGetter, cssHeightSetter));
         return true;
     }
 
@@ -277,11 +335,10 @@ namespace XULWin
     void ElementImpl::setStyleController(const std::string & inAttr, const StyleController & inController)
     {
         StyleControllers::iterator it = mStyleControllers.find(inAttr);
-        if (it != mStyleControllers.end())
+        if (it == mStyleControllers.end())
         {
-            mStyleControllers.erase(it);
+            mStyleControllers.insert(std::make_pair(inAttr, inController));
         }
-        mStyleControllers.insert(std::make_pair(inAttr, inController));
     }
 
 
@@ -436,7 +493,7 @@ namespace XULWin
             TEXT("XULWin::Window"),
             TEXT(""),
             WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW,
-            1, 1, 1, 1,
+            CW_USEDEFAULT, CW_USEDEFAULT, Defaults::windowWidth(), Defaults::windowHeight(),
             0,
             (HMENU)0,
             mModuleHandle,
@@ -469,6 +526,14 @@ namespace XULWin
         RECT rc;
         ::GetClientRect(handle(), &rc);
         return Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+    }
+    
+    
+    Rect NativeWindow::windowRect() const
+    {
+        RECT rw;
+        ::GetWindowRect(handle(), &rw);
+        return Rect(rw.left, rw.top, rw.right - rw.left, rw.bottom - rw.top);
     }
     
     
@@ -551,25 +616,27 @@ namespace XULWin
 
 
     void NativeWindow::showModal()
-    {      
+    {  
+        Rect rect = windowRect();
+        int minWidth = calculateMinimumWidth();
+        int minHeight = calculateMinimumHeight();
+        int x = rect.x();
+        int y = rect.y();
+        int w = rect.width();
+        int h = rect.height();
+        if (w < minWidth)
         {
-            SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-            int w = String2Int(owningElement()->getDocumentAttribute("width"), calculateMinimumWidth()) + sizeDiff.cx;
-            int h = String2Int(owningElement()->getDocumentAttribute("height"), calculateMinimumHeight()) + sizeDiff.cy;
-            int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
-            int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
-            move(x, y, w, h);
-            rebuildLayout();
-        }   
+            w = minWidth;
+        }
+        if (h < minHeight)
         {
-            SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-            int w = String2Int(owningElement()->getDocumentAttribute("width"), calculateMinimumWidth()) + sizeDiff.cx;
-            int h = String2Int(owningElement()->getDocumentAttribute("height"), calculateMinimumHeight()) + sizeDiff.cy;
-            int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
-            int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
-            move(x, y, w, h);
-            rebuildLayout();
-        }   
+            h = minHeight;
+        }
+        x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
+        y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
+        move(x, y, w, h);
+        move(x, y, w, h);
+        rebuildLayout();
         ::ShowWindow(handle(), SW_SHOW);
         ::UpdateWindow(handle());
 
@@ -943,6 +1010,12 @@ namespace XULWin
         {
             sControlsById.erase(itById);
         }
+    }
+
+
+    bool NativeControl::initStyleControllers()
+    {
+        return Super::initStyleControllers();
     }
 
 

@@ -94,6 +94,8 @@ namespace XULWin
 
         bool getAttribute(const std::string & inName, std::string & outValue);
 
+        bool getStyle(const std::string & inName, std::string & outValue);
+
         virtual bool setStyle(const std::string & inName, const std::string & inValue);
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
@@ -187,6 +189,8 @@ namespace XULWin
 
         virtual Rect clientRect() const;
 
+        virtual Rect windowRect() const;
+
         virtual bool initAttributeControllers();
 
         virtual bool initStyleControllers();
@@ -205,6 +209,8 @@ namespace XULWin
         NativeControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
 
         virtual ~NativeControl();
+        
+        bool initStyleControllers();
 
         virtual void rebuildLayout();
 

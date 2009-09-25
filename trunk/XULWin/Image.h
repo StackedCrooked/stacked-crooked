@@ -20,7 +20,7 @@ namespace XULWin
     
     private:
         friend class Element;
-        Image(Element * inParent);
+        Image(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

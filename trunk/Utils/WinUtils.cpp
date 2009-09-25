@@ -351,5 +351,6 @@ namespace Utils
     {
         ::ShowWindow(inHandle, inVisible ? SW_SHOW : SW_HIDE);
     }
+
     
 } // namespace Utils

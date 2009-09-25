@@ -1,6 +1,4 @@
-- Grid no longer supports flex value, fix this.
 - Password field
-- Fix min width for grid (see login dialog problems)
 - Implement width and height attr for image, box...
 - Make window with toolbar, status-bar, contentpant with scrollbar
 - Add scrollbar

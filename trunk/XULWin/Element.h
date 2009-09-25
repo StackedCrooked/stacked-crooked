@@ -77,7 +77,7 @@ namespace XULWin
         static ElementPtr Create(Element * inParent,
                                  const AttributesMapping & inAttr)
         {
-            ElementPtr result(new T(inParent));
+            ElementPtr result(new T(inParent, inAttr));
             if (inParent)
             {
                 inParent->addChild(result);
@@ -132,7 +132,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Window(Element * inParent);
+        Window(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -146,7 +146,7 @@ namespace XULWin
     
     private:
         friend class Element;
-        Button(Element * inParent);
+        Button(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -162,7 +162,7 @@ namespace XULWin
     
     private:
         friend class Element;
-        Label(Element * inParent);
+        Label(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -176,7 +176,7 @@ namespace XULWin
     
     private:
         friend class Element;
-        Description(Element * inParent);
+        Description(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -191,7 +191,7 @@ namespace XULWin
     
     private:
         friend class Element;
-        Text(Element * inParent);
+        Text(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -205,7 +205,7 @@ namespace XULWin
     
     private:
         friend class Element;
-        TextBox(Element * inParent);
+        TextBox(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -219,7 +219,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        CheckBox(Element * inParent);
+        CheckBox(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -232,7 +232,7 @@ namespace XULWin
         static const char * Type() { return "box"; }
     private:
         friend class Element;
-        Box(Element * inParent);
+        Box(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -246,7 +246,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        HBox(Element * inParent);
+        HBox(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -260,7 +260,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        VBox(Element * inParent);
+        VBox(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -279,7 +279,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        MenuList(Element * inParent);
+        MenuList(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -299,7 +299,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        MenuPopup(Element * inParent);
+        MenuPopup(Element * inParent, const AttributesMapping & inAttributesMapping);
 
         // This flag is set to true when destructor is called.
         // It is used to prevent that the destruction of
@@ -328,7 +328,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        MenuItem(Element * inParent);
+        MenuItem(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -344,7 +344,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Separator(Element * inParent);
+        Separator(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -360,7 +360,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Spacer(Element * inParent);
+        Spacer(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -376,7 +376,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        MenuButton(Element * inParent);
+        MenuButton(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -398,7 +398,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Grid(Element * inParent);
+        Grid(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -417,7 +417,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Rows(Element * inParent);
+        Rows(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -436,7 +436,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Columns(Element * inParent);
+        Columns(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -452,7 +452,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Row(Element * inParent);
+        Row(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -468,7 +468,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Column(Element * inParent);
+        Column(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -485,7 +485,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        RadioGroup(Element * inParent);
+        RadioGroup(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -502,7 +502,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Radio(Element * inParent);
+        Radio(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -518,7 +518,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        ProgressMeter(Element * inParent);
+        ProgressMeter(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -534,7 +534,7 @@ namespace XULWin
 
     private:
         friend class Element;
-        Deck(Element * inParent);
+        Deck(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

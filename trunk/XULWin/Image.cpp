@@ -48,7 +48,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeImage(ElementImpl * inParent);
+        NativeImage(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -70,16 +70,16 @@ namespace XULWin
     };
 
 
-    Image::Image(Element * inParent) :
+    Image::Image(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Image::Type(),
                 inParent,
-                new NativeImage(inParent->impl()))
+                new NativeImage(inParent->impl(), inAttributesMapping))
     {
     }
 
     
-    NativeImage::NativeImage(ElementImpl * inParent) :
-        NativeControl(inParent, L"STATIC", 0, 0)
+    NativeImage::NativeImage(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, L"STATIC", 0, 0)
     {
     }
 

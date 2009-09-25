@@ -33,7 +33,7 @@
       </row>
       <row align="center">
         <label value="&TAGS;" />
-        <textbox />
+        <textbox type="password"/>
       </row>
       <row align="stretch">
         <spacer/>

@@ -4,9 +4,9 @@
 <window title="Config Panel"
 		    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 >
-  <grid flex="1">
+  <grid>
     <columns>
-      <column align="end" flex="1"></column>
+      <column flex="0" align="end" ></column>
       <column flex="1"></column>
     </columns>
     <rows>
@@ -35,7 +35,7 @@
         <label value="&TAGS;" />
         <textbox />
       </row>
-      <row>
+      <row align="stretch">
         <spacer/>
         <description value="&TAGS_DESCRIPTION;">&TAGS_DESCRIPTION;</description>
       </row>

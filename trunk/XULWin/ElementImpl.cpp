@@ -34,12 +34,33 @@ namespace XULWin
     }
 
 
+    int String2Int(const std::string & inValue, int inDefault)
+    {
+        int result = inDefault;
+        try
+        {
+            if (!inValue.empty())
+            {
+                result = boost::lexical_cast<int>(inValue);
+            }
+        }
+        catch (std::exception &)
+        {
+            // ok, too bad
+        }
+        return result;
+    }
+
+
     int String2Int(const std::string & inValue)
     {
         int result = 0;
         try
         {
-            result = boost::lexical_cast<int>(inValue);
+            if (!inValue.empty())
+            {
+                result = boost::lexical_cast<int>(inValue);
+            }
         }
         catch (std::exception &)
         {
@@ -49,12 +70,16 @@ namespace XULWin
     }
 
 
-    Orientation String2Orientation(const std::string & inValue)
+    Orientation String2Orientation(const std::string & inValue, Orientation inDefault)
     {
-        Orientation result = VERTICAL;
+        Orientation result = inDefault;
         if (inValue == "horizontal")
         {
             result = HORIZONTAL;
+        }
+        else if (inValue == "vertical")
+        {
+            result = VERTICAL;
         }
         return result;
     }
@@ -407,7 +432,7 @@ namespace XULWin
     int NativeWindow::minimumWidth() const
     {
         int result = 0;
-        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"));
+        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"), VERTICAL);
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
@@ -428,7 +453,7 @@ namespace XULWin
     int NativeWindow::minimumHeight() const
     {
         int result = 0;
-        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"));
+        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"), VERTICAL);
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
@@ -453,18 +478,18 @@ namespace XULWin
 
     
     void NativeWindow::rebuildLayout()
-    {        
-        LinearLayoutManager layout(String2Orientation(owningElement()->getAttribute("orient")));
+    {
+        LinearLayoutManager layout(String2Orientation(owningElement()->getAttribute("orient"), VERTICAL));
         bool horizontal = layout.orientation() == HORIZONTAL;
         
-        std::vector<SizeInfo> sizeInfos;
+        std::vector<ExtendedSizeInfo> sizeInfos;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child = owningElement()->children()[idx];
             int flexValue = String2Int(child->getAttribute("flex"));
             int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
             int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
-            sizeInfos.push_back(SizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
+            sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
         }
         
         std::vector<Rect> childRects;
@@ -1138,10 +1163,11 @@ namespace XULWin
 
     int NativeDescription::minimumWidth() const
     {
-        std::string text = Utils::getWindowText(handle());
-        int width = Utils::getTextSize(handle(), text).cx;
-        width += Defaults::textPadding();
-        return width;
+        //std::string text = Utils::getWindowText(handle());
+        //int width = Utils::getTextSize(handle(), text).cx;
+        //width += Defaults::textPadding();
+        //return width;
+        return 0;
     }
 
     
@@ -1167,7 +1193,7 @@ namespace XULWin
 
     bool NativeBox::initAttributeControllers()
     {        
-        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&String2Orientation, _1));
+        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&String2Orientation, _1, VERTICAL));
         AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&NativeBox::getOrientation, this));
         setAttributeController("orient", AttributeController(orientationGetter, orientationSetter));
         setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
@@ -1272,14 +1298,14 @@ namespace XULWin
         LinearLayoutManager layout(mOrientation);
         bool horizontal = mOrientation == HORIZONTAL;
         
-        std::vector<SizeInfo> sizeInfos;
+        std::vector<ExtendedSizeInfo> sizeInfos;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child = owningElement()->children()[idx];
             int flexValue = String2Int(child->getAttribute("flex"));
             int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
             int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
-            sizeInfos.push_back(SizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
+            sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
         }
         
         std::vector<Rect> childRects;
@@ -1441,53 +1467,18 @@ namespace XULWin
     int NativeGrid::minimumWidth() const
     {
         int result = 0;
-        ElementPtr rows;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child = owningElement()->children()[idx];
-            if (child->type() == Rows::Type())
+            if (NativeColumns * cols = child->impl()->downcast<NativeColumns>())
             {
-                rows = child;
-                break;
-            }
-        }
-
-        if (!rows)
-        {
-            ReportError("Rows element not found in grid!");
-            return 0;
-        }
-
-        for (size_t idx = 0; idx != rows->children().size(); ++idx)
-        {
-            ElementPtr el = rows->children()[idx];
-            if (el->type() == Row::Type())
-            {
-                int w = 0;
-                if (Row * row = el->downcast<Row>())
+                for (size_t idx = 0; idx != cols->owningElement()->children().size(); ++idx)
                 {
-                    const Children & children = row->children();
-                    for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
+                    if (NativeColumn * col = cols->owningElement()->children()[idx]->impl()->downcast<NativeColumn>())
                     {
-                        ElementPtr child = children[childIdx];
-                        w += child->impl()->minimumWidth();
-                    }
-                    if (w > result)
-                    {
-                        result = w;
+                        result += col->minimumWidth();
                     }
                 }
-            }
-        }
-        
-        ElementPtr columns;
-        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
-        {
-            ElementPtr child = owningElement()->children()[idx];
-            if (child->type() == Columns::Type())
-            {
-                columns = child;
-                break;
             }
         }
         return result;
@@ -1497,42 +1488,17 @@ namespace XULWin
     int NativeGrid::minimumHeight() const
     {
         int result = 0;
-        ElementPtr rows;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child = owningElement()->children()[idx];
-            if (child->type() == Rows::Type())
+            if (NativeRows * rows = child->impl()->downcast<NativeRows>())
             {
-                rows = child;
-                break;
-            }
-        }
-
-        if (!rows)
-        {
-            ReportError("Rows element not found in grid!");
-            return 0;
-        }
-
-        for (size_t idx = 0; idx != rows->children().size(); ++idx)
-        {
-            ElementPtr el = rows->children()[idx];
-            if (el->type() == Row::Type())
-            {
-                int maxHeight = 0;
-                if (Row * row = el->downcast<Row>())
+                for (size_t idx = 0; idx != rows->owningElement()->children().size(); ++idx)
                 {
-                    const Children & children = row->children();
-                    for (size_t childIdx = 0; childIdx != children.size(); ++childIdx)
+                    if (NativeRow * row = rows->owningElement()->children()[idx]->impl()->downcast<NativeRow>())
                     {
-                        ElementPtr child = children[childIdx];
-                        int h = child->impl()->minimumHeight();
-                        if (h > maxHeight)
-                        {
-                            maxHeight = h;
-                        }
+                        result += row->minimumHeight();
                     }
-                    result += maxHeight;
                 }
             }
         }
@@ -1542,6 +1508,9 @@ namespace XULWin
 
     void NativeGrid::rebuildLayout()
     {
+        //
+        // Initialize helper variables
+        //
         int numCols = 0;
         int numRows = 0;
         ElementPtr columns;
@@ -1570,11 +1539,44 @@ namespace XULWin
             return;
         }
 
+
+        //
+        // Get column size infos (min width and flex)
+        //
+        std::vector<SizeInfo> colWidths;
+        for (size_t colIdx = 0; colIdx != columns->children().size(); ++colIdx)
+        {
+            if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
+            {
+                colWidths.push_back(SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)), col->minimumWidth()));
+            }
+        }
+
+
+        //
+        // Get row size infos (min height and flex)
+        //
+        std::vector<SizeInfo> rowHeights;
+        for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
+        {
+            if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+            {
+                rowHeights.push_back(SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)), row->minimumHeight()));
+            }
+        }
+
+
+        //
+        // Get bounding rect for all cells
+        //
         GenericGrid<Rect> outerRects(numRows, numCols);
+        GridLayoutManager::GetOuterRects(clientRect(), colWidths, rowHeights, outerRects);
+
+
+        //
+        // Get size info for each cell
+        //
         GenericGrid<CellInfo> widgetInfos(numRows, numCols, CellInfo(0, 0, Start, Start));
-        Rect rc = clientRect();
-        int offsetX = rc.x();
-        int offsetY = rc.y();
         for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
         {
             if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
@@ -1584,14 +1586,6 @@ namespace XULWin
                 {
                     if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
                     {
-                        int colWidth = column->minimumWidth();
-                        int x = offsetX;
-                        int y = offsetY;
-                        int w = colWidth;
-                        int h = rowHeight;
-                        outerRects.set(rowIdx, colIdx, Rect(x, y, w, h));
-                        offsetX += colWidth;
-
                         if (colIdx < row->owningElement()->children().size())
                         {                            
                             ElementImpl * child = row->owningElement()->children()[colIdx]->impl();
@@ -1603,12 +1597,20 @@ namespace XULWin
                         }
                     }
                 }
-                offsetX = rc.x();
-                offsetY += rowHeight;
             }
         }
+
+
+        //
+        // Get inner rect for each cell
+        //
         GenericGrid<Rect> innerRects(numRows, numCols);
         GridLayoutManager::GetInnerRects(outerRects, widgetInfos, innerRects);
+
+
+        //
+        // Apply inner rect to each widget inside a cell
+        //
         for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
         {
             for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
@@ -1625,6 +1627,10 @@ namespace XULWin
                 }
             }
         }
+
+        //
+        // Rebuild child layoutss
+        //
         rebuildChildLayouts();
     }
 

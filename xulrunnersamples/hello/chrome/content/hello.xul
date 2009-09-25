@@ -4,12 +4,22 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        align="stretch"
 >
-  <hbox align="stretch">
-  <button label="The button is not clicked"></button>
-  <vbox>
-    <button label="The button is not clicked"></button>
-    <button label="The button is not clicked"></button>      
-  </vbox>
-  </hbox>
+  <grid flex="1">
+    <columns>
+      <column flex="1" ></column>
+      <column flex="1" ></column>
+    </columns>
+    <rows>
+      <row align="center" flex="1">
+        <label value="Test"></label>
+        <button label="Test stretch align"></button>
+      </row>
+      <row flex="1">
+        <label value="Test"></label>
+        <button label="Test stretch align"></button>
+      </row>
+    </rows>
+  </grid>
 </window>

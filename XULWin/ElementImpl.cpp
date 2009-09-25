@@ -1570,49 +1570,59 @@ namespace XULWin
             return;
         }
 
-        GenericGrid<GridSizeInfo> proportions(numRows, numCols,
-                                              GridSizeInfo(SizeInfo(Defaults::Attributes::flex(), 1, 1, false),   // just some random value will
-                                                           SizeInfo(Defaults::Attributes::flex(), 1, 1, false))); // be overwritten inside loop
-        for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
+        GenericGrid<Rect> outerRects(numRows, numCols);
+        GenericGrid<CellInfo> widgetInfos(numRows, numCols, CellInfo(0, 0, Start, Start));
+        Rect rc = clientRect();
+        int offsetX = rc.x();
+        int offsetY = rc.y();
+        for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
         {
-            for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
+            if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
             {
-                if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+                int rowHeight = row->minimumHeight();
+                for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
                 {
-                    assert(row->owningElement()->type() == Row::Type());
-
                     if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
                     {
-                        assert(column->owningElement()->type() == Column::Type());
+                        int colWidth = column->minimumWidth();
+                        int x = offsetX;
+                        int y = offsetY;
+                        int w = colWidth;
+                        int h = rowHeight;
+                        outerRects.set(rowIdx, colIdx, Rect(x, y, w, h));
+                        offsetX += colWidth;
 
-                        ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-                        if (child)
-                        {
-                            ErrorCatcher ignoreBadCast;
-                            int hflex = String2Int(column->owningElement()->getAttribute("flex"));
-                            int vflex = String2Int(row->owningElement()->getAttribute("flex"));
-                            proportions.set(
-                                rowIdx, colIdx,
-                                GridSizeInfo(SizeInfo(hflex, column->minimumWidth(), column->minimumHeight(), false),
-                                             SizeInfo(vflex, row->minimumHeight(), row->minimumWidth(), false)));
+                        if (colIdx < row->owningElement()->children().size())
+                        {                            
+                            ElementImpl * child = row->owningElement()->children()[colIdx]->impl();
+                            widgetInfos.set(rowIdx, colIdx,
+                                            CellInfo(child->minimumWidth(),
+                                                     child->minimumHeight(), 
+                                                     String2Align(row->owningElement()->getAttribute("align"), Stretch),
+                                                     String2Align(column->owningElement()->getAttribute("align"), Stretch)));
                         }
                     }
                 }
+                offsetX = rc.x();
+                offsetY += rowHeight;
             }
         }
-
-        GenericGrid<Rect> rects(numRows, numCols);
-        GridLayoutManager::GetRects(clientRect(), proportions, rects);
-        for (size_t colIdx = 0; colIdx != rects.numColumns(); ++colIdx)
+        GenericGrid<Rect> innerRects(numRows, numCols);
+        GridLayoutManager::GetInnerRects(outerRects, widgetInfos, innerRects);
+        for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
         {
-            for (size_t rowIdx = 0; rowIdx != rects.numRows(); ++rowIdx)
+            for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
             {
-                Rect & childRect = rects.get(rowIdx, colIdx);
-                ElementPtr child = rows->children()[rowIdx]->children()[colIdx];
-                child->impl()->move(childRect.x(),
-                                    childRect.y(),
-                                    childRect.width(),
-                                    childRect.height());
+                if (rowIdx < rows->children().size())
+                {
+                    ElementPtr rowEl = rows->children()[rowIdx];
+                    if (colIdx < rowEl->children().size())
+                    {
+                        ElementImpl * child = rowEl->children()[colIdx]->impl();
+                        const Rect & r = innerRects.get(rowIdx, colIdx);
+                        child->move(r.x(), r.y(), r.width(), r.height());
+                    }
+                }
             }
         }
         rebuildChildLayouts();
@@ -1691,7 +1701,7 @@ namespace XULWin
                 {
                     if (child->children()[ownI]->impl()->commandId() == commandId())
                     {
-                        ownIndex = idx;
+                        ownIndex = ownI;
                     }
                 }
             }

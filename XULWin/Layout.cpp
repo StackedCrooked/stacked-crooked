@@ -188,48 +188,71 @@ namespace XULWin
     //        outRects.push_back(Rect(x, y, width, height));
     //    }
     //}
-
     
-    void GridLayoutManager::GetRects(const Rect & inRect,
-                                     const Utils::GenericGrid<GridSizeInfo> & inSizeInfos,
-                                     Utils::GenericGrid<Rect> & outRects)
-    {
-        std::vector<int> horizontalSizes;
-        std::vector<int> verticalSizes;
-
-        // Get horizontal sizes
-        {   
-            std::vector<SizeInfo> horizontalProportions;         
-            for (size_t colIdx = 0; colIdx != inSizeInfos.numColumns(); ++colIdx)
-            {
-                horizontalProportions.push_back(inSizeInfos.get(0, colIdx).Horizontal);
-            }
-            LinearLayoutManager::GetSizes(inRect.width(), horizontalProportions, horizontalSizes);
-        }
-
-        // Get vertical sizes
-        {      
-            std::vector<SizeInfo> verticalProportions;
-            for (size_t rowIdx = 0; rowIdx != inSizeInfos.numRows(); ++rowIdx)
-            {
-                verticalProportions.push_back(inSizeInfos.get(rowIdx, 0).Vertical);
-            }
-            LinearLayoutManager::GetSizes(inRect.height(), verticalProportions, verticalSizes);
-        }
-        
+    void GridLayoutManager::GetOuterRects(const Rect & inRect,
+                                          const std::vector<int> & inColWidths,
+                                          const std::vector<int> & inRowHeights,
+                                          Utils::GenericGrid<Rect> & outRects)
+    {        
         int offsetX = 0;
         int offsetY = 0;
         for (size_t colIdx = 0; colIdx != outRects.numColumns(); ++colIdx)
         {
-            int width = horizontalSizes[colIdx];
+            int width = inColWidths[colIdx];
             for (size_t rowIdx = 0; rowIdx != outRects.numRows(); ++rowIdx)
             {
-                int height = verticalSizes[rowIdx];
+                int height = inRowHeights[rowIdx];
                 outRects.set(rowIdx, colIdx, Rect(offsetX, offsetY, width, height));
                 offsetY += height;
             }
             offsetX += width;
             offsetY = 0;
+        }
+    }
+
+    void GridLayoutManager::GetInnerRects(const Utils::GenericGrid<Rect> & inOuterRects,
+                                          const Utils::GenericGrid<CellInfo> & inWidgetInfos,
+                                          Utils::GenericGrid<Rect> & outInnerRects)
+    {
+        for (size_t rowIdx = 0; rowIdx != inOuterRects.numRows(); ++rowIdx)
+        {
+            for (size_t colIdx = 0; colIdx != inOuterRects.numColumns(); ++colIdx)
+            {
+                const Rect & outerRect = inOuterRects.get(rowIdx, colIdx);
+                const CellInfo & info = inWidgetInfos.get(rowIdx, colIdx);
+
+                int x = outerRect.x();
+                int y = outerRect.y();
+                int w = info.MinWidgetWidth;
+                int h = info.MinWidgetHeight;
+
+                if (info.ColAlign == Center)
+                {
+                    x = x + (outerRect.width() - info.MinWidgetWidth)/2;                    
+                }
+                else if (info.ColAlign == End)
+                {
+                    x = x + outerRect.width() - info.MinWidgetWidth;
+                }
+                else if (info.ColAlign == Stretch)
+                {
+                    w = outerRect.width();
+                }
+
+                if (info.RowAlign == Center)
+                {
+                    y = y + (outerRect.height() - info.MinWidgetHeight)/2;
+                }
+                else if (info.RowAlign == End)
+                {
+                    y = y + outerRect.height() - info.MinWidgetHeight;
+                }
+                else if (info.RowAlign == Stretch)
+                {
+                    h = outerRect.height();
+                }
+                outInnerRects.set(rowIdx, colIdx, Rect(x, y, w, h));
+            }
         }
     }
 

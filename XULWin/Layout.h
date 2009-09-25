@@ -187,22 +187,37 @@ namespace XULWin
     };
 
 
-    struct GridSizeInfo
+    struct CellInfo
     {
-        GridSizeInfo(const SizeInfo & inHorizontal, const SizeInfo & inVertical) :
-            Horizontal(inHorizontal), Vertical(inVertical) {}
+        CellInfo(int inMinWidgetWidth,
+                 int inMinWidgetHeight,
+                 Alignment inRowAlign,
+                 Alignment inColAlign) :
+            MinWidgetWidth(inMinWidgetWidth),
+            MinWidgetHeight(inMinWidgetHeight),
+            RowAlign(inRowAlign),
+            ColAlign(inColAlign)
+        {
+        }
 
-        SizeInfo Horizontal;
-        SizeInfo Vertical;
+        int MinWidgetWidth;
+        int MinWidgetHeight;
+        Alignment RowAlign;
+        Alignment ColAlign;
     };
 
     
     class GridLayoutManager
     {
     public:
-        static void GetRects(const Rect & inRect,
-                             const Utils::GenericGrid<GridSizeInfo> & inSizeInfos,
-                             Utils::GenericGrid<Rect> & outRects);
+        static void GetOuterRects(const Rect & inRect,
+                                  const std::vector<int> & inColWidths,
+                                  const std::vector<int> & inRowHeights,
+                                  Utils::GenericGrid<Rect> & outRects);
+
+        static void GetInnerRects(const Utils::GenericGrid<Rect> & inOuterRects,
+                                  const Utils::GenericGrid<CellInfo> & inWidgetInfos,
+                                  Utils::GenericGrid<Rect> & outInnerRects);
     };
 
 } // namespace XULWin

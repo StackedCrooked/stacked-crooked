@@ -141,7 +141,7 @@ namespace XULWin
     public:
         typedef ElementImpl Super;
 
-        NativeComponent(ElementImpl * inParent);
+        NativeComponent(ElementImpl * inParent, const AttributesMapping & inAttributes);
 
         virtual ~NativeComponent();
 
@@ -169,7 +169,7 @@ namespace XULWin
 
         static void Register(HMODULE inModuleHandle);
 
-        NativeWindow();
+        NativeWindow(const AttributesMapping & inAttributesMapping);
 
         void showModal();
 
@@ -198,7 +198,7 @@ namespace XULWin
     public:
         typedef NativeComponent Super;
 
-        NativeControl(ElementImpl * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
+        NativeControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
 
         virtual ~NativeControl();
 
@@ -241,7 +241,7 @@ namespace XULWin
     public:
         typedef ElementImpl Super;
 
-        VirtualControl(ElementImpl * inParent);
+        VirtualControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual ~VirtualControl();
 
@@ -345,7 +345,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeButton(ElementImpl * inParent);
+        NativeButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -358,7 +358,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeLabel(ElementImpl * inParent);
+        NativeLabel(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
@@ -375,7 +375,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeDescription(ElementImpl * inParent);
+        NativeDescription(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
@@ -390,7 +390,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeTextBox(ElementImpl * inParent);
+        NativeTextBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
@@ -399,6 +399,9 @@ namespace XULWin
         virtual int minimumHeight() const;
 
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
+
+    private:
+        static DWORD GetPasswordFlag(const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -407,7 +410,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeCheckBox(ElementImpl * inParent);
+        NativeCheckBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
@@ -422,7 +425,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeBox(ElementImpl * inParent, Orientation inOrientation = HORIZONTAL);
+        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrientation = HORIZONTAL);
 
         virtual bool initAttributeControllers();
 
@@ -450,7 +453,7 @@ namespace XULWin
     public:
         typedef NativeBox Super;
 
-        NativeHBox(ElementImpl * inParent);
+        NativeHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -459,10 +462,7 @@ namespace XULWin
     public:
         typedef NativeBox Super;
 
-        NativeVBox(ElementImpl * inParent) :
-            NativeBox(inParent, VERTICAL)
-        {
-        }
+        NativeVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -471,7 +471,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeMenuList(ElementImpl * inParent);
+        NativeMenuList(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
             
         virtual int minimumWidth() const;
 
@@ -490,7 +490,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeSeparator(ElementImpl * inParent);
+        NativeSeparator(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -503,7 +503,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeSpacer(ElementImpl * inParent);
+        NativeSpacer(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -516,7 +516,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeMenuButton(ElementImpl * inParent);
+        NativeMenuButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -529,7 +529,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeGrid(ElementImpl * inParent);
+        NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -544,7 +544,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeRows(ElementImpl * inParent);
+        NativeRows(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -553,7 +553,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeRow(ElementImpl * inParent);
+        NativeRow(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -566,7 +566,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeColumns(ElementImpl * inParent);
+        NativeColumns(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -575,7 +575,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeColumn(ElementImpl * inParent);
+        NativeColumn(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -588,7 +588,7 @@ namespace XULWin
     public:
         typedef NativeBox Super;
 
-        NativeRadioGroup(ElementImpl * inParent);
+        NativeRadioGroup(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
@@ -597,7 +597,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeRadio(ElementImpl * inParent);
+        NativeRadio(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -610,7 +610,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeProgressMeter(ElementImpl * inParent);
+        NativeProgressMeter(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int minimumWidth() const;
 
@@ -625,7 +625,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        NativeDeck(ElementImpl * inParent);
+        NativeDeck(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual void rebuildLayout();
 

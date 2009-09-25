@@ -197,10 +197,10 @@ namespace XULWin
     }
 
 
-    Window::Window(Element * inParent) :
+    Window::Window(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Window::Type(),
                 inParent,
-                new NativeWindow())
+                new NativeWindow(inAttributesMapping))
     {
     }
 
@@ -214,18 +214,18 @@ namespace XULWin
     }
 
 
-    Button::Button(Element * inParent) :
+    Button::Button(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Button::Type(),
                 inParent,
-                new PaddingDecorator(new NativeButton(inParent->impl())))
+                new PaddingDecorator(new NativeButton(inParent->impl(), inAttributesMapping)))
     {
     }
 
 
-    Label::Label(Element * inParent) :
+    Label::Label(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Label::Type(),
                 inParent,
-                new PaddingDecorator(new NativeLabel(inParent->impl())))
+                new PaddingDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -236,66 +236,66 @@ namespace XULWin
     }
 
 
-    Description::Description(Element * inParent) :
+    Description::Description(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Description::Type(),
                 inParent,
-                new PaddingDecorator(new NativeDescription(inParent->impl())))
+                new PaddingDecorator(new NativeDescription(inParent->impl(), inAttributesMapping)))
     {
     }
 
 
-    Text::Text(Element * inParent) :
+    Text::Text(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Text::Type(),
                 inParent,
-                new PaddingDecorator(new NativeLabel(inParent->impl())))
+                new PaddingDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
     {
     }
 
 
-    TextBox::TextBox(Element * inParent) :
+    TextBox::TextBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(TextBox::Type(),
                 inParent,
-                new PaddingDecorator(new NativeTextBox(inParent->impl())))
+                new PaddingDecorator(new NativeTextBox(inParent->impl(), inAttributesMapping)))
     {
     }
 
 
-    CheckBox::CheckBox(Element * inParent) :
+    CheckBox::CheckBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(CheckBox::Type(),
                 inParent,
-                new PaddingDecorator(new NativeCheckBox(inParent->impl())))
+                new PaddingDecorator(new NativeCheckBox(inParent->impl(), inAttributesMapping)))
     {
     }
 
 
-    Box::Box(Element * inParent) :
+    Box::Box(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Box::Type(),
                 inParent,
-                new NativeBox(inParent->impl()))
+                new NativeBox(inParent->impl(), inAttributesMapping))
     {
     }
 
 
-    HBox::HBox(Element * inParent) :
+    HBox::HBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(HBox::Type(),
                 inParent,
-                new NativeHBox(inParent->impl()))
+                new NativeHBox(inParent->impl(), inAttributesMapping))
     {
     }
 
 
-    VBox::VBox(Element * inParent) :
+    VBox::VBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(VBox::Type(),
                 inParent,
-                new NativeVBox(inParent->impl()))
+                new NativeVBox(inParent->impl(), inAttributesMapping))
     {
     }
 
 
-    MenuList::MenuList(Element * inParent) :
+    MenuList::MenuList(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(MenuList::Type(),
                 inParent,
-                new PaddingDecorator(new NativeMenuList(inParent->impl())))
+                new PaddingDecorator(new NativeMenuList(inParent->impl(), inAttributesMapping)))
     {
     }
         
@@ -318,7 +318,7 @@ namespace XULWin
     }
 
     
-    MenuPopup::MenuPopup(Element * inParent) :
+    MenuPopup::MenuPopup(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(MenuPopup::Type(), inParent, gNullNativeComponent),
         mDestructing(false)
     {
@@ -378,7 +378,7 @@ namespace XULWin
     }
 
     
-    MenuItem::MenuItem(Element * inParent) :
+    MenuItem::MenuItem(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(MenuItem::Type(), inParent, gNullNativeComponent)
     {
     }
@@ -422,10 +422,10 @@ namespace XULWin
     }
 
 
-    Separator::Separator(Element * inParent) :
+    Separator::Separator(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Separator::Type(),
                 inParent,
-                new PaddingDecorator(new NativeSeparator(inParent->impl())))
+                new PaddingDecorator(new NativeSeparator(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -435,10 +435,10 @@ namespace XULWin
     }
 
 
-    Spacer::Spacer(Element * inParent) :
+    Spacer::Spacer(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Spacer::Type(),
                 inParent,
-                new NativeSpacer(inParent->impl()))
+                new NativeSpacer(inParent->impl(), inAttributesMapping))
     {
     }
 
@@ -448,10 +448,10 @@ namespace XULWin
     }
 
 
-    MenuButton::MenuButton(Element * inParent) :
+    MenuButton::MenuButton(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(MenuButton::Type(),
                 inParent,
-                new PaddingDecorator(new NativeMenuButton(inParent->impl())))
+                new PaddingDecorator(new NativeMenuButton(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -461,10 +461,10 @@ namespace XULWin
     }
 
 
-    Grid::Grid(Element * inParent) :
+    Grid::Grid(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Grid::Type(),
                 inParent,
-                new NativeGrid(inParent->impl()))
+                new NativeGrid(inParent->impl(), inAttributesMapping))
     {
     }
 
@@ -474,10 +474,10 @@ namespace XULWin
     }
 
 
-    Rows::Rows(Element * inParent) :
+    Rows::Rows(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Rows::Type(),
                 inParent,
-                new NativeRows(inParent->impl()))
+                new NativeRows(inParent->impl(), inAttributesMapping))
     {
     }
 
@@ -487,10 +487,10 @@ namespace XULWin
     }
 
 
-    Columns::Columns(Element * inParent) :
+    Columns::Columns(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Columns::Type(),
                 inParent,
-                new NativeColumns(inParent->impl()))
+                new NativeColumns(inParent->impl(), inAttributesMapping))
     {
     }
 
@@ -500,10 +500,10 @@ namespace XULWin
     }
 
 
-    Row::Row(Element * inParent) :
+    Row::Row(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Row::Type(),
                 inParent,
-                new NativeRow(inParent->impl()))
+                new NativeRow(inParent->impl(), inAttributesMapping))
     {
     }
 
@@ -513,10 +513,10 @@ namespace XULWin
     }
 
 
-    Column::Column(Element * inParent) :
+    Column::Column(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Column::Type(),
                 inParent,
-                new NativeColumn(inParent->impl()))
+                new NativeColumn(inParent->impl(), inAttributesMapping))
     {
     }
 
@@ -526,10 +526,10 @@ namespace XULWin
     }
 
 
-    RadioGroup::RadioGroup(Element * inParent) :
+    RadioGroup::RadioGroup(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(RadioGroup::Type(),
                 inParent,
-                new NativeRadioGroup(inParent->impl()))
+                new NativeRadioGroup(inParent->impl(), inAttributesMapping))
     {
     }
 
@@ -539,10 +539,10 @@ namespace XULWin
     }
 
 
-    Radio::Radio(Element * inParent) :
+    Radio::Radio(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Radio::Type(),
                 inParent,
-                new PaddingDecorator(new NativeRadio(inParent->impl())))
+                new PaddingDecorator(new NativeRadio(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -552,10 +552,10 @@ namespace XULWin
     }
 
 
-    ProgressMeter::ProgressMeter(Element * inParent) :
+    ProgressMeter::ProgressMeter(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(ProgressMeter::Type(),
                 inParent,
-                new PaddingDecorator(new NativeProgressMeter(inParent->impl())))
+                new PaddingDecorator(new NativeProgressMeter(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -565,10 +565,10 @@ namespace XULWin
     }
 
 
-    Deck::Deck(Element * inParent) :
+    Deck::Deck(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Deck::Type(),
                 inParent,
-                new NativeDeck(inParent->impl()))
+                new NativeDeck(inParent->impl(), inAttributesMapping))
     {
     }
 

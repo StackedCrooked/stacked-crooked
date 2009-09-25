@@ -286,7 +286,7 @@ namespace XULWin
     HMODULE NativeComponent::sModuleHandle(0);
 
 
-    NativeComponent::NativeComponent(ElementImpl * inParent) :
+    NativeComponent::NativeComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         ElementImpl(inParent),
         mHandle(0),
         mModuleHandle(sModuleHandle ? sModuleHandle : ::GetModuleHandle(0))
@@ -384,8 +384,8 @@ namespace XULWin
     }
 
 
-    NativeWindow::NativeWindow() :
-        NativeComponent(0)
+    NativeWindow::NativeWindow(const AttributesMapping & inAttributesMapping) :
+        NativeComponent(0, inAttributesMapping)
     {
         mHandle = ::CreateWindowEx
         (
@@ -587,7 +587,7 @@ namespace XULWin
     }
 
 
-    VirtualControl::VirtualControl(ElementImpl * inParent) :
+    VirtualControl::VirtualControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         ElementImpl(inParent),
         mWidth(0),
         mHeight(0)
@@ -837,8 +837,8 @@ namespace XULWin
     }
 
 
-    NativeControl::NativeControl(ElementImpl * inParent, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
-        NativeComponent(inParent)
+    NativeControl::NativeControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle) :
+        NativeComponent(inParent, inAttributesMapping)
     {
         if (!mParent)
         {
@@ -979,8 +979,9 @@ namespace XULWin
     }
     
     
-    NativeButton::NativeButton(ElementImpl * inParent) :
+    NativeButton::NativeButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("BUTTON"),
                       0, // exStyle
                       BS_PUSHBUTTON)
@@ -1003,8 +1004,8 @@ namespace XULWin
     }
     
     
-    NativeCheckBox::NativeCheckBox(ElementImpl * inParent) :
-        NativeControl(inParent, TEXT("BUTTON"), 0, BS_AUTOCHECKBOX)
+    NativeCheckBox::NativeCheckBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, TEXT("BUTTON"), 0, BS_AUTOCHECKBOX)
     {
     }
     
@@ -1041,13 +1042,21 @@ namespace XULWin
     }
 
 
-    NativeTextBox::NativeTextBox(ElementImpl * inParent) :
+    NativeTextBox::NativeTextBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
-                      ES_AUTOHSCROLL)
+                      ES_AUTOHSCROLL | GetPasswordFlag(inAttributesMapping))
     {
     }
+
+
+    DWORD NativeTextBox::GetPasswordFlag(const AttributesMapping & inAttributesMapping)
+    {
+        AttributesMapping::const_iterator it = inAttributesMapping.find("type");
+        return (it != inAttributesMapping.end()) ? ES_PASSWORD : 0;
+    } 
 
     
     bool NativeTextBox::initAttributeControllers()
@@ -1079,8 +1088,9 @@ namespace XULWin
     }
 
 
-    NativeLabel::NativeLabel(ElementImpl * inParent) :
+    NativeLabel::NativeLabel(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("STATIC"),
                       0, // exStyle
                       SS_LEFT)
@@ -1143,8 +1153,9 @@ namespace XULWin
     }
 
 
-    NativeDescription::NativeDescription(ElementImpl * inParent) :
+    NativeDescription::NativeDescription(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("STATIC"),
                       0, // exStyle
                       SS_LEFT)
@@ -1177,14 +1188,20 @@ namespace XULWin
     }
     
     
-    NativeHBox::NativeHBox(ElementImpl * inParent) :
-        NativeBox(inParent, HORIZONTAL)
+    NativeHBox::NativeHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeBox(inParent, inAttributesMapping, HORIZONTAL)
+    {   
+    }
+    
+    
+    NativeVBox::NativeVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeBox(inParent, inAttributesMapping, VERTICAL)
     {   
     }
         
         
-    NativeBox::NativeBox(ElementImpl * inParent, Orientation inOrientation) :
-        VirtualControl(inParent),
+    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrientation) :
+        VirtualControl(inParent, inAttributesMapping),
         mOrientation(inOrientation),
         mAlign(inOrientation == HORIZONTAL ? Start : Stretch)
     {
@@ -1322,8 +1339,9 @@ namespace XULWin
     }
     
     
-    NativeMenuList::NativeMenuList(ElementImpl * inParent) :
+    NativeMenuList::NativeMenuList(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("COMBOBOX"),
                       0, // exStyle
                       CBS_DROPDOWNLIST)
@@ -1381,8 +1399,9 @@ namespace XULWin
     }
 
 
-    NativeSeparator::NativeSeparator(ElementImpl * inParent) :
+    NativeSeparator::NativeSeparator(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("STATIC"),
                       0, // exStyle
                       SS_GRAYFRAME)
@@ -1403,8 +1422,8 @@ namespace XULWin
     }
 
 
-    NativeSpacer::NativeSpacer(ElementImpl * inParent) :
-        VirtualControl(inParent)
+    NativeSpacer::NativeSpacer(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualControl(inParent, inAttributesMapping)
     {
     }
 
@@ -1421,8 +1440,9 @@ namespace XULWin
     }
 
 
-    NativeMenuButton::NativeMenuButton(ElementImpl * inParent) :
+    NativeMenuButton::NativeMenuButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("BUTTON"),
                       0, // exStyle
                       BS_PUSHBUTTON)
@@ -1458,8 +1478,8 @@ namespace XULWin
     }
 
 
-    NativeGrid::NativeGrid(ElementImpl * inParent) :
-        VirtualControl(inParent)
+    NativeGrid::NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualControl(inParent, inAttributesMapping)
     {
     }
         
@@ -1635,20 +1655,20 @@ namespace XULWin
     }
 
 
-    NativeRows::NativeRows(ElementImpl * inParent) :
-        VirtualControl(inParent)
+    NativeRows::NativeRows(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualControl(inParent, inAttributesMapping)
     {
     }
 
 
-    NativeColumns::NativeColumns(ElementImpl * inParent) :
-        VirtualControl(inParent)
+    NativeColumns::NativeColumns(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualControl(inParent, inAttributesMapping)
     {
     }
 
 
-    NativeRow::NativeRow(ElementImpl * inParent) :
-        VirtualControl(inParent)
+    NativeRow::NativeRow(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualControl(inParent, inAttributesMapping)
     {
     }
 
@@ -1683,8 +1703,8 @@ namespace XULWin
     }
 
 
-    NativeColumn::NativeColumn(ElementImpl * inParent) :
-        VirtualControl(inParent)
+    NativeColumn::NativeColumn(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualControl(inParent, inAttributesMapping)
     {
     }
 
@@ -1755,14 +1775,15 @@ namespace XULWin
     }
 
     
-    NativeRadioGroup::NativeRadioGroup(ElementImpl * inParent) :
-        NativeBox(inParent)
+    NativeRadioGroup::NativeRadioGroup(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeBox(inParent, inAttributesMapping)
     {
     }
 
     
-    NativeRadio::NativeRadio(ElementImpl * inParent) :
+    NativeRadio::NativeRadio(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       TEXT("BUTTON"),
                       0, // exStyle
                       BS_RADIOBUTTON)
@@ -1782,8 +1803,9 @@ namespace XULWin
     }
 
     
-    NativeProgressMeter::NativeProgressMeter(ElementImpl * inParent) :
+    NativeProgressMeter::NativeProgressMeter(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
+                      inAttributesMapping,
                       PROGRESS_CLASS,
                       0, // exStyle
                       PBS_SMOOTH)
@@ -1813,8 +1835,8 @@ namespace XULWin
     }
 
     
-    NativeDeck::NativeDeck(ElementImpl * inParent) :
-        VirtualControl(inParent),
+    NativeDeck::NativeDeck(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualControl(inParent, inAttributesMapping),
         mSelectedIndex(0)
     {
     }

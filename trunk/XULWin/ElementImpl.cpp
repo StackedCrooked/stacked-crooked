@@ -511,8 +511,8 @@ namespace XULWin
     {      
         {
             SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-            int w = minimumWidth() + sizeDiff.cx;
-            int h = minimumHeight() + sizeDiff.cy;
+            int w = String2Int(owningElement()->getDocumentAttribute("width"), minimumWidth()) + sizeDiff.cx;
+            int h = String2Int(owningElement()->getDocumentAttribute("height"), minimumHeight()) + sizeDiff.cy;
             int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
             int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
             move(x, y, w, h);
@@ -520,13 +520,13 @@ namespace XULWin
         }   
         {
             SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-            int w = minimumWidth() + sizeDiff.cx;
-            int h = minimumHeight() + sizeDiff.cy;
+            int w = String2Int(owningElement()->getDocumentAttribute("width"), minimumWidth()) + sizeDiff.cx;
+            int h = String2Int(owningElement()->getDocumentAttribute("height"), minimumHeight()) + sizeDiff.cy;
             int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
             int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
             move(x, y, w, h);
             rebuildLayout();
-        }
+        }   
         ::ShowWindow(handle(), SW_SHOW);
         ::UpdateWindow(handle());
 

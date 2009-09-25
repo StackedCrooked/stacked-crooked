@@ -5,21 +5,11 @@
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         align="stretch"
+        
 >
-  <grid flex="1">
-    <columns>
-      <column flex="1" ></column>
-      <column flex="1" ></column>
-    </columns>
-    <rows>
-      <row align="center" flex="1">
-        <label value="Test"></label>
-        <button label="Test stretch align"></button>
-      </row>
-      <row flex="1">
-        <label value="Test"></label>
-        <button label="Test stretch align"></button>
-      </row>
-    </rows>
-  </grid>
+  <vbox>
+    <label value="hoi"></label>
+    <button label="test"></button>
+    <textbox value="test" type="password"></textbox>
+  </vbox>
 </window>

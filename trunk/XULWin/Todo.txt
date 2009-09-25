@@ -1,4 +1,3 @@
-- Password field
 - Implement width and height attr for image, box...
 - Make window with toolbar, status-bar, contentpant with scrollbar
 - Add scrollbar

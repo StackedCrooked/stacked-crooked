@@ -22,14 +22,41 @@ namespace XULWin
         try
         {
             //pref("toolkit.defaultChromeURI", "chrome://myapp/content/myapp.xul");
-            std::string::size_type begin = inPrefsLine.find_first_of("\"") + 1;
+            std::string::size_type begin = inPrefsLine.find_first_of("\"");
+            if (begin == std::string::npos)
+            {
+                begin = inPrefsLine.find_first_of("'");
+            }
+            if (begin == std::string::npos)
+            {
+                return false;
+            }
+            begin++;
+
             std::string::size_type end = inPrefsLine.find_first_of("\"", begin);
-            outPref.first = inPrefsLine.substr(begin, end - begin);
+            if (end == std::string::npos)
+            {
+                end = inPrefsLine.find_first_of("'", begin);
+            }     
             
+            outPref.first = inPrefsLine.substr(begin, end - begin);       
             end++;
-            begin = inPrefsLine.find_first_of("\"", end) + 1;
+            
+            begin = inPrefsLine.find_first_of("\"", end);
+            if (begin == std::string::npos)
+            {
+                begin = inPrefsLine.find_first_of("'", end);
+            }
+            begin++;
+
             end = inPrefsLine.find_first_of("\"", begin);
+            if (end == std::string::npos)
+            {
+                end = inPrefsLine.find_first_of("'", begin);
+            }
+
             outPref.second = inPrefsLine.substr(begin, end - begin);
+            end++;
         }
         catch (const std::exception & inExc)
         {

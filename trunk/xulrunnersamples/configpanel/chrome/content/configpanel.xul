@@ -6,26 +6,20 @@
 >
   <grid flex="1">
     <columns>
-      <column flex="0"></column>
+      <column align="end" flex="1"></column>
       <column flex="1"></column>
     </columns>
     <rows>
-      <row>
-        <hbox align="center">
-          <spacer flex="1"/>
-          <label value="&UPLOAD_TO;"/>
-        </hbox>
+      <row align="center">
+        <label value="&UPLOAD_TO;" />
         <menulist>
           <menupopup>
             <menuitem label="StackedCrooked" />
           </menupopup>
         </menulist>
       </row>
-      <row>
-        <hbox align="center">
-          <spacer flex="1" />
-          <label value="&ADD_TO_SET;" />
-        </hbox>
+      <row align="center">
+        <label value="&ADD_TO_SET;" />
         <hbox align="center">
           <menulist flex="1">
             <menupopup>
@@ -37,22 +31,16 @@
           <button label="&NEW_SET;"></button>
         </hbox>
       </row>
-      <row>
-        <hbox align="center">
-          <spacer flex="1" />
-          <label value="&TAGS;" />
-        </hbox>
+      <row align="center">
+        <label value="&TAGS;" />
         <textbox />
       </row>
       <row>
         <spacer/>
         <description value="&TAGS_DESCRIPTION;">&TAGS_DESCRIPTION;</description>
       </row>
-      <row>
-        <hbox align="center">
-          <spacer flex="1" />
-          <label value="&SHOW_TO;" />
-        </hbox>
+      <row align="center">
+        <label value="&SHOW_TO;" />
         <menulist>
           <menupopup>
             <menuitem label="&TO_EVERYONE;"></menuitem>
@@ -60,14 +48,14 @@
           </menupopup>
         </menulist>
       </row>
-      <row>
+      <row align="center">
         <spacer/>
         <hbox>
           <checkbox flex="1" checked="true" label="Allow ratings?"></checkbox>
           <checkbox flex="1" checked="true" label="Allow comments?"></checkbox>
         </hbox>
       </row>
-      <row flex="1">
+      <row align="center" flex="1">
         <spacer/>
         <vbox>
           <spacer flex="1" />

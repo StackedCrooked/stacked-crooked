@@ -151,6 +151,22 @@ namespace XULWin
     }
 
     
+    std::string Element::getStyle(const std::string & inName) const
+    {
+        std::string result;
+        if (!mImpl || !mImpl->getStyle(inName, result))
+        {
+            StylesMapping::const_iterator it = mStyles.find(inName);
+            if (it != mStyles.end())
+            {
+                result = it->second;
+            }
+        }
+        return result;
+
+    }
+
+
     std::string Element::getAttribute(const std::string & inName) const
     {
         std::string result;

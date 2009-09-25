@@ -155,17 +155,39 @@ namespace XULWin
     };
 
 
+    // Introduced wrapper class so that the compiler will
+    // report an error if we accidentally mix up the order
+    // of parameters in the SizeInfo class.
+    struct FlexWrap
+    {
+        explicit FlexWrap(int inValue) :
+            Value(inValue)
+        {
+        }
+        int Value;
+    };
+
+
     struct SizeInfo
     {
-        SizeInfo(int inFlex, int inMinSize, int inMinSizeOpposite, bool inExpansive) :
-            Flex(inFlex),
-            MinSize(inMinSize),
-            MinSizeOpposite(inMinSizeOpposite),
-            Expansive(inExpansive)
+        SizeInfo(FlexWrap inFlex, int inMinSize) :
+            Flex(inFlex.Value),
+            MinSize(inMinSize)
         {
         }
         int Flex;
         int MinSize;
+    };
+
+
+    struct ExtendedSizeInfo : public SizeInfo
+    {
+        ExtendedSizeInfo(int inFlex, int inMinSize, int inMinSizeOpposite, bool inExpansive) :
+            SizeInfo(FlexWrap(inFlex), inMinSize),
+            MinSizeOpposite(inMinSizeOpposite),
+            Expansive(inExpansive)
+        {
+        }
         int MinSizeOpposite;
         bool Expansive;
     };
@@ -176,7 +198,7 @@ namespace XULWin
     public:
         LinearLayoutManager(Orientation inOrientation);
 
-        void getRects(const Rect & inRect, Alignment inAlign, const std::vector<SizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
+        void getRects(const Rect & inRect, Alignment inAlign, const std::vector<ExtendedSizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
         static void GetSizes(int inLength, const std::vector<SizeInfo> & inSizeInfos, std::vector<int> & outSizes);
         static void GetSizes(int inLength, const std::vector<int> & inSizeInfos, std::vector<int> & outSizes);        
 
@@ -205,14 +227,13 @@ namespace XULWin
         Alignment RowAlign;
         Alignment ColAlign;
     };
-
     
     class GridLayoutManager
     {
     public:
         static void GetOuterRects(const Rect & inRect,
-                                  const std::vector<int> & inColWidths,
-                                  const std::vector<int> & inRowHeights,
+                                  const std::vector<SizeInfo> & inColWidths,
+                                  const std::vector<SizeInfo> & inRowHeights,
                                   Utils::GenericGrid<Rect> & outRects);
 
         static void GetInnerRects(const Utils::GenericGrid<Rect> & inOuterRects,

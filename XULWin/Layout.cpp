@@ -97,13 +97,17 @@ namespace XULWin
     
     void LinearLayoutManager::getRects(const Rect & inRect,
                                        Alignment inAlign, 
-                                       const std::vector<SizeInfo> & inSizeInfos,
+                                       const std::vector<ExtendedSizeInfo> & inSizeInfos,
                                        std::vector<Rect> & outRects)
     {
         std::vector<int> sizes;
-        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(),
-                 inSizeInfos,
-                 sizes);
+
+        std::vector<SizeInfo> sizeInfos;
+        for (size_t idx = 0; idx != inSizeInfos.size(); ++idx)
+        {
+            sizeInfos.push_back(inSizeInfos[idx]);
+        }
+        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), sizeInfos, sizes);
         int xOffset = inRect.x();
         int yOffset = inRect.y();
         bool horizontal = mOrientation == HORIZONTAL;
@@ -190,18 +194,24 @@ namespace XULWin
     //}
     
     void GridLayoutManager::GetOuterRects(const Rect & inRect,
-                                          const std::vector<int> & inColWidths,
-                                          const std::vector<int> & inRowHeights,
+                                          const std::vector<SizeInfo> & inColWidths,
+                                          const std::vector<SizeInfo> & inRowHeights,
                                           Utils::GenericGrid<Rect> & outRects)
-    {        
+    {
+        std::vector<int> colSizes;
+        LinearLayoutManager::GetSizes(inRect.width(), inColWidths, colSizes);
+
+        std::vector<int> rowSizes;
+        LinearLayoutManager::GetSizes(inRect.height(), inRowHeights, rowSizes);
+
         int offsetX = 0;
         int offsetY = 0;
         for (size_t colIdx = 0; colIdx != outRects.numColumns(); ++colIdx)
         {
-            int width = inColWidths[colIdx];
+            int width = colSizes[colIdx];
             for (size_t rowIdx = 0; rowIdx != outRects.numRows(); ++rowIdx)
             {
-                int height = inRowHeights[rowIdx];
+                int height = rowSizes[rowIdx];
                 outRects.set(rowIdx, colIdx, Rect(offsetX, offsetY, width, height));
                 offsetY += height;
             }

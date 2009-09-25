@@ -50,9 +50,9 @@ namespace XULWin
 
         NativeImage(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         bool initAttributeControllers();
 
@@ -84,7 +84,7 @@ namespace XULWin
     }
 
 
-    int NativeImage::minimumWidth() const
+    int NativeImage::calculateMinimumWidth() const
     {
         if (mImage)
         {
@@ -94,7 +94,7 @@ namespace XULWin
     }
 
     
-    int NativeImage::minimumHeight() const
+    int NativeImage::calculateMinimumHeight() const
     {
         if (mImage)
         {

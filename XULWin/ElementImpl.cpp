@@ -101,7 +101,11 @@ namespace XULWin
     Alignment String2Align(const std::string & inValue, Alignment inDefault)
     {
         Alignment result = inDefault;
-        if (inValue == "center")
+        if (inValue == "start")
+        {
+            result = Start;
+        }
+        else if (inValue == "center")
         {
             result = Center;
         }
@@ -159,6 +163,22 @@ namespace XULWin
 
     ElementImpl::~ElementImpl()
     {
+    }
+    
+    
+    int ElementImpl::minimumWidth() const
+    {
+        int minWidth = calculateMinimumWidth();
+        int elementWidthFromDocument = String2Int(owningElement()->getDocumentAttribute("width"), 0);
+        return std::max<int>(minWidth, elementWidthFromDocument);
+    }
+
+    
+    int ElementImpl::minimumHeight() const
+    {
+        int minHeight = calculateMinimumHeight();
+        int elementHeightFromDocument = String2Int(owningElement()->getDocumentAttribute("height"), 0);
+        return std::max<int>(minHeight, elementHeightFromDocument);
     }
     
     
@@ -429,7 +449,7 @@ namespace XULWin
     }
     
     
-    int NativeWindow::minimumWidth() const
+    int NativeWindow::calculateMinimumWidth() const
     {
         int result = 0;
         Orientation orient = String2Orientation(owningElement()->getAttribute("orient"), VERTICAL);
@@ -450,7 +470,7 @@ namespace XULWin
     }
     
     
-    int NativeWindow::minimumHeight() const
+    int NativeWindow::calculateMinimumHeight() const
     {
         int result = 0;
         Orientation orient = String2Orientation(owningElement()->getAttribute("orient"), VERTICAL);
@@ -511,8 +531,8 @@ namespace XULWin
     {      
         {
             SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-            int w = String2Int(owningElement()->getDocumentAttribute("width"), minimumWidth()) + sizeDiff.cx;
-            int h = String2Int(owningElement()->getDocumentAttribute("height"), minimumHeight()) + sizeDiff.cy;
+            int w = String2Int(owningElement()->getDocumentAttribute("width"), calculateMinimumWidth()) + sizeDiff.cx;
+            int h = String2Int(owningElement()->getDocumentAttribute("height"), calculateMinimumHeight()) + sizeDiff.cy;
             int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
             int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
             move(x, y, w, h);
@@ -520,8 +540,8 @@ namespace XULWin
         }   
         {
             SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-            int w = String2Int(owningElement()->getDocumentAttribute("width"), minimumWidth()) + sizeDiff.cx;
-            int h = String2Int(owningElement()->getDocumentAttribute("height"), minimumHeight()) + sizeDiff.cy;
+            int w = String2Int(owningElement()->getDocumentAttribute("width"), calculateMinimumWidth()) + sizeDiff.cx;
+            int h = String2Int(owningElement()->getDocumentAttribute("height"), calculateMinimumHeight()) + sizeDiff.cy;
             int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
             int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
             move(x, y, w, h);
@@ -567,8 +587,8 @@ namespace XULWin
 			{
                 SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
 				MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
-                minMaxInfo->ptMinTrackSize.x = minimumWidth() + sizeDiff.cx;
-                minMaxInfo->ptMinTrackSize.y = minimumHeight() + sizeDiff.cy;
+                minMaxInfo->ptMinTrackSize.x = calculateMinimumWidth() + sizeDiff.cx;
+                minMaxInfo->ptMinTrackSize.y = calculateMinimumHeight() + sizeDiff.cy;
                 break;
 			}
         }
@@ -825,13 +845,13 @@ namespace XULWin
     }
     
     
-    int PaddingDecorator::minimumWidth() const
+    int PaddingDecorator::calculateMinimumWidth() const
     {
         return paddingLeft() + mDecoratedElement->minimumWidth() + paddingRight();
     }
 
     
-    int PaddingDecorator::minimumHeight() const
+    int PaddingDecorator::calculateMinimumHeight() const
     {
         return paddingTop() + mDecoratedElement->minimumHeight() + paddingBottom();
     }
@@ -989,13 +1009,13 @@ namespace XULWin
     }
     
     
-    int NativeButton::minimumHeight() const
+    int NativeButton::calculateMinimumHeight() const
     {
         return Defaults::buttonHeight();
     }
     
     
-    int NativeButton::minimumWidth() const
+    int NativeButton::calculateMinimumWidth() const
     {
         std::string text = Utils::getWindowText(handle());
         int width = Utils::getTextSize(handle(), text).cx;
@@ -1010,13 +1030,13 @@ namespace XULWin
     }
     
     
-    int NativeCheckBox::minimumHeight() const
+    int NativeCheckBox::calculateMinimumHeight() const
     {
         return Defaults::controlHeight();
     }
     
     
-    int NativeCheckBox::minimumWidth() const
+    int NativeCheckBox::calculateMinimumWidth() const
     {
         return Defaults::checkBoxMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
     }
@@ -1068,7 +1088,7 @@ namespace XULWin
     }
 
 
-    int NativeTextBox::minimumWidth() const
+    int NativeTextBox::calculateMinimumWidth() const
     {
         std::string text = Utils::getWindowText(handle());
         int width = Utils::getTextSize(handle(), text).cx;
@@ -1077,7 +1097,7 @@ namespace XULWin
     }
 
 
-    int NativeTextBox::minimumHeight() const
+    int NativeTextBox::calculateMinimumHeight() const
     {
         return Defaults::controlHeight();
     }
@@ -1139,7 +1159,7 @@ namespace XULWin
     }
 
 
-    int NativeLabel::minimumWidth() const
+    int NativeLabel::calculateMinimumWidth() const
     {
         std::string text = Utils::getWindowText(handle());
         int width = Utils::getTextSize(handle(), text).cx;
@@ -1147,7 +1167,7 @@ namespace XULWin
     }
 
     
-    int NativeLabel::minimumHeight() const
+    int NativeLabel::calculateMinimumHeight() const
     {
         return Utils::getTextSize(handle(), Utils::getWindowText(handle())).cy;
     }
@@ -1172,7 +1192,7 @@ namespace XULWin
     }
 
 
-    int NativeDescription::minimumWidth() const
+    int NativeDescription::calculateMinimumWidth() const
     {
         //std::string text = Utils::getWindowText(handle());
         //int width = Utils::getTextSize(handle(), text).cx;
@@ -1182,7 +1202,7 @@ namespace XULWin
     }
 
     
-    int NativeDescription::minimumHeight() const
+    int NativeDescription::calculateMinimumHeight() const
     {
         return Utils::getMultilineTextHeight(handle());
     }
@@ -1222,7 +1242,7 @@ namespace XULWin
     }
 
 
-    int NativeBox::minimumWidth() const
+    int NativeBox::calculateMinimumWidth() const
     {
         if (mOrientation == HORIZONTAL)
         {
@@ -1254,7 +1274,7 @@ namespace XULWin
     }
 
 
-    int NativeBox::minimumHeight() const
+    int NativeBox::calculateMinimumHeight() const
     {
         if (mOrientation == HORIZONTAL)
         {
@@ -1349,13 +1369,13 @@ namespace XULWin
     }
     
     
-    int NativeMenuList::minimumWidth() const
+    int NativeMenuList::calculateMinimumWidth() const
     {
         return Defaults::dropDownListMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
     }
 
 
-    int NativeMenuList::minimumHeight() const
+    int NativeMenuList::calculateMinimumHeight() const
     {
         return Defaults::controlHeight();
     }
@@ -1410,13 +1430,13 @@ namespace XULWin
     }
         
         
-    int NativeSeparator::minimumWidth() const
+    int NativeSeparator::calculateMinimumWidth() const
     {
         return 1;
     }
 
     
-    int NativeSeparator::minimumHeight() const
+    int NativeSeparator::calculateMinimumHeight() const
     {
         return 1;
     }
@@ -1428,13 +1448,13 @@ namespace XULWin
     }
 
         
-    int NativeSpacer::minimumWidth() const
+    int NativeSpacer::calculateMinimumWidth() const
     {
         return 0;
     }
 
      
-    int NativeSpacer::minimumHeight() const
+    int NativeSpacer::calculateMinimumHeight() const
     {
         return 0;
     }
@@ -1466,13 +1486,13 @@ namespace XULWin
     }
         
         
-    int NativeMenuButton::minimumWidth() const
+    int NativeMenuButton::calculateMinimumWidth() const
     {
         return Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx + Defaults::textPadding()*2;
     }
 
     
-    int NativeMenuButton::minimumHeight() const
+    int NativeMenuButton::calculateMinimumHeight() const
     {
         return Defaults::buttonHeight();
     }
@@ -1484,7 +1504,7 @@ namespace XULWin
     }
         
         
-    int NativeGrid::minimumWidth() const
+    int NativeGrid::calculateMinimumWidth() const
     {
         int result = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
@@ -1505,7 +1525,7 @@ namespace XULWin
     }
 
     
-    int NativeGrid::minimumHeight() const
+    int NativeGrid::calculateMinimumHeight() const
     {
         int result = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
@@ -1673,7 +1693,7 @@ namespace XULWin
     }
 
     
-    int NativeRow::minimumWidth() const
+    int NativeRow::calculateMinimumWidth() const
     {
         int res = 0;
         const Children & children = owningElement()->children();
@@ -1686,7 +1706,7 @@ namespace XULWin
     }
 
 
-    int NativeRow::minimumHeight() const
+    int NativeRow::calculateMinimumHeight() const
     {
         int res = 0;
         const Children & children = owningElement()->children();
@@ -1709,7 +1729,7 @@ namespace XULWin
     }
 
     
-    int NativeColumn::minimumWidth() const
+    int NativeColumn::calculateMinimumWidth() const
     {
         ElementPtr rows;
         int ownIndex = -1;
@@ -1762,7 +1782,7 @@ namespace XULWin
     }
 
 
-    int NativeColumn::minimumHeight() const
+    int NativeColumn::calculateMinimumHeight() const
     {
         int res = 0;
         const Children & children = owningElement()->children();
@@ -1791,13 +1811,13 @@ namespace XULWin
     }
 
 
-    int NativeRadio::minimumWidth() const
+    int NativeRadio::calculateMinimumWidth() const
     {
         return Defaults::radioButtonMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
     }
 
     
-    int NativeRadio::minimumHeight() const
+    int NativeRadio::calculateMinimumHeight() const
     {
         return Defaults::controlHeight();
     }
@@ -1814,13 +1834,13 @@ namespace XULWin
     }
 
 
-    int NativeProgressMeter::minimumWidth() const
+    int NativeProgressMeter::calculateMinimumWidth() const
     {
         return 80;
     }
 
     
-    int NativeProgressMeter::minimumHeight() const
+    int NativeProgressMeter::calculateMinimumHeight() const
     {
         return 21;
     }
@@ -1863,7 +1883,7 @@ namespace XULWin
     }
 
 
-    int NativeDeck::minimumWidth() const
+    int NativeDeck::calculateMinimumWidth() const
     {
         int res = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
@@ -1878,7 +1898,7 @@ namespace XULWin
     }
 
     
-    int NativeDeck::minimumHeight() const
+    int NativeDeck::calculateMinimumHeight() const
     {
         int res = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)

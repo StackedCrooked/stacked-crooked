@@ -343,13 +343,25 @@ namespace Utils
 
     bool hasWindowStyle(HWND inHandle, LONG inStyle)
     {
-        return (::GetWindowLong(inHandle, GWL_STYLE) & WS_CLIPCHILDREN) != 0;
+        return (::GetWindowLong(inHandle, GWL_STYLE) & inStyle) != 0;
     }
 
 
     void setWindowVisible(HWND inHandle, bool inVisible)
     {
         ::ShowWindow(inHandle, inVisible ? SW_SHOW : SW_HIDE);
+    }
+
+
+    void setTextBoxReadOnly(HWND inHandle, bool inReadOnly)
+    {
+        ::SendMessage(inHandle, EM_SETREADONLY, inReadOnly ? TRUE : FALSE, 0);
+    }
+
+
+    bool isTextBoxReadOnly(HWND inHandle)
+    {
+        return hasWindowStyle(inHandle, ES_READONLY);
     }
 
     

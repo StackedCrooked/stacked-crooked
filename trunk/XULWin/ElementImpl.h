@@ -405,7 +405,9 @@ namespace XULWin
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
 
     private:
+        bool mReadonly;
         static DWORD GetPasswordFlag(const AttributesMapping & inAttributesMapping);
+        static bool IsReadOnly(const AttributesMapping & inAttributesMapping);
     };
 
 

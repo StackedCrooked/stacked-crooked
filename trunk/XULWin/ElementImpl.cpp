@@ -68,6 +68,29 @@ namespace XULWin
         }
         return result;
     }
+    
+    
+    bool String2Bool(const std::string & inString, bool inDefault)
+    {
+        if (inString == "true")
+        {
+            return true;
+        }
+        else if (inString == "false")
+        {
+            return false;
+        }
+        else
+        {
+            return inDefault;
+        }
+    }
+    
+    
+    std::string Bool2String(bool inBool)
+    {
+        return inBool ? "true" : "false";
+    }
 
 
     Orientation String2Orientation(const std::string & inValue, Orientation inDefault)
@@ -1067,7 +1090,8 @@ namespace XULWin
                       inAttributesMapping,
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
-                      ES_AUTOHSCROLL | GetPasswordFlag(inAttributesMapping))
+                      ES_AUTOHSCROLL | GetPasswordFlag(inAttributesMapping)),
+                      mReadonly(IsReadOnly(inAttributesMapping))
     {
     }
 
@@ -1078,12 +1102,23 @@ namespace XULWin
         return (it != inAttributesMapping.end()) ? ES_PASSWORD : 0;
     } 
 
+
+    bool NativeTextBox::IsReadOnly(const AttributesMapping & inAttributesMapping)
+    {
+        AttributesMapping::const_iterator it = inAttributesMapping.find("readonly");
+        return it != inAttributesMapping.end();
+    } 
+
     
     bool NativeTextBox::initAttributeControllers()
     {
         AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
         AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
         setAttributeController("value", AttributeController(valueGetter, valueSetter));
+
+        {AttributeGetter readOnlyGetter = boost::bind(&Bool2String, boost::bind(&Utils::isTextBoxReadOnly, handle()));
+        AttributeSetter readOnlySetter = boost::bind(&Utils::setTextBoxReadOnly, handle(), boost::bind(&String2Bool, _1, false));
+        setAttributeController("readonly", AttributeController(readOnlyGetter, readOnlySetter));}
         return Super::initAttributeControllers();
     }
 
@@ -1099,7 +1134,7 @@ namespace XULWin
 
     int NativeTextBox::calculateMinimumHeight() const
     {
-        return Defaults::controlHeight();
+        return Defaults::controlHeight() * String2Int(owningElement()->getAttribute("rows"), 1);
     }
 
 

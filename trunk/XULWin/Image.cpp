@@ -73,7 +73,7 @@ namespace XULWin
     Image::Image(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Image::Type(),
                 inParent,
-                new NativeImage(inParent->impl(), inAttributesMapping))
+                new Decorator(new NativeImage(inParent->impl(), inAttributesMapping)))
     {
     }
 

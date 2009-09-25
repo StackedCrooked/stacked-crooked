@@ -299,7 +299,7 @@ namespace XULWin
     Box::Box(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Box::Type(),
                 inParent,
-                new NativeBox(inParent->impl(), inAttributesMapping))
+                new Decorator(new NativeBox(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -307,7 +307,7 @@ namespace XULWin
     HBox::HBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(HBox::Type(),
                 inParent,
-                new NativeHBox(inParent->impl(), inAttributesMapping))
+                new Decorator(new NativeHBox(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -315,7 +315,7 @@ namespace XULWin
     VBox::VBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(VBox::Type(),
                 inParent,
-                new NativeVBox(inParent->impl(), inAttributesMapping))
+                new Decorator(new NativeVBox(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -492,7 +492,7 @@ namespace XULWin
     Grid::Grid(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Grid::Type(),
                 inParent,
-                new NativeGrid(inParent->impl(), inAttributesMapping))
+                new Decorator(new NativeGrid(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -557,7 +557,7 @@ namespace XULWin
     RadioGroup::RadioGroup(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(RadioGroup::Type(),
                 inParent,
-                new NativeRadioGroup(inParent->impl(), inAttributesMapping))
+                new Decorator(new NativeRadioGroup(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -596,7 +596,7 @@ namespace XULWin
     Deck::Deck(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Deck::Type(),
                 inParent,
-                new NativeDeck(inParent->impl(), inAttributesMapping))
+                new Decorator(new NativeDeck(inParent->impl(), inAttributesMapping)))
     {
     }
 

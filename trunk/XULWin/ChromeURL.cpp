@@ -20,13 +20,17 @@ namespace XULWin
 
     std::string ChromeURL::convertToLocalPath()
     {
+        static const std::string cChrome = "chrome://";
+        if (mURL.empty() || mURL.size() < cChrome.size() || (mURL.find(cChrome) == std::string::npos))
+        {
+            return "";
+        }
 
         // Change this pattern: chrome://myapp/skin/icons/myimg.jpg
         // Into this pattern:   chrome/skin/icons/myimg.jpg
         std::string result;
         
         // remove "chrome://"
-        static const std::string cChrome = "chrome://";
         result = mURL.substr(cChrome.size(), mURL.size() - cChrome.size());
 
         // remove myapp

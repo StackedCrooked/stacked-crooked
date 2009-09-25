@@ -24,18 +24,17 @@
 
 -->
 
+<?xml-stylesheet href="chrome://navigator/skin/navigator.css" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
 <window id="openLocation"
-        title="XUL Widgets"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         class="dialog"
-        width="800"
-        height="600"
+        style="width: 250px;"
         orient="vertical">
 
   <script>
-  <![CDATA[
+    <![CDATA[
 
   function testProperty( aID )
   {
@@ -51,6 +50,7 @@
 
   ]]>
   </script>
+
   <hbox align="center">
     <text class="label" value="Foo Label 1:" for="nerp1"/>
     <textbox flex="1" id="nerp1" disabled="true" value="disabled"/>
@@ -169,7 +169,7 @@
   <progressmeter mode="undetermined" flex="1"/>
 
   <script>
-  <![CDATA[
+    <![CDATA[
     function advanceProgress()
     {
       var progressMeter = document.getElementById("normal");
@@ -189,11 +189,12 @@
 
 
   <hbox align="center">
-    <progressmeter id="normal" mode="normal" flex="1" value="50"/>
+    <progressmeter id="normal" mode="normal" flex="1"/>
     <button label="Advance Progress" oncommand="advanceProgress();"/>
   </hbox>
 
   <separator/>
 
   <scrollbar orient="horizontal"/>
- </window>
+
+</window>

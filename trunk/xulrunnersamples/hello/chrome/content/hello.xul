@@ -4,12 +4,8 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        align="stretch"
-        
+        align="start"
 >
-  <vbox>
-    <label value="hoi"></label>
-    <button label="test"></button>
-    <textbox value="test" type="password"></textbox>
-  </vbox>
+    <button label="test1" width="500" height="50"></button>
+    <button label="test1" width="50" height="500"></button>
 </window>

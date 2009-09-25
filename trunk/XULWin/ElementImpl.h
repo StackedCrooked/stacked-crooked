@@ -65,9 +65,13 @@ namespace XULWin
 
         int commandId() const { return mCommandId.intValue(); }
 
-        virtual int minimumWidth() const = 0;
+        int minimumWidth() const;
 
-        virtual int minimumHeight() const = 0;
+        int minimumHeight() const;
+
+        virtual int calculateMinimumWidth() const = 0;
+
+        virtual int calculateMinimumHeight() const = 0;
 
         // Tendency to expand, used for separators.
         bool expansive() const;
@@ -177,9 +181,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         virtual Rect clientRect() const;
 
@@ -257,9 +261,9 @@ namespace XULWin
 
         void setHeight(int inHeight);
 
-        virtual int minimumWidth() const { return 0; }
+        virtual int calculateMinimumWidth() const { return 0; }
 
-        virtual int minimumHeight() const { return 0; }
+        virtual int calculateMinimumHeight() const { return 0; }
 
         virtual void rebuildLayout();
 
@@ -331,9 +335,9 @@ namespace XULWin
 
         int paddingBottom() const;
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
     private:
         int mTop, mLeft, mRight, mBottom;
@@ -347,9 +351,9 @@ namespace XULWin
 
         NativeButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -364,9 +368,9 @@ namespace XULWin
 
         virtual bool initStyleControllers();
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -379,9 +383,9 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -394,9 +398,9 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
 
@@ -414,9 +418,9 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -431,9 +435,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         void setOrientation(Orientation inOrientation);
 
@@ -473,9 +477,9 @@ namespace XULWin
 
         NativeMenuList(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
             
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -492,9 +496,9 @@ namespace XULWin
 
         NativeSeparator(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -505,9 +509,9 @@ namespace XULWin
 
         NativeSpacer(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -518,9 +522,9 @@ namespace XULWin
 
         NativeMenuButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -531,9 +535,9 @@ namespace XULWin
 
         NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         virtual void rebuildLayout();
     };
@@ -555,9 +559,9 @@ namespace XULWin
 
         NativeRow(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -577,9 +581,9 @@ namespace XULWin
 
         NativeColumn(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -599,9 +603,9 @@ namespace XULWin
 
         NativeRadio(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
     };
 
 
@@ -612,9 +616,9 @@ namespace XULWin
 
         NativeProgressMeter(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         bool initAttributeControllers();
     };
@@ -629,9 +633,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int minimumWidth() const;
+        virtual int calculateMinimumWidth() const;
 
-        virtual int minimumHeight() const;
+        virtual int calculateMinimumHeight() const;
 
         void setSelectedIndex(int inSelectedIndex);
 

@@ -320,14 +320,43 @@ namespace XULWin
             {
                 return inEl->clientRect().height();
             }
+
+
+            static void SetPadding(ElementImpl * inEl, int inPadding)
+            {
+                if (PaddingDecorator * obj = inEl->owningElement()->impl()->downcast<PaddingDecorator>())
+                {
+                    obj->setPadding(inPadding);
+                }
+                else if (Decorator * dec = inEl->owningElement()->impl()->downcast<Decorator>())
+                {
+                    ElementImplPtr newDec(new PaddingDecorator(dec->decoratedElement()));
+                    dec->setDecoratedElement(newDec);
+                    if (PaddingDecorator * p = newDec->downcast<PaddingDecorator>())
+                    {
+                        p->setPadding(inPadding);
+                    }
+                }
+            }
+
+            static int GetPadding(ElementImpl * inEl)
+            {
+                return inEl->downcast<PaddingDecorator>()->padding();
+            }
+
+
         };
-        StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
+        {StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
         StyleSetter cssWidthSetter = boost::bind(&Helper::SetWidth, this, boost::bind(&CssString2Size, _1, Defaults::controlWidth()));
         setStyleController("width", StyleController(cssWidthGetter, cssWidthSetter));
 
         StyleGetter cssHeightGetter = boost::bind(&Int2String, boost::bind(&Helper::GetHeight, this));
         StyleSetter cssHeightSetter = boost::bind(&Helper::SetHeight, this, boost::bind(&CssString2Size, _1, Defaults::controlHeight()));
-        setStyleController("height", StyleController(cssHeightGetter, cssHeightSetter));
+        setStyleController("height", StyleController(cssHeightGetter, cssHeightSetter));}
+
+        StyleGetter cssPaddingGetter = boost::bind(&Int2String, boost::bind(&Helper::GetPadding, this));
+        StyleSetter cssPaddingSetter = boost::bind(&Helper::SetPadding, this, boost::bind(&CssString2Size, _1, 0));
+        setStyleController("padding", StyleController(cssPaddingGetter, cssPaddingSetter));
         return true;
     }
 
@@ -617,23 +646,10 @@ namespace XULWin
 
     void NativeWindow::showModal()
     {  
-        Rect rect = windowRect();
-        int minWidth = calculateMinimumWidth();
-        int minHeight = calculateMinimumHeight();
-        int x = rect.x();
-        int y = rect.y();
-        int w = rect.width();
-        int h = rect.height();
-        if (w < minWidth)
-        {
-            w = minWidth;
-        }
-        if (h < minHeight)
-        {
-            h = minHeight;
-        }
-        x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
-        y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
+        int w = calculateMinimumWidth();
+        int h = calculateMinimumHeight();
+        int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
+        int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         move(x, y, w, h);
         move(x, y, w, h);
         rebuildLayout();
@@ -790,6 +806,13 @@ namespace XULWin
     }
 
 
+    Decorator::Decorator(ElementImplPtr inDecoratedElement) :
+        ElementImpl(inDecoratedElement->parent()),
+        mDecoratedElement(inDecoratedElement)
+    {
+    }
+
+
     Decorator::~Decorator()
     {
     }
@@ -805,15 +828,15 @@ namespace XULWin
     }
     
     
-    ElementImpl * Decorator::decoratedElement()
+    ElementImplPtr Decorator::decoratedElement() const
     {
-        return mDecoratedElement.get();
+        return mDecoratedElement;
     }
-
     
-    const ElementImpl * Decorator::decoratedElement() const
+    
+    void Decorator::setDecoratedElement(ElementImplPtr inElement)
     {
-        return mDecoratedElement.get();
+        mDecoratedElement = inElement;
     }
 
 
@@ -847,6 +870,26 @@ namespace XULWin
             return mDecoratedElement->initStyleControllers();
         }
         return true;
+    }
+
+    
+    int Decorator::calculateMinimumWidth() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->calculateMinimumWidth();
+        }
+        return 0;
+    }
+
+
+    int Decorator::calculateMinimumHeight() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->calculateMinimumHeight();
+        }
+        return 0;
     }
 
 
@@ -899,6 +942,16 @@ namespace XULWin
     }
 
 
+    PaddingDecorator::PaddingDecorator(ElementImplPtr inDecoratedElement) :
+        Decorator(inDecoratedElement),
+        mTop(2),
+        mLeft(4),
+        mRight(4),
+        mBottom(2)
+    {
+    }
+
+
     PaddingDecorator::~PaddingDecorator()
     {
     }
@@ -908,6 +961,30 @@ namespace XULWin
     {
         mRect = Rect(x + paddingLeft(), y + paddingTop(), w - paddingLeft() - paddingRight(), h - paddingTop() - paddingBottom());
         mDecoratedElement->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
+    }
+
+
+    void PaddingDecorator::setPadding(int top, int left, int right, int bottom)
+    {
+        mTop = top;
+        mLeft = left;
+        mRight = right;
+        mBottom = bottom;
+    }
+
+
+    void PaddingDecorator::setPadding(int inPadding)
+    {
+        mTop = inPadding;
+        mLeft = inPadding;
+        mRight = inPadding;
+        mBottom = inPadding;
+    }
+
+
+    int PaddingDecorator::padding() const
+    {
+        return mLeft;
     }
 
 
@@ -937,13 +1014,13 @@ namespace XULWin
     
     int PaddingDecorator::calculateMinimumWidth() const
     {
-        return paddingLeft() + mDecoratedElement->minimumWidth() + paddingRight();
+        return paddingLeft() + mDecoratedElement->calculateMinimumWidth() + paddingRight();
     }
 
     
     int PaddingDecorator::calculateMinimumHeight() const
     {
-        return paddingTop() + mDecoratedElement->minimumHeight() + paddingBottom();
+        return paddingTop() + mDecoratedElement->calculateMinimumHeight() + paddingBottom();
     }
 
 
@@ -1085,7 +1162,7 @@ namespace XULWin
         }
         else if (Decorator * obj = dynamic_cast<Decorator*>(inElementImpl))
         {
-            return GetNativeParent(obj->decoratedElement());
+            return GetNativeParent(obj->decoratedElement().get());
         }
         else if (VirtualControl * obj = dynamic_cast<VirtualControl*>(inElementImpl))
         {

@@ -33,7 +33,7 @@ namespace XULWin
     class ElementImpl;
     class Decorator;
     class NativeComponent;
-    typedef boost::shared_ptr<ElementImpl> NativeComponentPtr;
+    typedef boost::shared_ptr<ElementImpl> ElementImplPtr;
 
     /**
      * ElementImpl is base class for all native UI elements.
@@ -290,13 +290,17 @@ namespace XULWin
     public:
         typedef ElementImpl Super;
 
+        // Takes ownership.
         Decorator(ElementImpl * inDecoratedElement);
+
+        // This constructor is needed when inserting a new object in the Decorator chain.
+        Decorator(ElementImplPtr inDecoratedElement);
 
         virtual ~Decorator();
 
-        ElementImpl * decoratedElement();
+        ElementImplPtr decoratedElement() const;
 
-        const ElementImpl * decoratedElement() const;
+        void setDecoratedElement(ElementImplPtr inElement);
 
         virtual void setOwningElement(Element * inElement);
 
@@ -305,6 +309,10 @@ namespace XULWin
         virtual bool initStyleControllers();
 
         virtual void rebuildLayout();
+
+        virtual int calculateMinimumWidth() const;
+
+        virtual int calculateMinimumHeight() const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -317,7 +325,7 @@ namespace XULWin
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
-        NativeComponentPtr mDecoratedElement;
+        ElementImplPtr mDecoratedElement;
         Rect mRect;
     };
 
@@ -327,11 +335,22 @@ namespace XULWin
     public:
         typedef Decorator Super;
 
+        // Takes ownership.
         PaddingDecorator(ElementImpl * inDecoratedElement);
+
+        // This constructor is needed for insertion of new objects in the Decorator chain.
+        PaddingDecorator(ElementImplPtr inDecoratedElement);
 
         virtual ~PaddingDecorator();
 
         virtual void move(int x, int y, int w, int h);
+
+        void setPadding(int top, int left, int right, int bottom);
+
+        void setPadding(int inPadding);
+
+        // returns left padding
+        int padding() const;
 
         int paddingTop() const;
 

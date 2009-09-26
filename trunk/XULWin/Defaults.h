@@ -39,11 +39,19 @@ namespace XULWin
 
         static int scrollbarWidth() { return 17; }
 
+        static int progressMeterHeight() { return 17; }
+
 
         namespace Attributes
         {
 
             static int flex() { return 0; }
+
+            static int pageincrement() { return 10; }
+
+            static int curpos() { return 0; }
+
+            static int maxpos() { return 100; }
 
         } // namespace Attributes
 

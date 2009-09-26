@@ -185,7 +185,7 @@ namespace XULWin
     
     ElementImpl::Components ElementImpl::sComponentsByHandle;
     
-    NativeControl::ControlsById NativeControl::sControlsById;
+    NativeControl::ComponentsById NativeControl::sComponentsById;
 
     ElementImpl::ElementImpl(ElementImpl * inParent) :
         mParent(inParent),
@@ -491,6 +491,55 @@ namespace XULWin
     }
 
 
+    LRESULT NativeComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        switch (inMessage)
+        {
+            case WM_COMMAND:
+            {
+                ComponentsById::iterator it = sComponentsById.find(LOWORD(wParam));
+                if (it != sComponentsById.end())
+                {
+                    it->second->handleCommand(wParam, lParam);
+                }
+                break;
+            }
+            // These messages get forwarded to the child elements that produced them.
+            case WM_VSCROLL:
+            case WM_HSCROLL:
+            {
+                HWND handle = (HWND)lParam;
+                Components::iterator it = sComponentsByHandle.find(handle);
+                if (it != sComponentsByHandle.end())
+                {
+                    it->second->handleMessage(inMessage, wParam, lParam);
+                }
+                break;
+            }
+        }
+
+        if (mOrigProc)
+		{
+			return ::CallWindowProc(mOrigProc, mHandle, inMessage, wParam, lParam);
+		}
+		else
+		{
+			return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
+		}
+    }
+
+    
+    LRESULT CALLBACK NativeComponent::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        Components::iterator it = sComponentsByHandle.find(hWnd);
+        if (it != sComponentsByHandle.end())
+        {
+            return it->second->handleMessage(inMessage, wParam, lParam);
+        }
+        return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
+    } 
+
+
     void NativeWindow::Register(HMODULE inModuleHandle)
     {
         WNDCLASSEX wndClass;
@@ -696,7 +745,29 @@ namespace XULWin
                 minMaxInfo->ptMinTrackSize.x = calculateMinimumWidth() + sizeDiff.cx;
                 minMaxInfo->ptMinTrackSize.y = calculateMinimumHeight() + sizeDiff.cy;
                 break;
-			}
+			}            
+            case WM_COMMAND:
+            {
+                int id = LOWORD(wParam);
+                ComponentsById::iterator it = sComponentsById.find(id);
+                if (it != sComponentsById.end())
+                {
+                    it->second->handleCommand(wParam, lParam);
+                }
+                break;
+            }
+            // These messages get forwarded to the child elements that produced them.
+            case WM_VSCROLL:
+            case WM_HSCROLL:
+            {
+                HWND handle = (HWND)lParam;
+                Components::iterator it = sComponentsByHandle.find(handle);
+                if (it != sComponentsByHandle.end())
+                {
+                    it->second->handleMessage(inMessage, wParam, lParam);
+                }
+                break;
+            }
         }
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
@@ -1068,7 +1139,7 @@ namespace XULWin
         mOrigProc = (WNDPROC)(LONG_PTR)::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)&NativeControl::MessageHandler);
 
         sComponentsByHandle.insert(std::make_pair(mHandle, this));
-        sControlsById.insert(std::make_pair(mCommandId.intValue(), this));
+        sComponentsById.insert(std::make_pair(mCommandId.intValue(), this));
     }
 
 
@@ -1080,12 +1151,12 @@ namespace XULWin
             mOrigProc = 0;
         }
 
-        ControlsById::iterator itById = sControlsById.find(mCommandId.intValue());
-        bool foundById = itById != sControlsById.end();
+        ComponentsById::iterator itById = sComponentsById.find(mCommandId.intValue());
+        bool foundById = itById != sComponentsById.end();
         assert(foundById);
         if (foundById)
         {
-            sControlsById.erase(itById);
+            sComponentsById.erase(itById);
         }
     }
 
@@ -1114,44 +1185,6 @@ namespace XULWin
         ::GetClientRect(handle(), &rc);
         return Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
     }
-
-
-    LRESULT NativeControl::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
-    {
-        switch (inMessage)
-        {
-            case WM_COMMAND:
-            {
-                ControlsById::iterator it = sControlsById.find(LOWORD(wParam));
-                if (it != sControlsById.end())
-                {
-                    it->second->handleCommand(wParam, lParam);
-                    //it->second->owningElement()->OnCommand(0);
-                }
-                break;
-            }
-        }
-
-        if (mOrigProc)
-		{
-			return ::CallWindowProc(mOrigProc, mHandle, inMessage, wParam, lParam);
-		}
-		else
-		{
-			return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
-		}
-    }
-
-    
-    LRESULT CALLBACK NativeControl::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
-    {
-        Components::iterator it = sComponentsByHandle.find(hWnd);
-        if (it != sComponentsByHandle.end())
-        {
-            return it->second->handleMessage(inMessage, wParam, lParam);
-        }
-        return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
-    } 
     
     
     NativeComponent * NativeControl::GetNativeParent(ElementImpl * inElementImpl)
@@ -2021,13 +2054,13 @@ namespace XULWin
 
     int NativeProgressMeter::calculateMinimumWidth() const
     {
-        return 80;
+        return 1;
     }
 
     
     int NativeProgressMeter::calculateMinimumHeight() const
     {
-        return 21;
+        return Defaults::progressMeterHeight();
     }
 
 
@@ -2113,9 +2146,9 @@ namespace XULWin
 
     bool NativeDeck::initAttributeControllers()
     {
-        AttributeSetter orientationSetter = boost::bind(&NativeDeck::setSelectedIndex, this, boost::bind(&String2Int, _1));
-        AttributeGetter orientationGetter = boost::bind(&Int2String, boost::bind(&NativeDeck::selectedIndex, this));
-        setAttributeController("selectedIndex", AttributeController(orientationGetter, orientationSetter));
+        AttributeSetter selIndexSetter = boost::bind(&NativeDeck::setSelectedIndex, this, boost::bind(&String2Int, _1));
+        AttributeGetter selIndexGetter = boost::bind(&Int2String, boost::bind(&NativeDeck::selectedIndex, this));
+        setAttributeController("selectedIndex", AttributeController(selIndexGetter, selIndexSetter));
         return Super::initAttributeControllers();
     }
 
@@ -2148,9 +2181,11 @@ namespace XULWin
         NativeControl(inParent, inAttributesMapping,
                       TEXT("SCROLLBAR"),
                       0, // exStyle
-                      GetFlags(inAttributesMapping))
+                      GetFlags(inAttributesMapping)),
+        mIncrement(0)
     {
         mExpansive = true;
+        Utils::setScrollInfo(handle(), 100, 10, 0);
     }
 
 
@@ -2166,16 +2201,206 @@ namespace XULWin
     }
 
 
+    void NativeScrollbar::setIncrement(int inIncrement)
+    {
+        mIncrement = inIncrement;
+    }
+
+
+    int NativeScrollbar::increment() const
+    {
+        return mIncrement;
+    }
+    
+    
+    LRESULT NativeScrollbar::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+        if (inMessage == WM_VSCROLL || inMessage == WM_HSCROLL)
+        {
+            bool skip = false;
+            int currentScrollPos = ::GetScrollPos(handle(), SB_CTL);
+            int totalHeight = 0;
+            int pageHeight = 0;
+            int currentPosition = 0;
+            Utils::getScrollInfo(handle(), totalHeight, pageHeight, currentPosition);
+			switch (LOWORD(wParam))
+			{
+				case SB_LINEUP: // user clicked the top arrow
+                {
+                    currentPosition -= 1;
+					break;
+                }
+				case SB_LINEDOWN: // user clicked the bottom arrow
+                {
+                    currentPosition += 1;
+					break;
+                }				
+				case SB_PAGEUP: // user clicked the scroll bar shaft above the scroll box
+                {
+                    currentPosition -= pageHeight;
+					break;
+                }				
+				case SB_PAGEDOWN: // user clicked the scroll bar shaft below the scroll box
+                {
+                    currentPosition += pageHeight;
+					break;
+                }				
+				case SB_THUMBTRACK: // user dragged the scroll box
+                {
+					SetScrollPos(handle(), SB_CTL, HIWORD(wParam), TRUE);
+                    skip = true;
+					break;
+                }
+				default:
+                {
+					break; 
+                }
+			}
+            if (!skip)
+            {
+                if (currentPosition < 0)
+                {
+                    currentPosition = 0;
+                }
+                if (currentPosition > totalHeight)
+                {
+                    currentPosition = totalHeight;
+                }
+                ::SetScrollPos(handle(), SB_CTL, currentPosition, TRUE);
+            }
+            return 0;
+        }
+        return NativeControl::handleMessage(inMessage, wParam, lParam);
+    }
+
+
     bool NativeScrollbar::initAttributeControllers()
     {
         // TODO: implement!
-        //<scrollbar
-        //id="identifier"
-        //orient="horizontal"
         //curpos="20"
         //maxpos="100"
         //increment="1"
         //pageincrement="10"/>
+        struct Helper
+        {
+            static void setCurPos(HWND inHandle, int inCurPos)
+            {
+                int totalHeight = 0;
+                int pageHeight = 0;
+                int dummy = 0;
+                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, dummy);
+                if (pageHeight == 0)
+                {
+                    pageHeight = 1;
+                }
+                if (totalHeight < pageHeight)
+                {
+                    totalHeight = pageHeight + 1;
+                }
+                if (inCurPos > pageHeight/2)
+                {
+                    inCurPos -= pageHeight/2;
+                }
+                if (totalHeight < inCurPos)
+                {
+                    totalHeight = inCurPos + 1;
+                }
+                Utils::setScrollInfo(inHandle, totalHeight, pageHeight, inCurPos);
+            }
+
+            static int getCurPos(HWND inHandle)
+            {
+                int totalHeight = 0;
+                int pageHeight = 0;
+                int curPos = 0;
+                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, curPos);
+                return curPos;
+            }
+
+            static void setMaxPos(HWND inHandle, int inMaxPos)
+            {
+                int dummy = 0;
+                int pageHeight = 0;
+                int curPos = 0;
+                Utils::getScrollInfo(inHandle, dummy, pageHeight, curPos);
+                if (pageHeight == 0)
+                {
+                    pageHeight = 1;
+                }
+                if (inMaxPos <= pageHeight)
+                {
+                    pageHeight = inMaxPos - 1;
+                }
+                if (curPos > pageHeight/2)
+                {
+                    curPos -= pageHeight/2;
+                }
+                Utils::setScrollInfo(inHandle, inMaxPos, pageHeight, curPos);
+            }
+
+            static int getMaxPos(HWND inHandle)
+            {
+                int totalHeight = 0;
+                int pageHeight = 0;
+                int curPos = 0;
+                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, curPos);
+                return totalHeight;
+            }
+
+            static void setPageIncrement(HWND inHandle, int inPageIncrement)
+            {
+                int totalHeight = 0;
+                int dummy = 0;
+                int curPos = 0;
+                Utils::getScrollInfo(inHandle, totalHeight, dummy, curPos);
+                
+                if (curPos > inPageIncrement/2)
+                {
+                    curPos -= inPageIncrement/2;
+                }
+                if (totalHeight == 0)
+                {
+                    totalHeight = 1;
+                }
+                if (curPos > totalHeight)
+                {
+                    totalHeight += 1;
+                }
+                if (inPageIncrement >= totalHeight)
+                {
+                    totalHeight = inPageIncrement + 1;
+                }
+                Utils::setScrollInfo(inHandle, totalHeight, inPageIncrement, curPos);
+            }
+
+            static int getPageIncrement(HWND inHandle)
+            {
+                int totalHeight = 0;
+                int pageHeight = 0;
+                int curPos = 0;
+                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, curPos);
+                return pageHeight;
+            }
+        };
+        
+        AttributeSetter pageIncrementSetter = boost::bind(&Helper::setPageIncrement, handle(), boost::bind(&String2Int, _1, Defaults::Attributes::pageincrement()));
+        AttributeGetter pageIncrementGetter = boost::bind(&Int2String, boost::bind(&Helper::getPageIncrement, handle()));
+        setAttributeController("pageincrement", AttributeController(pageIncrementGetter, pageIncrementSetter));        
+        
+        
+        AttributeSetter maxPosSetter = boost::bind(&Helper::setMaxPos, handle(), boost::bind(&String2Int, _1, Defaults::Attributes::maxpos()));
+        AttributeGetter maxPosGetter = boost::bind(&Int2String, boost::bind(&Helper::getMaxPos, handle()));
+        setAttributeController("maxpos", AttributeController(maxPosGetter, maxPosSetter));        
+        
+        
+        AttributeSetter curPosSetter = boost::bind(&Helper::setCurPos, handle(), boost::bind(&String2Int, _1, Defaults::Attributes::curpos()));
+        AttributeGetter curPosGetter = boost::bind(&Int2String, boost::bind(&Helper::getCurPos, handle()));
+        setAttributeController("curpos", AttributeController(curPosGetter, curPosSetter));        
+        
+        
+        AttributeSetter incrementSetter = boost::bind(&NativeScrollbar::setIncrement, this, boost::bind(&String2Int, _1, 1));
+        AttributeGetter incrementGetter = boost::bind(&Int2String, boost::bind(&NativeScrollbar::increment, this));
+        setAttributeController("increment", AttributeController(incrementGetter, incrementSetter));        
         return Super::initAttributeControllers();
     }
 

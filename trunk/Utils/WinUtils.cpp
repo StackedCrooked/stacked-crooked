@@ -364,5 +364,33 @@ namespace Utils
         return hasWindowStyle(inHandle, ES_READONLY);
     }
 
+
+    void setScrollInfo(HWND inHandle, int inTotalHeight, int inPageHeight, int inCurrentPosition)
+    {
+        SCROLLINFO si;
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		si.nMin = 0;
+		si.nMax = inTotalHeight;
+		si.nPage = inPageHeight;
+		si.nPos = inCurrentPosition;
+		si.nTrackPos = 0; // is ignored by SetScrollInfo
+        ::SetScrollInfo(inHandle, SB_CTL, &si, TRUE);
+    }
+
+
+    void getScrollInfo(HWND inHandle, int & outTotalHeight, int & outPageHeight, int & outCurrentPosition)
+    {
+        SCROLLINFO si;
+        ::ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+
+        ::GetScrollInfo(inHandle, SB_CTL, &si);
+        outTotalHeight = si.nMax;
+        outPageHeight = si.nPage;
+        outCurrentPosition = si.nPos;
+    }
+
     
 } // namespace Utils

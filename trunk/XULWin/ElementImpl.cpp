@@ -1188,11 +1188,6 @@ namespace XULWin
     
     void NativeControl::move(int x, int y, int w, int h)
     {
-        if (owningElement()->type() == Scrollbar::Type())
-        {
-            int x1 = x;
-            int w1 = w;
-        }
         ::MoveWindow(handle(), x, y, w, h, FALSE);
     }
     
@@ -2623,10 +2618,18 @@ namespace XULWin
             if (mOrient == VERTICAL)
             {
                 w -= Defaults::scrollbarWidth();
+                if (w < 0)
+                {
+                    w = 0;
+                }
             }
             else
             {
                 h -= Defaults::scrollbarWidth();
+                if (h < 0)
+                {
+                    h = 0;
+                }
             }
             mDecoratedElement->move(x, y, w, h);
         }

@@ -43,6 +43,7 @@ namespace XULWin
         // returns attribe value that represents actual state of the element
         std::string getAttribute(const std::string & inName) const;
 
+        // returns css value defined in the style attribute
         std::string getStyle(const std::string & inName) const;
 
         // only looks in the original XUL document

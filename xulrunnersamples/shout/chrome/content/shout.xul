@@ -4,35 +4,23 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        align="start"
->
-  <hbox>
-    <box style="margin:4px;">
-      <image
-        id="NetlogToolbar-ShoutDialog-Image"
-        src="chrome://shout/skin/StackedCrooked.jpg"
-        />
-    </box>
-    <vbox>
-      <textbox
-        id="NetlogToolbar-ShoutBox"
-        oninput="NetlogToolbar.onShoutTextBoxInput();"
-        onkeypress="if (event.keyCode == event.DOM_VK_RETURN) NetlogToolbar.onShoutConfirm();"
-        flex="1"
-          />
-      <hbox flex="2">
-        <checkbox
-          id="NetlogToolbar-ShoutDialog-CheckBox"
-          label="&SHOW_IN_SPOTLIGHT;"
-          flex="1"
-          />
-        <button
-          id="NetlogToolbar-ShoutDialog-ShoutButton"
-          label="&SHOUT;"
-          disabled="true"
-          oncommand="NetlogToolbar.onShoutConfirm();"
-            />
-      </hbox>
-    </vbox>
-  </hbox>
+        align="center"
+        orient="horizontal">
+  <image id="NetlogToolbar-ShoutDialog-Image"
+         src="chrome://shout/skin/StackedCrooked.jpg"
+         style="margin:4px;" />
+  <vbox align="stretch">
+    <textbox id="NetlogToolbar-ShoutBox"
+             oninput="NetlogToolbar.onShoutTextBoxInput();"
+             onkeypress="if (event.keyCode == event.DOM_VK_RETURN) NetlogToolbar.onShoutConfirm();" />
+    <hbox align="end">
+      <checkbox id="NetlogToolbar-ShoutDialog-CheckBox"
+                label="&SHOW_IN_SPOTLIGHT;"
+                flex="1" />
+      <button id="NetlogToolbar-ShoutDialog-ShoutButton"
+              label="&SHOUT;"
+              disabled="true"
+              oncommand="NetlogToolbar.onShoutConfirm();" />
+    </hbox>
+  </vbox>
 </window>

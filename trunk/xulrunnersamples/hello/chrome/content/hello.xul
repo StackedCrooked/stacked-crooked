@@ -4,13 +4,8 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        align="center"
 >
-  <hbox align="end">
-    <vbox height="500">
-      <button label="een" width="100" height="100"></button>
-      <button label="twee"></button>
-      <button label="drie"></button>
-    </vbox>
-    <button label="vier"></button>
-  </hbox>
+  <button style="margin:40px" label="een" ></button>
+  <button style="margin:40px" label="een" ></button>
 </window>

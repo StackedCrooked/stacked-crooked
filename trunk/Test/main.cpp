@@ -23,10 +23,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Utils::ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
 
     XULTest::Tester tester;
-    //tester.runXULSample("hello");
+    tester.runXULSample("hello");
     //tester.runXULSample("uploadr");
-    tester.runXULSample("widgets");
+    //tester.runXULSample("widgets");
     //tester.runXULSample("configpanel");
-    //tester.runXULSample("shout");
+    tester.runXULSample("shout");
     return 0;
 }

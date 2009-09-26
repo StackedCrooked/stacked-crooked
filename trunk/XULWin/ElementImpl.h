@@ -329,35 +329,35 @@ namespace XULWin
     };
 
 
-    class PaddingDecorator : public Decorator
+    class MarginDecorator : public Decorator
     {
     public:
         typedef Decorator Super;
 
         // Takes ownership.
-        PaddingDecorator(ElementImpl * inDecoratedElement);
+        MarginDecorator(ElementImpl * inDecoratedElement);
 
         // This constructor is needed for insertion of new objects in the Decorator chain.
-        PaddingDecorator(ElementImplPtr inDecoratedElement);
+        MarginDecorator(ElementImplPtr inDecoratedElement);
 
-        virtual ~PaddingDecorator();
+        virtual ~MarginDecorator();
 
         virtual void move(int x, int y, int w, int h);
 
-        void setPadding(int top, int left, int right, int bottom);
+        void setMargin(int top, int left, int right, int bottom);
 
-        void setPadding(int inPadding);
+        void setMargin(int inPadding);
 
-        // returns left padding
-        int padding() const;
+        // returns left margin
+        int margin() const;
 
-        int paddingTop() const;
+        int marginTop() const;
 
-        int paddingLeft() const;
+        int marginLeft() const;
 
-        int paddingRight() const;
+        int marginRight() const;
 
-        int paddingBottom() const;
+        int marginBottom() const;
 
         virtual int calculateMinimumWidth() const;
 

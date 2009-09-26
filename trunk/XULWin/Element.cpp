@@ -245,7 +245,7 @@ namespace XULWin
     Button::Button(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Button::Type(),
                 inParent,
-                new PaddingDecorator(new NativeButton(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeButton(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -253,7 +253,7 @@ namespace XULWin
     Label::Label(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Label::Type(),
                 inParent,
-                new PaddingDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -267,7 +267,7 @@ namespace XULWin
     Description::Description(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Description::Type(),
                 inParent,
-                new PaddingDecorator(new NativeDescription(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeDescription(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -275,7 +275,7 @@ namespace XULWin
     Text::Text(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Text::Type(),
                 inParent,
-                new PaddingDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -283,7 +283,7 @@ namespace XULWin
     TextBox::TextBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(TextBox::Type(),
                 inParent,
-                new PaddingDecorator(new NativeTextBox(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeTextBox(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -291,7 +291,7 @@ namespace XULWin
     CheckBox::CheckBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(CheckBox::Type(),
                 inParent,
-                new PaddingDecorator(new NativeCheckBox(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeCheckBox(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -323,7 +323,7 @@ namespace XULWin
     MenuList::MenuList(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(MenuList::Type(),
                 inParent,
-                new PaddingDecorator(new NativeMenuList(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeMenuList(inParent->impl(), inAttributesMapping)))
     {
     }
         
@@ -453,7 +453,7 @@ namespace XULWin
     Separator::Separator(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Separator::Type(),
                 inParent,
-                new PaddingDecorator(new NativeSeparator(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeSeparator(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -479,7 +479,7 @@ namespace XULWin
     MenuButton::MenuButton(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(MenuButton::Type(),
                 inParent,
-                new PaddingDecorator(new NativeMenuButton(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeMenuButton(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -570,7 +570,7 @@ namespace XULWin
     Radio::Radio(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Radio::Type(),
                 inParent,
-                new PaddingDecorator(new NativeRadio(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeRadio(inParent->impl(), inAttributesMapping)))
     {
     }
 
@@ -583,7 +583,7 @@ namespace XULWin
     ProgressMeter::ProgressMeter(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(ProgressMeter::Type(),
                 inParent,
-                new PaddingDecorator(new NativeProgressMeter(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeProgressMeter(inParent->impl(), inAttributesMapping)))
     {
     }
 

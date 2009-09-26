@@ -176,6 +176,47 @@ namespace XULWin
     }
 
 
+    WrapDecorator::WrapDecorator(ElementImpl * inParent, ElementImpl * inDecoratedElement) :
+        Decorator(inDecoratedElement),
+        mParent(inParent)
+    {
+    }
+
+
+    void WrapDecorator::addChild(ElementImpl * inChild)
+    {
+        boost::shared_ptr<ElementImpl> childPtr(inChild);
+        mDecoratorChildren.push_back(childPtr);
+    }
+    
+    
+    BoxLayoutDecorator::BoxLayoutDecorator(ElementImpl * inParent,
+                                           ElementImpl * inDecoratedElement,
+                                           Orientation inOrient,
+                                           Alignment inAlign) :
+        WrapDecorator(inParent, inDecoratedElement),
+        BoxLayouter(inOrient, inAlign)
+    {
+        
+    }
+    
+    
+    Rect BoxLayoutDecorator::clientRect() const
+    {
+        return Super::clientRect();
+    }
+    
+    
+    void BoxLayoutDecorator::rebuildChildLayouts()
+    {
+        mDecoratedElement->rebuildChildLayouts();
+        for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
+        {
+            mDecoratorChildren[idx]->rebuildLayout();
+        }
+    }
+
+
     ScrollDecorator::ScrollDecorator(ElementImpl * inDecoratedElement, Orientation inOrient) :
         Decorator(inDecoratedElement),
         mOrient(inOrient)

@@ -1250,18 +1250,18 @@ namespace XULWin
         if (orientation() == HORIZONTAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
+            for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                result += elementChildren()[idx]->impl()->minimumWidth();
+                result += getChild(idx)->minimumWidth();
             }
             return result;
         }
         else if (orientation() == VERTICAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
+            for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                int width = elementChildren()[idx]->impl()->minimumWidth();
+                int width = getChild(idx)->minimumWidth();
                 if (width > result)
                 {
                     result = width;
@@ -1282,9 +1282,9 @@ namespace XULWin
         if (orientation() == HORIZONTAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
+            for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                int height = elementChildren()[idx]->impl()->minimumHeight();
+                int height = getChild(idx)->minimumHeight();
                 if (height > result)
                 {
                     result = height;
@@ -1295,9 +1295,9 @@ namespace XULWin
         else if (orientation() == VERTICAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
+            for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                result += elementChildren()[idx]->impl()->minimumHeight();
+                result += getChild(idx)->minimumHeight();
             }
             return result;
         }
@@ -1360,9 +1360,9 @@ namespace XULWin
         bool horizontal = orientation() == HORIZONTAL;
         
         std::vector<ExtendedSizeInfo> sizeInfos;
-        for (size_t idx = 0; idx != elementChildren().size(); ++idx)
+        for (size_t idx = 0; idx != numChildren(); ++idx)
         {
-            ElementPtr child = elementChildren()[idx];
+            Element * child = getChild(idx)->owningElement();
             int flexValue = String2Int(child->getAttribute("flex"));
             int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
             int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
@@ -1372,9 +1372,9 @@ namespace XULWin
         std::vector<Rect> childRects;
         layout.getRects(clientRect(), alignment(), sizeInfos, childRects);
 
-        for (size_t idx = 0; idx != elementChildren().size(); ++idx)
+        for (size_t idx = 0; idx != numChildren(); ++idx)
         {
-            ElementPtr child = elementChildren()[idx];
+            Element * child = getChild(idx)->owningElement();
             const Rect & rect = childRects[idx];
             child->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
         }
@@ -1400,12 +1400,6 @@ namespace XULWin
     {
         BoxLayouter::initAttributeControllers();
         return Super::initAttributeControllers();
-    }
-
-
-    const std::vector<ElementPtr> & NativeScrollBox::elementChildren() const
-    {
-        return mElement->children();
     }
     
     

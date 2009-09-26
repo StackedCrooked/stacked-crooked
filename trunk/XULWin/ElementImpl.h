@@ -672,6 +672,17 @@ namespace XULWin
 
         NativeScrollbar(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
+        class EventHandler
+        {
+        public:
+            virtual bool curposChanged(NativeScrollbar * inSender, int inPos) = 0;
+        };
+
+        EventHandler * eventHandler() { return mEventHandler; }
+
+        void setEventHandler(EventHandler * inEventHandler)
+        { mEventHandler = inEventHandler; }
+
         virtual int calculateMinimumWidth() const;
 
         virtual int calculateMinimumHeight() const;
@@ -685,8 +696,41 @@ namespace XULWin
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     private:
-        int mIncrement;
         static DWORD GetFlags(const AttributesMapping & inAttributesMapping);
+
+        EventHandler * mEventHandler;
+        int mIncrement;
+    };
+
+
+    class ScrollDecorator : public Decorator,
+                            public NativeScrollbar::EventHandler
+    {
+    public:
+        typedef Decorator Super;
+
+        // Takes ownership.
+        ScrollDecorator(ElementImpl * inDecoratedElement, Orientation inOrient);
+
+        // This constructor is needed for insertion of new objects in the Decorator chain.
+        ScrollDecorator(ElementImplPtr inDecoratedElement, Orientation inOrient);
+
+        virtual ~ScrollDecorator();
+
+        virtual void rebuildLayout();
+
+        virtual void move(int x, int y, int w, int h);
+
+        virtual int calculateMinimumWidth() const;
+
+        virtual int calculateMinimumHeight() const;
+
+        // NativeScrollbar::EventHandler
+        virtual bool curposChanged(NativeScrollbar * inSender, int inPos);
+
+    private:
+        ElementPtr mScrollbar;
+        Orientation mOrient;
     };
 
 

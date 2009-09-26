@@ -4,7 +4,13 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        align="center"
 >
-  <description>test</description>
+  <vbox style="overflow-y:auto;overflow-x:hidden;" flex="1">
+    <label value="01 Four score and seven years ago "/>
+    <label value="02 our fathers brought forth on "/>
+    <label value="03 this continent, a new nation, "/>
+    <label value="04 conceived in Liberty, and "/>
+    <label value="05 dedicated to the proposition "/>
+    <label value="06 that all men are created equal."/>
+  </vbox>
 </window>

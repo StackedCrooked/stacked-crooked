@@ -343,18 +343,46 @@ namespace XULWin
             {
                 return inEl->downcast<MarginDecorator>()->margin();
             }
+
+
+            static void SetOverflow(ElementImpl * inEl, const std::string & inOverflow, Orientation inOrient)
+            {
+                // MDC documenation
+                //visible: Default value. Content is not clipped, it may be rendered outside the content box.
+                //hidden: The content is clipped and no scrollbars are provided.
+                //scroll: The content is clipped and desktop browsers use scrollbars, whether or not any content is clipped. This avoids any problem with scrollbars appearing and disappearing in a dynamic environment. Printers may print overflowing content.
+                //auto: Depends on the user agent. Desktop browsers like Firefox provide scrollbars if content overflows.
+                if (inOverflow == "auto")
+                {
+                    if (ScrollDecorator * obj = inEl->owningElement()->impl()->downcast<ScrollDecorator>())
+                    {
+                        ReportError("Overwriting 'overflow' attribute not yet supported.");
+                    }
+                    else if (Decorator * dec = inEl->owningElement()->impl()->downcast<Decorator>())
+                    {
+                        ElementImplPtr newDec(new ScrollDecorator(dec->decoratedElement(), inOrient));
+                        dec->setDecoratedElement(newDec);
+                    }                    
+                }
+            }
         };
-        {StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
+        StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
         StyleSetter cssWidthSetter = boost::bind(&Helper::SetWidth, this, boost::bind(&CssString2Size, _1, Defaults::controlWidth()));
         setStyleController("width", StyleController(cssWidthGetter, cssWidthSetter));
 
         StyleGetter cssHeightGetter = boost::bind(&Int2String, boost::bind(&Helper::GetHeight, this));
         StyleSetter cssHeightSetter = boost::bind(&Helper::SetHeight, this, boost::bind(&CssString2Size, _1, Defaults::controlHeight()));
-        setStyleController("height", StyleController(cssHeightGetter, cssHeightSetter));}
+        setStyleController("height", StyleController(cssHeightGetter, cssHeightSetter));
 
         StyleGetter cssMarginGetter = boost::bind(&Int2String, boost::bind(&Helper::GetMargin, this));
         StyleSetter cssMarginSetter = boost::bind(&Helper::SetMargin, this, boost::bind(&CssString2Size, _1, 0));
         setStyleController("margin", StyleController(cssMarginGetter, cssMarginSetter));
+
+        StyleGetter overflowGetter; // no getter
+        StyleSetter overflowSetterX = boost::bind(&Helper::SetOverflow, this, _1, HORIZONTAL);
+        StyleSetter overflowSetterY = boost::bind(&Helper::SetOverflow, this, _1, VERTICAL);
+        setStyleController("overflow-x", StyleController(overflowGetter, overflowSetterX));
+        setStyleController("overflow-y", StyleController(overflowGetter, overflowSetterY));
         return true;
     }
 
@@ -1140,6 +1168,11 @@ namespace XULWin
     
     void NativeControl::move(int x, int y, int w, int h)
     {
+        if (owningElement()->type() == Scrollbar::Type())
+        {
+            int x1 = x;
+            int w1 = w;
+        }
         ::MoveWindow(handle(), x, y, w, h, FALSE);
     }
     
@@ -2158,6 +2191,7 @@ namespace XULWin
                       TEXT("SCROLLBAR"),
                       0, // exStyle
                       GetFlags(inAttributesMapping)),
+        mEventHandler(0),
         mIncrement(0)
     {
         mExpansive = true;
@@ -2193,8 +2227,7 @@ namespace XULWin
     {
         if (inMessage == WM_VSCROLL || inMessage == WM_HSCROLL)
         {
-            bool skip = false;
-            int currentScrollPos = ::GetScrollPos(handle(), SB_CTL);
+            int currentScrollPos = Utils::getScrollPos(handle());
             int totalHeight = 0;
             int pageHeight = 0;
             int currentPosition = 0;
@@ -2223,8 +2256,7 @@ namespace XULWin
                 }				
 				case SB_THUMBTRACK: // user dragged the scroll box
                 {
-					SetScrollPos(handle(), SB_CTL, HIWORD(wParam), TRUE);
-                    skip = true;
+                    currentPosition = HIWORD(wParam);
 					break;
                 }
 				default:
@@ -2232,18 +2264,15 @@ namespace XULWin
 					break; 
                 }
 			}
-            if (!skip)
+            if (currentPosition < 0)
             {
-                if (currentPosition < 0)
-                {
-                    currentPosition = 0;
-                }
-                if (currentPosition > totalHeight)
-                {
-                    currentPosition = totalHeight;
-                }
-                ::SetScrollPos(handle(), SB_CTL, currentPosition, TRUE);
+                currentPosition = 0;
             }
+            if (currentPosition > totalHeight)
+            {
+                currentPosition = totalHeight;
+            }
+            setAttribute("curpos", Int2String(currentPosition));
             return 0;
         }
         return NativeControl::handleMessage(inMessage, wParam, lParam);
@@ -2259,19 +2288,18 @@ namespace XULWin
         //pageincrement="10"/>
         struct Helper
         {
-            static void setCurPos(HWND inHandle, int inCurPos)
+            static void setCurPos(NativeScrollbar * el, int inCurPos)
             {
                 int totalHeight = 0;
                 int pageHeight = 0;
                 int dummy = 0;
-                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, dummy);
+                Utils::getScrollInfo(el->handle(), totalHeight, pageHeight, dummy);
 
-                // Because the order in which setCurPos, setMaxPos and setPageIncrement
+                // The order in which setCurPos, setMaxPos and setPageIncrement
                 // will be set (alphabetically by attribute name) can cause
-                // impossible scrollbar states (i.e. having a currentpos or pageincrement
-                // greater than maxpos) we need to make sure that we don't enter an
-                // impossible state.
-                // Our workaoround is to detect such states here, and change invalid
+                // impossible scrollbar states (i.e. currentpos or pageincrement
+                // greater than maxpos). And we want to avoid that.
+                // Our workaround is to detect such states here, and change invalid
                 // values to valid ones.
                 if (pageHeight == 0)
                 {
@@ -2289,7 +2317,11 @@ namespace XULWin
                 {
                     totalHeight = inCurPos + 1;
                 }
-                Utils::setScrollInfo(inHandle, totalHeight, pageHeight, inCurPos);
+                Utils::setScrollInfo(el->handle(), totalHeight, pageHeight, inCurPos);
+                if (el->eventHandler())
+                {
+                    el->eventHandler()->curposChanged(el, inCurPos);
+                }
             }
 
             static int getCurPos(HWND inHandle)
@@ -2308,12 +2340,11 @@ namespace XULWin
                 int curPos = 0;
                 Utils::getScrollInfo(inHandle, dummy, pageHeight, curPos);
 
-                // Because the order in which setCurPos, setMaxPos and setPageIncrement
+                // The order in which setCurPos, setMaxPos and setPageIncrement
                 // will be set (alphabetically by attribute name) can cause
-                // impossible scrollbar states (i.e. having a currentpos or pageincrement
-                // greater than maxpos) we need to make sure that we don't enter an
-                // impossible state.
-                // Our workaoround is to detect such states here, and change invalid
+                // impossible scrollbar states (i.e. currentpos or pageincrement
+                // greater than maxpos). And we want to avoid that.
+                // Our workaround is to detect such states here, and change invalid
                 // values to valid ones.
                 if (pageHeight == 0)
                 {
@@ -2346,12 +2377,11 @@ namespace XULWin
                 int curPos = 0;
                 Utils::getScrollInfo(inHandle, totalHeight, dummy, curPos);
 
-                // Because the order in which setCurPos, setMaxPos and setPageIncrement
+                // The order in which setCurPos, setMaxPos and setPageIncrement
                 // will be set (alphabetically by attribute name) can cause
-                // impossible scrollbar states (i.e. having a currentpos or pageincrement
-                // greater than maxpos) we need to make sure that we don't enter an
-                // impossible state.
-                // Our workaoround is to detect such states here, and change invalid
+                // impossible scrollbar states (i.e. currentpos or pageincrement
+                // greater than maxpos). And we want to avoid that.
+                // Our workaround is to detect such states here, and change invalid
                 // values to valid ones.
                 if (curPos > inPageIncrement/2)     // }
                 {                                   // } => this makes sure that the scroll box 
@@ -2392,7 +2422,7 @@ namespace XULWin
         setAttributeController("maxpos", AttributeController(maxPosGetter, maxPosSetter));        
         
         
-        AttributeSetter curPosSetter = boost::bind(&Helper::setCurPos, handle(), boost::bind(&String2Int, _1, Defaults::Attributes::curpos()));
+        AttributeSetter curPosSetter = boost::bind(&Helper::setCurPos, this, boost::bind(&String2Int, _1, Defaults::Attributes::curpos()));
         AttributeGetter curPosGetter = boost::bind(&Int2String, boost::bind(&Helper::getCurPos, handle()));
         setAttributeController("curpos", AttributeController(curPosGetter, curPosSetter));        
         
@@ -2401,6 +2431,122 @@ namespace XULWin
         AttributeGetter incrementGetter = boost::bind(&Int2String, boost::bind(&NativeScrollbar::increment, this));
         setAttributeController("increment", AttributeController(incrementGetter, incrementSetter));        
         return Super::initAttributeControllers();
+    }
+
+
+    ScrollDecorator::ScrollDecorator(ElementImpl * inDecoratedElement, Orientation inOrient) :
+        Decorator(inDecoratedElement),
+        mOrient(inOrient)
+    {
+        if (!mScrollbar)
+        {
+            AttributesMapping attr;
+            attr["orient"] = Orientation2String(mOrient);
+            mScrollbar = Element::Create<Scrollbar>(inDecoratedElement->owningElement(), attr);
+            mScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+        }
+    }
+
+
+    ScrollDecorator::ScrollDecorator(ElementImplPtr inDecoratedElement, Orientation inOrient) :
+        Decorator(inDecoratedElement),
+        mOrient(inOrient)
+    {
+        if (!mScrollbar)
+        {
+            AttributesMapping attr;
+            attr["orient"] = Orientation2String(mOrient);
+            mScrollbar = Element::Create<Scrollbar>(inDecoratedElement->owningElement(), attr);
+            mScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+        }
+    }
+
+
+    ScrollDecorator::~ScrollDecorator()
+    {
+    }
+
+
+    bool ScrollDecorator::curposChanged(NativeScrollbar * inSender, int inPos)
+    {
+        rebuildLayout();
+        return true;
+    }
+    
+    
+    void ScrollDecorator::rebuildLayout()
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->rebuildLayout();
+            if (mOrient == VERTICAL)
+            {
+                mScrollbar->impl()->move(mRect.x() + mRect.width() - Defaults::scrollbarWidth(),
+                                         mRect.y(),
+                                         Defaults::scrollbarWidth(),
+                                         mRect.height());
+            }
+            else
+            {
+                mScrollbar->impl()->move(mRect.x(),
+                                         mRect.y() + mRect.height() - Defaults::scrollbarWidth(),
+                                         mRect.width(),
+                                         Defaults::scrollbarWidth());
+            }
+        }
+    }
+    
+    
+    void ScrollDecorator::move(int x, int y, int w, int h)
+    {
+        if (mDecoratedElement)
+        {
+            mRect = Rect(x, y, w, h);
+            int minHeight = mDecoratedElement->calculateMinimumHeight();
+            if (minHeight != 0) // guard against division by zero
+            {
+                int maxpos = 100;
+                float ratio = (float)h/(float)minHeight;
+                int pageincrement = (int)(100.0*ratio + 0.5);
+                if (maxpos > 0)
+                {
+                    mScrollbar->setAttribute("maxpos", Int2String(maxpos));
+                    mScrollbar->setAttribute("pageincrement", Int2String(pageincrement));
+                    //mScrollbar->setAttribute("curpos", Int2String(0));
+                    std::string curpos;
+                    mScrollbar->impl()->downcast<NativeScrollbar>()->getAttribute("curpos", curpos);
+                    int intcurpos = String2Int(curpos);
+                    y -= intcurpos;
+                }
+            }
+            mDecoratedElement->move(x, y, w, h);
+        }
+    }
+    
+    
+    int ScrollDecorator::calculateMinimumWidth() const
+    {
+        if (mOrient == VERTICAL)
+        {
+            return mDecoratedElement->calculateMinimumWidth() + Defaults::scrollbarWidth();
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    
+    int ScrollDecorator::calculateMinimumHeight() const
+    {
+        if (mOrient == HORIZONTAL)
+        {
+            return mDecoratedElement->calculateMinimumHeight() + Defaults::scrollbarWidth();
+        }
+        else
+        {
+            return 0;
+        }
     }
 
 

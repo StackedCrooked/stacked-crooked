@@ -40,15 +40,26 @@ namespace XULWin
 
         Element * parent() const { return mParent; }
 
-        // returns attribe value that represents actual state of the element
+        // Gets the attribute value from the attribute controller.
+        // If no attribute controller was found then it will search
+        // the attribute mapping.
+        // Returns empty string if not found.
         std::string getAttribute(const std::string & inName) const;
 
-        // returns css value defined in the style attribute
-        std::string getStyle(const std::string & inName) const;
-
-        // only looks in the original XUL document
+        // Gets the attribute from the attribute mapping
+        // without querying the attribute controllers.
+        // Returns empty string if not found.
         std::string getDocumentAttribute(const std::string & inName) const;
 
+        // Gets the attribute value from the style controller.
+        // If no style controller was found then it will search
+        // the style mapping.
+        // Returns empty string if not found.
+        std::string getStyle(const std::string & inName) const;
+
+        // Sets the attribute by invoking the attribute controller.
+        // If no attribute controller found it will insert (or overwrite)
+        // the value in the attributes mapping.
         void setAttribute(const std::string & inName, const std::string & inValue);
 
         Element * getElementById(const std::string & inId);

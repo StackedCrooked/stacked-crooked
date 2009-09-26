@@ -2289,6 +2289,14 @@ namespace XULWin
                 int pageHeight = 0;
                 int dummy = 0;
                 Utils::getScrollInfo(inHandle, totalHeight, pageHeight, dummy);
+
+                // Because the order in which setCurPos, setMaxPos and setPageIncrement
+                // will be set (alphabetically by attribute name) can cause
+                // impossible scrollbar states (i.e. having a currentpos or pageincrement
+                // greater than maxpos) we need to make sure that we don't enter an
+                // impossible state.
+                // Our workaoround is to detect such states here, and change invalid
+                // values to valid ones.
                 if (pageHeight == 0)
                 {
                     pageHeight = 1;
@@ -2297,10 +2305,10 @@ namespace XULWin
                 {
                     totalHeight = pageHeight + 1;
                 }
-                if (inCurPos > pageHeight/2)
-                {
-                    inCurPos -= pageHeight/2;
-                }
+                if (inCurPos > pageHeight/2)   // }
+                {                              // } => this makes sure that the scroll box
+                    inCurPos -= pageHeight/2;  // }    is centered around currentpos
+                }                              // }
                 if (totalHeight < inCurPos)
                 {
                     totalHeight = inCurPos + 1;
@@ -2323,6 +2331,14 @@ namespace XULWin
                 int pageHeight = 0;
                 int curPos = 0;
                 Utils::getScrollInfo(inHandle, dummy, pageHeight, curPos);
+
+                // Because the order in which setCurPos, setMaxPos and setPageIncrement
+                // will be set (alphabetically by attribute name) can cause
+                // impossible scrollbar states (i.e. having a currentpos or pageincrement
+                // greater than maxpos) we need to make sure that we don't enter an
+                // impossible state.
+                // Our workaoround is to detect such states here, and change invalid
+                // values to valid ones.
                 if (pageHeight == 0)
                 {
                     pageHeight = 1;
@@ -2331,10 +2347,10 @@ namespace XULWin
                 {
                     pageHeight = inMaxPos - 1;
                 }
-                if (curPos > pageHeight/2)
-                {
-                    curPos -= pageHeight/2;
-                }
+                if (curPos > pageHeight/2)     // }
+                {                              // } => this makes sure that the scroll box
+                    curPos -= pageHeight/2;    // }    is centered around currentpos
+                }                              // }
                 Utils::setScrollInfo(inHandle, inMaxPos, pageHeight, curPos);
             }
 
@@ -2353,11 +2369,18 @@ namespace XULWin
                 int dummy = 0;
                 int curPos = 0;
                 Utils::getScrollInfo(inHandle, totalHeight, dummy, curPos);
-                
-                if (curPos > inPageIncrement/2)
-                {
-                    curPos -= inPageIncrement/2;
-                }
+
+                // Because the order in which setCurPos, setMaxPos and setPageIncrement
+                // will be set (alphabetically by attribute name) can cause
+                // impossible scrollbar states (i.e. having a currentpos or pageincrement
+                // greater than maxpos) we need to make sure that we don't enter an
+                // impossible state.
+                // Our workaoround is to detect such states here, and change invalid
+                // values to valid ones.
+                if (curPos > inPageIncrement/2)     // }
+                {                                   // } => this makes sure that the scroll box 
+                    curPos -= inPageIncrement/2;    // }    is centered around currentpos
+                }                                   // }
                 if (totalHeight == 0)
                 {
                     totalHeight = 1;

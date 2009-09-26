@@ -28,6 +28,20 @@ namespace XULWin
         static int sId;
     };
 
+    
+    // TODO: find a better place for these items
+    std::string Orientation2String(Orientation inOrient);
+    std::string Int2String(int inValue);
+    int String2Int(const std::string & inValue, int inDefault);
+    int String2Int(const std::string & inValue);
+    bool String2Bool(const std::string & inString, bool inDefault);
+    std::string Bool2String(bool inBool);
+    Orientation String2Orientation(const std::string & inValue, Orientation inDefault);
+    std::string Orientation2String(Orientation inOrient);
+    Alignment String2Align(const std::string & inValue, Alignment inDefault);
+    std::string Align2String(Alignment inAlign);
+    int CssString2Size(const std::string & inString, int inDefault);
+
 
     class Element;
     class ElementImpl;
@@ -83,7 +97,7 @@ namespace XULWin
 
         virtual void setOwningElement(Element * inElement);
 
-        Element * owningElement() const;
+        virtual Element * owningElement() const;
 
         ElementImpl * parent() const;
 
@@ -273,94 +287,6 @@ namespace XULWin
 
     protected:
         Rect mRect;
-    };
-
-
-    class Decorator : public ElementImpl
-    {
-    public:
-        typedef ElementImpl Super;
-
-        // Takes ownership.
-        Decorator(ElementImpl * inDecoratedElement);
-
-        // This constructor is needed when inserting a new object in the Decorator chain.
-        Decorator(ElementImplPtr inDecoratedElement);
-
-        virtual ~Decorator();
-
-        ElementImplPtr decoratedElement() const;
-
-        void setDecoratedElement(ElementImplPtr inElement);
-
-        virtual void setOwningElement(Element * inElement);
-
-        virtual bool initAttributeControllers();
-
-        virtual bool initStyleControllers();
-
-        virtual void rebuildLayout();
-
-        virtual int calculateMinimumWidth() const;
-
-        virtual int calculateMinimumHeight() const;
-
-        virtual void move(int x, int y, int w, int h);
-
-        virtual Rect clientRect() const;
-
-        virtual bool getAttribute(const std::string & inName, std::string & outValue);
-
-        virtual bool getStyle(const std::string & inName, std::string & outValue);
-
-        virtual bool setAttribute(const std::string & inName, const std::string & inValue);
-
-        virtual bool setStyle(const std::string & inName, const std::string & inValue);
-
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
-
-    protected:
-        ElementImplPtr mDecoratedElement;
-        Rect mRect;
-    };
-
-
-    class MarginDecorator : public Decorator
-    {
-    public:
-        typedef Decorator Super;
-
-        // Takes ownership.
-        MarginDecorator(ElementImpl * inDecoratedElement);
-
-        // This constructor is needed for insertion of new objects in the Decorator chain.
-        MarginDecorator(ElementImplPtr inDecoratedElement);
-
-        virtual ~MarginDecorator();
-
-        virtual void move(int x, int y, int w, int h);
-
-        void setMargin(int top, int left, int right, int bottom);
-
-        void setMargin(int inPadding);
-
-        // returns left margin
-        int margin() const;
-
-        int marginTop() const;
-
-        int marginLeft() const;
-
-        int marginRight() const;
-
-        int marginBottom() const;
-
-        virtual int calculateMinimumWidth() const;
-
-        virtual int calculateMinimumHeight() const;
-
-    private:
-        int mTop, mLeft, mRight, mBottom;
     };
 
 
@@ -778,37 +704,6 @@ namespace XULWin
 
         EventHandler * mEventHandler;
         int mIncrement;
-    };
-
-
-    class ScrollDecorator : public Decorator,
-                            public NativeScrollbar::EventHandler
-    {
-    public:
-        typedef Decorator Super;
-
-        // Takes ownership.
-        ScrollDecorator(ElementImpl * inDecoratedElement, Orientation inOrient);
-
-        // This constructor is needed for insertion of new objects in the Decorator chain.
-        ScrollDecorator(ElementImplPtr inDecoratedElement, Orientation inOrient);
-
-        virtual ~ScrollDecorator();
-
-        virtual void rebuildLayout();
-
-        virtual void move(int x, int y, int w, int h);
-
-        virtual int calculateMinimumWidth() const;
-
-        virtual int calculateMinimumHeight() const;
-
-        // NativeScrollbar::EventHandler
-        virtual bool curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos);
-
-    private:
-        ElementPtr mScrollbar;
-        Orientation mOrient;
     };
 
 

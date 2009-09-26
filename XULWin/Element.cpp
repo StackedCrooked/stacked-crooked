@@ -1,4 +1,5 @@
 #include "Element.h"
+#include "Decorator.h"
 #include "ElementImpl.h"
 #include "Utils/ErrorReporter.h"
 #include "Poco/StringTokenizer.h"

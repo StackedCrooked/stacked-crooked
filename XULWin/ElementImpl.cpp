@@ -1280,14 +1280,18 @@ namespace XULWin
     DWORD NativeTextBox::GetPasswordFlag(const AttributesMapping & inAttributesMapping)
     {
         AttributesMapping::const_iterator it = inAttributesMapping.find("type");
-        return (it != inAttributesMapping.end()) ? ES_PASSWORD : 0;
+        if (it != inAttributesMapping.end() && it->second == "password")
+        {
+            return ES_PASSWORD;
+        }
+        return 0;
     } 
 
 
     bool NativeTextBox::IsReadOnly(const AttributesMapping & inAttributesMapping)
     {
         AttributesMapping::const_iterator it = inAttributesMapping.find("readonly");
-        return it != inAttributesMapping.end();
+        return it != inAttributesMapping.end() && it->second == "true";
     } 
 
     

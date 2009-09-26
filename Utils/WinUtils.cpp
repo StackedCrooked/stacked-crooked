@@ -392,5 +392,17 @@ namespace Utils
         outCurrentPosition = si.nPos;
     }
 
+
+    int getScrollPos(HWND inHandle)
+    {
+        return (int)::GetScrollPos(inHandle, SB_CTL);
+    }
+
+
+    void setScrollPos(HWND inHandle, int inPos)
+    {
+        ::SetScrollPos(inHandle, SB_CTL, inPos, TRUE);
+    }
+
     
 } // namespace Utils

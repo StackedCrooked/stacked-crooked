@@ -5,7 +5,5 @@ style="overflow:hidden;"
 
 - Add "undetermined" attribute for progressmeter
 - Make window with toolbar, status-bar and scrollbar
-- Add textfield with multiline
-- Compare against Gecko engine when testing
 - Make sample program that illustrates DHTML-like behavior
 - Add ErrorCatcher live reporter in a sep DOS window

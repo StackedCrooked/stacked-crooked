@@ -34,6 +34,22 @@ namespace XULWin
     class Element : private boost::noncopyable
     {
     public:
+        template<class T>
+        static ElementPtr Create(Element * inParent,
+                                 const AttributesMapping & inAttr)
+        {
+            ElementPtr result(new T(inParent, inAttr));
+            if (inParent)
+            {
+                inParent->addChild(result);
+            }
+            result->initAttributeControllers();
+            result->setAttributes(inAttr);
+            result->initStyleControllers();
+            result->setStyles(inAttr);
+            return result;
+        }
+
         ~Element();
 
         // called by parser at end-element event
@@ -96,23 +112,7 @@ namespace XULWin
         }
 
     protected:
-        Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);
-
-        template<class T>
-        static ElementPtr Create(Element * inParent,
-                                 const AttributesMapping & inAttr)
-        {
-            ElementPtr result(new T(inParent, inAttr));
-            if (inParent)
-            {
-                inParent->addChild(result);
-            }
-            result->initAttributeControllers();
-            result->setAttributes(inAttr);
-            result->initStyleControllers();
-            result->setStyles(inAttr);
-            return result;
-        }   
+        Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);   
 
         Element * mParent;
         Children mChildren;

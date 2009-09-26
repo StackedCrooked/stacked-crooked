@@ -112,7 +112,10 @@ namespace Utils
     void setScrollInfo(HWND inHandle, int inTotalHeight, int inPageHeight, int inCurrentPosition);
 
     void getScrollInfo(HWND inHandle, int & outTotalHeight, int & outPageHeight, int & outCurrentPosition);
-    
+
+    int getScrollPos(HWND inHandle);
+
+    void setScrollPos(HWND inHandle, int inPos);    
 
 } // namespace Utils
 

@@ -109,9 +109,9 @@ namespace XULWin
     }
 
 
-    std::string Orientation2String(Orientation inOrientation)
+    std::string Orientation2String(Orientation inOrient)
     {
-        if (inOrientation == HORIZONTAL)
+        if (inOrient == HORIZONTAL)
         {
             return "horizontal";
         }
@@ -966,6 +966,26 @@ namespace XULWin
     }
     
     
+    bool Decorator::getAttribute(const std::string & inName, std::string & outValue)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getAttribute(inName, outValue);
+        }
+        return false;
+    }
+
+
+    bool Decorator::getStyle(const std::string & inName, std::string & outValue)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getStyle(inName, outValue);
+        }
+        return false;
+    }
+    
+    
     bool Decorator::setAttribute(const std::string & inName, const std::string & inValue)
     {
         if (mDecoratedElement)
@@ -1446,46 +1466,51 @@ namespace XULWin
     {   
     }
         
-        
-    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrientation) :
+    
+    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
         VirtualControl(inParent, inAttributesMapping),
-        mOrientation(inOrientation),
-        mAlign(inOrientation == HORIZONTAL ? Start : Stretch)
+        BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
+    }
+        
+    
+    void NativeBox::setAttributeController(const std::string & inAttr, const AttributeController & inController)
+    {
+        Super::setAttributeController(inAttr, inController);
     }
 
 
     bool NativeBox::initAttributeControllers()
     {        
         AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&String2Orientation, _1, VERTICAL));
-        AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&NativeBox::getOrientation, this));
+        AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&NativeBox::orientation, this));
         setAttributeController("orient", AttributeController(orientationGetter, orientationSetter));
         setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
 
         AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&String2Align, _1, Start));
-        AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&NativeBox::getAlignment, this));
+        AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&NativeBox::alignment, this));
         setAttributeController("align", AttributeController(alignGetter, alignSetter));
         return Super::initAttributeControllers();
     }
 
 
-    int NativeBox::calculateMinimumWidth() const
+    int BoxLayouter::calculateMinimumWidth() const
     {
-        if (mOrientation == HORIZONTAL)
+        if (orientation() == HORIZONTAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
             {
-                result += mElement->children()[idx]->impl()->minimumWidth();
+                result += elementChildren()[idx]->impl()->minimumWidth();
             }
             return result;
         }
-        else if (mOrientation == VERTICAL)
+        else if (orientation() == VERTICAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
             {
-                int width = mElement->children()[idx]->impl()->minimumWidth();
+                int width = elementChildren()[idx]->impl()->minimumWidth();
                 if (width > result)
                 {
                     result = width;
@@ -1501,14 +1526,14 @@ namespace XULWin
     }
 
 
-    int NativeBox::calculateMinimumHeight() const
+    int BoxLayouter::calculateMinimumHeight() const
     {
-        if (mOrientation == HORIZONTAL)
+        if (orientation() == HORIZONTAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
             {
-                int height = mElement->children()[idx]->impl()->minimumHeight();
+                int height = elementChildren()[idx]->impl()->minimumHeight();
                 if (height > result)
                 {
                     result = height;
@@ -1516,12 +1541,12 @@ namespace XULWin
             }
             return result;
         }
-        else if (mOrientation == VERTICAL)
+        else if (orientation() == VERTICAL)
         {
             int result = 0;
-            for (size_t idx = 0; idx != mElement->children().size(); ++idx)
+            for (size_t idx = 0; idx != elementChildren().size(); ++idx)
             {
-                result += mElement->children()[idx]->impl()->minimumHeight();
+                result += elementChildren()[idx]->impl()->minimumHeight();
             }
             return result;
         }
@@ -1531,41 +1556,62 @@ namespace XULWin
             return 0;
         }
     }
-
-
-    void NativeBox::setOrientation(Orientation inOrientation)
-    {
-        mOrientation = inOrientation;
-    }
-
     
-    Orientation NativeBox::getOrientation()
+    
+    Orientation BoxLayouter::orientation() const
     {
-        return mOrientation;
-    }
-        
-        
-    void NativeBox::setAlignment(Alignment inAlign)
-    {
-        mAlign = inAlign;
+        return mOrient;
     }
 
-    
-    Alignment NativeBox::getAlignment() const
+     
+    Alignment BoxLayouter::alignment() const
     {
         return mAlign;
     }
 
-    
-    void NativeBox::rebuildLayout()
+
+    void BoxLayouter::setOrientation(Orientation inOrient)
     {
-        LinearLayoutManager layout(mOrientation);
-        bool horizontal = mOrientation == HORIZONTAL;
+        mOrient = inOrient;
+    }
+        
+        
+    void BoxLayouter::setAlignment(Alignment inAlign)
+    {
+        mAlign = inAlign;
+    }
+
+
+    BoxLayouter::BoxLayouter(Orientation inOrient, Alignment inAlign) :
+        mOrient(inOrient),
+        mAlign(inAlign)
+    {
+    }
+
+
+    bool BoxLayouter::initAttributeControllers()
+    {
+        ElementImpl::AttributeSetter orientationSetter = boost::bind(&BoxLayouter::setOrientation, this, boost::bind(&String2Orientation, _1, VERTICAL));
+        ElementImpl::AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&BoxLayouter::orientation, this));
+        setAttributeController("orient", ElementImpl::AttributeController(orientationGetter, orientationSetter));
+        setAttributeController("orientation", ElementImpl::AttributeController(orientationGetter, orientationSetter));
+
+        ElementImpl::AttributeSetter alignSetter = boost::bind(&BoxLayouter::setAlignment, this, boost::bind(&String2Align, _1, Start));
+        ElementImpl::AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&BoxLayouter::alignment, this));
+        setAttributeController("align", ElementImpl::AttributeController(alignGetter, alignSetter));
+        return true;
+    }
+
+    
+    void BoxLayouter::rebuildLayout()
+    {
+        LinearLayoutManager layout(orientation());
+        bool horizontal = orientation() == HORIZONTAL;
         
         std::vector<ExtendedSizeInfo> sizeInfos;
-        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        for (size_t idx = 0; idx != elementChildren().size(); ++idx)
         {
-            ElementPtr child = owningElement()->children()[idx];
+            ElementPtr child = elementChildren()[idx];
             int flexValue = String2Int(child->getAttribute("flex"));
             int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
             int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
@@ -1573,18 +1619,68 @@ namespace XULWin
         }
         
         std::vector<Rect> childRects;
-        layout.getRects(clientRect(), getAlignment(), sizeInfos, childRects);
+        layout.getRects(clientRect(), alignment(), sizeInfos, childRects);
 
-        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        for (size_t idx = 0; idx != elementChildren().size(); ++idx)
         {
-            ElementPtr child = owningElement()->children()[idx];
+            ElementPtr child = elementChildren()[idx];
             const Rect & rect = childRects[idx];
             child->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
         }
 
         rebuildChildLayouts();
     }
+        
+
+    NativeScrollBox::NativeScrollBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
+        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0),
+        BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
+    {
+    }
+        
     
+    void NativeScrollBox::setAttributeController(const std::string & inAttr, const AttributeController & inController)
+    {
+        Super::setAttributeController(inAttr, inController);
+    }
+    
+        
+    bool NativeScrollBox::initAttributeControllers()
+    {
+        BoxLayouter::initAttributeControllers();
+        return Super::initAttributeControllers();
+    }
+
+
+    const std::vector<ElementPtr> & NativeScrollBox::elementChildren() const
+    {
+        return mElement->children();
+    }
+    
+    
+    void NativeScrollBox::rebuildLayout()
+    {
+        BoxLayouter::rebuildLayout();
+    }
+
+    
+    int NativeScrollBox::calculateMinimumWidth() const
+    {
+        return BoxLayouter::calculateMinimumWidth();
+    }
+
+    
+    int NativeScrollBox::calculateMinimumHeight() const
+    {
+        return BoxLayouter::calculateMinimumHeight();
+    }
+    
+    
+    Rect NativeScrollBox::clientRect() const
+    {
+        return Super::clientRect();
+    }
+
     
     NativeMenuList::NativeMenuList(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
@@ -2292,8 +2388,8 @@ namespace XULWin
             {
                 int totalHeight = 0;
                 int pageHeight = 0;
-                int dummy = 0;
-                Utils::getScrollInfo(el->handle(), totalHeight, pageHeight, dummy);
+                int oldCurPos = 0;
+                Utils::getScrollInfo(el->handle(), totalHeight, pageHeight, oldCurPos);
 
                 // The order in which setCurPos, setMaxPos and setPageIncrement
                 // will be set (alphabetically by attribute name) can cause
@@ -2309,10 +2405,10 @@ namespace XULWin
                 {
                     totalHeight = pageHeight + 1;
                 }
-                if (inCurPos > pageHeight/2)   // }
-                {                              // } => this makes sure that the scroll box
-                    inCurPos -= pageHeight/2;  // }    is centered around currentpos
-                }                              // }
+                //if (inCurPos > pageHeight/2)   // }
+                //{                              // } => this makes sure that the scroll box
+                //    inCurPos -= pageHeight/2;  // }    is centered around currentpos
+                //}                              // }
                 if (totalHeight < inCurPos)
                 {
                     totalHeight = inCurPos + 1;
@@ -2320,7 +2416,7 @@ namespace XULWin
                 Utils::setScrollInfo(el->handle(), totalHeight, pageHeight, inCurPos);
                 if (el->eventHandler())
                 {
-                    el->eventHandler()->curposChanged(el, inCurPos);
+                    el->eventHandler()->curposChanged(el, oldCurPos, inCurPos);
                 }
             }
 
@@ -2354,10 +2450,10 @@ namespace XULWin
                 {
                     pageHeight = inMaxPos - 1;
                 }
-                if (curPos > pageHeight/2)     // }
-                {                              // } => this makes sure that the scroll box
-                    curPos -= pageHeight/2;    // }    is centered around currentpos
-                }                              // }
+                //if (curPos > pageHeight/2)     // }
+                //{                              // } => this makes sure that the scroll box
+                //    curPos -= pageHeight/2;    // }    is centered around currentpos
+                //}                              // }
                 Utils::setScrollInfo(inHandle, inMaxPos, pageHeight, curPos);
             }
 
@@ -2383,10 +2479,10 @@ namespace XULWin
                 // greater than maxpos). And we want to avoid that.
                 // Our workaround is to detect such states here, and change invalid
                 // values to valid ones.
-                if (curPos > inPageIncrement/2)     // }
-                {                                   // } => this makes sure that the scroll box 
-                    curPos -= inPageIncrement/2;    // }    is centered around currentpos
-                }                                   // }
+                //if (curPos > inPageIncrement/2)     // }
+                //{                                   // } => this makes sure that the scroll box 
+                //    curPos -= inPageIncrement/2;    // }    is centered around currentpos
+                //}                                   // }
                 if (totalHeight == 0)
                 {
                     totalHeight = 1;
@@ -2456,7 +2552,7 @@ namespace XULWin
         {
             AttributesMapping attr;
             attr["orient"] = Orientation2String(mOrient);
-            mScrollbar = Element::Create<Scrollbar>(inDecoratedElement->owningElement(), attr);
+            mScrollbar = Element::Create<Scrollbar>(inDecoratedElement->parent()->owningElement(), attr);
             mScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
         }
     }
@@ -2467,9 +2563,16 @@ namespace XULWin
     }
 
 
-    bool ScrollDecorator::curposChanged(NativeScrollbar * inSender, int inPos)
+    bool ScrollDecorator::curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos)
     {
-        rebuildLayout();
+        if (NativeComponent * comp = mDecoratedElement->downcast<NativeComponent>())
+        {
+            int maxpos = String2Int(mScrollbar->getAttribute("maxpos"), 0);
+            int dx = mOrient == HORIZONTAL ? (inNewPos - inOldPos) : 0;
+            int dy = mOrient == VERTICAL   ? (inNewPos - inOldPos) : 0;
+            ::ScrollWindowEx(comp->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
+            
+        }
         return true;
     }
     
@@ -2502,22 +2605,28 @@ namespace XULWin
         if (mDecoratedElement)
         {
             mRect = Rect(x, y, w, h);
-            int minHeight = mDecoratedElement->calculateMinimumHeight();
-            if (minHeight != 0) // guard against division by zero
+
+            int minSize = mOrient == VERTICAL ? mDecoratedElement->calculateMinimumHeight()
+                                              : mDecoratedElement->calculateMinimumWidth();
+
+            if (minSize != 0) // guard against division by zero
             {
                 int maxpos = 100;
-                float ratio = (float)h/(float)minHeight;
+                float ratio = (float)(mOrient == VERTICAL ? h : w)/(float)minSize;
                 int pageincrement = (int)(100.0*ratio + 0.5);
                 if (maxpos > 0)
                 {
                     mScrollbar->setAttribute("maxpos", Int2String(maxpos));
                     mScrollbar->setAttribute("pageincrement", Int2String(pageincrement));
-                    //mScrollbar->setAttribute("curpos", Int2String(0));
-                    std::string curpos;
-                    mScrollbar->impl()->downcast<NativeScrollbar>()->getAttribute("curpos", curpos);
-                    int intcurpos = String2Int(curpos);
-                    y -= intcurpos;
                 }
+            }
+            if (mOrient == VERTICAL)
+            {
+                w -= Defaults::scrollbarWidth();
+            }
+            else
+            {
+                h -= Defaults::scrollbarWidth();
             }
             mDecoratedElement->move(x, y, w, h);
         }

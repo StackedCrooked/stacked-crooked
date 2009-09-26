@@ -314,10 +314,56 @@ namespace XULWin
     }
 
 
+    static ElementImpl * CreateBox(Element * inParent,
+                                   const AttributesMapping & inAttributesMapping,
+                                   Orientation inOrient = VERTICAL)
+    {
+        struct Helper
+        {
+            static bool Has(const StylesMapping & inStylesMapping, const std::string & value)
+            {
+                return inStylesMapping.find(value) != inStylesMapping.end();
+            }
+        };
+        StylesMapping styles;
+        StylesMapping::const_iterator it = inAttributesMapping.find("style");
+        if (it != inAttributesMapping.end())
+        {
+            Poco::StringTokenizer tok(it->second, ";:", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
+            Poco::StringTokenizer::Iterator it = tok.begin(), end = tok.end();
+            std::string key, value;
+            int counter = 0;
+            for (; it != end; ++it)
+            {
+                if (counter%2 == 0)
+                {
+                    key = *it;
+                }
+                else
+                {
+                    value = *it;
+                    styles.insert(std::make_pair(key, value));
+                }
+                counter++;
+            }
+        }
+        if (   Helper::Has(styles, "style")
+            || Helper::Has(styles, "overflow-x")
+            || Helper::Has(styles, "overflow-y"))
+        {
+            return new NativeScrollBox(inParent->impl(), inAttributesMapping, inOrient);
+        }
+        else
+        {
+            return new NativeBox(inParent->impl(), inAttributesMapping, inOrient);
+        }
+    }
+
+
     Box::Box(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Box::Type(),
                 inParent,
-                new Decorator(new NativeBox(inParent->impl(), inAttributesMapping)))
+                new Decorator(CreateBox(inParent, inAttributesMapping)))
     {
     }
 
@@ -325,7 +371,7 @@ namespace XULWin
     HBox::HBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(HBox::Type(),
                 inParent,
-                new Decorator(new NativeHBox(inParent->impl(), inAttributesMapping)))
+                new Decorator(CreateBox(inParent, inAttributesMapping, HORIZONTAL)))
     {
     }
 
@@ -333,7 +379,7 @@ namespace XULWin
     VBox::VBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(VBox::Type(),
                 inParent,
-                new Decorator(new NativeVBox(inParent->impl(), inAttributesMapping)))
+                new Decorator(CreateBox(inParent, inAttributesMapping, VERTICAL)))
     {
     }
 

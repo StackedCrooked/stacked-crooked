@@ -322,29 +322,27 @@ namespace XULWin
             }
 
 
-            static void SetPadding(ElementImpl * inEl, int inPadding)
+            static void SetMargin(ElementImpl * inEl, int inMargin)
             {
-                if (PaddingDecorator * obj = inEl->owningElement()->impl()->downcast<PaddingDecorator>())
+                if (MarginDecorator * obj = inEl->owningElement()->impl()->downcast<MarginDecorator>())
                 {
-                    obj->setPadding(inPadding);
+                    obj->setMargin(inMargin);
                 }
                 else if (Decorator * dec = inEl->owningElement()->impl()->downcast<Decorator>())
                 {
-                    ElementImplPtr newDec(new PaddingDecorator(dec->decoratedElement()));
+                    ElementImplPtr newDec(new MarginDecorator(dec->decoratedElement()));
                     dec->setDecoratedElement(newDec);
-                    if (PaddingDecorator * p = newDec->downcast<PaddingDecorator>())
+                    if (MarginDecorator * p = newDec->downcast<MarginDecorator>())
                     {
-                        p->setPadding(inPadding);
+                        p->setMargin(inMargin);
                     }
                 }
             }
 
-            static int GetPadding(ElementImpl * inEl)
+            static int GetMargin(ElementImpl * inEl)
             {
-                return inEl->downcast<PaddingDecorator>()->padding();
+                return inEl->downcast<MarginDecorator>()->margin();
             }
-
-
         };
         {StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
         StyleSetter cssWidthSetter = boost::bind(&Helper::SetWidth, this, boost::bind(&CssString2Size, _1, Defaults::controlWidth()));
@@ -354,9 +352,9 @@ namespace XULWin
         StyleSetter cssHeightSetter = boost::bind(&Helper::SetHeight, this, boost::bind(&CssString2Size, _1, Defaults::controlHeight()));
         setStyleController("height", StyleController(cssHeightGetter, cssHeightSetter));}
 
-        StyleGetter cssPaddingGetter = boost::bind(&Int2String, boost::bind(&Helper::GetPadding, this));
-        StyleSetter cssPaddingSetter = boost::bind(&Helper::SetPadding, this, boost::bind(&CssString2Size, _1, 0));
-        setStyleController("padding", StyleController(cssPaddingGetter, cssPaddingSetter));
+        StyleGetter cssMarginGetter = boost::bind(&Int2String, boost::bind(&Helper::GetMargin, this));
+        StyleSetter cssMarginSetter = boost::bind(&Helper::SetMargin, this, boost::bind(&CssString2Size, _1, 0));
+        setStyleController("margin", StyleController(cssMarginGetter, cssMarginSetter));
         return true;
     }
 
@@ -1003,7 +1001,7 @@ namespace XULWin
     }
 
 
-    PaddingDecorator::PaddingDecorator(ElementImpl * inDecoratedElement) :
+    MarginDecorator::MarginDecorator(ElementImpl * inDecoratedElement) :
         Decorator(inDecoratedElement),
         mTop(2),
         mLeft(4),
@@ -1013,7 +1011,7 @@ namespace XULWin
     }
 
 
-    PaddingDecorator::PaddingDecorator(ElementImplPtr inDecoratedElement) :
+    MarginDecorator::MarginDecorator(ElementImplPtr inDecoratedElement) :
         Decorator(inDecoratedElement),
         mTop(2),
         mLeft(4),
@@ -1023,19 +1021,19 @@ namespace XULWin
     }
 
 
-    PaddingDecorator::~PaddingDecorator()
+    MarginDecorator::~MarginDecorator()
     {
     }
     
     
-    void PaddingDecorator::move(int x, int y, int w, int h)
+    void MarginDecorator::move(int x, int y, int w, int h)
     {
-        mRect = Rect(x + paddingLeft(), y + paddingTop(), w - paddingLeft() - paddingRight(), h - paddingTop() - paddingBottom());
+        mRect = Rect(x + marginLeft(), y + marginTop(), w - marginLeft() - marginRight(), h - marginTop() - marginBottom());
         mDecoratedElement->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
     }
 
 
-    void PaddingDecorator::setPadding(int top, int left, int right, int bottom)
+    void MarginDecorator::setMargin(int top, int left, int right, int bottom)
     {
         mTop = top;
         mLeft = left;
@@ -1044,54 +1042,54 @@ namespace XULWin
     }
 
 
-    void PaddingDecorator::setPadding(int inPadding)
+    void MarginDecorator::setMargin(int inMargin)
     {
-        mTop = inPadding;
-        mLeft = inPadding;
-        mRight = inPadding;
-        mBottom = inPadding;
+        mTop = inMargin;
+        mLeft = inMargin;
+        mRight = inMargin;
+        mBottom = inMargin;
     }
 
 
-    int PaddingDecorator::padding() const
+    int MarginDecorator::margin() const
     {
         return mLeft;
     }
 
 
-    int PaddingDecorator::paddingTop() const
+    int MarginDecorator::marginTop() const
     {
         return mTop;
     }
 
     
-    int PaddingDecorator::paddingLeft() const
+    int MarginDecorator::marginLeft() const
     {
         return mLeft;
     }
 
     
-    int PaddingDecorator::paddingRight() const
+    int MarginDecorator::marginRight() const
     {
         return mRight;
     }
 
     
-    int PaddingDecorator::paddingBottom() const
+    int MarginDecorator::marginBottom() const
     {
         return mBottom;
     }
     
     
-    int PaddingDecorator::calculateMinimumWidth() const
+    int MarginDecorator::calculateMinimumWidth() const
     {
-        return paddingLeft() + mDecoratedElement->calculateMinimumWidth() + paddingRight();
+        return marginLeft() + mDecoratedElement->calculateMinimumWidth() + marginRight();
     }
 
     
-    int PaddingDecorator::calculateMinimumHeight() const
+    int MarginDecorator::calculateMinimumHeight() const
     {
-        return paddingTop() + mDecoratedElement->calculateMinimumHeight() + paddingBottom();
+        return marginTop() + mDecoratedElement->calculateMinimumHeight() + marginBottom();
     }
 
 

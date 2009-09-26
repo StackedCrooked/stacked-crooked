@@ -7,7 +7,7 @@
         align="start"
 >
   <hbox>
-    <box style="padding:4px;">
+    <box style="margin:4px;">
       <image
         id="NetlogToolbar-ShoutDialog-Image"
         src="chrome://shout/skin/StackedCrooked.jpg"

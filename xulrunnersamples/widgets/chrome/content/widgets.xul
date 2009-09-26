@@ -195,6 +195,7 @@
 
   <separator/>
 
-  <scrollbar orient="horizontal"/>
-  
+  <scrollbar orient="horizontal" />
+  <!--<scrollbar orient="horizontal" curpos="26" maxpos="100" increment="1" pageincrement="60"/>-->
+
 </window>

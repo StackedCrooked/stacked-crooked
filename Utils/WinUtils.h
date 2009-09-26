@@ -108,6 +108,10 @@ namespace Utils
     void setTextBoxReadOnly(HWND inHandle, bool inReadOnly);
 
     bool isTextBoxReadOnly(HWND inHandle);
+
+    void setScrollInfo(HWND inHandle, int inTotalHeight, int inPageHeight, int inCurrentPosition);
+
+    void getScrollInfo(HWND inHandle, int & outTotalHeight, int & outPageHeight, int & outCurrentPosition);
     
 
 } // namespace Utils

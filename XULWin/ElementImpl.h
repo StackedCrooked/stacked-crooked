@@ -159,9 +159,24 @@ namespace XULWin
 
         virtual bool initStyleControllers();
 
+        /**
+         * Override this method if you want your control to handle its own command events.
+         * (Normally the parent control handles them through the WM_COMMAND message.)
+         */
+        virtual void handleCommand(WPARAM wParam, LPARAM lParam) {}
+
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+
+        static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
+
     protected:
         HWND mHandle;
         HMODULE mModuleHandle;
+
+        typedef std::map<int, NativeComponent*> ComponentsById;
+        static ComponentsById sComponentsById;
+
+        WNDPROC mOrigProc;
 
     private:
         static HMODULE sModuleHandle;
@@ -218,20 +233,6 @@ namespace XULWin
 
         virtual void move(int x, int y, int w, int h);
 
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
-
-        /**
-         * Override this method if you want your control to handle its own command events.
-         * (Normally the parent control handles them through the WM_COMMAND message.)
-         */
-        virtual void handleCommand(WPARAM wParam, LPARAM lParam) {}
-
-        static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
-
-    protected:
-        typedef std::map<int, NativeControl*> ControlsById;
-        static ControlsById sControlsById;
-
     private:
 
         // Gets a NativeComponent object from this object. This
@@ -241,8 +242,6 @@ namespace XULWin
         // If this is a VirtualControl, return first parent that is a NativeComponent.
         // If this is a Decorator, resolve until a NativeComponent is found.
         NativeComponent * GetNativeParent(ElementImpl * inElementImpl);
-
-        WNDPROC mOrigProc;
     };
 
 
@@ -688,7 +687,14 @@ namespace XULWin
 
         bool initAttributeControllers();
 
+        void setIncrement(int inIncrement);
+
+        int increment() const;
+
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+
     private:
+        int mIncrement;
         static DWORD GetFlags(const AttributesMapping & inAttributesMapping);
     };
 

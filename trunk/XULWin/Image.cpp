@@ -1,4 +1,5 @@
 #include "Image.h"
+#include "Decorator.h"
 #include "ElementImpl.h"
 #include "ChromeURL.h"
 #include "Defaults.h"

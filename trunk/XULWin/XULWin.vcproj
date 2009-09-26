@@ -163,6 +163,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Decorator.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Decorator.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Defaults.h"
 				>
 			</File>

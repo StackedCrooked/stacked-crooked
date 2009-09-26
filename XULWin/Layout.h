@@ -196,7 +196,7 @@ namespace XULWin
     class LinearLayoutManager
     {
     public:
-        LinearLayoutManager(Orientation inOrientation);
+        LinearLayoutManager(Orientation inOrient);
 
         void getRects(const Rect & inRect, Alignment inAlign, const std::vector<ExtendedSizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
         static void GetSizes(int inLength, const std::vector<SizeInfo> & inSizeInfos, std::vector<int> & outSizes);
@@ -205,7 +205,7 @@ namespace XULWin
         Orientation orientation() const;
 
     private:
-        Orientation mOrientation;
+        Orientation mOrient;
     };
 
 

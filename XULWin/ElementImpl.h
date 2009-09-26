@@ -32,6 +32,7 @@ namespace XULWin
     class Element;
     class ElementImpl;
     class Decorator;
+    class BoxLayouter;
     class NativeComponent;
     typedef boost::shared_ptr<ElementImpl> ElementImplPtr;
 
@@ -92,9 +93,9 @@ namespace XULWin
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
 
-        bool getAttribute(const std::string & inName, std::string & outValue);
+        virtual bool getAttribute(const std::string & inName, std::string & outValue);
 
-        bool getStyle(const std::string & inName, std::string & outValue);
+        virtual bool getStyle(const std::string & inName, std::string & outValue);
 
         virtual bool setStyle(const std::string & inName, const std::string & inValue);
 
@@ -109,7 +110,7 @@ namespace XULWin
         Element * mElement;
         CommandId mCommandId;
         bool mExpansive;
-        
+        friend class BoxLayouter;
         typedef boost::function<std::string()> Getter;
         typedef boost::function<void(const std::string &)> Setter;
         struct Controller
@@ -308,6 +309,10 @@ namespace XULWin
 
         virtual Rect clientRect() const;
 
+        virtual bool getAttribute(const std::string & inName, std::string & outValue);
+
+        virtual bool getStyle(const std::string & inName, std::string & outValue);
+
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
         virtual bool setStyle(const std::string & inName, const std::string & inValue);
@@ -441,31 +446,76 @@ namespace XULWin
     };
 
 
-    class NativeBox : public VirtualControl
+    class BoxLayouter
     {
     public:
-        typedef VirtualControl Super;
-
-        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrientation = HORIZONTAL);
+        BoxLayouter(Orientation inOrient, Alignment inAlign);
 
         virtual bool initAttributeControllers();
 
+        virtual void setAttributeController(const std::string & inAttr, const ElementImpl::AttributeController & inController) = 0;
+
         virtual void rebuildLayout();
+
+        Orientation orientation() const;
+
+        void setOrientation(Orientation inOrient);
+
+        Alignment alignment() const;
+
+        void setAlignment(Alignment inAlign);
 
         virtual int calculateMinimumWidth() const;
 
         virtual int calculateMinimumHeight() const;
 
-        void setOrientation(Orientation inOrientation);
+        virtual const std::vector<ElementPtr> & elementChildren() const = 0;
 
-        Orientation getOrientation();
+        virtual Rect clientRect() const = 0;
 
-        void setAlignment(Alignment inAlign);
+        virtual void rebuildChildLayouts() = 0;
 
-        Alignment getAlignment() const;
     private:
-        Orientation mOrientation;
+        Orientation mOrient;
         Alignment mAlign;
+    };
+
+
+    class NativeBox : public VirtualControl,
+                      public BoxLayouter
+    {
+    public:
+        typedef VirtualControl Super;
+
+        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient = HORIZONTAL);
+
+        virtual bool initAttributeControllers();
+
+        virtual void rebuildLayout()
+        {
+            BoxLayouter::rebuildLayout();
+        }
+
+        virtual int calculateMinimumWidth() const
+        {
+            return BoxLayouter::calculateMinimumWidth();
+        }
+
+        virtual int calculateMinimumHeight() const
+        {
+            return BoxLayouter::calculateMinimumHeight();
+        }
+
+        virtual const std::vector<ElementPtr> & elementChildren() const
+        { return mElement->children(); }
+
+        virtual Rect clientRect() const
+        { return Super::clientRect(); }
+
+        virtual void rebuildChildLayouts()
+        { return Super::rebuildChildLayouts(); }
+
+        virtual void setAttributeController(const std::string & inAttr, const AttributeController & inController);
     };
 
 
@@ -484,6 +534,34 @@ namespace XULWin
         typedef NativeBox Super;
 
         NativeVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class NativeScrollBox : public NativeControl,
+                            public BoxLayouter
+    {
+    public:
+        typedef NativeControl Super;
+
+        NativeScrollBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient);
+
+        virtual bool initAttributeControllers();
+
+        virtual const std::vector<ElementPtr> & elementChildren() const;
+
+        virtual void rebuildLayout();
+
+        virtual int calculateMinimumWidth() const;
+
+        virtual int calculateMinimumHeight() const;
+
+        virtual Rect clientRect() const;
+
+        virtual void rebuildChildLayouts()
+        { return Super::rebuildChildLayouts(); }
+
+        virtual void setAttributeController(const std::string & inAttr, const AttributeController & inController);
+
     };
 
 
@@ -675,7 +753,7 @@ namespace XULWin
         class EventHandler
         {
         public:
-            virtual bool curposChanged(NativeScrollbar * inSender, int inPos) = 0;
+            virtual bool curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos) = 0;
         };
 
         EventHandler * eventHandler() { return mEventHandler; }
@@ -726,7 +804,7 @@ namespace XULWin
         virtual int calculateMinimumHeight() const;
 
         // NativeScrollbar::EventHandler
-        virtual bool curposChanged(NativeScrollbar * inSender, int inPos);
+        virtual bool curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos);
 
     private:
         ElementPtr mScrollbar;

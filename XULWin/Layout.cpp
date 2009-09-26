@@ -83,15 +83,15 @@ namespace XULWin
     }
 
 
-    LinearLayoutManager::LinearLayoutManager(Orientation inOrientation) :
-        mOrientation(inOrientation)
+    LinearLayoutManager::LinearLayoutManager(Orientation inOrient) :
+        mOrient(inOrient)
     {
     }
 
 
     Orientation LinearLayoutManager::orientation() const
     {
-        return mOrientation;
+        return mOrient;
     }
 
     
@@ -107,11 +107,11 @@ namespace XULWin
         {
             sizeInfos.push_back(inSizeInfos[idx]);
         }
-        GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), sizeInfos, sizes);
+        GetSizes(mOrient == HORIZONTAL ? inRect.width() : inRect.height(), sizeInfos, sizes);
         int xOffset = inRect.x();
         int yOffset = inRect.y();
-        bool horizontal = mOrientation == HORIZONTAL;
-        bool vertical = mOrientation == VERTICAL;
+        bool horizontal = mOrient == HORIZONTAL;
+        bool vertical = mOrient == VERTICAL;
         for (size_t idx = 0; idx != inSizeInfos.size(); ++idx)
         {
             int x = horizontal ? xOffset : inRect.x();
@@ -178,15 +178,15 @@ namespace XULWin
     //void LinearLayoutManager::getRects(const Rect & inRect, const std::vector<int> & inFlexValues, std::vector<Rect> & outRects)
     //{
     //    std::vector<int> portions;
-    //    GetSizes(mOrientation == HORIZONTAL ? inRect.width() : inRect.height(), inFlexValues, portions);
+    //    GetSizes(mOrient == HORIZONTAL ? inRect.width() : inRect.height(), inFlexValues, portions);
     //    int xOffset = inRect.x();
     //    int yOffset = inRect.y();
     //    for (size_t idx = 0; idx != portions.size(); ++idx)
     //    {
-    //        int x = mOrientation == HORIZONTAL ? xOffset : inRect.x();
-    //        int y = mOrientation  == VERTICAL ? yOffset : inRect.y();
-    //        int width = mOrientation  == HORIZONTAL ? portions[idx] : inRect.width();
-    //        int height = mOrientation  == VERTICAL ? portions[idx] : inRect.height();
+    //        int x = mOrient == HORIZONTAL ? xOffset : inRect.x();
+    //        int y = mOrient  == VERTICAL ? yOffset : inRect.y();
+    //        int width = mOrient  == HORIZONTAL ? portions[idx] : inRect.width();
+    //        int height = mOrient  == VERTICAL ? portions[idx] : inRect.height();
     //        xOffset += width;
     //        yOffset += height;
     //        outRects.push_back(Rect(x, y, width, height));

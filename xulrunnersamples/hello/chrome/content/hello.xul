@@ -5,24 +5,8 @@
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 >
-  <vbox style="overflow-y:auto;overflow-x:auto;" flex="1">
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
-    <button label="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></button>
+  <vbox style="overflow-y:auto" flex="1">
+    <button label="Hello!"></button>
+    <button label="How are you?"></button>
   </vbox>
 </window>

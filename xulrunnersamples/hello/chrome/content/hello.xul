@@ -6,6 +6,5 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         align="center"
 >
-  <button style="margin:40px" label="een" ></button>
-  <button style="margin:40px" label="een" ></button>
+  <description>test</description>
 </window>

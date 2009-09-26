@@ -1392,11 +1392,7 @@ namespace XULWin
 
     int NativeDescription::calculateMinimumWidth() const
     {
-        //std::string text = Utils::getWindowText(handle());
-        //int width = Utils::getTextSize(handle(), text).cx;
-        //width += Defaults::textPadding();
-        //return width;
-        return 0;
+        return Defaults::textPadding();
     }
 
     

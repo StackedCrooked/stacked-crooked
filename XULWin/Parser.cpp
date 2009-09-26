@@ -121,11 +121,22 @@ namespace XULWin
     {
         if (mIgnores == 0)
         {
+            mStack.top()->init();
             mStack.pop();
         }
         else
         {
             mIgnores--;
+        }
+    }
+    
+    
+    void Parser::characters(const Poco::XML::XMLChar ch[], int start, int length)
+    {
+        if (!mStack.empty())
+        {
+            std::string innerText = std::string(ch + start, length);
+            mStack.top()->setInnerText(innerText);
         }
     }
 

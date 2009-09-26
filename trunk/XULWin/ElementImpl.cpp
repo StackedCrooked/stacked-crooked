@@ -783,9 +783,7 @@ namespace XULWin
 
 
     VirtualControl::VirtualControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        ElementImpl(inParent),
-        mWidth(0),
-        mHeight(0)
+        ElementImpl(inParent)
     {
         if (!mParent)
         {
@@ -800,40 +798,9 @@ namespace XULWin
 
     }
 
-        
-    int VirtualControl::width() const
-    {
-        return mWidth;
-    }
-
-
-    void VirtualControl::setWidth(int inWidth)
-    {
-        mWidth = inWidth;
-    }
-
-
-    int VirtualControl::height() const
-    {
-        return mHeight;
-    }
-
-
-    void VirtualControl::setHeight(int inHeight)
-    {
-        mHeight = inHeight;
-    }
-
      
     bool VirtualControl::initAttributeControllers()
     {
-        AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&VirtualControl::height, this));
-        AttributeSetter heightSetter = boost::bind(&VirtualControl::setHeight, this, boost::bind(&String2Int, _1));
-        setAttributeController("height", AttributeController(heightGetter, heightSetter));
-
-        AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&VirtualControl::width, this));
-        AttributeSetter widthSetter = boost::bind(&VirtualControl::setWidth, this, boost::bind(&String2Int, _1));
-        setAttributeController("width", AttributeController(widthGetter, widthSetter));
         return Super::initAttributeControllers();
     }
 

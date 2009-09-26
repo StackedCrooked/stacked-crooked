@@ -73,7 +73,7 @@ namespace XULWin
 
         virtual int calculateMinimumHeight() const = 0;
 
-        // Tendency to expand, used for separators.
+        // Tendency to expand, used for separators, scrollbars, etc..
         bool expansive() const;
 
         virtual void move(int x, int y, int w, int h) = 0;
@@ -258,14 +258,6 @@ namespace XULWin
 
         virtual bool initStyleControllers();
 
-        int width() const;
-
-        void setWidth(int inWidth);
-
-        int height() const;
-
-        void setHeight(int inHeight);
-
         virtual int calculateMinimumWidth() const { return 0; }
 
         virtual int calculateMinimumHeight() const { return 0; }
@@ -280,7 +272,6 @@ namespace XULWin
 
     protected:
         Rect mRect;
-        int mWidth, mHeight;
     };
 
 

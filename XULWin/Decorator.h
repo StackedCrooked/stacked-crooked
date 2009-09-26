@@ -60,6 +60,41 @@ namespace XULWin
     };
 
 
+    class WrapDecorator : public Decorator
+    {
+    public:
+        typedef Decorator Super;
+
+        WrapDecorator(ElementImpl * inParent, ElementImpl * inDecoratedElement);
+
+        // takes ownership
+        void addChild(ElementImpl * inChild);
+
+    protected:
+        ElementImpl * mParent;
+        std::vector<boost::shared_ptr<ElementImpl> > mDecoratorChildren;
+    };
+
+
+    class BoxLayoutDecorator : public WrapDecorator,
+                               public BoxLayouter
+    {
+    public:
+        typedef WrapDecorator Super;
+
+        BoxLayoutDecorator(ElementImpl * inParent,
+                           ElementImpl * inDecoratedElement,
+                           Orientation inOrient,
+                           Alignment inAlign);
+
+        
+        // BoxLayouter methods
+        virtual Rect clientRect() const;
+
+        virtual void rebuildChildLayouts();
+    };
+
+
     class ScrollDecorator : public Decorator,
                             public NativeScrollbar::EventHandler
     {

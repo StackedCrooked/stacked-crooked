@@ -395,7 +395,11 @@ namespace XULWin
 
         virtual int calculateMinimumHeight() const;
 
-        virtual const std::vector<ElementPtr> & elementChildren() const = 0;
+        virtual size_t numChildren() const = 0;
+
+        virtual const ElementImpl * getChild(size_t idx) const = 0;
+
+        virtual ElementImpl * getChild(size_t idx) = 0;
 
         virtual Rect clientRect() const = 0;
 
@@ -431,9 +435,15 @@ namespace XULWin
         {
             return BoxLayouter::calculateMinimumHeight();
         }
+        
+        virtual size_t numChildren() const
+        { return mElement->children().size(); }
 
-        virtual const std::vector<ElementPtr> & elementChildren() const
-        { return mElement->children(); }
+        virtual const ElementImpl * getChild(size_t idx) const
+        { return mElement->children()[idx]->impl(); }
+
+        virtual ElementImpl * getChild(size_t idx)
+        { return mElement->children()[idx]->impl(); }
 
         virtual Rect clientRect() const
         { return Super::clientRect(); }
@@ -473,8 +483,6 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual const std::vector<ElementPtr> & elementChildren() const;
-
         virtual void rebuildLayout();
 
         virtual int calculateMinimumWidth() const;
@@ -482,6 +490,15 @@ namespace XULWin
         virtual int calculateMinimumHeight() const;
 
         virtual Rect clientRect() const;
+
+        virtual size_t numChildren() const
+        { return mElement->children().size(); }
+
+        virtual const ElementImpl * getChild(size_t idx) const
+        { return mElement->children()[idx]->impl(); }
+
+        virtual ElementImpl * getChild(size_t idx)
+        { return mElement->children()[idx]->impl(); }
 
         virtual void rebuildChildLayouts()
         { return Super::rebuildChildLayouts(); }

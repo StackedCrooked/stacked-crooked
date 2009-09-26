@@ -1271,20 +1271,31 @@ namespace XULWin
                       inAttributesMapping,
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
-                      ES_AUTOHSCROLL | GetPasswordFlag(inAttributesMapping)),
+                      GetFlags(inAttributesMapping)),
                       mReadonly(IsReadOnly(inAttributesMapping))
     {
+        
     }
 
 
-    DWORD NativeTextBox::GetPasswordFlag(const AttributesMapping & inAttributesMapping)
+    DWORD NativeTextBox::GetFlags(const AttributesMapping & inAttributesMapping)
     {
+        DWORD flags = 0;
         AttributesMapping::const_iterator it = inAttributesMapping.find("type");
         if (it != inAttributesMapping.end() && it->second == "password")
         {
-            return ES_PASSWORD;
+            flags |= ES_PASSWORD;
         }
-        return 0;
+        it = inAttributesMapping.find("multiline");
+        if (it != inAttributesMapping.end() && it->second == "true")
+        {
+            flags |= WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN;            
+        }
+        else
+        {
+            flags |= ES_AUTOHSCROLL;            
+        }
+        return flags;
     } 
 
 

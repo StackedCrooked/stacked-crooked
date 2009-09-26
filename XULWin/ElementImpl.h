@@ -430,7 +430,7 @@ namespace XULWin
 
     private:
         bool mReadonly;
-        static DWORD GetPasswordFlag(const AttributesMapping & inAttributesMapping);
+        static DWORD GetFlags(const AttributesMapping & inAttributesMapping);
         static bool IsReadOnly(const AttributesMapping & inAttributesMapping);
     };
 

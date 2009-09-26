@@ -38,6 +38,18 @@ namespace XULWin
         return mType;
     }
 
+
+    void Element::setInnerText(const std::string & inText)
+    {
+        mInnerText = inText;
+    }
+
+
+    const std::string & Element::innerText() const
+    {
+        return mInnerText;
+    }
+
     
     Element * Element::getElementById(const std::string & inId)
     {
@@ -269,6 +281,12 @@ namespace XULWin
                 inParent,
                 new MarginDecorator(new NativeDescription(inParent->impl(), inAttributesMapping)))
     {
+    }
+
+
+    void Description::init()
+    {
+        setAttribute("value", innerText());
     }
 
 

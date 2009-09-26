@@ -41,7 +41,7 @@ namespace XULWin
                                 const Poco::XML::XMLString& localName,
                                 const Poco::XML::XMLString& qname);
 
-        virtual void characters(const Poco::XML::XMLChar ch[], int start, int length) {}
+        virtual void characters(const Poco::XML::XMLChar ch[], int start, int length);
 	
 	    virtual void ignorableWhitespace(const Poco::XML::XMLChar ch[], int start, int length) {}
 	

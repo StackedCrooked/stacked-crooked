@@ -37,7 +37,7 @@
       </row>
       <row align="stretch">
         <spacer/>
-        <description value="&TAGS_DESCRIPTION;">&TAGS_DESCRIPTION;</description>
+        <description>&TAGS_DESCRIPTION;</description>
       </row>
       <row align="center">
         <label value="&SHOW_TO;" />

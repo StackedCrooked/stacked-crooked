@@ -36,6 +36,9 @@ namespace XULWin
     public:
         ~Element();
 
+        // called by parser at end-element event
+        virtual void init() {}
+
         const std::string & type() const;
 
         Element * parent() const { return mParent; }
@@ -61,6 +64,10 @@ namespace XULWin
         // If no attribute controller found it will insert (or overwrite)
         // the value in the attributes mapping.
         void setAttribute(const std::string & inName, const std::string & inValue);
+
+        void setInnerText(const std::string & inText);
+
+        const std::string & innerText() const;
 
         Element * getElementById(const std::string & inId);
 
@@ -104,11 +111,8 @@ namespace XULWin
             result->setAttributes(inAttr);
             result->initStyleControllers();
             result->setStyles(inAttr);
-            result->init();
             return result;
         }   
-
-        virtual void init() {}
 
         Element * mParent;
         Children mChildren;
@@ -135,6 +139,7 @@ namespace XULWin
         std::string mType;
         AttributesMapping mAttributes;
         StylesMapping mStyles;
+        std::string mInnerText;
         boost::shared_ptr<ElementImpl> mImpl;
     };
 
@@ -191,6 +196,8 @@ namespace XULWin
         { return Element::Create<Description>(inParent, inAttr); }
 
         static const char * Type() { return "description"; }
+
+        virtual void init();
     
     private:
         friend class Element;

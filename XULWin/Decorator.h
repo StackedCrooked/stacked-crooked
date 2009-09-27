@@ -128,8 +128,6 @@ namespace XULWin
         virtual bool curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos);
 
     private:
-        int mHorScrollPos;
-        int mVerScrollPos;
         bool mScrollbarVisible;
     };
 

@@ -191,7 +191,8 @@ namespace XULWin
     ElementImpl::ElementImpl(ElementImpl * inParent) :
         mParent(inParent),
         mCommandId(),
-        mExpansive(false)
+        mExpansive(false),
+        mElement(0)
     {
     }
 
@@ -203,17 +204,45 @@ namespace XULWin
     
     int ElementImpl::minimumWidth() const
     {
+        // Return zero if hidden
+        if (const NativeComponent * nativeComponent = constDowncast<const NativeComponent>())
+        {
+            if (!Utils::isWindowVisible(nativeComponent->handle()))
+            {
+                return 0;
+            }
+        }
+
+
         int minWidth = calculateMinimumWidth();
-        int elementWidthFromDocument = String2Int(owningElement()->getDocumentAttribute("width"), 0);
-        return std::max<int>(minWidth, elementWidthFromDocument);
+        if (mElement)
+        {
+            int elementWidthFromDocument = String2Int(owningElement()->getDocumentAttribute("width"), 0);
+            return std::max<int>(minWidth, elementWidthFromDocument);
+        }
+        return minWidth;
     }
 
     
     int ElementImpl::minimumHeight() const
     {
+        // Return zero if hidden
+        if (const NativeComponent * nativeComponent = constDowncast<NativeComponent>())
+        {
+            if (!Utils::isWindowVisible(nativeComponent->handle()))
+            {
+                return 0;
+            }
+        }
+
+
         int minHeight = calculateMinimumHeight();
-        int elementHeightFromDocument = String2Int(owningElement()->getDocumentAttribute("height"), 0);
-        return std::max<int>(minHeight, elementHeightFromDocument);
+        if (mElement)
+        {
+            int elementHeightFromDocument = String2Int(owningElement()->getDocumentAttribute("height"), 0);
+            return std::max<int>(minHeight, elementHeightFromDocument);
+        }
+        return minHeight;
     }
     
     
@@ -344,28 +373,6 @@ namespace XULWin
             {
                 return inEl->downcast<MarginDecorator>()->margin();
             }
-
-
-            static void SetOverflow(ElementImpl * inEl, const std::string & inOverflow, Orientation inOrient)
-            {
-                // MDC documenation
-                //visible: Default value. Content is not clipped, it may be rendered outside the content box.
-                //hidden: The content is clipped and no scrollbars are provided.
-                //scroll: The content is clipped and desktop browsers use scrollbars, whether or not any content is clipped. This avoids any problem with scrollbars appearing and disappearing in a dynamic environment. Printers may print overflowing content.
-                //auto: Depends on the user agent. Desktop browsers like Firefox provide scrollbars if content overflows.
-                if (inOverflow == "auto")
-                {
-                    if (ScrollDecorator * obj = inEl->owningElement()->impl()->downcast<ScrollDecorator>())
-                    {
-                        ReportError("Overwriting 'overflow' attribute not yet supported.");
-                    }
-                    else if (Decorator * dec = inEl->owningElement()->impl()->downcast<Decorator>())
-                    {
-                        ElementImplPtr newDec(new ScrollDecorator(dec->decoratedElement(), inOrient));
-                        dec->setDecoratedElement(newDec);
-                    }                    
-                }
-            }
         };
         StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
         StyleSetter cssWidthSetter = boost::bind(&Helper::SetWidth, this, boost::bind(&CssString2Size, _1, Defaults::controlWidth()));
@@ -378,12 +385,6 @@ namespace XULWin
         StyleGetter cssMarginGetter = boost::bind(&Int2String, boost::bind(&Helper::GetMargin, this));
         StyleSetter cssMarginSetter = boost::bind(&Helper::SetMargin, this, boost::bind(&CssString2Size, _1, 0));
         setStyleController("margin", StyleController(cssMarginGetter, cssMarginSetter));
-
-        StyleGetter overflowGetter; // no getter
-        StyleSetter overflowSetterX = boost::bind(&Helper::SetOverflow, this, _1, HORIZONTAL);
-        StyleSetter overflowSetterY = boost::bind(&Helper::SetOverflow, this, _1, VERTICAL);
-        setStyleController("overflow-x", StyleController(overflowGetter, overflowSetterX));
-        setStyleController("overflow-y", StyleController(overflowGetter, overflowSetterY));
         return true;
     }
 
@@ -428,6 +429,11 @@ namespace XULWin
     
     void ElementImpl::rebuildChildLayouts()
     {
+        if (!mElement)
+        {
+            return;
+        }
+
         for (size_t idx = 0; idx != mElement->children().size(); ++idx)
         {
             ElementImpl * nativeComp = mElement->children()[idx]->impl();
@@ -1206,40 +1212,40 @@ namespace XULWin
     }
     
     
-    NativeHBox::NativeHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeBox(inParent, inAttributesMapping, HORIZONTAL)
+    VirtualHBox::VirtualHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualBox(inParent, inAttributesMapping, HORIZONTAL)
     {   
     }
     
     
-    NativeVBox::NativeVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeBox(inParent, inAttributesMapping, VERTICAL)
+    VirtualVBox::VirtualVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualBox(inParent, inAttributesMapping, VERTICAL)
     {   
     }
         
     
-    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
+    VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
         VirtualControl(inParent, inAttributesMapping),
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
     }
         
     
-    void NativeBox::setAttributeController(const std::string & inAttr, const AttributeController & inController)
+    void VirtualBox::setAttributeController(const std::string & inAttr, const AttributeController & inController)
     {
         Super::setAttributeController(inAttr, inController);
     }
 
 
-    bool NativeBox::initAttributeControllers()
+    bool VirtualBox::initAttributeControllers()
     {        
-        AttributeSetter orientationSetter = boost::bind(&NativeBox::setOrientation, this, boost::bind(&String2Orientation, _1, VERTICAL));
-        AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&NativeBox::orientation, this));
+        AttributeSetter orientationSetter = boost::bind(&VirtualBox::setOrientation, this, boost::bind(&String2Orientation, _1, VERTICAL));
+        AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&VirtualBox::orientation, this));
         setAttributeController("orient", AttributeController(orientationGetter, orientationSetter));
         setAttributeController("orientation", AttributeController(orientationGetter, orientationSetter));
 
-        AttributeSetter alignSetter = boost::bind(&NativeBox::setAlignment, this, boost::bind(&String2Align, _1, Start));
-        AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&NativeBox::alignment, this));
+        AttributeSetter alignSetter = boost::bind(&VirtualBox::setAlignment, this, boost::bind(&String2Align, _1, Start));
+        AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&VirtualBox::alignment, this));
         setAttributeController("align", AttributeController(alignGetter, alignSetter));
         return Super::initAttributeControllers();
     }
@@ -1271,7 +1277,7 @@ namespace XULWin
         }
         else
         {
-            ReportError("Invalid orientation in NativeBox"); 
+            ReportError("Invalid orientation in VirtualBox"); 
             return 0;
         }
     }
@@ -1303,7 +1309,7 @@ namespace XULWin
         }
         else
         {
-            ReportError("Invalid orientation in NativeBox");
+            ReportError("Invalid orientation in VirtualBox");
             return 0;
         }
     }
@@ -1362,66 +1368,72 @@ namespace XULWin
         std::vector<ExtendedSizeInfo> sizeInfos;
         for (size_t idx = 0; idx != numChildren(); ++idx)
         {
-            Element * child = getChild(idx)->owningElement();
-            int flexValue = String2Int(child->getAttribute("flex"));
-            int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
-            int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
-            sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
+            ElementImpl * child = getChild(idx);
+            std::string flex;
+            if (child->owningElement())
+            {
+                flex = child->owningElement()->getAttribute("flex");
+            }
+            int flexValue = String2Int(flex, 0);
+            int minSize = horizontal ? child->minimumWidth() : child->minimumHeight();
+            int minSizeOpposite = horizontal ? child->minimumHeight() : child->minimumWidth();
+            sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->expansive()));
         }
         
         std::vector<Rect> childRects;
-        layout.getRects(clientRect(), alignment(), sizeInfos, childRects);
+        Rect clientR(clientRect());
+        layout.getRects(clientR, alignment(), sizeInfos, childRects);
 
         for (size_t idx = 0; idx != numChildren(); ++idx)
         {
-            Element * child = getChild(idx)->owningElement();
+            ElementImpl * child = getChild(idx);
             const Rect & rect = childRects[idx];
-            child->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
+            child->move(rect.x(), rect.y(), rect.width(), rect.height());
         }
 
         rebuildChildLayouts();
     }
         
 
-    NativeScrollBox::NativeScrollBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
+    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
         NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0),
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
     }
         
     
-    void NativeScrollBox::setAttributeController(const std::string & inAttr, const AttributeController & inController)
+    void NativeBox::setAttributeController(const std::string & inAttr, const AttributeController & inController)
     {
         Super::setAttributeController(inAttr, inController);
     }
     
         
-    bool NativeScrollBox::initAttributeControllers()
+    bool NativeBox::initAttributeControllers()
     {
         BoxLayouter::initAttributeControllers();
         return Super::initAttributeControllers();
     }
     
     
-    void NativeScrollBox::rebuildLayout()
+    void NativeBox::rebuildLayout()
     {
         BoxLayouter::rebuildLayout();
     }
 
     
-    int NativeScrollBox::calculateMinimumWidth() const
+    int NativeBox::calculateMinimumWidth() const
     {
         return BoxLayouter::calculateMinimumWidth();
     }
 
     
-    int NativeScrollBox::calculateMinimumHeight() const
+    int NativeBox::calculateMinimumHeight() const
     {
         return BoxLayouter::calculateMinimumHeight();
     }
     
     
-    Rect NativeScrollBox::clientRect() const
+    Rect NativeBox::clientRect() const
     {
         return Super::clientRect();
     }
@@ -1864,7 +1876,7 @@ namespace XULWin
 
     
     NativeRadioGroup::NativeRadioGroup(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeBox(inParent, inAttributesMapping)
+        VirtualBox(inParent, inAttributesMapping)
     {
     }
 
@@ -2113,6 +2125,7 @@ namespace XULWin
             {
                 currentPosition = totalHeight;
             }
+
             setAttribute("curpos", Int2String(currentPosition));
             return 0;
         }

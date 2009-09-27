@@ -111,6 +111,12 @@ namespace XULWin
             return 0;
         }
 
+        // you don't need to call this, the factory method takes care of it
+        void addChild(ElementPtr inChild);
+
+        // highly volatile, use at your own risk
+        void removeChild(const Element * inChild);
+
     protected:
         Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);   
 
@@ -120,7 +126,6 @@ namespace XULWin
         EventHandlers mEventHandlers;
 
     private:
-        void removeChild(const Element * inChild);
 
         void setAttributes(const AttributesMapping & inAttributes);
 
@@ -131,9 +136,6 @@ namespace XULWin
         void initAttributeControllers();
 
         void initStyleControllers();
-
-        // you don't need to call this, the factory method takes care of it
-        void addChild(ElementPtr inChild);
 
         friend class ElementFactory;
         std::string mType;

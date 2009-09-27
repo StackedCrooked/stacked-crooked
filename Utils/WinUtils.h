@@ -105,6 +105,8 @@ namespace Utils
 
     void setWindowVisible(HWND inHandle, bool inVisible);
 
+    bool isWindowVisible(HWND inHandle);
+
     void setTextBoxReadOnly(HWND inHandle, bool inReadOnly);
 
     bool isTextBoxReadOnly(HWND inHandle);

@@ -352,6 +352,12 @@ namespace Utils
         ::ShowWindow(inHandle, inVisible ? SW_SHOW : SW_HIDE);
     }
 
+    
+    bool isWindowVisible(HWND inHandle)
+    {
+        return ::IsWindowVisible(inHandle) == TRUE;
+    }
+
 
     void setTextBoxReadOnly(HWND inHandle, bool inReadOnly)
     {

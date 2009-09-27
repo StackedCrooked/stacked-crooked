@@ -468,24 +468,6 @@ namespace XULWin
     };
 
 
-    class VirtualHBox : public VirtualBox
-    {
-    public:
-        typedef VirtualBox Super;
-
-        VirtualHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
-    };
-
-
-    class VirtualVBox : public VirtualBox
-    {
-    public:
-        typedef VirtualBox Super;
-
-        VirtualVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
-    };
-
-
     class NativeBox : public NativeControl,
                       public BoxLayouter
     {

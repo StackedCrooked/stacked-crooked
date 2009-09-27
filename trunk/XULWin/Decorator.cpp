@@ -2,6 +2,7 @@
 #include "ElementImpl.h"
 #include "ChromeURL.h"
 #include "Defaults.h"
+#include "Utils/WinUtils.h"
 #include "Poco/Path.h"
 #include "Poco/UnicodeConverter.h"
 #include <boost/bind.hpp>
@@ -183,10 +184,9 @@ namespace XULWin
     }
 
 
-    void WrapDecorator::addChild(ElementImpl * inChild)
+    void WrapDecorator::addChild(ElementPtr inChild)
     {
-        boost::shared_ptr<ElementImpl> childPtr(inChild);
-        mDecoratorChildren.push_back(childPtr);
+        mDecoratorChildren.push_back(inChild);
     }
     
     
@@ -203,154 +203,211 @@ namespace XULWin
     
     Rect BoxLayoutDecorator::clientRect() const
     {
-        return Super::clientRect();
+        return mRect;
+    }
+
+    
+    void BoxLayoutDecorator::rebuildLayout()
+    {
+        return BoxLayouter::rebuildLayout();
     }
     
     
     void BoxLayoutDecorator::rebuildChildLayouts()
     {
-        mDecoratedElement->rebuildChildLayouts();
+        mDecoratedElement->rebuildLayout();
         for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
         {
-            mDecoratorChildren[idx]->rebuildLayout();
+            mDecoratorChildren[idx]->impl()->rebuildLayout();
         }
     }
 
 
-    ScrollDecorator::ScrollDecorator(ElementImpl * inDecoratedElement, Orientation inOrient) :
-        Decorator(inDecoratedElement),
-        mOrient(inOrient)
+    size_t BoxLayoutDecorator::numChildren() const
     {
-        if (!mScrollbar)
+        // mDecoratedElement + mDecoratorChildren.size()
+        return 1 + mDecoratorChildren.size();
+    }
+
+    
+    const ElementImpl * BoxLayoutDecorator::getChild(size_t idx) const
+    {
+        if (idx == 0)
         {
-            AttributesMapping attr;
-            attr["orient"] = Orientation2String(mOrient);
-            mScrollbar = Element::Create<Scrollbar>(inDecoratedElement->owningElement(), attr);
-            mScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+            return mDecoratedElement.get();
+        }
+        else
+        {
+            return mDecoratorChildren[idx-1]->impl();
         }
     }
 
 
-    ScrollDecorator::ScrollDecorator(ElementImplPtr inDecoratedElement, Orientation inOrient) :
-        Decorator(inDecoratedElement),
-        mOrient(inOrient)
+    ElementImpl * BoxLayoutDecorator::getChild(size_t idx)
     {
-        if (!mScrollbar)
+        if (idx == 0)
         {
-            AttributesMapping attr;
-            attr["orient"] = Orientation2String(mOrient);
-            mScrollbar = Element::Create<Scrollbar>(inDecoratedElement->parent()->owningElement(), attr);
-            mScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+            return mDecoratedElement.get();
+        }
+        else
+        {
+            return mDecoratorChildren[idx-1]->impl();
         }
     }
 
 
-    ScrollDecorator::~ScrollDecorator()
+    int BoxLayoutDecorator::calculateMinimumWidth() const
     {
+        int result = mDecoratedElement->calculateMinimumWidth();
+        if (orientation() == HORIZONTAL)
+        {
+            for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
+            {
+                result += mDecoratorChildren[idx]->impl()->calculateMinimumWidth();
+            }
+        }
+        return result;
     }
 
 
-    bool ScrollDecorator::curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos)
+    int BoxLayoutDecorator::calculateMinimumHeight() const
     {
-        if (NativeComponent * comp = mDecoratedElement->downcast<NativeComponent>())
+        int result = mDecoratedElement->calculateMinimumHeight();
+        if (orientation() == VERTICAL)
         {
-            int maxpos = String2Int(mScrollbar->getAttribute("maxpos"), 0);
-            int dx = mOrient == HORIZONTAL ? (inNewPos - inOldPos) : 0;
-            int dy = mOrient == VERTICAL   ? (inNewPos - inOldPos) : 0;
-            ::ScrollWindowEx(comp->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
+            for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
+            {
+                result += mDecoratorChildren[idx]->impl()->calculateMinimumHeight();
+            }
+        }
+        return result;
+    }
+    
+    
+    void BoxLayoutDecorator::setAttributeController(const std::string & inAttr,
+                                                    const ElementImpl::AttributeController & inController)
+    {
+        return Super::setAttributeController(inAttr, inController);
+    }
+    
+    
+    ScrollDecorator::ScrollDecorator(ElementImpl * inParent,
+                                     ElementImpl * inDecoratedElement,
+                                     Orientation inScrollbarOrient) :
+            BoxLayoutDecorator(inParent,
+                               inDecoratedElement,
+                               inScrollbarOrient == HORIZONTAL ? VERTICAL : HORIZONTAL,
+                               Stretch),
+            mHorScrollPos(0),
+            mVerScrollPos(0),
+            mScrollbarVisible(false)
+
+    {        
+        AttributesMapping attr;
+        attr["orient"] = Orientation2String(inScrollbarOrient);
+        ElementPtr scrollbar = Scrollbar::Create(inParent->owningElement(), attr);
+
+        // Remove it from the parent so that it is untouched by its layout manager
+        inParent->owningElement()->removeChild(scrollbar.get());
+
+        scrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+
+        // Add it to our own list of children
+        addChild(scrollbar);
+    }
             
-        }
-        return true;
-    }
-    
-    
-    void ScrollDecorator::rebuildLayout()
+            
+    int ScrollDecorator::calculateMinimumWidth() const
     {
-        if (mDecoratedElement)
+        if (orientation() == HORIZONTAL)
         {
-            mDecoratedElement->rebuildLayout();
-            if (mOrient == VERTICAL)
-            {
-                mScrollbar->impl()->move(mRect.x() + mRect.width() - Defaults::scrollbarWidth(),
-                                         mRect.y(),
-                                         Defaults::scrollbarWidth(),
-                                         mRect.height());
-            }
-            else
-            {
-                mScrollbar->impl()->move(mRect.x(),
-                                         mRect.y() + mRect.height() - Defaults::scrollbarWidth(),
-                                         mRect.width(),
-                                         Defaults::scrollbarWidth());
-            }
+            return Super::calculateMinimumWidth();
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+
+    int ScrollDecorator::calculateMinimumHeight() const
+    {
+        if (orientation() == HORIZONTAL)
+        {
+            return 0;
+        }
+        else
+        {
+            return Super::calculateMinimumHeight();
         }
     }
     
     
     void ScrollDecorator::move(int x, int y, int w, int h)
     {
-        if (mDecoratedElement)
+        if (mDecoratorChildren.empty())
         {
-            mRect = Rect(x, y, w, h);
-
-            int minSize = mOrient == VERTICAL ? mDecoratedElement->calculateMinimumHeight()
-                                              : mDecoratedElement->calculateMinimumWidth();
-
-            if (minSize != 0) // guard against division by zero
-            {
-                int maxpos = 100;
-                float ratio = (float)(mOrient == VERTICAL ? h : w)/(float)minSize;
-                int pageincrement = (int)(100.0*ratio + 0.5);
-                if (maxpos > 0)
-                {
-                    mScrollbar->setAttribute("maxpos", Int2String(maxpos));
-                    mScrollbar->setAttribute("pageincrement", Int2String(pageincrement));
-                }
-            }
-            if (mOrient == VERTICAL)
-            {
-                w -= Defaults::scrollbarWidth();
-                if (w < 0)
-                {
-                    w = 0;
-                }
-            }
-            else
-            {
-                h -= Defaults::scrollbarWidth();
-                if (h < 0)
-                {
-                    h = 0;
-                }
-            }
-            mDecoratedElement->move(x, y, w, h);
+            return;
         }
-    }
-    
-    
-    int ScrollDecorator::calculateMinimumWidth() const
-    {
-        if (mOrient == VERTICAL)
+
+        // 
+        // Update page height of scroll box
+        //
+        NativeScrollbar * scrollbar = mDecoratorChildren[0]->impl()->downcast<NativeScrollbar>();
+        int minSize = orientation() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
+                                                  : mDecoratedElement->calculateMinimumWidth();
+
+        if (minSize != 0) // guard against division by zero
         {
-            return mDecoratedElement->calculateMinimumWidth() + Defaults::scrollbarWidth();
+            int maxpos = Defaults::Attributes::maxpos();
+            float ratio = (float)(orientation() == HORIZONTAL ? h : w)/(float)minSize;
+            int pageincrement = (int)(maxpos*ratio + 0.5);
+            int curpos = Utils::getScrollPos(scrollbar->handle());
+            Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
+            mScrollbarVisible = pageincrement < maxpos;
+            Utils::setWindowVisible(scrollbar->handle(), mScrollbarVisible);
+        }
+
+        //
+        // Move the content pane
+        //
+        if (mScrollbarVisible)
+        {
+            Super::move(x - mHorScrollPos, y - mVerScrollPos, w, h);
         }
         else
         {
-            return 0;
+            Super::move(x, y, w, h);
         }
     }
 
-    
-    int ScrollDecorator::calculateMinimumHeight() const
+
+    bool ScrollDecorator::curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos)
     {
-        if (mOrient == HORIZONTAL)
+        if (NativeComponent * nativeBox = mDecoratedElement->downcast<NativeComponent>())
         {
-            return mDecoratedElement->calculateMinimumHeight() + Defaults::scrollbarWidth();
+            int maxpos = Defaults::Attributes::maxpos();
+
+            Rect clientRect(mDecoratedElement->clientRect());
+            double diff = (double)inNewPos - (double)inOldPos;
+            double ratio = diff/(double)Defaults::Attributes::maxpos();
+            double rounder = 0.5;
+            if (diff < 0)
+            {
+                rounder = -0.5;
+            }
+            int minHeight = mDecoratedElement->calculateMinimumHeight();
+            double scrollAmount = ratio * (double)minHeight;
+            int dx = orientation() == VERTICAL   ? (int)(scrollAmount + rounder) : 0;
+            int dy = orientation() == HORIZONTAL ? (int)(scrollAmount + rounder) : 0;
+            mHorScrollPos = orientation() == VERTICAL   ? inNewPos : 0;
+            mVerScrollPos = orientation() == HORIZONTAL ? inNewPos : 0;
+            if (minHeight - clientRect.height() - 1 > inNewPos)
+            {
+                ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
+            }
         }
-        else
-        {
-            return 0;
-        }
+        return true;
     }
 
 

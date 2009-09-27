@@ -68,11 +68,11 @@ namespace XULWin
         WrapDecorator(ElementImpl * inParent, ElementImpl * inDecoratedElement);
 
         // takes ownership
-        void addChild(ElementImpl * inChild);
+        void addChild(ElementPtr inChild);
 
     protected:
         ElementImpl * mParent;
-        std::vector<boost::shared_ptr<ElementImpl> > mDecoratorChildren;
+        std::vector<ElementPtr> mDecoratorChildren;
     };
 
 
@@ -86,43 +86,51 @@ namespace XULWin
                            ElementImpl * inDecoratedElement,
                            Orientation inOrient,
                            Alignment inAlign);
-
         
-        // BoxLayouter methods
-        virtual Rect clientRect() const;
-
-        virtual void rebuildChildLayouts();
-    };
-
-
-    class ScrollDecorator : public Decorator,
-                            public NativeScrollbar::EventHandler
-    {
-    public:
-        typedef Decorator Super;
-
-        // Takes ownership.
-        ScrollDecorator(ElementImpl * inDecoratedElement, Orientation inOrient);
-
-        // This constructor is needed for insertion of new objects in the Decorator chain.
-        ScrollDecorator(ElementImplPtr inDecoratedElement, Orientation inOrient);
-
-        virtual ~ScrollDecorator();
-
-        virtual void rebuildLayout();
-
-        virtual void move(int x, int y, int w, int h);
+        virtual void setAttributeController(const std::string & inAttr,
+                                            const ElementImpl::AttributeController & inController);
 
         virtual int calculateMinimumWidth() const;
 
         virtual int calculateMinimumHeight() const;
 
-        // NativeScrollbar::EventHandler
+        virtual Rect clientRect() const;
+
+        virtual void rebuildLayout();
+
+        virtual void rebuildChildLayouts();
+
+        virtual size_t numChildren() const;
+
+        virtual const ElementImpl * getChild(size_t idx) const;
+
+        virtual ElementImpl * getChild(size_t idx);
+    };
+
+
+    class ScrollDecorator : public BoxLayoutDecorator,
+                            public NativeScrollbar::EventHandler
+    {
+    public:
+        typedef BoxLayoutDecorator Super;
+
+        // Takes ownership.
+        ScrollDecorator(ElementImpl * inParent,
+                        ElementImpl * inDecoratedElement,
+                        Orientation inScrollbarOrient);
+
+        virtual int calculateMinimumWidth() const;
+
+        virtual int calculateMinimumHeight() const;
+
+        virtual void move(int x, int y, int w, int h);
+
         virtual bool curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos);
 
     private:
-        ElementPtr mScrollbar;
-        Orientation mOrient;
+        int mHorScrollPos;
+        int mVerScrollPos;
+        bool mScrollbarVisible;
     };
 
 

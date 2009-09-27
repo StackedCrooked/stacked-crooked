@@ -4,9 +4,13 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        orient="horizontal"
+        align="stretch"
 >
-  <vbox style="overflow-y:auto" flex="1">
-    <button label="Hello!"></button>
-    <button label="How are you?"></button>
+  <vbox flex="1" style="overflow-y:auto">
+    <button label="Overflow1"></button>
+    <button label="Overflow2"></button>
+    <button label="Overflow3"></button>
+    <button label="Overflow4"></button>
   </vbox>
 </window>

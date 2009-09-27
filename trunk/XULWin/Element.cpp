@@ -348,15 +348,26 @@ namespace XULWin
                 counter++;
             }
         }
-        if (   Helper::Has(styles, "style")
-            || Helper::Has(styles, "overflow-x")
-            || Helper::Has(styles, "overflow-y"))
+        bool overflow = Helper::Has(styles, "overflow");
+        bool overflowX = overflow || Helper::Has(styles, "overflow-x");
+        bool overflowY = overflow || Helper::Has(styles, "overflow-y");
+        if (overflowX || overflowY)
         {
-            return new NativeScrollBox(inParent->impl(), inAttributesMapping, inOrient);
+            ScrollDecorator * result;
+            NativeBox * box = new NativeBox(inParent->impl(), inAttributesMapping, inOrient);
+            if (overflowX)
+            {
+                result = new ScrollDecorator(inParent->impl(), box, HORIZONTAL);
+            }
+            else
+            {
+                result = new ScrollDecorator(inParent->impl(), box, VERTICAL);
+            }
+            return result;
         }
         else
         {
-            return new NativeBox(inParent->impl(), inAttributesMapping, inOrient);
+            return new Decorator(new VirtualBox(inParent->impl(), inAttributesMapping, inOrient));
         }
     }
 
@@ -364,7 +375,7 @@ namespace XULWin
     Box::Box(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Box::Type(),
                 inParent,
-                new Decorator(CreateBox(inParent, inAttributesMapping)))
+                CreateBox(inParent, inAttributesMapping))
     {
     }
 
@@ -372,7 +383,7 @@ namespace XULWin
     HBox::HBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(HBox::Type(),
                 inParent,
-                new Decorator(CreateBox(inParent, inAttributesMapping, HORIZONTAL)))
+                CreateBox(inParent, inAttributesMapping, HORIZONTAL))
     {
     }
 
@@ -380,7 +391,7 @@ namespace XULWin
     VBox::VBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(VBox::Type(),
                 inParent,
-                new Decorator(CreateBox(inParent, inAttributesMapping, VERTICAL)))
+                CreateBox(inParent, inAttributesMapping, VERTICAL))
     {
     }
 

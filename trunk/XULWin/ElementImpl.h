@@ -78,6 +78,21 @@ namespace XULWin
             return 0;
         }
 
+
+        template<class ConstType>
+        const ConstType * constDowncast() const
+        {
+            if (const ConstType * obj = dynamic_cast<const ConstType*>(this))
+            {
+                return obj;
+            }
+            else if (const Decorator * obj = dynamic_cast<const Decorator*>(this))
+            {
+                return obj->decoratedElement()->constDowncast<ConstType>();
+            }
+            return 0;
+        }
+
         int commandId() const { return mCommandId.intValue(); }
 
         int minimumWidth() const;
@@ -248,15 +263,13 @@ namespace XULWin
 
         virtual void move(int x, int y, int w, int h);
 
-    private:
-
         // Gets a NativeComponent object from this object. This
         // is only needed in constructors of NativeComponents, because
         // they need to know which is their native parent handle object.
         // If this is a NativeComponent, return this.
         // If this is a VirtualControl, return first parent that is a NativeComponent.
         // If this is a Decorator, resolve until a NativeComponent is found.
-        NativeComponent * GetNativeParent(ElementImpl * inElementImpl);
+        static NativeComponent * GetNativeParent(ElementImpl * inElementImpl);
     };
 
 
@@ -411,13 +424,13 @@ namespace XULWin
     };
 
 
-    class NativeBox : public VirtualControl,
-                      public BoxLayouter
+    class VirtualBox : public VirtualControl,
+                       public BoxLayouter
     {
     public:
         typedef VirtualControl Super;
 
-        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient = HORIZONTAL);
+        VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient = HORIZONTAL);
 
         virtual bool initAttributeControllers();
 
@@ -455,31 +468,31 @@ namespace XULWin
     };
 
 
-    class NativeHBox : public NativeBox
+    class VirtualHBox : public VirtualBox
     {
     public:
-        typedef NativeBox Super;
+        typedef VirtualBox Super;
 
-        NativeHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        VirtualHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
-    class NativeVBox : public NativeBox
+    class VirtualVBox : public VirtualBox
     {
     public:
-        typedef NativeBox Super;
+        typedef VirtualBox Super;
 
-        NativeVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        VirtualVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
-    class NativeScrollBox : public NativeControl,
-                            public BoxLayouter
+    class NativeBox : public NativeControl,
+                      public BoxLayouter
     {
     public:
         typedef NativeControl Super;
 
-        NativeScrollBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient);
+        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient);
 
         virtual bool initAttributeControllers();
 
@@ -625,10 +638,10 @@ namespace XULWin
     };
 
 
-    class NativeRadioGroup : public NativeBox
+    class NativeRadioGroup : public VirtualBox
     {
     public:
-        typedef NativeBox Super;
+        typedef VirtualBox Super;
 
         NativeRadioGroup(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };

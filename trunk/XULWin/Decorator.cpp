@@ -377,6 +377,8 @@ namespace XULWin
         }
         else
         {
+            mVerScrollPos = 0;
+            mHorScrollPos = 0;
             Super::move(x, y, w, h);
         }
     }
@@ -387,8 +389,26 @@ namespace XULWin
         if (NativeComponent * nativeBox = mDecoratedElement->downcast<NativeComponent>())
         {
             int maxpos = Defaults::Attributes::maxpos();
-
             Rect clientRect(mDecoratedElement->clientRect());
+            int minHeight = mDecoratedElement->calculateMinimumHeight();
+            int maxScrollPos = minHeight - clientRect.height() - 2;
+            if (inNewPos > maxScrollPos)
+            {
+                inNewPos = maxScrollPos;
+            }
+
+            // HACK!
+            // For some reason Windows sends a scroll down followed by
+            // a scroll up event when pressing the arrow-down button 
+            // on a scrollbar is already completely scrolled to bottom.
+            // This scroll-down event is blocked by my scrollbar handlemessage function.
+            // However the scroll-up event is not. So we do that here.
+            // TODO: Find a better fix.
+            if (inOldPos > maxScrollPos)
+            {
+                return false;
+            }
+
             double diff = (double)inNewPos - (double)inOldPos;
             double ratio = diff/(double)Defaults::Attributes::maxpos();
             double rounder = 0.5;
@@ -396,13 +416,12 @@ namespace XULWin
             {
                 rounder = -0.5;
             }
-            int minHeight = mDecoratedElement->calculateMinimumHeight();
             double scrollAmount = ratio * (double)minHeight;
             int dx = orientation() == VERTICAL   ? (int)(scrollAmount + rounder) : 0;
             int dy = orientation() == HORIZONTAL ? (int)(scrollAmount + rounder) : 0;
             mHorScrollPos = orientation() == VERTICAL   ? inNewPos : 0;
             mVerScrollPos = orientation() == HORIZONTAL ? inNewPos : 0;
-            if (minHeight - clientRect.height() - 1 > inNewPos)
+            if (inNewPos <= maxScrollPos)
             {
                 ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
             }

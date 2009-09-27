@@ -1210,19 +1210,7 @@ namespace XULWin
     {
         return Utils::getMultilineTextHeight(handle());
     }
-    
-    
-    VirtualHBox::VirtualHBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping, HORIZONTAL)
-    {   
-    }
-    
-    
-    VirtualVBox::VirtualVBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping, VERTICAL)
-    {   
-    }
-        
+
     
     VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
         VirtualControl(inParent, inAttributesMapping),

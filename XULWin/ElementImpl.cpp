@@ -2172,7 +2172,7 @@ namespace XULWin
                     totalHeight = inCurPos + 1;
                 }
                 Utils::setScrollInfo(el->handle(), totalHeight, pageHeight, inCurPos);
-                if (el->eventHandler())
+                if ((oldCurPos != inCurPos) && el->eventHandler())
                 {
                     el->eventHandler()->curposChanged(el, oldCurPos, inCurPos);
                 }

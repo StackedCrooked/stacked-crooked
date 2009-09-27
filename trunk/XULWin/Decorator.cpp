@@ -298,8 +298,6 @@ namespace XULWin
                                inDecoratedElement,
                                inScrollbarOrient == HORIZONTAL ? VERTICAL : HORIZONTAL,
                                Stretch),
-            mHorScrollPos(0),
-            mVerScrollPos(0),
             mScrollbarVisible(false)
 
     {        
@@ -367,20 +365,7 @@ namespace XULWin
             mScrollbarVisible = pageincrement < maxpos;
             Utils::setWindowVisible(scrollbar->handle(), mScrollbarVisible);
         }
-
-        //
-        // Move the content pane
-        //
-        if (mScrollbarVisible)
-        {
-            Super::move(x - mHorScrollPos, y - mVerScrollPos, w, h);
-        }
-        else
-        {
-            mVerScrollPos = 0;
-            mHorScrollPos = 0;
-            Super::move(x, y, w, h);
-        }
+        Super::move(x, y, w, h);
     }
 
 
@@ -419,8 +404,6 @@ namespace XULWin
             double scrollAmount = ratio * (double)minHeight;
             int dx = orientation() == VERTICAL   ? (int)(scrollAmount + rounder) : 0;
             int dy = orientation() == HORIZONTAL ? (int)(scrollAmount + rounder) : 0;
-            mHorScrollPos = orientation() == VERTICAL   ? inNewPos : 0;
-            mVerScrollPos = orientation() == HORIZONTAL ? inNewPos : 0;
             if (inNewPos <= maxScrollPos)
             {
                 ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);

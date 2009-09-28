@@ -112,7 +112,7 @@ namespace XULWin
             left = values[3];
 
         }
-        setCSSMargin(top, left, bottom, right);
+        setCSSMargin(top, left, right, bottom);
     }
 
 } // namespace XULWin

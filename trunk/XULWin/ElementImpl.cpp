@@ -105,12 +105,8 @@ namespace XULWin
         int margin = 0;
         if (const MarginDecorator * marginDecorator = constDowncast<MarginDecorator>())
         {
-            margin = marginDecorator->margin();
+            marginDecorator->getMargin(outTop, outLeft, outRight, outBottom);
         }
-        outTop = margin;
-        outLeft = margin;
-        outRight = margin;
-        outBottom = margin;
     }
 
 
@@ -125,7 +121,7 @@ namespace XULWin
         // Find a margin decorator, and set the margin value.
         if (MarginDecorator * obj = owningElement()->impl()->downcast<MarginDecorator>())
         {
-            obj->setCSSMargin(inTop);
+            obj->setMargin(inTop, inLeft, inRight, inBottom);
         }
         // If no margin decorator found, insert one, and set the value.
         else if (Decorator * dec = owningElement()->impl()->downcast<Decorator>())
@@ -134,7 +130,7 @@ namespace XULWin
             dec->setDecoratedElement(newDec);
             if (MarginDecorator * p = newDec->downcast<MarginDecorator>())
             {
-                p->setCSSMargin(inTop);
+                p->setMargin(inTop, inLeft, inRight, inBottom);
             }
         }
         else

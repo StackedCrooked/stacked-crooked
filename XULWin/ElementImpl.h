@@ -3,6 +3,7 @@
 
 
 #include "Element.h"
+#include "Conversions.h"
 #include "Layout.h"
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
@@ -27,20 +28,6 @@ namespace XULWin
         int mId;
         static int sId;
     };
-
-    
-    // TODO: find a better place for these items
-    std::string Orientation2String(Orientation inOrient);
-    std::string Int2String(int inValue);
-    int String2Int(const std::string & inValue, int inDefault);
-    int String2Int(const std::string & inValue);
-    bool String2Bool(const std::string & inString, bool inDefault);
-    std::string Bool2String(bool inBool);
-    Orientation String2Orientation(const std::string & inValue, Orientation inDefault);
-    std::string Orientation2String(Orientation inOrient);
-    Alignment String2Align(const std::string & inValue, Alignment inDefault);
-    std::string Align2String(Alignment inAlign);
-    int CssString2Size(const std::string & inString, int inDefault);
 
 
     class Element;
@@ -130,9 +117,9 @@ namespace XULWin
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
-        virtual bool initStyleControllers();
+        virtual bool initOldStyleControllers();
 
     protected:
         ElementImpl * mParent;
@@ -155,17 +142,17 @@ namespace XULWin
 
         typedef Getter AttributeGetter;
         typedef Setter AttributeSetter;        
-        typedef Controller AttributeController;
-        void setAttributeController(const std::string & inAttr, const AttributeController & inController);
-        typedef std::map<std::string, AttributeController> AttributeControllers;
-        AttributeControllers mAttributeControllers;
+        typedef Controller OldAttributeController;
+        void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
+        typedef std::map<std::string, OldAttributeController> OldAttributeControllers;
+        OldAttributeControllers mOldAttributeControllers;
         
         typedef Getter StyleGetter;
         typedef Setter StyleSetter;
-        typedef Controller StyleController;
-        void setStyleController(const std::string & inAttr, const StyleController & inController);
-        typedef std::map<std::string, StyleController> StyleControllers;
-        StyleControllers mStyleControllers;
+        typedef Controller OldStyleController;
+        void setOldStyleController(const std::string & inAttr, const OldStyleController & inController);
+        typedef std::map<std::string, OldStyleController> OldStyleControllers;
+        OldStyleControllers mOldStyleControllers;
 
         typedef std::map<HWND, ElementImpl*> Components;
         static Components sComponentsByHandle;
@@ -185,9 +172,9 @@ namespace XULWin
 
         virtual HWND handle() const;
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
-        virtual bool initStyleControllers();
+        virtual bool initOldStyleControllers();
 
         /**
          * Override this method if you want your control to handle its own command events.
@@ -236,9 +223,9 @@ namespace XULWin
 
         virtual Rect windowRect() const;
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
-        virtual bool initStyleControllers();
+        virtual bool initOldStyleControllers();
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -255,7 +242,7 @@ namespace XULWin
 
         virtual ~NativeControl();
         
-        bool initStyleControllers();
+        bool initOldStyleControllers();
 
         virtual void rebuildLayout();
 
@@ -282,9 +269,9 @@ namespace XULWin
 
         virtual ~VirtualControl();
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
-        virtual bool initStyleControllers();
+        virtual bool initOldStyleControllers();
 
         virtual int calculateMinimumWidth() const { return 0; }
 
@@ -323,9 +310,9 @@ namespace XULWin
 
         NativeLabel(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
-        virtual bool initStyleControllers();
+        virtual bool initOldStyleControllers();
 
         virtual int calculateMinimumWidth() const;
 
@@ -340,7 +327,7 @@ namespace XULWin
 
         NativeDescription(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
         virtual int calculateMinimumWidth() const;
 
@@ -355,7 +342,7 @@ namespace XULWin
 
         NativeTextBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
         virtual int calculateMinimumWidth() const;
 
@@ -377,7 +364,7 @@ namespace XULWin
 
         NativeCheckBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
         virtual int calculateMinimumWidth() const;
 
@@ -390,9 +377,9 @@ namespace XULWin
     public:
         BoxLayouter(Orientation inOrient, Alignment inAlign);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
-        virtual void setAttributeController(const std::string & inAttr, const ElementImpl::AttributeController & inController) = 0;
+        virtual void setOldAttributeController(const std::string & inAttr, const ElementImpl::OldAttributeController & inController) = 0;
 
         virtual void rebuildLayout();
 
@@ -432,7 +419,7 @@ namespace XULWin
 
         VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient = HORIZONTAL);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
         virtual void rebuildLayout()
         {
@@ -464,7 +451,7 @@ namespace XULWin
         virtual void rebuildChildLayouts()
         { return Super::rebuildChildLayouts(); }
 
-        virtual void setAttributeController(const std::string & inAttr, const AttributeController & inController);
+        virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
     };
 
 
@@ -476,7 +463,7 @@ namespace XULWin
 
         NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient);
 
-        virtual bool initAttributeControllers();
+        virtual bool initOldAttributeControllers();
 
         virtual void rebuildLayout();
 
@@ -498,7 +485,7 @@ namespace XULWin
         virtual void rebuildChildLayouts()
         { return Super::rebuildChildLayouts(); }
 
-        virtual void setAttributeController(const std::string & inAttr, const AttributeController & inController);
+        virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
 
     };
 
@@ -653,7 +640,7 @@ namespace XULWin
 
         virtual int calculateMinimumHeight() const;
 
-        bool initAttributeControllers();
+        bool initOldAttributeControllers();
     };
 
 
@@ -674,7 +661,7 @@ namespace XULWin
 
         int selectedIndex() const;
 
-        bool initAttributeControllers();
+        bool initOldAttributeControllers();
 
     private:
         int mSelectedIndex;
@@ -703,7 +690,7 @@ namespace XULWin
 
         virtual int calculateMinimumHeight() const;
 
-        bool initAttributeControllers();
+        bool initOldAttributeControllers();
 
         void setIncrement(int inIncrement);
 

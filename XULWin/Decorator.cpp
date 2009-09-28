@@ -78,21 +78,21 @@ namespace XULWin
     }
 
 
-    bool Decorator::initAttributeControllers()
+    bool Decorator::initOldAttributeControllers()
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->initAttributeControllers();
+            return mDecoratedElement->initOldAttributeControllers();
         }
         return true;
     }
 
 
-    bool Decorator::initStyleControllers()
+    bool Decorator::initOldStyleControllers()
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->initStyleControllers();
+            return mDecoratedElement->initOldStyleControllers();
         }
         return true;
     }
@@ -284,10 +284,10 @@ namespace XULWin
     }
     
     
-    void BoxLayoutDecorator::setAttributeController(const std::string & inAttr,
-                                                    const ElementImpl::AttributeController & inController)
+    void BoxLayoutDecorator::setOldAttributeController(const std::string & inAttr,
+                                                    const ElementImpl::OldAttributeController & inController)
     {
-        return Super::setAttributeController(inAttr, inController);
+        return Super::setOldAttributeController(inAttr, inController);
     }
     
     

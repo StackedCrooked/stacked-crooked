@@ -90,7 +90,7 @@ namespace XULWin
     }
 
 
-    Orientation String2Orientation(const std::string & inValue, Orientation inDefault)
+    Orientation String2Orient(const std::string & inValue, Orientation inDefault)
     {
         Orientation result = inDefault;
         if (inValue == "horizontal")
@@ -105,7 +105,7 @@ namespace XULWin
     }
 
 
-    std::string Orientation2String(Orientation inOrient)
+    std::string Orient2String(Orientation inOrient)
     {
         if (inOrient == HORIZONTAL)
         {

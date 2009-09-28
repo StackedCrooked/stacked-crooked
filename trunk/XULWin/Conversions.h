@@ -19,9 +19,9 @@ namespace XULWin
     
     std::string Bool2String(bool inBool);
     
-    Orientation String2Orientation(const std::string & inValue, Orientation inDefault);
+    Orientation String2Orient(const std::string & inValue, Orientation inDefault);
     
-    std::string Orientation2String(Orientation inOrient);
+    std::string Orient2String(Orientation inOrient);
     
     Alignment String2Align(const std::string & inValue, Alignment inDefault);
     

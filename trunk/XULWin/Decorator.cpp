@@ -78,11 +78,11 @@ namespace XULWin
     }
 
 
-    bool Decorator::initOldAttributeControllers()
+    bool Decorator::initAttributeControllers()
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->initOldAttributeControllers();
+            return mDecoratedElement->initAttributeControllers();
         }
         return true;
     }
@@ -259,7 +259,7 @@ namespace XULWin
     int BoxLayoutDecorator::calculateMinimumWidth() const
     {
         int result = mDecoratedElement->calculateMinimumWidth();
-        if (orientation() == HORIZONTAL)
+        if (getOrient() == HORIZONTAL)
         {
             for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
             {
@@ -273,7 +273,7 @@ namespace XULWin
     int BoxLayoutDecorator::calculateMinimumHeight() const
     {
         int result = mDecoratedElement->calculateMinimumHeight();
-        if (orientation() == VERTICAL)
+        if (getOrient() == VERTICAL)
         {
             for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
             {
@@ -282,14 +282,13 @@ namespace XULWin
         }
         return result;
     }
+
     
-    
-    void BoxLayoutDecorator::setOldAttributeController(const std::string & inAttr,
-                                                    const ElementImpl::OldAttributeController & inController)
+    void BoxLayoutDecorator::setAttributeController(const std::string & inAttr, AttributeController * inController)
     {
-        return Super::setOldAttributeController(inAttr, inController);
+        Super::setAttributeController(inAttr, inController);
     }
-    
+
     
     ScrollDecorator::ScrollDecorator(ElementImpl * inParent,
                                      ElementImpl * inDecoratedElement,
@@ -302,7 +301,7 @@ namespace XULWin
 
     {        
         AttributesMapping attr;
-        attr["orient"] = Orientation2String(inScrollbarOrient);
+        attr["orient"] = Orient2String(inScrollbarOrient);
         ElementPtr scrollbar = Scrollbar::Create(inParent->owningElement(), attr);
 
         // Remove it from the parent so that it is untouched by its layout manager
@@ -317,7 +316,7 @@ namespace XULWin
             
     int ScrollDecorator::calculateMinimumWidth() const
     {
-        if (orientation() == HORIZONTAL)
+        if (getOrient() == HORIZONTAL)
         {
             return Super::calculateMinimumWidth();
         }
@@ -330,7 +329,7 @@ namespace XULWin
 
     int ScrollDecorator::calculateMinimumHeight() const
     {
-        if (orientation() == HORIZONTAL)
+        if (getOrient() == HORIZONTAL)
         {
             return 0;
         }
@@ -352,13 +351,13 @@ namespace XULWin
         // Update page height of scroll box
         //
         NativeScrollbar * scrollbar = mDecoratorChildren[0]->impl()->downcast<NativeScrollbar>();
-        int minSize = orientation() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
+        int minSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
                                                   : mDecoratedElement->calculateMinimumWidth();
 
         if (minSize != 0) // guard against division by zero
         {
             int maxpos = Defaults::Attributes::maxpos();
-            float ratio = (float)(orientation() == HORIZONTAL ? h : w)/(float)minSize;
+            float ratio = (float)(getOrient() == HORIZONTAL ? h : w)/(float)minSize;
             int pageincrement = (int)(maxpos*ratio + 0.5);
             int curpos = Utils::getScrollPos(scrollbar->handle());
             Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
@@ -375,9 +374,9 @@ namespace XULWin
         {
             int maxpos = Defaults::Attributes::maxpos();
             Rect clientRect(mDecoratedElement->clientRect());
-            int minSize = orientation() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
+            int minSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
                                                       : mDecoratedElement->calculateMinimumWidth();
-            int clientSize = orientation() == HORIZONTAL ? clientRect.height()
+            int clientSize = getOrient() == HORIZONTAL ? clientRect.height()
                                                          : clientRect.height();
             int maxScrollPos = minSize - clientSize - 2;
             if (inNewPos > maxScrollPos)
@@ -405,8 +404,8 @@ namespace XULWin
                 rounder = -0.5;
             }
             double scrollAmount = ratio * (double)minSize;
-            int dx = orientation() == VERTICAL   ? (int)(scrollAmount + rounder) : 0;
-            int dy = orientation() == HORIZONTAL ? (int)(scrollAmount + rounder) : 0;
+            int dx = getOrient() == VERTICAL   ? (int)(scrollAmount + rounder) : 0;
+            int dy = getOrient() == HORIZONTAL ? (int)(scrollAmount + rounder) : 0;
             if (inNewPos <= maxScrollPos)
             {
                 ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);

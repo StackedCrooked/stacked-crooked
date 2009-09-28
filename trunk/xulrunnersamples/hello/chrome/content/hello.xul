@@ -7,10 +7,10 @@
         orient="horizontal"
         align="stretch"
 >
-  <vbox flex="1" style="overflow-y:auto">
-    <button label="Overflow1"></button>
+  <hbox flex="1" style="overflow-x:auto">
+    <button label="Overflow1Overflow1Overflow1"></button>
     <button label="Overflow2"></button>
     <button label="Overflow3"></button>
     <button label="Overflow4"></button>
-  </vbox>
+  </hbox>
 </window>

@@ -7,7 +7,7 @@
         orient="vertical"
         align="stretch"
 >
-  <vbox style="overflow-y" flex="1">
+  <vbox style="overflow-y:auto" flex="1">
     <button label="test"></button>
     <button label="test"></button>
     <button label="test"></button>

@@ -2,6 +2,9 @@
 #define DEFAULTS_H_INCLUDED
 
 
+#include "Layout.h"
+
+
 namespace XULWin
 {
 
@@ -44,6 +47,15 @@ namespace XULWin
 
         namespace Attributes
         {
+            static bool disabled() { return false; }
+
+            static bool readonly() { return false; }
+
+            static bool checked() { return false; } // checkbox
+
+            static Orientation orient() { return VERTICAL; }
+
+            static Alignment align() { return Start; }
 
             static int flex() { return 0; }
 

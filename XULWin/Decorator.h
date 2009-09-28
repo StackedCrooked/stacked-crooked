@@ -4,6 +4,7 @@
 
 #include "Element.h"
 #include "ElementImpl.h"
+#include "Layout.h"
 
 
 namespace XULWin
@@ -30,7 +31,7 @@ namespace XULWin
 
         virtual Element * owningElement() const;
 
-        virtual bool initOldAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual bool initOldStyleControllers();
 
@@ -87,8 +88,7 @@ namespace XULWin
                            Orientation inOrient,
                            Alignment inAlign);
         
-        virtual void setOldAttributeController(const std::string & inAttr,
-                                            const ElementImpl::OldAttributeController & inController);
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
 
         virtual int calculateMinimumWidth() const;
 

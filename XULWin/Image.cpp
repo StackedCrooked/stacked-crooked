@@ -1,4 +1,5 @@
 #include "Image.h"
+#include "AttributeController.h"
 #include "Decorator.h"
 #include "ElementImpl.h"
 #include "ChromeURL.h"
@@ -44,22 +45,24 @@ namespace XULWin
     int GdiplusLoader::sRefCount = 0;
 
 
-    class NativeImage : public NativeControl, public GdiplusLoader
+    class NativeImage : public NativeControl,
+                        public virtual SrcController,
+                        public GdiplusLoader
     {
     public:
         typedef NativeControl Super;
 
         NativeImage(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
+        virtual std::string getSrc() const;
+
+        virtual void setSrc(const std::string & inSrc);
+
         virtual int calculateMinimumWidth() const;
 
         virtual int calculateMinimumHeight() const;
 
-        bool initOldAttributeControllers();
-
-        void setSrc(const std::string & inSrc);
-
-        const std::string & src() const;
+        bool initAttributeControllers();
         
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -84,6 +87,27 @@ namespace XULWin
     {
     }
 
+        
+    std::string NativeImage::getSrc() const
+    {
+        return mSrc;
+    }
+
+
+    void NativeImage::setSrc(const std::string & inSrc)
+    {
+        ChromeURL url(inSrc, Defaults::locale());
+        mSrc = url.convertToLocalPath();
+        std::wstring utf16Path;
+        Poco::UnicodeConverter::toUTF16(mSrc, utf16Path);
+        Gdiplus::Bitmap * img = new Gdiplus::Bitmap(utf16Path.c_str());
+        mImage.reset(img);
+        if (mImage->GetLastStatus() != Gdiplus::Ok)
+        {
+            mImage.reset();
+        }
+    }
+
 
     int NativeImage::calculateMinimumWidth() const
     {
@@ -104,34 +128,11 @@ namespace XULWin
         return 0;
     }
 
-    
-    void NativeImage::setSrc(const std::string & inSrc)
-    {
-        ChromeURL url(inSrc, Defaults::locale());
-        mSrc = url.convertToLocalPath();
-        std::wstring utf16Path;
-        Poco::UnicodeConverter::toUTF16(mSrc, utf16Path);
-        Gdiplus::Bitmap * img = new Gdiplus::Bitmap(utf16Path.c_str());
-        mImage.reset(img);
-        if (mImage->GetLastStatus() != Gdiplus::Ok)
-        {
-            mImage.reset();
-        }
-    }
 
-    
-    const std::string & NativeImage::src() const
+    bool NativeImage::initAttributeControllers()
     {
-        return mSrc;
-    }
-
-
-    bool NativeImage::initOldAttributeControllers()
-    {
-        AttributeGetter srcGetter = boost::bind(&NativeImage::src, this);
-        AttributeSetter srcSetter = boost::bind(&NativeImage::setSrc, this, _1);
-        setOldAttributeController("src", OldAttributeController(srcGetter, srcSetter));
-        return NativeControl::initOldAttributeControllers();
+        Super::setAttributeController("src", static_cast<SrcController*>(this));
+        return Super::initAttributeControllers();
     }
     
     

@@ -43,7 +43,7 @@ namespace XULWin
             {
                 inParent->addChild(result);
             }
-            result->initOldAttributeControllers();
+            result->initAttributeControllers();
             result->setAttributes(inAttr);
             result->initOldStyleControllers();
             result->setStyles(inAttr);
@@ -133,7 +133,7 @@ namespace XULWin
 
         void setStyles(const AttributesMapping & inAttributes);
 
-        void initOldAttributeControllers();
+        void initAttributeControllers();
 
         void initOldStyleControllers();
 

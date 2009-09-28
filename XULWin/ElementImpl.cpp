@@ -29,11 +29,41 @@ namespace XULWin
         mExpansive(false),
         mElement(0)
     {
+        // STATIC CAST NEEDED HERE OTHERWISE WE GET COMPILER ERROR:
+        // error C2594: '=' : ambiguous conversions from 'Element *const ' to 'AttributeController *'
+        mAttributeControllers["width"] = static_cast<WidthController*>(this);
+        mAttributeControllers["height"] = static_cast<HeightController*>(this);
     }
 
 
     ElementImpl::~ElementImpl()
     {
+    }
+
+
+    int ElementImpl::getWidth() const
+    {
+        return clientRect().width();
+    }
+    
+    
+    void ElementImpl::setWidth(int inWidth)
+    {
+        Rect clientRect(clientRect());
+        move(clientRect.x(), clientRect.y(), inWidth, clientRect.height());
+    }
+
+
+    int ElementImpl::getHeight() const
+    {
+        return clientRect().width();
+    }
+    
+    
+    void ElementImpl::setHeight(int inHeight)
+    {
+        Rect clientRect(clientRect());
+        move(clientRect.x(), clientRect.y(), clientRect.width(), inHeight);
     }
     
     
@@ -106,16 +136,11 @@ namespace XULWin
     
     bool ElementImpl::getAttribute(const std::string & inName, std::string & outValue)
     {
-        OldAttributeControllers::iterator it = mOldAttributeControllers.find(inName);
-        if (it != mOldAttributeControllers.end())
+        AttributeControllers::iterator it = mAttributeControllers.find(inName);
+        if (it != mAttributeControllers.end())
         {
-            const OldAttributeController & controller = it->second;
-            const AttributeGetter & getter = controller.getter;
-            if (getter)
-            {
-                outValue = getter();
-                return true;
-            }
+            it->second->get(outValue);
+            return true;
         }
         return false;
     }
@@ -140,22 +165,17 @@ namespace XULWin
     
     bool ElementImpl::setAttribute(const std::string & inName, const std::string & inValue)
     {
-        OldAttributeControllers::iterator it = mOldAttributeControllers.find(inName);
-        if (it != mOldAttributeControllers.end())
+        AttributeControllers::iterator it = mAttributeControllers.find(inName);
+        if (it != mAttributeControllers.end())
         {
-            const OldAttributeController & controller = it->second;
-            const AttributeSetter & setter = controller.setter;
-            if (setter)
-            {
-                setter(inValue);
-                return true;
-            }
+            it->second->set(inValue);
+            return true;
         }
         return false;
     }
 
 
-    bool ElementImpl::initOldAttributeControllers()
+    bool ElementImpl::initAttributeControllers()
     {
         return true;
     }
@@ -224,22 +244,18 @@ namespace XULWin
     }
 
 
+    void ElementImpl::setAttributeController(const std::string & inAttr, AttributeController * inController)
+    {
+        mAttributeControllers[inAttr] = inController;
+    }
+
+
     void ElementImpl::setOldStyleController(const std::string & inAttr, const OldStyleController & inController)
     {
         OldStyleControllers::iterator it = mOldStyleControllers.find(inAttr);
         if (it == mOldStyleControllers.end())
         {
             mOldStyleControllers.insert(std::make_pair(inAttr, inController));
-        }
-    }
-
-
-    void ElementImpl::setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController)
-    {
-        OldAttributeControllers::iterator it = mOldAttributeControllers.find(inAttr);
-        if (it == mOldAttributeControllers.end())
-        {
-            mOldAttributeControllers.insert(std::make_pair(inAttr, inController));
         }
     }
 
@@ -306,6 +322,30 @@ namespace XULWin
             ::DestroyWindow(mHandle);
         }
     }
+    
+    
+    bool NativeComponent::getDisabled() const
+    {
+        return Utils::isWindowDisabled(handle());
+    }
+
+
+    void NativeComponent::setDisabled(bool inDisabled)
+    {
+        Utils::disableWindow(handle(), inDisabled);
+    }
+
+
+    std::string NativeComponent::getLabel() const
+    {
+        return Utils::getWindowText(handle());
+    }
+
+
+    void NativeComponent::setLabel(const std::string & inLabel)
+    {
+        Utils::setWindowText(handle(), inLabel);
+    }
         
     
     void NativeComponent::SetModuleHandle(HMODULE inModule)
@@ -326,36 +366,11 @@ namespace XULWin
     }
     
     
-    bool NativeComponent::initOldAttributeControllers()
-    {    
-        struct Helper
-        {
-            static std::string Bool2String(bool inValue)
-            {
-                return inValue ? "true" : "false";
-            }
-            static bool String2Bool(const std::string & inString)
-            {
-                return inString == "true" ? true : false;
-            }
-        };
-
-        AttributeGetter heightGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowHeight, handle()));
-        AttributeSetter heightSetter = boost::bind(&Utils::setWindowHeight, handle(), boost::bind(&String2Int, _1));
-        setOldAttributeController("height", OldAttributeController(heightGetter, heightSetter));
-
-        AttributeGetter widthGetter = boost::bind(&Int2String, boost::bind(&Utils::getWindowWidth, handle()));
-        AttributeSetter widthSetter = boost::bind(&Utils::setWindowWidth, handle(), boost::bind(&String2Int, _1));
-        setOldAttributeController("width", OldAttributeController(widthGetter, widthSetter));
-
-        AttributeGetter disabledGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isWindowDisabled, handle()));
-        AttributeSetter disabledSetter = boost::bind(&Utils::disableWindow, handle(), boost::bind(&Helper::String2Bool, _1));
-        setOldAttributeController("disabled", OldAttributeController(disabledGetter, disabledSetter));
-        
-        AttributeGetter labelGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter labelSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setOldAttributeController("label", OldAttributeController(labelGetter, labelSetter));
-        return Super::initOldAttributeControllers();
+    bool NativeComponent::initAttributeControllers()
+    {
+        mAttributeControllers["disabled"] = static_cast<DisabledController*>(this);
+        mAttributeControllers["label"] = static_cast<LabelController*>(this);
+        return Super::initAttributeControllers();
     }
 
 
@@ -458,12 +473,10 @@ namespace XULWin
     }
 
 
-    bool NativeWindow::initOldAttributeControllers()
+    bool NativeWindow::initAttributeControllers()
     {
-        AttributeGetter titleGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter titleSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setOldAttributeController("title", OldAttributeController(titleGetter, titleSetter));
-        return Super::initOldAttributeControllers();
+        Super::setAttributeController("title", static_cast<TitleController*>(this));
+        return Super::initAttributeControllers();
     }
     
     
@@ -486,7 +499,7 @@ namespace XULWin
     int NativeWindow::calculateMinimumWidth() const
     {
         int result = 0;
-        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"), VERTICAL);
+        Orientation orient = String2Orient(owningElement()->getAttribute("orient"), VERTICAL);
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
@@ -507,7 +520,7 @@ namespace XULWin
     int NativeWindow::calculateMinimumHeight() const
     {
         int result = 0;
-        Orientation orient = String2Orientation(owningElement()->getAttribute("orient"), VERTICAL);
+        Orientation orient = String2Orient(owningElement()->getAttribute("orient"), VERTICAL);
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
@@ -533,7 +546,7 @@ namespace XULWin
     
     void NativeWindow::rebuildLayout()
     {
-        LinearLayoutManager layout(String2Orientation(owningElement()->getAttribute("orient"), VERTICAL));
+        LinearLayoutManager layout(String2Orient(owningElement()->getAttribute("orient"), VERTICAL));
         bool horizontal = layout.orientation() == HORIZONTAL;
         
         std::vector<ExtendedSizeInfo> sizeInfos;
@@ -558,6 +571,18 @@ namespace XULWin
 
         rebuildChildLayouts();
         ::InvalidateRect(handle(), 0, FALSE);
+    }        
+    
+    
+    std::string NativeWindow::getTitle() const
+    {
+        return Utils::getWindowText(handle());
+    }
+
+
+    void NativeWindow::setTitle(const std::string & inTitle)
+    {
+        Utils::setWindowText(handle(), inTitle);
     }
 
 
@@ -669,9 +694,9 @@ namespace XULWin
     }
 
      
-    bool VirtualControl::initOldAttributeControllers()
+    bool VirtualControl::initAttributeControllers()
     {
-        return Super::initOldAttributeControllers();
+        return Super::initAttributeControllers();
     }
 
 
@@ -858,23 +883,22 @@ namespace XULWin
     }
 
     
-    bool NativeCheckBox::initOldAttributeControllers()
+    bool NativeCheckBox::isChecked() const
     {
-        struct Helper
-        {
-            static std::string Bool2String(bool inValue)
-            {
-                return inValue ? "true" : "false";
-            }
-            static bool String2Bool(const std::string & inString)
-            {
-                return inString == "false" ? false : true;
-            }
-        };
-        AttributeGetter checkedGetter = boost::bind(&Helper::Bool2String, boost::bind(&Utils::isCheckBoxChecked, handle()));
-        AttributeSetter checkedSetter = boost::bind(&Utils::setCheckBoxChecked, handle(), boost::bind(&Helper::String2Bool, _1));
-        setOldAttributeController("checked", OldAttributeController(checkedGetter, checkedSetter));
-        return Super::initOldAttributeControllers();
+        return Utils::isCheckBoxChecked(handle());
+    }
+
+
+    void NativeCheckBox::setChecked(bool inChecked)
+    {
+        Utils::setCheckBoxChecked(handle(), inChecked);
+    }
+
+    
+    bool NativeCheckBox::initAttributeControllers()
+    {
+        mAttributeControllers["checked"] = static_cast<CheckedController *>(this);
+        return Super::initAttributeControllers();
     }
 
 
@@ -917,17 +941,36 @@ namespace XULWin
         return it != inAttributesMapping.end() && it->second == "true";
     } 
 
-    
-    bool NativeTextBox::initOldAttributeControllers()
-    {
-        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setOldAttributeController("value", OldAttributeController(valueGetter, valueSetter));
 
-        {AttributeGetter readOnlyGetter = boost::bind(&Bool2String, boost::bind(&Utils::isTextBoxReadOnly, handle()));
-        AttributeSetter readOnlySetter = boost::bind(&Utils::setTextBoxReadOnly, handle(), boost::bind(&String2Bool, _1, false));
-        setOldAttributeController("readonly", OldAttributeController(readOnlyGetter, readOnlySetter));}
-        return Super::initOldAttributeControllers();
+    std::string NativeTextBox::getValue() const
+    {
+        return Utils::getWindowText(handle());
+    }
+
+
+    void NativeTextBox::setValue(const std::string & inStringValue)
+    {
+        Utils::setWindowText(handle(), inStringValue);
+    }
+    
+    
+    bool NativeTextBox::isReadOnly() const
+    {
+        return Utils::isTextBoxReadOnly(handle());
+    }
+
+    
+    void NativeTextBox::setReadOnly(bool inReadOnly)
+    {
+        Utils::setTextBoxReadOnly(handle(), inReadOnly);
+    }
+
+    
+    bool NativeTextBox::initAttributeControllers()
+    {
+        mAttributeControllers["value"] = static_cast<StringValueController*>(this);
+        mAttributeControllers["readonly"] = static_cast<ReadOnlyController*>(this);
+        return Super::initAttributeControllers();
     }
 
 
@@ -959,14 +1002,24 @@ namespace XULWin
                       SS_LEFT)
     {
     }
-        
     
-    bool NativeLabel::initOldAttributeControllers()
+        
+    std::string NativeLabel::getValue() const
     {
-        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setOldAttributeController("value", OldAttributeController(valueGetter, valueSetter));
-        return Super::initOldAttributeControllers();
+        return Utils::getWindowText(handle());
+    }
+
+
+    void NativeLabel::setValue(const std::string & inStringValue)
+    {
+        Utils::setWindowText(handle(), inStringValue);
+    }
+
+    
+    bool NativeLabel::initAttributeControllers()
+    {
+        mAttributeControllers["value"] = static_cast<StringValueController*>(this);
+        return Super::initAttributeControllers();
     }
     
     
@@ -1024,14 +1077,24 @@ namespace XULWin
                       SS_LEFT)
     {
     }
-
-
-    bool NativeDescription::initOldAttributeControllers()
+    
+        
+    std::string NativeDescription::getValue() const
     {
-        AttributeGetter valueGetter = boost::bind(&Utils::getWindowText, handle());
-        AttributeSetter valueSetter = boost::bind(&Utils::setWindowText, handle(), _1);
-        setOldAttributeController("value", OldAttributeController(valueGetter, valueSetter));
-        return Super::initOldAttributeControllers();
+        return Utils::getWindowText(handle());
+    }
+
+
+    void NativeDescription::setValue(const std::string & inStringValue)
+    {
+        Utils::setWindowText(handle(), inStringValue);
+    }
+
+
+    bool NativeDescription::initAttributeControllers()
+    {
+        mAttributeControllers["value"] = static_cast<StringValueController*>(this);
+        return Super::initAttributeControllers();
     }
 
 
@@ -1052,31 +1115,23 @@ namespace XULWin
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
     }
-        
     
-    void VirtualBox::setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController)
+    
+    void VirtualBox::setAttributeController(const std::string & inAttr, AttributeController * inController)
     {
-        Super::setOldAttributeController(inAttr, inController);
+        Super::setAttributeController(inAttr, inController);
     }
 
 
-    bool VirtualBox::initOldAttributeControllers()
-    {        
-        AttributeSetter orientationSetter = boost::bind(&VirtualBox::setOrientation, this, boost::bind(&String2Orientation, _1, VERTICAL));
-        AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&VirtualBox::orientation, this));
-        setOldAttributeController("orient", OldAttributeController(orientationGetter, orientationSetter));
-        setOldAttributeController("orientation", OldAttributeController(orientationGetter, orientationSetter));
-
-        AttributeSetter alignSetter = boost::bind(&VirtualBox::setAlignment, this, boost::bind(&String2Align, _1, Start));
-        AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&VirtualBox::alignment, this));
-        setOldAttributeController("align", OldAttributeController(alignGetter, alignSetter));
-        return Super::initOldAttributeControllers();
+    bool VirtualBox::initAttributeControllers()
+    {
+        return Super::initAttributeControllers();
     }
 
 
     int BoxLayouter::calculateMinimumWidth() const
     {
-        if (orientation() == HORIZONTAL)
+        if (getOrient() == HORIZONTAL)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1085,7 +1140,7 @@ namespace XULWin
             }
             return result;
         }
-        else if (orientation() == VERTICAL)
+        else if (getOrient() == VERTICAL)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1100,7 +1155,7 @@ namespace XULWin
         }
         else
         {
-            ReportError("Invalid orientation in VirtualBox"); 
+            ReportError("Invalid getOrient in VirtualBox"); 
             return 0;
         }
     }
@@ -1108,7 +1163,7 @@ namespace XULWin
 
     int BoxLayouter::calculateMinimumHeight() const
     {
-        if (orientation() == HORIZONTAL)
+        if (getOrient() == HORIZONTAL)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1121,7 +1176,7 @@ namespace XULWin
             }
             return result;
         }
-        else if (orientation() == VERTICAL)
+        else if (getOrient() == VERTICAL)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1132,33 +1187,9 @@ namespace XULWin
         }
         else
         {
-            ReportError("Invalid orientation in VirtualBox");
+            ReportError("Invalid getOrient in VirtualBox");
             return 0;
         }
-    }
-    
-    
-    Orientation BoxLayouter::orientation() const
-    {
-        return mOrient;
-    }
-
-     
-    Alignment BoxLayouter::alignment() const
-    {
-        return mAlign;
-    }
-
-
-    void BoxLayouter::setOrientation(Orientation inOrient)
-    {
-        mOrient = inOrient;
-    }
-        
-        
-    void BoxLayouter::setAlignment(Alignment inAlign)
-    {
-        mAlign = inAlign;
     }
 
 
@@ -1168,25 +1199,43 @@ namespace XULWin
     {
     }
 
-
-    bool BoxLayouter::initOldAttributeControllers()
+    
+    Orientation BoxLayouter::getOrient() const
     {
-        ElementImpl::AttributeSetter orientationSetter = boost::bind(&BoxLayouter::setOrientation, this, boost::bind(&String2Orientation, _1, VERTICAL));
-        ElementImpl::AttributeGetter orientationGetter = boost::bind(&Orientation2String, boost::bind(&BoxLayouter::orientation, this));
-        setOldAttributeController("orient", ElementImpl::OldAttributeController(orientationGetter, orientationSetter));
-        setOldAttributeController("orientation", ElementImpl::OldAttributeController(orientationGetter, orientationSetter));
+        return mOrient;
+    }
 
-        ElementImpl::AttributeSetter alignSetter = boost::bind(&BoxLayouter::setAlignment, this, boost::bind(&String2Align, _1, Start));
-        ElementImpl::AttributeGetter alignGetter = boost::bind(&Align2String, boost::bind(&BoxLayouter::alignment, this));
-        setOldAttributeController("align", ElementImpl::OldAttributeController(alignGetter, alignSetter));
+
+    void BoxLayouter::setOrient(Orientation inOrient)
+    {
+        mOrient = inOrient;
+    }
+
+
+    Alignment BoxLayouter::getAlign() const
+    {
+        return mAlign;
+    }
+
+
+    void BoxLayouter::setAlign(Alignment inAlign)
+    {
+        mAlign = inAlign;
+    }
+
+
+    bool BoxLayouter::initAttributeControllers()
+    {
+        setAttributeController("orient", static_cast<OrientController*>(this));
+        setAttributeController("align", static_cast<AlignController*>(this));
         return true;
     }
 
     
     void BoxLayouter::rebuildLayout()
     {
-        LinearLayoutManager layout(orientation());
-        bool horizontal = orientation() == HORIZONTAL;
+        LinearLayoutManager layout(getOrient());
+        bool horizontal = getOrient() == HORIZONTAL;
         
         std::vector<ExtendedSizeInfo> sizeInfos;
         for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1205,7 +1254,7 @@ namespace XULWin
         
         std::vector<Rect> childRects;
         Rect clientR(clientRect());
-        layout.getRects(clientR, alignment(), sizeInfos, childRects);
+        layout.getRects(clientR, getAlign(), sizeInfos, childRects);
 
         for (size_t idx = 0; idx != numChildren(); ++idx)
         {
@@ -1223,18 +1272,18 @@ namespace XULWin
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
     }
-        
-    
-    void NativeBox::setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController)
+
+
+    void NativeBox::setAttributeController(const std::string & inAttr, AttributeController * inController)
     {
-        Super::setOldAttributeController(inAttr, inController);
+        Super::setAttributeController(inAttr, inController);
     }
     
         
-    bool NativeBox::initOldAttributeControllers()
+    bool NativeBox::initAttributeControllers()
     {
-        BoxLayouter::initOldAttributeControllers();
-        return Super::initOldAttributeControllers();
+        BoxLayouter::initAttributeControllers();
+        return Super::initAttributeControllers();
     }
     
     
@@ -1747,14 +1796,24 @@ namespace XULWin
     {
         return Defaults::progressMeterHeight();
     }
+    
 
-
-    bool NativeProgressMeter::initOldAttributeControllers()
+    int NativeProgressMeter::getValue() const
     {
-        AttributeSetter orientationSetter = boost::bind(&Utils::setProgressMeterProgress, handle(), boost::bind(&String2Int, _1));
-        AttributeGetter orientationGetter = boost::bind(&Int2String, boost::bind(&Utils::getProgressMeterProgress, handle()));
-        setOldAttributeController("value", OldAttributeController(orientationGetter, orientationSetter));
-        return Super::initOldAttributeControllers();
+        return ::Utils::getProgressMeterProgress(handle());
+    }
+
+
+    void NativeProgressMeter::setValue(int inValue)
+    {
+        Utils::setProgressMeterProgress(handle(), inValue);
+    }
+
+
+    bool NativeProgressMeter::initAttributeControllers()
+    {
+        Super::setAttributeController("value", static_cast<IntValueController*>(this));
+        return Super::initAttributeControllers();
     }
 
     
@@ -1764,7 +1823,20 @@ namespace XULWin
     {
     }
         
-        
+    
+    int NativeDeck::getSelectedIndex() const
+    {
+        return mSelectedIndex;
+    }
+
+
+    void NativeDeck::setSelectedIndex(int inSelectedIndex)
+    {
+        mSelectedIndex = inSelectedIndex;
+        rebuildLayout();
+    }
+
+
     void NativeDeck::rebuildLayout()
     {
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
@@ -1815,26 +1887,14 @@ namespace XULWin
         return res;
     }
 
-    
-    void NativeDeck::setSelectedIndex(int inSelectedIndex)
-    {
-        mSelectedIndex = inSelectedIndex;
-        rebuildLayout();
-    }
 
-    
-    int NativeDeck::selectedIndex() const
+    bool NativeDeck::initAttributeControllers()
     {
-        return mSelectedIndex;
-    }
-
-
-    bool NativeDeck::initOldAttributeControllers()
-    {
-        AttributeSetter selIndexSetter = boost::bind(&NativeDeck::setSelectedIndex, this, boost::bind(&String2Int, _1));
-        AttributeGetter selIndexGetter = boost::bind(&Int2String, boost::bind(&NativeDeck::selectedIndex, this));
-        setOldAttributeController("selectedIndex", OldAttributeController(selIndexGetter, selIndexSetter));
-        return Super::initOldAttributeControllers();
+        //AttributeSetter selIndexSetter = boost::bind(&NativeDeck::setSelectedIndex, this, boost::bind(&String2Int, _1));
+        //AttributeGetter selIndexGetter = boost::bind(&Int2String, boost::bind(&NativeDeck::selectedIndex, this));
+        //setOldAttributeController("selectedIndex", OldAttributeController(selIndexGetter, selIndexSetter));
+        Super::setAttributeController("selectedIndex", static_cast<SelectedIndexController*>(this));
+        return Super::initAttributeControllers();
     }
 
 
@@ -1884,18 +1944,6 @@ namespace XULWin
     int NativeScrollbar::calculateMinimumHeight() const
     {
         return Defaults::scrollbarWidth();
-    }
-
-
-    void NativeScrollbar::setIncrement(int inIncrement)
-    {
-        mIncrement = inIncrement;
-    }
-
-
-    int NativeScrollbar::increment() const
-    {
-        return mIncrement;
     }
     
     
@@ -1956,158 +2004,138 @@ namespace XULWin
     }
 
 
-    bool NativeScrollbar::initOldAttributeControllers()
+    int NativeScrollbar::getCurrentPosition() const
     {
-        // TODO: implement!
-        //curpos="20"
-        //maxpos="100"
-        //increment="1"
-        //pageincrement="10"/>
-        struct Helper
+        return Utils::getScrollPos(handle());
+    }
+
+
+    void NativeScrollbar::setCurrentPosition(int inCurrentPosition)
+    {
+        int totalHeight = 0;
+        int pageHeight = 0;
+        int oldCurPos = 0;
+        Utils::getScrollInfo(handle(), totalHeight, pageHeight, oldCurPos);
+
+        // The order in which curpos, maxpos and pageincrement
+        // will be set (alphabetically by attribute name) can cause
+        // impossible scrollbar states (i.e. currentpos or pageincrement
+        // greater than maxpos). And we want to avoid that.
+        // Our workaround is to detect such states here, and change invalid
+        // values to valid ones.
+        if (pageHeight == 0)
         {
-            static void setCurPos(NativeScrollbar * el, int inCurPos)
-            {
-                int totalHeight = 0;
-                int pageHeight = 0;
-                int oldCurPos = 0;
-                Utils::getScrollInfo(el->handle(), totalHeight, pageHeight, oldCurPos);
+            pageHeight = 1;
+        }
+        if (totalHeight < pageHeight)
+        {
+            totalHeight = pageHeight + 1;
+        }
+        if (totalHeight < inCurrentPosition)
+        {
+            totalHeight = inCurrentPosition + 1;
+        }
+        Utils::setScrollInfo(handle(), totalHeight, pageHeight, inCurrentPosition);
+        if ((oldCurPos != inCurrentPosition) && eventHandler())
+        {
+            eventHandler()->curposChanged(this, oldCurPos, inCurrentPosition);
+        }
+    }
 
-                // The order in which setCurPos, setMaxPos and setPageIncrement
-                // will be set (alphabetically by attribute name) can cause
-                // impossible scrollbar states (i.e. currentpos or pageincrement
-                // greater than maxpos). And we want to avoid that.
-                // Our workaround is to detect such states here, and change invalid
-                // values to valid ones.
-                if (pageHeight == 0)
-                {
-                    pageHeight = 1;
-                }
-                if (totalHeight < pageHeight)
-                {
-                    totalHeight = pageHeight + 1;
-                }
-                //if (inCurPos > pageHeight/2)   // }
-                //{                              // } => this makes sure that the scroll box
-                //    inCurPos -= pageHeight/2;  // }    is centered around currentpos
-                //}                              // }
-                if (totalHeight < inCurPos)
-                {
-                    totalHeight = inCurPos + 1;
-                }
-                Utils::setScrollInfo(el->handle(), totalHeight, pageHeight, inCurPos);
-                if ((oldCurPos != inCurPos) && el->eventHandler())
-                {
-                    el->eventHandler()->curposChanged(el, oldCurPos, inCurPos);
-                }
-            }
 
-            static int getCurPos(HWND inHandle)
-            {
-                int totalHeight = 0;
-                int pageHeight = 0;
-                int curPos = 0;
-                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, curPos);
-                return curPos;
-            }
+    int NativeScrollbar::getMaxPosition() const
+    {
+        int totalHeight = 0;
+        int pageHeight = 0;
+        int curPos = 0;
+        Utils::getScrollInfo(handle(), totalHeight, pageHeight, curPos);
+        return totalHeight;
+    }
 
-            static void setMaxPos(HWND inHandle, int inMaxPos)
-            {
-                int dummy = 0;
-                int pageHeight = 0;
-                int curPos = 0;
-                Utils::getScrollInfo(inHandle, dummy, pageHeight, curPos);
 
-                // The order in which setCurPos, setMaxPos and setPageIncrement
-                // will be set (alphabetically by attribute name) can cause
-                // impossible scrollbar states (i.e. currentpos or pageincrement
-                // greater than maxpos). And we want to avoid that.
-                // Our workaround is to detect such states here, and change invalid
-                // values to valid ones.
-                if (pageHeight == 0)
-                {
-                    pageHeight = 1;
-                }
-                if (inMaxPos <= pageHeight)
-                {
-                    pageHeight = inMaxPos - 1;
-                }
-                //if (curPos > pageHeight/2)     // }
-                //{                              // } => this makes sure that the scroll box
-                //    curPos -= pageHeight/2;    // }    is centered around currentpos
-                //}                              // }
-                Utils::setScrollInfo(inHandle, inMaxPos, pageHeight, curPos);
-            }
+    void NativeScrollbar::setMaxPosition(int inMaxPosition)
+    {
+        int dummy = 0;
+        int pageHeight = 0;
+        int curPos = 0;
+        Utils::getScrollInfo(handle(), dummy, pageHeight, curPos);
 
-            static int getMaxPos(HWND inHandle)
-            {
-                int totalHeight = 0;
-                int pageHeight = 0;
-                int curPos = 0;
-                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, curPos);
-                return totalHeight;
-            }
+        // The order in which setCurPos, setMaxPos and setPageIncrement
+        // will be set (alphabetically by attribute name) can cause
+        // impossible scrollbar states (i.e. currentpos or pageincrement
+        // greater than maxpos). And we want to avoid that.
+        // Our workaround is to detect such states here, and change invalid
+        // values to valid ones.
+        if (pageHeight == 0)
+        {
+            pageHeight = 1;
+        }
+        if (inMaxPosition <= pageHeight)
+        {
+            pageHeight = inMaxPosition - 1;
+        }
+        Utils::setScrollInfo(handle(), inMaxPosition, pageHeight, curPos);
+    }
 
-            static void setPageIncrement(HWND inHandle, int inPageIncrement)
-            {
-                int totalHeight = 0;
-                int dummy = 0;
-                int curPos = 0;
-                Utils::getScrollInfo(inHandle, totalHeight, dummy, curPos);
 
-                // The order in which setCurPos, setMaxPos and setPageIncrement
-                // will be set (alphabetically by attribute name) can cause
-                // impossible scrollbar states (i.e. currentpos or pageincrement
-                // greater than maxpos). And we want to avoid that.
-                // Our workaround is to detect such states here, and change invalid
-                // values to valid ones.
-                //if (curPos > inPageIncrement/2)     // }
-                //{                                   // } => this makes sure that the scroll box 
-                //    curPos -= inPageIncrement/2;    // }    is centered around currentpos
-                //}                                   // }
-                if (totalHeight == 0)
-                {
-                    totalHeight = 1;
-                }
-                if (curPos > totalHeight)
-                {
-                    totalHeight += 1;
-                }
-                if (inPageIncrement >= totalHeight)
-                {
-                    totalHeight = inPageIncrement + 1;
-                }
-                Utils::setScrollInfo(inHandle, totalHeight, inPageIncrement, curPos);
-            }
+    void NativeScrollbar::setIncrement(int inIncrement)
+    {
+        mIncrement = inIncrement;
+    }
 
-            static int getPageIncrement(HWND inHandle)
-            {
-                int totalHeight = 0;
-                int pageHeight = 0;
-                int curPos = 0;
-                Utils::getScrollInfo(inHandle, totalHeight, pageHeight, curPos);
-                return pageHeight;
-            }
-        };
-        
-        AttributeSetter pageIncrementSetter = boost::bind(&Helper::setPageIncrement, handle(), boost::bind(&String2Int, _1, Defaults::Attributes::pageincrement()));
-        AttributeGetter pageIncrementGetter = boost::bind(&Int2String, boost::bind(&Helper::getPageIncrement, handle()));
-        setOldAttributeController("pageincrement", OldAttributeController(pageIncrementGetter, pageIncrementSetter));        
-        
-        
-        AttributeSetter maxPosSetter = boost::bind(&Helper::setMaxPos, handle(), boost::bind(&String2Int, _1, Defaults::Attributes::maxpos()));
-        AttributeGetter maxPosGetter = boost::bind(&Int2String, boost::bind(&Helper::getMaxPos, handle()));
-        setOldAttributeController("maxpos", OldAttributeController(maxPosGetter, maxPosSetter));        
-        
-        
-        AttributeSetter curPosSetter = boost::bind(&Helper::setCurPos, this, boost::bind(&String2Int, _1, Defaults::Attributes::curpos()));
-        AttributeGetter curPosGetter = boost::bind(&Int2String, boost::bind(&Helper::getCurPos, handle()));
-        setOldAttributeController("curpos", OldAttributeController(curPosGetter, curPosSetter));        
-        
-        
-        AttributeSetter incrementSetter = boost::bind(&NativeScrollbar::setIncrement, this, boost::bind(&String2Int, _1, 1));
-        AttributeGetter incrementGetter = boost::bind(&Int2String, boost::bind(&NativeScrollbar::increment, this));
-        setOldAttributeController("increment", OldAttributeController(incrementGetter, incrementSetter));        
-        return Super::initOldAttributeControllers();
+
+    int NativeScrollbar::getIncrement() const
+    {
+        return mIncrement;
+    }
+
+
+    void NativeScrollbar::setPageIncrement(int inPageIncrement)
+    {
+        int totalHeight = 0;
+        int dummy = 0;
+        int curPos = 0;
+        Utils::getScrollInfo(handle(), totalHeight, dummy, curPos);
+
+        // The order in which setCurPos, setMaxPos and setPageIncrement
+        // will be set (alphabetically by attribute name) can cause
+        // impossible scrollbar states (i.e. currentpos or pageincrement
+        // greater than maxpos). And we want to avoid that.
+        // Our workaround is to detect such states here, and change invalid
+        // values to valid ones.
+        if (totalHeight == 0)
+        {
+            totalHeight = 1;
+        }
+        if (curPos > totalHeight)
+        {
+            totalHeight += 1;
+        }
+        if (inPageIncrement >= totalHeight)
+        {
+            totalHeight = inPageIncrement + 1;
+        }
+        Utils::setScrollInfo(handle(), totalHeight, inPageIncrement, curPos);
+    }
+
+
+    int NativeScrollbar::getPageIncrement() const
+    {
+        int totalHeight = 0;
+        int pageHeight = 0;
+        int curPos = 0;
+        Utils::getScrollInfo(handle(), totalHeight, pageHeight, curPos);
+        return pageHeight;
+    }
+
+
+    bool NativeScrollbar::initAttributeControllers()
+    {
+        Super::setAttributeController("curpos", static_cast<ScrollbarCurrentPositionController*>(this));
+        Super::setAttributeController("maxpos", static_cast<ScrollbarMaxPositionController*>(this));
+        Super::setAttributeController("increment", static_cast<ScrollbarIncrementController*>(this));
+        Super::setAttributeController("pageincrement", static_cast<ScrollbarPageIncrementController*>(this));
+        return Super::initAttributeControllers();
     }
 
 

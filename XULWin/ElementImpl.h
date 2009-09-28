@@ -3,6 +3,7 @@
 
 
 #include "Element.h"
+#include "AttributeController.h"
 #include "Conversions.h"
 #include "Layout.h"
 #include <boost/function.hpp>
@@ -40,12 +41,24 @@ namespace XULWin
     /**
      * ElementImpl is base class for all native UI elements.
      */
-    class ElementImpl : boost::noncopyable
+    class ElementImpl : public virtual WidthController,
+                        public virtual HeightController,
+                        boost::noncopyable
     {
     public:
         ElementImpl(ElementImpl * inParent);
 
         virtual ~ElementImpl() = 0;
+
+        // WidthController methods
+        virtual int getWidth() const;
+
+        virtual void setWidth(int inWidth);
+
+        // HeightController methods
+        virtual int getHeight() const;
+
+        virtual void setHeight(int inHeight);
 
         // Downcast that also resolves decorators.
         // Use this instead of manual cast, because
@@ -117,16 +130,22 @@ namespace XULWin
 
         virtual bool setAttribute(const std::string & inName, const std::string & inValue);
 
-        virtual bool initOldAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual bool initOldStyleControllers();
 
+        void setAttributeController(const std::string & inAttr, AttributeController * inController);
+
     protected:
+        friend class BoxLayouter;
         ElementImpl * mParent;
         Element * mElement;
         CommandId mCommandId;
         bool mExpansive;
-        friend class BoxLayouter;
+        typedef std::map<std::string, AttributeController *> AttributeControllers;
+        AttributeControllers mAttributeControllers;
+
+
         typedef boost::function<std::string()> Getter;
         typedef boost::function<void(const std::string &)> Setter;
         struct Controller
@@ -140,13 +159,6 @@ namespace XULWin
             Setter setter;
         };
 
-        typedef Getter AttributeGetter;
-        typedef Setter AttributeSetter;        
-        typedef Controller OldAttributeController;
-        void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
-        typedef std::map<std::string, OldAttributeController> OldAttributeControllers;
-        OldAttributeControllers mOldAttributeControllers;
-        
         typedef Getter StyleGetter;
         typedef Setter StyleSetter;
         typedef Controller OldStyleController;
@@ -159,7 +171,9 @@ namespace XULWin
     };
 
 
-    class NativeComponent : public ElementImpl
+    class NativeComponent : public ElementImpl,
+                            public virtual DisabledController,
+                            public virtual LabelController
     {
     public:
         typedef ElementImpl Super;
@@ -168,11 +182,21 @@ namespace XULWin
 
         virtual ~NativeComponent();
 
+        // DisabledController methods
+        virtual bool getDisabled() const;
+
+        virtual void setDisabled(bool inDisabled);
+
+        // LabelController methods
+        virtual std::string getLabel() const;
+
+        virtual void setLabel(const std::string & inLabel);
+
         static void SetModuleHandle(HMODULE inModule);
 
         virtual HWND handle() const;
 
-        virtual bool initOldAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual bool initOldStyleControllers();
 
@@ -200,7 +224,8 @@ namespace XULWin
     };
 
 
-    class NativeWindow : public NativeComponent
+    class NativeWindow : public NativeComponent,
+                         public virtual TitleController
     {
     public:
         typedef NativeComponent Super;
@@ -208,6 +233,10 @@ namespace XULWin
         static void Register(HMODULE inModuleHandle);
 
         NativeWindow(const AttributesMapping & inAttributesMapping);
+
+        virtual std::string getTitle() const;
+
+        virtual void setTitle(const std::string & inTitle);
 
         void showModal();
 
@@ -223,7 +252,7 @@ namespace XULWin
 
         virtual Rect windowRect() const;
 
-        virtual bool initOldAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual bool initOldStyleControllers();
 
@@ -269,7 +298,7 @@ namespace XULWin
 
         virtual ~VirtualControl();
 
-        virtual bool initOldAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual bool initOldStyleControllers();
 
@@ -303,14 +332,20 @@ namespace XULWin
     };
 
 
-    class NativeLabel : public NativeControl
+    class NativeLabel : public NativeControl,
+                        public virtual StringValueController
     {
     public:
         typedef NativeControl Super;
 
         NativeLabel(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initOldAttributeControllers();
+        // StringValueController methods
+        virtual std::string getValue() const;
+
+        virtual void setValue(const std::string & inStringValue);
+
+        virtual bool initAttributeControllers();
 
         virtual bool initOldStyleControllers();
 
@@ -320,14 +355,20 @@ namespace XULWin
     };
 
 
-    class NativeDescription : public NativeControl
+    class NativeDescription : public NativeControl,
+                              public virtual StringValueController
     {
     public:
         typedef NativeControl Super;
 
         NativeDescription(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initOldAttributeControllers();
+        // StringValueController methods
+        virtual std::string getValue() const;
+
+        virtual void setValue(const std::string & inStringValue);
+
+        virtual bool initAttributeControllers();
 
         virtual int calculateMinimumWidth() const;
 
@@ -335,14 +376,26 @@ namespace XULWin
     };
 
 
-    class NativeTextBox : public NativeControl
+    class NativeTextBox : public NativeControl,
+                          public virtual StringValueController,
+                          public virtual ReadOnlyController
     {
     public:
         typedef NativeControl Super;
 
         NativeTextBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initOldAttributeControllers();
+        // StringValueController methods
+        virtual std::string getValue() const;
+
+        virtual void setValue(const std::string & inStringValue);
+
+        // ReadOnlyController methods
+        virtual bool isReadOnly() const;
+
+        virtual void setReadOnly(bool inReadOnly);
+
+        virtual bool initAttributeControllers();
 
         virtual int calculateMinimumWidth() const;
 
@@ -357,14 +410,19 @@ namespace XULWin
     };
 
 
-    class NativeCheckBox : public NativeControl
+    class NativeCheckBox : public NativeControl,
+                           public virtual CheckedController
     {
     public:
         typedef NativeControl Super;
 
         NativeCheckBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initOldAttributeControllers();
+        virtual bool isChecked() const;
+
+        virtual void setChecked(bool inChecked);
+
+        virtual bool initAttributeControllers();
 
         virtual int calculateMinimumWidth() const;
 
@@ -372,24 +430,29 @@ namespace XULWin
     };
 
 
-    class BoxLayouter
+    class BoxLayouter : public virtual OrientController,
+                        public virtual AlignController
     {
     public:
         BoxLayouter(Orientation inOrient, Alignment inAlign);
 
-        virtual bool initOldAttributeControllers();
+        // OrientController methods
+        virtual Orientation getOrient() const;
 
-        virtual void setOldAttributeController(const std::string & inAttr, const ElementImpl::OldAttributeController & inController) = 0;
+        virtual void setOrient(Orientation inOrient);
+
+        // AlignController methods
+        virtual Alignment getAlign() const;
+
+        virtual void setAlign(Alignment inAlign);
+
+        virtual bool initAttributeControllers();
+
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController) = 0;
+
+        //virtual void setOldAttributeController(const std::string & inAttr, const ElementImpl::OldAttributeController & inController) = 0;
 
         virtual void rebuildLayout();
-
-        Orientation orientation() const;
-
-        void setOrientation(Orientation inOrient);
-
-        Alignment alignment() const;
-
-        void setAlignment(Alignment inAlign);
 
         virtual int calculateMinimumWidth() const;
 
@@ -419,7 +482,7 @@ namespace XULWin
 
         VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient = HORIZONTAL);
 
-        virtual bool initOldAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual void rebuildLayout()
         {
@@ -450,8 +513,11 @@ namespace XULWin
 
         virtual void rebuildChildLayouts()
         { return Super::rebuildChildLayouts(); }
+        
 
-        virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
+
+        //virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
     };
 
 
@@ -463,7 +529,7 @@ namespace XULWin
 
         NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient);
 
-        virtual bool initOldAttributeControllers();
+        virtual bool initAttributeControllers();
 
         virtual void rebuildLayout();
 
@@ -484,8 +550,10 @@ namespace XULWin
 
         virtual void rebuildChildLayouts()
         { return Super::rebuildChildLayouts(); }
+        
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
 
-        virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
+        //virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
 
     };
 
@@ -629,27 +697,39 @@ namespace XULWin
     };
 
 
-    class NativeProgressMeter : public NativeControl
+    class NativeProgressMeter : public NativeControl,
+                                public virtual IntValueController
     {
     public:
         typedef NativeControl Super;
 
         NativeProgressMeter(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
+        // IntValueController methods
+        virtual int getValue() const;
+
+        virtual void setValue(int inValue);
+
         virtual int calculateMinimumWidth() const;
 
         virtual int calculateMinimumHeight() const;
 
-        bool initOldAttributeControllers();
+        bool initAttributeControllers();
     };
 
 
-    class NativeDeck : public VirtualControl
+    class NativeDeck : public VirtualControl,
+                       public virtual SelectedIndexController
     {
     public:
         typedef VirtualControl Super;
 
         NativeDeck(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        // SelectedIndexController methods
+        virtual int getSelectedIndex() const;
+
+        virtual void setSelectedIndex(int inSelectedIndex);
 
         virtual void rebuildLayout();
 
@@ -657,23 +737,39 @@ namespace XULWin
 
         virtual int calculateMinimumHeight() const;
 
-        void setSelectedIndex(int inSelectedIndex);
-
-        int selectedIndex() const;
-
-        bool initOldAttributeControllers();
+        bool initAttributeControllers();
 
     private:
         int mSelectedIndex;
     };
 
 
-    class NativeScrollbar : public NativeControl
+    class NativeScrollbar : public NativeControl,
+                            public virtual ScrollbarCurrentPositionController,
+                            public virtual ScrollbarMaxPositionController,
+                            public virtual ScrollbarIncrementController,
+                            public virtual ScrollbarPageIncrementController
     {
     public:
         typedef NativeControl Super;
 
         NativeScrollbar(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int getCurrentPosition() const;
+
+        virtual void setCurrentPosition(int inCurrentPosition);
+
+        virtual int getMaxPosition() const;
+
+        virtual void setMaxPosition(int inMaxPosition);
+
+        virtual int getIncrement() const;
+
+        virtual void setIncrement(int inIncrement);
+
+        virtual int getPageIncrement() const;
+
+        virtual void setPageIncrement(int inPageIncrement);
 
         class EventHandler
         {
@@ -690,11 +786,7 @@ namespace XULWin
 
         virtual int calculateMinimumHeight() const;
 
-        bool initOldAttributeControllers();
-
-        void setIncrement(int inIncrement);
-
-        int increment() const;
+        bool initAttributeControllers();
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 

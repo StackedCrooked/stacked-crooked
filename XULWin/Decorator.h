@@ -147,12 +147,9 @@ namespace XULWin
 
         virtual void move(int x, int y, int w, int h);
 
-        void setCSSMargin(int top, int left, int right, int bottom);
+        void setMargin(int top, int left, int right, int bottom);
 
-        void setCSSMargin(int inPadding);
-
-        // returns left margin
-        int margin() const;
+        void getMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const;
 
         int marginTop() const;
 

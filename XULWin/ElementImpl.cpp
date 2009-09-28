@@ -1340,7 +1340,7 @@ namespace XULWin
         
 
     NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient) :
-        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0),
+        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), WS_EX_CONTROLPARENT, WS_TABSTOP),
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
     }

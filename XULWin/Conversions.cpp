@@ -90,9 +90,9 @@ namespace XULWin
     }
 
 
-    Orientation String2Orient(const std::string & inValue, Orientation inDefault)
+    Orient String2Orient(const std::string & inValue, Orient inDefault)
     {
-        Orientation result = inDefault;
+        Orient result = inDefault;
         if (inValue == "horizontal")
         {
             result = HORIZONTAL;
@@ -105,7 +105,7 @@ namespace XULWin
     }
 
 
-    std::string Orient2String(Orientation inOrient)
+    std::string Orient2String(Orient inOrient)
     {
         if (inOrient == HORIZONTAL)
         {
@@ -118,9 +118,9 @@ namespace XULWin
     }
 
     
-    Alignment String2Align(const std::string & inValue, Alignment inDefault)
+    Align String2Align(const std::string & inValue, Align inDefault)
     {
-        Alignment result = inDefault;
+        Align result = inDefault;
         if (inValue == "start")
         {
             result = Start;
@@ -141,7 +141,7 @@ namespace XULWin
     }
 
 
-    std::string Align2String(Alignment inAlign)
+    std::string Align2String(Align inAlign)
     {
         if (inAlign == Start)
         {

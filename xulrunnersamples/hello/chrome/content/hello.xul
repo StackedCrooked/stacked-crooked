@@ -7,9 +7,14 @@
         orient="vertical"
         align="stretch"
 >
-  <label value="test"></label>
-  <separator width="1" class="groove"></separator>
-  <label value="test"></label>
-  <separator width="1" class="groove"></separator>
-  <label value="test"></label>
+  <vbox style="overflow-y" flex="1">
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+  </vbox>
 </window>

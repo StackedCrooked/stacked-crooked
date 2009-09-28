@@ -85,8 +85,8 @@ namespace XULWin
 
         BoxLayoutDecorator(ElementImpl * inParent,
                            ElementImpl * inDecoratedElement,
-                           Orientation inOrient,
-                           Alignment inAlign);
+                           Orient inOrient,
+                           Align inAlign);
         
         virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
 
@@ -117,7 +117,7 @@ namespace XULWin
         // Takes ownership.
         ScrollDecorator(ElementImpl * inParent,
                         ElementImpl * inDecoratedElement,
-                        Orientation inScrollbarOrient);
+                        Orient inScrollbarOrient);
 
         virtual int calculateMinimumWidth() const;
 

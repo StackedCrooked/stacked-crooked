@@ -42,6 +42,18 @@ namespace XULWin
     }
 
 
+    void FlexController::get(std::string & outValue)
+    {
+        outValue = Int2String(getFlex());
+    }
+
+
+    void FlexController::set(const std::string & inValue)
+    {
+        setFlex(String2Int(inValue));
+    }
+
+
     void DisabledController::get(std::string & outValue)
     {
         outValue = Bool2String(getDisabled());

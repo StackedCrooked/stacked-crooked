@@ -62,6 +62,21 @@ namespace XULWin
     };
 
 
+    class FlexController : public AttributeController
+    {
+    public:
+        FlexController(){}
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual int getFlex() const = 0;
+
+        virtual void setFlex(int inFlex) = 0;
+    };
+
+
     class DisabledController : public AttributeController
     {
     public:
@@ -146,9 +161,9 @@ namespace XULWin
 
         virtual void set(const std::string & inValue);
 
-        virtual Orientation getOrient() const = 0;
+        virtual Orient getOrient() const = 0;
 
-        virtual void setOrient(Orientation inOrient) = 0;
+        virtual void setOrient(Orient inOrient) = 0;
     };
 
 
@@ -161,9 +176,9 @@ namespace XULWin
 
         virtual void set(const std::string & inValue);
 
-        virtual Alignment getAlign() const = 0;
+        virtual Align getAlign() const = 0;
 
-        virtual void setAlign(Alignment inAlign) = 0;
+        virtual void setAlign(Align inAlign) = 0;
     };
 
 

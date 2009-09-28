@@ -19,13 +19,13 @@ namespace XULWin
     
     std::string Bool2String(bool inBool);
     
-    Orientation String2Orient(const std::string & inValue, Orientation inDefault);
+    Orient String2Orient(const std::string & inValue, Orient inDefault);
     
-    std::string Orient2String(Orientation inOrient);
+    std::string Orient2String(Orient inOrient);
     
-    Alignment String2Align(const std::string & inValue, Alignment inDefault);
+    Align String2Align(const std::string & inValue, Align inDefault);
     
-    std::string Align2String(Alignment inAlign);
+    std::string Align2String(Align inAlign);
     
     int CssString2Size(const std::string & inString, int inDefault);
 

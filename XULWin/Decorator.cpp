@@ -192,8 +192,8 @@ namespace XULWin
     
     BoxLayoutDecorator::BoxLayoutDecorator(ElementImpl * inParent,
                                            ElementImpl * inDecoratedElement,
-                                           Orientation inOrient,
-                                           Alignment inAlign) :
+                                           Orient inOrient,
+                                           Align inAlign) :
         WrapDecorator(inParent, inDecoratedElement),
         BoxLayouter(inOrient, inAlign)
     {
@@ -292,7 +292,7 @@ namespace XULWin
     
     ScrollDecorator::ScrollDecorator(ElementImpl * inParent,
                                      ElementImpl * inDecoratedElement,
-                                     Orientation inScrollbarOrient) :
+                                     Orient inScrollbarOrient) :
             BoxLayoutDecorator(inParent,
                                inDecoratedElement,
                                inScrollbarOrient == HORIZONTAL ? VERTICAL : HORIZONTAL,

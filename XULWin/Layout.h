@@ -139,14 +139,14 @@ namespace XULWin
 	};
 
 
-    enum Orientation
+    enum Orient
     {
         HORIZONTAL,
         VERTICAL
     };
 
 
-    enum Alignment
+    enum Align
     {
         Start,
         Center,
@@ -196,16 +196,16 @@ namespace XULWin
     class LinearLayoutManager
     {
     public:
-        LinearLayoutManager(Orientation inOrient);
+        LinearLayoutManager(Orient inOrient);
 
-        void getRects(const Rect & inRect, Alignment inAlign, const std::vector<ExtendedSizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
+        void getRects(const Rect & inRect, Align inAlign, const std::vector<ExtendedSizeInfo> & inSizeInfos, std::vector<Rect> & outRects);
         static void GetSizes(int inLength, const std::vector<SizeInfo> & inSizeInfos, std::vector<int> & outSizes);
         static void GetSizes(int inLength, const std::vector<int> & inSizeInfos, std::vector<int> & outSizes);        
 
-        Orientation orientation() const;
+        Orient orientation() const;
 
     private:
-        Orientation mOrient;
+        Orient mOrient;
     };
 
 
@@ -213,8 +213,8 @@ namespace XULWin
     {
         CellInfo(int inMinWidgetWidth,
                  int inMinWidgetHeight,
-                 Alignment inRowAlign,
-                 Alignment inColAlign) :
+                 Align inRowAlign,
+                 Align inColAlign) :
             MinWidgetWidth(inMinWidgetWidth),
             MinWidgetHeight(inMinWidgetHeight),
             RowAlign(inRowAlign),
@@ -224,8 +224,8 @@ namespace XULWin
 
         int MinWidgetWidth;
         int MinWidgetHeight;
-        Alignment RowAlign;
-        Alignment ColAlign;
+        Align RowAlign;
+        Align ColAlign;
     };
     
     class GridLayoutManager

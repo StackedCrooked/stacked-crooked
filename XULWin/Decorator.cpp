@@ -447,7 +447,7 @@ namespace XULWin
     }
 
 
-    void MarginDecorator::setMargin(int top, int left, int right, int bottom)
+    void MarginDecorator::setCSSMargin(int top, int left, int right, int bottom)
     {
         mTop = top;
         mLeft = left;
@@ -456,7 +456,7 @@ namespace XULWin
     }
 
 
-    void MarginDecorator::setMargin(int inMargin)
+    void MarginDecorator::setCSSMargin(int inMargin)
     {
         mTop = inMargin;
         mLeft = inMargin;

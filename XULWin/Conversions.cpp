@@ -165,9 +165,9 @@ namespace XULWin
             return "";
         }
     }
-    
-    
-    int CssString2Size(const std::string & inString, int inDefault)
+
+
+    int String2CSSSize(const std::string & inString, int inDefault)
     {
         if (inString.rfind("px") != std::string::npos)
         {
@@ -175,5 +175,29 @@ namespace XULWin
         }
         return String2Int(inString, inDefault);
     }
+    
+    
+    std::string CSSTextAlign2String(CSSTextAlign inTextAlign)
+    {
+        switch (inTextAlign)
+        {
+            case CSSTextAlign_Left:      return "left";
+            case CSSTextAlign_Center:    return "center";  
+            case CSSTextAlign_Right:     return "right";
+            //case CSSTextAlign_Justify:   return "justify";
+            default:                     return "left";
+        }
+    }
+
+
+    CSSTextAlign String2CSSTextAlign(const std::string & inTextAlign, CSSTextAlign inDefault)
+    {
+        if (inTextAlign == "left")          return CSSTextAlign_Left;
+        else if (inTextAlign == "center")   return CSSTextAlign_Center;
+        else if (inTextAlign == "right")    return CSSTextAlign_Right;
+        //else if (inTextAlign == "justify")  return CSSTextAlign_Justify;
+        return CSSTextAlign_Left;
+    }
+
 
 } // namespace XULWin

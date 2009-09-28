@@ -74,6 +74,74 @@ namespace XULWin
     {
         mFlex = inFlex;
     }
+
+
+    int ElementImpl::getCSSWidth() const
+    {
+        return getWidth();
+    }
+
+
+    void ElementImpl::setCSSWidth(int inWidth)
+    {
+        setWidth(inWidth);
+    }
+
+    
+    int ElementImpl::getCSSHeight() const
+    {
+        return getHeight();
+    }
+
+
+    void ElementImpl::setCSSHeight(int inHeight)
+    {
+        setHeight(inHeight);
+    }
+
+    
+    void ElementImpl::getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const
+    {
+        int margin = 0;
+        if (const MarginDecorator * marginDecorator = constDowncast<MarginDecorator>())
+        {
+            margin = marginDecorator->margin();
+        }
+        outTop = margin;
+        outLeft = margin;
+        outRight = margin;
+        outBottom = margin;
+    }
+
+
+    void ElementImpl::setCSSMargin(int inTop, int inLeft, int inRight, int inBottom)
+    {
+        if (!owningElement())
+        {
+            ReportError("ElementImpl::setCSSMargin failed because no owning element was present.");
+            return;
+        }
+
+        // Find a margin decorator, and set the margin value.
+        if (MarginDecorator * obj = owningElement()->impl()->downcast<MarginDecorator>())
+        {
+            obj->setCSSMargin(inTop);
+        }
+        // If no margin decorator found, insert one, and set the value.
+        else if (Decorator * dec = owningElement()->impl()->downcast<Decorator>())
+        {
+            ElementImplPtr newDec(new MarginDecorator(dec->decoratedElement()));
+            dec->setDecoratedElement(newDec);
+            if (MarginDecorator * p = newDec->downcast<MarginDecorator>())
+            {
+                p->setCSSMargin(inTop);
+            }
+        }
+        else
+        {
+            ReportError("No decorator found!");
+        }
+    }
     
     
     int ElementImpl::minimumWidth() const
@@ -128,16 +196,11 @@ namespace XULWin
     
     bool ElementImpl::getStyle(const std::string & inName, std::string & outValue)
     {
-        OldStyleControllers::iterator it = mOldStyleControllers.find(inName);
-        if (it != mOldStyleControllers.end())
+        StyleControllers::iterator it = mStyleControllers.find(inName);
+        if (it != mStyleControllers.end())
         {
-            const OldStyleController & controller = it->second;
-            const StyleGetter & getter = controller.getter;
-            if (getter)
-            {
-                outValue = getter();
-                return true;
-            }
+            StyleController * controller = it->second;
+            controller->get(outValue);
         }
         return false;
     }
@@ -157,16 +220,11 @@ namespace XULWin
     
     bool ElementImpl::setStyle(const std::string & inName, const std::string & inValue)
     {
-        OldStyleControllers::iterator it = mOldStyleControllers.find(inName);
-        if (it != mOldStyleControllers.end())
+        StyleControllers::iterator it = mStyleControllers.find(inName);
+        if (it != mStyleControllers.end())
         {
-            const OldStyleController & controller = it->second;
-            const StyleSetter & setter = controller.setter;
-            if (setter)
-            {
-                setter(inValue);
-                return true;
-            }
+            StyleController * controller = it->second;
+            controller->set(inValue);
         }
         return false;
     }
@@ -197,63 +255,9 @@ namespace XULWin
 
     bool ElementImpl::initOldStyleControllers()
     {
-        struct Helper
-        {
-            static void SetWidth(ElementImpl * inEl, int inWidth)
-            {
-                Rect r = inEl->clientRect();
-                inEl->move(r.x(), r.y(), inWidth, r.height());
-            }
-
-            static int GetWidth(ElementImpl * inEl)
-            {
-                return inEl->clientRect().width();
-            }
-            static void SetHeight(ElementImpl * inEl, int inHeight)
-            {
-                Rect r = inEl->clientRect();
-                inEl->move(r.x(), r.y(), r.width(), inHeight);
-            }
-
-            static int GetHeight(ElementImpl * inEl)
-            {
-                return inEl->clientRect().height();
-            }
-
-
-            static void SetMargin(ElementImpl * inEl, int inMargin)
-            {
-                if (MarginDecorator * obj = inEl->owningElement()->impl()->downcast<MarginDecorator>())
-                {
-                    obj->setMargin(inMargin);
-                }
-                else if (Decorator * dec = inEl->owningElement()->impl()->downcast<Decorator>())
-                {
-                    ElementImplPtr newDec(new MarginDecorator(dec->decoratedElement()));
-                    dec->setDecoratedElement(newDec);
-                    if (MarginDecorator * p = newDec->downcast<MarginDecorator>())
-                    {
-                        p->setMargin(inMargin);
-                    }
-                }
-            }
-
-            static int GetMargin(ElementImpl * inEl)
-            {
-                return inEl->downcast<MarginDecorator>()->margin();
-            }
-        };
-        StyleGetter cssWidthGetter = boost::bind(&Int2String, boost::bind(&Helper::GetWidth, this));
-        StyleSetter cssWidthSetter = boost::bind(&Helper::SetWidth, this, boost::bind(&CssString2Size, _1, Defaults::controlWidth()));
-        setOldStyleController("width", OldStyleController(cssWidthGetter, cssWidthSetter));
-
-        StyleGetter cssHeightGetter = boost::bind(&Int2String, boost::bind(&Helper::GetHeight, this));
-        StyleSetter cssHeightSetter = boost::bind(&Helper::SetHeight, this, boost::bind(&CssString2Size, _1, Defaults::controlHeight()));
-        setOldStyleController("height", OldStyleController(cssHeightGetter, cssHeightSetter));
-
-        StyleGetter cssMarginGetter = boost::bind(&Int2String, boost::bind(&Helper::GetMargin, this));
-        StyleSetter cssMarginSetter = boost::bind(&Helper::SetMargin, this, boost::bind(&CssString2Size, _1, 0));
-        setOldStyleController("margin", OldStyleController(cssMarginGetter, cssMarginSetter));
+        setStyleController(CSSMarginController::PropertyName(), static_cast<CSSMarginController*>(this));
+        setStyleController(CSSWidthController::PropertyName(), static_cast<CSSWidthController*>(this));
+        setStyleController(CSSHeightController::PropertyName(), static_cast<CSSHeightController*>(this));
         return true;
     }
 
@@ -266,14 +270,14 @@ namespace XULWin
             mAttributeControllers.insert(std::make_pair(inAttr, inController));
         }
     }
-
-
-    void ElementImpl::setOldStyleController(const std::string & inAttr, const OldStyleController & inController)
+    
+    
+    void ElementImpl::setStyleController(const std::string & inAttr, StyleController * inController)
     {
-        OldStyleControllers::iterator it = mOldStyleControllers.find(inAttr);
-        if (it == mOldStyleControllers.end())
+        StyleControllers::iterator it = mStyleControllers.find(inAttr);
+        if (it == mStyleControllers.end())
         {
-            mOldStyleControllers.insert(std::make_pair(inAttr, inController));
+            mStyleControllers.insert(std::make_pair(inAttr, inController));
         }
     }
 
@@ -1045,6 +1049,62 @@ namespace XULWin
     {
         Utils::setWindowText(handle(), inStringValue);
     }
+    
+    
+    CSSTextAlign NativeLabel::getCSSTextAlign() const
+    {
+        LONG styles = Utils::getWindowStyles(handle());
+        if (styles & SS_LEFT)
+        {
+            return CSSTextAlign_Left;
+        }
+        else if (styles & SS_CENTER)
+        {
+            return CSSTextAlign_Center;
+        }
+        else if (styles & SS_RIGHT)
+        {
+            return CSSTextAlign_Right;
+        }
+        else
+        {
+            return CSSTextAlign_Left;
+        }
+    }
+
+
+    void NativeLabel::setCSSTextAlign(CSSTextAlign inValue)
+    {
+        LONG styles = Utils::getWindowStyles(handle());
+        styles &= ~SS_LEFT;
+        styles &= ~SS_CENTER;
+        styles &= ~SS_RIGHT;
+
+        switch (inValue)
+        {
+            case CSSTextAlign_Left:
+            {
+                styles |= SS_LEFT;
+                break;
+            }
+            case CSSTextAlign_Center:
+            {
+                styles |= SS_CENTER;
+                break;
+            }
+            case CSSTextAlign_Right:
+            {
+                styles |= SS_RIGHT;
+                break;
+            }
+            //case CSSTextAlign_Justify:
+            //{
+            //    styles |= 0;
+            //    break;
+            //}
+        }
+        Utils::setWindowStyle(handle(), styles);
+    }
 
     
     bool NativeLabel::initAttributeControllers()
@@ -1056,32 +1116,34 @@ namespace XULWin
     
     bool NativeLabel::initOldStyleControllers()
     {
-        struct Helper
-        {
-            static LONG String2TextAlign(const std::string & inTextAlign)
-            {
-                if (inTextAlign == "left")
-                {
-                    return SS_LEFT;
-                }
-                else if (inTextAlign == "center")
-                {
-                    return SS_CENTER;
-                }
-                else if (inTextAlign == "right")
-                {
-                    return SS_RIGHT;
-                }
-                else
-                {
-                    ReportError("Unrecognized value for text-align style property: '" + inTextAlign + "'");
-                }
-                return 0;
-            }
-        };
-        StyleGetter textAlignGetter; // no getter
-        StyleSetter textAlignSetter = boost::bind(&Utils::addWindowStyle, handle(), boost::bind(&Helper::String2TextAlign, _1));
-        setOldStyleController("text-align", OldStyleController(textAlignGetter, textAlignSetter));
+        //struct Helper
+        //{
+        //    static LONG String2CSSTextAlign(const std::string & inTextAlign)
+        //    {
+        //        if (inTextAlign == "left")
+        //        {
+        //            return SS_LEFT;
+        //        }
+        //        else if (inTextAlign == "center")
+        //        {
+        //            return SS_CENTER;
+        //        }
+        //        else if (inTextAlign == "right")
+        //        {
+        //            return SS_RIGHT;
+        //        }
+        //        else
+        //        {
+        //            ReportError("Unrecognized value for text-align style property: '" + inTextAlign + "'");
+        //        }
+        //        return 0;
+        //    }
+        //};
+        //StyleGetter textAlignGetter; // no getter
+        //StyleSetter textAlignSetter = boost::bind(&Utils::addWindowStyle, handle(), boost::bind(&Helper::String2CSSTextAlign, _1));
+        //setOldStyleController("text-align", OldStyleController(textAlignGetter, textAlignSetter));
+
+        setStyleController(CSSTextAlignController::PropertyName(), static_cast<CSSTextAlignController*>(this));
         return Super::initOldStyleControllers();
     }
 

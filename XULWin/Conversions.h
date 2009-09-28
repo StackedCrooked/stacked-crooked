@@ -2,7 +2,7 @@
 #define CONVERSIONS_H_INCLUDED
 
 
-#include "Layout.h"
+#include "Enums.h"
 #include <string>
 
 
@@ -26,8 +26,12 @@ namespace XULWin
     Align String2Align(const std::string & inValue, Align inDefault);
     
     std::string Align2String(Align inAlign);
-    
-    int CssString2Size(const std::string & inString, int inDefault);
+
+    int String2CSSSize(const std::string & inString, int inDefault);
+
+    std::string CSSTextAlign2String(CSSTextAlign inTextAlign);
+
+    CSSTextAlign String2CSSTextAlign(const std::string & inTextAlign, CSSTextAlign inDefault);
 
 } // namespace XULWin
 

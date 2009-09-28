@@ -4,6 +4,7 @@
 
 #include "Element.h"
 #include "AttributeController.h"
+#include "StyleController.h"
 #include "Conversions.h"
 #include "Layout.h"
 #include <boost/function.hpp>
@@ -44,6 +45,9 @@ namespace XULWin
     class ElementImpl : public virtual WidthController,
                         public virtual HeightController,
                         public virtual FlexController,
+                        public virtual CSSMarginController,
+                        public virtual CSSWidthController,
+                        public virtual CSSHeightController,
                         boost::noncopyable
     {
     public:
@@ -65,6 +69,21 @@ namespace XULWin
         virtual int getFlex() const;
 
         virtual void setFlex(int inFlex);
+
+        // CSSWidthController methods
+        virtual int getCSSWidth() const;
+
+        virtual void setCSSWidth(int inWidth);
+
+        // CSSHeightController methods
+        virtual int getCSSHeight() const;
+
+        virtual void setCSSHeight(int inHeight);
+
+        // CSSMarginController methods
+        virtual void getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const;
+
+        virtual void setCSSMargin(int inTop, int inLeft, int inRight, int inBottom);
 
         // Downcast that also resolves decorators.
         // Use this instead of manual cast, because
@@ -142,6 +161,8 @@ namespace XULWin
 
         void setAttributeController(const std::string & inAttr, AttributeController * inController);
 
+        void setStyleController(const std::string & inAttr, StyleController * inController);
+
     protected:
         friend class BoxLayouter;
         ElementImpl * mParent;
@@ -152,26 +173,8 @@ namespace XULWin
         typedef std::map<std::string, AttributeController *> AttributeControllers;
         AttributeControllers mAttributeControllers;
 
-
-        typedef boost::function<std::string()> Getter;
-        typedef boost::function<void(const std::string &)> Setter;
-        struct Controller
-        {
-            Controller(Getter & inGetter, Setter & inSetter) :
-                getter(inGetter),
-                setter(inSetter)
-            {
-            }
-            Getter getter;
-            Setter setter;
-        };
-
-        typedef Getter StyleGetter;
-        typedef Setter StyleSetter;
-        typedef Controller OldStyleController;
-        void setOldStyleController(const std::string & inAttr, const OldStyleController & inController);
-        typedef std::map<std::string, OldStyleController> OldStyleControllers;
-        OldStyleControllers mOldStyleControllers;
+        typedef std::map<std::string, StyleController *> StyleControllers;
+        StyleControllers mStyleControllers;
 
         typedef std::map<HWND, ElementImpl*> Components;
         static Components sComponentsByHandle;
@@ -350,7 +353,8 @@ namespace XULWin
 
 
     class NativeLabel : public NativeControl,
-                        public virtual StringValueController
+                        public virtual StringValueController,
+                        public virtual CSSTextAlignController
     {
     public:
         typedef NativeControl Super;
@@ -361,6 +365,11 @@ namespace XULWin
         virtual std::string getValue() const;
 
         virtual void setValue(const std::string & inStringValue);
+
+        // CSSTextAlignController methods
+        virtual CSSTextAlign getCSSTextAlign() const;
+
+        virtual void setCSSTextAlign(CSSTextAlign inValue);
 
         virtual bool initAttributeControllers();
 

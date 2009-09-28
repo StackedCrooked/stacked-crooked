@@ -335,6 +335,18 @@ namespace Utils
     }
 
 
+    LONG getWindowStyles(HWND inHandle)
+    {
+        return ::GetWindowLong(inHandle, GWL_STYLE);
+    }
+
+
+    void setWindowStyle(HWND inHandle, LONG inStyle) 
+    {
+        ::SetWindowLong(inHandle, GWL_STYLE, inStyle);
+    }
+
+
     void removeWindowStyle(HWND inHandle, LONG inStyle)
     {
         ::SetWindowLong(inHandle, GWL_STYLE, ::GetWindowLong(inHandle, GWL_STYLE) & ~inStyle);

@@ -99,6 +99,10 @@ namespace Utils
 
     void addWindowStyle(HWND inHandle, LONG inStyle);
 
+    LONG getWindowStyles(HWND inHandle);
+
+    void setWindowStyle(HWND inHandle, LONG inStyle);
+
     void removeWindowStyle(HWND inHandle, LONG inStyle);
 
     bool hasWindowStyle(HWND inHandle, LONG inStyle);

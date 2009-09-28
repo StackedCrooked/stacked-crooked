@@ -2,6 +2,7 @@
 #define LAYOUT_H_INCLUDED
 
 
+#include "Enums.h"
 #include "Utils/GenericGrid.h"
 #include <vector>
 
@@ -137,22 +138,6 @@ namespace XULWin
 		int mRight;
 		int mBottom;
 	};
-
-
-    enum Orient
-    {
-        HORIZONTAL,
-        VERTICAL
-    };
-
-
-    enum Align
-    {
-        Start,
-        Center,
-        End,
-        Stretch
-    };
 
 
     // Introduced wrapper class so that the compiler will

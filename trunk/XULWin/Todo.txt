@@ -4,6 +4,8 @@ style="max-height: 300px;"
 style="overflow:hidden;"
 
 
+- Margin decorator should support 4 values
+
 - Scroll halfway vertically and then resize the width -> scrollbox is repositioned wrongly
 - Test & implement horizontal scrolling
 - Implement all overflow styles

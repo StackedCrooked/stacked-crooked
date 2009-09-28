@@ -155,27 +155,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\AttributeController.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\AttributeController.h"
-				>
-			</File>
-			<File
 				RelativePath=".\ChromeURL.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\ChromeURL.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Conversions.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Conversions.h"
 				>
 			</File>
 			<File
@@ -247,14 +231,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\StyleController.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\StyleController.h"
-				>
-			</File>
-			<File
 				RelativePath=".\XULRunner.cpp"
 				>
 			</File>
@@ -278,6 +254,38 @@
 		<Filter
 			Name="Resources"
 			>
+		</Filter>
+		<Filter
+			Name="Attributes &amp; Style"
+			>
+			<File
+				RelativePath=".\AttributeController.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AttributeController.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Conversions.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Conversions.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Enums.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StyleController.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\StyleController.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

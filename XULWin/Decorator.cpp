@@ -375,8 +375,11 @@ namespace XULWin
         {
             int maxpos = Defaults::Attributes::maxpos();
             Rect clientRect(mDecoratedElement->clientRect());
-            int minHeight = mDecoratedElement->calculateMinimumHeight();
-            int maxScrollPos = minHeight - clientRect.height() - 2;
+            int minSize = orientation() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
+                                                      : mDecoratedElement->calculateMinimumWidth();
+            int clientSize = orientation() == HORIZONTAL ? clientRect.height()
+                                                         : clientRect.height();
+            int maxScrollPos = minSize - clientSize - 2;
             if (inNewPos > maxScrollPos)
             {
                 inNewPos = maxScrollPos;
@@ -401,7 +404,7 @@ namespace XULWin
             {
                 rounder = -0.5;
             }
-            double scrollAmount = ratio * (double)minHeight;
+            double scrollAmount = ratio * (double)minSize;
             int dx = orientation() == VERTICAL   ? (int)(scrollAmount + rounder) : 0;
             int dy = orientation() == HORIZONTAL ? (int)(scrollAmount + rounder) : 0;
             if (inNewPos <= maxScrollPos)

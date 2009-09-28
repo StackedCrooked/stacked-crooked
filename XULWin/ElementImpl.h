@@ -234,9 +234,53 @@ namespace XULWin
     };
 
 
+    class BoxLayouter : public virtual OrientController,
+                        public virtual AlignController
+    {
+    public:
+        BoxLayouter(Orient inOrient, Align inAlign);
+
+        // OrientController methods
+        virtual Orient getOrient() const;
+
+        virtual void setOrient(Orient inOrient);
+
+        // AlignController methods
+        virtual Align getAlign() const;
+
+        virtual void setAlign(Align inAlign);
+
+        virtual bool initAttributeControllers();
+
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController) = 0;
+
+        //virtual void setOldAttributeController(const std::string & inAttr, const ElementImpl::OldAttributeController & inController) = 0;
+
+        virtual void rebuildLayout();
+
+        virtual int calculateMinimumWidth() const;
+
+        virtual int calculateMinimumHeight() const;
+
+        virtual size_t numChildren() const = 0;
+
+        virtual const ElementImpl * getChild(size_t idx) const = 0;
+
+        virtual ElementImpl * getChild(size_t idx) = 0;
+
+        virtual Rect clientRect() const = 0;
+
+        virtual void rebuildChildLayouts() = 0;
+
+    private:
+        Orient mOrient;
+        Align mAlign;
+    };
+
+
     class NativeWindow : public NativeComponent,
-                         public virtual TitleController,
-                         public virtual OrientController
+                         public BoxLayouter,
+                         public virtual TitleController
     {
     public:
         typedef NativeComponent Super;
@@ -250,10 +294,18 @@ namespace XULWin
 
         virtual void setTitle(const std::string & inTitle);
 
-        // OrientController methods
-        virtual Orient getOrient() const;
+        // BoxLayouter methods
+        virtual size_t numChildren() const;
 
-        virtual void setOrient(Orient inOrient);
+        virtual const ElementImpl * getChild(size_t idx) const;
+
+        virtual ElementImpl * getChild(size_t idx);
+
+        virtual void rebuildChildLayouts()
+        { return Super::rebuildChildLayouts(); }
+
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController)
+        { return Super::setAttributeController(inAttr, inController); }
 
         void showModal();
 
@@ -277,8 +329,6 @@ namespace XULWin
 
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-    private:
-        Orient mOrient;
     };
 
 
@@ -404,7 +454,8 @@ namespace XULWin
 
     class NativeTextBox : public NativeControl,
                           public virtual StringValueController,
-                          public virtual ReadOnlyController
+                          public virtual ReadOnlyController,
+                          public virtual RowsController
     {
     public:
         typedef NativeControl Super;
@@ -421,6 +472,11 @@ namespace XULWin
 
         virtual void setReadOnly(bool inReadOnly);
 
+        // RowsControll methods
+        virtual int getRows() const;
+
+        virtual void setRows(int inRows);
+
         virtual bool initAttributeControllers();
 
         virtual int calculateMinimumWidth() const;
@@ -431,6 +487,7 @@ namespace XULWin
 
     private:
         bool mReadonly;
+        int mRows;
         static DWORD GetFlags(const AttributesMapping & inAttributesMapping);
         static bool IsReadOnly(const AttributesMapping & inAttributesMapping);
     };
@@ -454,50 +511,6 @@ namespace XULWin
         virtual int calculateMinimumWidth() const;
 
         virtual int calculateMinimumHeight() const;
-    };
-
-
-    class BoxLayouter : public virtual OrientController,
-                        public virtual AlignController
-    {
-    public:
-        BoxLayouter(Orient inOrient, Align inAlign);
-
-        // OrientController methods
-        virtual Orient getOrient() const;
-
-        virtual void setOrient(Orient inOrient);
-
-        // AlignController methods
-        virtual Align getAlign() const;
-
-        virtual void setAlign(Align inAlign);
-
-        virtual bool initAttributeControllers();
-
-        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController) = 0;
-
-        //virtual void setOldAttributeController(const std::string & inAttr, const ElementImpl::OldAttributeController & inController) = 0;
-
-        virtual void rebuildLayout();
-
-        virtual int calculateMinimumWidth() const;
-
-        virtual int calculateMinimumHeight() const;
-
-        virtual size_t numChildren() const = 0;
-
-        virtual const ElementImpl * getChild(size_t idx) const = 0;
-
-        virtual ElementImpl * getChild(size_t idx) = 0;
-
-        virtual Rect clientRect() const = 0;
-
-        virtual void rebuildChildLayouts() = 0;
-
-    private:
-        Orient mOrient;
-        Align mAlign;
     };
 
 
@@ -539,12 +552,9 @@ namespace XULWin
         { return Super::clientRect(); }
 
         virtual void rebuildChildLayouts()
-        { return Super::rebuildChildLayouts(); }
-        
+        { return Super::rebuildChildLayouts(); }        
 
         virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
-
-        //virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
     };
 
 

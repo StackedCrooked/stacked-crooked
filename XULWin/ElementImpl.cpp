@@ -469,7 +469,7 @@ namespace XULWin
 
     NativeWindow::NativeWindow(const AttributesMapping & inAttributesMapping) :
         NativeComponent(0, inAttributesMapping),
-        mOrient(VERTICAL)
+        BoxLayouter(VERTICAL, Stretch)
     {
         mHandle = ::CreateWindowEx
         (
@@ -499,6 +499,7 @@ namespace XULWin
     bool NativeWindow::initAttributeControllers()
     {
         Super::setAttributeController("title", static_cast<TitleController*>(this));
+        BoxLayouter::initAttributeControllers();
         return Super::initAttributeControllers();
     }
     
@@ -569,30 +570,7 @@ namespace XULWin
     
     void NativeWindow::rebuildLayout()
     {
-        LinearLayoutManager layout(getOrient());
-        bool horizontal = layout.orientation() == HORIZONTAL;
-        
-        std::vector<ExtendedSizeInfo> sizeInfos;
-        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
-        {
-            ElementPtr child = owningElement()->children()[idx];
-            int flexValue = String2Int(child->getAttribute("flex"));
-            int minSize = horizontal ? child->impl()->minimumWidth() : child->impl()->minimumHeight();
-            int minSizeOpposite = horizontal ? child->impl()->minimumHeight() : child->impl()->minimumWidth();
-            sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->impl()->expansive()));
-        }
-        
-        std::vector<Rect> childRects;
-        layout.getRects(clientRect(), String2Align(owningElement()->getAttribute("align"), Stretch), sizeInfos, childRects);
-
-        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
-        {
-            ElementPtr child = owningElement()->children()[idx];
-            const Rect & rect = childRects[idx];
-            child->impl()->move(rect.x(), rect.y(), rect.width(), rect.height());
-        }
-
-        rebuildChildLayouts();
+        BoxLayouter::rebuildLayout();
         ::InvalidateRect(handle(), 0, FALSE);
     }        
     
@@ -607,17 +585,35 @@ namespace XULWin
     {
         Utils::setWindowText(handle(), inTitle);
     }
+
     
-    
-    Orient NativeWindow::getOrient() const
+    size_t NativeWindow::numChildren() const
     {
-        return mOrient;
+        if (owningElement())
+        {
+            return owningElement()->children().size();
+        }
+        return 0;
     }
 
 
-    void NativeWindow::setOrient(Orient inOrient)
+    const ElementImpl * NativeWindow::getChild(size_t idx) const
     {
-        mOrient = inOrient;
+        if (owningElement())
+        {
+            return owningElement()->children()[idx]->impl();
+        }
+        return 0;
+    }
+
+
+    ElementImpl * NativeWindow::getChild(size_t idx)
+    {
+        if (owningElement())
+        {
+            return owningElement()->children()[idx]->impl();
+        }
+        return 0;
     }
 
 
@@ -943,7 +939,8 @@ namespace XULWin
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
                       GetFlags(inAttributesMapping)),
-                      mReadonly(IsReadOnly(inAttributesMapping))
+        mReadonly(IsReadOnly(inAttributesMapping)),
+        mRows(1)
     {
         
     }
@@ -1000,11 +997,24 @@ namespace XULWin
         Utils::setTextBoxReadOnly(handle(), inReadOnly);
     }
 
+
+    int NativeTextBox::getRows() const
+    {
+        return mRows;
+    }
+
+
+    void NativeTextBox::setRows(int inRows)
+    {
+        mRows = inRows;
+    }
+
     
     bool NativeTextBox::initAttributeControllers()
     {
         setAttributeController("value", static_cast<StringValueController*>(this));
         setAttributeController("readonly", static_cast<ReadOnlyController*>(this));
+        setAttributeController("rows", static_cast<RowsController*>(this));
         return Super::initAttributeControllers();
     }
 
@@ -1020,7 +1030,7 @@ namespace XULWin
 
     int NativeTextBox::calculateMinimumHeight() const
     {
-        return Defaults::controlHeight() * String2Int(owningElement()->getAttribute("rows"), 1);
+        return Defaults::controlHeight() * getRows();
     }
 
 
@@ -1116,33 +1126,6 @@ namespace XULWin
     
     bool NativeLabel::initOldStyleControllers()
     {
-        //struct Helper
-        //{
-        //    static LONG String2CSSTextAlign(const std::string & inTextAlign)
-        //    {
-        //        if (inTextAlign == "left")
-        //        {
-        //            return SS_LEFT;
-        //        }
-        //        else if (inTextAlign == "center")
-        //        {
-        //            return SS_CENTER;
-        //        }
-        //        else if (inTextAlign == "right")
-        //        {
-        //            return SS_RIGHT;
-        //        }
-        //        else
-        //        {
-        //            ReportError("Unrecognized value for text-align style property: '" + inTextAlign + "'");
-        //        }
-        //        return 0;
-        //    }
-        //};
-        //StyleGetter textAlignGetter; // no getter
-        //StyleSetter textAlignSetter = boost::bind(&Utils::addWindowStyle, handle(), boost::bind(&Helper::String2CSSTextAlign, _1));
-        //setOldStyleController("text-align", OldStyleController(textAlignGetter, textAlignSetter));
-
         setStyleController(CSSTextAlignController::PropertyName(), static_cast<CSSTextAlignController*>(this));
         return Super::initOldStyleControllers();
     }

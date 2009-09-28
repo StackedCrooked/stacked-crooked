@@ -137,6 +137,21 @@ namespace XULWin
     };
 
 
+    class RowsController : public AttributeController
+    {
+    public:
+        RowsController(){}
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual int getRows() const = 0;
+
+        virtual void setRows(int inRows) = 0;
+    };
+
+
     class CheckedController : public AttributeController
     {
     public:

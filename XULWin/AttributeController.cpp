@@ -100,6 +100,18 @@ namespace XULWin
     {
         setReadOnly(String2Bool(inValue, Defaults::Attributes::readonly()));
     }
+    
+
+    void RowsController::get(std::string & outValue)
+    {
+        outValue = Int2String(getRows());
+    }
+
+
+    void RowsController::set(const std::string & inValue)
+    {
+        setRows(String2Int(inValue));
+    }
 
 
     void CheckedController::get(std::string & outValue)

@@ -317,7 +317,7 @@ namespace XULWin
 
     static ElementImpl * CreateBox(Element * inParent,
                                    const AttributesMapping & inAttributesMapping,
-                                   Orientation inOrient = VERTICAL)
+                                   Orient inOrient = VERTICAL)
     {
         struct Helper
         {

@@ -27,12 +27,9 @@ namespace XULWin
         mParent(inParent),
         mCommandId(),
         mExpansive(false),
-        mElement(0)
+        mElement(0),
+        mFlex(0)
     {
-        // STATIC CAST NEEDED HERE OTHERWISE WE GET COMPILER ERROR:
-        // error C2594: '=' : ambiguous conversions from 'Element *const ' to 'AttributeController *'
-        mAttributeControllers["width"] = static_cast<WidthController*>(this);
-        mAttributeControllers["height"] = static_cast<HeightController*>(this);
     }
 
 
@@ -64,6 +61,18 @@ namespace XULWin
     {
         Rect clientRect(clientRect());
         move(clientRect.x(), clientRect.y(), clientRect.width(), inHeight);
+    }
+
+
+    int ElementImpl::getFlex() const
+    {
+        return mFlex;
+    }
+    
+    
+    void ElementImpl::setFlex(int inFlex)
+    {
+        mFlex = inFlex;
     }
     
     
@@ -176,7 +185,12 @@ namespace XULWin
 
 
     bool ElementImpl::initAttributeControllers()
-    {
+    {        
+        // STATIC CAST NEEDED HERE OTHERWISE WE GET COMPILER ERROR:
+        // error C2594: '=' : ambiguous conversions from 'Element *const ' to 'AttributeController *'
+        setAttributeController("width", static_cast<WidthController*>(this));
+        setAttributeController("height", static_cast<HeightController*>(this));
+        setAttributeController("flex", static_cast<FlexController*>(this));
         return true;
     }
 
@@ -246,7 +260,11 @@ namespace XULWin
 
     void ElementImpl::setAttributeController(const std::string & inAttr, AttributeController * inController)
     {
-        mAttributeControllers[inAttr] = inController;
+        AttributeControllers::iterator it = mAttributeControllers.find(inAttr);
+        if (it == mAttributeControllers.end())
+        {
+            mAttributeControllers.insert(std::make_pair(inAttr, inController));
+        }
     }
 
 
@@ -368,8 +386,8 @@ namespace XULWin
     
     bool NativeComponent::initAttributeControllers()
     {
-        mAttributeControllers["disabled"] = static_cast<DisabledController*>(this);
-        mAttributeControllers["label"] = static_cast<LabelController*>(this);
+        setAttributeController("disabled", static_cast<DisabledController*>(this));
+        setAttributeController("label", static_cast<LabelController*>(this));
         return Super::initAttributeControllers();
     }
 
@@ -446,7 +464,8 @@ namespace XULWin
 
 
     NativeWindow::NativeWindow(const AttributesMapping & inAttributesMapping) :
-        NativeComponent(0, inAttributesMapping)
+        NativeComponent(0, inAttributesMapping),
+        mOrient(VERTICAL)
     {
         mHandle = ::CreateWindowEx
         (
@@ -499,7 +518,7 @@ namespace XULWin
     int NativeWindow::calculateMinimumWidth() const
     {
         int result = 0;
-        Orientation orient = String2Orient(owningElement()->getAttribute("orient"), VERTICAL);
+        Orient orient = getOrient();
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
@@ -520,7 +539,7 @@ namespace XULWin
     int NativeWindow::calculateMinimumHeight() const
     {
         int result = 0;
-        Orientation orient = String2Orient(owningElement()->getAttribute("orient"), VERTICAL);
+        Orient orient = getOrient();
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
@@ -546,7 +565,7 @@ namespace XULWin
     
     void NativeWindow::rebuildLayout()
     {
-        LinearLayoutManager layout(String2Orient(owningElement()->getAttribute("orient"), VERTICAL));
+        LinearLayoutManager layout(getOrient());
         bool horizontal = layout.orientation() == HORIZONTAL;
         
         std::vector<ExtendedSizeInfo> sizeInfos;
@@ -583,6 +602,18 @@ namespace XULWin
     void NativeWindow::setTitle(const std::string & inTitle)
     {
         Utils::setWindowText(handle(), inTitle);
+    }
+    
+    
+    Orient NativeWindow::getOrient() const
+    {
+        return mOrient;
+    }
+
+
+    void NativeWindow::setOrient(Orient inOrient)
+    {
+        mOrient = inOrient;
     }
 
 
@@ -897,7 +928,7 @@ namespace XULWin
     
     bool NativeCheckBox::initAttributeControllers()
     {
-        mAttributeControllers["checked"] = static_cast<CheckedController *>(this);
+        setAttributeController("checked", static_cast<CheckedController *>(this));
         return Super::initAttributeControllers();
     }
 
@@ -968,8 +999,8 @@ namespace XULWin
     
     bool NativeTextBox::initAttributeControllers()
     {
-        mAttributeControllers["value"] = static_cast<StringValueController*>(this);
-        mAttributeControllers["readonly"] = static_cast<ReadOnlyController*>(this);
+        setAttributeController("value", static_cast<StringValueController*>(this));
+        setAttributeController("readonly", static_cast<ReadOnlyController*>(this));
         return Super::initAttributeControllers();
     }
 
@@ -1018,7 +1049,7 @@ namespace XULWin
     
     bool NativeLabel::initAttributeControllers()
     {
-        mAttributeControllers["value"] = static_cast<StringValueController*>(this);
+        setAttributeController("value", static_cast<StringValueController*>(this));
         return Super::initAttributeControllers();
     }
     
@@ -1093,7 +1124,7 @@ namespace XULWin
 
     bool NativeDescription::initAttributeControllers()
     {
-        mAttributeControllers["value"] = static_cast<StringValueController*>(this);
+        setAttributeController("value", static_cast<StringValueController*>(this));
         return Super::initAttributeControllers();
     }
 
@@ -1110,7 +1141,7 @@ namespace XULWin
     }
 
     
-    VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
+    VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient) :
         VirtualControl(inParent, inAttributesMapping),
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
@@ -1193,32 +1224,32 @@ namespace XULWin
     }
 
 
-    BoxLayouter::BoxLayouter(Orientation inOrient, Alignment inAlign) :
+    BoxLayouter::BoxLayouter(Orient inOrient, Align inAlign) :
         mOrient(inOrient),
         mAlign(inAlign)
     {
     }
 
     
-    Orientation BoxLayouter::getOrient() const
+    Orient BoxLayouter::getOrient() const
     {
         return mOrient;
     }
 
 
-    void BoxLayouter::setOrient(Orientation inOrient)
+    void BoxLayouter::setOrient(Orient inOrient)
     {
         mOrient = inOrient;
     }
 
 
-    Alignment BoxLayouter::getAlign() const
+    Align BoxLayouter::getAlign() const
     {
         return mAlign;
     }
 
 
-    void BoxLayouter::setAlign(Alignment inAlign)
+    void BoxLayouter::setAlign(Align inAlign)
     {
         mAlign = inAlign;
     }
@@ -1267,7 +1298,7 @@ namespace XULWin
     }
         
 
-    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient) :
+    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient) :
         NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0),
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {

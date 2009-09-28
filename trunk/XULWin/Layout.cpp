@@ -83,20 +83,20 @@ namespace XULWin
     }
 
 
-    LinearLayoutManager::LinearLayoutManager(Orientation inOrient) :
+    LinearLayoutManager::LinearLayoutManager(Orient inOrient) :
         mOrient(inOrient)
     {
     }
 
 
-    Orientation LinearLayoutManager::orientation() const
+    Orient LinearLayoutManager::orientation() const
     {
         return mOrient;
     }
 
     
     void LinearLayoutManager::getRects(const Rect & inRect,
-                                       Alignment inAlign, 
+                                       Align inAlign, 
                                        const std::vector<ExtendedSizeInfo> & inSizeInfos,
                                        std::vector<Rect> & outRects)
     {

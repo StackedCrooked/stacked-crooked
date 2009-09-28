@@ -43,6 +43,7 @@ namespace XULWin
      */
     class ElementImpl : public virtual WidthController,
                         public virtual HeightController,
+                        public virtual FlexController,
                         boost::noncopyable
     {
     public:
@@ -59,6 +60,11 @@ namespace XULWin
         virtual int getHeight() const;
 
         virtual void setHeight(int inHeight);
+
+        // FlexController methods
+        virtual int getFlex() const;
+
+        virtual void setFlex(int inFlex);
 
         // Downcast that also resolves decorators.
         // Use this instead of manual cast, because
@@ -142,6 +148,7 @@ namespace XULWin
         Element * mElement;
         CommandId mCommandId;
         bool mExpansive;
+        int mFlex;
         typedef std::map<std::string, AttributeController *> AttributeControllers;
         AttributeControllers mAttributeControllers;
 
@@ -225,7 +232,8 @@ namespace XULWin
 
 
     class NativeWindow : public NativeComponent,
-                         public virtual TitleController
+                         public virtual TitleController,
+                         public virtual OrientController
     {
     public:
         typedef NativeComponent Super;
@@ -234,9 +242,15 @@ namespace XULWin
 
         NativeWindow(const AttributesMapping & inAttributesMapping);
 
+        // TitleController methods
         virtual std::string getTitle() const;
 
         virtual void setTitle(const std::string & inTitle);
+
+        // OrientController methods
+        virtual Orient getOrient() const;
+
+        virtual void setOrient(Orient inOrient);
 
         void showModal();
 
@@ -259,6 +273,9 @@ namespace XULWin
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
+
+    private:
+        Orient mOrient;
     };
 
 
@@ -418,6 +435,7 @@ namespace XULWin
 
         NativeCheckBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
+        // CheckedController methods
         virtual bool isChecked() const;
 
         virtual void setChecked(bool inChecked);
@@ -434,17 +452,17 @@ namespace XULWin
                         public virtual AlignController
     {
     public:
-        BoxLayouter(Orientation inOrient, Alignment inAlign);
+        BoxLayouter(Orient inOrient, Align inAlign);
 
         // OrientController methods
-        virtual Orientation getOrient() const;
+        virtual Orient getOrient() const;
 
-        virtual void setOrient(Orientation inOrient);
+        virtual void setOrient(Orient inOrient);
 
         // AlignController methods
-        virtual Alignment getAlign() const;
+        virtual Align getAlign() const;
 
-        virtual void setAlign(Alignment inAlign);
+        virtual void setAlign(Align inAlign);
 
         virtual bool initAttributeControllers();
 
@@ -469,8 +487,8 @@ namespace XULWin
         virtual void rebuildChildLayouts() = 0;
 
     private:
-        Orientation mOrient;
-        Alignment mAlign;
+        Orient mOrient;
+        Align mAlign;
     };
 
 
@@ -480,7 +498,7 @@ namespace XULWin
     public:
         typedef VirtualControl Super;
 
-        VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient = HORIZONTAL);
+        VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient = HORIZONTAL);
 
         virtual bool initAttributeControllers();
 
@@ -527,7 +545,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orientation inOrient);
+        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient);
 
         virtual bool initAttributeControllers();
 

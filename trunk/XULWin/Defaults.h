@@ -53,9 +53,9 @@ namespace XULWin
 
             static bool checked() { return false; } // checkbox
 
-            static Orientation orient() { return VERTICAL; }
+            static Orient orient() { return VERTICAL; }
 
-            static Alignment align() { return Start; }
+            static Align align() { return Start; }
 
             static int flex() { return 0; }
 

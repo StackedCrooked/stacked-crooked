@@ -55,7 +55,7 @@ namespace XULWin
 
         virtual int calculateMinimumHeight() const;
 
-        bool initAttributeControllers();
+        bool initOldAttributeControllers();
 
         void setSrc(const std::string & inSrc);
 
@@ -126,12 +126,12 @@ namespace XULWin
     }
 
 
-    bool NativeImage::initAttributeControllers()
+    bool NativeImage::initOldAttributeControllers()
     {
         AttributeGetter srcGetter = boost::bind(&NativeImage::src, this);
         AttributeSetter srcSetter = boost::bind(&NativeImage::setSrc, this, _1);
-        setAttributeController("src", AttributeController(srcGetter, srcSetter));
-        return NativeControl::initAttributeControllers();
+        setOldAttributeController("src", OldAttributeController(srcGetter, srcSetter));
+        return NativeControl::initOldAttributeControllers();
     }
     
     

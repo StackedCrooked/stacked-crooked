@@ -146,20 +146,20 @@ namespace XULWin
     }
 
 
-    void Element::initAttributeControllers()
+    void Element::initOldAttributeControllers()
     {
         if (mImpl)
         {
-            mImpl->initAttributeControllers();
+            mImpl->initOldAttributeControllers();
         }
     }
 
 
-    void Element::initStyleControllers()
+    void Element::initOldStyleControllers()
     {
         if (mImpl)
         {
-            mImpl->initStyleControllers();
+            mImpl->initOldStyleControllers();
         }
     }
 

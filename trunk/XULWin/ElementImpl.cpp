@@ -28,7 +28,8 @@ namespace XULWin
         mCommandId(),
         mExpansive(false),
         mElement(0),
-        mFlex(0)
+        mFlex(0),
+        mHidden(false)
     {
     }
 
@@ -73,6 +74,18 @@ namespace XULWin
     void ElementImpl::setFlex(int inFlex)
     {
         mFlex = inFlex;
+    }
+
+    
+    bool ElementImpl::isHidden() const
+    {
+        return mHidden;
+    }
+
+
+    void ElementImpl::setHidden(bool inHidden)
+    {
+        mHidden = inHidden;
     }
 
 
@@ -142,15 +155,10 @@ namespace XULWin
     
     int ElementImpl::minimumWidth() const
     {
-        // Return zero if hidden
-        if (const NativeComponent * nativeComponent = constDowncast<const NativeComponent>())
+        if (isHidden())
         {
-            if (!Utils::isWindowVisible(nativeComponent->handle()))
-            {
-                return 0;
-            }
+            return 0;
         }
-
 
         int minWidth = calculateMinimumWidth();
         if (mElement)
@@ -164,13 +172,9 @@ namespace XULWin
     
     int ElementImpl::minimumHeight() const
     {
-        // Return zero if hidden
-        if (const NativeComponent * nativeComponent = constDowncast<NativeComponent>())
+        if (isHidden())
         {
-            if (!Utils::isWindowVisible(nativeComponent->handle()))
-            {
-                return 0;
-            }
+            return 0;
         }
 
 
@@ -245,6 +249,7 @@ namespace XULWin
         setAttributeController("width", static_cast<WidthController*>(this));
         setAttributeController("height", static_cast<HeightController*>(this));
         setAttributeController("flex", static_cast<FlexController*>(this));
+        setAttributeController("hidden", static_cast<HiddenController*>(this));
         return true;
     }
 
@@ -342,7 +347,7 @@ namespace XULWin
     }
     
     
-    bool NativeComponent::getDisabled() const
+    bool NativeComponent::isDisabled() const
     {
         return Utils::isWindowDisabled(handle());
     }
@@ -363,6 +368,13 @@ namespace XULWin
     void NativeComponent::setLabel(const std::string & inLabel)
     {
         Utils::setWindowText(handle(), inLabel);
+    }
+    
+    
+    void NativeComponent::setHidden(bool inHidden)
+    {
+        Super::setHidden(inHidden);
+        Utils::setWindowVisible(handle(), !inHidden);
     }
         
     
@@ -519,19 +531,10 @@ namespace XULWin
     int NativeWindow::calculateMinimumWidth() const
     {
         int result = 0;
-        Orient orient = getOrient();
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            int minWidth = child->impl()->minimumWidth();
-            if (orient == HORIZONTAL)
-            {
-                result += minWidth;
-            }
-            else if (minWidth > result)
-            {
-                result = minWidth;
-            }
+            result += child->impl()->minimumWidth();
         }
         return result;
     }
@@ -540,19 +543,10 @@ namespace XULWin
     int NativeWindow::calculateMinimumHeight() const
     {
         int result = 0;
-        Orient orient = getOrient();
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            int minHeight = child->impl()->minimumHeight();
-            if (orient == VERTICAL)
-            {
-                result += minHeight;
-            }
-            else if (minHeight > result)
-            {
-                result = minHeight;
-            }
+            result += child->impl()->minimumHeight();
         }
         return result;
     }

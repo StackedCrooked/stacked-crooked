@@ -86,9 +86,24 @@ namespace XULWin
 
         virtual void set(const std::string & inValue);
 
-        virtual bool getDisabled() const = 0;
+        virtual bool isDisabled() const = 0;
 
         virtual void setDisabled(bool inDisabled) = 0;
+    };
+
+
+    class HiddenController : public AttributeController
+    {
+    public:
+        HiddenController(){}
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual bool isHidden() const = 0;
+
+        virtual void setHidden(bool inHidden) = 0;
     };
 
 

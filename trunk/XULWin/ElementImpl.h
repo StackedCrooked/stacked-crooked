@@ -45,6 +45,7 @@ namespace XULWin
     class ElementImpl : public virtual WidthController,
                         public virtual HeightController,
                         public virtual FlexController,
+                        public virtual HiddenController,
                         public virtual CSSMarginController,
                         public virtual CSSWidthController,
                         public virtual CSSHeightController,
@@ -68,7 +69,12 @@ namespace XULWin
         // FlexController methods
         virtual int getFlex() const;
 
-        virtual void setFlex(int inFlex);
+        virtual void setFlex(int inFlex);        
+
+        // HiddenController methods
+        virtual bool isHidden() const;
+
+        virtual void setHidden(bool inHidden);
 
         // CSSWidthController methods
         virtual int getCSSWidth() const;
@@ -170,6 +176,20 @@ namespace XULWin
         CommandId mCommandId;
         bool mExpansive;
         int mFlex;
+
+        // We need to remember the hidden state ourselves
+        // because we can't rely on WinAPI IsWindowVisible
+        // call, because it will return false for child windows
+        // of which the parent is not visible.
+        // This is a problem because in NativeWindow::showModal
+        // we calculate the minimum height before showing the 
+        // window. Calculation of minimum height depends on
+        // visibility of child items. Minimum height of hidden
+        // items is 0. Now, this means that all child items
+        // would return a minimum height of zero, because the
+        // Windows API says that they are not visible.
+        bool mHidden;
+        
         typedef std::map<std::string, AttributeController *> AttributeControllers;
         AttributeControllers mAttributeControllers;
 
@@ -193,7 +213,7 @@ namespace XULWin
         virtual ~NativeComponent();
 
         // DisabledController methods
-        virtual bool getDisabled() const;
+        virtual bool isDisabled() const;
 
         virtual void setDisabled(bool inDisabled);
 
@@ -201,6 +221,8 @@ namespace XULWin
         virtual std::string getLabel() const;
 
         virtual void setLabel(const std::string & inLabel);
+
+        virtual void setHidden(bool inHidden);
 
         static void SetModuleHandle(HMODULE inModule);
 

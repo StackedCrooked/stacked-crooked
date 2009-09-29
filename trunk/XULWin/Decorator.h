@@ -125,9 +125,13 @@ namespace XULWin
 
         virtual void move(int x, int y, int w, int h);
 
+        virtual void rebuildLayout();
+
         virtual bool curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos);
 
     private:
+        void updateWindowScroll();
+
         bool mScrollbarVisible;
         int mOldScrollPos;
     };

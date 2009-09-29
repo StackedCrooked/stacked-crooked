@@ -56,13 +56,25 @@ namespace XULWin
 
     void DisabledController::get(std::string & outValue)
     {
-        outValue = Bool2String(getDisabled());
+        outValue = Bool2String(isDisabled());
     }
 
 
     void DisabledController::set(const std::string & inValue)
     {
         setDisabled(String2Bool(inValue, Defaults::Attributes::disabled()));
+    }
+
+
+    void HiddenController::get(std::string & outValue)
+    {
+        outValue = Bool2String(isHidden());
+    }
+
+
+    void HiddenController::set(const std::string & inValue)
+    {
+        setHidden(String2Bool(inValue, Defaults::Attributes::disabled()));
     }
 
 

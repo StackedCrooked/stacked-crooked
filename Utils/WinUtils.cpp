@@ -367,7 +367,8 @@ namespace Utils
     
     bool isWindowVisible(HWND inHandle)
     {
-        return ::IsWindowVisible(inHandle) == TRUE;
+        BOOL visible = ::IsWindowVisible(inHandle);
+        return (bool)visible;
     }
 
 

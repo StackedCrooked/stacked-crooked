@@ -549,7 +549,7 @@ namespace XULWin
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            result += child->impl()->calculateWidth(inSizeConstraint);
+            result += child->impl()->getWidth(inSizeConstraint);
         }
         return result;
     }
@@ -561,7 +561,7 @@ namespace XULWin
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            result += child->impl()->calculateHeight(inSizeConstraint);
+            result += child->impl()->getHeight(inSizeConstraint);
         }
         return result;
     }
@@ -624,9 +624,9 @@ namespace XULWin
 
     void NativeWindow::showModal()
     {  
-
-        int w = getWidth();
-        int h = getHeight();
+        SIZE sz = Utils::GetSizeDifference_WindowRect_ClientRect(handle());
+        int w = getWidth() + sz.cx;
+        int h = getHeight() + sz.cy;
 
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
@@ -673,8 +673,8 @@ namespace XULWin
 			{
                 SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
 				MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
-                minMaxInfo->ptMinTrackSize.x = calculateWidth(Minimum) + sizeDiff.cx;
-                minMaxInfo->ptMinTrackSize.y = calculateHeight(Minimum) + sizeDiff.cy;
+                minMaxInfo->ptMinTrackSize.x = getWidth(Minimum) + sizeDiff.cx;
+                minMaxInfo->ptMinTrackSize.y = getHeight(Minimum) + sizeDiff.cy;
                 break;
 			}            
             case WM_COMMAND:

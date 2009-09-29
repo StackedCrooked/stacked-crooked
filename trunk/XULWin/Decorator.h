@@ -131,8 +131,6 @@ namespace XULWin
 
     private:
         void updateWindowScroll();
-
-        bool mScrollbarVisible;
         int mOldScrollPos;
     };
 

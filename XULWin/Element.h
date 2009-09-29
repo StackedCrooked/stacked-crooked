@@ -45,7 +45,7 @@ namespace XULWin
             }
             result->initAttributeControllers();
             result->setAttributes(inAttr);
-            result->initOldStyleControllers();
+            result->initStyleControllers();
             result->setStyles(inAttr);
             return result;
         }
@@ -135,7 +135,7 @@ namespace XULWin
 
         void initAttributeControllers();
 
-        void initOldStyleControllers();
+        void initStyleControllers();
 
         friend class ElementFactory;
         std::string mType;

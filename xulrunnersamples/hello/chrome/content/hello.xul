@@ -4,13 +4,10 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        orient="vertical"
-        align="stretch"
+        orient="horizontal"
 >
-  <vbox flex="3" style="overflow-y:auto">
-    <button label="FIRST"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="LAST"></button>
-  </vbox>
+
+  <button label="TestTestTestTestTestTestTestTestTestTestTest" flex="1"></button>
+  <spacer flex="1"></spacer>
+  <button label="Test" flex="1"></button>
 </window>

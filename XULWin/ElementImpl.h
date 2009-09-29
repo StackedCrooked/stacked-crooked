@@ -58,6 +58,10 @@ namespace XULWin
         virtual ~ElementImpl() = 0;
 
         // WidthController methods
+        // Returns value from last call to setWidth. If setWidth has not yet
+        // been called, then this method returns the value as defined in XUL
+        // document. If the value in the XUL document has not been defined,
+        // then the optimal size of the element is returned.
         virtual int getWidth() const;
 
         virtual void setWidth(int inWidth);
@@ -164,7 +168,7 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual bool initOldStyleControllers();
+        virtual bool initStyleControllers();
 
         void setAttributeController(const std::string & inAttr, AttributeController * inController);
 
@@ -179,6 +183,8 @@ namespace XULWin
         int mFlex;
         Utils::Fallible<int> mWidth;
         Utils::Fallible<int> mHeight;
+        Utils::Fallible<int> mCSSWidth;
+        Utils::Fallible<int> mCSSHeight;
 
         // We need to remember the hidden state ourselves
         // because we can't rely on WinAPI IsWindowVisible
@@ -233,7 +239,7 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual bool initOldStyleControllers();
+        virtual bool initStyleControllers();
 
         /**
          * Override this method if you want your control to handle its own command events.
@@ -348,7 +354,7 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual bool initOldStyleControllers();
+        virtual bool initStyleControllers();
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -366,7 +372,7 @@ namespace XULWin
 
         virtual ~NativeControl();
         
-        bool initOldStyleControllers();
+        bool initStyleControllers();
 
         virtual void rebuildLayout();
 
@@ -395,7 +401,7 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual bool initOldStyleControllers();
+        virtual bool initStyleControllers();
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const { return 0; }
 
@@ -448,7 +454,7 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual bool initOldStyleControllers();
+        virtual bool initStyleControllers();
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
@@ -545,7 +551,7 @@ namespace XULWin
     public:
         typedef VirtualComponent Super;
 
-        VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient = HORIZONTAL);
+        VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign);
 
         virtual bool initAttributeControllers();
 
@@ -589,7 +595,7 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient);
+        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign);
 
         virtual bool initAttributeControllers();
 

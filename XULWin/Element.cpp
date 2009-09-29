@@ -1,5 +1,6 @@
 #include "Element.h"
 #include "Decorator.h"
+#include "Defaults.h"
 #include "ElementImpl.h"
 #include "Utils/ErrorReporter.h"
 #include "Poco/StringTokenizer.h"
@@ -155,11 +156,11 @@ namespace XULWin
     }
 
 
-    void Element::initOldStyleControllers()
+    void Element::initStyleControllers()
     {
         if (mImpl)
         {
-            mImpl->initOldStyleControllers();
+            mImpl->initStyleControllers();
         }
     }
 
@@ -317,7 +318,8 @@ namespace XULWin
 
     static ElementImpl * CreateBox(Element * inParent,
                                    const AttributesMapping & inAttributesMapping,
-                                   Orient inOrient = VERTICAL)
+                                   Orient inOrient = Defaults::Attributes::orient(),
+                                   Align inAlign = Defaults::Attributes::align())
     {
         struct Helper
         {
@@ -354,7 +356,7 @@ namespace XULWin
         if (overflowX || overflowY)
         {
             ScrollDecorator * result;
-            NativeBox * box = new NativeBox(inParent->impl(), inAttributesMapping, inOrient);
+            NativeBox * box = new NativeBox(inParent->impl(), inAttributesMapping, inOrient, inAlign);
             if (overflowX)
             {
                 result = new ScrollDecorator(inParent->impl(), box, HORIZONTAL);
@@ -367,7 +369,7 @@ namespace XULWin
         }
         else
         {
-            return new Decorator(new VirtualBox(inParent->impl(), inAttributesMapping, inOrient));
+            return new Decorator(new VirtualBox(inParent->impl(), inAttributesMapping, inOrient, inAlign));
         }
     }
 

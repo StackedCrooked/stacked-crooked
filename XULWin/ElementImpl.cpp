@@ -31,10 +31,14 @@ namespace XULWin
         mFlex(0),
         mHidden(false),
         mWidth(0),
-        mHeight(0)
+        mHeight(0),
+        mCSSWidth(0),
+        mCSSHeight(0)
     {
         mWidth.setInvalid();
         mHeight.setInvalid();
+        mCSSWidth.setInvalid();
+        mCSSHeight.setInvalid();
     }
 
 
@@ -49,6 +53,12 @@ namespace XULWin
         {
             return mWidth;
         }
+
+        if (mCSSWidth.isValid())
+        {
+            return std::max<int>(mCSSWidth.getValue(), getWidth(Minimum));
+        }
+
         return getWidth(Optimal);
     }
     
@@ -65,6 +75,12 @@ namespace XULWin
         {
             return mHeight;
         }
+
+        if (mCSSHeight.isValid())
+        {
+            return std::max<int>(mCSSHeight.getValue(), getHeight(Minimum));
+        }
+
         return getHeight(Optimal);
     }
     
@@ -111,7 +127,7 @@ namespace XULWin
 
     void ElementImpl::setCSSWidth(int inWidth)
     {
-        setWidth(inWidth);
+        mCSSWidth = inWidth;
     }
 
     
@@ -127,7 +143,7 @@ namespace XULWin
 
     void ElementImpl::setCSSHeight(int inHeight)
     {
-        setHeight(inHeight);
+        mCSSHeight = inHeight;
     }
 
     
@@ -178,12 +194,12 @@ namespace XULWin
             return 0;
         }
 
-        int result = calculateWidth(inSizeConstraint);
-        if (mWidth.isValid() && mWidth.getValue() > result)
+        if (mWidth.isValid())
         {
-            result = mWidth.getValue();
+            return mWidth.getValue();
         }
-        return result;
+
+        return calculateWidth(inSizeConstraint);
     }
 
     
@@ -194,12 +210,12 @@ namespace XULWin
             return 0;
         }
 
-        int result = calculateHeight(inSizeConstraint);
-        if (mHeight.isValid() && mHeight.getValue() > result)
+        if (mHeight.isValid())
         {
-            result = mHeight.getValue();
+            return mHeight.getValue();
         }
-        return result;
+
+        return calculateHeight(inSizeConstraint);
     }
     
     
@@ -269,7 +285,7 @@ namespace XULWin
     }
 
 
-    bool ElementImpl::initOldStyleControllers()
+    bool ElementImpl::initStyleControllers()
     {
         setStyleController(CSSMarginController::PropertyName(), static_cast<CSSMarginController*>(this));
         setStyleController(CSSWidthController::PropertyName(), static_cast<CSSWidthController*>(this));
@@ -405,9 +421,9 @@ namespace XULWin
     }
 
 
-    bool NativeComponent::initOldStyleControllers()
+    bool NativeComponent::initStyleControllers()
     {
-        return Super::initOldStyleControllers();
+        return Super::initStyleControllers();
     }
     
     
@@ -513,9 +529,9 @@ namespace XULWin
     }
 
 
-    bool NativeWindow::initOldStyleControllers()
+    bool NativeWindow::initStyleControllers()
     {  
-        return Super::initOldStyleControllers();
+        return Super::initStyleControllers();
     }
 
 
@@ -546,10 +562,19 @@ namespace XULWin
     int NativeWindow::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         int result = 0;
+        
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            result += child->impl()->getWidth(inSizeConstraint);
+            int width = child->impl()->getWidth(inSizeConstraint);
+            if (getOrient() == HORIZONTAL)
+            {
+                result += width;
+            }
+            else if (width > result)
+            {
+                result = width;
+            }
         }
         return result;
     }
@@ -561,7 +586,15 @@ namespace XULWin
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            result += child->impl()->getHeight(inSizeConstraint);
+            int height = child->impl()->getHeight(inSizeConstraint);
+            if (getOrient() == VERTICAL)
+            {
+                result += height;
+            }
+            else if (height > result)
+            {
+                result = height;
+            }
         }
         return result;
     }
@@ -655,13 +688,7 @@ namespace XULWin
         {
             case WM_SIZE:
             {
-                Children::const_iterator it = owningElement()->children().begin();
-                if (it != owningElement()->children().end())
-                {
-                    Rect clientRect(clientRect());
-                    (*it)->impl()->move(clientRect.x(), clientRect.y(), clientRect.width(), clientRect.height());
-                    rebuildLayout();
-                }
+                rebuildLayout();
                 break;
             }
             case WM_CLOSE:
@@ -738,9 +765,9 @@ namespace XULWin
     }
 
 
-    bool VirtualComponent::initOldStyleControllers()
+    bool VirtualComponent::initStyleControllers()
     {
-        return Super::initOldStyleControllers();
+        return Super::initStyleControllers();
     }
 
 
@@ -834,9 +861,9 @@ namespace XULWin
     }
 
 
-    bool NativeControl::initOldStyleControllers()
+    bool NativeControl::initStyleControllers()
     {
-        return Super::initOldStyleControllers();
+        return Super::initStyleControllers();
     }
 
 
@@ -897,9 +924,16 @@ namespace XULWin
     int NativeButton::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         std::string text = Utils::getWindowText(handle());
-        int width = Utils::getTextSize(handle(), text).cx;
-        width += Defaults::textPadding();
-        return width;
+        int minWidth = Utils::getTextSize(handle(), text).cx;
+        minWidth += Defaults::textPadding();
+        if (inSizeConstraint == Minimum)
+        {
+            return minWidth;
+        }
+        else
+        {
+            return std::max<int>(minWidth, Defaults::buttonWidth());
+        }
     }
     
     
@@ -1131,10 +1165,10 @@ namespace XULWin
     }
     
     
-    bool NativeLabel::initOldStyleControllers()
+    bool NativeLabel::initStyleControllers()
     {
         setStyleController(CSSTextAlignController::PropertyName(), static_cast<CSSTextAlignController*>(this));
-        return Super::initOldStyleControllers();
+        return Super::initStyleControllers();
     }
 
 
@@ -1193,9 +1227,9 @@ namespace XULWin
     }
 
     
-    VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient) :
+    VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign) :
         VirtualComponent(inParent, inAttributesMapping),
-        BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
+        BoxLayouter(inOrient, inAlign)
     {
     }
     
@@ -1228,7 +1262,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                int width = getChild(idx)->getHeight(inSizeConstraint);
+                int width = getChild(idx)->getWidth(inSizeConstraint);
                 if (width > result)
                 {
                     result = width;
@@ -1251,7 +1285,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                int height = getChild(idx)->getWidth(inSizeConstraint);
+                int height = getChild(idx)->getHeight(inSizeConstraint);
                 if (height > result)
                 {
                     result = height;
@@ -1316,27 +1350,61 @@ namespace XULWin
 
     
     void BoxLayouter::rebuildLayout()
-    {
+    {     
+        Rect clientR(clientRect());   
         LinearLayoutManager layout(getOrient());
         bool horizontal = getOrient() == HORIZONTAL;
         
+        // Here we get the sizeinfo objects for our LinearLayoutManager object.
+        // However this loop also checks if the requested size does not exceed
+        // the client rect of its box.
+        // We start with size constraint Optimal, and each time a child is
+        // added to the sizeInfos vector we re-check if the client size has not
+        // yet been exceeded.
+        // If the size has been exceeded we clear the sizeinfos vector, change
+        // the size constraint to Minimum and restart the loop.
+        // Once we are using the Minimum size constraint we can't fall back to
+        // a less spacey constraint anymore. So if we happen to exceed the
+        // bounds, then we just continue doing so.
         std::vector<ExtendedSizeInfo> sizeInfos;
-        for (size_t idx = 0; idx != numChildren(); ++idx)
+        SizeConstraint sizeConstraint = Optimal;
+        int totalMinimumSize = 0;
+        int clientRectSize = horizontal ? clientR.width() : clientR.height();
+        while (sizeInfos.empty())
         {
-            ElementImpl * child = getChild(idx);
-            std::string flex;
-            if (child->owningElement())
+            for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                flex = child->owningElement()->getAttribute("flex");
+                ElementImpl * child = getChild(idx);
+                std::string flex;
+                if (child->owningElement())
+                {
+                    flex = child->owningElement()->getAttribute("flex");
+                }
+                int flexValue = String2Int(flex, 0);
+                int minSize = horizontal ? child->getWidth(sizeConstraint) : child->getHeight(sizeConstraint);
+                totalMinimumSize += minSize;                
+                if (totalMinimumSize > clientRectSize)
+                {
+                    if (sizeConstraint == Optimal)
+                    {
+                        sizeConstraint = Minimum;
+                        sizeInfos.clear();
+                        break;
+                    }
+                    else
+                    {
+                        // We are already using Minimum, there is nothing else
+                        // we can do. Just continue going out of bounds. The
+                        // parent container is responsible for giving us too
+                        // few space for layouting our child components.
+                    }
+                }
+                int minSizeOpposite = horizontal ? child->getHeight(sizeConstraint) : child->getWidth(sizeConstraint);
+                sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->expansive()));
             }
-            int flexValue = String2Int(flex, 0);
-            int minSize = horizontal ? child->getWidth(Minimum) : child->getHeight(Minimum);
-            int minSizeOpposite = horizontal ? child->getHeight(Minimum) : child->getWidth(Minimum);
-            sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->expansive()));
         }
-        
+
         std::vector<Rect> childRects;
-        Rect clientR(clientRect());
         layout.getRects(clientR, getAlign(), sizeInfos, childRects);
 
         for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1350,9 +1418,9 @@ namespace XULWin
     }
         
 
-    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient) :
+    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign) :
         NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), WS_EX_CONTROLPARENT, WS_TABSTOP),
-        BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
+        BoxLayouter(inOrient, inAlign)
     {
     }
 
@@ -1614,17 +1682,48 @@ namespace XULWin
             return;
         }
 
+        if (rows->children().empty())
+        {
+            ReportError("Grid has no rows!");
+            return;
+        }
+
+        if (columns->children().empty())
+        {
+            ReportError("Grid has no columns!");
+            return;
+        }
+
 
         //
         // Get column size infos (min width and flex)
         //
         std::vector<SizeInfo> colWidths;
-        for (size_t colIdx = 0; colIdx != columns->children().size(); ++colIdx)
+        SizeConstraint colSizeConstraint = Optimal;
+        while (colWidths.empty())
         {
-            if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
+            int totalWidth = 0;
+            for (size_t colIdx = 0; colIdx != columns->children().size(); ++colIdx)
             {
-                colWidths.push_back(SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)), col->getWidth(Minimum)));
+                if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
+                {
+                    int colWidth = col->getWidth(colSizeConstraint);
+                    totalWidth += colWidth;
+                    if (totalWidth > clientRect().width() && colSizeConstraint == Optimal)
+                    {
+                        colWidths.clear();
+                        colSizeConstraint = Minimum;
+                        break;
+                    }
+                    colWidths.push_back(SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)), colWidth));
+                }
             }
+        }
+
+        if (colWidths.empty())
+        {
+            ReportError("Grid has no columns!");
+            return;
         }
 
 
@@ -1632,12 +1731,31 @@ namespace XULWin
         // Get row size infos (min height and flex)
         //
         std::vector<SizeInfo> rowHeights;
-        for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
+        SizeConstraint rowSizeConstraint = Optimal;
+        while (rowHeights.empty())
         {
-            if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+            int totalHeight = 0;
+            for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
             {
-                rowHeights.push_back(SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)), row->getHeight(Minimum)));
+                if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+                {
+                    int rowHeight = row->getHeight(rowSizeConstraint);
+                    totalHeight += rowHeight;
+                    if (totalHeight > clientRect().height() && rowSizeConstraint == Optimal)
+                    {
+                        rowHeights.clear();
+                        rowSizeConstraint = Minimum;
+                        break;
+                    }
+                    rowHeights.push_back(SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)), rowHeight));
+                }
             }
+        }
+
+        if (rowHeights.empty())
+        {
+            ReportError("Grid has no rows!");
+            return;
         }
 
 
@@ -1656,7 +1774,7 @@ namespace XULWin
         {
             if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
             {
-                int rowHeight = row->getHeight(Minimum);
+                int rowHeight = row->getHeight();
                 for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
                 {
                     if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
@@ -1665,8 +1783,8 @@ namespace XULWin
                         {                            
                             ElementImpl * child = row->owningElement()->children()[colIdx]->impl();
                             widgetInfos.set(rowIdx, colIdx,
-                                                     CellInfo(child->getWidth(Minimum),
-                                                     child->getHeight(Minimum),
+                                                     CellInfo(child->getWidth(),
+                                                     child->getHeight(),
                                                      String2Align(row->owningElement()->getAttribute("align"), Stretch),
                                                      String2Align(column->owningElement()->getAttribute("align"), Stretch)));
                         }
@@ -1831,7 +1949,7 @@ namespace XULWin
 
     
     NativeRadioGroup::NativeRadioGroup(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping)
+        VirtualBox(inParent, inAttributesMapping, Defaults::Attributes::orient(), Defaults::Attributes::align())
     {
     }
 

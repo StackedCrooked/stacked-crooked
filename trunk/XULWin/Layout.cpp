@@ -59,7 +59,7 @@ namespace XULWin
             else
             {
                 // it's a widget without flex
-                availableLength -= inFlexValues[idx].MinSize;
+                availableLength -= inFlexValues[idx].OptSize;
             }
         }
         std::vector<int> sizes;
@@ -90,7 +90,7 @@ namespace XULWin
             }
             else
             {
-                outSizes.push_back(inFlexValues[idx].MinSize);
+                outSizes.push_back(inFlexValues[idx].OptSize);
             }
         }
 
@@ -105,11 +105,11 @@ namespace XULWin
             {
                 for (size_t idx = 0; idx != componentsToTrim_Indices.size(); ++idx)
                 {
-                    outSizes[componentsToTrim_Indices[idx]] -= spacerCuts[idx];
-                    if (outSizes[idx] < 0)
+                    int flexIdx = componentsToTrim_Indices[idx];
+                    outSizes[flexIdx] -= spacerCuts[idx];
+                    if (outSizes[idx] < inFlexValues[flexIdx].MinSize)
                     {
-                        ReportError("Spacer trim value is <0??");
-                        outSizes[idx] = 0;
+                        outSizes[idx] = inFlexValues[flexIdx].MinSize;
                     }
                 }
             }

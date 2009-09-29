@@ -74,7 +74,7 @@ namespace XULWin
         // FlexController methods
         virtual int getFlex() const;
 
-        virtual void setFlex(int inFlex);        
+        virtual void setFlex(int inFlex);
 
         // HiddenController methods
         virtual bool isHidden() const;

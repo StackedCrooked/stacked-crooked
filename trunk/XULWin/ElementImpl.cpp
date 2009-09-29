@@ -656,16 +656,14 @@ namespace XULWin
 
 
     void NativeWindow::showModal()
-    {  
+    {
+        rebuildLayout();
         SIZE sz = Utils::GetSizeDifference_WindowRect_ClientRect(handle());
         int w = getWidth() + sz.cx;
         int h = getHeight() + sz.cy;
-
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         move(x, y, w, h);
-        move(x, y, w, h);
-        rebuildLayout();
         ::ShowWindow(handle(), SW_SHOW);
         ::UpdateWindow(handle());
 
@@ -696,14 +694,14 @@ namespace XULWin
                 PostQuitMessage(0);
                 break;
             }
-			case WM_GETMINMAXINFO:
-			{
+/*            case WM_GETMINMAXINFO:
+            {
                 SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
-				MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
+                MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
                 minMaxInfo->ptMinTrackSize.x = getWidth(Minimum) + sizeDiff.cx;
                 minMaxInfo->ptMinTrackSize.y = getHeight(Minimum) + sizeDiff.cy;
                 break;
-			}            
+            }   */         
             case WM_COMMAND:
             {
                 int id = LOWORD(wParam);
@@ -926,14 +924,7 @@ namespace XULWin
         std::string text = Utils::getWindowText(handle());
         int minWidth = Utils::getTextSize(handle(), text).cx;
         minWidth += Defaults::textPadding();
-        if (inSizeConstraint == Minimum)
-        {
-            return minWidth;
-        }
-        else
-        {
-            return std::max<int>(minWidth, Defaults::buttonWidth());
-        }
+        return std::max<int>(minWidth, Defaults::buttonWidth());
     }
     
     
@@ -1354,54 +1345,26 @@ namespace XULWin
         Rect clientR(clientRect());   
         LinearLayoutManager layout(getOrient());
         bool horizontal = getOrient() == HORIZONTAL;
-        
-        // Here we get the sizeinfo objects for our LinearLayoutManager object.
-        // However this loop also checks if the requested size does not exceed
-        // the client rect of its box.
-        // We start with size constraint Optimal, and each time a child is
-        // added to the sizeInfos vector we re-check if the client size has not
-        // yet been exceeded.
-        // If the size has been exceeded we clear the sizeinfos vector, change
-        // the size constraint to Minimum and restart the loop.
-        // Once we are using the Minimum size constraint we can't fall back to
-        // a less spacey constraint anymore. So if we happen to exceed the
-        // bounds, then we just continue doing so.
         std::vector<ExtendedSizeInfo> sizeInfos;
-        SizeConstraint sizeConstraint = Optimal;
-        int totalMinimumSize = 0;
-        int clientRectSize = horizontal ? clientR.width() : clientR.height();
-        while (sizeInfos.empty())
+
+        for (size_t idx = 0; idx != numChildren(); ++idx)
         {
-            for (size_t idx = 0; idx != numChildren(); ++idx)
+            ElementImpl * child = getChild(idx);
+            std::string flex;
+            if (child->owningElement())
             {
-                ElementImpl * child = getChild(idx);
-                std::string flex;
-                if (child->owningElement())
-                {
-                    flex = child->owningElement()->getAttribute("flex");
-                }
-                int flexValue = String2Int(flex, 0);
-                int minSize = horizontal ? child->getWidth(sizeConstraint) : child->getHeight(sizeConstraint);
-                totalMinimumSize += minSize;                
-                if (totalMinimumSize > clientRectSize)
-                {
-                    if (sizeConstraint == Optimal)
-                    {
-                        sizeConstraint = Minimum;
-                        sizeInfos.clear();
-                        break;
-                    }
-                    else
-                    {
-                        // We are already using Minimum, there is nothing else
-                        // we can do. Just continue going out of bounds. The
-                        // parent container is responsible for giving us too
-                        // few space for layouting our child components.
-                    }
-                }
-                int minSizeOpposite = horizontal ? child->getHeight(sizeConstraint) : child->getWidth(sizeConstraint);
-                sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->expansive()));
+                flex = child->owningElement()->getAttribute("flex");
             }
+            int flexValue = String2Int(flex, 0);
+            int optSize = horizontal ? child->getWidth(Optimal) : child->getHeight(Optimal);
+            int minSize = horizontal ? child->getWidth(Minimum) : child->getHeight(Minimum);
+            int minSizeOpposite = horizontal ? child->getHeight(Minimum) : child->getWidth(Minimum);
+            sizeInfos.push_back(
+                ExtendedSizeInfo(FlexWrap(flexValue),
+                                 MinSizeWrap(minSize),
+                                 OptSizeWrap(optSize),
+                                 MinSizeOppositeWrap(minSizeOpposite),
+                                 child->expansive()));
         }
 
         std::vector<Rect> childRects;
@@ -1699,24 +1662,14 @@ namespace XULWin
         // Get column size infos (min width and flex)
         //
         std::vector<SizeInfo> colWidths;
-        SizeConstraint colSizeConstraint = Optimal;
-        while (colWidths.empty())
+        for (size_t colIdx = 0; colIdx != columns->children().size(); ++colIdx)
         {
-            int totalWidth = 0;
-            for (size_t colIdx = 0; colIdx != columns->children().size(); ++colIdx)
+            if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
             {
-                if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
-                {
-                    int colWidth = col->getWidth(colSizeConstraint);
-                    totalWidth += colWidth;
-                    if (totalWidth > clientRect().width() && colSizeConstraint == Optimal)
-                    {
-                        colWidths.clear();
-                        colSizeConstraint = Minimum;
-                        break;
-                    }
-                    colWidths.push_back(SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)), colWidth));
-                }
+                colWidths.push_back(
+                    SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)),
+                             MinSizeWrap(col->getWidth(Minimum)),
+                             OptSizeWrap(col->getWidth(Optimal))));
             }
         }
 
@@ -1731,24 +1684,14 @@ namespace XULWin
         // Get row size infos (min height and flex)
         //
         std::vector<SizeInfo> rowHeights;
-        SizeConstraint rowSizeConstraint = Optimal;
-        while (rowHeights.empty())
+        for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
         {
-            int totalHeight = 0;
-            for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
+            if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
             {
-                if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
-                {
-                    int rowHeight = row->getHeight(rowSizeConstraint);
-                    totalHeight += rowHeight;
-                    if (totalHeight > clientRect().height() && rowSizeConstraint == Optimal)
-                    {
-                        rowHeights.clear();
-                        rowSizeConstraint = Minimum;
-                        break;
-                    }
-                    rowHeights.push_back(SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)), rowHeight));
-                }
+                rowHeights.push_back(
+                    SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)),
+                             MinSizeWrap(row->getHeight(Minimum)),
+                             OptSizeWrap(row->getHeight(Optimal))));
             }
         }
 

@@ -152,24 +152,53 @@ namespace XULWin
         int Value;
     };
 
+    struct MinSizeWrap
+    {
+        explicit MinSizeWrap(int inValue) :
+            Value(inValue)
+        {
+        }
+        int Value;
+    };
+
+    struct OptSizeWrap
+    {
+        explicit OptSizeWrap(int inValue) :
+            Value(inValue)
+        {
+        }
+        int Value;
+    };
+
+    struct MinSizeOppositeWrap
+    {
+        explicit MinSizeOppositeWrap(int inValue) :
+            Value(inValue)
+        {
+        }
+        int Value;
+    };
+
 
     struct SizeInfo
     {
-        SizeInfo(FlexWrap inFlex, int inMinSize) :
+        SizeInfo(FlexWrap inFlex, MinSizeWrap inMinSize, OptSizeWrap inOptSize) :
             Flex(inFlex.Value),
-            MinSize(inMinSize)
+            MinSize(inMinSize.Value),
+            OptSize(inOptSize.Value)
         {
         }
         int Flex;
         int MinSize;
+        int OptSize;
     };
 
 
     struct ExtendedSizeInfo : public SizeInfo
     {
-        ExtendedSizeInfo(int inFlex, int inMinSize, int inMinSizeOpposite, bool inExpansive) :
-            SizeInfo(FlexWrap(inFlex), inMinSize),
-            MinSizeOpposite(inMinSizeOpposite),
+        ExtendedSizeInfo(FlexWrap inFlex, MinSizeWrap inMinSize, OptSizeWrap inOptSize, MinSizeOppositeWrap inMinSizeOpposite, bool inExpansive) :
+            SizeInfo(inFlex, inMinSize, inOptSize),
+            MinSizeOpposite(inMinSizeOpposite.Value),
             Expansive(inExpansive)
         {
         }

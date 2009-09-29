@@ -32,6 +32,26 @@ namespace XULWin
     {
     }
 
+
+    bool Decorator::isHidden() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->isHidden();
+        }
+        return Super::isHidden();
+    }
+
+
+    void Decorator::setHidden(bool inHidden)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->setHidden(inHidden);
+        }
+        Super::setHidden(inHidden);
+    }
+
     
     void Decorator::setOwningElement(Element * inElement)
     {
@@ -302,15 +322,19 @@ namespace XULWin
     {        
         AttributesMapping attr;
         attr["orient"] = Orient2String(inScrollbarOrient);
-        ElementPtr scrollbar = Scrollbar::Create(inParent->owningElement(), attr);
+        ElementPtr scrollbarEl = Scrollbar::Create(inParent->owningElement(), attr);
 
         // Remove it from the parent so that it is untouched by its layout manager
-        inParent->owningElement()->removeChild(scrollbar.get());
+        inParent->owningElement()->removeChild(scrollbarEl.get());
 
-        scrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+        NativeScrollbar * scrollbar = scrollbarEl->impl()->downcast<NativeScrollbar>();
+        if (scrollbar)
+        {
+            scrollbar->setEventHandler(this);
 
-        // Add it to our own list of children
-        addChild(scrollbar);
+            // Add it to our own list of children
+            addChild(scrollbarEl);
+        }
     }
             
             

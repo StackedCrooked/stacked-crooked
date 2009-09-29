@@ -5,6 +5,7 @@ style="overflow:hidden;"
 
 
 - Scroll halfway vertically and then resize the width -> scrollbox is repositioned wrongly
+- Fix margin for Config panel margin near Cancel button
 - Test & implement horizontal scrolling
 - Implement all overflow styles
 - Rename ElementImpl::getAttribute to getNativeAttribute

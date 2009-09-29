@@ -297,7 +297,8 @@ namespace XULWin
                                inDecoratedElement,
                                inScrollbarOrient == HORIZONTAL ? VERTICAL : HORIZONTAL,
                                Stretch),
-            mScrollbarVisible(false)
+            mScrollbarVisible(false),
+            mOldScrollPos(0)
 
     {        
         AttributesMapping attr;
@@ -375,42 +376,20 @@ namespace XULWin
             int maxpos = Defaults::Attributes::maxpos();
             Rect clientRect(mDecoratedElement->clientRect());
             int minSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
-                                                      : mDecoratedElement->calculateMinimumWidth();
+                                                    : mDecoratedElement->calculateMinimumWidth();
             int clientSize = getOrient() == HORIZONTAL ? clientRect.height()
-                                                         : clientRect.height();
-            int maxScrollPos = minSize - clientSize - 2;
-            if (inNewPos > maxScrollPos)
+                                                       : clientRect.height();
+            if (inNewPos > maxpos)
             {
-                inNewPos = maxScrollPos;
+                inNewPos = maxpos;
             }
 
-            // HACK!
-            // For some reason Windows sends a scroll down event followed
-            // by a scroll up event when pressing the arrow-down button 
-            // on a scrollbar that has already completely scrolled to bottom.
-            // I already blocked this scroll-down event in my scrollbar
-            // handlemessage function. However the scroll-up event is not
-            // blocked there, so we do it here.
-            // TODO: Find a better solution than this hackish one.
-            if (inOldPos > maxScrollPos)
-            {
-                return false;
-            }
-
-            double diff = (double)inNewPos - (double)inOldPos;
-            double ratio = diff/(double)Defaults::Attributes::maxpos();
-            double rounder = 0.5;
-            if (diff < 0)
-            {
-                rounder = -0.5;
-            }
-            double scrollAmount = ratio * (double)minSize;
-            int dx = getOrient() == VERTICAL   ? (int)(scrollAmount + rounder) : 0;
-            int dy = getOrient() == HORIZONTAL ? (int)(scrollAmount + rounder) : 0;
-            if (inNewPos <= maxScrollPos)
-            {
-                ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
-            }
+            double ratio = (double)inNewPos/(double)Defaults::Attributes::maxpos();
+            int newScrollPos = (int)((ratio * (double)minSize) + 0.5);
+            int dx = getOrient() == VERTICAL   ? (newScrollPos - mOldScrollPos) : 0;
+            int dy = getOrient() == HORIZONTAL ? (newScrollPos - mOldScrollPos) : 0;
+            ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
+            mOldScrollPos = newScrollPos;
         }
         return true;
     }

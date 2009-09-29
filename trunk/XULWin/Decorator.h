@@ -129,6 +129,7 @@ namespace XULWin
 
     private:
         bool mScrollbarVisible;
+        int mOldScrollPos;
     };
 
 

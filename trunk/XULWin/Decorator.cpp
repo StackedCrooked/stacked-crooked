@@ -88,11 +88,11 @@ namespace XULWin
     }
 
 
-    bool Decorator::initOldStyleControllers()
+    bool Decorator::initStyleControllers()
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->initOldStyleControllers();
+            return mDecoratedElement->initStyleControllers();
         }
         return true;
     }
@@ -112,7 +112,7 @@ namespace XULWin
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->calculateHeight(inSizeConstraint);
+            return mDecoratedElement->getHeight(inSizeConstraint);
         }
         return 0;
     }

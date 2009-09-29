@@ -47,30 +47,43 @@ namespace XULWin
         
         int sumOfProportions = 0;
         int availableLength = inLength;
+        int spacerCount = 0;
         std::vector<int> flexValues;
         for (size_t idx = 0; idx != inFlexValues.size(); ++idx)
         {
             if (inFlexValues[idx].Flex != 0)
             {
+                // it's a widget with flex
                 flexValues.push_back(inFlexValues[idx].Flex);
             }
             else
             {
+                // it's a widget without flex
                 availableLength -= inFlexValues[idx].MinSize;
             }
         }
         std::vector<int> sizes;
         GetSizes(availableLength, flexValues, sizes);
 
+        std::vector<int> componentsToTrim_FlexValues;
+        std::vector<int> componentsToTrim_Indices;
+
         int sizesIdx = 0;
+        int amountExceeded = 0;
         for (size_t idx = 0; idx != inFlexValues.size(); ++idx)
         {
             if (inFlexValues[idx].Flex != 0)
-            {
+            {    
                 int size = sizes[sizesIdx];
                 if (size < inFlexValues[idx].MinSize)
                 {
+                    amountExceeded += inFlexValues[idx].MinSize - size;
                     size = inFlexValues[idx].MinSize;
+                }
+                else if (size > inFlexValues[idx].MinSize)
+                {
+                    componentsToTrim_FlexValues.push_back(inFlexValues[idx].Flex);
+                    componentsToTrim_Indices.push_back(idx);
                 }
                 outSizes.push_back(size);
                 sizesIdx++;
@@ -78,6 +91,27 @@ namespace XULWin
             else
             {
                 outSizes.push_back(inFlexValues[idx].MinSize);
+            }
+        }
+
+        // If we lack the space to display all components, we gonna trim the
+        // flex widgets according to their own flex values. So widgets with
+        // high flex will lose more space.
+        if (amountExceeded > 0 && !componentsToTrim_FlexValues.empty())
+        {
+            std::vector<int> spacerCuts;
+            GetSizes(amountExceeded, componentsToTrim_FlexValues, spacerCuts);
+            if (!spacerCuts.empty())
+            {
+                for (size_t idx = 0; idx != componentsToTrim_Indices.size(); ++idx)
+                {
+                    outSizes[componentsToTrim_Indices[idx]] -= spacerCuts[idx];
+                    if (outSizes[idx] < 0)
+                    {
+                        ReportError("Spacer trim value is <0??");
+                        outSizes[idx] = 0;
+                    }
+                }
             }
         }
     }

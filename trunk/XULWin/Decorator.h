@@ -33,7 +33,7 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual bool initOldStyleControllers();
+        virtual bool initStyleControllers();
 
         virtual void rebuildLayout();
 

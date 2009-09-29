@@ -22,7 +22,10 @@ namespace XULWin
         // we usually calculate the minimum width
         static int controlWidth() { return 40; }        
 
-        static int buttonHeight() { return 23; }
+        static int buttonHeight() { return 23; }      
+
+        // optimal width for a button
+        static int buttonWidth() { return 75; }
 
         static int textPadding() { return 12; }
 
@@ -55,7 +58,7 @@ namespace XULWin
 
             static Orient orient() { return VERTICAL; }
 
-            static Align align() { return Start; }
+            static Align align() { return Stretch; }
 
             static int flex() { return 0; }
 

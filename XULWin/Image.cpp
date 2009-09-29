@@ -58,9 +58,9 @@ namespace XULWin
 
         virtual void setSrc(const std::string & inSrc);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         bool initAttributeControllers();
         
@@ -109,7 +109,7 @@ namespace XULWin
     }
 
 
-    int NativeImage::calculateMinimumWidth() const
+    int NativeImage::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         if (mImage)
         {
@@ -119,7 +119,7 @@ namespace XULWin
     }
 
     
-    int NativeImage::calculateMinimumHeight() const
+    int NativeImage::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         if (mImage)
         {

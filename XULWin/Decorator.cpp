@@ -98,21 +98,21 @@ namespace XULWin
     }
 
     
-    int Decorator::calculateMinimumWidth() const
+    int Decorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->calculateMinimumWidth();
+            return mDecoratedElement->calculateWidth(inSizeConstraint);
         }
         return 0;
     }
 
 
-    int Decorator::calculateMinimumHeight() const
+    int Decorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->calculateMinimumHeight();
+            return mDecoratedElement->calculateHeight(inSizeConstraint);
         }
         return 0;
     }
@@ -256,28 +256,28 @@ namespace XULWin
     }
 
 
-    int BoxLayoutDecorator::calculateMinimumWidth() const
+    int BoxLayoutDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        int result = mDecoratedElement->calculateMinimumWidth();
+        int result = mDecoratedElement->calculateWidth(inSizeConstraint);
         if (getOrient() == HORIZONTAL)
         {
             for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
             {
-                result += mDecoratorChildren[idx]->impl()->calculateMinimumWidth();
+                result += mDecoratorChildren[idx]->impl()->calculateWidth(inSizeConstraint);
             }
         }
         return result;
     }
 
 
-    int BoxLayoutDecorator::calculateMinimumHeight() const
+    int BoxLayoutDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        int result = mDecoratedElement->calculateMinimumHeight();
+        int result = mDecoratedElement->calculateHeight(inSizeConstraint);
         if (getOrient() == VERTICAL)
         {
             for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
             {
-                result += mDecoratorChildren[idx]->impl()->calculateMinimumHeight();
+                result += mDecoratorChildren[idx]->impl()->calculateHeight(inSizeConstraint);
             }
         }
         return result;
@@ -315,29 +315,23 @@ namespace XULWin
     }
             
             
-    int ScrollDecorator::calculateMinimumWidth() const
+    int ScrollDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        if (getOrient() == HORIZONTAL)
-        {
-            return Super::calculateMinimumWidth();
-        }
-        else
+        if (inSizeConstraint == Minimum && getOrient() == VERTICAL)
         {
             return 0;
         }
+        return Super::calculateWidth(inSizeConstraint);
     }
 
 
-    int ScrollDecorator::calculateMinimumHeight() const
+    int ScrollDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        if (getOrient() == HORIZONTAL)
+        if (inSizeConstraint == Minimum && getOrient() == HORIZONTAL)
         {
             return 0;
         }
-        else
-        {
-            return Super::calculateMinimumHeight();
-        }
+        return Super::calculateHeight(inSizeConstraint);
     }
     
     
@@ -363,13 +357,13 @@ namespace XULWin
         // Update page height of scroll box
         //
         NativeScrollbar * scrollbar = mDecoratorChildren[0]->impl()->downcast<NativeScrollbar>();
-        int minSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
-                                                : mDecoratedElement->calculateMinimumWidth();
+        int optSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateHeight(Optimal)
+                                                : mDecoratedElement->calculateWidth(Optimal);
 
-        if (minSize != 0) // guard against division by zero
+        if (optSize != 0) // guard against division by zero
         {
             int maxpos = Defaults::Attributes::maxpos();
-            float ratio = (float)(getOrient() == HORIZONTAL ? h : w)/(float)minSize;
+            float ratio = (float)(getOrient() == HORIZONTAL ? h : w)/(float)optSize;
             int pageincrement = (int)(maxpos*ratio + 0.5);
             int curpos = Utils::getScrollPos(scrollbar->handle());
             Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
@@ -396,8 +390,8 @@ namespace XULWin
         {
             int maxpos = Defaults::Attributes::maxpos();
             Rect clientRect(mDecoratedElement->clientRect());
-            int minSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateMinimumHeight()
-                                                    : mDecoratedElement->calculateMinimumWidth();
+            int optSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateHeight(Optimal)
+                                                    : mDecoratedElement->calculateWidth(Optimal);
             int clientSize = getOrient() == HORIZONTAL ? clientRect.height()
                                                        : clientRect.height();
             int scrollPos = Utils::getScrollPos(scrollbar->handle());
@@ -408,7 +402,7 @@ namespace XULWin
 
             double ratio = (double)scrollPos/(double)Defaults::Attributes::maxpos();
             int oldScrollPos = mOldScrollPos;
-            int newScrollPos = (int)((ratio * (double)minSize) + 0.5);
+            int newScrollPos = (int)((ratio * (double)optSize) + 0.5);
             int dx = getOrient() == VERTICAL   ? (newScrollPos - mOldScrollPos) : 0;
             int dy = getOrient() == HORIZONTAL ? (newScrollPos - mOldScrollPos) : 0;
             ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
@@ -498,15 +492,15 @@ namespace XULWin
     }
     
     
-    int MarginDecorator::calculateMinimumWidth() const
+    int MarginDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return marginLeft() + mDecoratedElement->calculateMinimumWidth() + marginRight();
+        return marginLeft() + mDecoratedElement->calculateWidth(inSizeConstraint) + marginRight();
     }
 
     
-    int MarginDecorator::calculateMinimumHeight() const
+    int MarginDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return marginTop() + mDecoratedElement->calculateMinimumHeight() + marginBottom();
+        return marginTop() + mDecoratedElement->calculateHeight(inSizeConstraint) + marginBottom();
     }
 
 } // namespace XULWin

@@ -29,8 +29,12 @@ namespace XULWin
         mExpansive(false),
         mElement(0),
         mFlex(0),
-        mHidden(false)
+        mHidden(false),
+        mWidth(0),
+        mHeight(0)
     {
+        mWidth.setInvalid();
+        mHeight.setInvalid();
     }
 
 
@@ -41,27 +45,33 @@ namespace XULWin
 
     int ElementImpl::getWidth() const
     {
-        return clientRect().width();
+        if (mWidth.isValid())
+        {
+            return mWidth;
+        }
+        return getWidth(Optimal);
     }
     
     
     void ElementImpl::setWidth(int inWidth)
     {
-        Rect clientRect(clientRect());
-        move(clientRect.x(), clientRect.y(), inWidth, clientRect.height());
+        mWidth = inWidth;
     }
 
 
     int ElementImpl::getHeight() const
     {
-        return clientRect().width();
+        if (mHeight.isValid())
+        {
+            return mHeight;
+        }
+        return getHeight(Optimal);
     }
     
     
     void ElementImpl::setHeight(int inHeight)
     {
-        Rect clientRect(clientRect());
-        move(clientRect.x(), clientRect.y(), clientRect.width(), inHeight);
+        mHeight = inHeight;
     }
 
 
@@ -91,7 +101,11 @@ namespace XULWin
 
     int ElementImpl::getCSSWidth() const
     {
-        return getWidth();
+        if (mWidth.isValid())
+        {
+            return mWidth.getValue();
+        }
+        return 0;
     }
 
 
@@ -103,7 +117,11 @@ namespace XULWin
     
     int ElementImpl::getCSSHeight() const
     {
-        return getHeight();
+        if (mHeight.isValid())
+        {
+            return mHeight.getValue();
+        }
+        return 0;
     }
 
 
@@ -153,38 +171,35 @@ namespace XULWin
     }
     
     
-    int ElementImpl::minimumWidth() const
+    int ElementImpl::getWidth(SizeConstraint inSizeConstraint) const
     {
         if (isHidden())
         {
             return 0;
         }
 
-        int minWidth = calculateMinimumWidth();
-        if (mElement)
+        int result = calculateWidth(inSizeConstraint);
+        if (mWidth.isValid() && mWidth.getValue() > result)
         {
-            int elementWidthFromDocument = String2Int(owningElement()->getDocumentAttribute("width"), 0);
-            return std::max<int>(minWidth, elementWidthFromDocument);
+            result = mWidth.getValue();
         }
-        return minWidth;
+        return result;
     }
 
     
-    int ElementImpl::minimumHeight() const
+    int ElementImpl::getHeight(SizeConstraint inSizeConstraint) const
     {
         if (isHidden())
         {
             return 0;
         }
 
-
-        int minHeight = calculateMinimumHeight();
-        if (mElement)
+        int result = calculateHeight(inSizeConstraint);
+        if (mHeight.isValid() && mHeight.getValue() > result)
         {
-            int elementHeightFromDocument = String2Int(owningElement()->getDocumentAttribute("height"), 0);
-            return std::max<int>(minHeight, elementHeightFromDocument);
+            result = mHeight.getValue();
         }
-        return minHeight;
+        return result;
     }
     
     
@@ -528,25 +543,25 @@ namespace XULWin
     }
     
     
-    int NativeWindow::calculateMinimumWidth() const
+    int NativeWindow::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         int result = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            result += child->impl()->minimumWidth();
+            result += child->impl()->calculateWidth(inSizeConstraint);
         }
         return result;
     }
     
     
-    int NativeWindow::calculateMinimumHeight() const
+    int NativeWindow::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         int result = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             ElementPtr child(owningElement()->children()[idx]);
-            result += child->impl()->minimumHeight();
+            result += child->impl()->calculateHeight(inSizeConstraint);
         }
         return result;
     }
@@ -609,8 +624,10 @@ namespace XULWin
 
     void NativeWindow::showModal()
     {  
-        int w = calculateMinimumWidth();
-        int h = calculateMinimumHeight();
+
+        int w = getWidth();
+        int h = getHeight();
+
         int x = (GetSystemMetrics(SM_CXSCREEN) - w)/2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h)/2;
         move(x, y, w, h);
@@ -656,8 +673,8 @@ namespace XULWin
 			{
                 SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
 				MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
-                minMaxInfo->ptMinTrackSize.x = calculateMinimumWidth() + sizeDiff.cx;
-                minMaxInfo->ptMinTrackSize.y = calculateMinimumHeight() + sizeDiff.cy;
+                minMaxInfo->ptMinTrackSize.x = calculateWidth(Minimum) + sizeDiff.cx;
+                minMaxInfo->ptMinTrackSize.y = calculateHeight(Minimum) + sizeDiff.cy;
                 break;
 			}            
             case WM_COMMAND:
@@ -871,13 +888,13 @@ namespace XULWin
     }
     
     
-    int NativeButton::calculateMinimumHeight() const
+    int NativeButton::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::buttonHeight();
     }
     
     
-    int NativeButton::calculateMinimumWidth() const
+    int NativeButton::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         std::string text = Utils::getWindowText(handle());
         int width = Utils::getTextSize(handle(), text).cx;
@@ -892,13 +909,13 @@ namespace XULWin
     }
     
     
-    int NativeCheckBox::calculateMinimumHeight() const
+    int NativeCheckBox::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::controlHeight();
     }
     
     
-    int NativeCheckBox::calculateMinimumWidth() const
+    int NativeCheckBox::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return Defaults::checkBoxMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
     }
@@ -1009,7 +1026,7 @@ namespace XULWin
     }
 
 
-    int NativeTextBox::calculateMinimumWidth() const
+    int NativeTextBox::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         std::string text = Utils::getWindowText(handle());
         int width = Utils::getTextSize(handle(), text).cx;
@@ -1018,7 +1035,7 @@ namespace XULWin
     }
 
 
-    int NativeTextBox::calculateMinimumHeight() const
+    int NativeTextBox::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::controlHeight() * getRows();
     }
@@ -1121,7 +1138,7 @@ namespace XULWin
     }
 
 
-    int NativeLabel::calculateMinimumWidth() const
+    int NativeLabel::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         std::string text = Utils::getWindowText(handle());
         int width = Utils::getTextSize(handle(), text).cx;
@@ -1129,7 +1146,7 @@ namespace XULWin
     }
 
     
-    int NativeLabel::calculateMinimumHeight() const
+    int NativeLabel::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Utils::getTextSize(handle(), Utils::getWindowText(handle())).cy;
     }
@@ -1164,13 +1181,13 @@ namespace XULWin
     }
 
 
-    int NativeDescription::calculateMinimumWidth() const
+    int NativeDescription::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return Defaults::textPadding();
     }
 
     
-    int NativeDescription::calculateMinimumHeight() const
+    int NativeDescription::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Utils::getMultilineTextHeight(handle());
     }
@@ -1195,14 +1212,14 @@ namespace XULWin
     }
 
 
-    int BoxLayouter::calculateMinimumWidth() const
+    int BoxLayouter::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         if (getOrient() == HORIZONTAL)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                result += getChild(idx)->minimumWidth();
+                result += getChild(idx)->getWidth(inSizeConstraint);
             }
             return result;
         }
@@ -1211,7 +1228,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                int width = getChild(idx)->minimumWidth();
+                int width = getChild(idx)->getHeight(inSizeConstraint);
                 if (width > result)
                 {
                     result = width;
@@ -1227,14 +1244,14 @@ namespace XULWin
     }
 
 
-    int BoxLayouter::calculateMinimumHeight() const
+    int BoxLayouter::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         if (getOrient() == HORIZONTAL)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                int height = getChild(idx)->minimumHeight();
+                int height = getChild(idx)->getWidth(inSizeConstraint);
                 if (height > result)
                 {
                     result = height;
@@ -1247,7 +1264,7 @@ namespace XULWin
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
             {
-                result += getChild(idx)->minimumHeight();
+                result += getChild(idx)->getHeight(inSizeConstraint);
             }
             return result;
         }
@@ -1313,8 +1330,8 @@ namespace XULWin
                 flex = child->owningElement()->getAttribute("flex");
             }
             int flexValue = String2Int(flex, 0);
-            int minSize = horizontal ? child->minimumWidth() : child->minimumHeight();
-            int minSizeOpposite = horizontal ? child->minimumHeight() : child->minimumWidth();
+            int minSize = horizontal ? child->getWidth(Minimum) : child->getHeight(Minimum);
+            int minSizeOpposite = horizontal ? child->getHeight(Minimum) : child->getWidth(Minimum);
             sizeInfos.push_back(ExtendedSizeInfo(flexValue, minSize, minSizeOpposite, child->expansive()));
         }
         
@@ -1359,15 +1376,15 @@ namespace XULWin
     }
 
     
-    int NativeBox::calculateMinimumWidth() const
+    int NativeBox::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return BoxLayouter::calculateMinimumWidth();
+        return BoxLayouter::calculateWidth(inSizeConstraint);
     }
 
     
-    int NativeBox::calculateMinimumHeight() const
+    int NativeBox::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return BoxLayouter::calculateMinimumHeight();
+        return BoxLayouter::calculateHeight(inSizeConstraint);
     }
     
     
@@ -1387,13 +1404,13 @@ namespace XULWin
     }
     
     
-    int NativeMenuList::calculateMinimumWidth() const
+    int NativeMenuList::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return Defaults::dropDownListMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
     }
 
 
-    int NativeMenuList::calculateMinimumHeight() const
+    int NativeMenuList::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::controlHeight();
     }
@@ -1448,13 +1465,13 @@ namespace XULWin
     }
         
         
-    int NativeSeparator::calculateMinimumWidth() const
+    int NativeSeparator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return 1;
     }
 
     
-    int NativeSeparator::calculateMinimumHeight() const
+    int NativeSeparator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return 1;
     }
@@ -1466,13 +1483,13 @@ namespace XULWin
     }
 
         
-    int NativeSpacer::calculateMinimumWidth() const
+    int NativeSpacer::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return 0;
     }
 
      
-    int NativeSpacer::calculateMinimumHeight() const
+    int NativeSpacer::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return 0;
     }
@@ -1504,13 +1521,13 @@ namespace XULWin
     }
         
         
-    int NativeMenuButton::calculateMinimumWidth() const
+    int NativeMenuButton::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx + Defaults::textPadding()*2;
     }
 
     
-    int NativeMenuButton::calculateMinimumHeight() const
+    int NativeMenuButton::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::buttonHeight();
     }
@@ -1522,7 +1539,7 @@ namespace XULWin
     }
         
         
-    int NativeGrid::calculateMinimumWidth() const
+    int NativeGrid::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         int result = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
@@ -1534,7 +1551,7 @@ namespace XULWin
                 {
                     if (NativeColumn * col = cols->owningElement()->children()[idx]->impl()->downcast<NativeColumn>())
                     {
-                        result += col->minimumWidth();
+                        result += col->getWidth(inSizeConstraint);
                     }
                 }
             }
@@ -1543,7 +1560,7 @@ namespace XULWin
     }
 
     
-    int NativeGrid::calculateMinimumHeight() const
+    int NativeGrid::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         int result = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
@@ -1555,7 +1572,7 @@ namespace XULWin
                 {
                     if (NativeRow * row = rows->owningElement()->children()[idx]->impl()->downcast<NativeRow>())
                     {
-                        result += row->minimumHeight();
+                        result += row->getHeight(inSizeConstraint);
                     }
                 }
             }
@@ -1606,7 +1623,7 @@ namespace XULWin
         {
             if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
             {
-                colWidths.push_back(SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)), col->minimumWidth()));
+                colWidths.push_back(SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)), col->getWidth(Minimum)));
             }
         }
 
@@ -1619,7 +1636,7 @@ namespace XULWin
         {
             if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
             {
-                rowHeights.push_back(SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)), row->minimumHeight()));
+                rowHeights.push_back(SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)), row->getHeight(Minimum)));
             }
         }
 
@@ -1639,7 +1656,7 @@ namespace XULWin
         {
             if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
             {
-                int rowHeight = row->minimumHeight();
+                int rowHeight = row->getHeight(Minimum);
                 for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
                 {
                     if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
@@ -1648,8 +1665,8 @@ namespace XULWin
                         {                            
                             ElementImpl * child = row->owningElement()->children()[colIdx]->impl();
                             widgetInfos.set(rowIdx, colIdx,
-                                            CellInfo(child->minimumWidth(),
-                                                     child->minimumHeight(), 
+                                                     CellInfo(child->getWidth(Minimum),
+                                                     child->getHeight(Minimum),
                                                      String2Align(row->owningElement()->getAttribute("align"), Stretch),
                                                      String2Align(column->owningElement()->getAttribute("align"), Stretch)));
                         }
@@ -1711,27 +1728,27 @@ namespace XULWin
     }
 
     
-    int NativeRow::calculateMinimumWidth() const
+    int NativeRow::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         int res = 0;
         const Children & children = owningElement()->children();
         for (size_t idx = 0; idx != children.size(); ++idx)
         {
             ElementPtr child = children[idx];
-            res += child->impl()->minimumWidth();
+            res += child->impl()->getWidth(inSizeConstraint);
         }
         return res;
     }
 
 
-    int NativeRow::calculateMinimumHeight() const
+    int NativeRow::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         int res = 0;
         const Children & children = owningElement()->children();
         for (size_t idx = 0; idx != children.size(); ++idx)
         {
             ElementPtr child = children[idx];
-            int h = child->impl()->minimumHeight();
+            int h = child->impl()->getHeight(inSizeConstraint);
             if (h > res)
             {
                 res = h;
@@ -1747,7 +1764,7 @@ namespace XULWin
     }
 
     
-    int NativeColumn::calculateMinimumWidth() const
+    int NativeColumn::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         ElementPtr rows;
         int ownIndex = -1;
@@ -1790,7 +1807,7 @@ namespace XULWin
         {
 
             ElementPtr row = rows->children()[rowIdx];
-            int w = row->children()[ownIndex]->impl()->minimumWidth();
+            int w = row->children()[ownIndex]->impl()->getWidth(inSizeConstraint);
             if (w > res)
             {
                 res = w;
@@ -1800,14 +1817,14 @@ namespace XULWin
     }
 
 
-    int NativeColumn::calculateMinimumHeight() const
+    int NativeColumn::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         int res = 0;
         const Children & children = owningElement()->children();
         for (size_t idx = 0; idx != children.size(); ++idx)
         {
             ElementPtr child = children[idx];
-            res += child->impl()->minimumHeight();
+            res += child->impl()->getHeight(inSizeConstraint);
         }
         return res;
     }
@@ -1829,13 +1846,13 @@ namespace XULWin
     }
 
 
-    int NativeRadio::calculateMinimumWidth() const
+    int NativeRadio::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return Defaults::radioButtonMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
     }
 
     
-    int NativeRadio::calculateMinimumHeight() const
+    int NativeRadio::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::controlHeight();
     }
@@ -1852,13 +1869,13 @@ namespace XULWin
     }
 
 
-    int NativeProgressMeter::calculateMinimumWidth() const
+    int NativeProgressMeter::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return 1;
     }
 
     
-    int NativeProgressMeter::calculateMinimumHeight() const
+    int NativeProgressMeter::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::progressMeterHeight();
     }
@@ -1924,12 +1941,12 @@ namespace XULWin
     }
 
 
-    int NativeDeck::calculateMinimumWidth() const
+    int NativeDeck::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         int res = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            int w = owningElement()->children()[idx]->impl()->minimumWidth();
+            int w = owningElement()->children()[idx]->impl()->getWidth(inSizeConstraint);
             if (w > res)
             {
                 res = w;
@@ -1939,12 +1956,12 @@ namespace XULWin
     }
 
     
-    int NativeDeck::calculateMinimumHeight() const
+    int NativeDeck::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         int res = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            int h = owningElement()->children()[idx]->impl()->minimumHeight();
+            int h = owningElement()->children()[idx]->impl()->getHeight(inSizeConstraint);
             if (h > res)
             {
                 res = h;
@@ -2001,13 +2018,13 @@ namespace XULWin
     }
 
 
-    int NativeScrollbar::calculateMinimumWidth() const
+    int NativeScrollbar::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return Defaults::scrollbarWidth();
     }
 
     
-    int NativeScrollbar::calculateMinimumHeight() const
+    int NativeScrollbar::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::scrollbarWidth();
     }

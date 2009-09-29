@@ -37,9 +37,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -90,9 +90,9 @@ namespace XULWin
         
         virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual Rect clientRect() const;
 
@@ -119,9 +119,9 @@ namespace XULWin
                         ElementImpl * inDecoratedElement,
                         Orient inScrollbarOrient);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -164,9 +164,9 @@ namespace XULWin
 
         int marginBottom() const;
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
     private:
         int mTop, mLeft, mRight, mBottom;

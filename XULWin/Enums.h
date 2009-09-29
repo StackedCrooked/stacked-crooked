@@ -8,6 +8,13 @@
 namespace XULWin
 {
 
+    enum SizeConstraint
+    {
+        Minimum,
+        Optimal,
+        Maximum
+    };
+
 
     enum Orient
     {

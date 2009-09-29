@@ -158,6 +158,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Fallible.h"
+				>
+			</File>
+			<File
 				RelativePath=".\GenericGrid.h"
 				>
 			</File>

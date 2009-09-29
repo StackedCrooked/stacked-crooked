@@ -7,17 +7,8 @@
         orient="vertical"
         align="stretch"
 >
-  <button label="FREE"></button>
   <vbox flex="3" style="overflow-y:auto">
     <button label="FIRST"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
     <button label="test"></button>
     <button label="test"></button>
     <button label="LAST"></button>

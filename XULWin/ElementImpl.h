@@ -7,6 +7,7 @@
 #include "StyleController.h"
 #include "Conversions.h"
 #include "Layout.h"
+#include "Utils/Fallible.h"
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
@@ -126,13 +127,13 @@ namespace XULWin
 
         int commandId() const { return mCommandId.intValue(); }
 
-        int minimumWidth() const;
+        int getWidth(SizeConstraint inSizeConstraint) const;
 
-        int minimumHeight() const;
+        int getHeight(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumWidth() const = 0;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const = 0;
 
-        virtual int calculateMinimumHeight() const = 0;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const = 0;
 
         // Tendency to expand, used for separators, scrollbars, etc..
         bool expansive() const;
@@ -176,6 +177,8 @@ namespace XULWin
         CommandId mCommandId;
         bool mExpansive;
         int mFlex;
+        Utils::Fallible<int> mWidth;
+        Utils::Fallible<int> mHeight;
 
         // We need to remember the hidden state ourselves
         // because we can't rely on WinAPI IsWindowVisible
@@ -280,9 +283,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual size_t numChildren() const = 0;
 
@@ -335,9 +338,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual Rect clientRect() const;
 
@@ -394,9 +397,9 @@ namespace XULWin
 
         virtual bool initOldStyleControllers();
 
-        virtual int calculateMinimumWidth() const { return 0; }
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const { return 0; }
 
-        virtual int calculateMinimumHeight() const { return 0; }
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const { return 0; }
 
         virtual void rebuildLayout();
 
@@ -418,9 +421,9 @@ namespace XULWin
 
         NativeButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -447,9 +450,9 @@ namespace XULWin
 
         virtual bool initOldStyleControllers();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -468,9 +471,9 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -501,9 +504,9 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
 
@@ -530,9 +533,9 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -551,14 +554,14 @@ namespace XULWin
             BoxLayouter::rebuildLayout();
         }
 
-        virtual int calculateMinimumWidth() const
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const
         {
-            return BoxLayouter::calculateMinimumWidth();
+            return BoxLayouter::calculateWidth(inSizeConstraint);
         }
 
-        virtual int calculateMinimumHeight() const
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const
         {
-            return BoxLayouter::calculateMinimumHeight();
+            return BoxLayouter::calculateHeight(inSizeConstraint);
         }
         
         virtual size_t numChildren() const
@@ -592,9 +595,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual Rect clientRect() const;
 
@@ -624,9 +627,9 @@ namespace XULWin
 
         NativeMenuList(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
             
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual void move(int x, int y, int w, int h);
 
@@ -643,9 +646,9 @@ namespace XULWin
 
         NativeSeparator(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -656,9 +659,9 @@ namespace XULWin
 
         NativeSpacer(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -669,9 +672,9 @@ namespace XULWin
 
         NativeMenuButton(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -682,9 +685,9 @@ namespace XULWin
 
         NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual void rebuildLayout();
     };
@@ -706,9 +709,9 @@ namespace XULWin
 
         NativeRow(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -728,9 +731,9 @@ namespace XULWin
 
         NativeColumn(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -750,9 +753,9 @@ namespace XULWin
 
         NativeRadio(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -769,9 +772,9 @@ namespace XULWin
 
         virtual void setValue(int inValue);
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         bool initAttributeControllers();
     };
@@ -792,9 +795,9 @@ namespace XULWin
 
         virtual void rebuildLayout();
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         bool initAttributeControllers();
 
@@ -841,9 +844,9 @@ namespace XULWin
         void setEventHandler(EventHandler * inEventHandler)
         { mEventHandler = inEventHandler; }
 
-        virtual int calculateMinimumWidth() const;
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
-        virtual int calculateMinimumHeight() const;
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         bool initAttributeControllers();
 

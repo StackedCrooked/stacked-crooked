@@ -385,12 +385,13 @@ namespace XULWin
             }
 
             // HACK!
-            // For some reason Windows sends a scroll down followed by
-            // a scroll up event when pressing the arrow-down button 
-            // on a scrollbar is already completely scrolled to bottom.
-            // This scroll-down event is blocked by my scrollbar handlemessage function.
-            // However the scroll-up event is not. So we do that here.
-            // TODO: Find a better fix.
+            // For some reason Windows sends a scroll down event followed
+            // by a scroll up event when pressing the arrow-down button 
+            // on a scrollbar that has already completely scrolled to bottom.
+            // I already blocked this scroll-down event in my scrollbar
+            // handlemessage function. However the scroll-up event is not
+            // blocked there, so we do it here.
+            // TODO: Find a better solution than this hackish one.
             if (inOldPos > maxScrollPos)
             {
                 return false;

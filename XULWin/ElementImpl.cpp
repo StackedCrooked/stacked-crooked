@@ -704,7 +704,7 @@ namespace XULWin
     }
 
 
-    VirtualControl::VirtualControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+    VirtualComponent::VirtualComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         ElementImpl(inParent)
     {
         if (!mParent)
@@ -715,43 +715,43 @@ namespace XULWin
     }
         
         
-    VirtualControl::~VirtualControl()
+    VirtualComponent::~VirtualComponent()
     {
 
     }
 
      
-    bool VirtualControl::initAttributeControllers()
+    bool VirtualComponent::initAttributeControllers()
     {
         return Super::initAttributeControllers();
     }
 
 
-    bool VirtualControl::initOldStyleControllers()
+    bool VirtualComponent::initOldStyleControllers()
     {
         return Super::initOldStyleControllers();
     }
 
 
-    void VirtualControl::move(int x, int y, int w, int h)
+    void VirtualComponent::move(int x, int y, int w, int h)
     {
         mRect = Rect(x, y, w, h);
     }
 
 
-    void VirtualControl::rebuildLayout()
+    void VirtualComponent::rebuildLayout()
     {
         rebuildChildLayouts();
     }
     
     
-    Rect VirtualControl::clientRect() const
+    Rect VirtualComponent::clientRect() const
     {
         return mRect;
     }
 
     
-    LRESULT VirtualControl::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    LRESULT VirtualComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         return FALSE;
     }
@@ -859,7 +859,7 @@ namespace XULWin
         {
             return GetNativeParent(obj->decoratedElement().get());
         }
-        else if (VirtualControl * obj = dynamic_cast<VirtualControl*>(inElementImpl))
+        else if (VirtualComponent * obj = dynamic_cast<VirtualComponent*>(inElementImpl))
         {
             return GetNativeParent(obj->parent());
         }
@@ -1183,7 +1183,7 @@ namespace XULWin
 
     
     VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient) :
-        VirtualControl(inParent, inAttributesMapping),
+        VirtualComponent(inParent, inAttributesMapping),
         BoxLayouter(inOrient, inOrient == HORIZONTAL ? Start : Stretch)
     {
     }
@@ -1467,7 +1467,7 @@ namespace XULWin
 
 
     NativeSpacer::NativeSpacer(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualControl(inParent, inAttributesMapping)
+        VirtualComponent(inParent, inAttributesMapping)
     {
     }
 
@@ -1523,7 +1523,7 @@ namespace XULWin
 
 
     NativeGrid::NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualControl(inParent, inAttributesMapping)
+        VirtualComponent(inParent, inAttributesMapping)
     {
     }
         
@@ -1700,19 +1700,19 @@ namespace XULWin
 
 
     NativeRows::NativeRows(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualControl(inParent, inAttributesMapping)
+        VirtualComponent(inParent, inAttributesMapping)
     {
     }
 
 
     NativeColumns::NativeColumns(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualControl(inParent, inAttributesMapping)
+        VirtualComponent(inParent, inAttributesMapping)
     {
     }
 
 
     NativeRow::NativeRow(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualControl(inParent, inAttributesMapping)
+        VirtualComponent(inParent, inAttributesMapping)
     {
     }
 
@@ -1748,7 +1748,7 @@ namespace XULWin
 
 
     NativeColumn::NativeColumn(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualControl(inParent, inAttributesMapping)
+        VirtualComponent(inParent, inAttributesMapping)
     {
     }
 
@@ -1890,7 +1890,7 @@ namespace XULWin
 
     
     NativeDeck::NativeDeck(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualControl(inParent, inAttributesMapping),
+        VirtualComponent(inParent, inAttributesMapping),
         mSelectedIndex(0)
     {
     }

@@ -353,20 +353,20 @@ namespace XULWin
         // is only needed in constructors of NativeComponents, because
         // they need to know which is their native parent handle object.
         // If this is a NativeComponent, return this.
-        // If this is a VirtualControl, return first parent that is a NativeComponent.
+        // If this is a VirtualComponent, return first parent that is a NativeComponent.
         // If this is a Decorator, resolve until a NativeComponent is found.
         static NativeComponent * GetNativeParent(ElementImpl * inElementImpl);
     };
 
 
-    class VirtualControl : public ElementImpl
+    class VirtualComponent : public ElementImpl
     {
     public:
         typedef ElementImpl Super;
 
-        VirtualControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        VirtualComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual ~VirtualControl();
+        virtual ~VirtualComponent();
 
         virtual bool initAttributeControllers();
 
@@ -514,11 +514,11 @@ namespace XULWin
     };
 
 
-    class VirtualBox : public VirtualControl,
+    class VirtualBox : public VirtualComponent,
                        public BoxLayouter
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient = HORIZONTAL);
 
@@ -627,10 +627,10 @@ namespace XULWin
     };
 
 
-    class NativeSpacer : public VirtualControl
+    class NativeSpacer : public VirtualComponent
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         NativeSpacer(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
@@ -653,10 +653,10 @@ namespace XULWin
     };
 
 
-    class NativeGrid : public VirtualControl
+    class NativeGrid : public VirtualComponent
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
@@ -668,19 +668,19 @@ namespace XULWin
     };
 
 
-    class NativeRows : public VirtualControl
+    class NativeRows : public VirtualComponent
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         NativeRows(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
-    class NativeRow : public VirtualControl
+    class NativeRow : public VirtualComponent
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         NativeRow(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
@@ -690,19 +690,19 @@ namespace XULWin
     };
 
 
-    class NativeColumns : public VirtualControl
+    class NativeColumns : public VirtualComponent
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         NativeColumns(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
-    class NativeColumn : public VirtualControl
+    class NativeColumn : public VirtualComponent
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         NativeColumn(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
@@ -755,11 +755,11 @@ namespace XULWin
     };
 
 
-    class NativeDeck : public VirtualControl,
+    class NativeDeck : public VirtualComponent,
                        public virtual SelectedIndexController
     {
     public:
-        typedef VirtualControl Super;
+        typedef VirtualComponent Super;
 
         NativeDeck(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 

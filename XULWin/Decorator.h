@@ -23,6 +23,11 @@ namespace XULWin
 
         virtual ~Decorator();
 
+        // HiddenController methods
+        virtual bool isHidden() const;
+
+        virtual void setHidden(bool inHidden);
+
         ElementImplPtr decoratedElement() const;
 
         void setDecoratedElement(ElementImplPtr inElement);

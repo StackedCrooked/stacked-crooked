@@ -24,7 +24,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     XULTest::Tester tester;
     tester.runXULSample("hello");
-    //tester.runXULSample("uploadr");
+    ////tester.runXULSample("uploadr");
     //tester.runXULSample("widgets");
     //tester.runXULSample("configpanel");
     //tester.runXULSample("shout");

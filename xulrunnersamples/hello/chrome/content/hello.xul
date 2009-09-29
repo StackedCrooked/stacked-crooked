@@ -4,10 +4,16 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        orient="horizontal"
+        orient="vertical"
+        align="stretch"
 >
-
-  <button label="TestTestTestTestTestTestTestTestTestTestTest" flex="1"></button>
-  <spacer flex="1"></spacer>
-  <button label="Test" flex="1"></button>
+  <vbox style="overflow-y:auto" flex="1">
+    <button label="testtesttesttesttesttesttesttest"></button>
+    <button label="testtesttesttesttesttesttesttest"></button>
+    <button label="testtesttesttesttesttesttesttest"></button>
+    <button label="testtesttesttesttesttesttesttest"></button>
+    <button label="testtesttesttesttesttesttesttest"></button>
+    <button label="testtesttesttesttesttesttesttest"></button>
+    <button label="testtesttesttesttesttesttesttest"></button>
+  </vbox>
 </window>

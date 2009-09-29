@@ -102,7 +102,7 @@ namespace XULWin
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->calculateWidth(inSizeConstraint);
+            return mDecoratedElement->getWidth(inSizeConstraint);
         }
         return 0;
     }
@@ -258,12 +258,12 @@ namespace XULWin
 
     int BoxLayoutDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        int result = mDecoratedElement->calculateWidth(inSizeConstraint);
+        int result = mDecoratedElement->getWidth(inSizeConstraint);
         if (getOrient() == HORIZONTAL)
         {
             for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
             {
-                result += mDecoratorChildren[idx]->impl()->calculateWidth(inSizeConstraint);
+                result += mDecoratorChildren[idx]->impl()->getWidth(inSizeConstraint);
             }
         }
         return result;
@@ -297,7 +297,6 @@ namespace XULWin
                                inDecoratedElement,
                                inScrollbarOrient == HORIZONTAL ? VERTICAL : HORIZONTAL,
                                Stretch),
-            mScrollbarVisible(false),
             mOldScrollPos(0)
 
     {        
@@ -341,6 +340,7 @@ namespace XULWin
 
         // The layout manager will have moved the window to origin again.
         // So set the scrolled state back.
+        // TODO: find a better fix
         mOldScrollPos = 0;
         updateWindowScroll();
     }
@@ -358,7 +358,7 @@ namespace XULWin
         //
         NativeScrollbar * scrollbar = mDecoratorChildren[0]->impl()->downcast<NativeScrollbar>();
         int optSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateHeight(Optimal)
-                                                : mDecoratedElement->calculateWidth(Optimal);
+                                                : mDecoratedElement->getWidth(Optimal);
 
         if (optSize != 0) // guard against division by zero
         {
@@ -367,8 +367,7 @@ namespace XULWin
             int pageincrement = (int)(maxpos*ratio + 0.5);
             int curpos = Utils::getScrollPos(scrollbar->handle());
             Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
-            mScrollbarVisible = pageincrement < maxpos;
-            Utils::setWindowVisible(scrollbar->handle(), mScrollbarVisible);
+            scrollbar->setHidden(maxpos <= pageincrement);
         }
 
         //
@@ -391,7 +390,7 @@ namespace XULWin
             int maxpos = Defaults::Attributes::maxpos();
             Rect clientRect(mDecoratedElement->clientRect());
             int optSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateHeight(Optimal)
-                                                    : mDecoratedElement->calculateWidth(Optimal);
+                                                    : mDecoratedElement->getWidth(Optimal);
             int clientSize = getOrient() == HORIZONTAL ? clientRect.height()
                                                        : clientRect.height();
             int scrollPos = Utils::getScrollPos(scrollbar->handle());
@@ -494,7 +493,7 @@ namespace XULWin
     
     int MarginDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return marginLeft() + mDecoratedElement->calculateWidth(inSizeConstraint) + marginRight();
+        return marginLeft() + mDecoratedElement->getWidth(inSizeConstraint) + marginRight();
     }
 
     

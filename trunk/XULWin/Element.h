@@ -67,7 +67,7 @@ namespace XULWin
         // Returns empty string if not found.
         std::string getDocumentAttribute(const std::string & inName) const;
 
-        // Gets the attribute value from the style controller.
+        // Gets the CSS property from the style controller.
         // If no style controller was found then it will search
         // the style mapping.
         // Returns empty string if not found.

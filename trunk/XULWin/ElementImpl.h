@@ -62,9 +62,133 @@ namespace XULWin
                         boost::noncopyable
     {
     public:
-        ElementImpl(ElementImpl * inParent);
+        virtual ~ElementImpl() = 0{}
 
-        virtual ~ElementImpl() = 0;
+        // WidthController methods
+        // Returns value from last call to setWidth. If setWidth has not yet
+        // been called, then this method returns the value as defined in XUL
+        // document. If the value in the XUL document has not been defined,
+        // then the optimal size of the element is returned.
+        virtual int getWidth() const = 0;
+
+        virtual void setWidth(int inWidth) = 0;
+
+        // HeightController methods
+        virtual int getHeight() const = 0;
+
+        virtual void setHeight(int inHeight) = 0;
+
+        // FlexController methods
+        virtual int getFlex() const = 0;
+
+        virtual void setFlex(int inFlex) = 0;
+
+        // HiddenController methods
+        virtual bool isHidden() const = 0;
+
+        virtual void setHidden(bool inHidden) = 0;
+
+        // CSSWidthController methods
+        virtual int getCSSWidth() const = 0;
+
+        virtual void setCSSWidth(int inWidth) = 0;
+
+        // CSSHeightController methods
+        virtual int getCSSHeight() const = 0;
+
+        virtual void setCSSHeight(int inHeight) = 0;
+
+        // CSSMarginController methods
+        virtual void getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const = 0;
+
+        virtual void setCSSMargin(int inTop, int inLeft, int inRight, int inBottom) = 0;
+
+        // Downcast that also resolves decorators.
+        // Use this instead of manual cast, because
+        // you may get a decorator instead of the 
+        // actual element.
+        template<class Type>
+        Type * downcast()
+        {
+            if (Type * obj = dynamic_cast<Type*>(this))
+            {
+                return obj;
+            }
+            else if (Decorator * obj = dynamic_cast<Decorator*>(this))
+            {
+                return obj->decoratedElement()->downcast<Type>();
+            }
+            return 0;
+        }
+
+
+        template<class ConstType>
+        const ConstType * constDowncast() const
+        {
+            if (const ConstType * obj = dynamic_cast<const ConstType*>(this))
+            {
+                return obj;
+            }
+            else if (const Decorator * obj = dynamic_cast<const Decorator*>(this))
+            {
+                return obj->decoratedElement()->constDowncast<ConstType>();
+            }
+            return 0;
+        }
+
+        virtual int commandId() const = 0;
+
+        virtual int getWidth(SizeConstraint inSizeConstraint) const = 0;
+
+        virtual int getHeight(SizeConstraint inSizeConstraint) const = 0;
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const = 0;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const = 0;
+
+        // Tendency to expand, used for separators, scrollbars, etc..
+        virtual bool expansive() const = 0;
+
+        virtual void move(int x, int y, int w, int h) = 0;
+
+        virtual Rect clientRect() const = 0;
+
+        virtual void setOwningElement(Element * inElement) = 0;
+
+        virtual Element * owningElement() const = 0;
+
+        virtual ElementImpl * parent() const = 0;
+
+        virtual void rebuildLayout() = 0;
+
+        virtual void rebuildChildLayouts() = 0;
+
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
+
+        virtual bool getAttribute(const std::string & inName, std::string & outValue) = 0;
+
+        virtual bool getStyle(const std::string & inName, std::string & outValue) = 0;
+
+        virtual bool setStyle(const std::string & inName, const std::string & inValue) = 0;
+
+        virtual bool setAttribute(const std::string & inName, const std::string & inValue) = 0;
+
+        virtual bool initAttributeControllers() = 0;
+
+        virtual bool initStyleControllers() = 0;
+
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController) = 0;
+
+        virtual void setStyleController(const std::string & inAttr, StyleController * inController) = 0;
+    };
+
+
+    class ConcreteElement : public ElementImpl
+    {
+    public:
+        ConcreteElement(ElementImpl * inParent);
+
+        virtual ~ConcreteElement() = 0;
 
         // WidthController methods
         // Returns value from last call to setWidth. If setWidth has not yet
@@ -219,12 +343,12 @@ namespace XULWin
     };
 
 
-    class NativeComponent : public ElementImpl,
+    class NativeComponent : public ConcreteElement,
                             public virtual DisabledController,
                             public virtual LabelController
     {
     public:
-        typedef ElementImpl Super;
+        typedef ConcreteElement Super;
 
         NativeComponent(ElementImpl * inParent, const AttributesMapping & inAttributes);
 
@@ -402,10 +526,10 @@ namespace XULWin
     };
 
 
-    class VirtualComponent : public ElementImpl
+    class VirtualComponent : public ConcreteElement
     {
     public:
-        typedef ElementImpl Super;
+        typedef ConcreteElement Super;
 
         VirtualComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 

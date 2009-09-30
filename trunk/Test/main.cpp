@@ -25,14 +25,14 @@ public:
     void run()
     {
         Utils::CurrentDirectoryChanger curdir("../xulrunnersamples/configpanel/");
-        mRootEl = mRunner.loadApplication("application.ini");
+        mConfigWindow = mRunner.loadApplication("application.ini");
 
-        mNewSetButton = mRootEl->getElementById("newSetButton");
+        mNewSetButton = mConfigWindow->getElementById("newSetButton");
         mNewSetButton->addEventListener(this);
 
-        mSetsPopup = mRootEl->getElementById("setsPopup");
+        mSetsPopup = mConfigWindow->getElementById("setsPopup");
 
-        if (NativeWindow * win = mRootEl->impl()->downcast<NativeWindow>())
+        if (NativeWindow * win = mConfigWindow->impl()->downcast<NativeWindow>())
         {        
             win->showModal();
         }
@@ -102,7 +102,7 @@ public:
 
 private:
     XULRunner mRunner;   
-    ElementPtr mRootEl;
+    ElementPtr mConfigWindow;
     ElementPtr mNewSetDlg;
     Utils::Fallible<Element*> mNewSetButton;
     Utils::Fallible<Element*> mSetsPopup;    
@@ -129,9 +129,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     Utils::ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
 
-    runConfigSample();
-    //XULTest::Tester tester;
-    //tester.runXULSample("hello");
+    //runConfigSample();
+    XULTest::Tester tester;
+    tester.runXULSample("hello");
     ////tester.runXULSample("uploadr");
     //tester.runXULSample("widgets");
     //tester.runXULSample("configpanel");

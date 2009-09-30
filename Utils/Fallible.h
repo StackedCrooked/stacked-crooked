@@ -46,8 +46,26 @@ namespace Utils
             mValid = false;
         }
 
+
+        operator bool() const
+        {
+            return mValid;
+        }
+
         
         operator const T &() const
+        {
+            return mValue;
+        }
+
+
+        T & operator->()
+        {
+            return mValue;
+        }
+
+
+        const T & operator->() const
         {
             return mValue;
         }

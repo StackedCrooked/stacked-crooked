@@ -18,7 +18,9 @@ namespace XULWin
          */
         void run(const std::string & inApplicationIniFile);
 
-        ElementPtr load(const std::string & inApplicationIniFile);
+        ElementPtr loadApplication(const std::string & inApplicationIniFile);
+
+        ElementPtr loadXUL(const std::string & inXULUrl);
 
     private:
         Parser mParser;

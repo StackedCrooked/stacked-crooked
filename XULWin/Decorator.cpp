@@ -312,124 +312,183 @@ namespace XULWin
     
     ScrollDecorator::ScrollDecorator(ElementImpl * inParent,
                                      ElementImpl * inDecoratedElement,
-                                     Orient inScrollbarOrient) :
-            BoxLayoutDecorator(inParent,
-                               inDecoratedElement,
-                               inScrollbarOrient == HORIZONTAL ? VERTICAL : HORIZONTAL,
-                               Stretch),
-            mOldScrollPos(0)
-
-    {        
-        AttributesMapping attr;
-        attr["orient"] = Orient2String(inScrollbarOrient);
-        ElementPtr scrollbarEl = Scrollbar::Create(inParent->owningElement(), attr);
-
-        // Remove it from the parent so that it is untouched by its layout manager
-        inParent->owningElement()->removeChild(scrollbarEl.get());
-
-        NativeScrollbar * scrollbar = scrollbarEl->impl()->downcast<NativeScrollbar>();
-        if (scrollbar)
+                                     Orients inOrients) :
+        Decorator(inDecoratedElement),
+        mOrients(inOrients),        
+        mOldHorScrollPos(0),        
+        mOldVerScrollPos(0)
+    {
+        if (mOrients == Horizontal || mOrients == Both)
         {
-            scrollbar->setEventHandler(this);
+            AttributesMapping attr;
+            attr["orient"] = Orient2String(HORIZONTAL);
+            mHorizontalScrollbar = Scrollbar::Create(inParent->owningElement(), attr);
 
-            // Add it to our own list of children
-            addChild(scrollbarEl);
+            // Remove it from the parent so that it is untouched by its layout manager
+            inParent->owningElement()->removeChild(mHorizontalScrollbar.get());
+
+            mHorizontalScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+        }
+        if (mOrients == Vertical || mOrients == Both)
+        {
+            AttributesMapping attr;
+            attr["orient"] = Orient2String(VERTICAL);
+            mVerticalScrollbar = Scrollbar::Create(inParent->owningElement(), attr);
+
+            // Remove it from the parent so that it is untouched by its layout manager
+            inParent->owningElement()->removeChild(mVerticalScrollbar.get());
+
+            mVerticalScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
         }
     }
             
             
     int ScrollDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        if (inSizeConstraint == Minimum && getOrient() == VERTICAL)
+        if (inSizeConstraint == Minimum && (mOrients == Horizontal || mOrients == Both))
         {
             return 0;
         }
-        return Super::calculateWidth(inSizeConstraint);
+
+        int result = mDecoratedElement->calculateWidth(inSizeConstraint);
+        if (mVerticalScrollbar && !mVerticalScrollbar->impl()->isHidden())
+        {
+            result += Defaults::scrollbarWidth();
+        }
+        return result;
     }
 
 
     int ScrollDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        if (inSizeConstraint == Minimum && getOrient() == HORIZONTAL)
+        if (inSizeConstraint == Minimum && (mOrients == Vertical || mOrients == Both))
         {
             return 0;
         }
-        return Super::calculateHeight(inSizeConstraint);
+
+        int result = mDecoratedElement->calculateHeight(inSizeConstraint);
+        if (mHorizontalScrollbar && !mHorizontalScrollbar->impl()->isHidden())
+        {
+            result += Defaults::scrollbarWidth();
+        }
+        return result;
     }
     
     
     void ScrollDecorator::rebuildLayout()
     {
-        Super::rebuildLayout();
+        Rect clientRect(clientRect());
+        if (mOrients == Horizontal || mOrients == Both)
+        {
+            mHorizontalScrollbar->impl()->move(
+                clientRect.x(),
+                clientRect.height(),
+                clientRect.width(),
+                Defaults::scrollbarWidth());
+            mOldHorScrollPos = 0;
+        }
+        if (mOrients == Vertical || mOrients == Both)
+        {
+            mVerticalScrollbar->impl()->move(
+                clientRect.width(),
+                clientRect.y(),
+                Defaults::scrollbarWidth(),
+                clientRect.height());
+            mOldVerScrollPos = 0;
+        }
 
-        // The layout manager will have moved the window to origin again.
-        // So set the scrolled state back.
-        // TODO: find a better fix
-        mOldScrollPos = 0;
-        updateWindowScroll();
+        Super::rebuildLayout();
     }
     
     
     void ScrollDecorator::move(int x, int y, int w, int h)
     {
-        if (mDecoratorChildren.empty())
+        // Update page height of scroll boxes
+        int newW = w;
+        int newH = h;
+        if (mOrients == Horizontal || mOrients == Both)
         {
-            return;
+            NativeScrollbar * scrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
+            if (scrollbar)
+            {
+                int maxpos = Defaults::Attributes::maxpos();
+                float ratio = (float)newW/(float)mDecoratedElement->getWidth(Optimal);
+                int pageincrement = (int)(maxpos*ratio + 0.5);
+                int curpos = Utils::getScrollPos(scrollbar->handle());
+                Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
+                scrollbar->setHidden(maxpos <= pageincrement);
+                if (!scrollbar->isHidden())
+                {
+                    newH -= Defaults::scrollbarWidth();
+                }
+                scrollbar->setWidth(w - Defaults::scrollbarWidth());
+            }
         }
 
-        // 
-        // Update page height of scroll box
-        //
-        NativeScrollbar * scrollbar = mDecoratorChildren[0]->impl()->downcast<NativeScrollbar>();
-        int optSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateHeight(Optimal)
-                                                : mDecoratedElement->getWidth(Optimal);
-
-        if (optSize != 0) // guard against division by zero
+        if (mOrients == Vertical || mOrients == Both)
         {
-            int maxpos = Defaults::Attributes::maxpos();
-            float ratio = (float)(getOrient() == HORIZONTAL ? h : w)/(float)optSize;
-            int pageincrement = (int)(maxpos*ratio + 0.5);
-            int curpos = Utils::getScrollPos(scrollbar->handle());
-            Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
-            scrollbar->setHidden(maxpos <= pageincrement);
+            NativeScrollbar * scrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
+            if (scrollbar)
+            {
+                int maxpos = Defaults::Attributes::maxpos();
+                float ratio = (float)newH/(float)mDecoratedElement->getHeight(Minimum);
+                int pageincrement = (int)(maxpos*ratio + 0.5);
+                int curpos = Utils::getScrollPos(scrollbar->handle());
+                Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
+                scrollbar->setHidden(maxpos <= pageincrement);
+                if (!scrollbar->isHidden())
+                {
+                    newW -= Defaults::scrollbarWidth();
+                }
+                scrollbar->setHeight(h - Defaults::scrollbarWidth());
+            }
         }
-
-        //
-        // Move the window
-        //
-        Super::move(x, y, w, h);
+        Super::move(x, y, newW, newH);
     }
 
 
     void ScrollDecorator::updateWindowScroll()
     {
-        NativeScrollbar * scrollbar = mDecoratorChildren[0]->impl()->downcast<NativeScrollbar>();
-        if (!scrollbar)
-        {
-            return;
-        }
-
         if (NativeComponent * nativeComponent = mDecoratedElement->downcast<NativeComponent>())
         {
-            int maxpos = Defaults::Attributes::maxpos();
-            Rect clientRect(mDecoratedElement->clientRect());
-            int optSize = getOrient() == HORIZONTAL ? mDecoratedElement->calculateHeight(Optimal)
-                                                    : mDecoratedElement->getWidth(Optimal);
-            int clientSize = getOrient() == HORIZONTAL ? clientRect.height()
-                                                       : clientRect.height();
-            int scrollPos = Utils::getScrollPos(scrollbar->handle());
-            if (scrollPos > maxpos) // just to be sure
+
+            struct Helper
             {
-                scrollPos = maxpos;
+                static void UpdateWindowScroll(Orient inOrient,
+                                               NativeScrollbar * inScrollbar,
+                                               ElementImpl * inDecoratedElement,
+                                               int & ioOldScrollPos)
+                {
+                    int maxpos = Defaults::Attributes::maxpos();
+                    Rect clientRect(inDecoratedElement->clientRect());
+                    int minSize = inOrient == HORIZONTAL ? inDecoratedElement->getWidth(Minimum) : inDecoratedElement->getHeight(Minimum);
+                    int clientSize = inOrient == HORIZONTAL ? clientRect.width() : clientRect.height();
+                    int scrollPos = Utils::getScrollPos(inScrollbar->handle());
+
+                    double ratio = (double)scrollPos/(double)Defaults::Attributes::maxpos();
+                    int newScrollPos = (int)((ratio * (double)minSize) + 0.5);
+                    int dx = inOrient == HORIZONTAL ? (newScrollPos - ioOldScrollPos) : 0;
+                    int dy = inOrient == VERTICAL   ? (newScrollPos - ioOldScrollPos) : 0;
+
+                    if (NativeComponent * nativeComponent = inDecoratedElement->downcast<NativeComponent>())
+                    {
+                        ::ScrollWindowEx(nativeComponent->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
+                    }
+                    ioOldScrollPos = newScrollPos;
+                }
+            };        
+            if (mOrients == Horizontal || mOrients == Both)
+            {
+                NativeScrollbar * scrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
+                Helper::UpdateWindowScroll(HORIZONTAL, scrollbar, mDecoratedElement.get(), mOldHorScrollPos);
             }
 
-            double ratio = (double)scrollPos/(double)Defaults::Attributes::maxpos();
-            int oldScrollPos = mOldScrollPos;
-            int newScrollPos = (int)((ratio * (double)optSize) + 0.5);
-            int dx = getOrient() == VERTICAL   ? (newScrollPos - mOldScrollPos) : 0;
-            int dy = getOrient() == HORIZONTAL ? (newScrollPos - mOldScrollPos) : 0;
-            ::ScrollWindowEx(nativeComponent->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
-            mOldScrollPos = newScrollPos;
+            if (mOrients == Vertical || mOrients == Both)
+            {
+                NativeScrollbar * scrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
+                Helper::UpdateWindowScroll(VERTICAL, scrollbar, mDecoratedElement.get(), mOldVerScrollPos);
+            }
+
         }
     }
 

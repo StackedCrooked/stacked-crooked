@@ -7,13 +7,50 @@
         orient="vertical"
         align="stretch"
 >
-  <grid style="overflow-y:auto;overflow-x:auto" flex="1">
-    <columns>
-      <column></column>
-      <column></column>
+  <vbox style="overflow-x:auto" flex="1" >
+    <hbox>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="LAST"></button>
+    </hbox>
+    <hbox>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="LAST"></button>
+    </hbox>
+    <hbox>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="LAST"></button>
+    </hbox>
+    <hbox>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="horizontal"></button>
+      <button label="LAST"></button>
+    </hbox>
+    <hbox>
+      <button label="LAST"></button>
+      <button label="LAST"></button>
+      <button label="LAST"></button>
+      <button label="LAST"></button>
+      <button label="LAST"></button>
+    </hbox>
+  </vbox>
+  <grid style="overflow-x:auto" flex="1">
+    <columns align="stretch">
+      <column flex="1"></column>
+      <column flex="1"></column>
     </columns>
-    <rows>
-      <row align="center">
+    <rows align="stretch">
+      <row align="center" flex="1">
         <label style="text-align:center" value="ItemItemItemItemItem"></label>
         <button label="button"></button>
       </row>

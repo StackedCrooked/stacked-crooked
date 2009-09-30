@@ -316,19 +316,8 @@ namespace XULWin
     }
 
 
-    static ElementImpl * CreateBox(Element * inParent,
-                                   const AttributesMapping & inAttributesMapping,
-                                   Orient inOrient = Defaults::Attributes::orient(),
-                                   Align inAlign = Defaults::Attributes::align())
-    {
-        struct Helper
-        {
-            static bool Has(const StylesMapping & inStylesMapping, const std::string & value)
-            {
-                return inStylesMapping.find(value) != inStylesMapping.end();
-            }
-        };
-        StylesMapping styles;
+    void GetStyles(const AttributesMapping & inAttributesMapping, StylesMapping & styles)
+    {        
         StylesMapping::const_iterator it = inAttributesMapping.find("style");
         if (it != inAttributesMapping.end())
         {
@@ -350,6 +339,23 @@ namespace XULWin
                 counter++;
             }
         }
+    }
+
+
+    static ElementImpl * CreateBox(Element * inParent,
+                                   const AttributesMapping & inAttributesMapping,
+                                   Orient inOrient = Defaults::Attributes::orient(),
+                                   Align inAlign = Defaults::Attributes::align())
+    {
+        struct Helper
+        {
+            static bool Has(const StylesMapping & inStylesMapping, const std::string & value)
+            {
+                return inStylesMapping.find(value) != inStylesMapping.end();
+            }
+        };
+        StylesMapping styles;
+        GetStyles(inAttributesMapping, styles);
         bool overflow = Helper::Has(styles, "overflow");
         bool overflowX = overflow || Helper::Has(styles, "overflow-x");
         bool overflowY = overflow || Helper::Has(styles, "overflow-y");
@@ -361,7 +367,7 @@ namespace XULWin
             {
                 result = new ScrollDecorator(inParent->impl(), box, HORIZONTAL);
             }
-            else
+            else if (overflowY)
             {
                 result = new ScrollDecorator(inParent->impl(), box, VERTICAL);
             }
@@ -567,10 +573,52 @@ namespace XULWin
     }
 
 
+
+
+
+    static ElementImpl * CreateGrid(Element * inParent,
+                                   const AttributesMapping & inAttributesMapping)
+    {
+        struct Helper
+        {
+            static bool Has(const StylesMapping & inStylesMapping, const std::string & value)
+            {
+                return inStylesMapping.find(value) != inStylesMapping.end();
+            }
+        };
+        StylesMapping styles;
+        GetStyles(inAttributesMapping, styles);
+        bool overflow = Helper::Has(styles, "overflow");
+        bool overflowX = overflow || Helper::Has(styles, "overflow-x");
+        bool overflowY = overflow || Helper::Has(styles, "overflow-y");
+        if (overflowX || overflowY)
+        {
+            ScrollDecorator * result;
+            NativeGrid * grid = new NativeGrid(inParent->impl(), inAttributesMapping);
+            ElementImpl * decoratedElement = grid;
+            if (overflowX)
+            {
+                result = new ScrollDecorator(inParent->impl(), decoratedElement, HORIZONTAL);
+                decoratedElement = result;
+            }
+            if (overflowY)
+            {
+                result = new ScrollDecorator(inParent->impl(), decoratedElement, VERTICAL);
+                decoratedElement = result;
+            }
+            return result;
+        }
+        else
+        {
+            return new Decorator(new VirtualGrid(inParent->impl(), inAttributesMapping));
+        }
+    }
+
+
     Grid::Grid(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Grid::Type(),
                 inParent,
-                new Decorator(new NativeGrid(inParent->impl(), inAttributesMapping)))
+                CreateGrid(inParent, inAttributesMapping))
     {
     }
 

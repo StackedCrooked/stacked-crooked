@@ -409,7 +409,7 @@ namespace XULWin
             return;
         }
 
-        if (NativeComponent * nativeBox = mDecoratedElement->downcast<NativeComponent>())
+        if (NativeComponent * nativeComponent = mDecoratedElement->downcast<NativeComponent>())
         {
             int maxpos = Defaults::Attributes::maxpos();
             Rect clientRect(mDecoratedElement->clientRect());
@@ -428,7 +428,7 @@ namespace XULWin
             int newScrollPos = (int)((ratio * (double)optSize) + 0.5);
             int dx = getOrient() == VERTICAL   ? (newScrollPos - mOldScrollPos) : 0;
             int dy = getOrient() == HORIZONTAL ? (newScrollPos - mOldScrollPos) : 0;
-            ::ScrollWindowEx(nativeBox->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
+            ::ScrollWindowEx(nativeComponent->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
             mOldScrollPos = newScrollPos;
         }
     }

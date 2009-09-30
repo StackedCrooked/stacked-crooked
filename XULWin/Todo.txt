@@ -5,6 +5,7 @@ style="overflow:hidden;"
 
 
 - Implement all overflow styles
+- Implement MDC dialog
 - Rename ElementImpl::getAttribute to getNativeAttribute
 - Factor out Poco tokenizer code in CreateBox (Element.cpp)
 - Add "undetermined" attribute for progressmeter

@@ -21,14 +21,14 @@
       <row align="center">
         <label value="&ADD_TO_SET;" />
         <hbox align="center">
-          <menulist flex="1">
+          <menulist flex="1" id="setList">
             <menupopup>
               <menuitem label="School" />
               <menuitem label="Family" />
               <menuitem label="Friends" />
             </menupopup>
           </menulist>
-          <button label="&NEW_SET;"></button>
+          <button label="&NEW_SET;" id="newSetButton"></button>
         </hbox>
       </row>
       <row align="center">

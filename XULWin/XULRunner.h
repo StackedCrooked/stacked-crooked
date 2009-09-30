@@ -2,6 +2,7 @@
 #define XULRUNNER_H_INCLUDED
 
 
+#include "Parser.h"
 #include <string>
 
 
@@ -16,6 +17,11 @@ namespace XULWin
          * inApplicationIniFile: path to ini file
          */
         void run(const std::string & inApplicationIniFile);
+
+        ElementPtr load(const std::string & inApplicationIniFile);
+
+    private:
+        Parser mParser;
     
     };
 

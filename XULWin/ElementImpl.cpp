@@ -435,6 +435,41 @@ namespace XULWin
     }
 
 
+    bool NativeComponent::addEventHandler(EventHandler * inEventHandler)
+    {       
+        EventHandlers::iterator it = mEventHandlers.find(inEventHandler);
+        if (it == mEventHandlers.end())
+        {
+            mEventHandlers.insert(inEventHandler);
+            return true;
+        }
+        return false;
+    }
+
+
+    bool NativeComponent::removeEventHandler(EventHandler * inEventHandler)
+    {       
+        EventHandlers::iterator it = mEventHandlers.find(inEventHandler);
+        if (it != mEventHandlers.end())
+        {
+            mEventHandlers.erase(it);
+            return true;
+        }
+        return false;
+    }
+    
+    
+    void NativeComponent::handleCommand(WPARAM wParam, LPARAM lParam)
+    {
+        unsigned short notificationCode = HIWORD(wParam);
+        EventHandlers::iterator it = mEventHandlers.begin(), end = mEventHandlers.end();
+        for (; it != end; ++it)
+        {
+            (*it)->command(owningElement(), notificationCode);
+        }
+    }
+
+
     LRESULT NativeComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         switch (inMessage)
@@ -461,6 +496,14 @@ namespace XULWin
                 break;
             }
         }
+
+        // Forward to event handlers
+        EventHandlers::iterator it = mEventHandlers.begin(), end = mEventHandlers.end();
+        for (; it != end; ++it)
+        {
+            (*it)->handleMessage(owningElement(), inMessage, wParam, lParam);
+        }
+
 
         if (mOrigProc)
 		{
@@ -725,6 +768,14 @@ namespace XULWin
                 break;
             }
         }
+
+        // Forward to event handlers
+        EventHandlers::iterator it = mEventHandlers.begin(), end = mEventHandlers.end();
+        for (; it != end; ++it)
+        {
+            (*it)->handleMessage(owningElement(), inMessage, wParam, lParam);
+        }
+
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
 

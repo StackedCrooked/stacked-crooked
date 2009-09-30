@@ -121,7 +121,7 @@ namespace XULWin
     
     Orient ConcreteElement::getOrient() const
     {
-        return mOrient.getValue(Vertical);
+        return mOrient.getValueOr(Vertical);
     }
 
 
@@ -133,7 +133,7 @@ namespace XULWin
 
     Align ConcreteElement::getAlign() const
     {
-        return mAlign.getValue((getOrient() == Vertical) ? Stretch : Start);
+        return mAlign.getValueOr((getOrient() == Vertical) ? Stretch : Start);
     }
 
 
@@ -1317,7 +1317,7 @@ namespace XULWin
         
     Orient VirtualBox::getOrient() const
     {
-        return Super::getOrient();
+        return mOrient.getValueOr(Horizontal);
     }
 
 
@@ -1463,7 +1463,7 @@ namespace XULWin
 
     Orient NativeBox::getOrient() const
     {
-        return Super::getOrient();
+        return mOrient.getValueOr(Horizontal);
     }
 
 
@@ -1629,22 +1629,6 @@ namespace XULWin
                       0, // exStyle
                       BS_PUSHBUTTON)
     {
-        //::SendMessage(handle(), TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0); 
-
-        //CommandId id;
-        //// add to toolbar
-        //std::wstring itemText = L"test";
-        //TBBUTTON theToolBarButton;
-        //theToolBarButton.idCommand = id.intValue();
-        //theToolBarButton.fsState = TBSTATE_ENABLED;
-        //theToolBarButton.fsStyle = BTNS_BUTTON | BTNS_DROPDOWN | BTNS_SHOWTEXT;
-        //theToolBarButton.dwData = 0; 
-        //theToolBarButton.iString = (INT_PTR)itemText.c_str();
-        //theToolBarButton.iBitmap = I_IMAGENONE;
-
-        //SendMessage(handle(), TB_ADDBUTTONS, 1, (LPARAM)(LPTBBUTTON)&theToolBarButton); 
-        //SendMessage(handle(), TB_AUTOSIZE, 0, 0);
-        //ShowWindow(handle(), SW_SHOW); 
     }
         
         
@@ -2133,7 +2117,7 @@ namespace XULWin
         
     Align NativeColumn::getAlign() const
     {
-        return mAlign.getValue(Stretch);
+        return mAlign.getValueOr(Stretch);
     }
 
     
@@ -2348,9 +2332,6 @@ namespace XULWin
 
     bool NativeDeck::initAttributeControllers()
     {
-        //AttributeSetter selIndexSetter = boost::bind(&NativeDeck::setSelectedIndex, this, boost::bind(&String2Int, _1));
-        //AttributeGetter selIndexGetter = boost::bind(&Int2String, boost::bind(&NativeDeck::selectedIndex, this));
-        //setOldAttributeController("selectedIndex", OldAttributeController(selIndexGetter, selIndexSetter));
         Super::setAttributeController("selectedIndex", static_cast<SelectedIndexController*>(this));
         return Super::initAttributeControllers();
     }

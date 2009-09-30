@@ -30,97 +30,12 @@
 <window id="openLocation"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         >
-
-  <vbox flex="1" style="overflow:scroll">
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-    <hbox>
-      <button label="1"></button>
-      <button label="2"></button>
-      <button label="3"></button>
-      <button label="4"></button>
-      <button label="5"></button>
-      <button label="6"></button>
-    </hbox>
-  </vbox>
-  <!--<radiogroup id="group" orient="vertical">
-    <hbox>
-      <radio group="group" label="Radio 1" id="radio1"/>
-      <spacer flex="1"/>
-      <button label="Test Property APIs" oncommand="testProperty('radio1');"/>
-    </hbox>
-    <radio group="group" label="Radio 2"/>
-    <radio group="group" label="Radio 3" disabled="true" checked="true"/>
-  </radiogroup>-->
-
+  <deck selectedIndex="2">
+    <description value="This is the first page"/>
+    <button label="This is the second page"/>
+    <box>
+      <label value="This is the third page"></label>
+      <button label="This is also the third page"/>
+    </box>
+  </deck>
 </window>

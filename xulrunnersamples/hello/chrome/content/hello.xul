@@ -4,9 +4,23 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        orient="vertical"
-        align="stretch"
-        width="200"
 >
-    <button label="test" flex="1" style="min-height:200px; max-height:400px; min-width: 300px; max-width: 400px;"></button>
+  <vbox flex="1" style="overflow-y:auto">
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+    <button label="test"></button>
+  </vbox>
 </window>

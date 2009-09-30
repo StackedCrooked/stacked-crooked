@@ -19,11 +19,11 @@ namespace XULWin
 
     int CommandId::sId = 101; // start handleCommand Ids at 101 to avoid conflicts with Windows predefined values
     
-    ElementImpl::Components ElementImpl::sComponentsByHandle;
+    ConcreteElement::Components ConcreteElement::sComponentsByHandle;
     
     NativeControl::ComponentsById NativeControl::sComponentsById;
 
-    ElementImpl::ElementImpl(ElementImpl * inParent) :
+    ConcreteElement::ConcreteElement(ElementImpl * inParent) :
         mParent(inParent),
         mCommandId(),
         mExpansive(false),
@@ -42,12 +42,12 @@ namespace XULWin
     }
 
 
-    ElementImpl::~ElementImpl()
+    ConcreteElement::~ConcreteElement()
     {
     }
 
 
-    int ElementImpl::getWidth() const
+    int ConcreteElement::getWidth() const
     {
         if (mWidth.isValid())
         {
@@ -63,13 +63,13 @@ namespace XULWin
     }
     
     
-    void ElementImpl::setWidth(int inWidth)
+    void ConcreteElement::setWidth(int inWidth)
     {
         mWidth = inWidth;
     }
 
 
-    int ElementImpl::getHeight() const
+    int ConcreteElement::getHeight() const
     {
         if (mHeight.isValid())
         {
@@ -85,37 +85,37 @@ namespace XULWin
     }
     
     
-    void ElementImpl::setHeight(int inHeight)
+    void ConcreteElement::setHeight(int inHeight)
     {
         mHeight = inHeight;
     }
 
 
-    int ElementImpl::getFlex() const
+    int ConcreteElement::getFlex() const
     {
         return mFlex;
     }
     
     
-    void ElementImpl::setFlex(int inFlex)
+    void ConcreteElement::setFlex(int inFlex)
     {
         mFlex = inFlex;
     }
 
     
-    bool ElementImpl::isHidden() const
+    bool ConcreteElement::isHidden() const
     {
         return mHidden;
     }
 
 
-    void ElementImpl::setHidden(bool inHidden)
+    void ConcreteElement::setHidden(bool inHidden)
     {
         mHidden = inHidden;
     }
 
 
-    int ElementImpl::getCSSWidth() const
+    int ConcreteElement::getCSSWidth() const
     {
         if (mWidth.isValid())
         {
@@ -125,13 +125,13 @@ namespace XULWin
     }
 
 
-    void ElementImpl::setCSSWidth(int inWidth)
+    void ConcreteElement::setCSSWidth(int inWidth)
     {
         mCSSWidth = inWidth;
     }
 
     
-    int ElementImpl::getCSSHeight() const
+    int ConcreteElement::getCSSHeight() const
     {
         if (mHeight.isValid())
         {
@@ -141,13 +141,13 @@ namespace XULWin
     }
 
 
-    void ElementImpl::setCSSHeight(int inHeight)
+    void ConcreteElement::setCSSHeight(int inHeight)
     {
         mCSSHeight = inHeight;
     }
 
     
-    void ElementImpl::getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const
+    void ConcreteElement::getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const
     {
         int margin = 0;
         if (const MarginDecorator * marginDecorator = constDowncast<MarginDecorator>())
@@ -157,11 +157,11 @@ namespace XULWin
     }
 
 
-    void ElementImpl::setCSSMargin(int inTop, int inLeft, int inRight, int inBottom)
+    void ConcreteElement::setCSSMargin(int inTop, int inLeft, int inRight, int inBottom)
     {
         if (!owningElement())
         {
-            ReportError("ElementImpl::setCSSMargin failed because no owning element was present.");
+            ReportError("ConcreteElement::setCSSMargin failed because no owning element was present.");
             return;
         }
 
@@ -187,7 +187,7 @@ namespace XULWin
     }
     
     
-    int ElementImpl::getWidth(SizeConstraint inSizeConstraint) const
+    int ConcreteElement::getWidth(SizeConstraint inSizeConstraint) const
     {
         if (isHidden())
         {
@@ -203,7 +203,7 @@ namespace XULWin
     }
 
     
-    int ElementImpl::getHeight(SizeConstraint inSizeConstraint) const
+    int ConcreteElement::getHeight(SizeConstraint inSizeConstraint) const
     {
         if (isHidden())
         {
@@ -219,13 +219,13 @@ namespace XULWin
     }
     
     
-    bool ElementImpl::expansive() const
+    bool ConcreteElement::expansive() const
     {
         return mExpansive;
     }
     
     
-    bool ElementImpl::getStyle(const std::string & inName, std::string & outValue)
+    bool ConcreteElement::getStyle(const std::string & inName, std::string & outValue)
     {
         StyleControllers::iterator it = mStyleControllers.find(inName);
         if (it != mStyleControllers.end())
@@ -237,7 +237,7 @@ namespace XULWin
     }
     
     
-    bool ElementImpl::getAttribute(const std::string & inName, std::string & outValue)
+    bool ConcreteElement::getAttribute(const std::string & inName, std::string & outValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
         if (it != mAttributeControllers.end())
@@ -249,7 +249,7 @@ namespace XULWin
     }
     
     
-    bool ElementImpl::setStyle(const std::string & inName, const std::string & inValue)
+    bool ConcreteElement::setStyle(const std::string & inName, const std::string & inValue)
     {
         StyleControllers::iterator it = mStyleControllers.find(inName);
         if (it != mStyleControllers.end())
@@ -261,7 +261,7 @@ namespace XULWin
     }
     
     
-    bool ElementImpl::setAttribute(const std::string & inName, const std::string & inValue)
+    bool ConcreteElement::setAttribute(const std::string & inName, const std::string & inValue)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inName);
         if (it != mAttributeControllers.end())
@@ -273,7 +273,7 @@ namespace XULWin
     }
 
 
-    bool ElementImpl::initAttributeControllers()
+    bool ConcreteElement::initAttributeControllers()
     {        
         // STATIC CAST NEEDED HERE OTHERWISE WE GET COMPILER ERROR:
         // error C2594: '=' : ambiguous conversions from 'Element *const ' to 'AttributeController *'
@@ -285,7 +285,7 @@ namespace XULWin
     }
 
 
-    bool ElementImpl::initStyleControllers()
+    bool ConcreteElement::initStyleControllers()
     {
         setStyleController(CSSMarginController::PropertyName(), static_cast<CSSMarginController*>(this));
         setStyleController(CSSWidthController::PropertyName(), static_cast<CSSWidthController*>(this));
@@ -294,7 +294,7 @@ namespace XULWin
     }
 
 
-    void ElementImpl::setAttributeController(const std::string & inAttr, AttributeController * inController)
+    void ConcreteElement::setAttributeController(const std::string & inAttr, AttributeController * inController)
     {
         AttributeControllers::iterator it = mAttributeControllers.find(inAttr);
         if (it == mAttributeControllers.end())
@@ -304,7 +304,7 @@ namespace XULWin
     }
     
     
-    void ElementImpl::setStyleController(const std::string & inAttr, StyleController * inController)
+    void ConcreteElement::setStyleController(const std::string & inAttr, StyleController * inController)
     {
         StyleControllers::iterator it = mStyleControllers.find(inAttr);
         if (it == mStyleControllers.end())
@@ -314,25 +314,25 @@ namespace XULWin
     }
 
     
-    void ElementImpl::setOwningElement(Element * inElement)
+    void ConcreteElement::setOwningElement(Element * inElement)
     {
         mElement = inElement;
     }
 
     
-    Element * ElementImpl::owningElement() const
+    Element * ConcreteElement::owningElement() const
     {
         return mElement;
     }
 
 
-    ElementImpl * ElementImpl::parent() const
+    ElementImpl * ConcreteElement::parent() const
     {
         return mParent;
     }
 
     
-    void ElementImpl::rebuildChildLayouts()
+    void ConcreteElement::rebuildChildLayouts()
     {
         if (!mElement)
         {
@@ -354,7 +354,7 @@ namespace XULWin
 
 
     NativeComponent::NativeComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        ElementImpl(inParent),
+        ConcreteElement(inParent),
         mHandle(0),
         mModuleHandle(sModuleHandle ? sModuleHandle : ::GetModuleHandle(0))
     {
@@ -792,7 +792,7 @@ namespace XULWin
 
 
     VirtualComponent::VirtualComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        ElementImpl(inParent)
+        ConcreteElement(inParent)
     {
         if (!mParent)
         {

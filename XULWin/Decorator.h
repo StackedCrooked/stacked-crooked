@@ -22,33 +22,81 @@ namespace XULWin
         Decorator(ElementImplPtr inDecoratedElement);
 
         virtual ~Decorator();
+        
+        virtual int getWidth() const;
+
+        virtual void setWidth(int inWidth);
+
+        // HeightController methods
+        virtual int getHeight() const;
+
+        virtual void setHeight(int inHeight);
+
+        // FlexController methods
+        virtual int getFlex() const;
+
+        virtual void setFlex(int inFlex);
 
         // HiddenController methods
         virtual bool isHidden() const;
 
         virtual void setHidden(bool inHidden);
 
-        ElementImplPtr decoratedElement() const;
+        // CSSWidthController methods
+        virtual int getCSSWidth() const;
 
-        void setDecoratedElement(ElementImplPtr inElement);
+        virtual void setCSSWidth(int inWidth);
 
-        virtual void setOwningElement(Element * inElement);
+        // CSSHeightController methods
+        virtual int getCSSHeight() const;
 
-        virtual Element * owningElement() const;
+        virtual void setCSSHeight(int inHeight);
 
-        virtual bool initAttributeControllers();
+        // CSSMarginController methods
+        virtual void getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const;
 
-        virtual bool initStyleControllers();
+        virtual void setCSSMargin(int inTop, int inLeft, int inRight, int inBottom);
 
-        virtual void rebuildLayout();
+        virtual int commandId() const;
+
+        virtual int getWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int getHeight(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
+        // Tendency to expand, used for separators, scrollbars, etc..
+        virtual bool expansive() const;
+
         virtual void move(int x, int y, int w, int h);
 
         virtual Rect clientRect() const;
+
+        virtual void setOwningElement(Element * inElement);
+
+        virtual Element * owningElement() const;
+
+        virtual ElementImpl * parent() const;
+
+        virtual void rebuildLayout();
+
+        virtual void rebuildChildLayouts();
+
+        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
+
+        virtual bool initAttributeControllers();
+
+        virtual bool initStyleControllers();
+
+        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
+
+        virtual void setStyleController(const std::string & inAttr, StyleController * inController);
+
+        ElementImplPtr decoratedElement() const;
+
+        void setDecoratedElement(ElementImplPtr inElement);
 
         virtual bool getAttribute(const std::string & inName, std::string & outValue);
 
@@ -58,11 +106,8 @@ namespace XULWin
 
         virtual bool setStyle(const std::string & inName, const std::string & inValue);
 
-        virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
-
     protected:
         ElementImplPtr mDecoratedElement;
-        Rect mRect;
     };
 
 
@@ -165,8 +210,6 @@ namespace XULWin
 
         virtual ~MarginDecorator();
 
-        virtual void move(int x, int y, int w, int h);
-
         void setMargin(int top, int left, int right, int bottom);
 
         void getMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const;
@@ -178,6 +221,22 @@ namespace XULWin
         int marginRight() const;
 
         int marginBottom() const;
+      
+        virtual int getWidth() const;
+
+        virtual void setWidth(int inWidth);
+
+        virtual int getHeight() const;
+
+        virtual void setHeight(int inHeight);
+
+        virtual int getWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int getHeight(SizeConstraint inSizeConstraint) const;
+        
+        virtual Rect clientRect() const;
+
+        virtual void move(int x, int y, int w, int h);
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
@@ -185,6 +244,8 @@ namespace XULWin
 
     private:
         int mTop, mLeft, mRight, mBottom;
+        Rect mOuterRect;
+        Rect mInnerRect;
     };
 
 } // namespace XULWin

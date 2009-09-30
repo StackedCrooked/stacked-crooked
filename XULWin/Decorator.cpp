@@ -15,14 +15,12 @@ namespace XULWin
 {
 
     Decorator::Decorator(ElementImpl * inDecoratedElement) :
-        ElementImpl(inDecoratedElement->parent()),
         mDecoratedElement(inDecoratedElement)
     {
     }
 
 
     Decorator::Decorator(ElementImplPtr inDecoratedElement) :
-        ElementImpl(inDecoratedElement->parent()),
         mDecoratedElement(inDecoratedElement)
     {
     }
@@ -33,13 +31,126 @@ namespace XULWin
     }
 
 
+    int Decorator::getWidth() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getWidth();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setWidth(int inWidth)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setWidth(inWidth);
+        }
+    }
+
+
+    int Decorator::getHeight() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getHeight();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setHeight(int inHeight)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setHeight(inHeight);
+        }
+    }
+
+
+    int Decorator::getFlex() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getFlex();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setFlex(int inFlex)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setFlex(inFlex);
+        }
+    }
+
+    
+    int Decorator::getCSSWidth() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getCSSWidth();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setCSSWidth(int inWidth)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setCSSWidth(inWidth);
+        }
+    }
+
+    
+    int Decorator::getCSSHeight() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getCSSHeight();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setCSSHeight(int inHeight)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setCSSHeight(inHeight);
+        }
+    }
+
+    
+    void Decorator::getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getCSSMargin(outTop, outLeft, outRight, outBottom);
+        }
+    }
+
+
+    void Decorator::setCSSMargin(int inTop, int inLeft, int inRight, int inBottom)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setCSSMargin(inTop, inLeft, inRight, inBottom);
+        }
+    }
+
+
     bool Decorator::isHidden() const
     {
         if (mDecoratedElement)
         {
             return mDecoratedElement->isHidden();
         }
-        return Super::isHidden();
+        return false;
     }
 
 
@@ -49,76 +160,20 @@ namespace XULWin
         {
             return mDecoratedElement->setHidden(inHidden);
         }
-        Super::setHidden(inHidden);
     }
 
-    
-    void Decorator::setOwningElement(Element * inElement)
-    {
-        mElement = inElement;
-        if (mDecoratedElement)
-        {
-            mDecoratedElement->setOwningElement(inElement);
-        }
-    }
-    
-    
-    Element * Decorator::owningElement() const
+
+    int Decorator::commandId() const
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->owningElement();
+            return mDecoratedElement->commandId();
         }
-        return mElement;
-    }
-    
-    
-    ElementImplPtr Decorator::decoratedElement() const
-    {
-        return mDecoratedElement;
-    }
-    
-    
-    void Decorator::setDecoratedElement(ElementImplPtr inElement)
-    {
-        mDecoratedElement = inElement;
+        return 0;
     }
 
 
-    void Decorator::move(int x, int y, int w, int h)
-    {
-        mRect = Rect(x, y, w, h);
-        mDecoratedElement->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
-    }
-
-
-    Rect Decorator::clientRect() const
-    {
-        return mRect;
-    }
-
-
-    bool Decorator::initAttributeControllers()
-    {
-        if (mDecoratedElement)
-        {
-            return mDecoratedElement->initAttributeControllers();
-        }
-        return true;
-    }
-
-
-    bool Decorator::initStyleControllers()
-    {
-        if (mDecoratedElement)
-        {
-            return mDecoratedElement->initStyleControllers();
-        }
-        return true;
-    }
-
-    
-    int Decorator::calculateWidth(SizeConstraint inSizeConstraint) const
+    int Decorator::getWidth(SizeConstraint inSizeConstraint) const
     {
         if (mDecoratedElement)
         {
@@ -128,11 +183,85 @@ namespace XULWin
     }
 
 
-    int Decorator::calculateHeight(SizeConstraint inSizeConstraint) const
+    int Decorator::getHeight(SizeConstraint inSizeConstraint) const
     {
         if (mDecoratedElement)
         {
             return mDecoratedElement->getHeight(inSizeConstraint);
+        }
+        return 0;
+    }
+
+
+    int Decorator::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->calculateWidth(inSizeConstraint);
+        }
+        return 0;
+    }
+
+
+    int Decorator::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->calculateHeight(inSizeConstraint);
+        }
+        return 0;
+    }
+
+    
+    bool Decorator::expansive() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->expansive();
+        }
+        return false;
+    }
+
+
+    void Decorator::move(int x, int y, int w, int h)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->move(x, y, w, h);
+        }
+    }
+
+
+    Rect Decorator::clientRect() const
+    {
+        return mDecoratedElement->clientRect();
+    }
+
+
+    void Decorator::setOwningElement(Element * inElement)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setOwningElement(inElement);
+        }
+    }
+
+
+    Element * Decorator::owningElement() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->owningElement();
+        }
+        return 0;
+    }
+
+
+    ElementImpl * Decorator::parent() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->parent();
         }
         return 0;
     }
@@ -145,8 +274,17 @@ namespace XULWin
             mDecoratedElement->rebuildLayout();
         }
     }
-    
-    
+
+
+    void Decorator::rebuildChildLayouts()
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->rebuildChildLayouts();
+        }
+    }
+
+
     bool Decorator::getAttribute(const std::string & inName, std::string & outValue)
     {
         if (mDecoratedElement)
@@ -165,8 +303,18 @@ namespace XULWin
         }
         return false;
     }
-    
-    
+
+
+    bool Decorator::setStyle(const std::string & inName, const std::string & inValue)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->setStyle(inName, inValue);
+        }
+        return false;
+    }
+
+
     bool Decorator::setAttribute(const std::string & inName, const std::string & inValue)
     {
         if (mDecoratedElement)
@@ -175,15 +323,55 @@ namespace XULWin
         }
         return false;
     }
-    
-    
-    bool Decorator::setStyle(const std::string & inName, const std::string & inValue)
+
+
+    bool Decorator::initAttributeControllers()
     {
         if (mDecoratedElement)
         {
-            return mDecoratedElement->setStyle(inName, inValue);
+            return mDecoratedElement->initAttributeControllers();
         }
         return false;
+    }
+
+
+    bool Decorator::initStyleControllers()
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->initStyleControllers();
+        }
+        return false;
+    }
+
+
+    void Decorator::setAttributeController(const std::string & inAttr, AttributeController * inController)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setAttributeController(inAttr, inController);
+        }
+    }
+
+
+    void Decorator::setStyleController(const std::string & inAttr, StyleController * inController)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setStyleController(inAttr, inController);
+        }
+    }
+    
+    
+    ElementImplPtr Decorator::decoratedElement() const
+    {
+        return mDecoratedElement;
+    }
+    
+    
+    void Decorator::setDecoratedElement(ElementImplPtr inElement)
+    {
+        mDecoratedElement = inElement;
     }
 
 
@@ -223,7 +411,7 @@ namespace XULWin
     
     Rect BoxLayoutDecorator::clientRect() const
     {
-        return mRect;
+        return Super::clientRect();
     }
 
     
@@ -523,13 +711,6 @@ namespace XULWin
     MarginDecorator::~MarginDecorator()
     {
     }
-    
-    
-    void MarginDecorator::move(int x, int y, int w, int h)
-    {
-        mRect = Rect(x + marginLeft(), y + marginTop(), w - marginLeft() - marginRight(), h - marginTop() - marginBottom());
-        mDecoratedElement->move(mRect.x(), mRect.y(), mRect.width(), mRect.height());
-    }
 
 
     void MarginDecorator::setMargin(int top, int left, int right, int bottom)
@@ -572,17 +753,77 @@ namespace XULWin
     {
         return mBottom;
     }
+
     
+    Rect MarginDecorator::clientRect() const
+    {
+        return mOuterRect;
+    }
+
+
+    int MarginDecorator::getWidth() const
+    {
+        return marginLeft() + Super::getWidth() + marginRight();
+    }
+
+
+    void MarginDecorator::setWidth(int inWidth)
+    {
+        mOuterRect = Rect(mOuterRect.x(), mOuterRect.y(), inWidth, mOuterRect.height());
+        Super::setWidth(inWidth);
+    }
+
+
+    int MarginDecorator::getHeight() const
+    {
+        return marginTop() + Super::getHeight() + marginBottom();
+    }
+
+
+    void MarginDecorator::setHeight(int inHeight)
+    {
+        mOuterRect = Rect(mOuterRect.x(), mOuterRect.y(), mOuterRect.width(), inHeight);
+        Super::setHeight(inHeight);
+    }
+
+
+    int MarginDecorator::getWidth(SizeConstraint inSizeConstraint) const
+    {
+        return marginLeft() + Super::getWidth(inSizeConstraint) + marginRight();
+    }
+
+
+    int MarginDecorator::getHeight(SizeConstraint inSizeConstraint) const
+    {
+        return marginTop() + Super::getHeight(inSizeConstraint) + marginBottom();
+    }
+
+    
+    void MarginDecorator::move(int x, int y, int w, int h)
+    {
+        mOuterRect = Rect(x, y, w, h);
+        mInnerRect = Rect(x + marginLeft(),
+                          y + marginTop(),
+                          w - marginLeft() - marginRight(),
+                          h - marginTop() - marginBottom());
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->move(mInnerRect.x(),
+                                    mInnerRect.y(),
+                                    mInnerRect.width(),
+                                    mInnerRect.height());
+        }
+    }
     
     int MarginDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return marginLeft() + mDecoratedElement->getWidth(inSizeConstraint) + marginRight();
+        return marginLeft() + Super::calculateWidth(inSizeConstraint) + marginRight();
     }
 
     
     int MarginDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return marginTop() + mDecoratedElement->calculateHeight(inSizeConstraint) + marginBottom();
+        return marginTop() + Super::calculateHeight(inSizeConstraint) + marginBottom();
     }
 
 } // namespace XULWin

@@ -4,6 +4,7 @@
 #include "XULWin/Initializer.h"
 #include "XULWin/XULRunner.h"
 #include "Utils/ErrorReporter.h"
+#include "Utils/Fallible.h"
 #include "Utils/WinUtils.h"
 #include <windows.h>
 #include <commctrl.h>
@@ -21,22 +22,60 @@ void log(const std::string & inMessage)
 class TestConfigSample : public XULWin::EventHandler
 {
 public:
-    XULWin::ElementPtr mRootEl;
     void run()
     {
         Utils::CurrentDirectoryChanger curdir("../xulrunnersamples/configpanel/");
-        XULWin::XULRunner runner;
-        mRootEl = runner.load("application.ini");
+        mRootEl = mRunner.loadApplication("application.ini");
 
-        Element * newSetButton = mRootEl->getElementById("newSetButton");
-        newSetButton->addEventHandler(this);
+        mNewSetButton = mRootEl->getElementById("newSetButton");
+        mNewSetButton->addEventHandler(this);
 
-        Element * setList = mRootEl->getElementById("setList");
-        setList->addEventHandler(this);
+        mSetsPopup = mRootEl->getElementById("setsPopup");
 
         if (NativeWindow * win = mRootEl->impl()->downcast<NativeWindow>())
         {        
             win->showModal();
+        }
+    }
+
+    void addNewSet(const std::string & inSetName)
+    { 
+        AttributesMapping attr;
+        attr["label"] = inSetName;
+        ElementPtr item = MenuItem::Create(mSetsPopup, attr);
+        item->init();
+    }
+
+    void showNewSetDialog()
+    {
+        mNewSetDlg = mRunner.loadXUL("chrome://configpanel/content/newsetdialog.xul");
+
+        mNewSetTextBox = mNewSetDlg->getElementById("settextbox");
+        
+        mNewSetOK = mNewSetDlg->getElementById("newSetOKButton");
+        mNewSetOK->addEventHandler(this);
+
+        mNewSetCancel = mNewSetDlg->getElementById("newSetCancelButton");
+        mNewSetCancel->addEventHandler(this);
+
+        mNewSetDlg->impl()->downcast<NativeWindow>()->showModal();
+    }
+
+    void newSetOK()
+    {        
+        AttributesMapping attr;
+        if (NativeTextBox * nativeTextBox = mNewSetTextBox->impl()->downcast<NativeTextBox>())
+        {
+            addNewSet(nativeTextBox->getValue());
+        }
+    }
+
+    void closeWindow(Element * inWindow)
+    {
+        if (NativeWindow * nativeWindow = inWindow->impl()->downcast<NativeWindow>())
+        {
+            ShowWindow(nativeWindow->handle(), SW_HIDE);
+		    PostQuitMessage(0);
         }
     }
     
@@ -46,20 +85,32 @@ public:
 
     virtual void command(Element * inSender, unsigned short inNotificationCode)
     {
-        if (inSender->getAttribute("id") == "newSetButton")
+        if (inSender->impl()->commandId() == mNewSetButton->impl()->commandId())
         {
-            MessageBox(0, TEXT("Command event from new set button"), 0, MB_OK);
+            showNewSetDialog();
         }
-        else if (inSender->getAttribute("id") == "setList")
-        {   
-            int a = 0;
-            a++;
-        }
-        else
+        else if (mNewSetOK && mNewSetOK->impl()->commandId() == inSender->impl()->commandId())
         {
-            MessageBox(0, TEXT("Command event from unknown sender"), 0, MB_OK);
+            newSetOK();
+            closeWindow(mNewSetDlg.get());
+        }
+        else if (mNewSetCancel && mNewSetCancel->impl()->commandId() == inSender->impl()->commandId())
+        {
+            // close the modal window
+			ShowWindow(mNewSetDlg->impl()->downcast<NativeWindow>()->handle(), SW_HIDE);
+			PostQuitMessage(0);
         }
     }
+
+private:
+    XULWin::XULRunner mRunner;   
+    XULWin::ElementPtr mRootEl;
+    ElementPtr mNewSetDlg;
+    Utils::Fallible<Element*> mNewSetButton;
+    Utils::Fallible<Element*> mSetsPopup;    
+    Utils::Fallible<Element*> mNewSetTextBox;
+    Utils::Fallible<Element*> mNewSetOK;
+    Utils::Fallible<Element*> mNewSetCancel;
 };
 
 

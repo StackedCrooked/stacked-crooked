@@ -136,13 +136,25 @@ namespace XULWin
             window->showModal();
         }
     }
+
     
-    ElementPtr XULRunner::load(const std::string & inApplicationIniFile)
+    ElementPtr XULRunner::loadApplication(const std::string & inApplicationIniFile)
     {
 	    Parser parser;
         Poco::Path topLevelAppDir = Utils::getCurrentDirectory();
         std::string mainXULFile = getMainXULFile(topLevelAppDir);
         parser.parse(mainXULFile);
+        return parser.rootElement();
+    }
+
+    
+    ElementPtr XULRunner::loadXUL(const std::string & inXULUrl)
+    {
+        ChromeURL url(inXULUrl, Defaults::locale());
+	    Parser parser;
+        std::string curdir = Utils::getCurrentDirectory();
+        std::string path = url.convertToLocalPath();
+        parser.parse(path);
         return parser.rootElement();
     }
 

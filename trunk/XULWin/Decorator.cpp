@@ -529,6 +529,27 @@ namespace XULWin
             mVerticalScrollbar->impl()->downcast<NativeScrollbar>()->setEventListener(this);
         }
     }
+
+
+    int ScrollDecorator::getWidth(SizeConstraint inSizeConstraint) const
+    {
+        if (inSizeConstraint == Minimum && (mOrients == Horizontal || mOrients == Both))
+        {
+            return 0;
+        }
+
+        return Super::getWidth(inSizeConstraint);
+    }
+
+
+    int ScrollDecorator::getHeight(SizeConstraint inSizeConstraint) const
+    {
+        if (inSizeConstraint == Minimum && (mOrients == Vertical || mOrients == Both))
+        {
+            return 0;
+        }
+        return Super::getHeight(inSizeConstraint);
+    }
             
             
     int ScrollDecorator::calculateWidth(SizeConstraint inSizeConstraint) const

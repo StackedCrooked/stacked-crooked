@@ -180,6 +180,10 @@ namespace XULWin
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
+        virtual int getWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int getHeight(SizeConstraint inSizeConstraint) const;
+
         virtual void move(int x, int y, int w, int h);
 
         virtual void rebuildLayout();

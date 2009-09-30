@@ -1,26 +1,86 @@
 <?xml version="1.0"?>
+
+<!--
+  The contents of this file are subject to the Netscape Public
+  License Version 1.1 (the "License"); you may not use this file
+  except in compliance with the License. You may obtain a copy of
+  the License at http://www.mozilla.org/NPL/
+
+  Software distributed under the License is distributed on an "AS
+  IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  implied. See the License for the specific language governing
+  rights and limitations under the License.
+
+  The Original Code is Mozilla Communicator client code, released
+  March 31, 1998.
+
+  The Initial Developer of the Original Code is Netscape
+  Communications Corporation. Portions created by Netscape are
+  Copyright (C) 1998-1999 Netscape Communications Corporation. All
+  Rights Reserved.
+
+  Contributor(s):
+    Ben Goodger <ben@netscape.com>
+
+-->
+
+<?xml-stylesheet href="chrome://navigator/skin/navigator.css" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
-<window id="main"
-        title="Hello"
+<window id="openLocation"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
->
-  <vbox flex="1" style="overflow-y:auto">
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
-    <button label="test"></button>
+        >
+
+  <vbox flex="1">
+    <hbox>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+    </hbox>
+    <hbox>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+    </hbox>
+    <hbox>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+    </hbox>
+    <hbox>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+    </hbox>
+    <hbox>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+      <button label="test"></button>
+    </hbox>
   </vbox>
+  <!--<radiogroup id="group" orient="vertical">
+    <hbox>
+      <radio group="group" label="Radio 1" id="radio1"/>
+      <spacer flex="1"/>
+      <button label="Test Property APIs" oncommand="testProperty('radio1');"/>
+    </hbox>
+    <radio group="group" label="Radio 2"/>
+    <radio group="group" label="Radio 3" disabled="true" checked="true"/>
+  </radiogroup>-->
+
 </window>

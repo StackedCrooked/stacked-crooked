@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<window title="New set"
+		    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        orient="vertical"
+        align="stretch"
+>
+  <hbox align="center">
+    <label style="text-align:center" value="Name your set: "></label>
+    <textbox flex="1" id="settextbox"></textbox>
+  </hbox>
+  <hbox>
+    <spacer flex="1"></spacer>
+    <button label="OK" id="newSetOKButton"></button>
+    <button label="Cancel" id="newSetCancelButton"></button>
+  </hbox>
+</window>

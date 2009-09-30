@@ -42,6 +42,16 @@ namespace XULWin
 
         virtual void setHidden(bool inHidden);
 
+        // OrientController methods
+        virtual Orient getOrient() const;
+        
+        virtual void setOrient(Orient inOrient);
+
+        // AlignController methods
+        virtual Align getAlign() const;
+
+        virtual void setAlign(Align inAlign);
+
         // CSSWidthController methods
         virtual int getCSSWidth() const;
 
@@ -127,54 +137,17 @@ namespace XULWin
     };
 
 
-    class BoxLayoutDecorator : public WrapDecorator,
-                               public BoxLayouter
-    {
-    public:
-        typedef WrapDecorator Super;
-
-        BoxLayoutDecorator(ElementImpl * inParent,
-                           ElementImpl * inDecoratedElement,
-                           Orient inOrient,
-                           Align inAlign);
-        
-        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
-
-        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
-
-        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
-
-        virtual Rect clientRect() const;
-
-        virtual void rebuildLayout();
-
-        virtual void rebuildChildLayouts();
-
-        virtual size_t numChildren() const;
-
-        virtual const ElementImpl * getChild(size_t idx) const;
-
-        virtual ElementImpl * getChild(size_t idx);
-    };
-
-
     class ScrollDecorator : public Decorator,
                             public NativeScrollbar::EventListener
     {
     public:
         typedef Decorator Super;
 
-        enum Orients
-        {
-            Horizontal,
-            Vertical,
-            Both
-        };
-
         // Takes ownership.
         ScrollDecorator(ElementImpl * inParent,
                         ElementImpl * inDecoratedElement,
-                        Orients inOrients);
+                        CSSOverflow inOverflowX,
+                        CSSOverflow inOverflowY);
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
@@ -193,7 +166,8 @@ namespace XULWin
     private:
         void updateWindowScroll();
 
-        Orients mOrients;
+        CSSOverflow mOverflowX;
+        CSSOverflow mOverflowY;
         int mOldHorScrollPos;
         int mOldVerScrollPos;
         ElementPtr mVerticalScrollbar;

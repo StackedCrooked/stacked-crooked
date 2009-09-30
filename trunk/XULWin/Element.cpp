@@ -348,7 +348,7 @@ namespace XULWin
     }
 
 
-    void GetStyles(const AttributesMapping & inAttributesMapping, StylesMapping & styles)
+    static void GetStyles(const AttributesMapping & inAttributesMapping, StylesMapping & styles)
     {        
         StylesMapping::const_iterator it = inAttributesMapping.find("style");
         if (it != inAttributesMapping.end())
@@ -374,44 +374,37 @@ namespace XULWin
     }
 
 
-    static ElementImpl * CreateBox(Element * inParent,
-                                   const AttributesMapping & inAttributesMapping,
-                                   Orient inOrient = Defaults::Attributes::orient(),
-                                   Align inAlign = Defaults::Attributes::align())
+    static CSSOverflow GetOverflow(const StylesMapping & inStyles,
+                                   const std::string & inOverflow)
     {
-        struct Helper
+        StylesMapping::const_iterator it = inStyles.find(inOverflow);
+        if (it == inStyles.end())
         {
-            static bool Has(const StylesMapping & inStylesMapping, const std::string & value)
-            {
-                return inStylesMapping.find(value) != inStylesMapping.end();
-            }
-        };
+            it = inStyles.find("overflow");
+        }
+        if (it != inStyles.end())
+        {
+            return String2CSSOverflow(it->second, CSSOverflow_Visible);
+        }
+        return CSSOverflow_Hidden;
+    }
+
+
+    template<class VirtualType, class NativeType>
+    static ElementImpl * CreateContainer(Element * inParent, const AttributesMapping & inAttributesMapping)
+    {
         StylesMapping styles;
         GetStyles(inAttributesMapping, styles);
-        bool overflow = Helper::Has(styles, "overflow");
-        bool overflowX = overflow || Helper::Has(styles, "overflow-x");
-        bool overflowY = overflow || Helper::Has(styles, "overflow-y");
-        if (overflowX || overflowY)
+        CSSOverflow overflowX = GetOverflow(styles, "overflow-x");
+        CSSOverflow overflowY = GetOverflow(styles, "overflow-y");
+        if (overflowX != CSSOverflow_Hidden || overflowY != CSSOverflow_Hidden)
         {
-            ScrollDecorator * result;
-            NativeBox * box = new NativeBox(inParent->impl(), inAttributesMapping, inOrient, inAlign);
-            if (overflowX && !overflowY)
-            {
-                result = new ScrollDecorator(inParent->impl(), box, ScrollDecorator::Horizontal);
-            }
-            else if (overflowY && !overflowX)
-            {
-                result = new ScrollDecorator(inParent->impl(), box, ScrollDecorator::Vertical);
-            }
-            else
-            {
-                result = new ScrollDecorator(inParent->impl(), box, ScrollDecorator::Both);
-            }
-            return result;
+            NativeType * box = new NativeType(inParent->impl(), inAttributesMapping);
+            return new ScrollDecorator(inParent->impl(), box, overflowX, overflowY);
         }
         else
         {
-            return new Decorator(new VirtualBox(inParent->impl(), inAttributesMapping, inOrient, inAlign));
+            return new Decorator(new VirtualType(inParent->impl(), inAttributesMapping));
         }
     }
 
@@ -419,7 +412,7 @@ namespace XULWin
     Box::Box(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Box::Type(),
                 inParent,
-                CreateBox(inParent, inAttributesMapping))
+                CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
     {
     }
 
@@ -427,16 +420,18 @@ namespace XULWin
     HBox::HBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(HBox::Type(),
                 inParent,
-                CreateBox(inParent, inAttributesMapping, HORIZONTAL))
+                CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
     {
+        impl()->setOrient(HORIZONTAL);
     }
 
 
     VBox::VBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(VBox::Type(),
                 inParent,
-                CreateBox(inParent, inAttributesMapping, VERTICAL))
+                CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
     {
+        impl()->setOrient(VERTICAL);
     }
 
 
@@ -609,53 +604,10 @@ namespace XULWin
     }
 
 
-
-
-
-    static ElementImpl * CreateGrid(Element * inParent,
-                                   const AttributesMapping & inAttributesMapping)
-    {
-        struct Helper
-        {
-            static bool Has(const StylesMapping & inStylesMapping, const std::string & value)
-            {
-                return inStylesMapping.find(value) != inStylesMapping.end();
-            }
-        };
-        StylesMapping styles;
-        GetStyles(inAttributesMapping, styles);
-        bool overflow = Helper::Has(styles, "overflow");
-        bool overflowX = overflow || Helper::Has(styles, "overflow-x");
-        bool overflowY = overflow || Helper::Has(styles, "overflow-y");
-        if (overflowX || overflowY)
-        {
-            ScrollDecorator * result;
-            NativeGrid * grid = new NativeGrid(inParent->impl(), inAttributesMapping);
-            if (overflowX && !overflowY)
-            {
-                result = new ScrollDecorator(inParent->impl(), grid, ScrollDecorator::Horizontal);
-            }
-            if (overflowY && !overflowX)
-            {
-                result = new ScrollDecorator(inParent->impl(), grid, ScrollDecorator::Vertical);
-            }
-            else
-            {
-                result = new ScrollDecorator(inParent->impl(), grid, ScrollDecorator::Both);
-            }
-            return result;
-        }
-        else
-        {
-            return new Decorator(new VirtualGrid(inParent->impl(), inAttributesMapping));
-        }
-    }
-
-
     Grid::Grid(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Grid::Type(),
                 inParent,
-                CreateGrid(inParent, inAttributesMapping))
+                CreateContainer<VirtualGrid, NativeGrid>(inParent, inAttributesMapping))
     {
     }
 
@@ -721,7 +673,7 @@ namespace XULWin
         Element(RadioGroup::Type(),
                 inParent,
                 new Decorator(new NativeRadioGroup(inParent->impl(), inAttributesMapping)))
-    {
+    { 
     }
 
 

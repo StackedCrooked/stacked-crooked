@@ -31,46 +31,86 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         >
 
-  <vbox flex="1">
+  <vbox flex="1" style="overflow:auto">
     <hbox>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
     </hbox>
     <hbox>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
     </hbox>
     <hbox>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
     </hbox>
     <hbox>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
     </hbox>
     <hbox>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
-      <button label="test"></button>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
+    </hbox>
+    <hbox>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
+    </hbox>
+    <hbox>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
+    </hbox>
+    <hbox>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
+    </hbox>
+    <hbox>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
+    </hbox>
+    <hbox>
+      <button label="1"></button>
+      <button label="2"></button>
+      <button label="3"></button>
+      <button label="4"></button>
+      <button label="5"></button>
+      <button label="6"></button>
     </hbox>
   </vbox>
   <!--<radiogroup id="group" orient="vertical">

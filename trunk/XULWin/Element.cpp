@@ -422,7 +422,7 @@ namespace XULWin
                 inParent,
                 CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
     {
-        impl()->setOrient(HORIZONTAL);
+        impl()->setOrient(Horizontal);
     }
 
 
@@ -431,7 +431,7 @@ namespace XULWin
                 inParent,
                 CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
     {
-        impl()->setOrient(VERTICAL);
+        impl()->setOrient(Vertical);
     }
 
 

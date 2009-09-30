@@ -30,7 +30,7 @@ namespace XULWin
         mElement(0),
         mFlex(0),
         mHidden(false),
-        mOrient(HORIZONTAL),
+        mOrient(Horizontal),
         mAlign(Start),
         mWidth(0),
         mHeight(0),
@@ -121,7 +121,7 @@ namespace XULWin
     
     Orient ConcreteElement::getOrient() const
     {
-        return mOrient.getValue(VERTICAL);
+        return mOrient.getValue(Vertical);
     }
 
 
@@ -133,7 +133,7 @@ namespace XULWin
 
     Align ConcreteElement::getAlign() const
     {
-        return mAlign.getValue((getOrient() == VERTICAL) ? Stretch : Start);
+        return mAlign.getValue((getOrient() == Vertical) ? Stretch : Start);
     }
 
 
@@ -638,7 +638,7 @@ namespace XULWin
         {
             ElementPtr child(owningElement()->children()[idx]);
             int width = child->impl()->getWidth(inSizeConstraint);
-            if (getOrient() == HORIZONTAL)
+            if (getOrient() == Horizontal)
             {
                 result += width;
             }
@@ -658,7 +658,7 @@ namespace XULWin
         {
             ElementPtr child(owningElement()->children()[idx]);
             int height = child->impl()->getHeight(inSizeConstraint);
-            if (getOrient() == VERTICAL)
+            if (getOrient() == Vertical)
             {
                 result += height;
             }
@@ -1352,7 +1352,7 @@ namespace XULWin
 
     int BoxLayouter::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        if (getOrient() == HORIZONTAL)
+        if (getOrient() == Horizontal)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1361,7 +1361,7 @@ namespace XULWin
             }
             return result;
         }
-        else if (getOrient() == VERTICAL)
+        else if (getOrient() == Vertical)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1384,7 +1384,7 @@ namespace XULWin
 
     int BoxLayouter::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        if (getOrient() == HORIZONTAL)
+        if (getOrient() == Horizontal)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1397,7 +1397,7 @@ namespace XULWin
             }
             return result;
         }
-        else if (getOrient() == VERTICAL)
+        else if (getOrient() == Vertical)
         {
             int result = 0;
             for (size_t idx = 0; idx != numChildren(); ++idx)
@@ -1418,7 +1418,7 @@ namespace XULWin
     {     
         Rect clientR(clientRect());   
         LinearLayoutManager layout(getOrient());
-        bool horizontal = getOrient() == HORIZONTAL;
+        bool horizontal = getOrient() == Horizontal;
         std::vector<ExtendedSizeInfo> sizeInfos;
 
         for (size_t idx = 0; idx != numChildren(); ++idx)

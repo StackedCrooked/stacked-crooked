@@ -39,6 +39,14 @@ namespace XULWin
         //CSSTextAlign_Justify // not supported atm
     };
 
+    enum CSSOverflow
+    {
+        CSSOverflow_Visible,
+        CSSOverflow_Hidden,
+        CSSOverflow_Scroll,
+        CSSOverflow_Auto
+    };
+
     
 } // namespace XULWin
 

@@ -33,6 +33,10 @@ namespace XULWin
 
     CSSTextAlign String2CSSTextAlign(const std::string & inTextAlign, CSSTextAlign inDefault);
 
+    std::string CSSOverflow2String(CSSOverflow inTextAlign);
+
+    CSSOverflow String2CSSOverflow(const std::string & inTextAlign, CSSOverflow inDefault);
+
 } // namespace XULWin
 
 

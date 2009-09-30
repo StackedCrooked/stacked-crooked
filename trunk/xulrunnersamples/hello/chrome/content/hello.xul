@@ -7,13 +7,48 @@
         orient="vertical"
         align="stretch"
 >
-  <vbox style="overflow-y:auto" flex="1">
-    <button label="testtesttesttesttesttesttesttest"></button>
-    <button label="testtesttesttesttesttesttesttest"></button>
-    <button label="testtesttesttesttesttesttesttest"></button>
-    <button label="testtesttesttesttesttesttesttest"></button>
-    <button label="testtesttesttesttesttesttesttest"></button>
-    <button label="testtesttesttesttesttesttesttest"></button>
-    <button label="testtesttesttesttesttesttesttest"></button>
-  </vbox>
+  <grid style="overflow-y:auto;overflow-x:auto" flex="1">
+    <columns>
+      <column></column>
+      <column></column>
+    </columns>
+    <rows>
+      <row align="center">
+        <label style="text-align:center" value="ItemItemItemItemItem"></label>
+        <button label="button"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="Item"></label>
+        <button label="buttonbuttonbuttonbuttonbuttonbuttonbuttonbutton"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="Item"></label>
+        <button label="button"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="ItemItemItemItemItem"></label>
+        <button label="button"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="Item"></label>
+        <button label="buttonbuttonbuttonbuttonbuttonbuttonbuttonbutton"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="Item"></label>
+        <button label="button"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="ItemItemItemItemItem"></label>
+        <button label="button"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="Item"></label>
+        <button label="buttonbuttonbuttonbuttonbuttonbuttonbuttonbutton"></button>
+      </row>
+      <row align="center">
+        <label style="text-align:center" value="Item"></label>
+        <button label="button"></button>
+      </row>
+    </rows>
+  </grid>
 </window>

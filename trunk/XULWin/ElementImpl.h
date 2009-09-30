@@ -684,10 +684,25 @@ namespace XULWin
     };
 
 
-    class NativeGrid : public VirtualComponent
+    class VirtualGrid : public VirtualComponent
     {
     public:
         typedef VirtualComponent Super;
+
+        VirtualGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+        virtual void rebuildLayout();
+    };
+
+
+    class NativeGrid : public NativeControl
+    {
+    public:
+        typedef NativeComponent Super;
 
         NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 

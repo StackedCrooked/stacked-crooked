@@ -694,14 +694,14 @@ namespace XULWin
                 PostQuitMessage(0);
                 break;
             }
-/*            case WM_GETMINMAXINFO:
+            case WM_GETMINMAXINFO:
             {
                 SIZE sizeDiff = GetSizeDifference_WindowRect_ClientRect(handle());
                 MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
                 minMaxInfo->ptMinTrackSize.x = getWidth(Minimum) + sizeDiff.cx;
                 minMaxInfo->ptMinTrackSize.y = getHeight(Minimum) + sizeDiff.cy;
                 break;
-            }   */         
+            }            
             case WM_COMMAND:
             {
                 int id = LOWORD(wParam);
@@ -1564,8 +1564,217 @@ namespace XULWin
     }
 
 
-    NativeGrid::NativeGrid(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+    VirtualGrid::VirtualGrid(ElementImpl * inParent,
+                           const AttributesMapping & inAttributesMapping) :
         VirtualComponent(inParent, inAttributesMapping)
+    {
+    }
+        
+        
+    int VirtualGrid::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (NativeColumns * cols = child->impl()->downcast<NativeColumns>())
+            {
+                for (size_t idx = 0; idx != cols->owningElement()->children().size(); ++idx)
+                {
+                    if (NativeColumn * col = cols->owningElement()->children()[idx]->impl()->downcast<NativeColumn>())
+                    {
+                        result += col->getWidth(inSizeConstraint);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    
+    int VirtualGrid::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (NativeRows * rows = child->impl()->downcast<NativeRows>())
+            {
+                for (size_t idx = 0; idx != rows->owningElement()->children().size(); ++idx)
+                {
+                    if (NativeRow * row = rows->owningElement()->children()[idx]->impl()->downcast<NativeRow>())
+                    {
+                        result += row->getHeight(inSizeConstraint);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+    void VirtualGrid::rebuildLayout()
+    {
+        //
+        // Initialize helper variables
+        //
+        int numCols = 0;
+        int numRows = 0;
+        ElementPtr columns;
+        ElementPtr rows;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementPtr child = owningElement()->children()[idx];
+            if (child->type() == Rows::Type())
+            {
+                rows = child;
+                numRows = rows->children().size();
+            }
+            else if (child->type() == Columns::Type())
+            {
+                columns = child;
+                numCols = columns->children().size();
+            }
+            else
+            {
+                ReportError("Grid contains incompatible child element: '" + child->type() + "'");
+            }
+        }
+        if (!rows || !columns)
+        {
+            ReportError("Grid has no rows or no columns!");
+            return;
+        }
+
+        if (rows->children().empty())
+        {
+            ReportError("Grid has no rows!");
+            return;
+        }
+
+        if (columns->children().empty())
+        {
+            ReportError("Grid has no columns!");
+            return;
+        }
+
+
+        //
+        // Get column size infos (min width and flex)
+        //
+        std::vector<SizeInfo> colWidths;
+        for (size_t colIdx = 0; colIdx != columns->children().size(); ++colIdx)
+        {
+            if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
+            {
+                colWidths.push_back(
+                    SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)),
+                             MinSizeWrap(col->getWidth(Minimum)),
+                             OptSizeWrap(col->getWidth(Optimal))));
+            }
+        }
+
+        if (colWidths.empty())
+        {
+            ReportError("Grid has no columns!");
+            return;
+        }
+
+
+        //
+        // Get row size infos (min height and flex)
+        //
+        std::vector<SizeInfo> rowHeights;
+        for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
+        {
+            if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+            {
+                rowHeights.push_back(
+                    SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)),
+                             MinSizeWrap(row->getHeight(Minimum)),
+                             OptSizeWrap(row->getHeight(Optimal))));
+            }
+        }
+
+        if (rowHeights.empty())
+        {
+            ReportError("Grid has no rows!");
+            return;
+        }
+
+
+        //
+        // Get bounding rect for all cells
+        //
+        GenericGrid<Rect> outerRects(numRows, numCols);
+        GridLayoutManager::GetOuterRects(clientRect(), colWidths, rowHeights, outerRects);
+
+
+        //
+        // Get size info for each cell
+        //
+        GenericGrid<CellInfo> widgetInfos(numRows, numCols, CellInfo(0, 0, Start, Start));
+        for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
+        {
+            if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
+            {
+                int rowHeight = row->getHeight();
+                for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
+                {
+                    if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
+                    {
+                        if (colIdx < row->owningElement()->children().size())
+                        {                            
+                            ElementImpl * child = row->owningElement()->children()[colIdx]->impl();
+                            widgetInfos.set(rowIdx, colIdx,
+                                                     CellInfo(child->getWidth(),
+                                                     child->getHeight(),
+                                                     String2Align(row->owningElement()->getAttribute("align"), Stretch),
+                                                     String2Align(column->owningElement()->getAttribute("align"), Stretch)));
+                        }
+                    }
+                }
+            }
+        }
+
+
+        //
+        // Get inner rect for each cell
+        //
+        GenericGrid<Rect> innerRects(numRows, numCols);
+        GridLayoutManager::GetInnerRects(outerRects, widgetInfos, innerRects);
+
+
+        //
+        // Apply inner rect to each widget inside a cell
+        //
+        for (size_t rowIdx = 0; rowIdx != numRows; ++rowIdx)
+        {
+            for (size_t colIdx = 0; colIdx != numCols; ++colIdx)
+            {
+                if (rowIdx < rows->children().size())
+                {
+                    ElementPtr rowEl = rows->children()[rowIdx];
+                    if (colIdx < rowEl->children().size())
+                    {
+                        ElementImpl * child = rowEl->children()[colIdx]->impl();
+                        const Rect & r = innerRects.get(rowIdx, colIdx);
+                        child->move(r.x(), r.y(), r.width(), r.height());
+                    }
+                }
+            }
+        }
+
+        //
+        // Rebuild child layoutss
+        //
+        rebuildChildLayouts();
+    }
+
+
+    NativeGrid::NativeGrid(ElementImpl * inParent,
+                           const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), WS_EX_CONTROLPARENT, WS_TABSTOP)
     {
     }
         

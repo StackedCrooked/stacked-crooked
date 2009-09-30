@@ -363,13 +363,17 @@ namespace XULWin
         {
             ScrollDecorator * result;
             NativeBox * box = new NativeBox(inParent->impl(), inAttributesMapping, inOrient, inAlign);
-            if (overflowX)
+            if (overflowX && !overflowY)
             {
-                result = new ScrollDecorator(inParent->impl(), box, HORIZONTAL);
+                result = new ScrollDecorator(inParent->impl(), box, ScrollDecorator::Horizontal);
             }
-            else if (overflowY)
+            else if (overflowY && !overflowX)
             {
-                result = new ScrollDecorator(inParent->impl(), box, VERTICAL);
+                result = new ScrollDecorator(inParent->impl(), box, ScrollDecorator::Vertical);
+            }
+            else
+            {
+                result = new ScrollDecorator(inParent->impl(), box, ScrollDecorator::Both);
             }
             return result;
         }
@@ -595,16 +599,17 @@ namespace XULWin
         {
             ScrollDecorator * result;
             NativeGrid * grid = new NativeGrid(inParent->impl(), inAttributesMapping);
-            ElementImpl * decoratedElement = grid;
-            if (overflowX)
+            if (overflowX && !overflowY)
             {
-                result = new ScrollDecorator(inParent->impl(), decoratedElement, HORIZONTAL);
-                decoratedElement = result;
+                result = new ScrollDecorator(inParent->impl(), grid, ScrollDecorator::Horizontal);
             }
-            if (overflowY)
+            if (overflowY && !overflowX)
             {
-                result = new ScrollDecorator(inParent->impl(), decoratedElement, VERTICAL);
-                decoratedElement = result;
+                result = new ScrollDecorator(inParent->impl(), grid, ScrollDecorator::Vertical);
+            }
+            else
+            {
+                result = new ScrollDecorator(inParent->impl(), grid, ScrollDecorator::Both);
             }
             return result;
         }

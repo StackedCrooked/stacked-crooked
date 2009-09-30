@@ -113,16 +113,23 @@ namespace XULWin
     };
 
 
-    class ScrollDecorator : public BoxLayoutDecorator,
+    class ScrollDecorator : public Decorator,
                             public NativeScrollbar::EventHandler
     {
     public:
-        typedef BoxLayoutDecorator Super;
+        typedef Decorator Super;
+
+        enum Orients
+        {
+            Horizontal,
+            Vertical,
+            Both
+        };
 
         // Takes ownership.
         ScrollDecorator(ElementImpl * inParent,
                         ElementImpl * inDecoratedElement,
-                        Orient inScrollbarOrient);
+                        Orients inOrients);
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
@@ -136,7 +143,12 @@ namespace XULWin
 
     private:
         void updateWindowScroll();
-        int mOldScrollPos;
+
+        Orients mOrients;
+        int mOldHorScrollPos;
+        int mOldVerScrollPos;
+        ElementPtr mVerticalScrollbar;
+        ElementPtr mHorizontalScrollbar;
     };
 
 

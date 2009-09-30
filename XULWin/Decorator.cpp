@@ -327,7 +327,7 @@ namespace XULWin
             // Remove it from the parent so that it is untouched by its layout manager
             inParent->owningElement()->removeChild(mHorizontalScrollbar.get());
 
-            mHorizontalScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+            mHorizontalScrollbar->impl()->downcast<NativeScrollbar>()->setEventListener(this);
         }
         if (mOrients == Vertical || mOrients == Both)
         {
@@ -338,7 +338,7 @@ namespace XULWin
             // Remove it from the parent so that it is untouched by its layout manager
             inParent->owningElement()->removeChild(mVerticalScrollbar.get());
 
-            mVerticalScrollbar->impl()->downcast<NativeScrollbar>()->setEventHandler(this);
+            mVerticalScrollbar->impl()->downcast<NativeScrollbar>()->setEventListener(this);
         }
     }
             

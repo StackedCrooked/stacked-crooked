@@ -19,7 +19,7 @@ void log(const std::string & inMessage)
 }
 
 
-class TestConfigSample : public XULWin::EventHandler
+class TestConfigSample : public XULWin::EventListener
 {
 public:
     void run()
@@ -28,7 +28,7 @@ public:
         mRootEl = mRunner.loadApplication("application.ini");
 
         mNewSetButton = mRootEl->getElementById("newSetButton");
-        mNewSetButton->addEventHandler(this);
+        mNewSetButton->addEventListener(this);
 
         mSetsPopup = mRootEl->getElementById("setsPopup");
 
@@ -53,10 +53,10 @@ public:
         mNewSetTextBox = mNewSetDlg->getElementById("settextbox");
         
         mNewSetOK = mNewSetDlg->getElementById("newSetOKButton");
-        mNewSetOK->addEventHandler(this);
+        mNewSetOK->addEventListener(this);
 
         mNewSetCancel = mNewSetDlg->getElementById("newSetCancelButton");
-        mNewSetCancel->addEventHandler(this);
+        mNewSetCancel->addEventListener(this);
 
         mNewSetDlg->impl()->downcast<NativeWindow>()->showModal();
     }
@@ -83,7 +83,7 @@ public:
     {
     }
 
-    virtual void command(Element * inSender, unsigned short inNotificationCode)
+    virtual void handleCommand(Element * inSender, unsigned short inNotificationCode)
     {
         if (inSender->impl()->commandId() == mNewSetButton->impl()->commandId())
         {
@@ -96,15 +96,13 @@ public:
         }
         else if (mNewSetCancel && mNewSetCancel->impl()->commandId() == inSender->impl()->commandId())
         {
-            // close the modal window
-			ShowWindow(mNewSetDlg->impl()->downcast<NativeWindow>()->handle(), SW_HIDE);
-			PostQuitMessage(0);
+            closeWindow(mNewSetDlg.get());
         }
     }
 
 private:
-    XULWin::XULRunner mRunner;   
-    XULWin::ElementPtr mRootEl;
+    XULRunner mRunner;   
+    ElementPtr mRootEl;
     ElementPtr mNewSetDlg;
     Utils::Fallible<Element*> mNewSetButton;
     Utils::Fallible<Element*> mSetsPopup;    

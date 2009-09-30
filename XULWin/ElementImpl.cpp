@@ -17,7 +17,7 @@ namespace XULWin
 {
 
 
-    int CommandId::sId = 101; // start command Ids at 101 to avoid conflicts with Windows predefined values
+    int CommandId::sId = 101; // start handleCommand Ids at 101 to avoid conflicts with Windows predefined values
     
     ElementImpl::Components ElementImpl::sComponentsByHandle;
     
@@ -435,24 +435,24 @@ namespace XULWin
     }
 
 
-    bool NativeComponent::addEventHandler(EventHandler * inEventHandler)
+    bool NativeComponent::addEventListener(EventListener * inEventListener)
     {       
-        EventHandlers::iterator it = mEventHandlers.find(inEventHandler);
-        if (it == mEventHandlers.end())
+        EventListeners::iterator it = mEventListeners.find(inEventListener);
+        if (it == mEventListeners.end())
         {
-            mEventHandlers.insert(inEventHandler);
+            mEventListeners.insert(inEventListener);
             return true;
         }
         return false;
     }
 
 
-    bool NativeComponent::removeEventHandler(EventHandler * inEventHandler)
+    bool NativeComponent::removeEventListener(EventListener * inEventListener)
     {       
-        EventHandlers::iterator it = mEventHandlers.find(inEventHandler);
-        if (it != mEventHandlers.end())
+        EventListeners::iterator it = mEventListeners.find(inEventListener);
+        if (it != mEventListeners.end())
         {
-            mEventHandlers.erase(it);
+            mEventListeners.erase(it);
             return true;
         }
         return false;
@@ -462,10 +462,10 @@ namespace XULWin
     void NativeComponent::handleCommand(WPARAM wParam, LPARAM lParam)
     {
         unsigned short notificationCode = HIWORD(wParam);
-        EventHandlers::iterator it = mEventHandlers.begin(), end = mEventHandlers.end();
+        EventListeners::iterator it = mEventListeners.begin(), end = mEventListeners.end();
         for (; it != end; ++it)
         {
-            (*it)->command(owningElement(), notificationCode);
+            (*it)->handleCommand(owningElement(), notificationCode);
         }
     }
 
@@ -498,7 +498,7 @@ namespace XULWin
         }
 
         // Forward to event handlers
-        EventHandlers::iterator it = mEventHandlers.begin(), end = mEventHandlers.end();
+        EventListeners::iterator it = mEventListeners.begin(), end = mEventListeners.end();
         for (; it != end; ++it)
         {
             (*it)->handleMessage(owningElement(), inMessage, wParam, lParam);
@@ -770,7 +770,7 @@ namespace XULWin
         }
 
         // Forward to event handlers
-        EventHandlers::iterator it = mEventHandlers.begin(), end = mEventHandlers.end();
+        EventListeners::iterator it = mEventListeners.begin(), end = mEventListeners.end();
         for (; it != end; ++it)
         {
             (*it)->handleMessage(owningElement(), inMessage, wParam, lParam);
@@ -2331,7 +2331,7 @@ namespace XULWin
                       TEXT("SCROLLBAR"),
                       0, // exStyle
                       GetFlags(inAttributesMapping)),
-        mEventHandler(0),
+        mEventListener(0),
         mIncrement(0)
     {
         mExpansive = true;

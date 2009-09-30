@@ -21,8 +21,8 @@
       <row align="center">
         <label value="&ADD_TO_SET;" />
         <hbox align="center">
-          <menulist flex="1" id="setList">
-            <menupopup>
+          <menulist flex="1">
+            <menupopup id="setsPopup">
               <menuitem label="School" />
               <menuitem label="Family" />
               <menuitem label="Friends" />

@@ -114,7 +114,7 @@ namespace XULWin
 
 
     class ScrollDecorator : public Decorator,
-                            public NativeScrollbar::EventHandler
+                            public NativeScrollbar::EventListener
     {
     public:
         typedef Decorator Super;

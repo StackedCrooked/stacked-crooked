@@ -95,11 +95,11 @@ namespace XULWin
         Orient result = inDefault;
         if (inValue == "horizontal")
         {
-            result = HORIZONTAL;
+            result = Horizontal;
         }
         else if (inValue == "vertical")
         {
-            result = VERTICAL;
+            result = Vertical;
         }
         return result;
     }
@@ -107,7 +107,7 @@ namespace XULWin
 
     std::string Orient2String(Orient inOrient)
     {
-        if (inOrient == HORIZONTAL)
+        if (inOrient == Horizontal)
         {
             return "horizontal";
         }

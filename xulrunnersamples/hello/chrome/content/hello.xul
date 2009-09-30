@@ -31,7 +31,7 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         >
 
-  <vbox flex="1" style="overflow:auto">
+  <vbox flex="1" style="overflow:scroll">
     <hbox>
       <button label="1"></button>
       <button label="2"></button>

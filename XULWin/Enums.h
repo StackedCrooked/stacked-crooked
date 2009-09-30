@@ -18,8 +18,8 @@ namespace XULWin
 
     enum Orient
     {
-        HORIZONTAL,
-        VERTICAL
+        Horizontal,
+        Vertical
     };
 
 

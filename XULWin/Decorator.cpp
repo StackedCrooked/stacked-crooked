@@ -169,7 +169,7 @@ namespace XULWin
         {
             return mDecoratedElement->getOrient();
         }
-        return VERTICAL;
+        return Vertical;
     }
 
 
@@ -449,7 +449,7 @@ namespace XULWin
         if (mOverflowX != CSSOverflow_Hidden)
         {
             AttributesMapping attr;
-            attr["orient"] = Orient2String(HORIZONTAL);
+            attr["orient"] = Orient2String(Horizontal);
             mHorizontalScrollbar = Scrollbar::Create(inParent->owningElement(), attr);
 
             // Remove it from the parent so that it is untouched by its layout manager
@@ -460,7 +460,7 @@ namespace XULWin
         if (mOverflowY != CSSOverflow_Hidden)
         {
             AttributesMapping attr;
-            attr["orient"] = Orient2String(VERTICAL);
+            attr["orient"] = Orient2String(Vertical);
             mVerticalScrollbar = Scrollbar::Create(inParent->owningElement(), attr);
 
             // Remove it from the parent so that it is untouched by its layout manager
@@ -567,8 +567,12 @@ namespace XULWin
                 float ratio = (float)newW/(float)mDecoratedElement->getWidth(Optimal);
                 int pageincrement = (int)(maxpos*ratio + 0.5);
                 int curpos = Utils::getScrollPos(scrollbar->handle());
-                Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
-                scrollbar->setHidden(maxpos <= pageincrement);
+                scrollbar->setHidden(ratio > 1 && mOverflowX != CSSOverflow_Scroll);
+                scrollbar->setDisabled(ratio > 1);
+                if (ratio < 1)
+                {
+                    Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
+                }
                 if (!scrollbar->isHidden())
                 {
                     newH -= Defaults::scrollbarWidth();
@@ -586,8 +590,12 @@ namespace XULWin
                 float ratio = (float)newH/(float)mDecoratedElement->getHeight(Minimum);
                 int pageincrement = (int)(maxpos*ratio + 0.5);
                 int curpos = Utils::getScrollPos(scrollbar->handle());
-                Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
-                scrollbar->setHidden(maxpos <= pageincrement);
+                scrollbar->setHidden(ratio > 1 && mOverflowY != CSSOverflow_Scroll);
+                scrollbar->setDisabled(ratio > 1);
+                if (ratio < 1)
+                {
+                    Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
+                }
                 if (!scrollbar->isHidden())
                 {
                     newW -= Defaults::scrollbarWidth();

@@ -162,6 +162,44 @@ namespace XULWin
         }
     }
 
+    
+    Orient Decorator::getOrient() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getOrient();
+        }
+        return VERTICAL;
+    }
+
+
+    void Decorator::setOrient(Orient inOrient)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->setOrient(inOrient);
+        }
+    }
+
+
+    Align Decorator::getAlign() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getAlign();
+        }
+        return Start;
+    }
+
+
+    void Decorator::setAlign(Align inAlign)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->setAlign(inAlign);
+        }
+    }
+
 
     int Decorator::commandId() const
     {
@@ -396,117 +434,19 @@ namespace XULWin
     {
         mDecoratorChildren.push_back(inChild);
     }
-    
-    
-    BoxLayoutDecorator::BoxLayoutDecorator(ElementImpl * inParent,
-                                           ElementImpl * inDecoratedElement,
-                                           Orient inOrient,
-                                           Align inAlign) :
-        WrapDecorator(inParent, inDecoratedElement),
-        BoxLayouter(inOrient, inAlign)
-    {
-        
-    }
-    
-    
-    Rect BoxLayoutDecorator::clientRect() const
-    {
-        return Super::clientRect();
-    }
-
-    
-    void BoxLayoutDecorator::rebuildLayout()
-    {
-        return BoxLayouter::rebuildLayout();
-    }
-    
-    
-    void BoxLayoutDecorator::rebuildChildLayouts()
-    {
-        mDecoratedElement->rebuildLayout();
-        for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
-        {
-            mDecoratorChildren[idx]->impl()->rebuildLayout();
-        }
-    }
-
-
-    size_t BoxLayoutDecorator::numChildren() const
-    {
-        // mDecoratedElement + mDecoratorChildren.size()
-        return 1 + mDecoratorChildren.size();
-    }
-
-    
-    const ElementImpl * BoxLayoutDecorator::getChild(size_t idx) const
-    {
-        if (idx == 0)
-        {
-            return mDecoratedElement.get();
-        }
-        else
-        {
-            return mDecoratorChildren[idx-1]->impl();
-        }
-    }
-
-
-    ElementImpl * BoxLayoutDecorator::getChild(size_t idx)
-    {
-        if (idx == 0)
-        {
-            return mDecoratedElement.get();
-        }
-        else
-        {
-            return mDecoratorChildren[idx-1]->impl();
-        }
-    }
-
-
-    int BoxLayoutDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
-    {
-        int result = mDecoratedElement->getWidth(inSizeConstraint);
-        if (getOrient() == HORIZONTAL)
-        {
-            for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
-            {
-                result += mDecoratorChildren[idx]->impl()->getWidth(inSizeConstraint);
-            }
-        }
-        return result;
-    }
-
-
-    int BoxLayoutDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
-    {
-        int result = mDecoratedElement->calculateHeight(inSizeConstraint);
-        if (getOrient() == VERTICAL)
-        {
-            for (size_t idx = 0; idx != mDecoratorChildren.size(); ++idx)
-            {
-                result += mDecoratorChildren[idx]->impl()->calculateHeight(inSizeConstraint);
-            }
-        }
-        return result;
-    }
-
-    
-    void BoxLayoutDecorator::setAttributeController(const std::string & inAttr, AttributeController * inController)
-    {
-        Super::setAttributeController(inAttr, inController);
-    }
 
     
     ScrollDecorator::ScrollDecorator(ElementImpl * inParent,
                                      ElementImpl * inDecoratedElement,
-                                     Orients inOrients) :
+                                     CSSOverflow inOverflowX,
+                                     CSSOverflow inOverflowY) :
         Decorator(inDecoratedElement),
-        mOrients(inOrients),        
-        mOldHorScrollPos(0),        
+        mOverflowX(inOverflowX),
+        mOverflowY(inOverflowY),
+        mOldHorScrollPos(0),
         mOldVerScrollPos(0)
     {
-        if (mOrients == Horizontal || mOrients == Both)
+        if (mOverflowX != CSSOverflow_Hidden)
         {
             AttributesMapping attr;
             attr["orient"] = Orient2String(HORIZONTAL);
@@ -517,7 +457,7 @@ namespace XULWin
 
             mHorizontalScrollbar->impl()->downcast<NativeScrollbar>()->setEventListener(this);
         }
-        if (mOrients == Vertical || mOrients == Both)
+        if (mOverflowY != CSSOverflow_Hidden)
         {
             AttributesMapping attr;
             attr["orient"] = Orient2String(VERTICAL);
@@ -533,7 +473,7 @@ namespace XULWin
 
     int ScrollDecorator::getWidth(SizeConstraint inSizeConstraint) const
     {
-        if (inSizeConstraint == Minimum && (mOrients == Horizontal || mOrients == Both))
+        if (inSizeConstraint == Minimum && mOverflowX != CSSOverflow_Hidden)
         {
             return 0;
         }
@@ -544,7 +484,7 @@ namespace XULWin
 
     int ScrollDecorator::getHeight(SizeConstraint inSizeConstraint) const
     {
-        if (inSizeConstraint == Minimum && (mOrients == Vertical || mOrients == Both))
+        if (inSizeConstraint == Minimum && mOverflowY != CSSOverflow_Hidden)
         {
             return 0;
         }
@@ -554,7 +494,7 @@ namespace XULWin
             
     int ScrollDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        if (inSizeConstraint == Minimum && (mOrients == Horizontal || mOrients == Both))
+        if (inSizeConstraint == Minimum && mOverflowX != CSSOverflow_Hidden)
         {
             return 0;
         }
@@ -570,7 +510,7 @@ namespace XULWin
 
     int ScrollDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        if (inSizeConstraint == Minimum && (mOrients == Vertical || mOrients == Both))
+        if (inSizeConstraint == Minimum && mOverflowY != CSSOverflow_Hidden)
         {
             return 0;
         }
@@ -587,7 +527,7 @@ namespace XULWin
     void ScrollDecorator::rebuildLayout()
     {
         Rect clientRect(clientRect());
-        if (mOrients == Horizontal || mOrients == Both)
+        if (mOverflowX != CSSOverflow_Hidden)
         {
             mHorizontalScrollbar->impl()->move(
                 clientRect.x(),
@@ -596,7 +536,7 @@ namespace XULWin
                 Defaults::scrollbarWidth());
             mOldHorScrollPos = 0;
         }
-        if (mOrients == Vertical || mOrients == Both)
+        if (mOverflowY != CSSOverflow_Hidden)
         {
             mVerticalScrollbar->impl()->move(
                 clientRect.width(),
@@ -615,7 +555,7 @@ namespace XULWin
         // Update page height of scroll boxes
         int newW = w;
         int newH = h;
-        if (mOrients == Horizontal || mOrients == Both)
+        if (mOverflowX != CSSOverflow_Hidden)
         {
             NativeScrollbar * scrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
             if (scrollbar)
@@ -634,7 +574,7 @@ namespace XULWin
             }
         }
 
-        if (mOrients == Vertical || mOrients == Both)
+        if (mOverflowY != CSSOverflow_Hidden)
         {
             NativeScrollbar * scrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
             if (scrollbar)
@@ -686,13 +626,13 @@ namespace XULWin
                     ioOldScrollPos = newScrollPos;
                 }
             };        
-            if (mOrients == Horizontal || mOrients == Both)
+            if (mOverflowX != CSSOverflow_Hidden)
             {
                 NativeScrollbar * scrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
                 Helper::UpdateWindowScroll(HORIZONTAL, scrollbar, mDecoratedElement.get(), mOldHorScrollPos);
             }
 
-            if (mOrients == Vertical || mOrients == Both)
+            if (mOverflowY != CSSOverflow_Hidden)
             {
                 NativeScrollbar * scrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
                 Helper::UpdateWindowScroll(VERTICAL, scrollbar, mDecoratedElement.get(), mOldVerScrollPos);

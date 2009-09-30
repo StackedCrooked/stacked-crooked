@@ -30,6 +30,8 @@ namespace XULWin
         mElement(0),
         mFlex(0),
         mHidden(false),
+        mOrient(HORIZONTAL),
+        mAlign(Start),
         mWidth(0),
         mHeight(0),
         mCSSWidth(0),
@@ -39,6 +41,8 @@ namespace XULWin
         mHeight.setInvalid();
         mCSSWidth.setInvalid();
         mCSSHeight.setInvalid();
+        mOrient.setInvalid();
+        mAlign.setInvalid();
     }
 
 
@@ -112,6 +116,30 @@ namespace XULWin
     void ConcreteElement::setHidden(bool inHidden)
     {
         mHidden = inHidden;
+    }
+
+    
+    Orient ConcreteElement::getOrient() const
+    {
+        return mOrient.getValue(VERTICAL);
+    }
+
+
+    void ConcreteElement::setOrient(Orient inOrient)
+    {
+        mOrient = inOrient;
+    }
+
+
+    Align ConcreteElement::getAlign() const
+    {
+        return mAlign.getValue((getOrient() == VERTICAL) ? Stretch : Start);
+    }
+
+
+    void ConcreteElement::setAlign(Align inAlign)
+    {
+        mAlign = inAlign;
     }
 
 
@@ -281,6 +309,8 @@ namespace XULWin
         setAttributeController("height", static_cast<HeightController*>(this));
         setAttributeController("flex", static_cast<FlexController*>(this));
         setAttributeController("hidden", static_cast<HiddenController*>(this));
+        setAttributeController("align", static_cast<AlignController*>(this));
+        setAttributeController("orient", static_cast<OrientController*>(this));
         return true;
     }
 
@@ -550,8 +580,7 @@ namespace XULWin
 
 
     NativeWindow::NativeWindow(const AttributesMapping & inAttributesMapping) :
-        NativeComponent(0, inAttributesMapping),
-        BoxLayouter(VERTICAL, Stretch)
+        NativeComponent(0, inAttributesMapping)
     {
         mHandle = ::CreateWindowEx
         (
@@ -580,8 +609,7 @@ namespace XULWin
 
     bool NativeWindow::initAttributeControllers()
     {
-        Super::setAttributeController("title", static_cast<TitleController*>(this));
-        BoxLayouter::initAttributeControllers();
+        setAttributeController("title", static_cast<TitleController*>(this));
         return Super::initAttributeControllers();
     }
     
@@ -654,7 +682,19 @@ namespace XULWin
         BoxLayouter::rebuildLayout();
         ::InvalidateRect(handle(), 0, FALSE);
     }        
-    
+
+
+    Orient NativeWindow::getOrient() const
+    {
+        return Super::getOrient();
+    }
+
+
+    Align NativeWindow::getAlign() const
+    {
+        return Super::getAlign();
+    }
+
     
     std::string NativeWindow::getTitle() const
     {
@@ -1269,10 +1309,21 @@ namespace XULWin
     }
 
     
-    VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign) :
-        VirtualComponent(inParent, inAttributesMapping),
-        BoxLayouter(inOrient, inAlign)
+    VirtualBox::VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualComponent(inParent, inAttributesMapping)
     {
+    }
+        
+        
+    Orient VirtualBox::getOrient() const
+    {
+        return Super::getOrient();
+    }
+
+
+    Align VirtualBox::getAlign() const
+    {
+        return Super::getAlign();
     }
     
     
@@ -1285,6 +1336,17 @@ namespace XULWin
     bool VirtualBox::initAttributeControllers()
     {
         return Super::initAttributeControllers();
+    }
+
+
+    void VirtualBox::rebuildLayout()
+    {
+        BoxLayouter::rebuildLayout();
+    }
+
+
+    BoxLayouter::BoxLayouter()
+    {
     }
 
 
@@ -1351,45 +1413,6 @@ namespace XULWin
         }
     }
 
-
-    BoxLayouter::BoxLayouter(Orient inOrient, Align inAlign) :
-        mOrient(inOrient),
-        mAlign(inAlign)
-    {
-    }
-
-    
-    Orient BoxLayouter::getOrient() const
-    {
-        return mOrient;
-    }
-
-
-    void BoxLayouter::setOrient(Orient inOrient)
-    {
-        mOrient = inOrient;
-    }
-
-
-    Align BoxLayouter::getAlign() const
-    {
-        return mAlign;
-    }
-
-
-    void BoxLayouter::setAlign(Align inAlign)
-    {
-        mAlign = inAlign;
-    }
-
-
-    bool BoxLayouter::initAttributeControllers()
-    {
-        setAttributeController("orient", static_cast<OrientController*>(this));
-        setAttributeController("align", static_cast<AlignController*>(this));
-        return true;
-    }
-
     
     void BoxLayouter::rebuildLayout()
     {     
@@ -1432,23 +1455,21 @@ namespace XULWin
     }
         
 
-    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign) :
-        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), WS_EX_CONTROLPARENT, WS_TABSTOP),
-        BoxLayouter(inOrient, inAlign)
+    NativeBox::NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), WS_EX_CONTROLPARENT, WS_TABSTOP)
     {
     }
 
 
-    void NativeBox::setAttributeController(const std::string & inAttr, AttributeController * inController)
+    Orient NativeBox::getOrient() const
     {
-        Super::setAttributeController(inAttr, inController);
+        return Super::getOrient();
     }
-    
-        
-    bool NativeBox::initAttributeControllers()
+
+
+    Align NativeBox::getAlign() const
     {
-        BoxLayouter::initAttributeControllers();
-        return Super::initAttributeControllers();
+        return Super::getAlign();
     }
     
     
@@ -1475,6 +1496,30 @@ namespace XULWin
         return Super::clientRect();
     }
 
+
+    size_t NativeBox::numChildren() const
+    {
+        return mElement->children().size();
+    }
+
+    
+    const ElementImpl * NativeBox::getChild(size_t idx) const
+    {
+        return mElement->children()[idx]->impl();
+    }
+
+    
+    ElementImpl * NativeBox::getChild(size_t idx)
+    {
+        return mElement->children()[idx]->impl();
+    }
+
+    
+    void NativeBox::rebuildChildLayouts()
+    {
+        return Super::rebuildChildLayouts();
+    }
+    
     
     NativeMenuList::NativeMenuList(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent,
@@ -1927,7 +1972,7 @@ namespace XULWin
             if (NativeColumn * col = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
             {
                 colWidths.push_back(
-                    SizeInfo(FlexWrap(String2Int(col->owningElement()->getAttribute("flex"), 0)),
+                    SizeInfo(FlexWrap(col->getFlex()),
                              MinSizeWrap(col->getWidth(Minimum)),
                              OptSizeWrap(col->getWidth(Optimal))));
             }
@@ -1949,7 +1994,7 @@ namespace XULWin
             if (NativeRow * row = rows->children()[rowIdx]->impl()->downcast<NativeRow>())
             {
                 rowHeights.push_back(
-                    SizeInfo(FlexWrap(String2Int(row->owningElement()->getAttribute("flex"), 0)),
+                    SizeInfo(FlexWrap(row->getFlex()),
                              MinSizeWrap(row->getHeight(Minimum)),
                              OptSizeWrap(row->getHeight(Optimal))));
             }
@@ -1966,7 +2011,8 @@ namespace XULWin
         // Get bounding rect for all cells
         //
         GenericGrid<Rect> outerRects(numRows, numCols);
-        GridLayoutManager::GetOuterRects(clientRect(), colWidths, rowHeights, outerRects);
+        Rect clientRect(clientRect());
+        GridLayoutManager::GetOuterRects(clientRect, colWidths, rowHeights, outerRects);
 
 
         //
@@ -1983,13 +2029,13 @@ namespace XULWin
                     if (NativeColumn * column = columns->children()[colIdx]->impl()->downcast<NativeColumn>())
                     {
                         if (colIdx < row->owningElement()->children().size())
-                        {                            
+                        {
                             ElementImpl * child = row->owningElement()->children()[colIdx]->impl();
                             widgetInfos.set(rowIdx, colIdx,
-                                                     CellInfo(child->getWidth(),
+                                            CellInfo(child->getWidth(),
                                                      child->getHeight(),
-                                                     String2Align(row->owningElement()->getAttribute("align"), Stretch),
-                                                     String2Align(column->owningElement()->getAttribute("align"), Stretch)));
+                                                     row->getAlign(),
+                                                     column->getAlign()));
                         }
                     }
                 }
@@ -2083,6 +2129,12 @@ namespace XULWin
         VirtualComponent(inParent, inAttributesMapping)
     {
     }
+        
+        
+    Align NativeColumn::getAlign() const
+    {
+        return mAlign.getValue(Stretch);
+    }
 
     
     int NativeColumn::calculateWidth(SizeConstraint inSizeConstraint) const
@@ -2126,12 +2178,14 @@ namespace XULWin
         int res = 0;
         for (size_t rowIdx = 0; rowIdx != rows->children().size(); ++rowIdx)
         {
-
             ElementPtr row = rows->children()[rowIdx];
-            int w = row->children()[ownIndex]->impl()->getWidth(inSizeConstraint);
-            if (w > res)
+            if (ownIndex < row->children().size())
             {
-                res = w;
+                int w = row->children()[ownIndex]->impl()->getWidth(inSizeConstraint);
+                if (w > res)
+                {
+                    res = w;
+                }
             }
         }
         return res;
@@ -2152,7 +2206,7 @@ namespace XULWin
 
     
     NativeRadioGroup::NativeRadioGroup(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping, Defaults::Attributes::orient(), Defaults::Attributes::align())
+        VirtualBox(inParent, inAttributesMapping)
     {
     }
 

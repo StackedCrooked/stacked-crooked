@@ -2,6 +2,7 @@
 #define ELEMENT_H_INCLUDED
 
 
+#include "Enums.h"
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
@@ -119,7 +120,7 @@ namespace XULWin
         void removeChild(const Element * inChild);
 
     protected:
-        Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);   
+        Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);
 
         Element * mParent;
         Children mChildren;

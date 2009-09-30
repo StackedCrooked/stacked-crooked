@@ -56,6 +56,8 @@ namespace XULWin
                         public virtual HeightController,
                         public virtual FlexController,
                         public virtual HiddenController,
+                        public virtual AlignController,
+                        public virtual OrientController,
                         public virtual CSSMarginController,
                         public virtual CSSWidthController,
                         public virtual CSSHeightController,
@@ -87,6 +89,16 @@ namespace XULWin
         virtual bool isHidden() const = 0;
 
         virtual void setHidden(bool inHidden) = 0;
+
+        // OrientController methods
+        virtual Orient getOrient() const = 0;
+        
+        virtual void setOrient(Orient inOrient) = 0;
+
+        // AlignController methods
+        virtual Align getAlign() const = 0;
+
+        virtual void setAlign(Align inAlign) = 0;
 
         // CSSWidthController methods
         virtual int getCSSWidth() const = 0;
@@ -214,6 +226,16 @@ namespace XULWin
 
         virtual void setHidden(bool inHidden);
 
+        // OrientController methods
+        virtual Orient getOrient() const;
+        
+        virtual void setOrient(Orient inOrient);
+
+        // AlignController methods
+        virtual Align getAlign() const;
+
+        virtual void setAlign(Align inAlign);
+
         // CSSWidthController methods
         virtual int getCSSWidth() const;
 
@@ -314,10 +336,15 @@ namespace XULWin
         CommandId mCommandId;
         bool mExpansive;
         int mFlex;
-        Utils::Fallible<int> mWidth;
-        Utils::Fallible<int> mHeight;
-        Utils::Fallible<int> mCSSWidth;
-        Utils::Fallible<int> mCSSHeight;
+
+        // Mutable because sometimes a subclass will override the get method
+        // and, if isValid returns false, set a default value.
+        mutable Utils::Fallible<int> mWidth;
+        mutable Utils::Fallible<int> mHeight;
+        mutable Utils::Fallible<int> mCSSWidth;
+        mutable Utils::Fallible<int> mCSSHeight;
+        mutable Utils::Fallible<Orient> mOrient;
+        mutable Utils::Fallible<Align> mAlign;
 
         // We need to remember the hidden state ourselves
         // because we can't rely on WinAPI IsWindowVisible
@@ -401,33 +428,20 @@ namespace XULWin
     };
 
 
-    class BoxLayouter : public virtual OrientController,
-                        public virtual AlignController
+    class BoxLayouter
     {
     public:
-        BoxLayouter(Orient inOrient, Align inAlign);
-
-        // OrientController methods
-        virtual Orient getOrient() const;
-
-        virtual void setOrient(Orient inOrient);
-
-        // AlignController methods
-        virtual Align getAlign() const;
-
-        virtual void setAlign(Align inAlign);
-
-        virtual bool initAttributeControllers();
-
-        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController) = 0;
-
-        //virtual void setOldAttributeController(const std::string & inAttr, const ElementImpl::OldAttributeController & inController) = 0;
+        BoxLayouter();
 
         virtual void rebuildLayout();
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+        virtual Orient getOrient() const = 0;
+
+        virtual Align getAlign() const = 0;
 
         virtual size_t numChildren() const = 0;
 
@@ -438,16 +452,12 @@ namespace XULWin
         virtual Rect clientRect() const = 0;
 
         virtual void rebuildChildLayouts() = 0;
-
-    private:
-        Orient mOrient;
-        Align mAlign;
     };
 
 
     class NativeWindow : public NativeComponent,
-                         public BoxLayouter,
-                         public virtual TitleController
+                         public virtual TitleController,
+                         public BoxLayouter
     {
     public:
         typedef NativeComponent Super;
@@ -455,6 +465,13 @@ namespace XULWin
         static void Register(HMODULE inModuleHandle);
 
         NativeWindow(const AttributesMapping & inAttributesMapping);
+
+        // BoxLayouter
+        virtual Orient getOrient() const;
+
+        // BoxLayouter
+        virtual Align getAlign() const;
+
 
         // TitleController methods
         virtual std::string getTitle() const;
@@ -495,7 +512,6 @@ namespace XULWin
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
-
     };
 
 
@@ -687,14 +703,15 @@ namespace XULWin
     public:
         typedef VirtualComponent Super;
 
-        VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign);
+        VirtualBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual Orient getOrient() const;
+
+        virtual Align getAlign() const;
 
         virtual bool initAttributeControllers();
 
-        virtual void rebuildLayout()
-        {
-            BoxLayouter::rebuildLayout();
-        }
+        virtual void rebuildLayout();
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const
         {
@@ -731,9 +748,11 @@ namespace XULWin
     public:
         typedef NativeControl Super;
 
-        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, Orient inOrient, Align inAlign);
+        NativeBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual bool initAttributeControllers();
+        virtual Orient getOrient() const;
+
+        virtual Align getAlign() const;
 
         virtual void rebuildLayout();
 
@@ -743,21 +762,13 @@ namespace XULWin
 
         virtual Rect clientRect() const;
 
-        virtual size_t numChildren() const
-        { return mElement->children().size(); }
+        virtual size_t numChildren() const;
 
-        virtual const ElementImpl * getChild(size_t idx) const
-        { return mElement->children()[idx]->impl(); }
+        virtual const ElementImpl * getChild(size_t idx) const;
 
-        virtual ElementImpl * getChild(size_t idx)
-        { return mElement->children()[idx]->impl(); }
+        virtual ElementImpl * getChild(size_t idx);
 
-        virtual void rebuildChildLayouts()
-        { return Super::rebuildChildLayouts(); }
-        
-        virtual void setAttributeController(const std::string & inAttr, AttributeController * inController);
-
-        //virtual void setOldAttributeController(const std::string & inAttr, const OldAttributeController & inController);
+        virtual void rebuildChildLayouts();
 
     };
 
@@ -887,6 +898,8 @@ namespace XULWin
         typedef VirtualComponent Super;
 
         NativeColumn(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual Align getAlign() const;
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 

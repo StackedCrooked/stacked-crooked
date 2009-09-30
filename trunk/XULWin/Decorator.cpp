@@ -547,6 +547,9 @@ namespace XULWin
         }
 
         Super::rebuildLayout();
+        mOldHorScrollPos = 0;
+        mOldVerScrollPos = 0;
+        updateWindowScroll();
     }
     
     
@@ -598,46 +601,36 @@ namespace XULWin
 
     void ScrollDecorator::updateWindowScroll()
     {
+        if (mOverflowX == CSSOverflow_Hidden && mOverflowY == CSSOverflow_Hidden)
+        {
+            return;
+        }
+
         if (NativeComponent * nativeComponent = mDecoratedElement->downcast<NativeComponent>())
         {
+            NativeScrollbar * hscrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
+            NativeScrollbar * vscrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
+            
+            int maxpos = Defaults::Attributes::maxpos();
+            Rect clientRect(mDecoratedElement->clientRect());
+            int minHorSize = mDecoratedElement->getWidth(Minimum);
+            int minVerSize = mDecoratedElement->getHeight(Minimum);
+            int horScrollPos = Utils::getScrollPos(hscrollbar->handle());
+            int verScrollPos = Utils::getScrollPos(vscrollbar->handle());
 
-            struct Helper
+            double horRatio = (double)horScrollPos/(double)Defaults::Attributes::maxpos();
+            double verRatio = (double)verScrollPos/(double)Defaults::Attributes::maxpos();
+            int newHorScrollPos = (int)((horRatio * (double)minHorSize) + 0.5);
+            int newVerScrollPos = (int)((verRatio * (double)minVerSize) + 0.5);
+            int dx = newHorScrollPos - mOldHorScrollPos;
+            int dy = newVerScrollPos - mOldVerScrollPos;
+
+            if (NativeComponent * nativeComponent = mDecoratedElement->downcast<NativeComponent>())
             {
-                static void UpdateWindowScroll(Orient inOrient,
-                                               NativeScrollbar * inScrollbar,
-                                               ElementImpl * inDecoratedElement,
-                                               int & ioOldScrollPos)
-                {
-                    int maxpos = Defaults::Attributes::maxpos();
-                    Rect clientRect(inDecoratedElement->clientRect());
-                    int minSize = inOrient == HORIZONTAL ? inDecoratedElement->getWidth(Minimum) : inDecoratedElement->getHeight(Minimum);
-                    int clientSize = inOrient == HORIZONTAL ? clientRect.width() : clientRect.height();
-                    int scrollPos = Utils::getScrollPos(inScrollbar->handle());
-
-                    double ratio = (double)scrollPos/(double)Defaults::Attributes::maxpos();
-                    int newScrollPos = (int)((ratio * (double)minSize) + 0.5);
-                    int dx = inOrient == HORIZONTAL ? (newScrollPos - ioOldScrollPos) : 0;
-                    int dy = inOrient == VERTICAL   ? (newScrollPos - ioOldScrollPos) : 0;
-
-                    if (NativeComponent * nativeComponent = inDecoratedElement->downcast<NativeComponent>())
-                    {
-                        ::ScrollWindowEx(nativeComponent->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
-                    }
-                    ioOldScrollPos = newScrollPos;
-                }
-            };        
-            if (mOverflowX != CSSOverflow_Hidden)
-            {
-                NativeScrollbar * scrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
-                Helper::UpdateWindowScroll(HORIZONTAL, scrollbar, mDecoratedElement.get(), mOldHorScrollPos);
+                ::ScrollWindowEx(nativeComponent->handle(), -dx, -dy, 0, 0, 0, 0, SW_SCROLLCHILDREN | SW_INVALIDATE);
             }
-
-            if (mOverflowY != CSSOverflow_Hidden)
-            {
-                NativeScrollbar * scrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
-                Helper::UpdateWindowScroll(VERTICAL, scrollbar, mDecoratedElement.get(), mOldVerScrollPos);
-            }
-
+            mOldHorScrollPos = newHorScrollPos;
+            mOldVerScrollPos = newVerScrollPos;
         }
     }
 

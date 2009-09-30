@@ -23,7 +23,7 @@ namespace XULWin
     typedef std::map<std::string, std::string> StylesMapping;
 
     class Event;
-    class EventHandler;
+    class EventListener;
 
     /**
      * Represents a XUL element.
@@ -86,9 +86,9 @@ namespace XULWin
 
         const Children & children() const { return mChildren; }
 
-        bool addEventHandler(EventHandler * inEventHandler);
+        bool addEventListener(EventListener * inEventListener);
 
-        bool removeEventHandler(EventHandler * inEventHandler);
+        bool removeEventListener(EventListener * inEventListener);
 
         ElementImpl * impl() const;
 

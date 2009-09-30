@@ -33,10 +33,10 @@ namespace XULWin
     };
 
 
-    class EventHandler
+    class EventListener
     {
     public:
-        virtual void command(Element * inSender, unsigned short inNotificationCode) = 0;
+        virtual void handleCommand(Element * inSender, unsigned short inNotificationCode) = 0;
         
         virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
     };
@@ -230,9 +230,9 @@ namespace XULWin
 
         virtual ~NativeComponent();        
 
-        bool addEventHandler(EventHandler * inEventHandler);
+        bool addEventListener(EventListener * inEventListener);
 
-        bool removeEventHandler(EventHandler * inEventHandler);
+        bool removeEventListener(EventListener * inEventListener);
 
         // DisabledController methods
         virtual bool isDisabled() const;
@@ -269,8 +269,8 @@ namespace XULWin
 
         WNDPROC mOrigProc;
 
-        typedef std::set<EventHandler*> EventHandlers;
-        EventHandlers mEventHandlers;
+        typedef std::set<EventListener*> EventListeners;
+        EventListeners mEventListeners;
 
     private:
         static HMODULE sModuleHandle;
@@ -866,16 +866,16 @@ namespace XULWin
 
         virtual void setPageIncrement(int inPageIncrement);
 
-        class EventHandler
+        class EventListener
         {
         public:
             virtual bool curposChanged(NativeScrollbar * inSender, int inOldPos, int inNewPos) = 0;
         };
 
-        EventHandler * eventHandler() { return mEventHandler; }
+        EventListener * eventHandler() { return mEventListener; }
 
-        void setEventHandler(EventHandler * inEventHandler)
-        { mEventHandler = inEventHandler; }
+        void setEventListener(EventListener * inEventListener)
+        { mEventListener = inEventListener; }
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
@@ -888,7 +888,7 @@ namespace XULWin
     private:
         static DWORD GetFlags(const AttributesMapping & inAttributesMapping);
 
-        EventHandler * mEventHandler;
+        EventListener * mEventListener;
         int mIncrement;
     };
 

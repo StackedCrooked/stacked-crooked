@@ -526,6 +526,8 @@ namespace XULWin
     
     void ScrollDecorator::rebuildLayout()
     {
+        bool refreshScroll = mOldHorScrollPos != 0 || mOldVerScrollPos != 0;
+
         Rect clientRect(clientRect());
         if (mOverflowX != CSSOverflow_Hidden)
         {
@@ -549,7 +551,10 @@ namespace XULWin
         Super::rebuildLayout();
         mOldHorScrollPos = 0;
         mOldVerScrollPos = 0;
-        updateWindowScroll();
+        if (refreshScroll)
+        {
+            updateWindowScroll();
+        }
     }
     
     
@@ -569,7 +574,7 @@ namespace XULWin
                 int curpos = Utils::getScrollPos(scrollbar->handle());
                 scrollbar->setHidden(ratio > 1 && mOverflowX != CSSOverflow_Scroll);
                 scrollbar->setDisabled(ratio > 1);
-                if (ratio < 1)
+                if (ratio <= 1)
                 {
                     Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
                 }
@@ -592,7 +597,7 @@ namespace XULWin
                 int curpos = Utils::getScrollPos(scrollbar->handle());
                 scrollbar->setHidden(ratio > 1 && mOverflowY != CSSOverflow_Scroll);
                 scrollbar->setDisabled(ratio > 1);
-                if (ratio < 1)
+                if (ratio <= 1)
                 {
                     Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
                 }

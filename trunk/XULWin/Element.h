@@ -6,6 +6,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -22,11 +23,7 @@ namespace XULWin
     typedef std::map<std::string, std::string> StylesMapping;
 
     class Event;
-    class EventHandler
-    {
-    public:
-        virtual void handle(Event * inEvent) {}
-    };
+    class EventHandler;
 
     /**
      * Represents a XUL element.
@@ -89,6 +86,10 @@ namespace XULWin
 
         const Children & children() const { return mChildren; }
 
+        bool addEventHandler(EventHandler * inEventHandler);
+
+        bool removeEventHandler(EventHandler * inEventHandler);
+
         ElementImpl * impl() const;
 
         template<class ElementType>
@@ -122,8 +123,6 @@ namespace XULWin
 
         Element * mParent;
         Children mChildren;
-        typedef std::map<std::string, std::vector<EventHandler*> > EventHandlers;
-        EventHandlers mEventHandlers;
 
     private:
 

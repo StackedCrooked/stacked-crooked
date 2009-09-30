@@ -227,6 +227,28 @@ namespace XULWin
     }
     
     
+    bool Element::addEventHandler(EventHandler * inEventHandler)
+    {
+        if (NativeComponent * comp = mImpl->downcast<NativeComponent>())
+        {
+            comp->addEventHandler(inEventHandler);
+            return true;
+        }
+        return false;
+    }
+
+
+    bool Element::removeEventHandler(EventHandler * inEventHandler)
+    {
+        if (NativeComponent * comp = mImpl->downcast<NativeComponent>())
+        {
+            comp->removeEventHandler(inEventHandler);
+            return true;
+        }
+        return false;
+    }
+    
+    
     ElementImpl * Element::impl() const
     {
         return mImpl.get();

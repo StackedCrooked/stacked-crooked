@@ -1,7 +1,6 @@
 #include "XULRunner.h"
 #include "ChromeURL.h"
 #include "Defaults.h"
-#include "Parser.h"
 #include "Utils/ErrorReporter.h"
 #include "Utils/WinUtils.h"
 #include "Poco/Path.h"
@@ -136,6 +135,15 @@ namespace XULWin
         {
             window->showModal();
         }
+    }
+    
+    ElementPtr XULRunner::load(const std::string & inApplicationIniFile)
+    {
+	    Parser parser;
+        Poco::Path topLevelAppDir = Utils::getCurrentDirectory();
+        std::string mainXULFile = getMainXULFile(topLevelAppDir);
+        parser.parse(mainXULFile);
+        return parser.rootElement();
     }
 
 } // namespace XULWin

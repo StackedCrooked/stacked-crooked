@@ -33,6 +33,15 @@ namespace XULWin
     };
 
 
+    class EventHandler
+    {
+    public:
+        virtual void command(Element * inSender, unsigned short inNotificationCode) = 0;
+        
+        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
+    };
+
+
     class Element;
     class ElementImpl;
     class Decorator;
@@ -219,7 +228,11 @@ namespace XULWin
 
         NativeComponent(ElementImpl * inParent, const AttributesMapping & inAttributes);
 
-        virtual ~NativeComponent();
+        virtual ~NativeComponent();        
+
+        bool addEventHandler(EventHandler * inEventHandler);
+
+        bool removeEventHandler(EventHandler * inEventHandler);
 
         // DisabledController methods
         virtual bool isDisabled() const;
@@ -241,11 +254,7 @@ namespace XULWin
 
         virtual bool initStyleControllers();
 
-        /**
-         * Override this method if you want your control to handle its own command events.
-         * (Normally the parent control handles them through the WM_COMMAND message.)
-         */
-        virtual void handleCommand(WPARAM wParam, LPARAM lParam) {}
+        virtual void handleCommand(WPARAM wParam, LPARAM lParam);
 
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -259,6 +268,9 @@ namespace XULWin
         static ComponentsById sComponentsById;
 
         WNDPROC mOrigProc;
+
+        typedef std::set<EventHandler*> EventHandlers;
+        EventHandlers mEventHandlers;
 
     private:
         static HMODULE sModuleHandle;

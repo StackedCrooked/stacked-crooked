@@ -231,6 +231,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Script.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Script.h"
+				>
+			</File>
+			<File
 				RelativePath=".\XULRunner.cpp"
 				>
 			</File>

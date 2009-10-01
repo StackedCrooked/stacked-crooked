@@ -3,7 +3,7 @@ style="min-width: 150px; width: 200px; max-width: 400px;"
 style="max-height: 300px;"
 style="overflow:hidden;"
 
-
+- Samples: http://starkravingfinkle.org/blog/2006/12/xul-clippings/
 - Implement all overflow styles
 - Implement MDC dialog
 - Add "undetermined" attribute for progressmeter

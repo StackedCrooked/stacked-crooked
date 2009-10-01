@@ -1,6 +1,7 @@
 #include "Initializer.h"
 #include "XULWin/ElementImpl.h"
 #include "XULWin/Image.h"
+#include "XULWin/Script.h"
 #include "Utils/ErrorReporter.h"
 
 
@@ -41,6 +42,7 @@ namespace XULWin
         ElementFactory::Instance().registerElement<Deck>();
         ElementFactory::Instance().registerElement<Image>();
         ElementFactory::Instance().registerElement<Scrollbar>();
+        ElementFactory::Instance().registerElement<Script>();
     }
 
 

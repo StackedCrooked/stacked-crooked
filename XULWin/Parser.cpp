@@ -136,7 +136,7 @@ namespace XULWin
         if (!mStack.empty())
         {
             std::string innerText = std::string(ch + start, length);
-            mStack.top()->setInnerText(innerText);
+            mStack.top()->setInnerText(mStack.top()->innerText() + innerText);
         }
     }
 

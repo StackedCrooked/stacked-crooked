@@ -666,6 +666,20 @@ namespace XULWin
     };
 
 
+    class GroupBox : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<GroupBox>(inParent, inAttr); }
+
+        static const char * Type() { return "groupbox"; }
+
+    private:
+        friend class Element;
+        GroupBox(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
 } // XULWin
 
 

@@ -12,8 +12,6 @@ using namespace Utils;
 
 namespace XULWin
 {
-    ElementImpl * gNullNativeComponent(0);
-
 
     Element::Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent) :
         mType(inType),
@@ -462,7 +460,9 @@ namespace XULWin
 
     
     MenuPopup::MenuPopup(Element * inParent, const AttributesMapping & inAttributesMapping) :
-        Element(MenuPopup::Type(), inParent, gNullNativeComponent),
+        Element(MenuPopup::Type(),
+                inParent,
+                new PassiveComponent(inParent->impl(), inAttributesMapping)),
         mDestructing(false)
     {
     }
@@ -522,7 +522,9 @@ namespace XULWin
 
     
     MenuItem::MenuItem(Element * inParent, const AttributesMapping & inAttributesMapping) :
-        Element(MenuItem::Type(), inParent, gNullNativeComponent)
+        Element(MenuItem::Type(),
+                inParent,
+                new PassiveComponent(inParent->impl(), inAttributesMapping))
     {
     }
         
@@ -806,5 +808,14 @@ namespace XULWin
             panel->initImpl();
         }
     }
+
+
+    GroupBox::GroupBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(GroupBox::Type(),
+                inParent,
+                new GroupBoxImpl(inParent->impl(), inAttributesMapping))
+    { 
+    }
+
 
 } // XULWin

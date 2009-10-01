@@ -1117,6 +1117,24 @@ namespace XULWin
     };
 
 
+    class GroupBoxImpl : public VirtualBox
+    {
+    public:
+        typedef VirtualBox Super;
+
+        GroupBoxImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual void rebuildLayout();
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+    private:
+        HWND mGroupBoxHandle;
+    };
+
+
 } // namespace XULWin
 
 

@@ -302,12 +302,6 @@ namespace XULWin
     }
 
 
-    std::string Label::value() const
-    {
-        return getAttribute("value");
-    }
-
-
     Description::Description(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Description::Type(),
                 inParent,
@@ -813,8 +807,22 @@ namespace XULWin
     GroupBox::GroupBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(GroupBox::Type(),
                 inParent,
-                new GroupBoxImpl(inParent->impl(), inAttributesMapping))
+                new MarginDecorator(new GroupBoxImpl(inParent->impl(), inAttributesMapping)))
     { 
+    }
+
+
+    Caption::Caption(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Caption::Type(),
+                inParent,
+                new NativeCaption(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+   
+    void Caption::init()
+    {
+        impl()->downcast<NativeCaption>()->initImpl();
     }
 
 

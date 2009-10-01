@@ -734,4 +734,77 @@ namespace XULWin
     }
 
 
+    TabBox::TabBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TabBox::Type(),
+                inParent,
+                CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
+    { 
+    }
+
+
+    TabBox::~TabBox()
+    {
+    }
+
+
+    Tabs::Tabs(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Tabs::Type(),
+                inParent,
+                new TabsImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    Tabs::~Tabs()
+    {
+    }
+
+
+    Tab::Tab(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Tab::Type(),
+                inParent,
+                new TabImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    Tab::~Tab()
+    {
+    }
+
+
+    TabPanels::TabPanels(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TabPanels::Type(),
+                inParent,
+                new TabPanelsImpl(inParent->impl(), inAttributesMapping))
+    { 
+    }
+
+
+    TabPanels::~TabPanels()
+    {
+    }
+
+
+    TabPanel::TabPanel(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TabPanel::Type(),
+                inParent,
+                new TabPanelImpl(inParent->impl(), inAttributesMapping))
+    { 
+    }
+
+
+    TabPanel::~TabPanel()
+    {
+    }
+    
+
+    void TabPanel::init()
+    {
+        if (TabPanelImpl * panel = impl()->downcast<TabPanelImpl>())
+        {
+            panel->initImpl();
+        }
+    }
+
 } // XULWin

@@ -114,10 +114,10 @@ namespace XULWin
         }
 
         // you don't need to call this, the factory method takes care of it
-        void addChild(ElementPtr inChild);
+        virtual void addChild(ElementPtr inChild);
 
         // highly volatile, use at your own risk
-        void removeChild(const Element * inChild);
+        virtual void removeChild(const Element * inChild);
 
     protected:
         Element(const std::string & inType, Element * inParent, ElementImpl * inNativeComponent);
@@ -578,6 +578,91 @@ namespace XULWin
     private:
         friend class Element;
         Scrollbar(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TabBox : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TabBox>(inParent, inAttr); }
+
+        static const char * Type() { return "tabbox"; }
+
+        virtual ~TabBox();
+
+    private:
+        friend class Element;
+        TabBox(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class Tabs : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Tabs>(inParent, inAttr); }
+
+        static const char * Type() { return "tabs"; }
+
+        virtual ~Tabs();
+
+        //void addRow(const Row & inRow);
+
+    private:
+        friend class Element;
+        Tabs(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class Tab : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Tab>(inParent, inAttr); }
+
+        static const char * Type() { return "tab"; }
+
+        virtual ~Tab();
+
+    private:
+        friend class Element;
+        Tab(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TabPanel;
+    class TabPanels : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TabPanels>(inParent, inAttr); }
+
+        static const char * Type() { return "tabpanels"; }
+
+        virtual ~TabPanels();
+
+    private:
+        friend class Element;
+        TabPanels(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TabPanel : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TabPanel>(inParent, inAttr); }
+
+        static const char * Type() { return "tabpanel"; }
+
+        virtual ~TabPanel();
+
+        virtual void init();
+
+    private:
+        friend class Element;
+        TabPanel(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

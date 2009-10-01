@@ -116,6 +116,10 @@ namespace XULWin
     void ConcreteElement::setHidden(bool inHidden)
     {
         mHidden = inHidden;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            owningElement()->children()[idx]->impl()->setHidden(inHidden);
+        }
     }
 
     
@@ -881,6 +885,18 @@ namespace XULWin
     LRESULT VirtualComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         return FALSE;
+    }
+
+
+    PassiveComponent::PassiveComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualComponent(inParent, inAttributesMapping)
+    {
+    }
+        
+        
+    PassiveComponent::~PassiveComponent()
+    {
+
     }
 
 
@@ -2285,10 +2301,7 @@ namespace XULWin
         {
             ElementPtr element = owningElement()->children()[idx];
             bool visible = idx == mSelectedIndex;
-            if (NativeControl * nativeControl = element->impl()->downcast<NativeControl>())
-            {
-                Utils::setWindowVisible(nativeControl->handle(), visible);
-            }
+            element->impl()->setHidden(!visible);
             if (visible)
             {
                 Rect rect = clientRect();
@@ -2575,6 +2588,201 @@ namespace XULWin
         Super::setAttributeController("increment", static_cast<ScrollbarIncrementController*>(this));
         Super::setAttributeController("pageincrement", static_cast<ScrollbarPageIncrementController*>(this));
         return Super::initAttributeControllers();
+    }
+
+
+    TabsImpl::TabsImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    TabImpl::TabImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    TabPanelsImpl::Instances TabPanelsImpl::sInstances;
+
+
+    TabPanelsImpl::TabPanelsImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualComponent(inParent, inAttributesMapping),
+        mParentHandle(0),
+        mTabBarHandle(0),
+        mSelectedIndex(0),
+        mChildCount(0)
+    {
+        NativeComponent * nativeParent = NativeControl::GetNativeParent(inParent);
+        if (!nativeParent)
+        {
+            ReportError("TabPanelsImpl constructor failed because no native parent was found.");
+            return;
+        }
+
+        mParentHandle = nativeParent->handle();
+        
+        mTabBarHandle = ::CreateWindowEx
+        (
+            0, 
+            WC_TABCONTROL,
+            0,
+            WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
+            0, 0, 0, 0,
+            mParentHandle,
+            (HMENU)mCommandId.intValue(),
+            GetModuleHandle(0), // TODO: fix this hack
+            0
+        );
+        ::SendMessage(mTabBarHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
+        mOrigProc = (WNDPROC)(LONG_PTR)::SetWindowLongPtr(mParentHandle, GWL_WNDPROC, (LONG)(LONG_PTR)&TabPanelsImpl::MessageHandler);
+        sInstances.insert(std::make_pair(mParentHandle, this));
+    }
+
+
+    TabPanelsImpl::~TabPanelsImpl()
+    {
+        Instances::iterator it = sInstances.find(mParentHandle);
+        if (it != sInstances.end())
+        {
+            sInstances.erase(it);
+        }
+        ::SetWindowLongPtr(mParentHandle, GWL_WNDPROC, (LONG)(LONG_PTR)mOrigProc);
+        ::DestroyWindow(mTabBarHandle);
+    }
+    
+    
+    void TabPanelsImpl::addTabPanel(TabPanelImpl * inPanel)
+    {
+        if (TabImpl * tab = getCorrespondingTab(mChildCount))
+        {
+            Utils::insertTabPanel(mTabBarHandle, tab->owningElement()->getAttribute("label"));
+            mChildCount++;
+        }
+        update();
+    }
+        
+    
+    TabImpl * TabPanelsImpl::getCorrespondingTab(size_t inIndex)
+    {
+        for (size_t idx = 0; idx != owningElement()->parent()->children().size(); ++idx)
+        {
+            if (owningElement()->parent()->children()[idx]->type() == Tabs::Type())
+            {
+                if (Tabs * tabs = owningElement()->parent()->children()[idx]->downcast<Tabs>())
+                {
+                    return tabs->children()[inIndex]->impl()->downcast<TabImpl>();
+                }
+            }
+        }
+        return 0;
+    }
+
+
+    void TabPanelsImpl::rebuildLayout()
+    {
+        Rect rect = clientRect();
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * elementImpl = owningElement()->children()[idx]->impl();
+            elementImpl->move(rect.x(),
+                              rect.y() + Defaults::tabHeight(),
+                              rect.width(),
+                              rect.height() - Defaults::tabHeight());
+        }
+        ::MoveWindow(mTabBarHandle, rect.x(), rect.y(), rect.width(), Defaults::tabHeight(), FALSE);
+        rebuildChildLayouts();
+    }
+
+
+    int TabPanelsImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        int res = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            int w = owningElement()->children()[idx]->impl()->getWidth(inSizeConstraint);
+            if (w > res)
+            {
+                res = w;
+            }
+        }
+        return res;
+    }
+
+    
+    int TabPanelsImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        int res = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            int h = owningElement()->children()[idx]->impl()->getHeight(inSizeConstraint);
+            if (h > res)
+            {
+                res = h;
+            }
+        }
+        return res + Defaults::tabHeight();
+    }
+
+
+    void TabPanelsImpl::update()
+    {
+        int selectedIndex = TabCtrl_GetCurSel(mTabBarHandle);
+        for (size_t idx = 0; idx != mChildCount; ++idx)
+        {
+            owningElement()->children()[idx]->impl()->setHidden(idx != selectedIndex);
+        }
+    }
+
+
+    LRESULT TabPanelsImpl::MessageHandler(HWND inHandle, UINT inMessage, WPARAM wParam, LPARAM lParam)
+    {
+
+        Instances::iterator it = sInstances.find(inHandle);
+        if (it == sInstances.end())
+        {
+            return ::DefWindowProc(inHandle, inMessage, wParam, lParam);
+        }
+
+        TabPanelsImpl * pThis = it->second;
+
+        switch (inMessage)
+        {
+            case WM_NOTIFY:
+            {
+                if (((LPNMHDR)lParam)->code == TCN_SELCHANGE)
+                {
+                    pThis->update();
+                    pThis->rebuildLayout();
+                    ::InvalidateRect(pThis->mParentHandle, 0, FALSE);
+                    return TRUE;
+                }
+            }
+        }
+        
+        if (pThis->mOrigProc)
+		{
+			return ::CallWindowProc(pThis->mOrigProc, inHandle, inMessage, wParam, lParam);
+		}
+		else
+		{
+			return ::DefWindowProc(inHandle, inMessage, wParam, lParam);
+		}
+    }
+
+
+    TabPanelImpl::TabPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualBox(inParent, inAttributesMapping)
+    {
+    }
+        
+    
+    void TabPanelImpl::initImpl()
+    {
+        if (TabPanelsImpl * parent = owningElement()->parent()->impl()->downcast<TabPanelsImpl>())
+        {
+            parent->addTabPanel(this);
+        }
     }
 
 

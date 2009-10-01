@@ -555,9 +555,9 @@ namespace XULWin
 
         virtual bool initStyleControllers();
 
-        virtual int calculateWidth(SizeConstraint inSizeConstraint) const { return 0; }
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const = 0;
 
-        virtual int calculateHeight(SizeConstraint inSizeConstraint) const { return 0; }
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const = 0;
 
         virtual void rebuildLayout();
 
@@ -569,6 +569,21 @@ namespace XULWin
 
     protected:
         Rect mRect;
+    };
+
+
+    class PassiveComponent : public VirtualComponent
+    {
+    public:
+        typedef VirtualComponent Super;
+
+        PassiveComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual ~PassiveComponent();
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const { return 0; }
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const { return 0; }
     };
 
 
@@ -867,6 +882,10 @@ namespace XULWin
         typedef VirtualComponent Super;
 
         NativeRows(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const { return 0; }
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const { return 0; }
     };
 
 
@@ -889,6 +908,10 @@ namespace XULWin
         typedef VirtualComponent Super;
 
         NativeColumns(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const { return 0; }
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const { return 0; }
     };
 
 
@@ -1027,6 +1050,70 @@ namespace XULWin
 
         EventListener * mEventListener;
         int mIncrement;
+    };
+
+
+    class TabsImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TabsImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TabImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TabImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TabPanelImpl;
+    class TabImpl;
+    class TabPanelsImpl : public VirtualComponent
+    {
+    public:
+        typedef VirtualComponent Super;
+
+        TabPanelsImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual ~TabPanelsImpl();
+        
+        void addTabPanel(TabPanelImpl * inPanel);
+
+        virtual void rebuildLayout();
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+        static LRESULT MessageHandler(HWND inHandle, UINT inMessage, WPARAM wParam, LPARAM lParam);
+
+    private:
+        void update();
+
+        TabImpl * getCorrespondingTab(size_t inIndex);
+        HWND mParentHandle;
+        HWND mTabBarHandle;
+        typedef std::map<HWND, TabPanelsImpl*> Instances;
+        static Instances sInstances;
+        WNDPROC mOrigProc;
+        size_t mChildCount;
+        int mSelectedIndex;
+    };
+
+
+    class TabPanelImpl : public VirtualBox
+    {
+    public:
+        typedef VirtualComponent Super;
+
+        TabPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual void initImpl();
     };
 
 

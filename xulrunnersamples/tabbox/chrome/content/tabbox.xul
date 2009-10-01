@@ -1,16 +1,42 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        orient="vertical"
+        align="stretch"
+        >
 
-<tabbox id="tabboxid" flex="1">
+  
+  <!--
+  
+  TabBox -> TabBoxImpl (VirtualBox or NativeBox)
+  Done.
+  
+  Tabs -> TabsImpl (PassiveComponent)
+  Impl does nothing.
+  
+  Tab -> TabImpl (PassiveComponent)
+  Impl does nothing.
+    
+  TabPanels -> TabPanelsImpl (VirtualComponent)
+  Layouts tabbar + child containers (deck-like behavior)
+  Has HWND for tabbar
+  
+  TabPanel -> TabPanelImpl (VirtualBox)
+  Attribute values: orient=vertical, align=stretch
+  
+  
+  getElementsByTagName
+  -->
+<tabbox id="tabboxid" flex="1" orient="vertical" align="stretch">
     <tabs>
         <tab label="General"/>
         <tab label="Special"/>
     </tabs>
-    <tabpanels flex="1">
-        <tabpanel>
-            <vbox flex="1">
-                <groupbox>
+    <tabpanels flex="1" orient="vertical" align="stretch">
+      <tabpanel orient="vertical" align="stretch">
+            <vbox flex="1" orient="vertical" align="stretch">
+              <label value="Een"></label>
+                <!--<groupbox>
                     <caption label="Associate files types:"/>
                     <checkbox label="mp3"/>
                     <checkbox label="ogg"/>
@@ -20,12 +46,13 @@
                     <caption label="Editor"/>
                     <label control="editor" accesskey="P" value="Path:"/>
                     <textbox id="editor"/>
-                </groupbox>
+                </groupbox>-->
             </vbox>
         </tabpanel>
-        <tabpanel>
-            <vbox flex="1">
-                <groupbox>
+      <tabpanel orient="vertical" align="stretch">
+            <vbox flex="1" orient="vertical" align="stretch">
+              <label value="Twee"></label>
+                <!--<groupbox>
                     <caption label="When opening files:"/>
                     <menulist>
                         <menupopup>
@@ -34,7 +61,7 @@
                             <menuitem label="Prompt user"/>
                         </menupopup>
                     </menulist>
-                </groupbox>
+                </groupbox>-->
             </vbox>
         </tabpanel>
     </tabpanels>

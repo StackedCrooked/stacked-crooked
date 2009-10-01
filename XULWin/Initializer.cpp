@@ -43,6 +43,11 @@ namespace XULWin
         ElementFactory::Instance().registerElement<Image>();
         ElementFactory::Instance().registerElement<Scrollbar>();
         ElementFactory::Instance().registerElement<Script>();
+        ElementFactory::Instance().registerElement<TabBox>();
+        ElementFactory::Instance().registerElement<Tabs>();
+        ElementFactory::Instance().registerElement<Tab>();
+        ElementFactory::Instance().registerElement<TabPanels>();
+        ElementFactory::Instance().registerElement<TabPanel>();
     }
 
 

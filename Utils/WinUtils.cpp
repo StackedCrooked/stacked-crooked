@@ -422,5 +422,18 @@ namespace Utils
         ::SetScrollPos(inHandle, SB_CTL, inPos, TRUE);
     }
 
+
+    void insertTabPanel(HWND inHandle, const std::string & inTitle)
+    {
+        TCITEM tabItem;
+        tabItem.mask = TCIF_TEXT | TCIF_IMAGE; 
+        tabItem.iImage = -1; 
+        std::wstring text = ToUTF16(inTitle);
+        tabItem.pszText = const_cast<LPWSTR>(text.c_str());
+        if (TabCtrl_InsertItem(inHandle, 0, &tabItem) == -1) 
+        { 
+            ReportError("Failed to insert a new tab.");
+        }
+    }
     
 } // namespace Utils

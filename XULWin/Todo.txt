@@ -3,6 +3,8 @@ style="min-width: 150px; width: 200px; max-width: 400px;"
 style="max-height: 300px;"
 style="overflow:hidden;"
 
+- Classes inheriting VirtualComponent should not have a 'Native' prefix in their class name.
+- MarginDecorator should probably not inherit getHeight() and getWidth()
 - Samples: http://starkravingfinkle.org/blog/2006/12/xul-clippings/
 - Implement all overflow styles
 - Implement MDC dialog

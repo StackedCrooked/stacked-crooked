@@ -28,7 +28,7 @@ public:
         mConfigWindow = mRunner.loadApplication("application.ini");
 
         mNewSetButton = mConfigWindow->getElementById("newSetButton");
-        mNewSetButton->addEventListener(this);
+        //mNewSetButton->setClickAction(boost::bind(&TestConfigSample::showNewSetDialog, this));
 
         mSetsPopup = mConfigWindow->getElementById("setsPopup");
 
@@ -53,10 +53,10 @@ public:
         mNewSetTextBox = mNewSetDlg->getElementById("settextbox");
         
         mNewSetOK = mNewSetDlg->getElementById("newSetOKButton");
-        mNewSetOK->addEventListener(this);
+        //mNewSetOK->setClickAction(boost::bind(&TestConfigSample::newSetOK, this));
 
         mNewSetCancel = mNewSetDlg->getElementById("newSetCancelButton");
-        mNewSetCancel->addEventListener(this);
+        //mNewSetCancel->setClickAction(boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
 
         mNewSetDlg->impl()->downcast<NativeWindow>()->showModal();
     }
@@ -68,6 +68,7 @@ public:
         {
             addNewSet(nativeTextBox->getValue());
         }
+        closeWindow(mNewSetDlg.get());
     }
 
     void closeWindow(Element * inWindow)
@@ -85,19 +86,19 @@ public:
 
     virtual void handleCommand(Element * inSender, unsigned short inNotificationCode)
     {
-        if (inSender->impl()->commandId() == mNewSetButton->impl()->commandId())
-        {
-            showNewSetDialog();
-        }
-        else if (mNewSetOK && mNewSetOK->impl()->commandId() == inSender->impl()->commandId())
-        {
-            newSetOK();
-            closeWindow(mNewSetDlg.get());
-        }
-        else if (mNewSetCancel && mNewSetCancel->impl()->commandId() == inSender->impl()->commandId())
-        {
-            closeWindow(mNewSetDlg.get());
-        }
+        //if (inSender->impl()->commandId() == mNewSetButton->impl()->commandId())
+        //{
+        //    showNewSetDialog();
+        //}
+        //else if (mNewSetOK && mNewSetOK->impl()->commandId() == inSender->impl()->commandId())
+        //{
+        //    newSetOK();
+        //    closeWindow(mNewSetDlg.get());
+        //}
+        //else if (mNewSetCancel && mNewSetCancel->impl()->commandId() == inSender->impl()->commandId())
+        //{
+        //    closeWindow(mNewSetDlg.get());
+        //}
     }
 
 private:
@@ -131,8 +132,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     //runConfigSample();
     XULTest::Tester tester;
-    tester.runXULSample("hello");
-    ////tester.runXULSample("uploadr");
+    //tester.runXULSample("hello");
+    tester.runXULSample("tabbox");
     //tester.runXULSample("widgets");
     //tester.runXULSample("configpanel");
     //tester.runXULSample("shout");

@@ -29,13 +29,26 @@
 
 <window id="openLocation"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        >
-  <deck selectedIndex="2">
-    <description value="This is the first page"/>
-    <button label="This is the second page"/>
-    <box>
-      <label value="This is the third page"></label>
-      <button label="This is also the third page"/>
-    </box>
-  </deck>
+        class="dialog"
+        style="width: 480px; height:320px"
+        orient="vertical">
+
+  <script flex="1" id="scriptID">
+    <![CDATA[
+
+  function testProperty( aID )
+  {
+    var element = document.getElementById( aID );
+    if (!element)
+      return false;
+
+    var pValPair = prompt("Enter property,value:","").split(",");
+    var property = pValPair[0];
+    var value = pValPair[1];
+    element[property] = value;
+  }
+
+  ]]>
+  </script>
+
 </window>

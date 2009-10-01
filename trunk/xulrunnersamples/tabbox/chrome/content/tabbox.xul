@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<tabbox id="tabboxid" flex="1">
+    <tabs>
+        <tab label="General"/>
+        <tab label="Special"/>
+    </tabs>
+    <tabpanels flex="1">
+        <tabpanel>
+            <vbox flex="1">
+                <groupbox>
+                    <caption label="Associate files types:"/>
+                    <checkbox label="mp3"/>
+                    <checkbox label="ogg"/>
+                    <checkbox label="wmv"/>
+                </groupbox>
+                <groupbox>
+                    <caption label="Editor"/>
+                    <label control="editor" accesskey="P" value="Path:"/>
+                    <textbox id="editor"/>
+                </groupbox>
+            </vbox>
+        </tabpanel>
+        <tabpanel>
+            <vbox flex="1">
+                <groupbox>
+                    <caption label="When opening files:"/>
+                    <menulist>
+                        <menupopup>
+                            <menuitem label="Display in new editor"/>
+                            <menuitem label="Display in new tab of current editor"/>
+                            <menuitem label="Prompt user"/>
+                        </menupopup>
+                    </menulist>
+                </groupbox>
+            </vbox>
+        </tabpanel>
+    </tabpanels>
+</tabbox>
+
+</window>

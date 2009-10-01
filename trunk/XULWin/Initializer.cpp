@@ -14,7 +14,7 @@ namespace XULWin
     Initializer::Initializer(HINSTANCE inModuleHandle)
     {
         ErrorReporter::Initialize();
-        NativeWindow::Register(inModuleHandle);
+        NativeWindow::Register(inModuleHandle);        
         ElementFactory::Instance().registerElement<Window>();
         ElementFactory::Instance().registerElement<Button>();
         ElementFactory::Instance().registerElement<CheckBox>();
@@ -48,6 +48,8 @@ namespace XULWin
         ElementFactory::Instance().registerElement<Tab>();
         ElementFactory::Instance().registerElement<TabPanels>();
         ElementFactory::Instance().registerElement<TabPanel>();
+        ElementFactory::Instance().registerElement<GroupBox>();
+        
     }
 
 

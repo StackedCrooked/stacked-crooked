@@ -923,7 +923,7 @@ namespace XULWin
             inExStyle, 
             inClassName,
             TEXT(""),
-			inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE,
+			inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
             0, 0, 0, 0,
             nativeParent->handle(),
             (HMENU)mCommandId.intValue(),
@@ -980,6 +980,12 @@ namespace XULWin
     
     void NativeControl::move(int x, int y, int w, int h)
     {
+        std::string type = mElement->type();
+        if (mElement->type() == CheckBox::Type())
+        {
+            int a = 0;
+            a ++;
+        }
         ::MoveWindow(handle(), x, y, w, h, FALSE);
     }
     
@@ -2754,7 +2760,7 @@ namespace XULWin
                 {
                     pThis->update();
                     pThis->rebuildLayout();
-                    ::InvalidateRect(pThis->mParentHandle, 0, FALSE);
+                    //::InvalidateRect(pThis->mParentHandle, 0, FALSE);
                     return TRUE;
                 }
             }
@@ -2783,6 +2789,42 @@ namespace XULWin
         {
             parent->addTabPanel(this);
         }
+    }
+
+
+    GroupBoxImpl::GroupBoxImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualBox(inParent, inAttributesMapping),
+        mGroupBoxHandle(0)
+    {
+        mGroupBoxHandle = CreateWindowEx(WS_EX_CLIENTEDGE,
+                                         TEXT("STATIC"),
+                                         TEXT("TEST"),
+                                         WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE | WS_GROUP,
+                                         0, 0, 0, 0,
+                                         NativeControl::GetNativeParent(inParent)->handle(),
+                                         (HMENU)mCommandId.intValue(),
+                                         GetModuleHandle(0),
+                                         0);
+    }
+
+
+    int GroupBoxImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        return 10 + Super::calculateWidth(inSizeConstraint) + 10;
+    }
+
+
+    int GroupBoxImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        return 20 + Super::calculateHeight(inSizeConstraint) + 10;
+    }
+
+
+    void GroupBoxImpl::rebuildLayout()
+    {
+        Rect rect(clientRect());
+        ::MoveWindow(mGroupBoxHandle, rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
+        Super::rebuildLayout();
     }
 
 

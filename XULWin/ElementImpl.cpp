@@ -2794,38 +2794,160 @@ namespace XULWin
 
     GroupBoxImpl::GroupBoxImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         VirtualBox(inParent, inAttributesMapping),
-        mGroupBoxHandle(0)
+        mGroupBoxHandle(0),
+        mMarginLeft(2),
+        mMarginTop(16),
+        mMarginRight(2),
+        mMarginBottom(2)
     {
-        mGroupBoxHandle = CreateWindowEx(WS_EX_CLIENTEDGE,
-                                         TEXT("STATIC"),
-                                         TEXT("TEST"),
-                                         WS_TABSTOP | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE | WS_GROUP,
+        
+        // HACK!!!
+        // Group boxes don't render properly if the parent window has the
+        // WS_CLIPCHILDREN style defined.
+        // There should be some more decent way to fix this. But for now
+        // I just remove the flag from the parent. This may result in more
+        // flickering during manual resize of the Window.
+        Utils::removeWindowStyle(NativeControl::GetNativeParent(inParent)->handle(), WS_CLIPCHILDREN);
+
+
+        mGroupBoxHandle = CreateWindowEx(0,
+                                         TEXT("BUTTON"),
+                                         0,
+                                         WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
                                          0, 0, 0, 0,
                                          NativeControl::GetNativeParent(inParent)->handle(),
                                          (HMENU)mCommandId.intValue(),
                                          GetModuleHandle(0),
                                          0);
+        ::SendMessage(mGroupBoxHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
+    }
+
+
+    GroupBoxImpl::~GroupBoxImpl()
+    {
+        ::DestroyWindow(mGroupBoxHandle);
+    }
+        
+        
+    Orient GroupBoxImpl::getOrient() const
+    {
+        return mOrient.getValueOr(Vertical);
+    }
+
+
+    void GroupBoxImpl::setCaption(const std::string & inLabel)
+    {
+        Utils::setWindowText(mGroupBoxHandle, inLabel);
     }
 
 
     int GroupBoxImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return 10 + Super::calculateWidth(inSizeConstraint) + 10;
+        return mMarginLeft + BoxLayouter::calculateWidth(inSizeConstraint) + mMarginRight;
     }
 
 
     int GroupBoxImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return 20 + Super::calculateHeight(inSizeConstraint) + 10;
+        return mMarginTop + BoxLayouter::calculateHeight(inSizeConstraint) + mMarginBottom;
     }
-
-
+    
+    
     void GroupBoxImpl::rebuildLayout()
     {
-        Rect rect(clientRect());
-        ::MoveWindow(mGroupBoxHandle, rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
-        Super::rebuildLayout();
+        Rect clientRect(Super::clientRect());
+        ::MoveWindow(mGroupBoxHandle,
+                     clientRect.x(),
+                     clientRect.y(),
+                     clientRect.width(),
+                     clientRect.height(),
+                     FALSE);
+        BoxLayouter::rebuildLayout();
     }
 
+
+    Rect GroupBoxImpl::clientRect() const
+    {
+        Rect clientRect(Super::clientRect());
+        Rect rect(clientRect.x() + mMarginLeft,
+                  clientRect.y() + mMarginTop,
+                  clientRect.width() - mMarginRight - mMarginLeft,
+                  clientRect.height() - mMarginTop - mMarginBottom);
+        return rect;
+    }
+
+    
+    const ElementImpl * GroupBoxImpl::getChild(size_t idx) const
+    {
+        if (!mElement->children().empty())
+        {
+            if (mElement->children()[0]->type() == Caption::Type())
+            {
+                return mElement->children()[idx + 1]->impl();
+            }
+        }
+        return mElement->children()[idx]->impl();
+    }
+
+    
+    ElementImpl * GroupBoxImpl::getChild(size_t idx)
+    {
+        if (!mElement->children().empty())
+        {
+            if (mElement->children()[0]->type() == Caption::Type())
+            {
+                return mElement->children()[idx + 1]->impl();
+            }
+        }
+        return mElement->children()[idx]->impl();
+    }
+    
+    
+    size_t GroupBoxImpl::numChildren() const
+    {
+        if (!mElement->children().empty())
+        {
+            if (mElement->children()[0]->type() == Caption::Type())
+            {
+                return mElement->children().size() - 1;
+            }
+        }
+        return mElement->children().size();
+    }
+
+
+    NativeCaption::NativeCaption(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualComponent(inParent, inAttributesMapping)
+    {
+    }
+        
+    
+    int NativeCaption::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        if (NativeComponent * comp = NativeControl::GetNativeParent(mParent))
+        {
+            return Utils::getTextSize(comp->handle(), mElement->getAttribute("label")).cx;
+        }
+        return 0;
+    }
+
+    
+    int NativeCaption::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        if (NativeComponent * comp = NativeControl::GetNativeParent(mParent))
+        {
+            return Utils::getTextSize(comp->handle(), mElement->getAttribute("label")).cy;
+        }
+        return 0;
+    }
+
+
+    void NativeCaption::initImpl()
+    {
+        if (GroupBoxImpl * groupBox = mParent->downcast<GroupBoxImpl>())
+        {
+            groupBox->setCaption(mElement->getAttribute("label"));
+        }
+    }
 
 } // namespace XULWin

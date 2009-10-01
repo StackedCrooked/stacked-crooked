@@ -182,8 +182,6 @@ namespace XULWin
         { return Element::Create<Label>(inParent, inAttr); }
 
         static const char * Type() { return "label"; }
-
-        std::string value() const;
     
     private:
         friend class Element;
@@ -677,6 +675,24 @@ namespace XULWin
     private:
         friend class Element;
         GroupBox(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class Caption : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Caption>(inParent, inAttr); }
+
+        static const char * Type() { return "caption"; }
+
+        std::string value() const;
+
+        virtual void init();
+    
+    private:
+        friend class Element;
+        Caption(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

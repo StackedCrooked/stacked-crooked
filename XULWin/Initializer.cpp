@@ -49,6 +49,7 @@ namespace XULWin
         ElementFactory::Instance().registerElement<TabPanels>();
         ElementFactory::Instance().registerElement<TabPanel>();
         ElementFactory::Instance().registerElement<GroupBox>();
+        ElementFactory::Instance().registerElement<Caption>();
         
     }
 

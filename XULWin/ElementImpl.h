@@ -1124,14 +1124,47 @@ namespace XULWin
 
         GroupBoxImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
+        virtual ~GroupBoxImpl();
+
+        void setCaption(const std::string & inLabel);
+
         virtual void rebuildLayout();
+
+        virtual Orient getOrient() const;
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
+        virtual const ElementImpl * getChild(size_t idx) const;
+
+        virtual ElementImpl * getChild(size_t idx);
+        
+        virtual size_t numChildren() const;
+
+        virtual Rect clientRect() const;
+
     private:
         HWND mGroupBoxHandle;
+        int mMarginLeft;
+        int mMarginTop;
+        int mMarginRight;
+        int mMarginBottom;
+    };
+
+
+    class NativeCaption : public VirtualComponent
+    {
+    public:
+        typedef VirtualComponent Super;
+
+        NativeCaption(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+        virtual void initImpl();
     };
 
 

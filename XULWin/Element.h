@@ -438,8 +438,6 @@ namespace XULWin
 
         virtual ~Rows();
 
-        //void addRow(const Row & inRow);
-
     private:
         friend class Element;
         Rows(Element * inParent, const AttributesMapping & inAttributesMapping);
@@ -686,13 +684,123 @@ namespace XULWin
 
         static const char * Type() { return "caption"; }
 
-        std::string value() const;
-
         virtual void init();
     
     private:
         friend class Element;
         Caption(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class Tree : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Tree>(inParent, inAttr); }
+
+        virtual ~Tree();
+
+        static const char * Type() { return "tree"; }
+    
+    private:
+        friend class Element;
+        Tree(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeChildren : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TreeChildren>(inParent, inAttr); }
+
+        static const char * Type() { return "treechildren"; }
+
+        virtual ~TreeChildren();
+
+    private:
+        friend class Element;
+        TreeChildren(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeItem : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TreeItem>(inParent, inAttr); }
+
+        static const char * Type() { return "treeitem"; }
+
+        virtual ~TreeItem();
+
+    private:
+        friend class Element;
+        TreeItem(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeCols : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TreeCols>(inParent, inAttr); }
+
+        static const char * Type() { return "treecols"; }
+
+        virtual ~TreeCols();
+
+    private:
+        friend class Element;
+        TreeCols(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeCol : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TreeCol>(inParent, inAttr); }
+
+        static const char * Type() { return "treecols"; }
+
+        virtual ~TreeCol();
+
+    private:
+        friend class Element;
+        TreeCol(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeRow : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TreeRow>(inParent, inAttr); }
+
+        static const char * Type() { return "treecols"; }
+
+        virtual ~TreeRow();
+
+    private:
+        friend class Element;
+        TreeRow(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeCell : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<TreeCell>(inParent, inAttr); }
+
+        static const char * Type() { return "treecols"; }
+
+        virtual ~TreeCell();
+
+    private:
+        friend class Element;
+        TreeCell(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

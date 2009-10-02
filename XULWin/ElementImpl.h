@@ -1156,18 +1156,85 @@ namespace XULWin
     };
 
 
-    class NativeCaption : public VirtualComponent
+    class CaptionImpl : public VirtualComponent
     {
     public:
         typedef VirtualComponent Super;
 
-        NativeCaption(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        CaptionImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
         virtual void initImpl();
+    };
+
+
+    class TreeImpl : public NativeControl
+    {
+    public:
+        typedef NativeControl Super;
+
+        TreeImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+    };
+
+
+    class TreeChildrenImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TreeChildrenImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeItemImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TreeItemImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeColsImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TreeColsImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeColImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TreeColImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeRowImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TreeRowImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class TreeCellImpl : public PassiveComponent
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        TreeCellImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

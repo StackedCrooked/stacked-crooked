@@ -256,6 +256,8 @@ namespace Utils
 
     int getMultilineTextHeight(HWND inHandle)
     {   
+        int result = 0;
+
         HDC deviceContext(::GetDC(inHandle));
 
         HFONT font = (HFONT)::SendMessage(inHandle, WM_GETFONT, 0, 0);
@@ -271,11 +273,15 @@ namespace Utils
 		bounds.left = 0;
 		bounds.top = 0;
 		bounds.right = rc.right - rc.left;
-		bounds.bottom = 1000;
+		bounds.bottom = INT_MAX;
 
         std::wstring textUTF16 = ToUTF16(getWindowText(inHandle));
         
-		return ::DrawText(deviceContext, textUTF16.c_str(), (int)textUTF16.size(), &bounds, DT_CALCRECT | DT_WORDBREAK | DT_EDITCONTROL);
+		result = ::DrawText(deviceContext, textUTF16.c_str(), (int)textUTF16.size(), &bounds, DT_CALCRECT | DT_WORDBREAK | DT_EDITCONTROL);
+
+        ::ReleaseDC(inHandle, deviceContext);
+
+        return result;
     }
 
 

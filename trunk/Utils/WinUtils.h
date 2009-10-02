@@ -123,7 +123,7 @@ namespace Utils
 
     void setScrollPos(HWND inHandle, int inPos);    
 
-    void insertTabPanel(HWND inHandle, const std::string & inTitle);
+    void appendTabPanel(HWND inHandle, const std::string & inTitle);
 
 } // namespace Utils
 

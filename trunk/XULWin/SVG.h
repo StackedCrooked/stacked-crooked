@@ -53,6 +53,20 @@ namespace SVG
         Polygon(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
+
+    class Rect : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Rect>(inParent, inAttr); }
+
+        static const char * Type() { return "rect"; }
+    
+    private:
+        friend class Element;
+        Rect(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
 } // namespace SVG
 
 } // namespace XULWin

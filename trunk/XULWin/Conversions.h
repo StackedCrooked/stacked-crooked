@@ -41,7 +41,13 @@ namespace XULWin
 
     std::string RGBColor2String(const RGBColor & inColor);
 
-    RGBColor String2RGBColor(const std::string & inValue, const RGBColor & inDefault);
+    // HTML (hex) style formatting, for example: "eb8080"
+    bool HTMLColor2RGBColor(const std::string & inValue, RGBColor & outResult);
+
+    // RGB style formatting, for example: "rgb(0,0,255)"
+    bool RGBString2RGBColor(const std::string & inValue, RGBColor & outResult);
+
+    bool String2RGBColor(const std::string & inValue, RGBColor & outResult);
 
     std::string Point2String(const Point & inPoint);
 

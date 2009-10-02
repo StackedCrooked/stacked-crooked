@@ -230,31 +230,88 @@ namespace XULWin
     }
 
 
-    RGBColor String2RGBColor(const std::string & inValue, const RGBColor & inDefault)
+    bool HTMLColor2RGBColor(const std::string & inHTMLColor, RGBColor & outResult)
     {
-        size_t offsetHexColor = inValue.find("#");
-        if (offsetHexColor != std::string::npos)
+        std::string colorComponent;
+        std::vector<int> colors;
+        for (size_t idx = 0; idx != inHTMLColor.size(); ++idx)
         {
-            std::string htmlColor = inValue.substr(offsetHexColor + 1, inValue.size() - offsetHexColor - 1);
-            std::string colorComponent;
-            std::vector<int> colors;
-            for (size_t idx = 0; idx != htmlColor.size(); ++idx)
+            colorComponent += inHTMLColor[idx];
+            if (idx%2 == 1)
             {
-                colorComponent += htmlColor[idx];
-                if (idx%2 == 1)
-                {
-                    int hex = 0;
-                    sscanf(colorComponent.c_str(), "%x", &hex);                    
-                    colors.push_back(hex);
-                    colorComponent.clear();
-                }
-            }
-            if (colors.size() == 3)
-            {
-                return RGBColor(colors[0], colors[1], colors[2]);
+                int hex = 0;
+                sscanf(colorComponent.c_str(), "%x", &hex);                    
+                colors.push_back(hex);
+                colorComponent.clear();
             }
         }
-        return RGBColor(0, 0, 255);
+        if (colors.size() == 3)
+        {
+            outResult = RGBColor(colors[0], colors[1], colors[2]);
+            return true;
+        }
+        return false;
+    }
+
+    
+    bool RGBString2RGBColor(const std::string & inValue, RGBColor & outRGBColor)
+    {
+        size_t begin = inValue.find("(");
+        if (begin == std::string::npos)
+        {
+            return false;
+        }
+
+        size_t end = inValue.find(")");
+        if (end == std::string::npos)
+        {
+            return false;
+        }
+        
+        Poco::StringTokenizer tok(inValue.substr(begin + 1, end - begin -1),
+                                  ",",
+                                  Poco::StringTokenizer::TOK_IGNORE_EMPTY
+                                  | Poco::StringTokenizer::TOK_TRIM);
+        Poco::StringTokenizer::Iterator it = tok.begin();
+        std::vector<int> colors;
+        for (; it != tok.end(); ++it)
+        {
+            int colorValue = 0;
+            sscanf((*it).c_str(), "%d", &colorValue);                    
+            colors.push_back(colorValue);
+        }
+
+        if (colors.size() == 3)
+        {
+            outRGBColor = RGBColor(colors[0], colors[1], colors[2]);
+            return true;
+        }
+        return false;
+    }
+
+
+    bool String2RGBColor(const std::string & inValue, RGBColor & outResult)
+    {
+        size_t offset = inValue.find("#");
+        if (offset != std::string::npos)
+        {
+            std::string htmlColor = inValue.substr(offset + 1, inValue.size() - offset - 1);
+            if (HTMLColor2RGBColor(htmlColor, outResult))
+            {
+                return true;
+            }
+        }
+        
+        offset = inValue.find("rgb");
+        if (offset != std::string::npos)
+        {
+            std::string rgbString = inValue.substr(offset, inValue.size() - offset);
+            if (RGBString2RGBColor(rgbString, outResult))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 

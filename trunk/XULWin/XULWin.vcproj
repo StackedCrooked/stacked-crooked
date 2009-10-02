@@ -330,6 +330,14 @@
 				RelativePath=".\SVG.h"
 				>
 			</File>
+			<File
+				RelativePath=".\SVGImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SVGImpl.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

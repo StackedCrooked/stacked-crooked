@@ -54,6 +54,14 @@ namespace XULWin
         ElementFactory::Instance().registerElement<SVG::SVG>();
         ElementFactory::Instance().registerElement<SVG::G>();
         ElementFactory::Instance().registerElement<SVG::Polygon>();
+
+        ElementFactory::Instance().registerElement<Tree>();
+        ElementFactory::Instance().registerElement<TreeChildren>();
+        ElementFactory::Instance().registerElement<TreeCols>();
+        ElementFactory::Instance().registerElement<TreeCol>();
+        ElementFactory::Instance().registerElement<TreeRow>();
+        ElementFactory::Instance().registerElement<TreeCell>();
+        ElementFactory::Instance().registerElement<TreeItem>();
         
     }
 

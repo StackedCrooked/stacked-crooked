@@ -815,14 +815,105 @@ namespace XULWin
     Caption::Caption(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Caption::Type(),
                 inParent,
-                new NativeCaption(inParent->impl(), inAttributesMapping))
+                new CaptionImpl(inParent->impl(), inAttributesMapping))
     {
     }
 
    
     void Caption::init()
     {
-        impl()->downcast<NativeCaption>()->initImpl();
+        impl()->downcast<CaptionImpl>()->initImpl();
+    }
+
+
+    Tree::Tree(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Tree::Type(),
+                inParent,
+                new TreeImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    Tree::~Tree()
+    {
+    }
+
+
+    TreeChildren::TreeChildren(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TreeChildren::Type(),
+                inParent,
+                new TreeChildrenImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    TreeChildren::~TreeChildren()
+    {
+    }
+
+
+    TreeItem::TreeItem(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TreeItem::Type(),
+                inParent,
+                new TreeItemImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    TreeItem::~TreeItem()
+    {
+    }
+
+
+    TreeCols::TreeCols(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TreeCols::Type(),
+                inParent,
+                new TreeColsImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    TreeCols::~TreeCols()
+    {
+    }
+
+
+    TreeCol::TreeCol(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TreeCol::Type(),
+                inParent,
+                new TreeColImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    TreeCol::~TreeCol()
+    {
+    }    
+    
+    
+    TreeRow::TreeRow(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TreeRow::Type(),
+                inParent,
+                new TreeRowImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    TreeRow::~TreeRow()
+    {
+    }
+
+    
+    TreeCell::TreeCell(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(TreeCell::Type(),
+                inParent,
+                new TreeCellImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    TreeCell::~TreeCell()
+    {
     }
 
 

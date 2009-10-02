@@ -2970,13 +2970,13 @@ namespace XULWin
     }
 
 
-    NativeCaption::NativeCaption(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+    CaptionImpl::CaptionImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         VirtualComponent(inParent, inAttributesMapping)
     {
     }
         
     
-    int NativeCaption::calculateWidth(SizeConstraint inSizeConstraint) const
+    int CaptionImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         if (NativeComponent * comp = NativeControl::GetNativeParent(mParent))
         {
@@ -2986,7 +2986,7 @@ namespace XULWin
     }
 
     
-    int NativeCaption::calculateHeight(SizeConstraint inSizeConstraint) const
+    int CaptionImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         if (NativeComponent * comp = NativeControl::GetNativeParent(mParent))
         {
@@ -2996,12 +2996,66 @@ namespace XULWin
     }
 
 
-    void NativeCaption::initImpl()
+    void CaptionImpl::initImpl()
     {
         if (GroupBoxImpl * groupBox = mParent->downcast<GroupBoxImpl>())
         {
             groupBox->setCaption(mElement->getAttribute("label"));
         }
+    }
+
+
+    TreeImpl::TreeImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, WC_TREEVIEW, TVS_HASLINES, 0)
+    {
+    }
+
+
+    int TreeImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        return 500; // TODO: fix this
+    }
+
+
+    int TreeImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        return 500; // TODO: fix this
+    }
+
+
+    TreeChildrenImpl::TreeChildrenImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    TreeItemImpl::TreeItemImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    TreeColsImpl::TreeColsImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    TreeColImpl::TreeColImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    TreeRowImpl::TreeRowImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    TreeCellImpl::TreeCellImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
     }
 
 } // namespace XULWin

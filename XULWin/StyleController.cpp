@@ -19,6 +19,30 @@ namespace XULWin
     }
 
 
+    void CSSXController::get(std::string & outValue)
+    {
+        outValue = Int2String(getCSSX());
+    }
+
+
+    void CSSXController::set(const std::string & inValue)
+    {
+        setCSSX(String2CSSSize(inValue, 0));
+    }
+
+
+    void CSSYController::get(std::string & outValue)
+    {
+        outValue = Int2String(getCSSY());
+    }
+
+
+    void CSSYController::set(const std::string & inValue)
+    {
+        setCSSY(String2CSSSize(inValue, 0));
+    }
+
+
     void CSSWidthController::get(std::string & outValue)
     {
         outValue = Int2String(getCSSWidth());
@@ -124,7 +148,11 @@ namespace XULWin
 
     void CSSFillController::set(const std::string & inValue)
     {
-        setCSSFill(String2RGBColor(inValue, RGBColor(0, 0, 0)));
+        RGBColor result;
+        if (String2RGBColor(inValue, result))
+        {
+            setCSSFill(result);
+        }
     }
 
 

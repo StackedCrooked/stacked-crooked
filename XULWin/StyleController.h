@@ -18,6 +18,36 @@ namespace XULWin
     };
 
 
+    class CSSXController : public StyleController
+    {
+    public:
+        static const char * PropertyName() { return "x"; }
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual int getCSSX() const = 0;
+
+        virtual void setCSSX(int inX) = 0;
+    };
+
+
+    class CSSYController : public StyleController
+    {
+    public:
+        static const char * PropertyName() { return "y"; }
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual int getCSSY() const = 0;
+
+        virtual void setCSSY(int inY) = 0;
+    };
+
+
     class CSSWidthController : public StyleController
     {
     public:

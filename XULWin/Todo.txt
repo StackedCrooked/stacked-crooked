@@ -4,7 +4,6 @@ style="max-height: 300px;"
 style="overflow:hidden;"
 
 
-- Menu list min width should be based on longest menu item text, not on current.
 - Tree view
 - Classes inheriting VirtualComponent should not have a 'Native' prefix in their class name.
 - MarginDecorator should probably not inherit getHeight() and getWidth()

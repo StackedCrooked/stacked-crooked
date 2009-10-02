@@ -41,7 +41,7 @@ namespace SVG
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     private:
-        virtual void erase(Gdiplus::Graphics & g);
+        void bufferedPaint(HDC inHDC);
 
         virtual void paint(HDC inHDC);
     };
@@ -55,32 +55,21 @@ namespace SVG
         
     int NativeSVG::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return 480;
+        return 0;
     }
 
     
     int NativeSVG::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return 480;
-    }
-    
-    
-    void NativeSVG::erase(Gdiplus::Graphics & g)
-    {
-        Gdiplus::SolidBrush brush(Gdiplus::Color::White);
-        Rect r(clientRect());
-        Gdiplus::RectF rectF((Gdiplus::REAL)r.x(),
-                             (Gdiplus::REAL)r.y(),
-                             (Gdiplus::REAL)r.width(),
-                             (Gdiplus::REAL)r.height());
-        g.FillRectangle(&brush, rectF);
+        return 0;
     }
     
     
     void NativeSVG::paint(HDC inHDC)
     {
         Gdiplus::Graphics g(inHDC);
-        erase(g);
+        g.SetInterpolationMode(Gdiplus::InterpolationModeHighQuality);
+	    g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             if (Painter * svg = owningElement()->children()[idx]->impl()->downcast<Painter>())
@@ -88,6 +77,68 @@ namespace SVG
                 svg->paint(g);
             }
         }
+    }
+    
+    
+    void NativeSVG::bufferedPaint(HDC inHDC)
+    {
+
+	    //
+	    // Get the size of the client rectangle.
+	    //
+	    RECT rc;
+	    GetClientRect(handle(), &rc);
+    	
+	    HDC compatibleDC = CreateCompatibleDC(inHDC);
+    	
+    	
+	    //
+	    // Create a bitmap big enough for our client rectangle.
+	    //
+	    HBITMAP backgroundBuffer = CreateCompatibleBitmap(inHDC, rc.right - rc.left, rc.bottom - rc.top);
+
+
+	    //
+	    // Select the bitmap into the off-screen DC.
+	    //
+	    HBITMAP backgroundBitmap = (HBITMAP)SelectObject(compatibleDC, backgroundBuffer);
+
+
+	    //
+	    // Erase the background.
+	    //
+	    HBRUSH backgroundBrush = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+	    FillRect(compatibleDC, &rc, backgroundBrush);
+	    DeleteObject(backgroundBrush);
+
+	    //
+	    // Render the image into the offscreen DC.
+	    //
+	    SetBkMode(compatibleDC, TRANSPARENT);
+    	
+
+        paint(compatibleDC);
+
+
+        //
+        // Blt the changes to the screen DC.
+        //
+        BitBlt
+        (
+            inHDC,
+            rc.left,
+            rc.top,
+            rc.right - rc.left,
+            rc.bottom - rc.top,
+            compatibleDC, 0, 0, SRCCOPY
+        );
+
+        //
+        // Done with off-screen bitmap and DC.
+        //
+        SelectObject(compatibleDC, backgroundBitmap);
+        DeleteObject(backgroundBuffer);
+        DeleteDC(compatibleDC);
     }
 
     
@@ -99,7 +150,7 @@ namespace SVG
             PAINTSTRUCT ps;
             ps.hdc = hDC;
             ::BeginPaint(handle(), &ps);
-            paint(hDC);
+            bufferedPaint(hDC);
             ::EndPaint(handle(), &ps);
             ::ReleaseDC(handle(), hDC);
             return TRUE;

@@ -572,11 +572,17 @@ namespace XULWin
                 float ratio = (float)newW/(float)mDecoratedElement->getWidth(Optimal);
                 int pageincrement = (int)(maxpos*ratio + 0.5);
                 int curpos = Utils::getScrollPos(scrollbar->handle());
-                scrollbar->setHidden(ratio > 1 && mOverflowX != CSSOverflow_Scroll);
-                scrollbar->setDisabled(ratio > 1);
-                if (ratio <= 1)
+                if (ratio < 1)
                 {
                     Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
+                    scrollbar->setHidden(mOverflowX == CSSOverflow_Hidden);
+                    scrollbar->setDisabled(false);
+                }
+                else
+                {
+                    Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, 0);
+                    scrollbar->setHidden(mOverflowX != CSSOverflow_Scroll);
+                    scrollbar->setDisabled(true);
                 }
                 if (!scrollbar->isHidden())
                 {
@@ -595,11 +601,17 @@ namespace XULWin
                 float ratio = (float)newH/(float)mDecoratedElement->getHeight(Minimum);
                 int pageincrement = (int)(maxpos*ratio + 0.5);
                 int curpos = Utils::getScrollPos(scrollbar->handle());
-                scrollbar->setHidden(ratio > 1 && mOverflowY != CSSOverflow_Scroll);
-                scrollbar->setDisabled(ratio > 1);
-                if (ratio <= 1)
+                if (ratio < 1)
                 {
                     Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, curpos);
+                    scrollbar->setHidden(mOverflowY == CSSOverflow_Hidden);
+                    scrollbar->setDisabled(false);
+                }
+                else
+                {
+                    scrollbar->setHidden(mOverflowY != CSSOverflow_Scroll);
+                    scrollbar->setDisabled(true);
+                    Utils::setScrollInfo(scrollbar->handle(), maxpos, pageincrement, 0);
                 }
                 if (!scrollbar->isHidden())
                 {

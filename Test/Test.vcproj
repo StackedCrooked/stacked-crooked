@@ -219,6 +219,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\xulrunnersamples\treeview\chrome\content\treeview.xul"
+				>
+			</File>
+			<File
 				RelativePath="..\xulrunnersamples\widgets\chrome\content\widgets.xul"
 				>
 			</File>

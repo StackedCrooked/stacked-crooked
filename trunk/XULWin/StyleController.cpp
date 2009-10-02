@@ -115,4 +115,17 @@ namespace XULWin
         setCSSMargin(top, left, right, bottom);
     }
 
+
+    void CSSFillController::get(std::string & outValue)
+    {
+        outValue = RGBColor2String(getCSSFill());
+    }
+
+
+    void CSSFillController::set(const std::string & inValue)
+    {
+        setCSSFill(String2RGBColor(inValue, RGBColor(0, 0, 0)));
+    }
+
+
 } // namespace XULWin

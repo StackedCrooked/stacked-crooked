@@ -3,6 +3,7 @@
 
 
 #include "Enums.h"
+#include "Points.h"
 #include <string>
 
 
@@ -314,6 +315,21 @@ namespace XULWin
         virtual std::string getSrc() const = 0;
 
         virtual void setSrc(const std::string & inSrc) = 0;
+    };
+
+
+    class PointsController : public AttributeController
+    {
+    public:
+        PointsController(){}
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual const Points & getPoints() const = 0;
+
+        virtual void setPoints(const Points & inPoints) = 0;
     };
 
 } // namespace XULWin

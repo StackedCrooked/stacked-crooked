@@ -125,7 +125,7 @@ namespace XULWin
     
     Orient ConcreteElement::getOrient() const
     {
-        return mOrient.getValueOr(Vertical);
+        return mOrient.or(Vertical);
     }
 
 
@@ -137,7 +137,7 @@ namespace XULWin
 
     Align ConcreteElement::getAlign() const
     {
-        return mAlign.getValueOr((getOrient() == Vertical) ? Stretch : Start);
+        return mAlign.or((getOrient() == Vertical) ? Stretch : Start);
     }
 
 
@@ -1339,13 +1339,13 @@ namespace XULWin
         
     Orient VirtualBox::getOrient() const
     {
-        return mOrient.getValueOr(Horizontal);
+        return mOrient.or(Horizontal);
     }
 
 
     Align VirtualBox::getAlign() const
     {
-        return Super::getAlign();
+        return mAlign.or(Stretch);
     }
     
     
@@ -1485,13 +1485,13 @@ namespace XULWin
 
     Orient NativeBox::getOrient() const
     {
-        return mOrient.getValueOr(Horizontal);
+        return mOrient.or(Vertical);
     }
 
 
     Align NativeBox::getAlign() const
     {
-        return Super::getAlign();
+        return mAlign.or(Stretch);
     }
     
     
@@ -2139,7 +2139,7 @@ namespace XULWin
         
     Align NativeColumn::getAlign() const
     {
-        return mAlign.getValueOr(Stretch);
+        return mAlign.or(Stretch);
     }
 
     
@@ -2831,7 +2831,7 @@ namespace XULWin
         
     Orient GroupBoxImpl::getOrient() const
     {
-        return mOrient.getValueOr(Vertical);
+        return mOrient.or(Vertical);
     }
 
 

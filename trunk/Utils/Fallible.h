@@ -77,7 +77,7 @@ namespace Utils
         }
 
 
-        const T & getValueOr(const T & inDefault) const
+        const T & or(const T & inDefault) const
         {
             if (mValid)
             {

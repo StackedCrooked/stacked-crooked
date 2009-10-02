@@ -8,6 +8,9 @@
 
 namespace Utils
 {
+    std::string ToUTF8(const std::wstring & inText);
+
+    std::wstring ToUTF16(const std::string & inText);
 
     class CurrentDirectoryChanger
     {

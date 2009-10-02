@@ -16,7 +16,7 @@ namespace XULTest
         std::string chdir = "../xulrunnersamples/" + inAppName + "/";
         CurrentDirectoryChanger curdir(chdir);
 
-        system("run.bat");
+        //system("run.bat");
 
         XULRunner runner;
         runner.run("application.ini");

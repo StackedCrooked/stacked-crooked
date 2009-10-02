@@ -762,7 +762,7 @@ namespace XULWin
         static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
         { return Element::Create<TreeCol>(inParent, inAttr); }
 
-        static const char * Type() { return "treecols"; }
+        static const char * Type() { return "treecol"; }
 
         virtual ~TreeCol();
 
@@ -778,7 +778,7 @@ namespace XULWin
         static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
         { return Element::Create<TreeRow>(inParent, inAttr); }
 
-        static const char * Type() { return "treecols"; }
+        static const char * Type() { return "treerow"; }
 
         virtual ~TreeRow();
 
@@ -794,9 +794,11 @@ namespace XULWin
         static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
         { return Element::Create<TreeCell>(inParent, inAttr); }
 
-        static const char * Type() { return "treecols"; }
+        static const char * Type() { return "treecell"; }
 
         virtual ~TreeCell();
+
+        virtual void init();
 
     private:
         friend class Element;

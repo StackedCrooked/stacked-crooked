@@ -3006,7 +3006,8 @@ namespace XULWin
 
 
     TreeImpl::TreeImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeControl(inParent, inAttributesMapping, WC_TREEVIEW, TVS_HASLINES, 0)
+        NativeControl(inParent, inAttributesMapping, WC_TREEVIEW, TVS_HASLINES, 0),
+        mPrev((HTREEITEM)TVI_FIRST)
     {
     }
 
@@ -3020,6 +3021,24 @@ namespace XULWin
     int TreeImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return 500; // TODO: fix this
+    }
+
+    
+    void TreeImpl::addItem(TreeCellImpl * inCell)
+    {
+        std::wstring label = ToUTF16(inCell->getLabel());
+
+        TVITEM tvi; 
+        tvi.mask = TVIF_TEXT; 
+        tvi.pszText = const_cast<TCHAR*>(label.c_str());
+        tvi.cchTextMax = label.size();
+        
+        TVINSERTSTRUCT tvins; 
+        tvins.item = tvi; 
+        tvins.hInsertAfter = mPrev;
+        tvins.hParent = TVI_ROOT;
+
+        mPrev = (HTREEITEM)SendMessage(handle(), TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins);
     }
 
 
@@ -3056,6 +3075,34 @@ namespace XULWin
     TreeCellImpl::TreeCellImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         PassiveComponent(inParent, inAttributesMapping)
     {
+    }
+        
+        
+    void TreeCellImpl::initImpl()
+    {
+        if (TreeImpl * parent = findParentOfType<TreeImpl>())
+        {
+            parent->addItem(this);
+        }
+    }
+
+
+    bool TreeCellImpl::initAttributeControllers()
+    {
+        Super::setAttributeController("label", static_cast<LabelController*>(this));
+        return Super::initAttributeControllers();
+    }
+
+
+    std::string TreeCellImpl::getLabel() const
+    {
+        return mLabel;
+    }
+
+
+    void TreeCellImpl::setLabel(const std::string & inLabel)
+    {
+        mLabel = inLabel;
     }
 
 } // namespace XULWin

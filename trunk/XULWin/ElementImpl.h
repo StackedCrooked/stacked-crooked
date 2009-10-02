@@ -804,6 +804,9 @@ namespace XULWin
         void addMenuItem(const std::string & inText);
 
         void removeMenuItem(const std::string & inText);
+
+    private:
+        std::vector<std::string> mItems;
     };
 
 

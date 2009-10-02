@@ -1555,7 +1555,17 @@ namespace XULWin
     
     int NativeMenuList::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return Defaults::dropDownListMinimumWidth() + Utils::getTextSize(handle(), Utils::getWindowText(handle())).cx;
+        int itemWidth = 0;
+        for (size_t idx = 0; idx != mItems.size(); ++idx)
+        {
+            int w = Utils::getTextSize(handle(), mItems[idx]).cx;
+            if (itemWidth < w)
+            {
+                itemWidth = w;
+            }
+        }
+        
+        return Defaults::dropDownListMinimumWidth() + itemWidth;
     }
 
 
@@ -1581,6 +1591,7 @@ namespace XULWin
 		{
             Utils::selectComboBoxItem(handle(), 0);
 		}
+        mItems.push_back(inText);
 
         // size needs to be updated
         mParent->rebuildLayout();
@@ -1589,6 +1600,15 @@ namespace XULWin
 
     void NativeMenuList::removeMenuItem(const std::string & inText)
     {
+        std::vector<std::string>::iterator it = mItems.begin(), end = mItems.end();
+        for (; it != end; ++it)
+        {
+            if (*it == inText)
+            {
+                mItems.erase(it);
+                break;
+            }
+        }
         int idx = Utils::findStringInComboBox(handle(), inText);
         if (idx == CB_ERR)
         {

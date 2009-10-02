@@ -2843,7 +2843,9 @@ namespace XULWin
 
     int GroupBoxImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return mMarginLeft + BoxLayouter::calculateWidth(inSizeConstraint) + mMarginRight;
+        int textWidth = Defaults::textPadding() + Utils::getTextSize(mGroupBoxHandle, Utils::getWindowText(mGroupBoxHandle)).cx;
+        int contentWidth = BoxLayouter::calculateWidth(inSizeConstraint);
+        return mMarginLeft + std::max<int>(textWidth, contentWidth) + mMarginRight;
     }
 
 

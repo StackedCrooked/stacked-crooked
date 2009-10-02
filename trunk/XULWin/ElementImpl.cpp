@@ -2740,6 +2740,20 @@ namespace XULWin
         }
     }
 
+    static NativeWindow * findParentWindow(ElementImpl * inChild)
+    {
+        NativeWindow * result = 0;
+        if (result = dynamic_cast<NativeWindow*>(inChild))
+        {
+            return result;
+        }
+        else if (inChild->parent())
+        {
+            return findParentWindow(inChild->parent());
+        }
+        return 0;
+    }
+
 
     LRESULT TabPanelsImpl::MessageHandler(HWND inHandle, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
@@ -2759,8 +2773,26 @@ namespace XULWin
                 if (((LPNMHDR)lParam)->code == TCN_SELCHANGE)
                 {
                     pThis->update();
-                    pThis->rebuildLayout();
-                    ::InvalidateRect(pThis->mParentHandle, 0, TRUE);
+
+                    // HACK!
+                    // When changing tabs the min-max sizes of the window can
+                    // change and we need a way to make sure the window
+                    // enlarges if needed. Our workaround consists of moving
+                    // the window the the same location but one pixel higher,
+                    // and then move it back to its original size.
+                    // This seemingly zero-op has two side effects:
+                    // 1. The minmax sizes will be enforced again. 
+                    // 2. The content of the tabpanel is refreshed correctly.
+                    NativeWindow * wnd = findParentWindow(pThis);
+                    if (wnd)
+                    {
+                        RECT rw;
+                        ::GetWindowRect(wnd->handle(), &rw);
+                        int w = rw.right - rw.left;
+                        int h = rw.bottom - rw.top;
+                        ::MoveWindow(wnd->handle(), rw.left, rw.top, w, h+1, FALSE);
+                        ::MoveWindow(wnd->handle(), rw.left, rw.top, w, h, FALSE);
+                    }
                     return TRUE;
                 }
             }

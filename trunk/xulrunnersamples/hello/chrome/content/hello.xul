@@ -10,22 +10,22 @@
     <tabpanels flex="1">
       <tabpanel>
         <vbox flex="1">
-          <groupbox>
+          <vbox>
             <caption label="AssociateAssociateAssociateAssociateAssociateAssociate files types:"/>
             <checkbox label="mp3"/>
             <checkbox label="ogg"/>
             <checkbox label="wmv"/>
-          </groupbox>
-          <groupbox>
+          </vbox>
+          <vbox>
             <caption label="Editor"/>
             <label control="editor" accesskey="P" value="Path:"/>
             <textbox id="editor"/>
-          </groupbox>
+          </vbox>
         </vbox>
       </tabpanel>
       <tabpanel>
         <vbox flex="1">
-          <groupbox>
+          <vbox>
             <caption label="When opening files:"/>
             <menulist>
               <menupopup>
@@ -34,7 +34,7 @@
                 <menuitem label="Prompt user"/>
               </menupopup>
             </menulist>
-          </groupbox>
+          </vbox>
         </vbox>
       </tabpanel>
     </tabpanels>

@@ -48,7 +48,7 @@ namespace SVG
 
     
     NativeSVG::NativeSVG(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, WS_BORDER)
+        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0)
     {
     }
         

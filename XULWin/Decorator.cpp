@@ -499,7 +499,7 @@ namespace XULWin
             return 0;
         }
 
-        int result = mDecoratedElement->calculateWidth(inSizeConstraint);
+        int result = mDecoratedElement->getWidth(inSizeConstraint);
         if (mVerticalScrollbar && !mVerticalScrollbar->impl()->isHidden())
         {
             result += Defaults::scrollbarWidth();
@@ -515,7 +515,7 @@ namespace XULWin
             return 0;
         }
 
-        int result = mDecoratedElement->calculateHeight(inSizeConstraint);
+        int result = mDecoratedElement->getHeight(inSizeConstraint);
         if (mHorizontalScrollbar && !mHorizontalScrollbar->impl()->isHidden())
         {
             result += Defaults::scrollbarWidth();
@@ -784,13 +784,13 @@ namespace XULWin
     
     int MarginDecorator::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return marginLeft() + Super::calculateWidth(inSizeConstraint) + marginRight();
+        return marginLeft() + Super::getWidth(inSizeConstraint) + marginRight();
     }
 
     
     int MarginDecorator::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return marginTop() + Super::calculateHeight(inSizeConstraint) + marginBottom();
+        return marginTop() + Super::getHeight(inSizeConstraint) + marginBottom();
     }
 
 } // namespace XULWin

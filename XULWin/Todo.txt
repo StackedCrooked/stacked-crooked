@@ -15,4 +15,3 @@ style="overflow:hidden;"
 - Make window with toolbar, status-bar and scrollbar
 - Make sample program that illustrates DHTML-like behavior
 - Add ErrorCatcher live reporter in a sep DOS window
-- Support SVG

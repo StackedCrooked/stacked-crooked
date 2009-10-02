@@ -132,8 +132,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     //runConfigSample();
     XULTest::Tester tester;
-    tester.runXULSample("hello");
-    //tester.runXULSample("tabbox");
+    //tester.runXULSample("hello");
+    tester.runXULSample("tabbox");
     //tester.runXULSample("widgets");
     //tester.runXULSample("configpanel");
     //tester.runXULSample("shout");

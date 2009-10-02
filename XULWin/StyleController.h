@@ -3,6 +3,7 @@
 
 
 #include "Enums.h"
+#include "RGBColor.h"
 #include <string>
 
 
@@ -74,6 +75,21 @@ namespace XULWin
         virtual void getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const = 0;
 
         virtual void setCSSMargin(int inTop, int inLeft, int inRight, int inBottom) = 0;
+    };
+
+
+    class CSSFillController : public StyleController
+    {
+    public:
+        static const char * PropertyName() { return "fill"; }
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual void setCSSFill(const RGBColor & inColor) = 0;
+
+        virtual const RGBColor & getCSSFill() const = 0;
     };
 
 } // namespace XULWin

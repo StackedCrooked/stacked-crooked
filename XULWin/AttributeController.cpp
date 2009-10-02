@@ -246,4 +246,16 @@ namespace XULWin
     }
 
 
+    void PointsController::get(std::string & outValue)
+    {
+        outValue = Points2String(getPoints());
+    }
+
+
+    void PointsController::set(const std::string & inPoints)
+    {
+        setPoints(String2Points(inPoints));
+    }
+
+
 } // namespace XULWin

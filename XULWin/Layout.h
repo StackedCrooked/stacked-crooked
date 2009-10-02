@@ -3,38 +3,13 @@
 
 
 #include "Enums.h"
+#include "Points.h"
 #include "Utils/GenericGrid.h"
 #include <vector>
 
 
 namespace XULWin
 {
-
-	class Point
-	{
-    public:		
-		Point() : mX(0), mY(0) {}
-		
-        Point(int inX, int inY) : mX(inX), mY(inY) {}
-		
-		bool operator==(const Point & inOtherPoint)
-		{
-			return mX == inOtherPoint.mX && mY == inOtherPoint.mY;
-		}
-		
-		bool operator!=(const Point & inOtherPoint)
-		{
-			return mX != inOtherPoint.mX || mY != inOtherPoint.mY;
-		}
-
-        int x() const { return mX; }
-
-        int y() const { return mY; }
-    
-    private:
-		int mX;
-		int mY;
-	};
 
 	
 	class Dimension

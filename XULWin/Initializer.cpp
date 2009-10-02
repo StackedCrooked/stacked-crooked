@@ -2,6 +2,7 @@
 #include "XULWin/ElementImpl.h"
 #include "XULWin/Image.h"
 #include "XULWin/Script.h"
+#include "XULWin/SVG.h"
 #include "Utils/ErrorReporter.h"
 
 
@@ -50,6 +51,9 @@ namespace XULWin
         ElementFactory::Instance().registerElement<TabPanel>();
         ElementFactory::Instance().registerElement<GroupBox>();
         ElementFactory::Instance().registerElement<Caption>();
+        ElementFactory::Instance().registerElement<SVG::SVG>();
+        ElementFactory::Instance().registerElement<SVG::G>();
+        ElementFactory::Instance().registerElement<SVG::Polygon>();
         
     }
 

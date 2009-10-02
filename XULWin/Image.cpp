@@ -1,9 +1,10 @@
 #include "Image.h"
 #include "AttributeController.h"
 #include "Decorator.h"
-#include "ElementImpl.h"
 #include "ChromeURL.h"
 #include "Defaults.h"
+#include "ElementImpl.h"
+#include "Graphics.h"
 #include "Poco/Path.h"
 #include "Poco/UnicodeConverter.h"
 #include <boost/bind.hpp>
@@ -14,36 +15,6 @@
 
 namespace XULWin
 {	
-	class GdiplusLoader : boost::noncopyable
-	{
-		public:
-			GdiplusLoader()
-			{
-				assert(sRefCount >= 0);
-				if (sRefCount++ == 0)
-				{
-					// Init Gdiplus
-					Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-					Gdiplus::GdiplusStartup(&mGdiPlusToken, &gdiplusStartupInput, NULL);
-				}
-			}
-
-			~GdiplusLoader()
-			{
-				assert(sRefCount >= 0);
-				if (--sRefCount == 0)
-				{
-					Gdiplus::GdiplusShutdown(mGdiPlusToken);
-				}
-				assert(sRefCount >= 0);
-			}
-		private:
-			ULONG_PTR mGdiPlusToken;
-			static int sRefCount;
-	};
-
-    int GdiplusLoader::sRefCount = 0;
-
 
     class NativeImage : public NativeControl,
                         public virtual SrcController,

@@ -199,14 +199,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Image.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Image.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Initializer.cpp"
 				>
 			</File>
@@ -287,11 +279,55 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Points.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Points.h"
+				>
+			</File>
+			<File
 				RelativePath=".\StyleController.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\StyleController.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Graphics"
+			>
+			<File
+				RelativePath=".\Graphics.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Graphics.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Image.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Image.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RGBColor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RGBColor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SVG.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SVG.h"
 				>
 			</File>
 		</Filter>

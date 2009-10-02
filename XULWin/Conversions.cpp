@@ -1,6 +1,7 @@
 #include "Conversions.h"
 #include "Utils/ErrorReporter.h"
 #include "Poco/String.h"
+#include "Poco/StringTokenizer.h"
 #include <boost/lexical_cast.hpp>
 
 
@@ -222,5 +223,86 @@ namespace XULWin
         return CSSOverflow_Visible;
     }
 
+
+    std::string RGBColor2String(const RGBColor & inColor)
+    {
+        return "blue";
+    }
+
+
+    RGBColor String2RGBColor(const std::string & inValue, const RGBColor & inDefault)
+    {
+        size_t offsetHexColor = inValue.find("#");
+        if (offsetHexColor != std::string::npos)
+        {
+            std::string htmlColor = inValue.substr(offsetHexColor + 1, inValue.size() - offsetHexColor - 1);
+            std::string colorComponent;
+            std::vector<int> colors;
+            for (size_t idx = 0; idx != htmlColor.size(); ++idx)
+            {
+                colorComponent += htmlColor[idx];
+                if (idx%2 == 1)
+                {
+                    int hex = 0;
+                    sscanf(colorComponent.c_str(), "%x", &hex);                    
+                    colors.push_back(hex);
+                    colorComponent.clear();
+                }
+            }
+            if (colors.size() == 3)
+            {
+                return RGBColor(colors[0], colors[1], colors[2]);
+            }
+        }
+        return RGBColor(0, 0, 255);
+    }
+
+
+    std::string Point2String(const Point & inPoint)
+    {
+        std::stringstream ss;
+        ss << boost::lexical_cast<std::string>(inPoint.x());
+        ss << ",";
+        ss << boost::lexical_cast<std::string>(inPoint.y());
+        return ss.str();
+    }
+
+
+    Point String2Point(const std::string & inValue)
+    {
+        int sep = inValue.find(",");
+        if (sep != std::string::npos)
+        {
+            int x = boost::lexical_cast<int>(inValue.substr(0, sep));
+            int y = boost::lexical_cast<int>(inValue.substr(sep + 1, inValue.size() - sep - 1));
+            return Point(x, y);
+        }
+        return Point();
+    }
+
+
+    std::string Points2String(const Points & inPoint)
+    {
+        std::stringstream ss;
+        Points::const_iterator it = inPoint.begin(), end = inPoint.end(); 
+        for (; it != end; ++it)
+        {
+            ss << Point2String(*it) << " ";
+        }
+        return ss.str();
+    }
+
+
+    Points String2Points(const std::string & inValue)
+    {
+        Points result;
+        Poco::StringTokenizer tokenizer(inValue, " ", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
+        Poco::StringTokenizer::Iterator it = tokenizer.begin(), end = tokenizer.end();
+        for (; it != end; ++it)
+        {
+            result.push_back(String2Point(*it));
+        }
+        return result;
+    }
 
 } // namespace XULWin

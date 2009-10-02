@@ -3,6 +3,8 @@
 
 
 #include "Enums.h"
+#include "Points.h"
+#include "RGBColor.h"
 #include <string>
 
 
@@ -36,6 +38,18 @@ namespace XULWin
     std::string CSSOverflow2String(CSSOverflow inTextAlign);
 
     CSSOverflow String2CSSOverflow(const std::string & inTextAlign, CSSOverflow inDefault);
+
+    std::string RGBColor2String(const RGBColor & inColor);
+
+    RGBColor String2RGBColor(const std::string & inValue, const RGBColor & inDefault);
+
+    std::string Point2String(const Point & inPoint);
+
+    Point String2Point(const std::string & inValue);
+
+    std::string Points2String(const Points & inPoint);
+
+    Points String2Points(const std::string & inValue);
 
 } // namespace XULWin
 

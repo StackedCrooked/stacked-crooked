@@ -915,6 +915,14 @@ namespace XULWin
     TreeCell::~TreeCell()
     {
     }
-
+    
+    
+    void TreeCell::init()
+    {
+        if (TreeCellImpl * cell = impl()->downcast<TreeCellImpl>())
+        {
+            cell->initImpl();
+        }
+    }
 
 } // XULWin

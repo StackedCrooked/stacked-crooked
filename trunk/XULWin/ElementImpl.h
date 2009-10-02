@@ -11,9 +11,10 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <windows.h>
 #include <string>
 #include <map>
+#include <windows.h>
+#include <CommCtrl.h>
 
 
 namespace XULWin
@@ -144,6 +145,25 @@ namespace XULWin
             else if (const Decorator * obj = dynamic_cast<const Decorator*>(this))
             {
                 return obj->decoratedElement()->constDowncast<ConstType>();
+            }
+            return 0;
+        }
+
+
+        template<class Type>
+        Type * findParentOfType()
+        {
+            if (Type * obj = dynamic_cast<Type*>(this))
+            {
+                return obj;
+            }
+            else if (const Decorator * obj = dynamic_cast<const Decorator*>(this))
+            {
+                return obj->decoratedElement()->findParentOfType<Type>();
+            }
+            else if (owningElement() && owningElement()->parent() && owningElement()->parent()->impl())
+            {
+                return owningElement()->parent()->impl()->findParentOfType<Type>();
             }
             return 0;
         }
@@ -1171,6 +1191,7 @@ namespace XULWin
     };
 
 
+    class TreeCellImpl;
     class TreeImpl : public NativeControl
     {
     public:
@@ -1181,9 +1202,14 @@ namespace XULWin
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+        void addItem(TreeCellImpl * inCell);
+
+    private:
+        HTREEITEM mPrev;
     };
 
-
+    
     class TreeChildrenImpl : public PassiveComponent
     {
     public:
@@ -1192,7 +1218,8 @@ namespace XULWin
         TreeChildrenImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
     };
 
-
+    
+    class TreeRowImpl;
     class TreeItemImpl : public PassiveComponent
     {
     public:
@@ -1220,6 +1247,7 @@ namespace XULWin
     };
 
 
+    class TreeCellImpl;
     class TreeRowImpl : public PassiveComponent
     {
     public:
@@ -1229,12 +1257,24 @@ namespace XULWin
     };
 
 
-    class TreeCellImpl : public PassiveComponent
+    class TreeCellImpl : public PassiveComponent,
+                         public LabelController
     {
     public:
         typedef PassiveComponent Super;
 
         TreeCellImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual void initImpl();
+
+        virtual bool initAttributeControllers();
+
+        virtual std::string getLabel() const;
+
+        virtual void setLabel(const std::string & inLabel);
+
+    private:
+        std::string mLabel;
     };
 
 

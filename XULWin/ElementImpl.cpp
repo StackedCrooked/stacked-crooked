@@ -2662,7 +2662,7 @@ namespace XULWin
     {
         if (TabImpl * tab = getCorrespondingTab(mChildCount))
         {
-            Utils::insertTabPanel(mTabBarHandle, tab->owningElement()->getAttribute("label"));
+            Utils::appendTabPanel(mTabBarHandle, tab->owningElement()->getAttribute("label"));
             mChildCount++;
         }
         update();
@@ -2760,7 +2760,7 @@ namespace XULWin
                 {
                     pThis->update();
                     pThis->rebuildLayout();
-                    //::InvalidateRect(pThis->mParentHandle, 0, FALSE);
+                    ::InvalidateRect(pThis->mParentHandle, 0, TRUE);
                     return TRUE;
                 }
             }

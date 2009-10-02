@@ -1,34 +1,43 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <script type="application/x-javascript">
-    function Test_doCommand() {
-    alert("not implemented");
-    }
-  </script>
 
-  <toolbox>
-    <menubar id="menubar">
-      <menu id="file-menu" label="File">
-        <menupopup id="file-popup">
-          <menuitem label="New" oncommand="Test_doCommand();"/>
-          <menuitem label="Open" oncommand="Test_doCommand();"/>
-          <menuitem label="Save" oncommand="Test_doCommand();"/>
-          <menuseparator/>
-          <menuitem label="Exit" oncommand="Test_doCommand();"/>
-        </menupopup>
-      </menu>
-      <menu id="edit-menu" label="Edit">
-        <menupopup id="edit-popup">
-          <menuitem label="Cut" oncommand="Test_doCommand();"/>
-          <menuitem label="Copy" oncommand="Test_doCommand();"/>
-          <menuitem label="Paste" oncommand="Test_doCommand();"/>
-        </menupopup>
-      </menu>
-    </menubar>
-  </toolbox>
+  <tabbox id="tabboxid" flex="1">
+    <tabs>
+      <tab label="General"/>
+      <tab label="Special"/>
+    </tabs>
+    <tabpanels flex="1">
+      <tabpanel>
+        <vbox flex="1">
+          <groupbox>
+            <caption label="AssociateAssociateAssociateAssociateAssociateAssociate files types:"/>
+            <checkbox label="mp3"/>
+            <checkbox label="ogg"/>
+            <checkbox label="wmv"/>
+          </groupbox>
+          <groupbox>
+            <caption label="Editor"/>
+            <label control="editor" accesskey="P" value="Path:"/>
+            <textbox id="editor"/>
+          </groupbox>
+        </vbox>
+      </tabpanel>
+      <tabpanel>
+        <vbox flex="1">
+          <groupbox>
+            <caption label="When opening files:"/>
+            <menulist>
+              <menupopup>
+                <menuitem label="Display in new editor"/>
+                <menuitem label="Display in new tab of current editor"/>
+                <menuitem label="Prompt user"/>
+              </menupopup>
+            </menulist>
+          </groupbox>
+        </vbox>
+      </tabpanel>
+    </tabpanels>
+  </tabbox>
 
-  <hbox id="main" flex="1">
-    <textbox multiline="true" flex="1"/>
-  </hbox>
 </window>

@@ -3170,6 +3170,10 @@ namespace XULWin
     
     bool TreeItemImpl::isOpened() const
     {
+        //if (NativeComponent * comp = NativeControl::GetNativeParent(const_cast<TreeItemImpl*>(this)))
+        //{
+        //    TreeView_GetItemState(comp->handle(), hti, mask);
+        //}
         return false; // TODO: implement
     }
 
@@ -3284,12 +3288,7 @@ namespace XULWin
 
     int TreeCellImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        int result = 0;
-        if (NativeComponent * comp = NativeControl::GetNativeParent(const_cast<TreeCellImpl*>(this)))
-        {
-            result = Utils::getTextSize(comp->handle(), getLabel()).cy + Defaults::textPadding();
-        }
-        return result;
+        return Defaults::treeItemHeight();
     }
 
 } // namespace XULWin

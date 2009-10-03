@@ -1254,7 +1254,7 @@ namespace XULWin
 
         void addInfo(const TreeItemInfo & inInfo);
 
-        void addInfo(HTREEITEM inRoot, const TreeItemInfo & inInfo);
+        HTREEITEM addInfo(HTREEITEM inRoot, HTREEITEM inPrev, const TreeItemInfo & inInfo);
 
         virtual void initImpl();
     };

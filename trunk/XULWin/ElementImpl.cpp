@@ -3006,7 +3006,7 @@ namespace XULWin
 
 
     TreeImpl::TreeImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeControl(inParent, inAttributesMapping, WC_TREEVIEW, TVS_HASLINES, 0)
+        NativeControl(inParent, inAttributesMapping, WC_TREEVIEW, 0, TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS)
     {
     }
 
@@ -3035,7 +3035,7 @@ namespace XULWin
         std::wstring label = ToUTF16(inInfo.label());
 
         TVITEM tvi; 
-        tvi.mask = TVIF_TEXT; 
+        tvi.mask = TVIF_TEXT;
         tvi.pszText = const_cast<TCHAR*>(label.c_str());
         tvi.cchTextMax = label.size();
 

@@ -3025,13 +3025,12 @@ namespace XULWin
     
     void TreeImpl::addInfo(const TreeItemInfo & inInfo)
     {
-        addInfo(TVI_ROOT, inInfo);
+        addInfo(TVI_ROOT, TVI_FIRST, inInfo);
     }
 
     
-    void TreeImpl::addInfo(HTREEITEM inRoot, const TreeItemInfo & inInfo)
+    HTREEITEM TreeImpl::addInfo(HTREEITEM inRoot, HTREEITEM inPrev, const TreeItemInfo & inInfo)
     {
-        HTREEITEM hPrev = TVI_FIRST;
         std::wstring label = ToUTF16(inInfo.label());
 
         TVITEM tvi; 
@@ -3041,14 +3040,17 @@ namespace XULWin
 
         TVINSERTSTRUCT tvins; 
         tvins.item = tvi; 
-        tvins.hInsertAfter = hPrev;
+        tvins.hInsertAfter = inPrev;
         tvins.hParent = inRoot;
-        hPrev = (HTREEITEM)SendMessage(handle(), TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins);
+        inPrev = (HTREEITEM)SendMessage(handle(), TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins);
 
+        HTREEITEM prevChild = TVI_FIRST;
         for (size_t idx = 0; idx != inInfo.numChildren(); ++idx)
         {
-            addInfo(hPrev, *inInfo.getChild(idx));
+            prevChild = addInfo(inPrev, prevChild, *inInfo.getChild(idx));
         }
+
+        return inPrev;
     }
     
     
@@ -3085,7 +3087,8 @@ namespace XULWin
         {
             if (TreeCellImpl * cell = row->findChildOfType<TreeCellImpl>())
             {
-                mItemInfo.setLabel(cell->getLabel());
+                std::string label = cell->getLabel();
+                mItemInfo.setLabel(label);
             }
         }
         if (TreeChildrenImpl * treeChildren = findChildOfType<TreeChildrenImpl>())

@@ -362,4 +362,17 @@ namespace XULWin
         return result;
     }
 
+    
+    std::string PathInstructions2String(const PathInstructions & inPathInstructions)
+    {
+        return "";
+    }
+
+
+    PathInstructions String2PathInstructions(const std::string & inValue)
+    {
+        PathInstructions result;
+        return result;
+    }
+
 } // namespace XULWin

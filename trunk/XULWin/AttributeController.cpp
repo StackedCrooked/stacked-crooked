@@ -258,4 +258,16 @@ namespace XULWin
     }
 
 
+    void PathInstructionsController::get(std::string & outValue)
+    {
+        outValue = PathInstructions2String(getPathInstructions());
+    }
+
+
+    void PathInstructionsController::set(const std::string & inPathInstructions)
+    {
+        setPathInstructions(String2PathInstructions(inPathInstructions));
+    }
+
+
 } // namespace XULWin

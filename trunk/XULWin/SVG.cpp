@@ -53,6 +53,14 @@ namespace SVG
     }
 
 
+    Path::Path(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Path::Type(),
+                inParent,
+                new NativePath(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
 
 } // namespace SVG
 

@@ -4,6 +4,7 @@
 
 #include "Enums.h"
 #include "Points.h"
+#include "PathInstructions.h"
 #include <string>
 
 
@@ -321,8 +322,6 @@ namespace XULWin
     class PointsController : public AttributeController
     {
     public:
-        PointsController(){}
-
         virtual void get(std::string & outValue);
 
         virtual void set(const std::string & inValue);
@@ -330,6 +329,19 @@ namespace XULWin
         virtual const Points & getPoints() const = 0;
 
         virtual void setPoints(const Points & inPoints) = 0;
+    };
+
+
+    class PathInstructionsController : public AttributeController
+    {
+    public:
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual const PathInstructions & getPathInstructions() const = 0;
+
+        virtual void setPathInstructions(const PathInstructions & inPathInstructions) = 0;
     };
 
 } // namespace XULWin

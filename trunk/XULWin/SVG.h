@@ -67,6 +67,20 @@ namespace SVG
         Rect(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
+
+    class Path : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Path>(inParent, inAttr); }
+
+        static const char * Type() { return "path"; }
+    
+    private:
+        friend class Element;
+        Path(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
 } // namespace SVG
 
 } // namespace XULWin

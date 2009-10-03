@@ -49,7 +49,7 @@ namespace XULWin
 
         static int progressMeterHeight() { return 17; }
 
-        static int treeIndent() { return 17; }
+        static int treeIndent() { return 18; }
 
         static int treeItemHeight() { return 16; }
 

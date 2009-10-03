@@ -4,6 +4,7 @@
 
 #include "Enums.h"
 #include "Points.h"
+#include "PathInstructions.h"
 #include "RGBColor.h"
 #include <string>
 
@@ -56,6 +57,10 @@ namespace XULWin
     std::string Points2String(const Points & inPoint);
 
     Points String2Points(const std::string & inValue);
+
+    std::string PathInstructions2String(const PathInstructions & inPathInstructions);
+
+    PathInstructions String2PathInstructions(const std::string & inValue);
 
 } // namespace XULWin
 

@@ -143,6 +143,28 @@ namespace SVG
         std::vector<Gdiplus::PointF> mNativePoints;
     };
 
+
+    class NativePath : public VirtualBox,
+                       public virtual PathInstructionsController,
+                       public Painter
+    {
+    public:
+        typedef VirtualBox Super;
+
+        NativePath(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual bool initAttributeControllers();
+
+        virtual void paint(Gdiplus::Graphics & g);
+
+        virtual const PathInstructions & getPathInstructions() const;
+
+        virtual void setPathInstructions(const PathInstructions & inPathInstructions);
+
+    private:
+        PathInstructions mInstructions;
+    };
+
 } // namespace SVG
 
 } // namespace XULWin

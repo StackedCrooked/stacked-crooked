@@ -1,4 +1,5 @@
 #include "SVGImpl.h"
+#include "PathInstructions.h"
 
 
 namespace XULWin
@@ -370,6 +371,48 @@ namespace SVG
     void RectImpl::setCSSFill(const RGBColor & inColor)
     {
         mFill = inColor;
+    }
+
+    
+    NativePath::NativePath(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        VirtualBox(inParent, inAttributesMapping)
+    {
+    }
+        
+        
+    bool NativePath::initAttributeControllers()
+    {
+        setAttributeController("d", static_cast<PathInstructionsController*>(this));
+        return Super::initAttributeControllers();
+    }
+
+    
+    void NativePath::paint(Gdiplus::Graphics & g)
+    {
+        //if (!mInstructions.empty())
+        //{
+        //    Gdiplus::Color color(Gdiplus::Color::Black);
+        //    NativeG * group = findNativeGParent(this);
+        //    if (group)
+        //    {
+        //        RGBColor fill = group->getCSSFill();
+        //        color = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+        //    }
+        //    Gdiplus::SolidBrush solidBrush(color);
+        //    g.FillPath(&solidBrush, &mNativePoints[0], mNativePoints.size());
+        //}
+    }
+    
+    
+    const PathInstructions & NativePath::getPathInstructions() const
+    {
+        return mInstructions;
+    }
+
+
+    void NativePath::setPathInstructions(const PathInstructions & inPathInstructions)
+    {
+        mInstructions = inPathInstructions;
     }
 
 } // namespace SVG

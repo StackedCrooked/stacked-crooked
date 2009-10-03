@@ -3,6 +3,7 @@
 #include "Poco/String.h"
 #include "Poco/StringTokenizer.h"
 #include <boost/lexical_cast.hpp>
+#include <map>
 
 
 using namespace Utils;
@@ -58,6 +59,24 @@ namespace XULWin
             if (!inValue.empty())
             {
                 result = boost::lexical_cast<int>(inValue);
+            }
+        }
+        catch (std::exception &)
+        {
+            ReportError("Int2String: lexical cast failed");
+        }
+        return result;
+    }
+    
+
+    float String2Float(const std::string & inValue)
+    {
+        float result(0);
+        try
+        {
+            if (!inValue.empty())
+            {
+                result = boost::lexical_cast<float>(inValue);
             }
         }
         catch (std::exception &)
@@ -365,14 +384,177 @@ namespace XULWin
     
     std::string PathInstructions2String(const PathInstructions & inPathInstructions)
     {
-        return "";
+        return ""; // TODO: implement
+    }
+
+
+    bool isInstruction(char c)
+    {
+        const static std::string fSeps = "MmLlHhVvCcSsQqTtAaZz";
+        return fSeps.find(c) != std::string::npos;
+    }
+
+
+    bool isInstructionSeparator(char c)
+    {
+        return c == ' ';
+    }
+
+
+    bool isCoordinateSeparator(char c)
+    {
+        return c == ',' || c == '-';
+    }
+
+
+    bool getInstructionType(char c,
+                            PathInstruction::Type & outType,
+                            PathInstruction::Positioning & outPositioning)
+    {
+        typedef std::map<char, std::pair<PathInstruction::Type, PathInstruction::Positioning> > Types;
+        static Types fTypes;
+        if (fTypes.empty())
+        {            
+            fTypes.insert(std::make_pair('M', std::make_pair(PathInstruction::MoveTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('m', std::make_pair(PathInstruction::MoveTo, PathInstruction::Relative)));
+            fTypes.insert(std::make_pair('H', std::make_pair(PathInstruction::LineTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('h', std::make_pair(PathInstruction::LineTo, PathInstruction::Relative)));
+            fTypes.insert(std::make_pair('V', std::make_pair(PathInstruction::VerticalLineTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('v', std::make_pair(PathInstruction::VerticalLineTo, PathInstruction::Relative)));            
+            fTypes.insert(std::make_pair('C', std::make_pair(PathInstruction::CurveTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('c', std::make_pair(PathInstruction::CurveTo, PathInstruction::Relative)));            
+            fTypes.insert(std::make_pair('S', std::make_pair(PathInstruction::SmoothCurveTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('s', std::make_pair(PathInstruction::SmoothCurveTo, PathInstruction::Relative)));            
+            fTypes.insert(std::make_pair('Q', std::make_pair(PathInstruction::QuadraticBelzierCurve, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('q', std::make_pair(PathInstruction::QuadraticBelzierCurve, PathInstruction::Relative)));            
+            fTypes.insert(std::make_pair('T', std::make_pair(PathInstruction::SmoothQuadraticBelzierCurveTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('t', std::make_pair(PathInstruction::SmoothQuadraticBelzierCurveTo, PathInstruction::Relative)));            
+            fTypes.insert(std::make_pair('A', std::make_pair(PathInstruction::EllipticalArc, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('a', std::make_pair(PathInstruction::EllipticalArc, PathInstruction::Relative)));            
+            fTypes.insert(std::make_pair('Z', std::make_pair(PathInstruction::ClosePath, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('z', std::make_pair(PathInstruction::ClosePath, PathInstruction::Relative)));
+        }
+        Types::iterator it = fTypes.find(c);
+        if (it != fTypes.end())
+        {
+            outType = it->second.first;
+            outPositioning = it->second.second;
+            return true;
+        }
+        return false;
     }
 
 
     PathInstructions String2PathInstructions(const std::string & inValue)
     {
+        // "MmLlHhVvCcSsQqTtAaZz"
+        // M205.2,17.1 c-33.6-9.7-42,19.1-48.2,22.6 c-6.2,3.5-27.9,2.2-33.3,5.8 c-5.3,3.5-17.3,23.5-8.4,41.6 c8.9,18.2,32.3,10.2,32.3,10.2 s-10.6,11.1-29.7,19.9 c-1,0.5-2.1,0.9-3.1,1.3 c-1.6,6.2-3,17.3,5,23.4 c0.4,0.4-10.8-0.9-13.9-3.1 c-2.6-1.9-4.9-9.8-5.6-15.9 c-10.9,2.1-19.6,1.1-25,0.5                                   c-13.3,7.9-27.1,30.5-31.9,40.3 c-4.9,9.8-11.9,26.9-19.3,31.2 c-5.4,3.1-19.4,0.7-21-11.7 c-1.2-9.5,12.7-29.2,23.8-41.6 c11.1-12.4,19-21.5,22.1-25.4 c0.4-1.8,20.3-56.9,33.8-68 c9.6-7.9,21.1-12.2,42.5-13.3 c26.6-1.3,19.6-6.1,41.2-18.8 C191.6,1.4,204.3,14.9,205.2,17.1z
         PathInstructions result;
+
+        
+        bool parsingPoints = false;
+        bool parsingX = false;
+        bool parsingY = false;
+        std::string x;
+        std::string y;
+        PathInstruction::Type type;
+        PathInstruction::Positioning pos;
+        Points points;
+        for (size_t idx = 0; idx != inValue.size(); ++idx)
+        {
+            char ch = inValue[idx];
+            if (isInstruction(ch))
+            {
+                if (getInstructionType(ch, type, pos))
+                {
+                    parsingPoints = true;
+                    parsingX = true;
+                }
+            }            
+            else if (isCoordinateSeparator(ch))
+            {
+                assert(parsingX || parsingY);
+                if (parsingX)
+                {
+                    if (x.empty())
+                    {
+                        x += ch;
+                    }
+                    else
+                    {
+                        parsingX = false;
+                        parsingY = true;
+
+                        // minus sign is both separator and first new char of y
+                        if (ch == '-')
+                        {
+                            y += ch;
+                        }
+                    }
+                }
+                else if (parsingY)
+                {
+                    if (y.empty())
+                    {
+                        y += ch;
+                    }
+                    else
+                    {
+                        // We round the floats to int
+                        float floatX = String2Float(x);
+                        float xRounder = floatX >= 0 ? 0.5f : -0.5f;
+                        float floatY = String2Float(y);
+                        float yRounder = floatY >= 0 ? 0.5f : -0.5f;
+                        points.push_back(Point((int)(xRounder + floatX),
+                                               (int)(yRounder + floatY)));
+                        x.clear();
+                        y.clear();
+                        parsingY = false;
+                        parsingX = true; // assume we start a new X here
+
+                        // minus sign is both separator and first new char of x
+                        if (ch == '-')
+                        {
+                            x += ch;
+                        }
+                    }
+                }
+            }
+            else if (isInstructionSeparator(ch))
+            {
+                if (parsingY)
+                {
+                    // We round the floats to int
+                    float floatX = String2Float(x);
+                    float xRounder = floatX >= 0 ? 0.5f : -0.5f;
+                    float floatY = String2Float(y);
+                    float yRounder = floatY >= 0 ? 0.5f : -0.5f;
+                    points.push_back(Point((int)(xRounder + floatX),
+                                           (int)(yRounder + floatY)));
+                    x.clear();
+                    y.clear();
+                    parsingY = false;
+                    assert(!parsingX);
+                }
+                result.push_back(PathInstruction(type, pos, points));
+                points.clear();
+                parsingPoints = false;
+            }
+            else if (parsingX)
+            {
+                x += ch;
+            }
+            else if (parsingY)
+            {
+                y += ch;
+            }
+            else
+            {
+                assert(false);
+            }
+        }
         return result;
     }
+
 
 } // namespace XULWin

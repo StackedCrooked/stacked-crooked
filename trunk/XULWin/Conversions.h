@@ -18,6 +18,8 @@ namespace XULWin
     
     int String2Int(const std::string & inValue);
     
+    float String2Float(const std::string & inValue);
+    
     bool String2Bool(const std::string & inString, bool inDefault);
     
     std::string Bool2String(bool inBool);

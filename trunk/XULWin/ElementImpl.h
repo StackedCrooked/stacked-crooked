@@ -168,6 +168,29 @@ namespace XULWin
             return 0;
         }
 
+
+        // Searches for a child of given type.
+        // Returns the first one found.
+        // Only searches one level deep.
+        template<class Type>
+        Type * findChildOfType()
+        {
+            if (!owningElement())
+            {
+                return 0;
+            }
+
+            for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+            {
+                ElementImpl * child = owningElement()->children()[idx]->impl();
+                if (Type * found = child->downcast<Type>())
+                {
+                    return found;
+                }
+            }
+            return 0;
+        }
+
         virtual int commandId() const = 0;
 
         virtual int getWidth(SizeConstraint inSizeConstraint) const = 0;
@@ -1189,6 +1212,32 @@ namespace XULWin
 
         virtual void initImpl();
     };
+    
+
+    class TreeItemInfo
+    {
+    public:
+        TreeItemInfo() {}
+
+        TreeItemInfo(const std::string & inLabel) : mLabel(inLabel){}
+
+        const std::string & label() const { return mLabel; }
+
+        void setLabel(const std::string & inLabel) { mLabel = inLabel; }
+        
+        size_t numChildren() const { return mChildren.size(); }
+
+        const TreeItemInfo * getChild(size_t idx) const { return mChildren[idx]; }
+
+        TreeItemInfo * getChild(size_t idx) { return mChildren[idx]; }
+
+        void addChild(TreeItemInfo * inItem) { mChildren.push_back(inItem); }
+
+    private:
+        std::string mLabel;
+        typedef std::vector<TreeItemInfo* > Children;
+        Children mChildren;
+    };
 
 
     class TreeCellImpl;
@@ -1203,13 +1252,15 @@ namespace XULWin
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
-        void addItem(TreeCellImpl * inCell);
+        void addInfo(const TreeItemInfo & inInfo);
 
-    private:
-        HTREEITEM mPrev;
+        void addInfo(HTREEITEM inRoot, const TreeItemInfo & inInfo);
+
+        virtual void initImpl();
     };
 
     
+    class TreeItemImpl;
     class TreeChildrenImpl : public PassiveComponent
     {
     public:
@@ -1226,6 +1277,15 @@ namespace XULWin
         typedef PassiveComponent Super;
 
         TreeItemImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual void initImpl();
+
+        const TreeItemInfo & itemInfo() const { return mItemInfo; }
+
+        TreeItemInfo & itemInfo() { return mItemInfo; }
+
+    private:
+        TreeItemInfo mItemInfo;
     };
 
 
@@ -1264,8 +1324,6 @@ namespace XULWin
         typedef PassiveComponent Super;
 
         TreeCellImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
-
-        virtual void initImpl();
 
         virtual bool initAttributeControllers();
 

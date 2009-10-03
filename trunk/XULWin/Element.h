@@ -701,6 +701,8 @@ namespace XULWin
         virtual ~Tree();
 
         static const char * Type() { return "tree"; }
+
+        virtual void init();
     
     private:
         friend class Element;
@@ -733,6 +735,8 @@ namespace XULWin
         static const char * Type() { return "treeitem"; }
 
         virtual ~TreeItem();
+
+        virtual void init();
 
     private:
         friend class Element;
@@ -797,8 +801,6 @@ namespace XULWin
         static const char * Type() { return "treecell"; }
 
         virtual ~TreeCell();
-
-        virtual void init();
 
     private:
         friend class Element;

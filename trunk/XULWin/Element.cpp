@@ -838,6 +838,12 @@ namespace XULWin
     {
     }
 
+    
+    void Tree::init()
+    {
+        impl()->downcast<TreeImpl>()->initImpl();
+    }
+
 
     TreeChildren::TreeChildren(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(TreeChildren::Type(),
@@ -862,6 +868,12 @@ namespace XULWin
 
     TreeItem::~TreeItem()
     {
+    }
+
+    
+    void TreeItem::init()
+    {
+        impl()->downcast<TreeItemImpl>()->initImpl();
     }
 
 
@@ -915,14 +927,6 @@ namespace XULWin
     TreeCell::~TreeCell()
     {
     }
-    
-    
-    void TreeCell::init()
-    {
-        if (TreeCellImpl * cell = impl()->downcast<TreeCellImpl>())
-        {
-            cell->initImpl();
-        }
-    }
+
 
 } // XULWin

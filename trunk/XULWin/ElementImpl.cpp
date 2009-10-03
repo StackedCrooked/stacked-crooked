@@ -3006,8 +3006,7 @@ namespace XULWin
 
 
     TreeImpl::TreeImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeControl(inParent, inAttributesMapping, WC_TREEVIEW, TVS_HASLINES, 0),
-        mPrev((HTREEITEM)TVI_FIRST)
+        NativeControl(inParent, inAttributesMapping, WC_TREEVIEW, TVS_HASLINES, 0)
     {
     }
 
@@ -3024,21 +3023,47 @@ namespace XULWin
     }
 
     
-    void TreeImpl::addItem(TreeCellImpl * inCell)
+    void TreeImpl::addInfo(const TreeItemInfo & inInfo)
     {
-        std::wstring label = ToUTF16(inCell->getLabel());
+        addInfo(TVI_ROOT, inInfo);
+    }
+
+    
+    void TreeImpl::addInfo(HTREEITEM inRoot, const TreeItemInfo & inInfo)
+    {
+        HTREEITEM hPrev = TVI_FIRST;
+        std::wstring label = ToUTF16(inInfo.label());
 
         TVITEM tvi; 
         tvi.mask = TVIF_TEXT; 
         tvi.pszText = const_cast<TCHAR*>(label.c_str());
         tvi.cchTextMax = label.size();
-        
+
         TVINSERTSTRUCT tvins; 
         tvins.item = tvi; 
-        tvins.hInsertAfter = mPrev;
-        tvins.hParent = TVI_ROOT;
+        tvins.hInsertAfter = hPrev;
+        tvins.hParent = inRoot;
+        hPrev = (HTREEITEM)SendMessage(handle(), TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins);
 
-        mPrev = (HTREEITEM)SendMessage(handle(), TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins);
+        for (size_t idx = 0; idx != inInfo.numChildren(); ++idx)
+        {
+            addInfo(hPrev, *inInfo.getChild(idx));
+        }
+    }
+    
+    
+    void TreeImpl::initImpl()
+    {
+        if (TreeChildrenImpl * children = findChildOfType<TreeChildrenImpl>())
+        {
+            if (ElementImpl * firstChild = children->owningElement()->children()[0]->impl())
+            {
+                if (TreeItemImpl * item = firstChild->downcast<TreeItemImpl>())
+                {
+                    addInfo(item->itemInfo());
+                }
+            }
+        }
     }
 
 
@@ -3051,6 +3076,29 @@ namespace XULWin
     TreeItemImpl::TreeItemImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         PassiveComponent(inParent, inAttributesMapping)
     {
+    }
+
+    
+    void TreeItemImpl::initImpl()
+    {
+        if (TreeRowImpl * row = findChildOfType<TreeRowImpl>())
+        {
+            if (TreeCellImpl * cell = row->findChildOfType<TreeCellImpl>())
+            {
+                mItemInfo.setLabel(cell->getLabel());
+            }
+        }
+        if (TreeChildrenImpl * treeChildren = findChildOfType<TreeChildrenImpl>())
+        {
+            for (size_t idx = 0; idx != treeChildren->owningElement()->children().size(); ++idx)
+            {
+                ElementImpl * child = treeChildren->owningElement()->children()[idx]->impl();
+                if (TreeItemImpl * item = child->downcast<TreeItemImpl>())
+                {
+                    mItemInfo.addChild(&item->itemInfo());
+                }
+            }
+        }
     }
 
 
@@ -3075,15 +3123,6 @@ namespace XULWin
     TreeCellImpl::TreeCellImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         PassiveComponent(inParent, inAttributesMapping)
     {
-    }
-        
-        
-    void TreeCellImpl::initImpl()
-    {
-        if (TreeImpl * parent = findParentOfType<TreeImpl>())
-        {
-            parent->addItem(this);
-        }
     }
 
 

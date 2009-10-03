@@ -191,6 +191,29 @@ namespace XULWin
             return 0;
         }
 
+
+        // Searches for a child of given type.
+        // Returns the first one found.
+        // Only searches one level deep.
+        template<class Type>
+        const Type * findConstChildOfType() const
+        {
+            if (!owningElement())
+            {
+                return 0;
+            }
+
+            for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+            {
+                const ElementImpl * child = owningElement()->children()[idx]->impl();
+                if (const Type * found = child->constDowncast<Type>())
+                {
+                    return found;
+                }
+            }
+            return 0;
+        }
+
         virtual int commandId() const = 0;
 
         virtual int getWidth(SizeConstraint inSizeConstraint) const = 0;
@@ -1267,6 +1290,10 @@ namespace XULWin
         typedef PassiveComponent Super;
 
         TreeChildrenImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
     
@@ -1283,6 +1310,12 @@ namespace XULWin
         const TreeItemInfo & itemInfo() const { return mItemInfo; }
 
         TreeItemInfo & itemInfo() { return mItemInfo; }
+
+        bool isOpened() const;
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
     private:
         TreeItemInfo mItemInfo;
@@ -1314,6 +1347,10 @@ namespace XULWin
         typedef PassiveComponent Super;
 
         TreeRowImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 
@@ -1330,6 +1367,10 @@ namespace XULWin
         virtual std::string getLabel() const;
 
         virtual void setLabel(const std::string & inLabel);
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
     private:
         std::string mLabel;

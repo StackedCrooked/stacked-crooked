@@ -288,6 +288,7 @@ namespace XULWin
         {
             StyleController * controller = it->second;
             controller->set(inValue);
+            return true;
         }
         return false;
     }
@@ -3013,13 +3014,23 @@ namespace XULWin
 
     int TreeImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return 500; // TODO: fix this
+        int result = Defaults::controlWidth();
+        if (const TreeChildrenImpl * children = findConstChildOfType<TreeChildrenImpl>())
+        {
+            result = Defaults::treeIndent() + children->calculateWidth(inSizeConstraint);
+        }
+        return result;
     }
 
 
     int TreeImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return 500; // TODO: fix this
+        int result = 0;
+        if (const TreeChildrenImpl * children = findConstChildOfType<TreeChildrenImpl>())
+        {
+            result = children->calculateHeight(inSizeConstraint);
+        }
+        return result;
     }
 
     
@@ -3073,14 +3084,96 @@ namespace XULWin
         PassiveComponent(inParent, inAttributesMapping)
     {
     }
+        
+    
+    int TreeChildrenImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * child = owningElement()->children()[idx]->impl();
+            if (TreeItemImpl * item = child->downcast<TreeItemImpl>())
+            {
+                result += item->calculateHeight(inSizeConstraint);
+            }
+        }
+        return result;
+    }
+
+
+    int TreeChildrenImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * child = owningElement()->children()[idx]->impl();
+            if (TreeItemImpl * item = child->downcast<TreeItemImpl>())
+            {
+                int minWidth = item->calculateWidth(inSizeConstraint);
+                if (result < minWidth)
+                {
+                    result = minWidth;
+                }
+            }
+        }
+        return result;
+    }
 
 
     TreeItemImpl::TreeItemImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         PassiveComponent(inParent, inAttributesMapping)
     {
     }
-
+        
     
+    int TreeItemImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        if (const TreeRowImpl * row = findConstChildOfType<TreeRowImpl>())
+        {
+            int minHeight = row->calculateHeight(inSizeConstraint);
+            if (result < minHeight)
+            {
+                result = minHeight;
+            }
+        }
+        if (const TreeChildrenImpl * treeChildren = findConstChildOfType<TreeChildrenImpl>())
+        {
+            result += treeChildren->calculateHeight(inSizeConstraint);
+        }
+        return result;
+    }
+
+
+    int TreeItemImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        if (const TreeRowImpl * row = findConstChildOfType<TreeRowImpl>())
+        {
+            int minWidth = row->calculateWidth(inSizeConstraint);
+            if (result < minWidth)
+            {
+                result = minWidth;
+            }
+        }
+        if (const TreeChildrenImpl * treeChildren = findConstChildOfType<TreeChildrenImpl>())
+        {
+            int minWidth = Defaults::treeIndent() + treeChildren->calculateWidth(inSizeConstraint);
+            if (result < minWidth)
+            {
+                result = minWidth;
+            }            
+        }
+        return result;
+    }
+    
+    
+    bool TreeItemImpl::isOpened() const
+    {
+        return false; // TODO: implement
+    }
+
+
     void TreeItemImpl::initImpl()
     {
         if (TreeRowImpl * row = findChildOfType<TreeRowImpl>())
@@ -3123,6 +3216,36 @@ namespace XULWin
     }
 
 
+    int TreeRowImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * child = owningElement()->children()[idx]->impl();
+            if (TreeCellImpl * cell = child->downcast<TreeCellImpl>())
+            {
+                result += cell->calculateWidth(inSizeConstraint);
+            }
+        }
+        return result;
+    }
+
+
+    int TreeRowImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * child = owningElement()->children()[idx]->impl();
+            if (TreeCellImpl * cell = child->downcast<TreeCellImpl>())
+            {
+                result += cell->calculateHeight(inSizeConstraint);
+            }
+        }
+        return result;
+    }
+
+
     TreeCellImpl::TreeCellImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         PassiveComponent(inParent, inAttributesMapping)
     {
@@ -3145,6 +3268,28 @@ namespace XULWin
     void TreeCellImpl::setLabel(const std::string & inLabel)
     {
         mLabel = inLabel;
+    }
+
+    
+    int TreeCellImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        if (NativeComponent * comp = NativeControl::GetNativeParent(const_cast<TreeCellImpl*>(this)))
+        {
+            result = Utils::getTextSize(comp->handle(), getLabel()).cx + Defaults::textPadding();
+        }
+        return result;
+    }
+
+
+    int TreeCellImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        if (NativeComponent * comp = NativeControl::GetNativeParent(const_cast<TreeCellImpl*>(this)))
+        {
+            result = Utils::getTextSize(comp->handle(), getLabel()).cy + Defaults::textPadding();
+        }
+        return result;
     }
 
 } // namespace XULWin

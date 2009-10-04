@@ -248,15 +248,29 @@ namespace XULWin
         return "blue";
     }
 
+	
+	RGBColor HTMLColor2RGBColor(const std::string & inHTMLColor)
+	{
+		RGBColor res;
+		HTMLColor2RGBColor(inHTMLColor, res);
+		return res;
+	}
+
 
     bool HTMLColor2RGBColor(const std::string & inHTMLColor, RGBColor & outResult)
     {
         std::string colorComponent;
         std::vector<int> colors;
-        for (size_t idx = 0; idx != inHTMLColor.size(); ++idx)
+		size_t offset = inHTMLColor.find("#");
+		if (offset == std::string::npos)
+		{
+			assert(false); // TODO: remove
+			return false;
+		}
+        for (size_t idx = offset + 1; idx < inHTMLColor.size(); ++idx)
         {
             colorComponent += inHTMLColor[idx];
-            if (idx%2 == 1)
+            if ((idx-offset-1)%2 == 1)
             {
                 int hex = 0;
                 sscanf(colorComponent.c_str(), "%x", &hex);                    
@@ -271,6 +285,162 @@ namespace XULWin
         }
         return false;
     }
+
+
+	bool ColorName2RGBColor(const std::string & inValue, RGBColor & outRGBColor)
+	{
+		static std::map<std::string, RGBColor> fMapping;
+		if (fMapping.empty())
+		{
+			fMapping.insert(std::make_pair("AliceBlue", HTMLColor2RGBColor("#F0F8FF")));
+			fMapping.insert(std::make_pair("AntiqueWhite", HTMLColor2RGBColor("#FAEBD7")));	 
+			fMapping.insert(std::make_pair("Aqua", HTMLColor2RGBColor("#00FFFF")));	 
+			fMapping.insert(std::make_pair("Aquamarine", HTMLColor2RGBColor("#7FFFD4")));	 
+			fMapping.insert(std::make_pair("Azure", HTMLColor2RGBColor("#F0FFFF")));	 
+			fMapping.insert(std::make_pair("Beige", HTMLColor2RGBColor("#F5F5DC")));	 
+			fMapping.insert(std::make_pair("Bisque", HTMLColor2RGBColor("#FFE4C4")));	 
+			fMapping.insert(std::make_pair("Black", HTMLColor2RGBColor("#000000")));	 
+			fMapping.insert(std::make_pair("BlanchedAlmond", HTMLColor2RGBColor("#FFEBCD")));	 
+			fMapping.insert(std::make_pair("Blue", HTMLColor2RGBColor("#0000FF")));	 
+			fMapping.insert(std::make_pair("BlueViolet", HTMLColor2RGBColor("#8A2BE2")));	 
+			fMapping.insert(std::make_pair("Brown", HTMLColor2RGBColor("#A52A2A")));	 
+			fMapping.insert(std::make_pair("BurlyWood", HTMLColor2RGBColor("#DEB887")));	 
+			fMapping.insert(std::make_pair("CadetBlue", HTMLColor2RGBColor("#5F9EA0")));	 
+			fMapping.insert(std::make_pair("Chartreuse", HTMLColor2RGBColor("#7FFF00")));	 
+			fMapping.insert(std::make_pair("Chocolate", HTMLColor2RGBColor("#D2691E")));	 
+			fMapping.insert(std::make_pair("Coral", HTMLColor2RGBColor("#FF7F50")));	 
+			fMapping.insert(std::make_pair("CornflowerBlue", HTMLColor2RGBColor("#6495ED")));	 
+			fMapping.insert(std::make_pair("Cornsilk", HTMLColor2RGBColor("#FFF8DC")));	 
+			fMapping.insert(std::make_pair("Crimson", HTMLColor2RGBColor("#DC143C")));	 
+			fMapping.insert(std::make_pair("Cyan", HTMLColor2RGBColor("#00FFFF")));	 
+			fMapping.insert(std::make_pair("DarkBlue", HTMLColor2RGBColor("#00008B")));	 
+			fMapping.insert(std::make_pair("DarkCyan", HTMLColor2RGBColor("#008B8B")));	 
+			fMapping.insert(std::make_pair("DarkGoldenRod", HTMLColor2RGBColor("#B8860B")));	 
+			fMapping.insert(std::make_pair("DarkGray", HTMLColor2RGBColor("#A9A9A9")));	 
+			fMapping.insert(std::make_pair("DarkGreen", HTMLColor2RGBColor("#006400")));	 
+			fMapping.insert(std::make_pair("DarkKhaki", HTMLColor2RGBColor("#BDB76B")));	 
+			fMapping.insert(std::make_pair("DarkMagenta", HTMLColor2RGBColor("#8B008B")));	 
+			fMapping.insert(std::make_pair("DarkOliveGreen", HTMLColor2RGBColor("#556B2F")));	 
+			fMapping.insert(std::make_pair("Darkorange", HTMLColor2RGBColor("#FF8C00")));	 
+			fMapping.insert(std::make_pair("DarkOrchid", HTMLColor2RGBColor("#9932CC")));	 
+			fMapping.insert(std::make_pair("DarkRed", HTMLColor2RGBColor("#8B0000")));	 
+			fMapping.insert(std::make_pair("DarkSalmon", HTMLColor2RGBColor("#E9967A")));	 
+			fMapping.insert(std::make_pair("DarkSeaGreen", HTMLColor2RGBColor("#8FBC8F")));	 
+			fMapping.insert(std::make_pair("DarkSlateBlue", HTMLColor2RGBColor("#483D8B")));	 
+			fMapping.insert(std::make_pair("DarkSlateGray", HTMLColor2RGBColor("#2F4F4F")));	 
+			fMapping.insert(std::make_pair("DarkTurquoise", HTMLColor2RGBColor("#00CED1")));	 
+			fMapping.insert(std::make_pair("DarkViolet", HTMLColor2RGBColor("#9400D3")));	 
+			fMapping.insert(std::make_pair("DeepPink", HTMLColor2RGBColor("#FF1493")));	 
+			fMapping.insert(std::make_pair("DeepSkyBlue", HTMLColor2RGBColor("#00BFFF")));	 
+			fMapping.insert(std::make_pair("DimGray", HTMLColor2RGBColor("#696969")));	 
+			fMapping.insert(std::make_pair("DodgerBlue", HTMLColor2RGBColor("#1E90FF")));	 
+			fMapping.insert(std::make_pair("FireBrick", HTMLColor2RGBColor("#B22222")));	 
+			fMapping.insert(std::make_pair("FloralWhite", HTMLColor2RGBColor("#FFFAF0")));	 
+			fMapping.insert(std::make_pair("ForestGreen", HTMLColor2RGBColor("#228B22")));	 
+			fMapping.insert(std::make_pair("Fuchsia", HTMLColor2RGBColor("#FF00FF")));	 
+			fMapping.insert(std::make_pair("Gainsboro", HTMLColor2RGBColor("#DCDCDC")));	 
+			fMapping.insert(std::make_pair("GhostWhite", HTMLColor2RGBColor("#F8F8FF")));	 
+			fMapping.insert(std::make_pair("Gold", HTMLColor2RGBColor("#FFD700")));	 
+			fMapping.insert(std::make_pair("GoldenRod", HTMLColor2RGBColor("#DAA520")));	 
+			fMapping.insert(std::make_pair("Gray", HTMLColor2RGBColor("#808080")));	 
+			fMapping.insert(std::make_pair("Green", HTMLColor2RGBColor("#008000")));	 
+			fMapping.insert(std::make_pair("GreenYellow", HTMLColor2RGBColor("#ADFF2F")));	 
+			fMapping.insert(std::make_pair("HoneyDew", HTMLColor2RGBColor("#F0FFF0")));	 
+			fMapping.insert(std::make_pair("HotPink", HTMLColor2RGBColor("#FF69B4")));	 
+			fMapping.insert(std::make_pair("IndianRed", HTMLColor2RGBColor("#CD5C5C")));	 
+			fMapping.insert(std::make_pair("Indigo", HTMLColor2RGBColor("#4B0082")));	 
+			fMapping.insert(std::make_pair("Ivory", HTMLColor2RGBColor("#FFFFF0")));	 
+			fMapping.insert(std::make_pair("Khaki", HTMLColor2RGBColor("#F0E68C")));	 
+			fMapping.insert(std::make_pair("Lavender", HTMLColor2RGBColor("#E6E6FA")));	 
+			fMapping.insert(std::make_pair("LavenderBlush", HTMLColor2RGBColor("#FFF0F5")));	 
+			fMapping.insert(std::make_pair("LawnGreen", HTMLColor2RGBColor("#7CFC00")));	 
+			fMapping.insert(std::make_pair("LemonChiffon", HTMLColor2RGBColor("#FFFACD")));	 
+			fMapping.insert(std::make_pair("LightBlue", HTMLColor2RGBColor("#ADD8E6")));	 
+			fMapping.insert(std::make_pair("LightCoral", HTMLColor2RGBColor("#F08080")));	 
+			fMapping.insert(std::make_pair("LightCyan", HTMLColor2RGBColor("#E0FFFF")));	 
+			fMapping.insert(std::make_pair("LightGoldenRodYellow", HTMLColor2RGBColor("#FAFAD2")));	 
+			fMapping.insert(std::make_pair("LightGrey", HTMLColor2RGBColor("#D3D3D3")));	 
+			fMapping.insert(std::make_pair("LightGreen", HTMLColor2RGBColor("#90EE90")));	 
+			fMapping.insert(std::make_pair("LightPink", HTMLColor2RGBColor("#FFB6C1")));	 
+			fMapping.insert(std::make_pair("LightSalmon", HTMLColor2RGBColor("#FFA07A")));	 
+			fMapping.insert(std::make_pair("LightSeaGreen", HTMLColor2RGBColor("#20B2AA")));	 
+			fMapping.insert(std::make_pair("LightSkyBlue", HTMLColor2RGBColor("#87CEFA")));	 
+			fMapping.insert(std::make_pair("LightSlateGray", HTMLColor2RGBColor("#778899")));	 
+			fMapping.insert(std::make_pair("LightSteelBlue", HTMLColor2RGBColor("#B0C4DE")));	 
+			fMapping.insert(std::make_pair("LightYellow", HTMLColor2RGBColor("#FFFFE0")));	 
+			fMapping.insert(std::make_pair("Lime", HTMLColor2RGBColor("#00FF00")));	 
+			fMapping.insert(std::make_pair("LimeGreen", HTMLColor2RGBColor("#32CD32")));	 
+			fMapping.insert(std::make_pair("Linen", HTMLColor2RGBColor("#FAF0E6")));	 
+			fMapping.insert(std::make_pair("Magenta", HTMLColor2RGBColor("#FF00FF")));	 
+			fMapping.insert(std::make_pair("Maroon", HTMLColor2RGBColor("#800000")));	 
+			fMapping.insert(std::make_pair("MediumAquaMarine", HTMLColor2RGBColor("#66CDAA")));	 
+			fMapping.insert(std::make_pair("MediumBlue", HTMLColor2RGBColor("#0000CD")));	 
+			fMapping.insert(std::make_pair("MediumOrchid", HTMLColor2RGBColor("#BA55D3")));	 
+			fMapping.insert(std::make_pair("MediumPurple", HTMLColor2RGBColor("#9370D8")));	 
+			fMapping.insert(std::make_pair("MediumSeaGreen", HTMLColor2RGBColor("#3CB371")));	 
+			fMapping.insert(std::make_pair("MediumSlateBlue", HTMLColor2RGBColor("#7B68EE")));	 
+			fMapping.insert(std::make_pair("MediumSpringGreen", HTMLColor2RGBColor("#00FA9A")));	 
+			fMapping.insert(std::make_pair("MediumTurquoise", HTMLColor2RGBColor("#48D1CC")));	 
+			fMapping.insert(std::make_pair("MediumVioletRed", HTMLColor2RGBColor("#C71585")));	 
+			fMapping.insert(std::make_pair("MidnightBlue", HTMLColor2RGBColor("#191970")));	 
+			fMapping.insert(std::make_pair("MintCream", HTMLColor2RGBColor("#F5FFFA")));	 
+			fMapping.insert(std::make_pair("MistyRose", HTMLColor2RGBColor("#FFE4E1")));	 
+			fMapping.insert(std::make_pair("Moccasin", HTMLColor2RGBColor("#FFE4B5")));	 
+			fMapping.insert(std::make_pair("NavajoWhite", HTMLColor2RGBColor("#FFDEAD")));	 
+			fMapping.insert(std::make_pair("Navy", HTMLColor2RGBColor("#000080")));	 
+			fMapping.insert(std::make_pair("OldLace", HTMLColor2RGBColor("#FDF5E6")));	 
+			fMapping.insert(std::make_pair("Olive", HTMLColor2RGBColor("#808000")));	 
+			fMapping.insert(std::make_pair("OliveDrab", HTMLColor2RGBColor("#6B8E23")));	 
+			fMapping.insert(std::make_pair("Orange", HTMLColor2RGBColor("#FFA500")));	 
+			fMapping.insert(std::make_pair("OrangeRed", HTMLColor2RGBColor("#FF4500")));	 
+			fMapping.insert(std::make_pair("Orchid", HTMLColor2RGBColor("#DA70D6")));	 
+			fMapping.insert(std::make_pair("PaleGoldenRod", HTMLColor2RGBColor("#EEE8AA")));	 
+			fMapping.insert(std::make_pair("PaleGreen", HTMLColor2RGBColor("#98FB98")));	 
+			fMapping.insert(std::make_pair("PaleTurquoise", HTMLColor2RGBColor("#AFEEEE")));	 
+			fMapping.insert(std::make_pair("PaleVioletRed", HTMLColor2RGBColor("#D87093")));	 
+			fMapping.insert(std::make_pair("PapayaWhip", HTMLColor2RGBColor("#FFEFD5")));	 
+			fMapping.insert(std::make_pair("PeachPuff", HTMLColor2RGBColor("#FFDAB9")));	 
+			fMapping.insert(std::make_pair("Peru", HTMLColor2RGBColor("#CD853F")));	 
+			fMapping.insert(std::make_pair("Pink", HTMLColor2RGBColor("#FFC0CB")));	 
+			fMapping.insert(std::make_pair("Plum", HTMLColor2RGBColor("#DDA0DD")));	 
+			fMapping.insert(std::make_pair("PowderBlue", HTMLColor2RGBColor("#B0E0E6")));	 
+			fMapping.insert(std::make_pair("Purple", HTMLColor2RGBColor("#800080")));	 
+			fMapping.insert(std::make_pair("Red", HTMLColor2RGBColor("#FF0000")));	 
+			fMapping.insert(std::make_pair("RosyBrown", HTMLColor2RGBColor("#BC8F8F")));	 
+			fMapping.insert(std::make_pair("RoyalBlue", HTMLColor2RGBColor("#4169E1")));	 
+			fMapping.insert(std::make_pair("SaddleBrown", HTMLColor2RGBColor("#8B4513")));	 
+			fMapping.insert(std::make_pair("Salmon", HTMLColor2RGBColor("#FA8072")));	 
+			fMapping.insert(std::make_pair("SandyBrown", HTMLColor2RGBColor("#F4A460")));	 
+			fMapping.insert(std::make_pair("SeaGreen", HTMLColor2RGBColor("#2E8B57")));	 
+			fMapping.insert(std::make_pair("SeaShell", HTMLColor2RGBColor("#FFF5EE")));	 
+			fMapping.insert(std::make_pair("Sienna", HTMLColor2RGBColor("#A0522D")));	 
+			fMapping.insert(std::make_pair("Silver", HTMLColor2RGBColor("#C0C0C0")));	 
+			fMapping.insert(std::make_pair("SkyBlue", HTMLColor2RGBColor("#87CEEB")));	 
+			fMapping.insert(std::make_pair("SlateBlue", HTMLColor2RGBColor("#6A5ACD")));	 
+			fMapping.insert(std::make_pair("SlateGray", HTMLColor2RGBColor("#708090")));	 
+			fMapping.insert(std::make_pair("Snow", HTMLColor2RGBColor("#FFFAFA")));	 
+			fMapping.insert(std::make_pair("SpringGreen", HTMLColor2RGBColor("#00FF7F")));	 
+			fMapping.insert(std::make_pair("SteelBlue", HTMLColor2RGBColor("#4682B4")));	 
+			fMapping.insert(std::make_pair("Tan", HTMLColor2RGBColor("#D2B48C")));	 
+			fMapping.insert(std::make_pair("Teal", HTMLColor2RGBColor("#008080")));	 
+			fMapping.insert(std::make_pair("Thistle", HTMLColor2RGBColor("#D8BFD8")));	 
+			fMapping.insert(std::make_pair("Tomato", HTMLColor2RGBColor("#FF6347")));	 
+			fMapping.insert(std::make_pair("Turquoise", HTMLColor2RGBColor("#40E0D0")));	 
+			fMapping.insert(std::make_pair("Violet", HTMLColor2RGBColor("#EE82EE")));	 
+			fMapping.insert(std::make_pair("Wheat", HTMLColor2RGBColor("#F5DEB3")));	 
+			fMapping.insert(std::make_pair("White", HTMLColor2RGBColor("#FFFFFF")));	 
+			fMapping.insert(std::make_pair("WhiteSmoke", HTMLColor2RGBColor("#F5F5F5")));	 
+			fMapping.insert(std::make_pair("Yellow", HTMLColor2RGBColor("#FFFF00")));	 
+			fMapping.insert(std::make_pair("YellowGreen", HTMLColor2RGBColor("#9ACD32")));
+		}
+		std::map<std::string, RGBColor>::iterator it = fMapping.find(inValue);
+		if (it != fMapping.end())
+		{
+			outRGBColor = it->second;
+			return true;
+		}
+		return false;
+	}
 
     
     bool RGBString2RGBColor(const std::string & inValue, RGBColor & outRGBColor)
@@ -314,7 +484,7 @@ namespace XULWin
         size_t offset = inValue.find("#");
         if (offset != std::string::npos)
         {
-            std::string htmlColor = inValue.substr(offset + 1, inValue.size() - offset - 1);
+            std::string htmlColor = inValue.substr(offset, inValue.size() - offset);
             if (HTMLColor2RGBColor(htmlColor, outResult))
             {
                 return true;

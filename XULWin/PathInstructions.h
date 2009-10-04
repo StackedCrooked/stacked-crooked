@@ -42,6 +42,10 @@ namespace XULWin
 
         Positioning positioning() const;
 
+        const PointFs & points() const;
+
+        PointFs & points();
+
     private:
         Type mType;
         PointFs mPoints;

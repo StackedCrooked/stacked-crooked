@@ -166,17 +166,27 @@ namespace SVG
 
         virtual void setPathInstructions(const PathInstructions & inPathInstructions);
 
-    private:
-        //void getEndPoint(const PathInstruction & instruction,
-        //                 const Gdiplus::PointF & inPrevPoint,
-        //                 Gdiplus::PointF & outEndPoint);
-        
+    private:        
         void getFloatPoints(const PathInstruction & instruction,
                             const Gdiplus::PointF & inPrevPoint,
                             std::vector<Gdiplus::PointF> & outPoints);
 
+        static void GetAbsolutePositions(const PathInstruction & instruction,
+                                         const PointF & inPrevPoint,
+                                         PointFs & outPoints);
+
+        static void GetAbsolutePositions(const PointFs & inRelativePoints,
+                                         const PointF & inPrevPoint,
+                                         PointFs & outPoints);
+
+        Gdiplus::Color getColor();
+
+        static void GetPreparedInstructions(const PathInstructions & inData, PathInstructions & outPrepData);
+
+        static void GetPointReflection(const PointF & inPoint, const PointF & inOrigin, PointF & outReflection);
+
         PathInstructions mInstructions;
-        Gdiplus::PointF mBeginPoint;
+        PathInstructions mPreparedInstructions;
         Utils::Fallible<RGBColor> mFill;
     };
 

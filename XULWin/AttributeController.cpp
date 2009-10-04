@@ -270,7 +270,6 @@ namespace XULWin
     }
 
 
-
     void FillController::get(std::string & outValue)
     {
         outValue = RGBColor2String(getFill());
@@ -283,6 +282,22 @@ namespace XULWin
         if (String2RGBColor(inValue, result))
         {
             setFill(result);
+        }
+    }
+
+
+    void StrokeController::get(std::string & outValue)
+    {
+        outValue = RGBColor2String(getStroke());
+    }
+
+
+    void StrokeController::set(const std::string & inValue)
+    {
+        RGBColor result;
+        if (String2RGBColor(inValue, result))
+        {
+            setStroke(result);
         }
     }
 

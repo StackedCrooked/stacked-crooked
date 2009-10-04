@@ -156,4 +156,20 @@ namespace XULWin
     }
 
 
+    void CSSStrokeController::get(std::string & outValue)
+    {
+        outValue = RGBColor2String(getCSSStroke());
+    }
+
+
+    void CSSStrokeController::set(const std::string & inValue)
+    {
+        RGBColor result;
+        if (String2RGBColor(inValue, result))
+        {
+            setCSSStroke(result);
+        }
+    }
+
+
 } // namespace XULWin

@@ -9,17 +9,17 @@
 namespace XULWin
 {
 
-	class GdiplusLoader : boost::noncopyable
-	{
-		public:
-			GdiplusLoader();
+    class GdiplusLoader : boost::noncopyable
+    {
+        public:
+            GdiplusLoader();
 
-			~GdiplusLoader();
+            ~GdiplusLoader();
 
-		private:
-			ULONG_PTR mGdiPlusToken;
-			static int sRefCount;
-	};
+        private:
+            ULONG_PTR mGdiPlusToken;
+            static int sRefCount;
+    };
 
 
 } // namespace XULWin

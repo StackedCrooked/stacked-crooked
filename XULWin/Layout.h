@@ -11,52 +11,52 @@
 namespace XULWin
 {
 
-	
-	class Dimension
-	{
+    
+    class Dimension
+    {
     public:
-		Dimension() : mWidth(0), mHeight(0) {}
+        Dimension() : mWidth(0), mHeight(0) {}
 
-		Dimension(int inWidth, int inHeight) : mWidth(inWidth), mHeight(inHeight) {}
-		
-		bool operator==(const Dimension & inOtherDimension)
-		{
-			return mWidth == inOtherDimension.mWidth && mHeight == inOtherDimension.mHeight;
-		}
-		
-		bool operator!=(const Dimension & inOtherDimension)
-		{
-			return mWidth != inOtherDimension.mWidth || mHeight != inOtherDimension.mHeight;
-		}
+        Dimension(int inWidth, int inHeight) : mWidth(inWidth), mHeight(inHeight) {}
+        
+        bool operator==(const Dimension & inOtherDimension)
+        {
+            return mWidth == inOtherDimension.mWidth && mHeight == inOtherDimension.mHeight;
+        }
+        
+        bool operator!=(const Dimension & inOtherDimension)
+        {
+            return mWidth != inOtherDimension.mWidth || mHeight != inOtherDimension.mHeight;
+        }
 
         int width() const { return mWidth; }
 
         int height() const { return mHeight; }
 
     private:
-		int mWidth;
-		int mHeight;		
-	};
+        int mWidth;
+        int mHeight;        
+    };
 
 
-	class Rect
-	{
-    public:		
-		Rect() : mLocation(), mSize() {}
+    class Rect
+    {
+    public:        
+        Rect() : mLocation(), mSize() {}
         
         Rect(const Point & inLocation, const Dimension & inSize) : mLocation(inLocation), mSize(inSize) {}
 
-		Rect(int inX, int inY, int inWidth, int inHeight) : mLocation(inX, inY), mSize(inWidth, inHeight) {}
-		
-		bool operator==(const Rect & inOtherRect)
-		{
-			return mLocation == inOtherRect.mLocation && mSize == inOtherRect.mSize;
-		}
-		
-		bool operator!=(const Rect & inOtherRect)
-		{
-			return mLocation != inOtherRect.mLocation || mSize != inOtherRect.mSize;
-		}
+        Rect(int inX, int inY, int inWidth, int inHeight) : mLocation(inX, inY), mSize(inWidth, inHeight) {}
+        
+        bool operator==(const Rect & inOtherRect)
+        {
+            return mLocation == inOtherRect.mLocation && mSize == inOtherRect.mSize;
+        }
+        
+        bool operator!=(const Rect & inOtherRect)
+        {
+            return mLocation != inOtherRect.mLocation || mSize != inOtherRect.mSize;
+        }
 
         int x() const { return mLocation.x(); }
 
@@ -71,17 +71,17 @@ namespace XULWin
         const Dimension & size() const { return mSize; }
 
     private:
-		Point mLocation;
-		Dimension mSize;
-	};
-	
-	
+        Point mLocation;
+        Dimension mSize;
+    };
+    
+    
     class Margins
-	{
-    public:		
-		Margins() : mLeft(0), mTop(0), mRight(0), mBottom(0) {}
+    {
+    public:        
+        Margins() : mLeft(0), mTop(0), mRight(0), mBottom(0) {}
 
-		Margins (int inLeft, int inTop, int inRight, int inBottom) : mLeft(inLeft), mTop(inTop), mRight(inRight), mBottom(inBottom) {}
+        Margins (int inLeft, int inTop, int inRight, int inBottom) : mLeft(inLeft), mTop(inTop), mRight(inRight), mBottom(inBottom) {}
 
         int left() const { return mLeft; }
 
@@ -90,29 +90,29 @@ namespace XULWin
         int right() const { return mRight; }
 
         int bottom() const { return mBottom; }
-	
-		bool operator==(const Margins & inOtherMargins)
-		{
-			return mLeft == inOtherMargins.mLeft
-				&& mTop == inOtherMargins.mTop
-				&& mRight == inOtherMargins.mRight
-				&& mBottom == inOtherMargins.mBottom;
-		}
-		
-		bool operator!=(const Margins & inOtherMargins)
-		{
-			return mLeft != inOtherMargins.mLeft
-				|| mTop != inOtherMargins.mTop
-				|| mRight != inOtherMargins.mRight
-				|| mBottom != inOtherMargins.mBottom;
-		}
+    
+        bool operator==(const Margins & inOtherMargins)
+        {
+            return mLeft == inOtherMargins.mLeft
+                && mTop == inOtherMargins.mTop
+                && mRight == inOtherMargins.mRight
+                && mBottom == inOtherMargins.mBottom;
+        }
+        
+        bool operator!=(const Margins & inOtherMargins)
+        {
+            return mLeft != inOtherMargins.mLeft
+                || mTop != inOtherMargins.mTop
+                || mRight != inOtherMargins.mRight
+                || mBottom != inOtherMargins.mBottom;
+        }
 
     private:
-		int mLeft;
-		int mTop;
-		int mRight;
-		int mBottom;
-	};
+        int mLeft;
+        int mTop;
+        int mRight;
+        int mBottom;
+    };
 
 
     // Introduced wrapper class so that the compiler will

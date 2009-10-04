@@ -541,13 +541,13 @@ namespace XULWin
 
 
         if (mOrigProc)
-		{
-			return ::CallWindowProc(mOrigProc, mHandle, inMessage, wParam, lParam);
-		}
-		else
-		{
-			return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
-		}
+        {
+            return ::CallWindowProc(mOrigProc, mHandle, inMessage, wParam, lParam);
+        }
+        else
+        {
+            return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
+        }
     }
 
     
@@ -924,7 +924,7 @@ namespace XULWin
             inExStyle, 
             inClassName,
             TEXT(""),
-			inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
+            inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
             0, 0, 0, 0,
             nativeParent->handle(),
             (HMENU)mCommandId.intValue(),
@@ -1582,11 +1582,11 @@ namespace XULWin
     void NativeMenuList::addMenuItem(const std::string & inText)
     {
         Utils::addStringToComboBox(handle(), inText);
-        int count = Utils::getComboBoxItemCount(handle());		
-		if (count == 1)
-		{
+        int count = Utils::getComboBoxItemCount(handle());        
+        if (count == 1)
+        {
             Utils::selectComboBoxItem(handle(), 0);
-		}
+        }
         mItems.push_back(inText);
 
         // size needs to be updated
@@ -2430,38 +2430,38 @@ namespace XULWin
             int pageHeight = 0;
             int currentPosition = 0;
             Utils::getScrollInfo(handle(), totalHeight, pageHeight, currentPosition);
-			switch (LOWORD(wParam))
-			{
-				case SB_LINEUP: // user clicked the top arrow
+            switch (LOWORD(wParam))
+            {
+                case SB_LINEUP: // user clicked the top arrow
                 {
                     currentPosition -= 1;
-					break;
+                    break;
                 }
-				case SB_LINEDOWN: // user clicked the bottom arrow
+                case SB_LINEDOWN: // user clicked the bottom arrow
                 {
                     currentPosition += 1;
-					break;
-                }				
-				case SB_PAGEUP: // user clicked the scroll bar shaft above the scroll box
+                    break;
+                }                
+                case SB_PAGEUP: // user clicked the scroll bar shaft above the scroll box
                 {
                     currentPosition -= pageHeight;
-					break;
-                }				
-				case SB_PAGEDOWN: // user clicked the scroll bar shaft below the scroll box
+                    break;
+                }                
+                case SB_PAGEDOWN: // user clicked the scroll bar shaft below the scroll box
                 {
                     currentPosition += pageHeight;
-					break;
-                }				
-				case SB_THUMBTRACK: // user dragged the scroll box
+                    break;
+                }                
+                case SB_THUMBTRACK: // user dragged the scroll box
                 {
                     currentPosition = HIWORD(wParam);
-					break;
+                    break;
                 }
-				default:
+                default:
                 {
-					break; 
+                    break; 
                 }
-			}
+            }
             if (currentPosition < 0)
             {
                 currentPosition = 0;
@@ -2815,13 +2815,13 @@ namespace XULWin
         }
         
         if (pThis->mOrigProc)
-		{
-			return ::CallWindowProc(pThis->mOrigProc, inHandle, inMessage, wParam, lParam);
-		}
-		else
-		{
-			return ::DefWindowProc(inHandle, inMessage, wParam, lParam);
-		}
+        {
+            return ::CallWindowProc(pThis->mOrigProc, inHandle, inMessage, wParam, lParam);
+        }
+        else
+        {
+            return ::DefWindowProc(inHandle, inMessage, wParam, lParam);
+        }
     }
 
 

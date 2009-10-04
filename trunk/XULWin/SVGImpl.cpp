@@ -126,8 +126,10 @@ namespace SVG
 
 
     NativeG::NativeG(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        PassiveComponent(inParent, inAttributesMapping)
+        PassiveComponent(inParent, inAttributesMapping),
+        mCSSStroke(RGBColor(0, 0, 0, 0)) // transaparent (invisible) by default
     {
+        mCSSStroke.setInvalid();
     }
     
         
@@ -252,7 +254,7 @@ namespace SVG
             if (group)
             {
                 RGBColor fill = group->getCSSFill();
-                color = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+                color = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
             }
             Gdiplus::SolidBrush solidBrush(color);
             g.FillPolygon(&solidBrush, &mNativePoints[0], mNativePoints.size());
@@ -297,7 +299,7 @@ namespace SVG
                 fill = group->getCSSFill();
             }
         }
-        color = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+        color = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
         Gdiplus::SolidBrush solidBrush(color);
         g.FillRectangle(&solidBrush, Gdiplus::RectF((Gdiplus::REAL)mX,
                                                     (Gdiplus::REAL)mY,
@@ -401,8 +403,12 @@ namespace SVG
 
     
     NativePath::NativePath(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping)
+        VirtualBox(inParent, inAttributesMapping),
+        mStroke(RGBColor(0, 0, 0, 0)),   // } => transparent (invisible) by default
+        mCSSStroke(RGBColor(0, 0, 0, 0)) // } 
     {
+        mStroke.setInvalid();
+        mCSSStroke.setInvalid();
     }
         
         
@@ -543,12 +549,12 @@ namespace SVG
     {
         if (mFill.isValid())
         {
-            outColor = Gdiplus::Color(mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
+            outColor = Gdiplus::Color(mFill.getValue().alpha(), mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
             return true;
         }
         else if (mCSSFill.isValid())
         {
-            outColor = Gdiplus::Color(mCSSFill.getValue().red(), mCSSFill.getValue().green(), mCSSFill.getValue().blue());
+            outColor = Gdiplus::Color(mFill.getValue().alpha(), mCSSFill.getValue().red(), mCSSFill.getValue().green(), mCSSFill.getValue().blue());
             return true;
         }
         else
@@ -557,7 +563,7 @@ namespace SVG
             if (group)
             {
                 RGBColor fill = group->getCSSFill();
-                outColor = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+                outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
                 return true;
             }
         }        
@@ -569,12 +575,12 @@ namespace SVG
     {
         if (mStroke.isValid())
         {
-            outColor = Gdiplus::Color(mStroke.getValue().red(), mStroke.getValue().green(), mStroke.getValue().blue());
+            outColor = Gdiplus::Color(mFill.getValue().alpha(), mStroke.getValue().red(), mStroke.getValue().green(), mStroke.getValue().blue());
             return true;
         }
         else if (mCSSStroke.isValid())
         {
-            outColor = Gdiplus::Color(mCSSStroke.getValue().red(), mCSSStroke.getValue().green(), mCSSStroke.getValue().blue());
+            outColor = Gdiplus::Color(mCSSStroke.getValue().alpha(), mCSSStroke.getValue().red(), mCSSStroke.getValue().green(), mCSSStroke.getValue().blue());
             return true;
         }
         else
@@ -583,7 +589,7 @@ namespace SVG
             if (group)
             {
                 RGBColor fill = group->getCSSStroke();
-                outColor = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+                outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
                 return true;
             }
         }        
@@ -757,9 +763,14 @@ namespace SVG
         Gdiplus::SolidBrush brush(fillColor);
 
         Gdiplus::Color strokeColor;
-        float strokeWidth = 2; // TODO: implement attribute controller
-        getStrokeColor(strokeColor);
-        Gdiplus::Pen pen(strokeColor, strokeWidth);
+        Gdiplus::Pen pen(Gdiplus::Color::Black, 1.0f);
+        bool hasStrokeColor = getStrokeColor(strokeColor);
+        if (hasStrokeColor)
+        {
+            pen.SetColor(strokeColor);
+            float strokeWidth = 2; // TODO: implement attribute controller
+            pen.SetWidth(strokeWidth);
+        }
 
         for (size_t idx = 0; idx != mPreparedInstructions.size(); ++idx)
         {
@@ -803,7 +814,10 @@ namespace SVG
                     bezierPath.SetFillMode(Gdiplus::FillModeWinding);
                     bezierPath.AddBeziers(&gdiplusPoints[0], gdiplusPoints.size());
                     g.FillPath(&brush, &bezierPath);
-                    g.DrawPath(&pen, &bezierPath);
+                    if (hasStrokeColor)
+                    {
+                        g.DrawPath(&pen, &bezierPath);
+                    }
                     break;
                 }
                 case PathInstruction::QuadraticBelzierCurve:

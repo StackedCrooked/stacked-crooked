@@ -33,13 +33,16 @@ namespace Utils
         }
 
 
-        // This method allows having a default value:
+        // This method allows setting a default value without making the
+        // object valid. The motivation behind this that in case a value
+        // was queried from a object in fault state, that it would then
+        // be better to return a default value than an uninitialized one.
         //
         // Fallible number<int>(0);
         // number.setInvalid();
         // int n = number; // 0 returned
         //
-        // I prefer above approach to raising an exceptions.
+        // I prefer above approach to raising exceptions.
         //
         void setInvalid()
         {

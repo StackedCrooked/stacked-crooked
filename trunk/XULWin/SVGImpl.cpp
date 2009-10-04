@@ -35,7 +35,7 @@ namespace SVG
     {
         Gdiplus::Graphics g(inHDC);
         g.SetInterpolationMode(Gdiplus::InterpolationModeHighQuality);
-	    g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
+        g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
             if (Painter * svg = owningElement()->children()[idx]->impl()->downcast<Painter>())
@@ -49,39 +49,39 @@ namespace SVG
     void NativeSVG::bufferedPaint(HDC inHDC)
     {
 
-	    //
-	    // Get the size of the client rectangle.
-	    //
-	    RECT rc;
-	    GetClientRect(handle(), &rc);
-    	
-	    HDC compatibleDC = CreateCompatibleDC(inHDC);
-    	
-    	
-	    //
-	    // Create a bitmap big enough for our client rectangle.
-	    //
-	    HBITMAP backgroundBuffer = CreateCompatibleBitmap(inHDC, rc.right - rc.left, rc.bottom - rc.top);
+        //
+        // Get the size of the client rectangle.
+        //
+        RECT rc;
+        GetClientRect(handle(), &rc);
+        
+        HDC compatibleDC = CreateCompatibleDC(inHDC);
+        
+        
+        //
+        // Create a bitmap big enough for our client rectangle.
+        //
+        HBITMAP backgroundBuffer = CreateCompatibleBitmap(inHDC, rc.right - rc.left, rc.bottom - rc.top);
 
 
-	    //
-	    // Select the bitmap into the off-screen DC.
-	    //
-	    HBITMAP backgroundBitmap = (HBITMAP)SelectObject(compatibleDC, backgroundBuffer);
+        //
+        // Select the bitmap into the off-screen DC.
+        //
+        HBITMAP backgroundBitmap = (HBITMAP)SelectObject(compatibleDC, backgroundBuffer);
 
 
-	    //
-	    // Erase the background.
-	    //
-	    HBRUSH backgroundBrush = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
-	    FillRect(compatibleDC, &rc, backgroundBrush);
-	    DeleteObject(backgroundBrush);
+        //
+        // Erase the background.
+        //
+        HBRUSH backgroundBrush = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+        FillRect(compatibleDC, &rc, backgroundBrush);
+        DeleteObject(backgroundBrush);
 
-	    //
-	    // Render the image into the offscreen DC.
-	    //
-	    SetBkMode(compatibleDC, TRANSPARENT);
-    	
+        //
+        // Render the image into the offscreen DC.
+        //
+        SetBkMode(compatibleDC, TRANSPARENT);
+        
 
         paint(compatibleDC);
 
@@ -170,9 +170,9 @@ namespace SVG
     
     const RGBColor & NativeG::getCSSFill() const
     {
-        if (mFill.isValid())
+        if (mCSSFill.isValid())
         {
-            return mFill;
+            return mCSSFill;
         }
 
         if (NativeG * g = findNativeGParent(parent()))
@@ -180,13 +180,35 @@ namespace SVG
             return g->getCSSFill();
         }
 
-        return mFill; // default value
+        return mCSSFill; // default value
+    }        
+    
+    
+    void NativeG::setCSSStroke(const RGBColor & inColor)
+    {
+        mCSSStroke = inColor;
+    }
+
+
+    const RGBColor & NativeG::getCSSStroke() const
+    {
+        if (mCSSStroke.isValid())
+        {
+            return mCSSStroke;
+        }
+
+        if (NativeG * g = findNativeGParent(parent()))
+        {
+            return g->getCSSStroke();
+        }
+
+        return mCSSStroke; // default value
     }
 
 
     void NativeG::setCSSFill(const RGBColor & inColor)
     {
-        mFill = inColor;
+        mCSSFill = inColor;
     }
 
     
@@ -388,7 +410,16 @@ namespace SVG
     {
         setAttributeController("d", static_cast<PathInstructionsController*>(this));
         setAttributeController("fill", static_cast<FillController*>(this));
+        setAttributeController("stroke", static_cast<StrokeController*>(this));
         return Super::initAttributeControllers();
+    }
+        
+        
+    bool NativePath::initStyleControllers()
+    {
+        setStyleController(CSSFillController::PropertyName(), static_cast<CSSFillController*>(this));
+        setStyleController(CSSStrokeController::PropertyName(), static_cast<CSSStrokeController*>(this));
+        return Super::initStyleControllers();
     }
 
 
@@ -401,6 +432,42 @@ namespace SVG
     const RGBColor & NativePath::getFill() const
     {
         return mFill;
+    }
+    
+    
+    void NativePath::setCSSFill(const RGBColor & inColor)
+    {
+        mCSSFill = inColor;
+    }
+
+    
+    const RGBColor & NativePath::getCSSFill() const
+    {
+        return mCSSFill;
+    }
+
+
+    void NativePath::setStroke(const RGBColor & inColor)
+    {
+        mStroke = inColor;
+    }
+
+
+    const RGBColor & NativePath::getStroke() const
+    {
+        return mStroke;
+    }
+
+
+    void NativePath::setCSSStroke(const RGBColor & inColor)
+    {
+        mCSSStroke = inColor;
+    }
+
+
+    const RGBColor & NativePath::getCSSStroke() const
+    {
+        return mCSSStroke;
     }
 
 
@@ -472,11 +539,17 @@ namespace SVG
 
     
     
-    Gdiplus::Color NativePath::getColor()
+    bool NativePath::getFillColor(Gdiplus::Color & outColor)
     {
         if (mFill.isValid())
         {
-            return Gdiplus::Color(mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
+            outColor = Gdiplus::Color(mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
+            return true;
+        }
+        else if (mCSSFill.isValid())
+        {
+            outColor = Gdiplus::Color(mCSSFill.getValue().red(), mCSSFill.getValue().green(), mCSSFill.getValue().blue());
+            return true;
         }
         else
         {
@@ -484,10 +557,37 @@ namespace SVG
             if (group)
             {
                 RGBColor fill = group->getCSSFill();
-                return Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+                outColor = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+                return true;
             }
         }        
-        return Gdiplus::Color(Gdiplus::Color::Black);
+        return false;
+    }
+
+
+    bool NativePath::getStrokeColor(Gdiplus::Color & outColor)
+    {
+        if (mStroke.isValid())
+        {
+            outColor = Gdiplus::Color(mStroke.getValue().red(), mStroke.getValue().green(), mStroke.getValue().blue());
+            return true;
+        }
+        else if (mCSSStroke.isValid())
+        {
+            outColor = Gdiplus::Color(mCSSStroke.getValue().red(), mCSSStroke.getValue().green(), mCSSStroke.getValue().blue());
+            return true;
+        }
+        else
+        {
+            NativeG * group = findNativeGParent(this);
+            if (group)
+            {
+                RGBColor fill = group->getCSSStroke();
+                outColor = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+                return true;
+            }
+        }        
+        return false;
     }
 
     
@@ -570,8 +670,8 @@ namespace SVG
                 }
                 case PathInstruction::SmoothCurveTo: // S
                 {
-					// We'll convert it to a curve instruction
-					PathInstruction curveInstruction = instruction;
+                    // We'll convert it to a curve instruction
+                    PathInstruction curveInstruction = instruction;
                     if (prevInstruction.type() == PathInstruction::CurveTo)
                     {  
                         PointF c2 = instruction.getPoint(0);
@@ -583,9 +683,9 @@ namespace SVG
                         // one used previously.
                         PointF c1;
                         GetPointReflection(prevInstruction.getPoint(1),
-										   prevInstruction.getPoint(2),
-										   c1);
-						curveInstruction.points().insert(curveInstruction.points().begin(), c1);
+                                           prevInstruction.getPoint(2),
+                                           c1);
+                        curveInstruction.points().insert(curveInstruction.points().begin(), c1);
                     }
                     else if (prevInstruction.type() == PathInstruction::SmoothCurveTo)
                     {
@@ -598,17 +698,17 @@ namespace SVG
                         // one used previously.
                         PointF c1;
                         GetPointReflection(prevInstruction.getPoint(0),
-										   prevInstruction.getPoint(1),
-										   c1);
-						curveInstruction.points().insert(curveInstruction.points().begin(), c1);
+                                           prevInstruction.getPoint(1),
+                                           c1);
+                        curveInstruction.points().insert(curveInstruction.points().begin(), c1);
                     }
-					else
-					{
-						// If the S command doesn't follow another S or C command, then it is
-						// assumed that both control points for the curve are the same.
-						curveInstruction.points().insert(curveInstruction.points().begin(),
-														 instruction.getPoint(0));
-					}
+                    else
+                    {
+                        // If the S command doesn't follow another S or C command, then it is
+                        // assumed that both control points for the curve are the same.
+                        curveInstruction.points().insert(curveInstruction.points().begin(),
+                                                         instruction.getPoint(0));
+                    }
                     GetAbsolutePositions(curveInstruction, prevPoint, preppedPoints);
                     if (!preppedPoints.empty())
                     {
@@ -616,9 +716,11 @@ namespace SVG
                     }
                     break;
                 }
-                //PathInstruction::QuadraticBelzierCurve,          // Q
-                //PathInstruction::SmoothQuadraticBelzierCurveTo,  // T
-                //PathInstruction::EllipticalArc,                  // A
+                case PathInstruction::QuadraticBelzierCurve: // Q
+                case PathInstruction::SmoothQuadraticBelzierCurveTo: // T
+                case PathInstruction::EllipticalArc: // A
+                {
+                }
                 case PathInstruction::ClosePath: // Z
                 {
                     if (!preppedPoints.empty())
@@ -650,9 +752,15 @@ namespace SVG
     
     void NativePath::paint(Gdiplus::Graphics & g)
     {
-        Gdiplus::Color color(getColor());
-        Gdiplus::SolidBrush solidBrush(color);
-        Gdiplus::Pen pen(color, 1);
+        Gdiplus::Color fillColor;
+        getFillColor(fillColor);
+        Gdiplus::SolidBrush brush(fillColor);
+
+        Gdiplus::Color strokeColor;
+        float strokeWidth = 2; // TODO: implement attribute controller
+        getStrokeColor(strokeColor);
+        Gdiplus::Pen pen(strokeColor, strokeWidth);
+
         for (size_t idx = 0; idx != mPreparedInstructions.size(); ++idx)
         {
             const PathInstruction & instruction = mPreparedInstructions[idx];
@@ -692,8 +800,10 @@ namespace SVG
                         gdiplusPoints.push_back(Gdiplus::PointF(point.x(), point.y()));
                     }
                     Gdiplus::GraphicsPath bezierPath;
+                    bezierPath.SetFillMode(Gdiplus::FillModeWinding);
                     bezierPath.AddBeziers(&gdiplusPoints[0], gdiplusPoints.size());
-                    g.FillPath(&solidBrush, &bezierPath);
+                    g.FillPath(&brush, &bezierPath);
+                    g.DrawPath(&pen, &bezierPath);
                     break;
                 }
                 case PathInstruction::QuadraticBelzierCurve:

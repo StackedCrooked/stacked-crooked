@@ -70,22 +70,22 @@ namespace XULWin
     {
         
         static char str[1024];
-		FILE *fp;
-		fp = fopen(inPrefsFile.c_str(), "r");
-		if(!fp)
-		{
+        FILE *fp;
+        fp = fopen(inPrefsFile.c_str(), "r");
+        if(!fp)
+        {
             ReportError("Failed to open prefs file: " + inPrefsFile);
-			return false;
-		}
-		
-		while (fgets(str, sizeof(str), fp) != NULL)
-		{
-			// strip trailing '\n' if it exists
-			int len = strlen(str)-1;
-			if(str[len] == '\n')
-			{
-				str[len] = 0;
-			}
+            return false;
+        }
+        
+        while (fgets(str, sizeof(str), fp) != NULL)
+        {
+            // strip trailing '\n' if it exists
+            int len = strlen(str)-1;
+            if(str[len] == '\n')
+            {
+                str[len] = 0;
+            }
             std::pair<std::string, std::string> pair;
             if (parsePrefsLine(str, pair))
             {
@@ -95,8 +95,8 @@ namespace XULWin
             {
                 ReportError("Could not parse pref: " + std::string(str));
             }
-		}
-		fclose(fp);
+        }
+        fclose(fp);
         return true;
     }
 
@@ -127,7 +127,7 @@ namespace XULWin
 
     void XULRunner::run(const std::string & inApplicationIniFile)
     {
-	    Parser parser;
+        Parser parser;
         Poco::Path topLevelAppDir = Utils::getCurrentDirectory();
         std::string mainXULFile = getMainXULFile(topLevelAppDir);
         parser.parse(mainXULFile);
@@ -140,7 +140,7 @@ namespace XULWin
     
     ElementPtr XULRunner::loadApplication(const std::string & inApplicationIniFile)
     {
-	    Parser parser;
+        Parser parser;
         Poco::Path topLevelAppDir = Utils::getCurrentDirectory();
         std::string mainXULFile = getMainXULFile(topLevelAppDir);
         parser.parse(mainXULFile);
@@ -151,7 +151,7 @@ namespace XULWin
     ElementPtr XULRunner::loadXUL(const std::string & inXULUrl)
     {
         ChromeURL url(inXULUrl, Defaults::locale());
-	    Parser parser;
+        Parser parser;
         std::string curdir = Utils::getCurrentDirectory();
         std::string path = url.convertToLocalPath();
         parser.parse(path);

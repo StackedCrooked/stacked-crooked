@@ -14,7 +14,7 @@
 
 
 namespace XULWin
-{	
+{    
 
     class NativeImage : public NativeControl,
                         public virtual SrcController,
@@ -110,7 +110,7 @@ namespace XULWin
     void NativeImage::paintImage(HDC inHDC, const RECT & rc)
     {
         Gdiplus::Graphics g(inHDC);        
-	    g.SetInterpolationMode(Gdiplus::InterpolationModeHighQuality);
+        g.SetInterpolationMode(Gdiplus::InterpolationModeHighQuality);
         g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
         g.DrawImage(mImage.get(), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
     }

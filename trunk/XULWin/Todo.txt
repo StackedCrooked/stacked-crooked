@@ -4,6 +4,7 @@ style="max-height: 300px;"
 style="overflow:hidden;"
 
 
+- stroke-width
 - Implement Parrot svg sample
 - Implement PathInstructions2String
 - Implement Popup in treeview sample

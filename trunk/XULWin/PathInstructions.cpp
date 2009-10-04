@@ -40,11 +40,11 @@ namespace XULWin
     {
         return mPoints;
     }
-	
-	
-	PointFs & PathInstruction::points()
-	{
-		return mPoints;
-	}
+    
+    
+    PointFs & PathInstruction::points()
+    {
+        return mPoints;
+    }
 
 } // namespace XULWin

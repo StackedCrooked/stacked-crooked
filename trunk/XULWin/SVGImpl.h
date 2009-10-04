@@ -44,7 +44,8 @@ namespace SVG
 
     class NativeG : public PassiveComponent,
                     public Painter,
-                    public CSSFillController
+                    public CSSFillController,
+                    public CSSStrokeController
     {
     public:
         typedef PassiveComponent Super;
@@ -57,10 +58,15 @@ namespace SVG
 
         virtual const RGBColor & getCSSFill() const;
 
+        virtual void setCSSStroke(const RGBColor & inColor);
+
+        virtual const RGBColor & getCSSStroke() const;
+
         virtual void paint(Gdiplus::Graphics & g);
 
     private:
-        Utils::Fallible<RGBColor> mFill;
+        Utils::Fallible<RGBColor> mCSSFill;
+        Utils::Fallible<RGBColor> mCSSStroke;
     };
 
 
@@ -147,6 +153,9 @@ namespace SVG
     class NativePath : public VirtualBox,
                        public virtual PathInstructionsController,
                        public virtual FillController,
+                       public virtual CSSFillController,
+                       public virtual StrokeController,
+                       public virtual CSSStrokeController,
                        public Painter
     {
     public:
@@ -156,9 +165,23 @@ namespace SVG
 
         virtual bool initAttributeControllers();
 
+        virtual bool initStyleControllers();
+
         virtual void setFill(const RGBColor & inColor);
 
         virtual const RGBColor & getFill() const;
+
+        virtual void setCSSFill(const RGBColor & inColor);
+
+        virtual const RGBColor & getCSSFill() const;
+
+        virtual void setStroke(const RGBColor & inColor);
+
+        virtual const RGBColor & getStroke() const;
+
+        virtual void setCSSStroke(const RGBColor & inColor);
+
+        virtual const RGBColor & getCSSStroke() const;
 
         virtual void paint(Gdiplus::Graphics & g);
 
@@ -179,7 +202,9 @@ namespace SVG
                                          const PointF & inPrevPoint,
                                          PointFs & outPoints);
 
-        Gdiplus::Color getColor();
+        bool getFillColor(Gdiplus::Color & outColor);
+
+        bool getStrokeColor(Gdiplus::Color & outColor);
 
         static void GetPreparedInstructions(const PathInstructions & inData, PathInstructions & outPrepData);
 
@@ -188,6 +213,9 @@ namespace SVG
         PathInstructions mInstructions;
         PathInstructions mPreparedInstructions;
         Utils::Fallible<RGBColor> mFill;
+        Utils::Fallible<RGBColor> mCSSFill;
+        Utils::Fallible<RGBColor> mStroke;
+        Utils::Fallible<RGBColor> mCSSStroke;
     };
 
 } // namespace SVG

@@ -9,17 +9,17 @@ namespace XULWin
 {
 
     template<class T>
-	class GenericPoint
-	{
-    public:		
+    class GenericPoint
+    {
+    public:        
         GenericPoint() : mX(0), mY(0) {}
-		
+        
         GenericPoint(T x, T y) : mX(x), mY(y) {}
-		
-		bool operator==(const GenericPoint & inOtherPoint)
+        
+        bool operator==(const GenericPoint & inOtherPoint)
         { return mX == inOtherPoint.mX && mY == inOtherPoint.mY; }
-		
-		bool operator!=(const GenericPoint & inOtherPoint)
+        
+        bool operator!=(const GenericPoint & inOtherPoint)
         { return mX != inOtherPoint.mX || mY != inOtherPoint.mY; }
 
         T x() const { return mX; }
@@ -27,9 +27,9 @@ namespace XULWin
         T y() const { return mY; }
     
     private:
-		T mX;
-		T mY;
-	};
+        T mX;
+        T mY;
+    };
 
 
     typedef GenericPoint<int> Point;

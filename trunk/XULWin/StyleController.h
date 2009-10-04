@@ -122,6 +122,21 @@ namespace XULWin
         virtual const RGBColor & getCSSFill() const = 0;
     };
 
+
+    class CSSStrokeController : public StyleController
+    {
+    public:
+        static const char * PropertyName() { return "stroke"; }
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual void setCSSStroke(const RGBColor & inColor) = 0;
+
+        virtual const RGBColor & getCSSStroke() const = 0;
+    };
+
 } // namespace XULWin
 
 #endif // STYLECONTROLLER_H_INCLUDED

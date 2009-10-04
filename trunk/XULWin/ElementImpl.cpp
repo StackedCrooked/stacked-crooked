@@ -982,11 +982,6 @@ namespace XULWin
     void NativeControl::move(int x, int y, int w, int h)
     {
         std::string type = mElement->type();
-        if (mElement->type() == CheckBox::Type())
-        {
-            int a = 0;
-            a ++;
-        }
         ::MoveWindow(handle(), x, y, w, h, FALSE);
     }
     
@@ -2799,7 +2794,7 @@ namespace XULWin
                     // When changing tabs the min-max sizes of the window can
                     // change and we need a way to make sure the window
                     // enlarges if needed. Our workaround consists of moving
-                    // the window the the same location but one pixel higher,
+                    // the window to the same location but one pixel higher,
                     // and then move it back to its original size.
                     // This seemingly zero-op has two side effects:
                     // 1. The minmax sizes will be enforced again. 

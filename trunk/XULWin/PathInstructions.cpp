@@ -34,5 +34,17 @@ namespace XULWin
     {
         return mPositioning;
     }
+    
+    
+    const PointFs & PathInstruction::points() const
+    {
+        return mPoints;
+    }
+	
+	
+	PointFs & PathInstruction::points()
+	{
+		return mPoints;
+	}
 
 } // namespace XULWin

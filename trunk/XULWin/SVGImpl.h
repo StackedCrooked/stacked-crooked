@@ -146,6 +146,7 @@ namespace SVG
 
     class NativePath : public VirtualBox,
                        public virtual PathInstructionsController,
+                       public virtual FillController,
                        public Painter
     {
     public:
@@ -155,6 +156,10 @@ namespace SVG
 
         virtual bool initAttributeControllers();
 
+        virtual void setFill(const RGBColor & inColor);
+
+        virtual const RGBColor & getFill() const;
+
         virtual void paint(Gdiplus::Graphics & g);
 
         virtual const PathInstructions & getPathInstructions() const;
@@ -162,7 +167,17 @@ namespace SVG
         virtual void setPathInstructions(const PathInstructions & inPathInstructions);
 
     private:
+        //void getEndPoint(const PathInstruction & instruction,
+        //                 const Gdiplus::PointF & inPrevPoint,
+        //                 Gdiplus::PointF & outEndPoint);
+        
+        void getFloatPoints(const PathInstruction & instruction,
+                            const Gdiplus::PointF & inPrevPoint,
+                            std::vector<Gdiplus::PointF> & outPoints);
+
         PathInstructions mInstructions;
+        Gdiplus::PointF mBeginPoint;
+        Utils::Fallible<RGBColor> mFill;
     };
 
 } // namespace SVG

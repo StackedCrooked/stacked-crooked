@@ -12,13 +12,18 @@ namespace XULWin
 
         RGBColor(int inRed, int inGreen, int inBlue);
 
+        RGBColor(int inAlpha, int inRed, int inGreen, int inBlue);
+
         int red() const;
 
         int green() const;
 
         int blue() const;
 
+        int alpha() const;
+
     private:
+        int mAlpha;
         int mRed;
         int mGreen;
         int mBlue;

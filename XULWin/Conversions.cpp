@@ -395,13 +395,7 @@ namespace XULWin
     }
 
 
-    bool isInstructionSeparator(char c)
-    {
-        return c == ' ';
-    }
-
-
-    bool isCoordinateSeparator(char c)
+    bool isPathSeparator(char c)
     {
         return c == ',' || c == '-';
     }
@@ -417,8 +411,10 @@ namespace XULWin
         {            
             fTypes.insert(std::make_pair('M', std::make_pair(PathInstruction::MoveTo, PathInstruction::Absolute)));
             fTypes.insert(std::make_pair('m', std::make_pair(PathInstruction::MoveTo, PathInstruction::Relative)));
-            fTypes.insert(std::make_pair('H', std::make_pair(PathInstruction::LineTo, PathInstruction::Absolute)));
-            fTypes.insert(std::make_pair('h', std::make_pair(PathInstruction::LineTo, PathInstruction::Relative)));
+            fTypes.insert(std::make_pair('L', std::make_pair(PathInstruction::LineTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('l', std::make_pair(PathInstruction::LineTo, PathInstruction::Relative)));
+            fTypes.insert(std::make_pair('H', std::make_pair(PathInstruction::HorizontalLineTo, PathInstruction::Absolute)));
+            fTypes.insert(std::make_pair('h', std::make_pair(PathInstruction::HorizontalLineTo, PathInstruction::Relative)));
             fTypes.insert(std::make_pair('V', std::make_pair(PathInstruction::VerticalLineTo, PathInstruction::Absolute)));
             fTypes.insert(std::make_pair('v', std::make_pair(PathInstruction::VerticalLineTo, PathInstruction::Relative)));            
             fTypes.insert(std::make_pair('C', std::make_pair(PathInstruction::CurveTo, PathInstruction::Absolute)));
@@ -445,10 +441,31 @@ namespace XULWin
     }
 
 
+    void addPoint(bool & ioParsingX,
+                  bool & ioParsingY,
+                  std::string & ioX,
+                  std::string & ioY,
+                  Points & outPoints)
+    {
+        // We round the floats to int
+        float floatX = String2Float(ioX);
+        float xRounder = floatX >= 0 ? 0.5f : -0.5f;
+        float floatY = String2Float(ioY);
+        float yRounder = floatY >= 0 ? 0.5f : -0.5f;
+        outPoints.push_back(Point((int)(xRounder + floatX),
+                                  (int)(yRounder + floatY)));
+        ioX.clear();
+        ioY.clear();
+        ioParsingX = true;
+        ioParsingY = false;
+    }
+
+
     PathInstructions String2PathInstructions(const std::string & inValue)
     {
         // "MmLlHhVvCcSsQqTtAaZz"
         // M205.2,17.1 c-33.6-9.7-42,19.1-48.2,22.6 c-6.2,3.5-27.9,2.2-33.3,5.8 c-5.3,3.5-17.3,23.5-8.4,41.6 c8.9,18.2,32.3,10.2,32.3,10.2 s-10.6,11.1-29.7,19.9 c-1,0.5-2.1,0.9-3.1,1.3 c-1.6,6.2-3,17.3,5,23.4 c0.4,0.4-10.8-0.9-13.9-3.1 c-2.6-1.9-4.9-9.8-5.6-15.9 c-10.9,2.1-19.6,1.1-25,0.5                                   c-13.3,7.9-27.1,30.5-31.9,40.3 c-4.9,9.8-11.9,26.9-19.3,31.2 c-5.4,3.1-19.4,0.7-21-11.7 c-1.2-9.5,12.7-29.2,23.8-41.6 c11.1-12.4,19-21.5,22.1-25.4 c0.4-1.8,20.3-56.9,33.8-68 c9.6-7.9,21.1-12.2,42.5-13.3 c26.6-1.3,19.6-6.1,41.2-18.8 C191.6,1.4,204.3,14.9,205.2,17.1z
+        // M250 150 L150 350 L350 350 Z
         PathInstructions result;
 
         
@@ -464,16 +481,47 @@ namespace XULWin
         {
             char ch = inValue[idx];
             if (isInstruction(ch))
-            {
+            { 
+                if (parsingPoints)
+                {
+                    if (parsingY)
+                    {
+                        addPoint(parsingX, parsingY, x, y, points);
+                    }
+                    result.push_back(PathInstruction(type, pos, points));
+                    points.clear();
+                    parsingPoints = false;
+                }
                 if (getInstructionType(ch, type, pos))
                 {
                     parsingPoints = true;
                     parsingX = true;
                 }
-            }            
-            else if (isCoordinateSeparator(ch))
+                else
+                {
+                    ReportError("Unable to get instruction type!");
+                }
+            }
+            else if (ch == ' ')
             {
-                assert(parsingX || parsingY);
+                if (parsingX)
+                {
+                    if (!x.empty())
+                    {
+                        parsingX = false;
+                        parsingY = true;
+                    }
+                }
+                else if (parsingY)
+                {
+                    if (!y.empty())
+                    {
+                        addPoint(parsingX, parsingY, x, y, points);
+                    }
+                }
+            }
+            else if (isPathSeparator(ch))
+            {
                 if (parsingX)
                 {
                     if (x.empty())
@@ -500,17 +548,7 @@ namespace XULWin
                     }
                     else
                     {
-                        // We round the floats to int
-                        float floatX = String2Float(x);
-                        float xRounder = floatX >= 0 ? 0.5f : -0.5f;
-                        float floatY = String2Float(y);
-                        float yRounder = floatY >= 0 ? 0.5f : -0.5f;
-                        points.push_back(Point((int)(xRounder + floatX),
-                                               (int)(yRounder + floatY)));
-                        x.clear();
-                        y.clear();
-                        parsingY = false;
-                        parsingX = true; // assume we start a new X here
+                        addPoint(parsingX, parsingY, x, y, points);
 
                         // minus sign is both separator and first new char of x
                         if (ch == '-')
@@ -519,26 +557,6 @@ namespace XULWin
                         }
                     }
                 }
-            }
-            else if (isInstructionSeparator(ch))
-            {
-                if (parsingY)
-                {
-                    // We round the floats to int
-                    float floatX = String2Float(x);
-                    float xRounder = floatX >= 0 ? 0.5f : -0.5f;
-                    float floatY = String2Float(y);
-                    float yRounder = floatY >= 0 ? 0.5f : -0.5f;
-                    points.push_back(Point((int)(xRounder + floatX),
-                                           (int)(yRounder + floatY)));
-                    x.clear();
-                    y.clear();
-                    parsingY = false;
-                    assert(!parsingX);
-                }
-                result.push_back(PathInstruction(type, pos, points));
-                points.clear();
-                parsingPoints = false;
             }
             else if (parsingX)
             {
@@ -552,6 +570,15 @@ namespace XULWin
             {
                 assert(false);
             }
+        }
+        
+        if (!y.empty())
+        {
+            addPoint(parsingX, parsingY, x, y, points);
+        }
+        if (!points.empty())
+        {            
+            result.push_back(PathInstruction(type, pos, points));
         }
         return result;
     }

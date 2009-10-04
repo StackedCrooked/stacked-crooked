@@ -9,6 +9,7 @@ style="overflow:hidden;"
 - Implement Popup in treeview sample
 - Implement toolbar, menubar from notepad-app sample
 - remove items from Tree view
+- Implement tree open/closed state, and min size implications
 - Classes inheriting VirtualComponent should not have a 'Native' prefix in their class name.
 - Samples: http://starkravingfinkle.org/blog/2006/12/xul-clippings/
 - Implement all overflow styles

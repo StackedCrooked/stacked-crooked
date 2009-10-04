@@ -270,4 +270,20 @@ namespace XULWin
     }
 
 
+
+    void FillController::get(std::string & outValue)
+    {
+        outValue = RGBColor2String(getFill());
+    }
+
+
+    void FillController::set(const std::string & inValue)
+    {
+        RGBColor result;
+        if (String2RGBColor(inValue, result))
+        {
+            setFill(result);
+        }
+    }
+
 } // namespace XULWin

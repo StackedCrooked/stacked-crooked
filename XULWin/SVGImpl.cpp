@@ -1,5 +1,6 @@
 #include "SVGImpl.h"
 #include "PathInstructions.h"
+#include "Utils/ErrorReporter.h"
 
 
 namespace XULWin
@@ -383,24 +384,245 @@ namespace SVG
     bool NativePath::initAttributeControllers()
     {
         setAttributeController("d", static_cast<PathInstructionsController*>(this));
+        setAttributeController("fill", static_cast<FillController*>(this));
         return Super::initAttributeControllers();
+    }
+
+
+    void NativePath::setFill(const RGBColor & inColor)
+    {
+        mFill = inColor;
+    }
+
+
+    const RGBColor & NativePath::getFill() const
+    {
+        return mFill;
+    }
+
+
+    //void NativePath::getEndPoint(const PathInstruction & instruction,
+    //                             const Gdiplus::PointF & inPrevPoint,
+    //                             Gdiplus::PointF & outEndPoint)
+    //{
+    //    if (instruction.numPoints() == 0)
+    //    {
+    //        assert(false);
+    //        return;
+    //    }
+
+    //    Point p = instruction.getPoint(0);
+    //    if (instruction.positioning() == PathInstruction::Absolute)
+    //    {
+    //        outEndPoint = Gdiplus::PointF((Gdiplus::REAL)p.x(),
+    //                                      (Gdiplus::REAL)p.y());
+    //    }
+    //    else
+    //    {
+    //        outEndPoint = Gdiplus::PointF(inPrevPoint.X + (Gdiplus::REAL)p.x(),
+    //                                      inPrevPoint.Y + (Gdiplus::REAL)p.y());
+    //    }
+    //}
+
+
+    void NativePath::getFloatPoints(const PathInstruction & instruction,
+                                    const Gdiplus::PointF & inPrevPoint,
+                                    std::vector<Gdiplus::PointF> & outPoints)
+    {
+        Gdiplus::PointF pointF = inPrevPoint;
+        for (size_t idx = 0; idx != instruction.numPoints(); ++idx)
+        {
+            const Point & point = instruction.getPoint(idx);
+            if (instruction.positioning() == PathInstruction::Absolute)
+            {
+                pointF = Gdiplus::PointF((Gdiplus::REAL)point.x(),
+                                         (Gdiplus::REAL)point.y());
+            }
+            else
+            {
+                pointF = Gdiplus::PointF(pointF.X + (Gdiplus::REAL)point.x(),
+                                         pointF.Y + (Gdiplus::REAL)point.y());
+            }
+            outPoints.push_back(pointF);
+        }
     }
 
     
     void NativePath::paint(Gdiplus::Graphics & g)
     {
-        //if (!mInstructions.empty())
-        //{
-        //    Gdiplus::Color color(Gdiplus::Color::Black);
-        //    NativeG * group = findNativeGParent(this);
-        //    if (group)
-        //    {
-        //        RGBColor fill = group->getCSSFill();
-        //        color = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
-        //    }
-        //    Gdiplus::SolidBrush solidBrush(color);
-        //    g.FillPath(&solidBrush, &mNativePoints[0], mNativePoints.size());
-        //}
+        Gdiplus::Color color(Gdiplus::Color::Black);
+        if (mFill.isValid())
+        {
+            color = Gdiplus::Color(mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
+        }
+        else
+        {
+            NativeG * group = findNativeGParent(this);
+            if (group)
+            {
+                RGBColor fill = group->getCSSFill();
+                color = Gdiplus::Color(fill.red(), fill.green(), fill.blue());
+            }
+        }
+        Gdiplus::SolidBrush solidBrush(color);
+        Gdiplus::Pen pen(color, 2);
+
+        std::vector<Gdiplus::PointF> prevPoints;
+        const PathInstruction * prevInstruction = 0;
+        Gdiplus::PointF prevPointF;
+        for (size_t idx = 0; idx != mInstructions.size(); ++idx)
+        {
+            const PathInstruction & instruction = mInstructions[idx];
+            switch (instruction.type())
+            {
+                case PathInstruction::MoveTo:
+                {
+                    assert(instruction.numPoints() > 0);
+                    if (instruction.numPoints() > 0)
+                    {
+                        Point p = instruction.getPoint(0);
+                        if (instruction.positioning() == PathInstruction::Absolute)
+                        {
+                            prevPointF = Gdiplus::PointF((float)p.x(), (float)p.y());
+                        }
+                        else
+                        {
+                            prevPointF.X += (float)p.x();
+                            prevPointF.Y += (float)p.y();
+                        }
+                    }
+                    break;
+                }
+                case PathInstruction::LineTo:
+                {
+                    assert(instruction.numPoints() > 0);
+                    if (instruction.numPoints() > 0)
+                    {
+                        std::vector<Gdiplus::PointF> points;
+                        getFloatPoints(instruction, prevPointF, points);
+                        if (points.size() == 2)
+                        {
+                            g.DrawLine(&pen, points[0], points[1]);
+                            prevPointF = points[1];
+                        }
+                    }
+                    break;
+                }
+                case PathInstruction::HorizontalLineTo:
+                {
+                    assert(false);
+                    // don't know what to do here
+                    break;
+                }
+                case PathInstruction::VerticalLineTo:
+                {
+                    assert(false);
+                    // don't know what to do here
+                    break;
+                }
+                case PathInstruction::CurveTo:
+                {
+                    assert(instruction.numPoints() > 0);
+                    if (instruction.numPoints() > 0)
+                    {
+                        std::vector<Gdiplus::PointF> points;
+                        points.push_back(prevPointF);
+                        getFloatPoints(instruction, prevPointF, points);
+                        assert(points.size() == 4);
+                        g.DrawBeziers(&pen, &points[0], points.size());
+                        if (!points.empty())
+                        {
+                            prevPointF = points[points.size() - 1];
+                        }
+                        // remember for next iteration, we may need it in SmoothCurveTo case
+                        prevPoints = points; 
+                    }
+                    break;
+                }
+                case PathInstruction::SmoothCurveTo:
+                {
+                    assert(instruction.numPoints() > 0);
+                    if (instruction.numPoints() > 0)
+                    {
+                        std::vector<Gdiplus::PointF> points;
+                        getFloatPoints(instruction, prevPointF, points);
+                        assert(points.size() == 2);
+                        if (points.size() == 2)
+                        {
+                            if (prevInstruction &&
+                                (prevInstruction->type() == PathInstruction::CurveTo
+                                 || prevInstruction->type() == PathInstruction::SmoothCurveTo)
+                                )
+                            {
+                                std::vector<Gdiplus::PointF> backup = points;
+                                points.clear();
+                                points.push_back(prevPointF);
+                                points.push_back(prevPoints[1]);
+                                points.push_back(backup[0]);
+                                points.push_back(backup[1]);
+                            }
+                            else
+                            {
+                                std::vector<Gdiplus::PointF> backup = points;
+                                points.clear();
+                                points.push_back(prevPointF);
+                                points.push_back(backup[0]);
+                                points.push_back(backup[0]);
+                                points.push_back(backup[1]);
+                            }
+                        }
+                        assert(points.size() == 4);
+                        g.DrawBeziers(&pen, &points[0], points.size());
+                        if (!points.empty())
+                        {
+                            prevPointF = points[points.size() - 1];
+                        }
+                        prevPoints = points;
+                    }
+                    break;
+                }
+                case PathInstruction::QuadraticBelzierCurve:
+                {
+                    assert(false);
+                    if (instruction.numPoints() > 0)
+                    {
+                        std::vector<Gdiplus::PointF> points;
+                        getFloatPoints(instruction, prevPointF, points);
+                        g.FillClosedCurve(&solidBrush, &points[0], points.size());
+                    }
+                    break;
+                }
+                case PathInstruction::SmoothQuadraticBelzierCurveTo:
+                {
+                    assert(false);
+                    if (instruction.numPoints() > 0)
+                    {
+                        std::vector<Gdiplus::PointF> points;
+                        getFloatPoints(instruction, prevPointF, points);
+                        g.FillClosedCurve(&solidBrush, &points[0], points.size());
+                    }
+                    break;
+                }
+                case PathInstruction::EllipticalArc:
+                {
+                    assert(false);
+                    //g.DrawArc(
+                    break;
+                }
+                case PathInstruction::ClosePath:
+                {
+                    assert(false);
+                    // TODO: implement
+                    break;
+                }
+                default:
+                {
+                    assert(false);
+                    Utils::ReportError("Unsupported type");
+                }
+            }
+            prevInstruction = &mInstructions[idx];
+        }
     }
     
     
@@ -414,6 +636,7 @@ namespace SVG
     {
         mInstructions = inPathInstructions;
     }
+
 
 } // namespace SVG
 

@@ -5,6 +5,7 @@
 #include "Enums.h"
 #include "Points.h"
 #include "PathInstructions.h"
+#include "RGBColor.h"
 #include <string>
 
 
@@ -342,6 +343,19 @@ namespace XULWin
         virtual const PathInstructions & getPathInstructions() const = 0;
 
         virtual void setPathInstructions(const PathInstructions & inPathInstructions) = 0;
+    };
+
+
+    class FillController : public AttributeController
+    {
+    public:
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual void setFill(const RGBColor & inColor) = 0;
+
+        virtual const RGBColor & getFill() const = 0;
     };
 
 } // namespace XULWin

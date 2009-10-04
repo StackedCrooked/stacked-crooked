@@ -32,19 +32,19 @@ namespace XULWin
             Absolute
         };
         
-        PathInstruction(Type inType, Positioning inPositioning, const Points & inPoints);
+        PathInstruction(Type inType, Positioning inPositioning, const PointFs & inPoints);
 
         Type type() const;
 
         size_t numPoints() const;
 
-        const Point & getPoint(size_t inIdx) const;
+        const PointF & getPoint(size_t inIdx) const;
 
         Positioning positioning() const;
 
     private:
         Type mType;
-        Points mPoints;
+        PointFs mPoints;
         Positioning mPositioning;
     };
 

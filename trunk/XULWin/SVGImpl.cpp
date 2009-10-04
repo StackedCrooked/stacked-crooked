@@ -432,7 +432,7 @@ namespace SVG
         Gdiplus::PointF pointF = inPrevPoint;
         for (size_t idx = 0; idx != instruction.numPoints(); ++idx)
         {
-            const Point & point = instruction.getPoint(idx);
+            const PointF & point = instruction.getPoint(idx);
             if (instruction.positioning() == PathInstruction::Absolute)
             {
                 pointF = Gdiplus::PointF((Gdiplus::REAL)point.x(),
@@ -480,7 +480,7 @@ namespace SVG
                     assert(instruction.numPoints() > 0);
                     if (instruction.numPoints() > 0)
                     {
-                        Point p = instruction.getPoint(0);
+                        PointF p = instruction.getPoint(0);
                         if (instruction.positioning() == PathInstruction::Absolute)
                         {
                             prevPointF = Gdiplus::PointF((float)p.x(), (float)p.y());
@@ -557,7 +557,12 @@ namespace SVG
                                 std::vector<Gdiplus::PointF> backup = points;
                                 points.clear();
                                 points.push_back(prevPointF);
-                                points.push_back(prevPoints[1]);
+                                // reflection
+                                float dx = prevPoints[2].X - prevPoints[1].X;
+                                float dy = prevPoints[2].Y - prevPoints[1].Y;
+                                float x = backup[0].X - dx;
+                                float y = backup[0].Y - dy;
+                                points.push_back(Gdiplus::PointF(x, y));
                                 points.push_back(backup[0]);
                                 points.push_back(backup[1]);
                             }

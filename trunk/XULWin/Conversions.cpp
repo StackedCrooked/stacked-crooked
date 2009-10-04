@@ -445,15 +445,9 @@ namespace XULWin
                   bool & ioParsingY,
                   std::string & ioX,
                   std::string & ioY,
-                  Points & outPoints)
+                  PointFs & outPoints)
     {
-        // We round the floats to int
-        float floatX = String2Float(ioX);
-        float xRounder = floatX >= 0 ? 0.5f : -0.5f;
-        float floatY = String2Float(ioY);
-        float yRounder = floatY >= 0 ? 0.5f : -0.5f;
-        outPoints.push_back(Point((int)(xRounder + floatX),
-                                  (int)(yRounder + floatY)));
+        outPoints.push_back(PointF(String2Float(ioX), String2Float(ioY)));
         ioX.clear();
         ioY.clear();
         ioParsingX = true;
@@ -476,7 +470,7 @@ namespace XULWin
         std::string y;
         PathInstruction::Type type;
         PathInstruction::Positioning pos;
-        Points points;
+        PointFs points;
         for (size_t idx = 0; idx != inValue.size(); ++idx)
         {
             char ch = inValue[idx];

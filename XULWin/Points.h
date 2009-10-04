@@ -8,27 +8,37 @@
 namespace XULWin
 {
 
-	class Point
+    template<class T>
+	class GenericPoint
 	{
     public:		
-		Point();
+        GenericPoint() : mX(0), mY(0) {}
 		
-        Point(int x, int y);
+        GenericPoint(T x, T y) : mX(x), mY(y) {}
 		
-		bool operator==(const Point & inOtherPoint);
+		bool operator==(const GenericPoint & inOtherPoint)
+        { return mX == inOtherPoint.mX && mY == inOtherPoint.mY; }
 		
-		bool operator!=(const Point & inOtherPoint);
+		bool operator!=(const GenericPoint & inOtherPoint)
+        { return mX != inOtherPoint.mX || mY != inOtherPoint.mY; }
 
-        int x() const;
+        T x() const { return mX; }
 
-        int y() const;
+        T y() const { return mY; }
     
     private:
-		int mX;
-		int mY;
+		T mX;
+		T mY;
 	};
 
+
+    typedef GenericPoint<int> Point;
+
+    typedef GenericPoint<float> PointF;
+
     typedef std::vector<Point> Points;
+
+    typedef std::vector<PointF> PointFs;
 
 } // namespace XULWin
 

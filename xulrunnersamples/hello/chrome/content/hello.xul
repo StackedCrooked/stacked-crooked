@@ -3,7 +3,7 @@
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:svg="http://www.w3.org/2000/svg"
         >
-  <!--<svg:svg width="400" height="400" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <svg:svg width="400" height="400" version="1.1" xmlns="http://www.w3.org/2000/svg">
 
         <svg:path d="M153 334
     C153 334 151 334 151 334
@@ -20,7 +20,7 @@
     C211 300 186 274 156 274"
         style="fill:white;stroke:red;stroke-width:2"/>
 
-  </svg:svg>-->
+  </svg:svg>
   <svg:svg version="1.1" baseProfile="full" flex="1">
     <svg:g> <!--transform="translate(1,1)">-->
 

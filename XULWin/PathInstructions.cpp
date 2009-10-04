@@ -4,7 +4,7 @@
 namespace XULWin
 {
     
-    PathInstruction::PathInstruction(Type inType, Positioning inPositioning, const Points & inPoints) :
+    PathInstruction::PathInstruction(Type inType, Positioning inPositioning, const PointFs & inPoints) :
         mType(inType),
         mPoints(inPoints),
         mPositioning(inPositioning)
@@ -24,7 +24,7 @@ namespace XULWin
     }
 
 
-    const Point & PathInstruction::getPoint(size_t inIdx) const
+    const PointF & PathInstruction::getPoint(size_t inIdx) const
     {
         return mPoints[inIdx];
     }

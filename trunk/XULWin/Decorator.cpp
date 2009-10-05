@@ -69,6 +69,65 @@ namespace XULWin
     }
 
 
+    void Decorator::setStroke(const RGBColor & inColor)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setStroke(inColor);
+        }
+    }
+
+
+    const RGBColor & Decorator::getStroke() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getStroke();
+        }
+        static RGBColor fDefault;
+        return fDefault;
+    }
+    
+
+    void Decorator::setStrokeWidth(int inStrokeWidth)
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->setStrokeWidth(inStrokeWidth);
+        }
+    }
+
+    
+    int Decorator::getStrokeWidth() const
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->getStrokeWidth();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setFill(const RGBColor & inColor)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setFill(inColor);
+        }
+    }
+
+
+    const RGBColor & Decorator::getFill() const
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->getFill();
+        }
+        static RGBColor fDefault;
+        return fDefault;
+    }
+
+
     int Decorator::getFlex() const
     {
         if (mDecoratedElement)
@@ -140,6 +199,84 @@ namespace XULWin
         if (mDecoratedElement)
         {
             mDecoratedElement->setCSSMargin(inTop, inLeft, inRight, inBottom);
+        }
+    }
+
+
+    void Decorator::setCSSFill(const RGBColor & inColor)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setCSSFill(inColor);
+        }
+    }
+
+
+    const RGBColor & Decorator::getCSSFill() const
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->getCSSFill();
+        }
+        static RGBColor fDefault;
+        return fDefault;
+    }
+
+
+    void Decorator::setCSSStroke(const RGBColor & inColor)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setCSSStroke(inColor);
+        }
+    }
+
+
+    const RGBColor & Decorator::getCSSStroke() const
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->getCSSStroke();
+        }
+        static RGBColor fDefault;
+        return fDefault;
+    }
+
+
+    int Decorator::getCSSX() const
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->getCSSX();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setCSSX(int inX)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setCSSX(inX);
+        }
+    }
+
+
+    int Decorator::getCSSY() const
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->getCSSY();
+        }
+        return 0;
+    }
+
+
+    void Decorator::setCSSY(int inY)
+    {
+        if (mDecoratedElement)
+        {
+            mDecoratedElement->setCSSY(inY);
         }
     }
 

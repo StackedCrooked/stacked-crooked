@@ -26,17 +26,17 @@ namespace SVG
     };
 
 
-    class G : public Element
+    class Group : public Element
     {
     public:
         static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
-        { return Element::Create<G>(inParent, inAttr); }
+        { return Element::Create<Group>(inParent, inAttr); }
 
         static const char * Type() { return "g"; }
     
     private:
         friend class Element;
-        G(Element * inParent, const AttributesMapping & inAttributesMapping);
+        Group(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

@@ -23,6 +23,7 @@ namespace XULWin
 
         virtual ~Decorator();
         
+        // WidthController methods
         virtual int getWidth() const;
 
         virtual void setWidth(int inWidth);
@@ -31,6 +32,21 @@ namespace XULWin
         virtual int getHeight() const;
 
         virtual void setHeight(int inHeight);
+
+        // StrokeController methods
+        virtual void setStroke(const RGBColor & inColor);
+
+        virtual const RGBColor & getStroke() const;
+
+        // StrokeWidthController methods
+        virtual void setStrokeWidth(int inStrokeWidth);
+
+        virtual int getStrokeWidth() const;
+
+        // FillController methods
+        virtual void setFill(const RGBColor & inColor);
+
+        virtual const RGBColor & getFill() const;
 
         // FlexController methods
         virtual int getFlex() const;
@@ -66,6 +82,26 @@ namespace XULWin
         virtual void getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const;
 
         virtual void setCSSMargin(int inTop, int inLeft, int inRight, int inBottom);
+
+        // CSSFillController methods
+        virtual void setCSSFill(const RGBColor & inColor);
+
+        virtual const RGBColor & getCSSFill() const;
+
+        // CSSStrokeController methods
+        virtual void setCSSStroke(const RGBColor & inColor);
+
+        virtual const RGBColor & getCSSStroke() const;
+
+        // CSSXController methods
+        virtual int getCSSX() const;
+
+        virtual void setCSSX(int inX);
+
+        // CSSYController methods
+        virtual int getCSSY() const;
+
+        virtual void setCSSY(int inY);
 
         virtual int commandId() const;
 

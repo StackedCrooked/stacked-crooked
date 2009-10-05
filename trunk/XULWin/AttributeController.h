@@ -371,6 +371,19 @@ namespace XULWin
         virtual const RGBColor & getStroke() const = 0;
     };
 
+
+    class StrokeWidthController : public AttributeController
+    {
+    public:
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual void setStrokeWidth(int inStrokeWidth) = 0;
+
+        virtual int getStrokeWidth() const = 0;
+    };
+
 } // namespace XULWin
 
 

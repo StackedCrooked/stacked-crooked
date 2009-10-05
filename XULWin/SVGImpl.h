@@ -14,20 +14,20 @@ namespace XULWin
 namespace SVG
 {
     
-    class Painter
+    class SVGPainter
     {
     public:
         virtual void paint(Gdiplus::Graphics & g) = 0;
     };
 
 
-    class NativeSVG : public NativeControl,
+    class SVGCanvas : public NativeControl,
                       public GdiplusLoader
     {
     public:
         typedef NativeControl Super;
 
-        NativeSVG(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        SVGCanvas(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
@@ -42,42 +42,39 @@ namespace SVG
     };
 
 
-    class NativeG : public PassiveComponent,
-                    public Painter,
-                    public CSSFillController,
-                    public CSSStrokeController
+    class SVGElementImpl : public PassiveComponent
     {
     public:
         typedef PassiveComponent Super;
 
-        NativeG(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
-
-        virtual bool initStyleControllers();
-
-        virtual void setCSSFill(const RGBColor & inColor);
-
-        virtual const RGBColor & getCSSFill() const;
-
-        virtual void setCSSStroke(const RGBColor & inColor);
-
-        virtual const RGBColor & getCSSStroke() const;
-
-        virtual void paint(Gdiplus::Graphics & g);
+        SVGElementImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
     private:
-        Utils::Fallible<RGBColor> mCSSFill;
-        Utils::Fallible<RGBColor> mCSSStroke;
     };
 
 
-    class NativePolygon : public VirtualBox,
-                          public Painter,
-                          public virtual PointsController
+    class SVGGroupImpl : public SVGElementImpl,
+                         public SVGPainter
     {
     public:
-        typedef VirtualBox Super;
+        typedef SVGElementImpl Super;
 
-        NativePolygon(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        SVGGroupImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual bool initStyleControllers();
+
+        virtual void paint(Gdiplus::Graphics & g);
+    };
+
+
+    class SVGPolygonImpl : public SVGElementImpl,
+                           public SVGPainter,
+                           public virtual PointsController
+    {
+    public:
+        typedef SVGElementImpl Super;
+
+        SVGPolygonImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
@@ -93,95 +90,35 @@ namespace SVG
     };
 
 
-    class RectImpl : public VirtualBox,
-                     public Painter,
-                     public virtual WidthController,
-                     public virtual HeightController,
-                     public virtual CSSXController,
-                     public virtual CSSYController,
-                     public virtual CSSWidthController,
-                     public virtual CSSHeightController,
-                     public virtual CSSFillController
+    class SVGRectImpl : public SVGElementImpl,
+                        public SVGPainter
     {
     public:
-        typedef VirtualBox Super;
+        typedef SVGElementImpl Super;
 
-        RectImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        SVGRectImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initStyleControllers();
 
         virtual void paint(Gdiplus::Graphics & g);
 
-        virtual int getCSSX() const;
-
-        virtual void setCSSX(int inX);
-
-        virtual int getCSSY() const;
-
-        virtual void setCSSY(int inY);
-
-        virtual int getCSSWidth() const;
-
-        virtual void setCSSWidth(int inWidth);
-
-        virtual int getCSSHeight() const;
-
-        virtual void setCSSHeight(int inHeight);
-
-        virtual void setCSSFill(const RGBColor & inColor);
-
-        virtual const RGBColor & getCSSFill() const;
-
-        virtual int getWidth() const;
-
-        virtual void setWidth(int inWidth);
-
-        virtual int getHeight() const;
-
-        virtual void setHeight(int inHeight);
-
     private:
-        int mX;
-        int mY;
-        int mWidth;
-        int mHeight;
-        Utils::Fallible<RGBColor> mFill;
         std::vector<Gdiplus::PointF> mNativePoints;
     };
 
 
-    class NativePath : public VirtualBox,
-                       public virtual PathInstructionsController,
-                       public virtual FillController,
-                       public virtual CSSFillController,
-                       public virtual StrokeController,
-                       public virtual CSSStrokeController,
-                       public Painter
+    class SVGPathImpl : public SVGElementImpl,
+                        public virtual PathInstructionsController,
+                        public SVGPainter
     {
     public:
-        typedef VirtualBox Super;
+        typedef SVGElementImpl Super;
 
-        NativePath(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        SVGPathImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
         virtual bool initStyleControllers();
-
-        virtual void setFill(const RGBColor & inColor);
-
-        virtual const RGBColor & getFill() const;
-
-        virtual void setCSSFill(const RGBColor & inColor);
-
-        virtual const RGBColor & getCSSFill() const;
-
-        virtual void setStroke(const RGBColor & inColor);
-
-        virtual const RGBColor & getStroke() const;
-
-        virtual void setCSSStroke(const RGBColor & inColor);
-
-        virtual const RGBColor & getCSSStroke() const;
 
         virtual void paint(Gdiplus::Graphics & g);
 
@@ -202,9 +139,9 @@ namespace SVG
                                          const PointF & inPrevPoint,
                                          PointFs & outPoints);
 
-        bool getFillColor(Gdiplus::Color & outColor);
+        //bool getFillColor(Gdiplus::Color & outColor);
 
-        bool getStrokeColor(Gdiplus::Color & outColor);
+        //bool getStrokeColor(Gdiplus::Color & outColor);
 
         static void GetPreparedInstructions(const PathInstructions & inData, PathInstructions & outPrepData);
 
@@ -212,10 +149,6 @@ namespace SVG
 
         PathInstructions mInstructions;
         PathInstructions mPreparedInstructions;
-        Utils::Fallible<RGBColor> mFill;
-        Utils::Fallible<RGBColor> mCSSFill;
-        Utils::Fallible<RGBColor> mStroke;
-        Utils::Fallible<RGBColor> mCSSStroke;
     };
 
 } // namespace SVG

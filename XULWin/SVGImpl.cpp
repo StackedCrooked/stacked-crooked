@@ -13,32 +13,32 @@ namespace SVG
 {
     
     
-    NativeSVG::NativeSVG(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+    SVGCanvas::SVGCanvas(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0)
     {
     }
         
         
-    int NativeSVG::calculateWidth(SizeConstraint inSizeConstraint) const
+    int SVGCanvas::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return 250;
     }
 
     
-    int NativeSVG::calculateHeight(SizeConstraint inSizeConstraint) const
+    int SVGCanvas::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return 250;
     }
     
     
-    void NativeSVG::paint(HDC inHDC)
+    void SVGCanvas::paint(HDC inHDC)
     {
         Gdiplus::Graphics g(inHDC);
         g.SetInterpolationMode(Gdiplus::InterpolationModeHighQuality);
         g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            if (Painter * svg = owningElement()->children()[idx]->impl()->downcast<Painter>())
+            if (SVGPainter * svg = owningElement()->children()[idx]->impl()->downcast<SVGPainter>())
             {
                 svg->paint(g);
             }
@@ -46,7 +46,7 @@ namespace SVG
     }
     
     
-    void NativeSVG::bufferedPaint(HDC inHDC)
+    void SVGCanvas::bufferedPaint(HDC inHDC)
     {
 
         //
@@ -108,7 +108,7 @@ namespace SVG
     }
 
     
-    LRESULT NativeSVG::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
+    LRESULT SVGCanvas::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         if (inMessage == WM_PAINT)
         {
@@ -125,44 +125,48 @@ namespace SVG
     }
 
 
-    NativeG::NativeG(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        PassiveComponent(inParent, inAttributesMapping),
-        mCSSStroke(RGBColor(0, 0, 0, 0)) // transaparent (invisible) by default
+    SVGElementImpl::SVGElementImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
     {
-        mCSSStroke.setInvalid();
     }
-    
+
         
-    static NativeG * findNativeGParent(ElementImpl * inEl)
+    static SVGElementImpl * findSVGParent(ElementImpl * inEl)
     {
         if (!inEl)
         {
             return 0;
         }
 
-        if (NativeG * g = inEl->downcast<NativeG>())
+        if (SVGElementImpl * g = inEl->downcast<SVGElementImpl>())
         {
             return g;
         }
         else
         {
-            return findNativeGParent(inEl->parent());
+            return findSVGParent(inEl->parent());
         }
     }
 
 
-    bool NativeG::initStyleControllers()
+    SVGGroupImpl::SVGGroupImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        SVGElementImpl(inParent, inAttributesMapping)
+    {
+    }
+
+
+    bool SVGGroupImpl::initStyleControllers()
     {
         setStyleController(CSSFillController::PropertyName(), static_cast<CSSFillController*>(this));
         return Super::initStyleControllers();
     }
     
     
-    void NativeG::paint(Gdiplus::Graphics & g)
+    void SVGGroupImpl::paint(Gdiplus::Graphics & g)
     {
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
         {
-            if (Painter * svg = owningElement()->children()[idx]->impl()->downcast<Painter>())
+            if (SVGPainter * svg = owningElement()->children()[idx]->impl()->downcast<SVGPainter>())
             {
                 svg->paint(g);
             }
@@ -170,70 +174,26 @@ namespace SVG
     }
 
     
-    const RGBColor & NativeG::getCSSFill() const
-    {
-        if (mCSSFill.isValid())
-        {
-            return mCSSFill;
-        }
-
-        if (NativeG * g = findNativeGParent(parent()))
-        {
-            return g->getCSSFill();
-        }
-
-        return mCSSFill; // default value
-    }        
-    
-    
-    void NativeG::setCSSStroke(const RGBColor & inColor)
-    {
-        mCSSStroke = inColor;
-    }
-
-
-    const RGBColor & NativeG::getCSSStroke() const
-    {
-        if (mCSSStroke.isValid())
-        {
-            return mCSSStroke;
-        }
-
-        if (NativeG * g = findNativeGParent(parent()))
-        {
-            return g->getCSSStroke();
-        }
-
-        return mCSSStroke; // default value
-    }
-
-
-    void NativeG::setCSSFill(const RGBColor & inColor)
-    {
-        mCSSFill = inColor;
-    }
-
-    
-    NativePolygon::NativePolygon(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping)
+    SVGPolygonImpl::SVGPolygonImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        SVGElementImpl(inParent, inAttributesMapping)
     {
     }
         
         
-    bool NativePolygon::initAttributeControllers()
+    bool SVGPolygonImpl::initAttributeControllers()
     {
         setAttributeController("points", static_cast<PointsController*>(this));
         return Super::initAttributeControllers();
     }
 
 
-    const Points & NativePolygon::getPoints() const
+    const Points & SVGPolygonImpl::getPoints() const
     {
         return mPoints;
     }
 
 
-    void NativePolygon::setPoints(const Points & inPoints)
+    void SVGPolygonImpl::setPoints(const Points & inPoints)
     {
         mPoints = inPoints;
         mNativePoints.clear();
@@ -245,15 +205,15 @@ namespace SVG
     }
 
     
-    void NativePolygon::paint(Gdiplus::Graphics & g)
+    void SVGPolygonImpl::paint(Gdiplus::Graphics & g)
     {
         if (!mNativePoints.empty())
         {
             Gdiplus::Color color(Gdiplus::Color::Black);
-            NativeG * group = findNativeGParent(this);
-            if (group)
+            SVGElementImpl * svg = findSVGParent(this);
+            if (svg)
             {
-                RGBColor fill = group->getCSSFill();
+                RGBColor fill = svg->getCSSFill();
                 color = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
             }
             Gdiplus::SolidBrush solidBrush(color);
@@ -262,17 +222,13 @@ namespace SVG
     }
 
 
-    RectImpl::RectImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping),
-        mX(0),
-        mY(0),
-        mWidth(0),
-        mHeight(0)
+    SVGRectImpl::SVGRectImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        SVGElementImpl(inParent, inAttributesMapping)
     {
     }
 
 
-    bool RectImpl::initStyleControllers()
+    bool SVGRectImpl::initStyleControllers()
     {
         setStyleController("x", static_cast<CSSXController*>(this));
         setStyleController("y", static_cast<CSSYController*>(this));
@@ -283,201 +239,39 @@ namespace SVG
     }
 
 
-    void RectImpl::paint(Gdiplus::Graphics & g)
+    void SVGRectImpl::paint(Gdiplus::Graphics & g)
     {
         Gdiplus::Color color(Gdiplus::Color::Black);
-        RGBColor fill;
-        if (mFill.isValid())
-        {
-            fill = mFill;
-        }
-        else
-        {
-            NativeG * group = findNativeGParent(this);
-            if (group)
-            {
-                fill = group->getCSSFill();
-            }
-        }
+        RGBColor fill = getFill();
         color = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
         Gdiplus::SolidBrush solidBrush(color);
-        g.FillRectangle(&solidBrush, Gdiplus::RectF((Gdiplus::REAL)mX,
-                                                    (Gdiplus::REAL)mY,
-                                                    (Gdiplus::REAL)mWidth,
-                                                    (Gdiplus::REAL)mHeight));
-    }
-
-
-    int RectImpl::getCSSX() const
-    {
-        return mX;
-    }
-
-
-    void RectImpl::setCSSX(int inX)
-    {
-        mX = inX;
-    }
-
-
-    int RectImpl::getCSSY() const
-    {
-        return mY;
-    }
-
-
-    void RectImpl::setCSSY(int inY)
-    {
-        mY = inY;
-    }
-
-
-    int RectImpl::getCSSWidth() const
-    {
-        return mWidth;
-    }
-
-
-    void RectImpl::setCSSWidth(int inWidth)
-    {
-        mWidth = inWidth;
-    }
-
-
-    int RectImpl::getCSSHeight() const
-    {
-        return mHeight;
-    }
-
-
-    void RectImpl::setCSSHeight(int inHeight)
-    {
-        mHeight = inHeight;
+        g.FillRectangle(&solidBrush, Gdiplus::RectF((Gdiplus::REAL)getCSSX(),
+                                                    (Gdiplus::REAL)getCSSY(),
+                                                    (Gdiplus::REAL)getWidth(),
+                                                    (Gdiplus::REAL)getHeight()));
     }
 
     
-    const RGBColor & RectImpl::getCSSFill() const
+    SVGPathImpl::SVGPathImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        SVGElementImpl(inParent, inAttributesMapping)
     {
-        if (mFill.isValid())
-        {
-            return mFill;
-        }
-
-        if (NativeG * g = findNativeGParent(parent()))
-        {
-            return g->getCSSFill();
-        }
-
-        return mFill; // default value
-    }
-
-    
-    int RectImpl::getWidth() const
-    {
-        return mWidth;
-    }
-
-
-    void RectImpl::setWidth(int inWidth)
-    {
-        mWidth = inWidth;
-    }
-
-
-    int RectImpl::getHeight() const
-    {
-        return mHeight;
-    }
-
-
-    void RectImpl::setHeight(int inHeight)
-    {
-        mHeight = inHeight;
-    }
-
-
-    void RectImpl::setCSSFill(const RGBColor & inColor)
-    {
-        mFill = inColor;
-    }
-
-    
-    NativePath::NativePath(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        VirtualBox(inParent, inAttributesMapping),
-        mStroke(RGBColor(0, 0, 0, 0)),   // } => transparent (invisible) by default
-        mCSSStroke(RGBColor(0, 0, 0, 0)) // } 
-    {
-        mStroke.setInvalid();
-        mCSSStroke.setInvalid();
     }
         
         
-    bool NativePath::initAttributeControllers()
+    bool SVGPathImpl::initAttributeControllers()
     {
         setAttributeController("d", static_cast<PathInstructionsController*>(this));
-        setAttributeController("fill", static_cast<FillController*>(this));
-        setAttributeController("stroke", static_cast<StrokeController*>(this));
         return Super::initAttributeControllers();
     }
         
         
-    bool NativePath::initStyleControllers()
+    bool SVGPathImpl::initStyleControllers()
     {
-        setStyleController(CSSFillController::PropertyName(), static_cast<CSSFillController*>(this));
-        setStyleController(CSSStrokeController::PropertyName(), static_cast<CSSStrokeController*>(this));
         return Super::initStyleControllers();
     }
 
 
-    void NativePath::setFill(const RGBColor & inColor)
-    {
-        mFill = inColor;
-    }
-
-
-    const RGBColor & NativePath::getFill() const
-    {
-        return mFill;
-    }
-    
-    
-    void NativePath::setCSSFill(const RGBColor & inColor)
-    {
-        mCSSFill = inColor;
-    }
-
-    
-    const RGBColor & NativePath::getCSSFill() const
-    {
-        return mCSSFill;
-    }
-
-
-    void NativePath::setStroke(const RGBColor & inColor)
-    {
-        mStroke = inColor;
-    }
-
-
-    const RGBColor & NativePath::getStroke() const
-    {
-        return mStroke;
-    }
-
-
-    void NativePath::setCSSStroke(const RGBColor & inColor)
-    {
-        mCSSStroke = inColor;
-    }
-
-
-    const RGBColor & NativePath::getCSSStroke() const
-    {
-        return mCSSStroke;
-    }
-
-
-    void NativePath::getFloatPoints(const PathInstruction & instruction,
+    void SVGPathImpl::getFloatPoints(const PathInstruction & instruction,
                                     const Gdiplus::PointF & inPrevPoint,
                                     std::vector<Gdiplus::PointF> & outPoints)
     {
@@ -500,7 +294,7 @@ namespace SVG
     }
 
 
-    void NativePath::GetAbsolutePositions(const PointFs & inRelativePoints,
+    void SVGPathImpl::GetAbsolutePositions(const PointFs & inRelativePoints,
                                           const PointF & inPrevPoint,
                                           PointFs & outPoints)
     {
@@ -513,7 +307,7 @@ namespace SVG
     }
 
 
-    void NativePath::GetAbsolutePositions(const PathInstruction & instruction,
+    void SVGPathImpl::GetAbsolutePositions(const PathInstruction & instruction,
                                           const PointF & inPrevPoint,
                                           PointFs & outPoints)
     {
@@ -534,7 +328,7 @@ namespace SVG
     }
 
 
-    void NativePath::GetPointReflection(const PointF & inPoint,
+    void SVGPathImpl::GetPointReflection(const PointF & inPoint,
                                         const PointF & inOrigin,
                                         PointF & outReflection)
     {
@@ -545,65 +339,65 @@ namespace SVG
 
     
     
-    bool NativePath::getFillColor(Gdiplus::Color & outColor)
-    {
-        if (mFill.isValid())
-        {
-            outColor = Gdiplus::Color(mFill.getValue().alpha(), mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
-            return true;
-        }
-        else if (mCSSFill.isValid())
-        {
-            outColor = Gdiplus::Color(mFill.getValue().alpha(), mCSSFill.getValue().red(), mCSSFill.getValue().green(), mCSSFill.getValue().blue());
-            return true;
-        }
-        else
-        {
-            NativeG * group = findNativeGParent(this);
-            if (group)
-            {
-                RGBColor fill = group->getCSSFill();
-                outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
-                return true;
-            }
-        }        
-        return false;
-    }
+    //bool SVGPathImpl::getFillColor(Gdiplus::Color & outColor)
+    //{
+    //    if (mFill.isValid())
+    //    {
+    //        outColor = Gdiplus::Color(mFill.getValue().alpha(), mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
+    //        return true;
+    //    }
+    //    else if (mCSSFill.isValid())
+    //    {
+    //        outColor = Gdiplus::Color(mFill.getValue().alpha(), mCSSFill.getValue().red(), mCSSFill.getValue().green(), mCSSFill.getValue().blue());
+    //        return true;
+    //    }
+    //    else
+    //    {
+    //        SVGGroupImpl * group = findNativeGParent(this);
+    //        if (group)
+    //        {
+    //            RGBColor fill = group->getCSSFill();
+    //            outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
+    //            return true;
+    //        }
+    //    }        
+    //    return false;
+    //}
 
 
-    bool NativePath::getStrokeColor(Gdiplus::Color & outColor)
-    {
-        if (mStroke.isValid())
-        {
-            outColor = Gdiplus::Color(mFill.getValue().alpha(),
-                                      mStroke.getValue().red(),
-                                      mStroke.getValue().green(),
-                                      mStroke.getValue().blue());
-            return true;
-        }
-        else if (mCSSStroke.isValid())
-        {
-            outColor = Gdiplus::Color(mCSSStroke.getValue().alpha(),
-                                      mCSSStroke.getValue().red(),
-                                      mCSSStroke.getValue().green(),
-                                      mCSSStroke.getValue().blue());
-            return true;
-        }
-        else
-        {
-            NativeG * group = findNativeGParent(this);
-            if (group)
-            {
-                RGBColor fill = group->getCSSStroke();
-                outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
-                return true;
-            }
-        }        
-        return false;
-    }
+    //bool SVGPathImpl::getStrokeColor(Gdiplus::Color & outColor)
+    //{
+    //    if (mStroke.isValid())
+    //    {
+    //        outColor = Gdiplus::Color(mFill.getValue().alpha(),
+    //                                  mStroke.getValue().red(),
+    //                                  mStroke.getValue().green(),
+    //                                  mStroke.getValue().blue());
+    //        return true;
+    //    }
+    //    else if (mCSSStroke.isValid())
+    //    {
+    //        outColor = Gdiplus::Color(mCSSStroke.getValue().alpha(),
+    //                                  mCSSStroke.getValue().red(),
+    //                                  mCSSStroke.getValue().green(),
+    //                                  mCSSStroke.getValue().blue());
+    //        return true;
+    //    }
+    //    else
+    //    {
+    //        SVGGroupImpl * group = findNativeGParent(this);
+    //        if (group)
+    //        {
+    //            RGBColor fill = group->getCSSStroke();
+    //            outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
+    //            return true;
+    //        }
+    //    }        
+    //    return false;
+    //}
 
     
-    void NativePath::GetPreparedInstructions(const PathInstructions & inData, PathInstructions & outPrepData)
+    void SVGPathImpl::GetPreparedInstructions(const PathInstructions & inData, PathInstructions & outPrepData)
     {
         PointFs preppedPoints;
         PointF prevPoint;
@@ -842,14 +636,21 @@ namespace SVG
     }
 
     
-    void NativePath::paint(Gdiplus::Graphics & g)
+    void SVGPathImpl::paint(Gdiplus::Graphics & g)
     {
-        Gdiplus::Color fillColor;
-        getFillColor(fillColor);
+        RGBColor fillColorRGB(getFill());
+        Gdiplus::Color fillColor(fillColorRGB.alpha(),
+                                 fillColorRGB.red(),
+                                 fillColorRGB.green(),
+                                 fillColorRGB.blue());
         Gdiplus::SolidBrush brush(fillColor);
 
-        Gdiplus::Color strokeColor;
-        getStrokeColor(strokeColor);
+
+        RGBColor strokeColorRGB(getStroke());
+        Gdiplus::Color strokeColor(strokeColorRGB.alpha(),
+                                   strokeColorRGB.red(),
+                                   strokeColorRGB.green(),
+                                   strokeColorRGB.blue());
         Gdiplus::Pen pen(strokeColor, 3.0f);
 
         Gdiplus::GraphicsPath path;
@@ -920,13 +721,13 @@ namespace SVG
     }
     
     
-    const PathInstructions & NativePath::getPathInstructions() const
+    const PathInstructions & SVGPathImpl::getPathInstructions() const
     {
         return mInstructions;
     }
 
 
-    void NativePath::setPathInstructions(const PathInstructions & inPathInstructions)
+    void SVGPathImpl::setPathInstructions(const PathInstructions & inPathInstructions)
     {
         mInstructions = inPathInstructions;
         mPreparedInstructions.clear();

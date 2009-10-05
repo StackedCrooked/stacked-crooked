@@ -53,15 +53,22 @@ namespace XULWin
     /**
      * ElementImpl is base class for all native UI elements.
      */
-    class ElementImpl : public virtual WidthController,
+    class ElementImpl : public virtual AlignController,
+                        public virtual WidthController,
                         public virtual HeightController,
+                        public virtual FillController,
+                        public virtual StrokeController,
+                        public virtual StrokeWidthController,
+                        public virtual CSSFillController,
+                        public virtual CSSHeightController,
+                        public virtual CSSMarginController,
+                        public virtual CSSStrokeController,
+                        public virtual CSSWidthController,
+                        public virtual CSSXController,
+                        public virtual CSSYController,
                         public virtual FlexController,
                         public virtual HiddenController,
-                        public virtual AlignController,
                         public virtual OrientController,
-                        public virtual CSSMarginController,
-                        public virtual CSSWidthController,
-                        public virtual CSSHeightController,
                         boost::noncopyable
     {
     public:
@@ -80,6 +87,21 @@ namespace XULWin
         virtual int getHeight() const = 0;
 
         virtual void setHeight(int inHeight) = 0;
+
+        // StrokeController methods
+        virtual void setStroke(const RGBColor & inColor) = 0;
+
+        virtual const RGBColor & getStroke() const = 0;
+
+        // StrokeWidthController methods
+        virtual void setStrokeWidth(int inStrokeWidth) = 0;
+
+        virtual int getStrokeWidth() const = 0;
+
+        // FillController methods
+        virtual void setFill(const RGBColor & inColor) = 0;
+
+        virtual const RGBColor & getFill() const = 0;
 
         // FlexController methods
         virtual int getFlex() const = 0;
@@ -115,6 +137,26 @@ namespace XULWin
         virtual void getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const = 0;
 
         virtual void setCSSMargin(int inTop, int inLeft, int inRight, int inBottom) = 0;
+
+        // CSSFillController methods
+        virtual void setCSSFill(const RGBColor & inColor) = 0;
+
+        virtual const RGBColor & getCSSFill() const = 0;
+
+        // CSSStrokeController methods
+        virtual void setCSSStroke(const RGBColor & inColor) = 0;
+
+        virtual const RGBColor & getCSSStroke() const = 0;
+
+        // CSSXController methods
+        virtual int getCSSX() const = 0;
+
+        virtual void setCSSX(int inX) = 0;
+
+        // CSSYController methods
+        virtual int getCSSY() const = 0;
+
+        virtual void setCSSY(int inY) = 0;
 
         // Downcast that also resolves decorators.
         // Use this instead of manual cast, because
@@ -282,6 +324,21 @@ namespace XULWin
 
         virtual void setHeight(int inHeight);
 
+        // StrokeController methods
+        virtual void setStroke(const RGBColor & inColor);
+
+        virtual const RGBColor & getStroke() const;
+
+        // StrokeWidthController methods
+        virtual void setStrokeWidth(int inStrokeWidth);
+
+        virtual int getStrokeWidth() const;
+
+        // FillController methods
+        virtual void setFill(const RGBColor & inColor);
+
+        virtual const RGBColor & getFill() const;
+
         // FlexController methods
         virtual int getFlex() const;
 
@@ -316,6 +373,26 @@ namespace XULWin
         virtual void getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const;
 
         virtual void setCSSMargin(int inTop, int inLeft, int inRight, int inBottom);
+
+        // CSSFillController methods
+        virtual void setCSSFill(const RGBColor & inColor);
+
+        virtual const RGBColor & getCSSFill() const;
+
+        // CSSStrokeController methods
+        virtual void setCSSStroke(const RGBColor & inColor);
+
+        virtual const RGBColor & getCSSStroke() const;
+
+        // CSSXController methods
+        virtual int getCSSX() const;
+
+        virtual void setCSSX(int inX);
+
+        // CSSYController methods
+        virtual int getCSSY() const;
+
+        virtual void setCSSY(int inY);
 
         // Downcast that also resolves decorators.
         // Use this instead of manual cast, because
@@ -405,10 +482,17 @@ namespace XULWin
 
         // Mutable because sometimes a subclass will override the get method
         // and, if isValid returns false, set a default value.
+        mutable Utils::Fallible<int> mCSSX;
+        mutable Utils::Fallible<int> mCSSY;
         mutable Utils::Fallible<int> mWidth;
         mutable Utils::Fallible<int> mHeight;
         mutable Utils::Fallible<int> mCSSWidth;
         mutable Utils::Fallible<int> mCSSHeight;
+        mutable Utils::Fallible<RGBColor> mFill;
+        mutable Utils::Fallible<RGBColor> mStroke;
+        mutable Utils::Fallible<int> mStrokeWidth;
+        mutable Utils::Fallible<RGBColor> mCSSFill;
+        mutable Utils::Fallible<RGBColor> mCSSStroke;
         mutable Utils::Fallible<Orient> mOrient;
         mutable Utils::Fallible<Align> mAlign;
 

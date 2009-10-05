@@ -32,15 +32,29 @@ namespace XULWin
         mHidden(false),
         mOrient(Horizontal),
         mAlign(Start),
+        mCSSX(0),
+        mCSSY(0),
         mWidth(0),
         mHeight(0),
+        mFill(RGBColor()),
+        mStroke(RGBColor(0, 0, 0, 0)),
+        mStrokeWidth(1),
         mCSSWidth(0),
-        mCSSHeight(0)
-    {
+        mCSSHeight(0),
+        mCSSFill(RGBColor()),
+        mCSSStroke(RGBColor(0, 0, 0, 0))
+    {        
+        mCSSX.setInvalid();
+        mCSSY.setInvalid();
         mWidth.setInvalid();
         mHeight.setInvalid();
+        mFill.setInvalid();
+        mStroke.setInvalid();
+        mStrokeWidth.setInvalid();
         mCSSWidth.setInvalid();
         mCSSHeight.setInvalid();
+        mCSSFill.setInvalid();
+        mCSSStroke.setInvalid();
         mOrient.setInvalid();
         mAlign.setInvalid();
     }
@@ -48,6 +62,162 @@ namespace XULWin
 
     ConcreteElement::~ConcreteElement()
     {
+    }
+
+    
+    const RGBColor & ConcreteElement::getCSSFill() const
+    {
+        if (mCSSFill.isValid())
+        {
+            return mCSSFill;
+        }
+
+        if (parent())
+        {
+            return parent()->getCSSFill();
+        }
+
+        return mCSSFill; // default value
+    }        
+
+
+    void ConcreteElement::setFill(const RGBColor & inColor)
+    {
+        mFill = inColor;
+    }
+
+
+    const RGBColor & ConcreteElement::getFill() const
+    {
+        return mFill;
+    }
+
+
+    void ConcreteElement::setStroke(const RGBColor & inColor)
+    {
+        mStroke = inColor;
+    }
+
+
+    const RGBColor & ConcreteElement::getStroke() const
+    {
+        if (mStroke.isValid())
+        {
+            return mStroke.getValue();
+        }
+
+        if (parent())
+        {
+            return parent()->getStroke();
+        }
+
+        return mStroke;
+    }
+
+
+    void ConcreteElement::setStrokeWidth(int inStrokeWidth)
+    {
+        mStrokeWidth = inStrokeWidth;
+    }
+
+
+    int ConcreteElement::getStrokeWidth() const
+    {
+        if (mStrokeWidth.isValid())
+        {
+            return mStrokeWidth.getValue();
+        }
+
+        if (parent())
+        {
+            return parent()->getStrokeWidth();
+        }
+
+        return mStrokeWidth;
+    }
+    
+    
+    void ConcreteElement::setCSSFill(const RGBColor & inColor)
+    {
+        mCSSFill = inColor;
+    }
+    
+    
+    void ConcreteElement::setCSSStroke(const RGBColor & inColor)
+    {
+        mCSSStroke = inColor;
+    }
+
+
+    const RGBColor & ConcreteElement::getCSSStroke() const
+    {
+        if (mCSSStroke.isValid())
+        {
+            return mCSSStroke;
+        }
+
+        if (parent())
+        {
+            return parent()->getCSSStroke();
+        }
+
+        return mCSSStroke; // default value
+    }
+
+
+    int ConcreteElement::getCSSX() const
+    {
+        return mCSSX;
+    }
+
+
+    void ConcreteElement::setCSSX(int inX)
+    {
+        mCSSX = inX;
+    }
+
+
+    int ConcreteElement::getCSSY() const
+    {
+        return mCSSY;
+    }
+
+
+    void ConcreteElement::setCSSY(int inY)
+    {
+        mCSSY = inY;
+    }
+
+
+    int ConcreteElement::getCSSWidth() const
+    {
+        if (mWidth.isValid())
+        {
+            return mWidth.getValue();
+        }
+        return mCSSWidth;
+    }
+
+
+    void ConcreteElement::setCSSWidth(int inWidth)
+    {
+        mCSSWidth = inWidth;
+    }
+
+    
+    int ConcreteElement::getCSSHeight() const
+    {
+        if (mHeight.isValid())
+        {
+            return mHeight.getValue();
+        }
+        return mCSSHeight;
+    }
+
+
+    void ConcreteElement::setCSSHeight(int inHeight)
+    {
+        mCSSHeight = inHeight;
     }
 
 
@@ -146,38 +316,6 @@ namespace XULWin
         mAlign = inAlign;
     }
 
-
-    int ConcreteElement::getCSSWidth() const
-    {
-        if (mWidth.isValid())
-        {
-            return mWidth.getValue();
-        }
-        return 0;
-    }
-
-
-    void ConcreteElement::setCSSWidth(int inWidth)
-    {
-        mCSSWidth = inWidth;
-    }
-
-    
-    int ConcreteElement::getCSSHeight() const
-    {
-        if (mHeight.isValid())
-        {
-            return mHeight.getValue();
-        }
-        return 0;
-    }
-
-
-    void ConcreteElement::setCSSHeight(int inHeight)
-    {
-        mCSSHeight = inHeight;
-    }
-
     
     void ConcreteElement::getCSSMargin(int & outTop, int & outLeft, int & outRight, int & outBottom) const
     {
@@ -217,7 +355,7 @@ namespace XULWin
             ReportError("No decorator found!");
         }
     }
-    
+
     
     int ConcreteElement::getWidth(SizeConstraint inSizeConstraint) const
     {
@@ -307,11 +445,13 @@ namespace XULWin
 
 
     bool ConcreteElement::initAttributeControllers()
-    {        
+    {
         // STATIC CAST NEEDED HERE OTHERWISE WE GET COMPILER ERROR:
         // error C2594: '=' : ambiguous conversions from 'Element *const ' to 'AttributeController *'
         setAttributeController("width", static_cast<WidthController*>(this));
         setAttributeController("height", static_cast<HeightController*>(this));
+        setAttributeController("fill", static_cast<FillController*>(this));
+        setAttributeController("stroke", static_cast<StrokeController*>(this));
         setAttributeController("flex", static_cast<FlexController*>(this));
         setAttributeController("hidden", static_cast<HiddenController*>(this));
         setAttributeController("align", static_cast<AlignController*>(this));
@@ -322,9 +462,13 @@ namespace XULWin
 
     bool ConcreteElement::initStyleControllers()
     {
-        setStyleController(CSSMarginController::PropertyName(), static_cast<CSSMarginController*>(this));
+        setStyleController(CSSXController::PropertyName(), static_cast<CSSXController*>(this));
+        setStyleController(CSSYController::PropertyName(), static_cast<CSSYController*>(this));
         setStyleController(CSSWidthController::PropertyName(), static_cast<CSSWidthController*>(this));
         setStyleController(CSSHeightController::PropertyName(), static_cast<CSSHeightController*>(this));
+        setStyleController(CSSMarginController::PropertyName(), static_cast<CSSMarginController*>(this));
+        setStyleController(CSSFillController::PropertyName(), static_cast<CSSFillController*>(this));
+        setStyleController(CSSStrokeController::PropertyName(), static_cast<CSSStrokeController*>(this));
         return true;
     }
 

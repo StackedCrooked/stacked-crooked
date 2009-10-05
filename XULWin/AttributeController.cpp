@@ -301,4 +301,16 @@ namespace XULWin
         }
     }
 
+
+    void StrokeWidthController::get(std::string & outValue)
+    {
+        outValue = Int2String(getStrokeWidth());
+    }
+
+
+    void StrokeWidthController::set(const std::string & inValue)
+    {
+        setStrokeWidth(String2Int(inValue));
+    }
+
 } // namespace XULWin

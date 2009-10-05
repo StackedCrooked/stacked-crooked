@@ -677,9 +677,19 @@ namespace SVG
                 }
                 case PathInstruction::CurveTo: // C
                 {
-                    //M114.4,85.9
-                    //c  18-1.8  27.1-10.8  27.1-10.8l  -1.5,7.2
-                    GetAbsolutePositions(instruction, prevPoint, preppedPoints);
+                    if (preppedPoints.empty())
+                    {
+                        // If preppedPoints is empty at this point then we need
+                        // to add the begin point ourselves. We do this after
+                        // the call to GetAbsolutePositions because prevPoint
+                        // is already absolute positioned.
+                        GetAbsolutePositions(instruction, prevPoint, preppedPoints);
+                        preppedPoints.insert(preppedPoints.begin(), prevPoint);
+                    }
+                    else
+                    {
+                        GetAbsolutePositions(instruction, prevPoint, preppedPoints);
+                    }
                     if (!preppedPoints.empty())
                     {
                         prevPoint = preppedPoints[preppedPoints.size() - 1];
@@ -760,7 +770,19 @@ namespace SVG
                                                              instruction.getAbsolutePoint(prevPoint, 0));
                         }
                     }
-                    GetAbsolutePositions(curveInstruction, prevPoint, preppedPoints);
+                    if (preppedPoints.empty())
+                    {
+                        // If preppedPoints is empty at this point then we need
+                        // to add the begin point ourselves. We do this after
+                        // the call to GetAbsolutePositions because prevPoint
+                        // is already absolute positioned.
+                        GetAbsolutePositions(curveInstruction, prevPoint, preppedPoints);
+                        preppedPoints.insert(preppedPoints.begin(), prevPoint);
+                    }
+                    else
+                    {
+                        GetAbsolutePositions(curveInstruction, prevPoint, preppedPoints);
+                    }
                     if (!preppedPoints.empty())
                     {
                         prevPoint = preppedPoints[preppedPoints.size() - 1];
@@ -828,7 +850,7 @@ namespace SVG
 
         Gdiplus::Color strokeColor;
         getStrokeColor(strokeColor);
-        Gdiplus::Pen pen(strokeColor, 1.0f);
+        Gdiplus::Pen pen(strokeColor, 3.0f);
 
         Gdiplus::GraphicsPath path;
         path.SetFillMode(Gdiplus::FillModeWinding);

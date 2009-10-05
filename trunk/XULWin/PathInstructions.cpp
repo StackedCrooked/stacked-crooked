@@ -30,6 +30,12 @@ namespace XULWin
     }
     
     
+    PointF PathInstruction::getAbsolutePoint(const PointF & inRef, size_t inIdx) const
+    {
+        return PointF(inRef.x() + mPoints[inIdx].x(), inRef.y() + mPoints[inIdx].y());
+    }
+    
+    
     PathInstruction::Positioning PathInstruction::positioning() const
     {
         return mPositioning;

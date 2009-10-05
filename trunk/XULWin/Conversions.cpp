@@ -666,6 +666,11 @@ namespace XULWin
                 }
                 if (getInstructionType(ch, type, pos))
                 {
+                    if (type == PathInstruction::ClosePath)
+                    {
+                        assert(points.empty());
+                        result.push_back(PathInstruction(type, pos, points));
+                    }
                     parsingPoints = true;
                     parsingX = true;
                 }

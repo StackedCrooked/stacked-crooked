@@ -40,7 +40,7 @@ namespace XULWin
         // prepend "chrome"
         result = "chrome" + result;
 
-        // replace 'locale' with 'local/en-US' (or whatever locale is selected)
+        // replace 'locale' with 'locale/en-US' (or whatever locale is selected)
         static const std::string cLocale = "locale";
         size_t localeIdx = result.find(cLocale);
         if (localeIdx != std::string::npos)

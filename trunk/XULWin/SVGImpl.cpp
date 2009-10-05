@@ -575,12 +575,18 @@ namespace SVG
     {
         if (mStroke.isValid())
         {
-            outColor = Gdiplus::Color(mFill.getValue().alpha(), mStroke.getValue().red(), mStroke.getValue().green(), mStroke.getValue().blue());
+            outColor = Gdiplus::Color(mFill.getValue().alpha(),
+                                      mStroke.getValue().red(),
+                                      mStroke.getValue().green(),
+                                      mStroke.getValue().blue());
             return true;
         }
         else if (mCSSStroke.isValid())
         {
-            outColor = Gdiplus::Color(mCSSStroke.getValue().alpha(), mCSSStroke.getValue().red(), mCSSStroke.getValue().green(), mCSSStroke.getValue().blue());
+            outColor = Gdiplus::Color(mCSSStroke.getValue().alpha(),
+                                      mCSSStroke.getValue().red(),
+                                      mCSSStroke.getValue().green(),
+                                      mCSSStroke.getValue().blue());
             return true;
         }
         else
@@ -641,6 +647,10 @@ namespace SVG
                         outPrepData.push_back(PathInstruction(prevInstruction.type(),
                                                               PathInstruction::Absolute,
                                                               preppedPoints));
+                        if (!preppedPoints.empty())
+                        {
+                            prevPoint = preppedPoints[preppedPoints.size() - 1];
+                        }
                         preppedPoints.clear();
                     }
                     if (instruction.numPoints() == 1)
@@ -667,6 +677,8 @@ namespace SVG
                 }
                 case PathInstruction::CurveTo: // C
                 {
+                    //M114.4,85.9
+                    //c  18-1.8  27.1-10.8  27.1-10.8l  -1.5,7.2
                     GetAbsolutePositions(instruction, prevPoint, preppedPoints);
                     if (!preppedPoints.empty())
                     {
@@ -688,9 +700,20 @@ namespace SVG
                         // control point is assumed to be a reflection of the 
                         // one used previously.
                         PointF c1;
-                        GetPointReflection(prevInstruction.getPoint(1),
-                                           prevInstruction.getPoint(2),
-                                           c1);
+                        if (instruction.positioning() == PathInstruction::Relative)
+                        {
+                            GetPointReflection(prevInstruction.getPoint(1),
+                                               prevInstruction.getPoint(2),
+                                               c1);
+                        }
+                        else
+                        {
+                            GetPointReflection(prevInstruction.getAbsolutePoint(prevPoint, 1),
+                                               prevInstruction.getAbsolutePoint(prevPoint, 2),
+                                               c1);
+                            // now also make it absolute position
+                            c1 = PointF(prevPoint.x() + c1.x(), prevPoint.y() + c1.y());
+                        }
                         curveInstruction.points().insert(curveInstruction.points().begin(), c1);
                     }
                     else if (prevInstruction.type() == PathInstruction::SmoothCurveTo)
@@ -703,17 +726,39 @@ namespace SVG
                         // control point is assumed to be a reflection of the 
                         // one used previously.
                         PointF c1;
-                        GetPointReflection(prevInstruction.getPoint(0),
-                                           prevInstruction.getPoint(1),
-                                           c1);
+                        if (instruction.positioning() == PathInstruction::Relative)
+                        {
+                            GetPointReflection(prevInstruction.getPoint(0),
+                                               prevInstruction.getPoint(1),
+                                               c1);
+                        }
+                        else
+                        {
+                            GetPointReflection(prevInstruction.getAbsolutePoint(prevPoint, 0),
+                                               prevInstruction.getAbsolutePoint(prevPoint, 1),
+                                               c1);
+                            // now also make it absolute position
+                            c1 = PointF(prevPoint.x() + c1.x(), prevPoint.y() + c1.y());
+                        }
                         curveInstruction.points().insert(curveInstruction.points().begin(), c1);
                     }
                     else
                     {
+                        //"M186.2,26
+                        //s-2.3, 5.9 -5.2, 5.9
+                        //S186.2,29.2 186.2,26z"
                         // If the S command doesn't follow another S or C command, then it is
                         // assumed that both control points for the curve are the same.
-                        curveInstruction.points().insert(curveInstruction.points().begin(),
-                                                         instruction.getPoint(0));
+                        if (instruction.positioning() == PathInstruction::Relative)
+                        {
+                            curveInstruction.points().insert(curveInstruction.points().begin(),
+                                                             instruction.getPoint(0));
+                        }
+                        else
+                        {
+                            curveInstruction.points().insert(curveInstruction.points().begin(),
+                                                             instruction.getAbsolutePoint(prevPoint, 0));
+                        }
                     }
                     GetAbsolutePositions(curveInstruction, prevPoint, preppedPoints);
                     if (!preppedPoints.empty())
@@ -734,11 +779,30 @@ namespace SVG
                         outPrepData.push_back(PathInstruction(prevInstruction.type(),
                                                               PathInstruction::Absolute,
                                                               preppedPoints));
+                        prevPoint = preppedPoints[preppedPoints.size() - 1];
                         preppedPoints.clear();
+                    }
+                    // This command draws a straight line from your current
+                    // position back to the first point that started the path.
+                    if (!inData.empty())
+                    {
+                        if (!inData[0].points().empty())
+                        {
+                            preppedPoints.push_back(inData[0].points()[0]);
+                            preppedPoints.push_back(prevPoint);
+                            if (preppedPoints[0] != preppedPoints[1])
+                            {
+                                outPrepData.push_back(PathInstruction(PathInstruction::LineTo,
+                                                                      PathInstruction::Absolute,
+                                                                      preppedPoints));
+                            }
+                            preppedPoints.clear();
+                        }
                     }
                     else
                     {
-                        ReportError("SVG ClosePath: nothing found to close.");
+                        // How could inData be empty if we are inside the for loop??
+                        assert(false); 
                     }
                     break;
                 }
@@ -763,42 +827,39 @@ namespace SVG
         Gdiplus::SolidBrush brush(fillColor);
 
         Gdiplus::Color strokeColor;
-        Gdiplus::Pen pen(Gdiplus::Color::Black, 1.0f);
-        bool hasStrokeColor = getStrokeColor(strokeColor);
-        if (hasStrokeColor)
-        {
-            pen.SetColor(strokeColor);
-            float strokeWidth = 2; // TODO: implement attribute controller
-            pen.SetWidth(strokeWidth);
-        }
+        getStrokeColor(strokeColor);
+        Gdiplus::Pen pen(strokeColor, 1.0f);
 
+        Gdiplus::GraphicsPath path;
+        path.SetFillMode(Gdiplus::FillModeWinding);
         for (size_t idx = 0; idx != mPreparedInstructions.size(); ++idx)
         {
             const PathInstruction & instruction = mPreparedInstructions[idx];
             const PointFs & points = instruction.points();
             switch (instruction.type())
             {
-                case PathInstruction::MoveTo:
+                case PathInstruction::MoveTo: // should not be found in mPreparedInstructions
                 {
-                    assert(false); // should not be included in prepped instructions
+                    assert(false);
                     break;
                 }
                 case PathInstruction::LineTo:
-                case PathInstruction::HorizontalLineTo:
-                case PathInstruction::VerticalLineTo:
                 {
                     if (instruction.numPoints() == 2)
                     {
-                        g.DrawLine(&pen,
-                                   instruction.getPoint(0).x(),
-                                   instruction.getPoint(0).y(),
-                                   instruction.getPoint(1).x(),
-                                   instruction.getPoint(1).y());
+                        path.AddLine(Gdiplus::PointF(instruction.getPoint(0).x(), instruction.getPoint(0).y()),
+                                     Gdiplus::PointF(instruction.getPoint(1).x(), instruction.getPoint(1).y()));
                     }
                     else
                     {
-                        ReportError("LineTo: paint failed because num prepped points is not equal to 2.");
+                        ReportError("LineTo: paint failed because number of prepared points is not equal to 2.");
                     }
+                    break;
+                }
+                case PathInstruction::HorizontalLineTo:
+                case PathInstruction::VerticalLineTo:
+                {
+                    assert(false); // not yet supported
                     break;
                 }
                 case PathInstruction::CurveTo:
@@ -810,14 +871,7 @@ namespace SVG
                         const PointF & point = points[idx];
                         gdiplusPoints.push_back(Gdiplus::PointF(point.x(), point.y()));
                     }
-                    Gdiplus::GraphicsPath bezierPath;
-                    bezierPath.SetFillMode(Gdiplus::FillModeWinding);
-                    bezierPath.AddBeziers(&gdiplusPoints[0], gdiplusPoints.size());
-                    g.FillPath(&brush, &bezierPath);
-                    if (hasStrokeColor)
-                    {
-                        g.DrawPath(&pen, &bezierPath);
-                    }
+                    path.AddBeziers(&gdiplusPoints[0], gdiplusPoints.size());
                     break;
                 }
                 case PathInstruction::QuadraticBelzierCurve:
@@ -827,9 +881,9 @@ namespace SVG
                     assert(false); // not yet implemented
                     break;
                 }
-                case PathInstruction::ClosePath:
+                case PathInstruction::ClosePath: // should not be found in mPreparedInstructions
                 {
-                    assert(false); // should not be included in prepped
+                    assert(false); 
                     break;
                 }
                 default:
@@ -839,6 +893,8 @@ namespace SVG
                 }
             }
         }
+        g.FillPath(&brush, &path);
+        g.DrawPath(&pen, &path);
     }
     
     

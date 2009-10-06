@@ -480,21 +480,19 @@ namespace XULWin
         bool mExpansive;
         int mFlex;
 
-        // Mutable because sometimes a subclass will override the get method
-        // and, if isValid returns false, set a default value.
-        mutable Utils::Fallible<int> mCSSX;
-        mutable Utils::Fallible<int> mCSSY;
-        mutable Utils::Fallible<int> mWidth;
-        mutable Utils::Fallible<int> mHeight;
-        mutable Utils::Fallible<int> mCSSWidth;
-        mutable Utils::Fallible<int> mCSSHeight;
-        mutable Utils::Fallible<RGBColor> mFill;
-        mutable Utils::Fallible<RGBColor> mStroke;
-        mutable Utils::Fallible<int> mStrokeWidth;
-        mutable Utils::Fallible<RGBColor> mCSSFill;
-        mutable Utils::Fallible<RGBColor> mCSSStroke;
-        mutable Utils::Fallible<Orient> mOrient;
-        mutable Utils::Fallible<Align> mAlign;
+        Utils::Fallible<int> mCSSX;
+        Utils::Fallible<int> mCSSY;
+        Utils::Fallible<int> mWidth;
+        Utils::Fallible<int> mHeight;
+        Utils::Fallible<int> mCSSWidth;
+        Utils::Fallible<int> mCSSHeight;
+        Utils::Fallible<RGBColor> mFill;
+        Utils::Fallible<RGBColor> mStroke;
+        Utils::Fallible<int> mStrokeWidth;
+        Utils::Fallible<RGBColor> mCSSFill;
+        Utils::Fallible<RGBColor> mCSSStroke;
+        Utils::Fallible<Orient> mOrient;
+        Utils::Fallible<Align> mAlign;
 
         // We need to remember the hidden state ourselves
         // because we can't rely on WinAPI IsWindowVisible
@@ -640,6 +638,8 @@ namespace XULWin
 
         virtual void setAttributeController(const std::string & inAttr, AttributeController * inController)
         { return Super::setAttributeController(inAttr, inController); }
+
+        void endModal();
 
         void showModal();
 

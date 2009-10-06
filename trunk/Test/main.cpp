@@ -29,6 +29,8 @@ public:
     {
         Utils::CurrentDirectoryChanger curdir("../xulrunnersamples/configpanel/");
         mConfigWindow = mRunner.loadApplication("application.ini");
+        mEvents.connect(mConfigWindow.get(), WM_DROPFILES, boost::bind(&TestConfigSample::dropFiles, this, _1, _2));
+        
 
         mNewSetButton = mConfigWindow->getElementById("newSetButton");
         mEvents.connect(mNewSetButton, boost::bind(&TestConfigSample::showNewSetDialog, this));
@@ -46,9 +48,22 @@ public:
 
         if (NativeWindow * win = mConfigWindow->impl()->downcast<NativeWindow>())
         {
+            ::DragAcceptFiles(win->handle(), TRUE);
             Element * cancelButton = mConfigWindow->getElementById("cancelButton");
             mEvents.connect(cancelButton, boost::bind(&NativeWindow::endModal, win));
             win->showModal();
+        }
+    }
+
+    void dropFiles(WPARAM wParam, LPARAM lParam)
+    {
+        std::vector<std::string> files;
+        int numFiles = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, 0, 0);
+        for (int idx = 0; idx < numFiles; ++idx)
+        {
+        	TCHAR fileName[MAX_PATH];
+        	DragQueryFile((HDROP)wParam, idx, &fileName[0], MAX_PATH);
+            files.push_back(Utils::ToUTF8(&fileName[0]));
         }
     }
 

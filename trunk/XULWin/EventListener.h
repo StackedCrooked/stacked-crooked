@@ -29,7 +29,7 @@ namespace XULWin
 
         virtual ~ScopedEventListener();
 
-        typedef boost::function<void()> Action;
+        typedef boost::function<void(WPARAM, LPARAM)> Action;
 
         void connect(Element * inEl, const Action & inAction);
 
@@ -44,7 +44,7 @@ namespace XULWin
         virtual void handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam){}
         virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-        void processMessage(Element * inSender, UINT inMessage);
+        void processMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
         typedef std::pair<Element*, UINT> MsgId;
         typedef std::map<MsgId, std::vector<Action> > MessageCallbacks;

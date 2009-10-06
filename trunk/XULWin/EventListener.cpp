@@ -56,7 +56,7 @@ namespace XULWin
     }
 
 
-    void ScopedEventListener::processMessage(Element * inSender, UINT inMessage)
+    void ScopedEventListener::processMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         MessageCallbacks::iterator it = mMessageCallbacks.find(std::make_pair(inSender, inMessage));
         if (it != mMessageCallbacks.end())
@@ -66,7 +66,7 @@ namespace XULWin
             {
                 if (callbacks[idx])
                 {
-                    callbacks[idx]();
+                    callbacks[idx](wParam, lParam);
                 }
             }            
         }
@@ -75,13 +75,13 @@ namespace XULWin
         
     void ScopedEventListener::handleCommand(Element * inSender, WORD inNotificationCode)
     {
-        processMessage(inSender, WM_COMMAND);
+        processMessage(inSender, WM_COMMAND, 0, 0);
     }
 
     
     void ScopedEventListener::handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        processMessage(inSender, inMessage);
+        processMessage(inSender, inMessage, wParam, lParam);
     }
 
 

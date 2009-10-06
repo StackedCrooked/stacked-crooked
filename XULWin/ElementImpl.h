@@ -504,9 +504,6 @@ namespace XULWin
 
         typedef std::map<std::string, StyleController *> StyleControllers;
         StyleControllers mStyleControllers;
-
-        typedef std::map<HWND, ElementImpl*> Components;
-        static Components sComponentsByHandle;
     };
 
 
@@ -547,6 +544,8 @@ namespace XULWin
 
         virtual void handleCommand(WPARAM wParam, LPARAM lParam);
 
+        virtual void handleDialogCommand(WORD inNotificationCode, WPARAM wParam, LPARAM lParam);
+
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
@@ -557,6 +556,9 @@ namespace XULWin
 
         typedef std::map<int, NativeComponent*> ComponentsById;
         static ComponentsById sComponentsById;
+
+        typedef std::map<HWND, NativeComponent*> Components;
+        static Components sComponentsByHandle;
 
         WNDPROC mOrigProc;
 

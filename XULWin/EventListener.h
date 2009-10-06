@@ -13,45 +13,60 @@ namespace XULWin
     class EventListener
     {
     public:
-        virtual void handleCommand(Element * inSender, unsigned short inNotificationCode) = 0;
+        virtual void handleCommand(Element * inSender, WORD inNotificationCode) = 0;        
         
+        virtual void handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam) = 0;
+
         virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
     };
 
 
-    class ScopedEventListener : public EventListener
+    class ScopedEventListener : public EventListener,
+                                boost::noncopyable
     {
     public:
         ScopedEventListener();
 
         virtual ~ScopedEventListener();
 
-        typedef boost::function<void()> Action;
+        typedef boost::function<void()> CommandCallback;
 
-        void setAction(Element * inEl, const Action & inAction);
+        void addCommand(Element * inEl, const CommandCallback & inAction);
 
-        void removeAction(Element * inEl);
+        void removeCommand(Element * inEl);
+
+        enum NotificationCode
+        {
+            Ok = IDOK,
+            Cancel = IDCANCEL,
+            Abort = IDABORT,
+            Retry = IDRETRY,
+            Ignore = IDIGNORE,
+            Yes = IDYES,
+            No = IDNO,
+            Help = IDHELP,
+            TryAgain = IDTRYAGAIN,
+            Continue = IDCONTINUE
+        };
+
+        typedef boost::function<void(NotificationCode)> DialogCommandCallback;
+
+        void addDialogCommand(Element * inEl, const DialogCommandCallback & inAction);
+
+        void removeDialogCommand(Element * inEl);
 
     private:
-        virtual void handleCommand(Element * inSender, unsigned short inNotificationCode) = 0;
+        virtual void handleCommand(Element * inSender, WORD inNotificationCode);
+        virtual void handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam);
 
-        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
+        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
-        typedef std::map<Element*, Action> Callbacks;
+        typedef std::map<Element*, std::vector<CommandCallback> > Callbacks;
+        Callbacks mCallbacks;
 
-        // because we have a destructor we need a copy ctor and assignment operator
-        // wrapping our only member in a boost::shared_ptr takes care of that
-        boost::shared_ptr<Callbacks> mCallbacks;
-    };
-
-
-    class ButtonListener : public ScopedEventListener
-    {
-    private:
-        virtual void handleCommand(Element * inSender, unsigned short inNotificationCode);
-
-        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam){}
+        typedef std::map<Element*, std::vector<DialogCommandCallback> > DialogCallbacks;
+        DialogCallbacks mDialogCallbacks;
     };
 
 

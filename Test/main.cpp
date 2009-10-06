@@ -20,8 +20,6 @@ void log(const std::string & inMessage)
 }
 
 
-
-
 class TestConfigSample
 {
 public:
@@ -33,19 +31,28 @@ public:
         mNewSetButton = mConfigWindow->getElementById("newSetButton");
 
         
-        ButtonListener bl;
-        bl.setAction(mNewSetButton, boost::bind(&TestConfigSample::showNewSetDialog, this));
+        ScopedEventListener listener;
+        listener.addCommand(mNewSetButton, boost::bind(&TestConfigSample::showNewSetDialog, this));
 
         mSetsPopup = mConfigWindow->getElementById("setsPopup");
+        
+        Element * tagsText = mConfigWindow->getElementById("tagsTextBox");
+        listener.addDialogCommand(tagsText, boost::bind(&TestConfigSample::tagsChanged, this, _1));
 
         Element * uploadButton = mConfigWindow->getElementById("uploadButton");
         Element * cancelButton = mConfigWindow->getElementById("cancelButton");
         if (NativeWindow * win = mConfigWindow->impl()->downcast<NativeWindow>())
         {          
-            bl.setAction(uploadButton, boost::bind(&TestConfigSample::showUpload, this));
-            bl.setAction(cancelButton, boost::bind(&NativeWindow::endModal, win));
+            listener.addCommand(uploadButton, boost::bind(&TestConfigSample::showUpload, this));
+            listener.addCommand(cancelButton, boost::bind(&NativeWindow::endModal, win));
             win->showModal();
         }
+    }
+
+    void tagsChanged(ScopedEventListener::NotificationCode inDialogCommand)
+    {
+        int a = 0;
+        a++;
     }
 
     void showUpload()
@@ -68,11 +75,11 @@ public:
         mNewSetTextBox = mNewSetDlg->getElementById("settextbox");
         
         mNewSetOK = mNewSetDlg->getElementById("newSetOKButton");
-        ButtonListener bl;
-        bl.setAction(mNewSetOK, boost::bind(&TestConfigSample::newSetOK, this));
+        ScopedEventListener bl;
+        bl.addCommand(mNewSetOK, boost::bind(&TestConfigSample::newSetOK, this));
 
         mNewSetCancel = mNewSetDlg->getElementById("newSetCancelButton");
-        bl.setAction(mNewSetCancel, boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
+        bl.addCommand(mNewSetCancel, boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
 
         mNewSetDlg->impl()->downcast<NativeWindow>()->showModal();
     }

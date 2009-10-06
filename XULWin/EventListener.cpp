@@ -1,4 +1,8 @@
 #include "EventListener.h"
+#include "Decorator.h"
+#include "ElementImpl.h"
+#include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include <windows.h>
 
 
@@ -11,91 +15,74 @@ namespace XULWin
     }
 
 
-    void ScopedEventListener::removeCommand(Element * inEl)
-    {
-        Callbacks::iterator it = mCallbacks.find(inEl);
-        if (it != mCallbacks.end())
-        {
-            it->first->removeEventListener(this);
-            mCallbacks.erase(it);
-        }
-    }
-
-
     ScopedEventListener::~ScopedEventListener()
     {
-        while (!mCallbacks.empty())
+        while (!mMessageCallbacks.empty())
         {
-            removeCommand(mCallbacks.begin()->first);
-        }
-        while (!mDialogCallbacks.empty())
-        {
-            removeDialogCommand(mDialogCallbacks.begin()->first);
+            const MsgId & id = mMessageCallbacks.begin()->first;
+            id.first->removeEventListener(this);
+            mMessageCallbacks.erase(mMessageCallbacks.begin());
         }
     }
 
 
-    void ScopedEventListener::addCommand(Element * inEl, const CommandCallback & inAction)
+    void ScopedEventListener::connect(Element * inEl, const Action & inAction)
+    {
+        connect(inEl, WM_COMMAND, inAction);
+    }
+
+
+    void ScopedEventListener::disconnect(Element * inEl)
+    {
+        disconnect(inEl, WM_COMMAND);
+    }
+
+
+    void ScopedEventListener::connect(Element * inEl, UINT inMessage, const Action & inAction)
     {
         inEl->addEventListener(this);
-        mCallbacks[inEl].push_back(inAction);
+        mMessageCallbacks[std::make_pair(inEl, inMessage)].push_back(inAction);
     }
 
     
-    void ScopedEventListener::addDialogCommand(Element * inEl, const DialogCommandCallback & inAction)
+    void ScopedEventListener::disconnect(Element * inEl, UINT inMessage)
     {
-        inEl->addEventListener(this);
-        mDialogCallbacks[inEl].push_back(inAction);
-    }
-
-    
-    void ScopedEventListener::removeDialogCommand(Element * inEl)
-    {
-        DialogCallbacks::iterator it = mDialogCallbacks.find(inEl);
-        if (it != mDialogCallbacks.end())
+        MessageCallbacks::iterator it = mMessageCallbacks.find(std::make_pair(inEl, inMessage));
+        if (it != mMessageCallbacks.end())
         {
-            it->first->removeEventListener(this);
-            mDialogCallbacks.erase(it);
+            it->first.first->removeEventListener(this);
+            mMessageCallbacks.erase(it);
         }
     }
 
 
-    void ScopedEventListener::handleCommand(Element * inSender, unsigned short inNotificationCode)
+    void ScopedEventListener::processMessage(Element * inSender, UINT inMessage)
     {
-        Callbacks::iterator it = mCallbacks.find(inSender);
-        if (it != mCallbacks.end())
+        MessageCallbacks::iterator it = mMessageCallbacks.find(std::make_pair(inSender, inMessage));
+        if (it != mMessageCallbacks.end())
         {
-            std::vector<CommandCallback> callbacks = it->second;
+            std::vector<Action> callbacks = it->second;
             for (size_t idx = 0; idx != callbacks.size(); ++idx)
             {
                 if (callbacks[idx])
                 {
                     callbacks[idx]();
                 }
-            }
+            }            
         }
     }
-    
-    
-    void ScopedEventListener::handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam)
+
+        
+    void ScopedEventListener::handleCommand(Element * inSender, WORD inNotificationCode)
     {
-        DialogCallbacks::iterator it = mDialogCallbacks.find(inSender);
-        if (it != mDialogCallbacks.end())
-        {
-            std::vector<DialogCommandCallback> callbacks = it->second;
-            for (size_t idx = 0; idx != callbacks.size(); ++idx)
-            {
-                if (callbacks[idx])
-                {
-                    callbacks[idx](static_cast<NotificationCode>(inNotificationCode));
-                }
-            }
-        }      
+        processMessage(inSender, WM_COMMAND);
     }
 
     
     void ScopedEventListener::handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
+        processMessage(inSender, inMessage);
     }
+
 
 } // namespace XULWin

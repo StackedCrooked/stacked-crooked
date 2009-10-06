@@ -29,44 +29,26 @@ namespace XULWin
 
         virtual ~ScopedEventListener();
 
-        typedef boost::function<void()> CommandCallback;
+        typedef boost::function<void()> Action;
 
-        void addCommand(Element * inEl, const CommandCallback & inAction);
+        void connect(Element * inEl, const Action & inAction);
 
-        void removeCommand(Element * inEl);
+        void disconnect(Element * inEl);
 
-        enum NotificationCode
-        {
-            Ok = IDOK,
-            Cancel = IDCANCEL,
-            Abort = IDABORT,
-            Retry = IDRETRY,
-            Ignore = IDIGNORE,
-            Yes = IDYES,
-            No = IDNO,
-            Help = IDHELP,
-            TryAgain = IDTRYAGAIN,
-            Continue = IDCONTINUE
-        };
+        void connect(Element * inEl, UINT inMessage, const Action & inAction);
 
-        typedef boost::function<void(NotificationCode)> DialogCommandCallback;
-
-        void addDialogCommand(Element * inEl, const DialogCommandCallback & inAction);
-
-        void removeDialogCommand(Element * inEl);
-
-    private:
-        virtual void handleCommand(Element * inSender, WORD inNotificationCode);
-        virtual void handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam);
-
-        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
+        void disconnect(Element * inEl, UINT inMessage);
 
     protected:
-        typedef std::map<Element*, std::vector<CommandCallback> > Callbacks;
-        Callbacks mCallbacks;
+        virtual void handleCommand(Element * inSender, WORD inNotificationCode);
+        virtual void handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam){}
+        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-        typedef std::map<Element*, std::vector<DialogCommandCallback> > DialogCallbacks;
-        DialogCallbacks mDialogCallbacks;
+        void processMessage(Element * inSender, UINT inMessage);
+
+        typedef std::pair<Element*, UINT> MsgId;
+        typedef std::map<MsgId, std::vector<Action> > MessageCallbacks;
+        MessageCallbacks mMessageCallbacks;
     };
 
 

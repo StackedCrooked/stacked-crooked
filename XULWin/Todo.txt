@@ -4,6 +4,7 @@ style="max-height: 300px;"
 style="overflow:hidden;"
 
 
+- Checkbox partial checkstate
 - Implement PathInstructions2String
 - Context menu (treeview sample)
 - Toolbar

@@ -7,6 +7,8 @@
 #include "Utils/ErrorReporter.h"
 #include "Utils/Fallible.h"
 #include "Utils/WinUtils.h"
+#include <boost/bind.hpp>
+#include <sstream>
 #include <windows.h>
 #include <commctrl.h>
 
@@ -31,29 +33,44 @@ public:
         mNewSetButton = mConfigWindow->getElementById("newSetButton");
 
         
-        ScopedEventListener listener;
-        listener.addCommand(mNewSetButton, boost::bind(&TestConfigSample::showNewSetDialog, this));
+        
+        mEvents.connect(mNewSetButton, boost::bind(&TestConfigSample::showNewSetDialog, this));
+
+        
+        Element * allowRatingsCheckbox = mConfigWindow->getElementById("allowRatingsCheckBox");
+        if (allowRatingsCheckbox)
+        {
+            mEvents.connect(allowRatingsCheckbox,
+                            boost::bind(&TestConfigSample::showMessage, this, "Checked"));
+        }
+
 
         mSetsPopup = mConfigWindow->getElementById("setsPopup");
         
         Element * tagsText = mConfigWindow->getElementById("tagsTextBox");
-        listener.addDialogCommand(tagsText, boost::bind(&TestConfigSample::tagsChanged, this, _1));
+        mEvents.connect(tagsText,
+                        WM_KEYUP,
+                        boost::bind(&TestConfigSample::showMessage, this, "WM_KEYUP"));
 
         Element * uploadButton = mConfigWindow->getElementById("uploadButton");
         Element * cancelButton = mConfigWindow->getElementById("cancelButton");
         if (NativeWindow * win = mConfigWindow->impl()->downcast<NativeWindow>())
         {          
-            listener.addCommand(uploadButton, boost::bind(&TestConfigSample::showUpload, this));
-            listener.addCommand(cancelButton, boost::bind(&NativeWindow::endModal, win));
+            mEvents.connect(uploadButton, boost::bind(&TestConfigSample::showUpload, this));
+            mEvents.connect(cancelButton, boost::bind(&NativeWindow::endModal, win));
             win->showModal();
         }
     }
 
-    void tagsChanged(ScopedEventListener::NotificationCode inDialogCommand)
+    
+    void showMessage(const std::string & inMessage)
     {
-        int a = 0;
-        a++;
+        std::stringstream ss;
+        ss << inMessage;
+
+        ::MessageBoxA(0, ss.str().c_str(), "Message", MB_OK);
     }
+
 
     void showUpload()
     {
@@ -75,11 +92,11 @@ public:
         mNewSetTextBox = mNewSetDlg->getElementById("settextbox");
         
         mNewSetOK = mNewSetDlg->getElementById("newSetOKButton");
-        ScopedEventListener bl;
-        bl.addCommand(mNewSetOK, boost::bind(&TestConfigSample::newSetOK, this));
+        ScopedEventListener localEvents;
+        localEvents.connect(mNewSetOK, boost::bind(&TestConfigSample::newSetOK, this));
 
         mNewSetCancel = mNewSetDlg->getElementById("newSetCancelButton");
-        bl.addCommand(mNewSetCancel, boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
+        localEvents.connect(mNewSetCancel, boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
 
         mNewSetDlg->impl()->downcast<NativeWindow>()->showModal();
     }
@@ -112,6 +129,7 @@ private:
     Utils::Fallible<Element*> mNewSetTextBox;
     Utils::Fallible<Element*> mNewSetOK;
     Utils::Fallible<Element*> mNewSetCancel;
+    ScopedEventListener mEvents;
 };
 
 

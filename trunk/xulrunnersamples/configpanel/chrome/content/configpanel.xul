@@ -51,8 +51,8 @@
       <row align="center">
         <spacer/>
         <hbox>
-          <checkbox flex="1" checked="true" label="Allow ratings?"></checkbox>
-          <checkbox flex="1" checked="true" label="Allow comments?"></checkbox>
+          <checkbox flex="1" checked="true" label="Allow ratings?" id="allowRatingsCheckBox"></checkbox>
+          <checkbox flex="1" checked="true" label="Allow comments?" id="allowCommentsCheckBox"></checkbox>
         </hbox>
       </row>
       <row align="center" flex="1">

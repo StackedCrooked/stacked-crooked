@@ -928,5 +928,18 @@ namespace XULWin
     {
     }
 
+    
+    StatusBar::StatusBar(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(StatusBar::Type(),
+                inParent,
+                new StatusBarImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    StatusBar::~StatusBar()
+    {
+    }
+
 
 } // XULWin

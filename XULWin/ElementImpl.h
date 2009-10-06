@@ -1455,6 +1455,25 @@ namespace XULWin
     };
 
 
+
+    class StatusBarImpl : public NativeControl
+    {
+    public:
+        typedef NativeControl Super;
+
+        StatusBarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual bool initAttributeControllers();
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+    private:
+        std::string mLabel;
+    };
+
+
 } // namespace XULWin
 
 

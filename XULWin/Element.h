@@ -808,6 +808,22 @@ namespace XULWin
     };
 
 
+    class StatusBar : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<StatusBar>(inParent, inAttr); }
+
+        static const char * Type() { return "statusbar"; }
+
+        virtual ~StatusBar();
+
+    private:
+        friend class Element;
+        StatusBar(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
 } // XULWin
 
 

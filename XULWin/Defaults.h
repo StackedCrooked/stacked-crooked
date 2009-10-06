@@ -52,6 +52,8 @@ namespace XULWin
 
         static int treeItemHeight() { return 16; }
 
+        static int statusBarHeight() { return 14; }
+
         namespace Attributes
         {
             static bool disabled() { return false; }

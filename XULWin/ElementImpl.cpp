@@ -3503,4 +3503,28 @@ namespace XULWin
         return Defaults::treeItemHeight();
     }
 
+
+    StatusBarImpl::StatusBarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, STATUSCLASSNAME, 0, SBARS_SIZEGRIP)
+    {
+    }
+
+
+    bool StatusBarImpl::initAttributeControllers()
+    {
+        return Super::initAttributeControllers();
+    }
+
+
+    int StatusBarImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        return 0;
+    }
+
+
+    int StatusBarImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        return Defaults::statusBarHeight();
+    }
+
 } // namespace XULWin

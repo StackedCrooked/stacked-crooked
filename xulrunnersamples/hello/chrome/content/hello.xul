@@ -4,8 +4,6 @@
         xmlns:svg="http://www.w3.org/2000/svg"
         screenX="0" 
         screenY="300" 
-        width="400"
-        height="400"
         >
   <vbox flex="1">
     <button label="Be the one"></button>

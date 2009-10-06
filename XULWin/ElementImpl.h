@@ -1456,7 +1456,8 @@ namespace XULWin
 
 
 
-    class StatusBarImpl : public NativeControl
+    class StatusBarImpl : public NativeControl,
+                          public BoxLayouter
     {
     public:
         typedef NativeControl Super;
@@ -1469,8 +1470,37 @@ namespace XULWin
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
-    private:
-        std::string mLabel;
+        virtual Orient getOrient() const;
+
+        virtual Align getAlign() const;
+
+        virtual size_t numChildren() const;
+
+        virtual const ElementImpl * getChild(size_t idx) const;
+
+        virtual ElementImpl * getChild(size_t idx);
+
+        virtual Rect clientRect() const;
+
+        virtual void rebuildChildLayouts();
+
+        virtual void rebuildLayout();
+    };
+
+
+
+    class StatusBarPanelImpl : public NativeControl
+    {
+    public:
+        typedef NativeControl Super;
+
+        StatusBarPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual bool initAttributeControllers();
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
     };
 
 

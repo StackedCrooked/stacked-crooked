@@ -46,6 +46,8 @@ namespace XULWin
 
         static int scrollbarWidth() { return 17; }
 
+        static int progressMeterWidth() { return 125; }
+
         static int progressMeterHeight() { return 17; }
 
         static int treeIndent() { return 18; }

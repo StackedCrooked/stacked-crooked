@@ -2485,7 +2485,7 @@ namespace XULWin
 
     int NativeProgressMeter::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return 1;
+        return Defaults::progressMeterWidth();
     }
 
     
@@ -3518,7 +3518,7 @@ namespace XULWin
 
     int StatusBarImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return 0;
+        return 1;
     }
 
 
@@ -3526,5 +3526,81 @@ namespace XULWin
     {
         return Defaults::statusBarHeight();
     }
+    
+
+    Orient StatusBarImpl::getOrient() const
+    {
+        return Horizontal;
+    }
+
+
+    Align StatusBarImpl::getAlign() const
+    {
+        return Center;
+    }
+
+
+    size_t StatusBarImpl::numChildren() const
+    {
+        return owningElement()->children().size();
+    }
+
+
+    const ElementImpl * StatusBarImpl::getChild(size_t idx) const
+    {
+        return owningElement()->children()[idx]->impl();
+    }
+
+
+    ElementImpl * StatusBarImpl::getChild(size_t idx)
+    {
+        return owningElement()->children()[idx]->impl();
+    }
+
+
+    Rect StatusBarImpl::clientRect() const
+    {
+        Rect clientRect(Super::clientRect());
+        // Substract from with one square to make place for the resize gripper widget
+        return Rect(clientRect.x(), clientRect.y(), clientRect.width() - Defaults::statusBarHeight(), clientRect.height());
+    }
+
+
+    void StatusBarImpl::rebuildLayout()
+    {
+        BoxLayouter::rebuildLayout();
+    }
+
+
+    void StatusBarImpl::rebuildChildLayouts()
+    {
+        Super::rebuildChildLayouts();
+    }
+
+
+    StatusBarPanelImpl::StatusBarPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0)
+    {
+    }
+
+
+    bool StatusBarPanelImpl::initAttributeControllers()
+    {
+        return Super::initAttributeControllers();
+    }
+
+
+    int StatusBarPanelImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        return Utils::getTextSize(handle(), getLabel()).cx;
+    }
+
+
+    int StatusBarPanelImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        return Utils::getTextSize(handle(), getLabel()).cy;
+    }
+    
 
 } // namespace XULWin
+

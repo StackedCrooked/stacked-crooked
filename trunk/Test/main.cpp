@@ -31,46 +31,33 @@ public:
         mConfigWindow = mRunner.loadApplication("application.ini");
 
         mNewSetButton = mConfigWindow->getElementById("newSetButton");
-
-        
-        
         mEvents.connect(mNewSetButton, boost::bind(&TestConfigSample::showNewSetDialog, this));
-
         
         Element * allowRatingsCheckbox = mConfigWindow->getElementById("allowRatingsCheckBox");
-        if (allowRatingsCheckbox)
-        {
-            mEvents.connect(allowRatingsCheckbox,
-                            boost::bind(&TestConfigSample::showMessage, this, "Checked"));
-        }
-
-
+        mEvents.connect(allowRatingsCheckbox, boost::bind(&TestConfigSample::showMessage, this, "Checked"));
+        
         mSetsPopup = mConfigWindow->getElementById("setsPopup");
         
         Element * tagsText = mConfigWindow->getElementById("tagsTextBox");
-        mEvents.connect(tagsText,
-                        WM_KEYUP,
-                        boost::bind(&TestConfigSample::showMessage, this, "WM_KEYUP"));
+        mEvents.connect(tagsText, WM_KEYUP, boost::bind(&TestConfigSample::showMessage, this, "WM_KEYUP"));
 
         Element * uploadButton = mConfigWindow->getElementById("uploadButton");
-        Element * cancelButton = mConfigWindow->getElementById("cancelButton");
+        mEvents.connect(uploadButton, boost::bind(&TestConfigSample::showUpload, this));
+
         if (NativeWindow * win = mConfigWindow->impl()->downcast<NativeWindow>())
-        {          
-            mEvents.connect(uploadButton, boost::bind(&TestConfigSample::showUpload, this));
+        {
+            Element * cancelButton = mConfigWindow->getElementById("cancelButton");
             mEvents.connect(cancelButton, boost::bind(&NativeWindow::endModal, win));
             win->showModal();
         }
     }
 
-    
     void showMessage(const std::string & inMessage)
     {
         std::stringstream ss;
         ss << inMessage;
-
         ::MessageBoxA(0, ss.str().c_str(), "Message", MB_OK);
     }
-
 
     void showUpload()
     {

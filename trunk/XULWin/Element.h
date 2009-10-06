@@ -824,6 +824,22 @@ namespace XULWin
     };
 
 
+    class StatusBarPanel : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<StatusBarPanel>(inParent, inAttr); }
+
+        static const char * Type() { return "statusbarpanel"; }
+
+        virtual ~StatusBarPanel();
+
+    private:
+        friend class Element;
+        StatusBarPanel(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
 } // XULWin
 
 

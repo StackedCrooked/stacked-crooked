@@ -65,6 +65,7 @@ namespace XULWin
         ElementFactory::Instance().registerElement<TreeCell>();
         ElementFactory::Instance().registerElement<TreeItem>();
         ElementFactory::Instance().registerElement<StatusBar>();
+        ElementFactory::Instance().registerElement<StatusBarPanel>();
         
     }
 

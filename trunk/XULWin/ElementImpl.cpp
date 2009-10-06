@@ -19,9 +19,9 @@ namespace XULWin
 
     int CommandId::sId = 101; // start handleCommand Ids at 101 to avoid conflicts with Windows predefined values
     
-    ConcreteElement::Components ConcreteElement::sComponentsByHandle;
+    NativeComponent::Components NativeComponent::sComponentsByHandle;
     
-    NativeControl::ComponentsById NativeControl::sComponentsById;
+    NativeComponent::ComponentsById NativeComponent::sComponentsById;
 
     ConcreteElement::ConcreteElement(ElementImpl * inParent) :
         mParent(inParent),
@@ -647,18 +647,57 @@ namespace XULWin
             (*it)->handleCommand(owningElement(), notificationCode);
         }
     }
+    
+    
+    void NativeComponent::handleDialogCommand(WORD inNotificationCode, WPARAM wParam, LPARAM lParam)
+    {
+        EventListeners::iterator it = mEventListeners.begin(), end = mEventListeners.end();
+        for (; it != end; ++it)
+        {
+            (*it)->handleDialogCommand(owningElement(), inNotificationCode, wParam, lParam);
+        }
+    }
 
 
     LRESULT NativeComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         switch (inMessage)
         {
+
             case WM_COMMAND:
             {
-                ComponentsById::iterator it = sComponentsById.find(LOWORD(wParam));
-                if (it != sComponentsById.end())
-                {
-                    it->second->handleCommand(wParam, lParam);
+				WORD paramHi = HIWORD(wParam);
+				WORD paramLo = LOWORD(wParam);
+				
+				switch (paramLo)
+				{
+					case IDOK:
+					case IDCANCEL:
+					case IDABORT:
+					case IDRETRY:
+					case IDIGNORE:
+					case IDYES:
+					case IDNO:
+					case IDHELP:
+					case IDTRYAGAIN:
+					case IDCONTINUE:
+					{
+                        Components::iterator focusIt = sComponentsByHandle.find(::GetFocus());
+                        if (focusIt != sComponentsByHandle.end())
+                        {
+                            focusIt->second->handleDialogCommand(paramLo, wParam, lParam);
+                        }
+                        break;
+                    }
+                    default:
+                    {                        
+                        ComponentsById::iterator it = sComponentsById.find(LOWORD(wParam));
+                        if (it != sComponentsById.end())
+                        {
+                            it->second->handleCommand(wParam, lParam);
+                        }
+                        break;
+					}
                 }
                 break;
             }
@@ -940,14 +979,41 @@ namespace XULWin
                 minMaxInfo->ptMinTrackSize.x = getWidth(Minimum) + sizeDiff.cx;
                 minMaxInfo->ptMinTrackSize.y = getHeight(Minimum) + sizeDiff.cy;
                 break;
-            }            
+            }
             case WM_COMMAND:
             {
-                int id = LOWORD(wParam);
-                ComponentsById::iterator it = sComponentsById.find(id);
-                if (it != sComponentsById.end())
-                {
-                    it->second->handleCommand(wParam, lParam);
+				WORD paramHi = HIWORD(wParam);
+				WORD paramLo = LOWORD(wParam);
+				
+				switch (paramLo)
+				{
+					case IDOK:
+					case IDCANCEL:
+					case IDABORT:
+					case IDRETRY:
+					case IDIGNORE:
+					case IDYES:
+					case IDNO:
+					case IDHELP:
+					case IDTRYAGAIN:
+					case IDCONTINUE:
+					{
+                        Components::iterator focusIt = sComponentsByHandle.find(::GetFocus());
+                        if (focusIt != sComponentsByHandle.end())
+                        {
+                            focusIt->second->handleDialogCommand(paramLo, wParam, lParam);
+                        }
+                        break;
+                    }
+                    default:
+                    {                        
+                        ComponentsById::iterator it = sComponentsById.find(LOWORD(wParam));
+                        if (it != sComponentsById.end())
+                        {
+                            it->second->handleCommand(wParam, lParam);
+                        }
+                        break;
+					}
                 }
                 break;
             }

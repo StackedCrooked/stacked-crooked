@@ -1,5 +1,6 @@
 #include "Tester.h"
 #include "XULWin/Decorator.h"
+#include "XULWin/EventListener.h"
 #include "XULWin/ElementImpl.h"
 #include "XULWin/Initializer.h"
 #include "XULWin/XULRunner.h"
@@ -19,83 +20,6 @@ void log(const std::string & inMessage)
 }
 
 
-class ScopedEventListener : public XULWin::EventListener
-{
-public:
-    ScopedEventListener();
-
-    virtual ~ScopedEventListener();
-
-    typedef boost::function<void()> Action;
-
-    void setAction(Element * inEl, const Action & inAction);
-
-    void removeAction(Element * inEl);
-
-private:
-    virtual void handleCommand(Element * inSender, unsigned short inNotificationCode) = 0;
-
-    virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
-
-protected:
-    typedef std::map<Element*, Action> Callbacks;
-
-    // because we have a destructor we need a copy ctor and assignment operator
-    // wrapping our only member in a boost::shared_ptr takes care of that
-    boost::shared_ptr<Callbacks> mCallbacks;
-};
-
-
-ScopedEventListener::ScopedEventListener() :
-    mCallbacks(new Callbacks)
-{
-}
-
-
-void ScopedEventListener::removeAction(Element * inEl)
-{
-    Callbacks::iterator it = mCallbacks->find(inEl);
-    if (it != mCallbacks->end())
-    {
-        it->first->removeEventListener(this);
-        mCallbacks->erase(it);
-    }
-}
-
-
-ScopedEventListener::~ScopedEventListener()
-{
-    while (!mCallbacks->empty())
-    {
-        removeAction(mCallbacks->begin()->first);
-    }
-}
-
-
-void ScopedEventListener::setAction(Element * inEl, const Action & inAction)
-{
-    inEl->addEventListener(this);
-    (*mCallbacks)[inEl] = inAction;
-}
-
-
-class ButtonListener : public ScopedEventListener
-{
-private:
-    virtual void handleCommand(Element * inSender, unsigned short inNotificationCode);
-
-    virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam){}
-};
-
-
-void ButtonListener::handleCommand(Element * inSender, unsigned short inNotificationCode)
-{
-    Callbacks::iterator it = mCallbacks->find(inSender);
-    if (it != mCallbacks->end() && it->second)
-    {
-        (*it).second();
-    }
-}
 
 
 class TestConfigSample

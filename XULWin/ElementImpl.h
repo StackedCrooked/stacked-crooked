@@ -6,6 +6,7 @@
 #include "AttributeController.h"
 #include "StyleController.h"
 #include "Conversions.h"
+#include "EventListener.h"
 #include "Layout.h"
 #include "Utils/Fallible.h"
 #include <boost/function.hpp>
@@ -31,15 +32,6 @@ namespace XULWin
     private:
         int mId;
         static int sId;
-    };
-
-
-    class EventListener
-    {
-    public:
-        virtual void handleCommand(Element * inSender, unsigned short inNotificationCode) = 0;
-        
-        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
     };
 
 

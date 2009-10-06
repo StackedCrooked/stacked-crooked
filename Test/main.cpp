@@ -29,7 +29,6 @@ public:
     {
         Utils::CurrentDirectoryChanger curdir("../xulrunnersamples/configpanel/");
         mConfigWindow = mRunner.loadApplication("application.ini");
-        mEvents.connect(mConfigWindow.get(), WM_DROPFILES, boost::bind(&TestConfigSample::dropFiles, this, _1, _2));
         
 
         mNewSetButton = mConfigWindow->getElementById("newSetButton");
@@ -49,6 +48,10 @@ public:
         if (NativeWindow * win = mConfigWindow->impl()->downcast<NativeWindow>())
         {
             ::DragAcceptFiles(win->handle(), TRUE);
+            mEvents.connect(mConfigWindow.get(),
+                            WM_DROPFILES,
+                            boost::bind(&TestConfigSample::dropFiles, this, _1, _2));
+
             Element * cancelButton = mConfigWindow->getElementById("cancelButton");
             mEvents.connect(cancelButton, boost::bind(&NativeWindow::endModal, win));
             win->showModal();

@@ -4,7 +4,7 @@
 <window title="Config Panel"
 		    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 >
-  <grid style="overflow-y:auto;overflow-x:auto" flex="1">
+  <grid flex="1">
     <columns>
       <column flex="0" align="end" ></column>
       <column flex="1"></column>
@@ -61,8 +61,8 @@
           <spacer flex="1" />
           <hbox align="center">
             <spacer flex="2"></spacer>
-            <button flex="1" label="Upload"></button>
-            <button flex="1" label="Cancel"></button>
+            <button flex="1" label="Upload" id="uploadButton"></button>
+            <button flex="1" label="Cancel" id="cancelButton"></button>
           </hbox>
         </vbox>
       </row>

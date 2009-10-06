@@ -19,7 +19,86 @@ void log(const std::string & inMessage)
 }
 
 
-class TestConfigSample : public XULWin::EventListener
+class ScopedEventListener : public XULWin::EventListener
+{
+public:
+    ScopedEventListener();
+
+    virtual ~ScopedEventListener();
+
+    typedef boost::function<void()> Action;
+
+    void setAction(Element * inEl, const Action & inAction);
+
+    void removeAction(Element * inEl);
+
+private:
+    virtual void handleCommand(Element * inSender, unsigned short inNotificationCode) = 0;
+
+    virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
+
+protected:
+    typedef std::map<Element*, Action> Callbacks;
+
+    // because we have a destructor we need a copy ctor and assignment operator
+    // wrapping our only member in a boost::shared_ptr takes care of that
+    boost::shared_ptr<Callbacks> mCallbacks;
+};
+
+
+ScopedEventListener::ScopedEventListener() :
+    mCallbacks(new Callbacks)
+{
+}
+
+
+void ScopedEventListener::removeAction(Element * inEl)
+{
+    Callbacks::iterator it = mCallbacks->find(inEl);
+    if (it != mCallbacks->end())
+    {
+        it->first->removeEventListener(this);
+        mCallbacks->erase(it);
+    }
+}
+
+
+ScopedEventListener::~ScopedEventListener()
+{
+    while (!mCallbacks->empty())
+    {
+        removeAction(mCallbacks->begin()->first);
+    }
+}
+
+
+void ScopedEventListener::setAction(Element * inEl, const Action & inAction)
+{
+    inEl->addEventListener(this);
+    (*mCallbacks)[inEl] = inAction;
+}
+
+
+class ButtonListener : public ScopedEventListener
+{
+private:
+    virtual void handleCommand(Element * inSender, unsigned short inNotificationCode);
+
+    virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam){}
+};
+
+
+void ButtonListener::handleCommand(Element * inSender, unsigned short inNotificationCode)
+{
+    Callbacks::iterator it = mCallbacks->find(inSender);
+    if (it != mCallbacks->end() && it->second)
+    {
+        (*it).second();
+    }
+}
+
+
+class TestConfigSample
 {
 public:
     void run()
@@ -28,14 +107,26 @@ public:
         mConfigWindow = mRunner.loadApplication("application.ini");
 
         mNewSetButton = mConfigWindow->getElementById("newSetButton");
-        //mNewSetButton->setClickAction(boost::bind(&TestConfigSample::showNewSetDialog, this));
+
+        
+        ButtonListener bl;
+        bl.setAction(mNewSetButton, boost::bind(&TestConfigSample::showNewSetDialog, this));
 
         mSetsPopup = mConfigWindow->getElementById("setsPopup");
 
+        Element * uploadButton = mConfigWindow->getElementById("uploadButton");
+        Element * cancelButton = mConfigWindow->getElementById("cancelButton");
         if (NativeWindow * win = mConfigWindow->impl()->downcast<NativeWindow>())
-        {        
+        {          
+            bl.setAction(uploadButton, boost::bind(&TestConfigSample::showUpload, this));
+            bl.setAction(cancelButton, boost::bind(&NativeWindow::endModal, win));
             win->showModal();
         }
+    }
+
+    void showUpload()
+    {
+        ::MessageBox(0, TEXT("Upload initiated!"), TEXT("Config panel"), MB_OK);
     }
 
     void addNewSet(const std::string & inSetName)
@@ -53,10 +144,11 @@ public:
         mNewSetTextBox = mNewSetDlg->getElementById("settextbox");
         
         mNewSetOK = mNewSetDlg->getElementById("newSetOKButton");
-        //mNewSetOK->setClickAction(boost::bind(&TestConfigSample::newSetOK, this));
+        ButtonListener bl;
+        bl.setAction(mNewSetOK, boost::bind(&TestConfigSample::newSetOK, this));
 
         mNewSetCancel = mNewSetDlg->getElementById("newSetCancelButton");
-        //mNewSetCancel->setClickAction(boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
+        bl.setAction(mNewSetCancel, boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
 
         mNewSetDlg->impl()->downcast<NativeWindow>()->showModal();
     }
@@ -78,27 +170,6 @@ public:
             ShowWindow(nativeWindow->handle(), SW_HIDE);
 		    PostQuitMessage(0);
         }
-    }
-    
-    virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam)
-    {
-    }
-
-    virtual void handleCommand(Element * inSender, unsigned short inNotificationCode)
-    {
-        //if (inSender->impl()->commandId() == mNewSetButton->impl()->commandId())
-        //{
-        //    showNewSetDialog();
-        //}
-        //else if (mNewSetOK && mNewSetOK->impl()->commandId() == inSender->impl()->commandId())
-        //{
-        //    newSetOK();
-        //    closeWindow(mNewSetDlg.get());
-        //}
-        //else if (mNewSetCancel && mNewSetCancel->impl()->commandId() == inSender->impl()->commandId())
-        //{
-        //    closeWindow(mNewSetDlg.get());
-        //}
     }
 
 private:
@@ -130,14 +201,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     Utils::ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
 
-    //runConfigSample();
-    XULTest::Tester tester;
+    runConfigSample();
+    //XULTest::Tester tester;
     //tester.runXULSample("hello");
     //tester.runXULSample("widgets");
     //tester.runXULSample("tabbox");
     //tester.runXULSample("treeview");
     //tester.runXULSample("configpanel");
     //tester.runXULSample("shout");
-    tester.runXULSample("svg");
+    //tester.runXULSample("svg");
     return 0;
 }

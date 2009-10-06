@@ -910,6 +910,13 @@ namespace XULWin
             }
         }
     }
+    
+    
+    void NativeWindow::endModal()
+    {
+        setHidden(true);
+        ::PostQuitMessage(0);
+    }
 
 
     LRESULT NativeWindow::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)

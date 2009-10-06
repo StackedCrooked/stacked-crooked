@@ -40,7 +40,7 @@ namespace Utils
         //
         // Fallible number<int>(0);
         // number.setInvalid();
-        // int n = number; // 0 returned
+        // int n = number; // 0 returned instead of garbage
         //
         // I prefer above approach to raising exceptions.
         //

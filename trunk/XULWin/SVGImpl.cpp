@@ -338,65 +338,6 @@ namespace SVG
     }
 
     
-    
-    //bool SVGPathImpl::getFillColor(Gdiplus::Color & outColor)
-    //{
-    //    if (mFill.isValid())
-    //    {
-    //        outColor = Gdiplus::Color(mFill.getValue().alpha(), mFill.getValue().red(), mFill.getValue().green(), mFill.getValue().blue());
-    //        return true;
-    //    }
-    //    else if (mCSSFill.isValid())
-    //    {
-    //        outColor = Gdiplus::Color(mFill.getValue().alpha(), mCSSFill.getValue().red(), mCSSFill.getValue().green(), mCSSFill.getValue().blue());
-    //        return true;
-    //    }
-    //    else
-    //    {
-    //        SVGGroupImpl * group = findNativeGParent(this);
-    //        if (group)
-    //        {
-    //            RGBColor fill = group->getCSSFill();
-    //            outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
-    //            return true;
-    //        }
-    //    }        
-    //    return false;
-    //}
-
-
-    //bool SVGPathImpl::getStrokeColor(Gdiplus::Color & outColor)
-    //{
-    //    if (mStroke.isValid())
-    //    {
-    //        outColor = Gdiplus::Color(mFill.getValue().alpha(),
-    //                                  mStroke.getValue().red(),
-    //                                  mStroke.getValue().green(),
-    //                                  mStroke.getValue().blue());
-    //        return true;
-    //    }
-    //    else if (mCSSStroke.isValid())
-    //    {
-    //        outColor = Gdiplus::Color(mCSSStroke.getValue().alpha(),
-    //                                  mCSSStroke.getValue().red(),
-    //                                  mCSSStroke.getValue().green(),
-    //                                  mCSSStroke.getValue().blue());
-    //        return true;
-    //    }
-    //    else
-    //    {
-    //        SVGGroupImpl * group = findNativeGParent(this);
-    //        if (group)
-    //        {
-    //            RGBColor fill = group->getCSSStroke();
-    //            outColor = Gdiplus::Color(fill.alpha(), fill.red(), fill.green(), fill.blue());
-    //            return true;
-    //        }
-    //    }        
-    //    return false;
-    //}
-
-    
     void SVGPathImpl::GetPreparedInstructions(const PathInstructions & inData, PathInstructions & outPrepData)
     {
         PointFs preppedPoints;
@@ -587,6 +528,8 @@ namespace SVG
                 case PathInstruction::SmoothQuadraticBelzierCurveTo: // T
                 case PathInstruction::EllipticalArc: // A
                 {
+                    assert(false); // not yet implemented
+                    break;
                 }
                 case PathInstruction::ClosePath: // Z
                 {

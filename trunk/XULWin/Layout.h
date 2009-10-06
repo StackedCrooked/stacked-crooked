@@ -154,7 +154,6 @@ namespace XULWin
         int Value;
     };
 
-
     struct SizeInfo
     {
         SizeInfo(FlexWrap inFlex, MinSizeWrap inMinSize, OptSizeWrap inOptSize) :
@@ -217,6 +216,7 @@ namespace XULWin
         Align ColAlign;
     };
     
+
     class GridLayoutManager
     {
     public:

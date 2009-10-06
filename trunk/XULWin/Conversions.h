@@ -67,9 +67,9 @@ namespace XULWin
 
     Points String2Points(const std::string & inValue);
 
-    std::string PathInstructions2String(const PathInstructions & inPathInstructions);
+    std::string PathInstructions2String(const SVG::PathInstructions & inPathInstructions);
 
-    PathInstructions String2PathInstructions(const std::string & inValue);
+    SVG::PathInstructions String2PathInstructions(const std::string & inValue);
 
 } // namespace XULWin
 

@@ -9,6 +9,9 @@
 namespace XULWin
 {
 
+namespace SVG
+{
+
     class PathInstruction
     {
     public:
@@ -55,6 +58,8 @@ namespace XULWin
     };
 
     typedef std::vector<PathInstruction> PathInstructions;
+
+} // namespace SVG
 
 } // namespace XULWin
 

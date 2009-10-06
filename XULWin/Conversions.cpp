@@ -11,6 +11,8 @@ using namespace Utils;
 
 namespace XULWin
 {
+    using namespace SVG;
+
 
     template<class T>
     std::string ToString(const T & inValue)

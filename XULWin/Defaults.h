@@ -24,7 +24,6 @@ namespace XULWin
 
         static int buttonHeight() { return 23; }      
 
-        // optimal width for a button
         static int buttonWidth() { return 75; }       
 
         static int tabHeight() { return 23; } 

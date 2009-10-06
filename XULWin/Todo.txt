@@ -4,6 +4,7 @@ style="max-height: 300px;"
 style="overflow:hidden;"
 
 
+- Drag and drop
 - Checkbox partial checkstate
 - Implement PathInstructions2String
 - Context menu (treeview sample)

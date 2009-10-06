@@ -162,6 +162,4 @@ namespace XULWin
     }
 
 
-
-
 } // namespace XULWin

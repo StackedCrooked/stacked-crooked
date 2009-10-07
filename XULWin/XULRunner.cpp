@@ -100,7 +100,7 @@ namespace XULWin
         return true;
     }
 
-    
+
     std::string getMainXULFile(const Poco::Path & inTopLevelAppDir)
     {
         static const std::string cPrefsFile = "defaults/preferences/prefs.js";

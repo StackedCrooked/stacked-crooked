@@ -1141,7 +1141,7 @@ namespace XULWin
             inExStyle, 
             inClassName,
             TEXT(""),
-            inStyle | WS_TABSTOP | WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
+            inStyle | WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE,
             0, 0, 0, 0,
             nativeParent->handle(),
             (HMENU)mCommandId.intValue(),
@@ -1234,7 +1234,7 @@ namespace XULWin
                       inAttributesMapping,
                       TEXT("BUTTON"),
                       0, // exStyle
-                      BS_PUSHBUTTON)
+                      WS_TABSTOP | BS_PUSHBUTTON)
     {   
     }
     
@@ -1255,7 +1255,7 @@ namespace XULWin
     
     
     NativeCheckBox::NativeCheckBox(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeControl(inParent, inAttributesMapping, TEXT("BUTTON"), 0, BS_AUTOCHECKBOX)
+        NativeControl(inParent, inAttributesMapping, TEXT("BUTTON"), 0, WS_TABSTOP | BS_AUTOCHECKBOX)
     {
     }
     
@@ -1296,7 +1296,7 @@ namespace XULWin
                       inAttributesMapping,
                       TEXT("EDIT"),
                       WS_EX_CLIENTEDGE, // exStyle
-                      GetFlags(inAttributesMapping)),
+                      WS_TABSTOP | GetFlags(inAttributesMapping)),
         mReadonly(IsReadOnly(inAttributesMapping)),
         mRows(1)
     {
@@ -1761,7 +1761,7 @@ namespace XULWin
                       inAttributesMapping,
                       TEXT("COMBOBOX"),
                       0, // exStyle
-                      CBS_DROPDOWNLIST)
+                      WS_TABSTOP | CBS_DROPDOWNLIST)
     {
     }
     
@@ -1882,7 +1882,7 @@ namespace XULWin
                       inAttributesMapping,
                       TEXT("BUTTON"),
                       0, // exStyle
-                      BS_PUSHBUTTON)
+                      WS_TABSTOP | BS_PUSHBUTTON)
     {
     }
         
@@ -2455,7 +2455,7 @@ namespace XULWin
                       inAttributesMapping,
                       TEXT("BUTTON"),
                       0, // exStyle
-                      BS_RADIOBUTTON)
+                      WS_TABSTOP | BS_RADIOBUTTON)
     {
     }
 
@@ -2617,7 +2617,7 @@ namespace XULWin
         NativeControl(inParent, inAttributesMapping,
                       TEXT("SCROLLBAR"),
                       0, // exStyle
-                      GetFlags(inAttributesMapping)),
+                      WS_TABSTOP | GetFlags(inAttributesMapping)),
         mEventListener(0),
         mIncrement(0)
     {

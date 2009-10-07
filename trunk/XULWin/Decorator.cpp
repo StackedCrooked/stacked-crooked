@@ -770,22 +770,33 @@ namespace XULWin
 
         if (NativeComponent * nativeComponent = mDecoratedElement->downcast<NativeComponent>())
         {
-            NativeScrollbar * hscrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
-            NativeScrollbar * vscrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
-            
             int maxpos = Defaults::Attributes::maxpos();
             Rect clientRect(mDecoratedElement->clientRect());
-            int minHorSize = mDecoratedElement->getWidth(Minimum);
-            int minVerSize = mDecoratedElement->getHeight(Minimum);
-            int horScrollPos = Utils::getScrollPos(hscrollbar->handle());
-            int verScrollPos = Utils::getScrollPos(vscrollbar->handle());
+            
+            int newHorScrollPos = 0;
+            int newVerScrollPos = 0;
+            int dx = 0;
+            int dy = 0;
 
-            double horRatio = (double)horScrollPos/(double)Defaults::Attributes::maxpos();
-            double verRatio = (double)verScrollPos/(double)Defaults::Attributes::maxpos();
-            int newHorScrollPos = (int)((horRatio * (double)minHorSize) + 0.5);
-            int newVerScrollPos = (int)((verRatio * (double)minVerSize) + 0.5);
-            int dx = newHorScrollPos - mOldHorScrollPos;
-            int dy = newVerScrollPos - mOldVerScrollPos;
+            if (mHorizontalScrollbar)
+            {
+                NativeScrollbar * hscrollbar = mHorizontalScrollbar->impl()->downcast<NativeScrollbar>();
+                int minHorSize = mDecoratedElement->getWidth(Minimum);
+                int horScrollPos = Utils::getScrollPos(hscrollbar->handle());
+                double horRatio = (double)horScrollPos/(double)Defaults::Attributes::maxpos();
+                newHorScrollPos = (int)((horRatio * (double)minHorSize) + 0.5);
+                dx = newHorScrollPos - mOldHorScrollPos;
+            }
+
+            if (mVerticalScrollbar)
+            {
+                NativeScrollbar * vscrollbar = mVerticalScrollbar->impl()->downcast<NativeScrollbar>();
+                int minVerSize = mDecoratedElement->getHeight(Minimum);
+                int verScrollPos = Utils::getScrollPos(vscrollbar->handle());
+                double verRatio = (double)verScrollPos/(double)Defaults::Attributes::maxpos();
+                newVerScrollPos = (int)((verRatio * (double)minVerSize) + 0.5);
+                dy = newVerScrollPos - mOldVerScrollPos;
+            }
 
             if (NativeComponent * nativeComponent = mDecoratedElement->downcast<NativeComponent>())
             {

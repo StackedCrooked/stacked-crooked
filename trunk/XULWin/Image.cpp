@@ -67,8 +67,15 @@ namespace XULWin
 
     void NativeImage::setSrc(const std::string & inSrc)
     {
-        ChromeURL url(inSrc, Defaults::locale());
-        mSrc = url.convertToLocalPath();
+        if (inSrc.find("chrome://") != std::string::npos)
+        {        
+            ChromeURL url(inSrc, Defaults::locale());
+            mSrc = url.convertToLocalPath();
+        }
+        else
+        {
+            mSrc = inSrc;
+        }
         std::wstring utf16Path;
         Poco::UnicodeConverter::toUTF16(mSrc, utf16Path);
         Gdiplus::Bitmap * img = new Gdiplus::Bitmap(utf16Path.c_str());

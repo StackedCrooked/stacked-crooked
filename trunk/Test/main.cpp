@@ -1,4 +1,5 @@
 #include "Tester.h"
+#include "ImageViewer.h"
 #include "XULWin/Decorator.h"
 #include "XULWin/EventListener.h"
 #include "XULWin/ElementImpl.h"
@@ -144,6 +145,13 @@ void runConfigSample()
 }
 
 
+void runImageViewerSample()
+{
+    ImageViewer sample;
+    sample.run();
+}
+
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     // Initialize all kinds of stuff
@@ -155,9 +163,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Utils::ErrorReporter::Instance().setLogger(boost::bind(&log, _1));
 
     //runConfigSample();
-    XULTest::Tester tester;
+    runImageViewerSample();
+    //XULTest::Tester tester;
     //tester.runXULSample("hello");
-    tester.runXULSample("imageviewer");
     //tester.runXULSample("widgets");
     //tester.runXULSample("tabbox");
     //tester.runXULSample("treeview");

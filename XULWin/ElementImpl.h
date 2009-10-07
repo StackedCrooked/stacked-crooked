@@ -486,17 +486,15 @@ namespace XULWin
         Utils::Fallible<Orient> mOrient;
         Utils::Fallible<Align> mAlign;
 
-        // We need to remember the hidden state ourselves
-        // because we can't rely on WinAPI IsWindowVisible
-        // call, because it will return false for child windows
-        // of which the parent is not visible.
-        // This is a problem because in NativeWindow::showModal
-        // we calculate the minimum height before showing the 
-        // window. Calculation of minimum height depends on
-        // visibility of child items. Minimum height of hidden
-        // items is 0. Now, this means that all child items
-        // would return a minimum height of zero, because the
-        // Windows API says that they are not visible.
+        // We need to remember the hidden state ourselves because we can't
+        // rely on WinAPI IsWindowVisible call, because it will return false
+        // for child windows of which the parent is not visible.
+        // This is a problem because calculation of minimum size depends on
+        // visibility of child items. Hidden elements return 0 when asked for
+        // their min width or height. This problem becomes apparent when
+        // calling NativeWindow's showModal method which calculates its minimum
+        // height *before* the window becomes visible. This would result in a
+        // 'minified' window state.
         bool mHidden;
         
         typedef std::map<std::string, AttributeController *> AttributeControllers;

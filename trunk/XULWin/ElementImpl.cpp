@@ -3518,7 +3518,13 @@ namespace XULWin
 
     int StatusBarImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
-        return 1;
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * child = owningElement()->children()[idx]->impl();
+            result += child->calculateWidth(inSizeConstraint);
+        }
+        return result;
     }
 
 
@@ -3526,7 +3532,7 @@ namespace XULWin
     {
         return Defaults::statusBarHeight();
     }
-    
+
 
     Orient StatusBarImpl::getOrient() const
     {
@@ -3600,7 +3606,6 @@ namespace XULWin
     {
         return Utils::getTextSize(handle(), getLabel()).cy;
     }
-    
+
 
 } // namespace XULWin
-

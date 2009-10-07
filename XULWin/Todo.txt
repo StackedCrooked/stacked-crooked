@@ -4,6 +4,7 @@ style="max-height: 300px;"
 style="overflow:hidden;"
 
 
+- Fix scrollbars for image sample
 - Fix WS_TABSTOP for multiline TextBoxes
 - Drag and drop
 - Checkbox partial checkstate

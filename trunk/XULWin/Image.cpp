@@ -14,7 +14,7 @@
 
 
 namespace XULWin
-{    
+{
 
     class NativeImage : public NativeControl,
                         public virtual SrcController,
@@ -28,10 +28,14 @@ namespace XULWin
         virtual std::string getSrc() const;
 
         virtual void setSrc(const std::string & inSrc);
-
+        
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+        
+        virtual int getWidth(SizeConstraint inSizeConstraint) const;
+        
+        virtual int getHeight(SizeConstraint inSizeConstraint) const;
 
         bool initAttributeControllers();
         
@@ -39,6 +43,8 @@ namespace XULWin
 
     private:
         void paintImage(HDC inHDC, const RECT & rc);
+
+        void getWidthAndHeight(int & outWidth, int & outHeight) const;
 
         boost::scoped_ptr<Gdiplus::Bitmap> mImage;
         std::string mSrc;
@@ -48,17 +54,17 @@ namespace XULWin
     Image::Image(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Image::Type(),
                 inParent,
-                new Decorator(new NativeImage(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(new NativeImage(inParent->impl(), inAttributesMapping)))
     {
     }
 
-    
+
     NativeImage::NativeImage(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent, inAttributesMapping, L"STATIC", 0, 0)
     {
     }
 
-        
+
     std::string NativeImage::getSrc() const
     {
         return mSrc;
@@ -87,22 +93,95 @@ namespace XULWin
     }
 
 
+    void NativeImage::getWidthAndHeight(int & width, int & height) const
+    {
+        float optimalWidth = (float)mImage->GetWidth();
+        float optimalHeight = (float)mImage->GetHeight();        	
+        if (optimalWidth < 1.0 || optimalHeight < 1.0)
+        {
+            width = 1;
+            height = 1;
+            return;
+        }
+
+        float resizeFactorX = mWidth.getValue()/optimalWidth;
+        float resizeFactorY = mHeight.getValue()/optimalHeight;
+        float resizeFactor = std::min<float>(resizeFactorX, resizeFactorY);
+		
+        width = (int)(resizeFactor*optimalWidth + 0.5f);
+        if (width == 0)
+        {
+            width = 1;
+        }
+
+        height = (int)(resizeFactor*optimalHeight + 0.5f);		        
+        if (height == 0)
+        {
+            height = 1;
+        }
+    }
+
+    
+    int NativeImage::getWidth(SizeConstraint inSizeConstraint) const
+    {
+        if (mWidth && mHeight)
+        {
+            int width = 0;
+            int height = 0;  
+            getWidthAndHeight(width, height);
+            return width;
+        }
+        else
+        {
+            return Super::getWidth();
+        }
+    }
+        
+    
+    int NativeImage::getHeight(SizeConstraint inSizeConstraint) const
+    {
+        if (mWidth && mHeight)
+        {
+            int width = 0;
+            int height = 0;  
+            getWidthAndHeight(width, height);
+            return height;
+        }
+        else
+        {
+            return Super::getHeight();
+        }
+    }
+
+
     int NativeImage::calculateWidth(SizeConstraint inSizeConstraint) const
     {
+        if (inSizeConstraint == Minimum)
+        {
+            return 0;
+        }
+
         if (mImage)
         {
             return mImage->GetWidth();
         }
+
         return 0;
     }
 
-    
+
     int NativeImage::calculateHeight(SizeConstraint inSizeConstraint) const
     {
+        if (inSizeConstraint == Minimum)
+        {
+            return 0;
+        }
+
         if (mImage)
         {
             return mImage->GetHeight();
         }
+
         return 0;
     }
 
@@ -112,8 +191,8 @@ namespace XULWin
         Super::setAttributeController("src", static_cast<SrcController*>(this));
         return Super::initAttributeControllers();
     }
-    
-    
+
+
     void NativeImage::paintImage(HDC inHDC, const RECT & rc)
     {
         Gdiplus::Graphics g(inHDC);        
@@ -122,7 +201,7 @@ namespace XULWin
         g.DrawImage(mImage.get(), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
     }
 
-    
+
     LRESULT NativeImage::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
         if (inMessage == WM_PAINT)

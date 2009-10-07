@@ -364,7 +364,7 @@ namespace XULWin
             return 0;
         }
 
-        if (mWidth.isValid())
+        if (inSizeConstraint == Minimum && mWidth.isValid())
         {
             return mWidth.getValue();
         }
@@ -380,7 +380,7 @@ namespace XULWin
             return 0;
         }
 
-        if (mHeight.isValid())
+        if (inSizeConstraint == Minimum && mHeight.isValid())
         {
             return mHeight.getValue();
         }

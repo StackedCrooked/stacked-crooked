@@ -3,10 +3,10 @@
 <window id="main"
         title="Hello"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        align="center"
-        orient="vertical"
-        width="400" 
-        height="400">
-  <vbox id="imagearea" flex="1" align="center" style="overflow-y:auto">
+        width="400"
+        height="400"
+        >
+  
+  <vbox id="imagearea" flex="0" align="center">
   </vbox>
 </window>

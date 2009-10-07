@@ -421,9 +421,9 @@ namespace XULWin
 
         int commandId() const { return mCommandId.intValue(); }
 
-        int getWidth(SizeConstraint inSizeConstraint) const;
+        virtual int getWidth(SizeConstraint inSizeConstraint) const;
 
-        int getHeight(SizeConstraint inSizeConstraint) const;
+        virtual int getHeight(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const = 0;
 

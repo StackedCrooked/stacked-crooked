@@ -59,7 +59,7 @@ namespace XULWin
             else
             {
                 // it's a widget without flex
-                availableLength -= inFlexValues[idx].OptSize;
+                availableLength -= inFlexValues[idx].MinSize;
             }
         }
         std::vector<int> sizes;
@@ -90,7 +90,7 @@ namespace XULWin
             }
             else
             {
-                outSizes.push_back(inFlexValues[idx].OptSize);
+                outSizes.push_back(inFlexValues[idx].MinSize);
             }
         }
 

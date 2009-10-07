@@ -65,6 +65,9 @@ namespace XULWin
             // Create the image element
             AttributesMapping attr;
             attr["src"] = Utils::ToUTF8(&fileName[0]);
+            attr["flex"] = "1";
+            attr["width"] = "160";
+            attr["height"] = "160";
             ElementPtr image = Image::Create(imageArea, attr);
             image->init();
         }

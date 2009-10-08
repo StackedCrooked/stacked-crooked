@@ -868,7 +868,6 @@ namespace XULWin
     void NativeWindow::rebuildLayout()
     {
         BoxLayouter::rebuildLayout();
-        ::InvalidateRect(handle(), 0, FALSE);
     }        
 
 
@@ -965,6 +964,7 @@ namespace XULWin
             case WM_SIZE:
             {
                 rebuildLayout();
+                ::InvalidateRect(handle(), 0, FALSE);
                 break;
             }
             case WM_CLOSE:
@@ -2524,7 +2524,7 @@ namespace XULWin
 
     int NativeProgressMeter::getValue() const
     {
-        return ::Utils::getProgressMeterProgress(handle());
+        return Utils::getProgressMeterProgress(handle());
     }
 
 

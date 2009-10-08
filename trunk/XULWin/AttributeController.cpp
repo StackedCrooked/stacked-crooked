@@ -246,6 +246,18 @@ namespace XULWin
     }
 
 
+    void KeepAspectRatioController::get(std::string & outKeepAspectRatio)
+    {
+        outKeepAspectRatio = Bool2String(getKeepAspectRatio());
+    }
+
+
+    void KeepAspectRatioController::set(const std::string & inKeepAspectRatio)
+    {
+        setKeepAspectRatio(String2Bool(inKeepAspectRatio, true));
+    }
+
+
     void PointsController::get(std::string & outValue)
     {
         outValue = Points2String(getPoints());

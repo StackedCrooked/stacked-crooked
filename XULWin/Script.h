@@ -16,7 +16,7 @@ namespace XULWin
 
         static const char * Type() { return "script"; }
 
-        virtual void init();
+        virtual bool init();
     
     private:
         friend class Element;

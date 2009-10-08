@@ -29,9 +29,10 @@ namespace XULWin
     }
 
 
-    void Script::init()
+    bool Script::init()
     {
         setAttribute("value", innerText());
+        return Element::init();
     }
 
     

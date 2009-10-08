@@ -51,7 +51,7 @@ namespace XULWin
         ~Element();
 
         // called by parser at end-element event
-        virtual void init() {}
+        virtual bool init();
 
         const std::string & type() const;
 
@@ -197,7 +197,7 @@ namespace XULWin
 
         static const char * Type() { return "description"; }
 
-        virtual void init();
+        virtual bool init();
     
     private:
         friend class Element;
@@ -345,7 +345,7 @@ namespace XULWin
 
         virtual ~MenuItem();
 
-        virtual void init();
+        virtual bool init();
 
         std::string label() const;
 
@@ -654,8 +654,6 @@ namespace XULWin
 
         virtual ~TabPanel();
 
-        virtual void init();
-
     private:
         friend class Element;
         TabPanel(Element * inParent, const AttributesMapping & inAttributesMapping);
@@ -684,8 +682,6 @@ namespace XULWin
 
         static const char * Type() { return "caption"; }
 
-        virtual void init();
-    
     private:
         friend class Element;
         Caption(Element * inParent, const AttributesMapping & inAttributesMapping);
@@ -701,8 +697,6 @@ namespace XULWin
         virtual ~Tree();
 
         static const char * Type() { return "tree"; }
-
-        virtual void init();
     
     private:
         friend class Element;
@@ -735,8 +729,6 @@ namespace XULWin
         static const char * Type() { return "treeitem"; }
 
         virtual ~TreeItem();
-
-        virtual void init();
 
     private:
         friend class Element;
@@ -808,35 +800,67 @@ namespace XULWin
     };
 
 
-    class StatusBar : public Element
+    class Statusbar : public Element
     {
     public:
         static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
-        { return Element::Create<StatusBar>(inParent, inAttr); }
+        { return Element::Create<Statusbar>(inParent, inAttr); }
 
         static const char * Type() { return "statusbar"; }
 
-        virtual ~StatusBar();
+        virtual ~Statusbar();
 
     private:
         friend class Element;
-        StatusBar(Element * inParent, const AttributesMapping & inAttributesMapping);
+        Statusbar(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 
-    class StatusBarPanel : public Element
+    class StatusbarPanel : public Element
     {
     public:
         static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
-        { return Element::Create<StatusBarPanel>(inParent, inAttr); }
+        { return Element::Create<StatusbarPanel>(inParent, inAttr); }
 
         static const char * Type() { return "statusbarpanel"; }
 
-        virtual ~StatusBarPanel();
+        virtual ~StatusbarPanel();
 
     private:
         friend class Element;
-        StatusBarPanel(Element * inParent, const AttributesMapping & inAttributesMapping);
+        StatusbarPanel(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class Toolbar : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<Toolbar>(inParent, inAttr); }
+
+        static const char * Type() { return "toolbar"; }
+
+        virtual ~Toolbar();
+
+    private:
+        friend class Element;
+        Toolbar(Element * inParent, const AttributesMapping & inAttributesMapping);
+    };
+
+
+    class ToolbarButton : public Element
+    {
+    public:
+        static ElementPtr Create(Element * inParent, const AttributesMapping & inAttr)
+        { return Element::Create<ToolbarButton>(inParent, inAttr); }
+
+        static const char * Type() { return "toolbarbutton"; }
+
+        virtual ~ToolbarButton();
+
+    private:
+        friend class Element;
+        ToolbarButton(Element * inParent, const AttributesMapping & inAttributesMapping);
     };
 
 

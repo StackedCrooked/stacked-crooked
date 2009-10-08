@@ -64,7 +64,9 @@ namespace XULWin
                         boost::noncopyable
     {
     public:
-        virtual ~ElementImpl() = 0{}
+        virtual ~ElementImpl() = 0{}        
+
+        virtual bool initImpl() = 0;
 
         // WidthController methods
         // Returns value from last call to setWidth. If setWidth has not yet
@@ -301,6 +303,8 @@ namespace XULWin
         ConcreteElement(ElementImpl * inParent);
 
         virtual ~ConcreteElement() = 0;
+
+        virtual bool initImpl();
 
         // WidthController methods
         // Returns value from last call to setWidth. If setWidth has not yet
@@ -1258,7 +1262,7 @@ namespace XULWin
 
         TabPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual void initImpl();
+        virtual bool initImpl();
     };
 
 
@@ -1309,7 +1313,7 @@ namespace XULWin
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
-        virtual void initImpl();
+        virtual bool initImpl();
     };
     
 
@@ -1355,7 +1359,7 @@ namespace XULWin
 
         HTREEITEM addInfo(HTREEITEM inRoot, HTREEITEM inPrev, const TreeItemInfo & inInfo);
 
-        virtual void initImpl();
+        virtual bool initImpl();
     };
 
     
@@ -1381,7 +1385,7 @@ namespace XULWin
 
         TreeItemImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
-        virtual void initImpl();
+        virtual bool initImpl();
 
         const TreeItemInfo & itemInfo() const { return mItemInfo; }
 
@@ -1454,13 +1458,13 @@ namespace XULWin
 
 
 
-    class StatusBarImpl : public NativeControl,
+    class StatusbarImpl : public NativeControl,
                           public BoxLayouter
     {
     public:
         typedef NativeControl Super;
 
-        StatusBarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        StatusbarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
@@ -1487,18 +1491,74 @@ namespace XULWin
 
 
 
-    class StatusBarPanelImpl : public NativeControl
+    class StatusbarPanelImpl : public NativeControl
     {
     public:
         typedef NativeControl Super;
 
-        StatusBarPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+        StatusbarPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual bool initAttributeControllers();
 
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+    };
+
+
+
+    class ToolbarImpl : public NativeControl,
+                          public BoxLayouter
+    {
+    public:
+        typedef NativeControl Super;
+
+        ToolbarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual bool initAttributeControllers();
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+        virtual Orient getOrient() const;
+
+        virtual Align getAlign() const;
+
+        virtual size_t numChildren() const;
+
+        virtual const ElementImpl * getChild(size_t idx) const;
+
+        virtual ElementImpl * getChild(size_t idx);
+
+        virtual Rect clientRect() const;
+
+        virtual void rebuildChildLayouts();
+
+        virtual void rebuildLayout();
+    };
+
+
+    class ToolbarButtonImpl : public PassiveComponent,
+                              public virtual LabelController
+    {
+    public:
+        typedef PassiveComponent Super;
+
+        ToolbarButtonImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual bool initAttributeControllers();
+
+        virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
+
+        virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
+
+        virtual std::string getLabel() const;
+
+        virtual void setLabel(const std::string & inLabel);
+
+    private:
+        std::string mLabel;
     };
 
 

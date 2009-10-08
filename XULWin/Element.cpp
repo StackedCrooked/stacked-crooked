@@ -32,7 +32,13 @@ namespace XULWin
         mChildren.clear();
     }
 
+    
+    bool Element::init()
+    {
+        return impl()->initImpl();
+    }
 
+    
     const std::string & Element::type() const
     {
         return mType;
@@ -150,6 +156,7 @@ namespace XULWin
         if (mImpl)
         {
             mImpl->initAttributeControllers();
+            mImpl->initImpl();
         }
     }
 
@@ -310,9 +317,10 @@ namespace XULWin
     }
 
 
-    void Description::init()
+    bool Description::init()
     {
         setAttribute("value", innerText());
+        return Element::init();
     }
 
 
@@ -536,7 +544,7 @@ namespace XULWin
     }
 
 
-    void MenuItem::init()
+    bool MenuItem::init()
     {
         if (MenuPopup * popup = mParent->downcast<MenuPopup>())
         {
@@ -546,6 +554,7 @@ namespace XULWin
         {
             ReportError("MenuItem is located in non-compatible container.");
         }
+        return Element::init();
     }
 
     
@@ -793,15 +802,6 @@ namespace XULWin
     TabPanel::~TabPanel()
     {
     }
-    
-
-    void TabPanel::init()
-    {
-        if (TabPanelImpl * panel = impl()->downcast<TabPanelImpl>())
-        {
-            panel->initImpl();
-        }
-    }
 
 
     GroupBox::GroupBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
@@ -819,12 +819,6 @@ namespace XULWin
     {
     }
 
-   
-    void Caption::init()
-    {
-        impl()->downcast<CaptionImpl>()->initImpl();
-    }
-
 
     Tree::Tree(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Tree::Type(),
@@ -836,12 +830,6 @@ namespace XULWin
 
     Tree::~Tree()
     {
-    }
-
-    
-    void Tree::init()
-    {
-        impl()->downcast<TreeImpl>()->initImpl();
     }
 
 
@@ -868,12 +856,6 @@ namespace XULWin
 
     TreeItem::~TreeItem()
     {
-    }
-
-    
-    void TreeItem::init()
-    {
-        impl()->downcast<TreeItemImpl>()->initImpl();
     }
 
 
@@ -929,28 +911,54 @@ namespace XULWin
     }
 
     
-    StatusBar::StatusBar(Element * inParent, const AttributesMapping & inAttributesMapping) :
-        Element(StatusBar::Type(),
+    Statusbar::Statusbar(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Statusbar::Type(),
                 inParent,
-                new StatusBarImpl(inParent->impl(), inAttributesMapping))
+                new StatusbarImpl(inParent->impl(), inAttributesMapping))
     {
     }
 
 
-    StatusBar::~StatusBar()
+    Statusbar::~Statusbar()
     {
     }
 
     
-    StatusBarPanel::StatusBarPanel(Element * inParent, const AttributesMapping & inAttributesMapping) :
-        Element(StatusBarPanel::Type(),
+    StatusbarPanel::StatusbarPanel(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(StatusbarPanel::Type(),
                 inParent,
-                new StatusBarPanelImpl(inParent->impl(), inAttributesMapping))
+                new StatusbarPanelImpl(inParent->impl(), inAttributesMapping))
     {
     }
 
 
-    StatusBarPanel::~StatusBarPanel()
+    StatusbarPanel::~StatusbarPanel()
+    {
+    }
+
+    
+    Toolbar::Toolbar(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(Toolbar::Type(),
+                inParent,
+                new ToolbarImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    Toolbar::~Toolbar()
+    {
+    }
+
+    
+    ToolbarButton::ToolbarButton(Element * inParent, const AttributesMapping & inAttributesMapping) :
+        Element(ToolbarButton::Type(),
+                inParent,
+                new ToolbarButtonImpl(inParent->impl(), inAttributesMapping))
+    {
+    }
+
+
+    ToolbarButton::~ToolbarButton()
     {
     }
 

@@ -28,18 +28,15 @@ namespace XULWin
 
         XULRunner runner;
         mRootElement = runner.loadXUL("chrome://imageviewer/content/imageviewer.xul");
-        
-        Window * win = mRootElement->downcast<Window>();
-        if (!win)
+        if (!mRootElement)
         {
             return;
         }
 
         ScopedEventListener events;
-        events.connect(win, WM_DROPFILES, boost::bind(&ImageViewer::dropFiles, this, _1, _2));
-
+        events.connect(mRootElement.get(), WM_DROPFILES, boost::bind(&ImageViewer::dropFiles, this, _1, _2));
        
-        if (mNativeWindow = win->impl()->downcast<NativeWindow>())
+        if (mNativeWindow = mRootElement->impl()->downcast<NativeWindow>())
         {
             ::DragAcceptFiles(mNativeWindow->handle(), TRUE);
             mNativeWindow->showModal();
@@ -72,9 +69,8 @@ namespace XULWin
             ElementPtr image = Image::Create(imageArea, attr);
             image->init();
         }
-        mRootElement->impl()->rebuildLayout();
-        HWND hwnd = mRootElement->impl()->downcast<NativeWindow>()->handle();
-        ::RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+        mNativeWindow->rebuildLayout();
+        ::RedrawWindow(mNativeWindow->handle(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
     }
 
 

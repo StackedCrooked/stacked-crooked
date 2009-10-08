@@ -22,6 +22,8 @@ namespace XULWin
         Decorator(ElementImplPtr inDecoratedElement);
 
         virtual ~Decorator();
+
+        virtual bool initImpl();
         
         // WidthController methods
         virtual int getWidth() const;

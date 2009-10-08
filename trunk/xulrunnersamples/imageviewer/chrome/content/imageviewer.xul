@@ -11,6 +11,7 @@
     <label value="Drag your images here."></label>
     <spacer flex="1"></spacer>
   </hbox>
+    
   <hbox id="imagearea" flex="1" align="center" style="overflow:auto">
   </hbox>
 </window>

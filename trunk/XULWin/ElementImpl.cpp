@@ -64,6 +64,12 @@ namespace XULWin
     {
     }
 
+
+    bool ConcreteElement::initImpl()
+    {
+        return true;
+    }
+
     
     const RGBColor & ConcreteElement::getCSSFill() const
     {
@@ -3075,12 +3081,13 @@ namespace XULWin
     }
         
     
-    void TabPanelImpl::initImpl()
+    bool TabPanelImpl::initImpl()
     {
         if (TabPanelsImpl * parent = owningElement()->parent()->impl()->downcast<TabPanelsImpl>())
         {
             parent->addTabPanel(this);
         }
+        return Super::initImpl();
     }
 
 
@@ -3236,12 +3243,13 @@ namespace XULWin
     }
 
 
-    void CaptionImpl::initImpl()
+    bool CaptionImpl::initImpl()
     {
         if (GroupBoxImpl * groupBox = mParent->downcast<GroupBoxImpl>())
         {
             groupBox->setCaption(mElement->getAttribute("label"));
         }
+        return Super::initImpl();
     }
 
 
@@ -3304,7 +3312,7 @@ namespace XULWin
     }
     
     
-    void TreeImpl::initImpl()
+    bool TreeImpl::initImpl()
     {
         if (TreeChildrenImpl * children = findChildOfType<TreeChildrenImpl>())
         {
@@ -3316,6 +3324,7 @@ namespace XULWin
                 }
             }
         }
+        return Super::initImpl();
     }
 
 
@@ -3417,7 +3426,7 @@ namespace XULWin
     }
 
 
-    void TreeItemImpl::initImpl()
+    bool TreeItemImpl::initImpl()
     {
         if (TreeRowImpl * row = findChildOfType<TreeRowImpl>())
         {
@@ -3438,6 +3447,7 @@ namespace XULWin
                 }
             }
         }
+        return Super::initImpl();
     }
 
 
@@ -3531,19 +3541,19 @@ namespace XULWin
     }
 
 
-    StatusBarImpl::StatusBarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+    StatusbarImpl::StatusbarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent, inAttributesMapping, STATUSCLASSNAME, 0, SBARS_SIZEGRIP)
     {
     }
 
 
-    bool StatusBarImpl::initAttributeControllers()
+    bool StatusbarImpl::initAttributeControllers()
     {
         return Super::initAttributeControllers();
     }
 
 
-    int StatusBarImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    int StatusbarImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         int result = 0;
         for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
@@ -3555,43 +3565,43 @@ namespace XULWin
     }
 
 
-    int StatusBarImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    int StatusbarImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Defaults::statusBarHeight();
     }
 
 
-    Orient StatusBarImpl::getOrient() const
+    Orient StatusbarImpl::getOrient() const
     {
         return Horizontal;
     }
 
 
-    Align StatusBarImpl::getAlign() const
+    Align StatusbarImpl::getAlign() const
     {
         return Center;
     }
 
 
-    size_t StatusBarImpl::numChildren() const
+    size_t StatusbarImpl::numChildren() const
     {
         return owningElement()->children().size();
     }
 
 
-    const ElementImpl * StatusBarImpl::getChild(size_t idx) const
+    const ElementImpl * StatusbarImpl::getChild(size_t idx) const
     {
         return owningElement()->children()[idx]->impl();
     }
 
 
-    ElementImpl * StatusBarImpl::getChild(size_t idx)
+    ElementImpl * StatusbarImpl::getChild(size_t idx)
     {
         return owningElement()->children()[idx]->impl();
     }
 
 
-    Rect StatusBarImpl::clientRect() const
+    Rect StatusbarImpl::clientRect() const
     {
         Rect clientRect(Super::clientRect());
         // Substract from with one square to make place for the resize gripper widget
@@ -3599,39 +3609,173 @@ namespace XULWin
     }
 
 
-    void StatusBarImpl::rebuildLayout()
+    void StatusbarImpl::rebuildLayout()
     {
         BoxLayouter::rebuildLayout();
     }
 
 
-    void StatusBarImpl::rebuildChildLayouts()
+    void StatusbarImpl::rebuildChildLayouts()
     {
         Super::rebuildChildLayouts();
     }
 
 
-    StatusBarPanelImpl::StatusBarPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+    StatusbarPanelImpl::StatusbarPanelImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         NativeControl(inParent, inAttributesMapping, TEXT("STATIC"), 0, 0)
     {
     }
 
 
-    bool StatusBarPanelImpl::initAttributeControllers()
+    bool StatusbarPanelImpl::initAttributeControllers()
     {
         return Super::initAttributeControllers();
     }
 
 
-    int StatusBarPanelImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    int StatusbarPanelImpl::calculateWidth(SizeConstraint inSizeConstraint) const
     {
         return Utils::getTextSize(handle(), getLabel()).cx;
     }
 
 
-    int StatusBarPanelImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    int StatusbarPanelImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
         return Utils::getTextSize(handle(), getLabel()).cy;
+    }
+
+
+    ToolbarImpl::ToolbarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeControl(inParent, inAttributesMapping, TOOLBARCLASSNAME, 0, TBSTYLE_TRANSPARENT
+		                                                                    | TBSTYLE_LIST
+		                                                                    | TBSTYLE_TOOLTIPS
+		                                                                    | CCS_NODIVIDER
+		                                                                    | CCS_NOPARENTALIGN
+		                                                                    | CCS_NORESIZE
+		                                                                    | CCS_TOP
+		                                                                    | CCS_NODIVIDER
+		                                                                    | CCS_NORESIZE)
+    {			
+       
+    }
+
+
+    bool ToolbarImpl::initAttributeControllers()
+    {
+        return Super::initAttributeControllers();
+    }
+
+
+    int ToolbarImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * child = owningElement()->children()[idx]->impl();
+            result += child->calculateWidth(inSizeConstraint);
+        }
+        return result;
+    }
+
+
+    int ToolbarImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        return Defaults::statusBarHeight();
+    }
+
+
+    Orient ToolbarImpl::getOrient() const
+    {
+        return Horizontal;
+    }
+
+
+    Align ToolbarImpl::getAlign() const
+    {
+        return Center;
+    }
+
+
+    size_t ToolbarImpl::numChildren() const
+    {
+        return owningElement()->children().size();
+    }
+
+
+    const ElementImpl * ToolbarImpl::getChild(size_t idx) const
+    {
+        return owningElement()->children()[idx]->impl();
+    }
+
+
+    ElementImpl * ToolbarImpl::getChild(size_t idx)
+    {
+        return owningElement()->children()[idx]->impl();
+    }
+
+
+    Rect ToolbarImpl::clientRect() const
+    {
+        Rect clientRect(Super::clientRect());
+        // Substract from with one square to make place for the resize gripper widget
+        return Rect(clientRect.x(), clientRect.y(), clientRect.width() - Defaults::statusBarHeight(), clientRect.height());
+    }
+
+
+    void ToolbarImpl::rebuildLayout()
+    {
+        BoxLayouter::rebuildLayout();
+    }
+
+
+    void ToolbarImpl::rebuildChildLayouts()
+    {
+        Super::rebuildChildLayouts();
+    }
+
+
+    ToolbarButtonImpl::ToolbarButtonImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        PassiveComponent(inParent, inAttributesMapping)
+    {
+    }
+
+
+    bool ToolbarButtonImpl::initAttributeControllers()
+    {
+        setAttributeController("label", static_cast<LabelController*>(this));
+        return Super::initAttributeControllers();
+    }
+
+
+    int ToolbarButtonImpl::calculateWidth(SizeConstraint inSizeConstraint) const
+    {
+        if (ToolbarImpl * toolbarImpl = parent()->downcast<ToolbarImpl>())
+        {
+            return Utils::getTextSize(toolbarImpl->handle(), getLabel()).cx;
+        }
+        return 0;
+    }
+
+
+    int ToolbarButtonImpl::calculateHeight(SizeConstraint inSizeConstraint) const
+    {
+        if (ToolbarImpl * toolbarImpl = parent()->downcast<ToolbarImpl>())
+        {
+            return Utils::getTextSize(toolbarImpl->handle(), getLabel()).cy;
+        }
+        return 0;
+    }
+    
+    
+    std::string ToolbarButtonImpl::getLabel() const
+    {
+        return mLabel;
+    }
+
+    
+    void ToolbarButtonImpl::setLabel(const std::string & inLabel)
+    {
+        mLabel = inLabel;
     }
 
 

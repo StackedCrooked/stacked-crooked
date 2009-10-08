@@ -31,6 +31,16 @@ namespace XULWin
     }
 
 
+    bool Decorator::initImpl()
+    {
+        if (mDecoratedElement)
+        {
+            return mDecoratedElement->initImpl();
+        }
+        return false;
+    }
+
+
     int Decorator::getWidth() const
     {
         if (mDecoratedElement)

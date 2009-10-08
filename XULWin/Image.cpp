@@ -18,6 +18,7 @@ namespace XULWin
 
     class NativeImage : public NativeControl,
                         public virtual SrcController,
+                        public virtual KeepAspectRatioController,
                         public GdiplusLoader
     {
     public:
@@ -37,7 +38,11 @@ namespace XULWin
         
         virtual int getHeight(SizeConstraint inSizeConstraint) const;
 
-        bool initAttributeControllers();
+        virtual bool getKeepAspectRatio() const;
+
+        virtual void setKeepAspectRatio(bool inKeepAspectRatio);
+
+        virtual bool initAttributeControllers();
         
         virtual LRESULT handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam);
 
@@ -48,6 +53,7 @@ namespace XULWin
 
         boost::scoped_ptr<Gdiplus::Bitmap> mImage;
         std::string mSrc;
+        bool mKeepAspectRatio;
     };
 
 
@@ -60,7 +66,8 @@ namespace XULWin
 
 
     NativeImage::NativeImage(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeControl(inParent, inAttributesMapping, L"STATIC", 0, 0)
+        NativeControl(inParent, inAttributesMapping, L"STATIC", 0, 0),
+        mKeepAspectRatio(false)
     {
     }
 
@@ -104,8 +111,8 @@ namespace XULWin
             return;
         }
 
-        float resizeFactorX = mWidth.getValue()/optimalWidth;
-        float resizeFactorY = mHeight.getValue()/optimalHeight;
+        float resizeFactorX = mWidth.or(mHeight.or(MAXINT32))/optimalWidth;
+        float resizeFactorY = mHeight.or(mWidth.or(MAXINT32))/optimalHeight;
         float resizeFactor = std::min<float>(resizeFactorX, resizeFactorY);
 		
         width = (int)(resizeFactor*optimalWidth + 0.5f);
@@ -124,7 +131,14 @@ namespace XULWin
     
     int NativeImage::getWidth(SizeConstraint inSizeConstraint) const
     {
-        if (mWidth && mHeight)
+        if (mWidth && mHeight && getKeepAspectRatio())
+        {
+            int width = 0;
+            int height = 0;  
+            getWidthAndHeight(width, height);
+            return width;
+        }
+        else if (mHeight && !mWidth)
         {
             int width = 0;
             int height = 0;  
@@ -140,7 +154,15 @@ namespace XULWin
     
     int NativeImage::getHeight(SizeConstraint inSizeConstraint) const
     {
-        if (mWidth && mHeight)
+        
+        if (mWidth && mHeight && getKeepAspectRatio())
+        {
+            int width = 0;
+            int height = 0;  
+            getWidthAndHeight(width, height);
+            return height;
+        }
+        else if (mWidth && !mHeight)
         {
             int width = 0;
             int height = 0;  
@@ -151,6 +173,18 @@ namespace XULWin
         {
             return Super::getHeight();
         }
+    }
+    
+    
+    bool NativeImage::getKeepAspectRatio() const
+    {
+        return mKeepAspectRatio;
+    }
+
+
+    void NativeImage::setKeepAspectRatio(bool inKeepAspectRatio)
+    {
+        mKeepAspectRatio = inKeepAspectRatio;
     }
 
 
@@ -189,6 +223,7 @@ namespace XULWin
     bool NativeImage::initAttributeControllers()
     {
         Super::setAttributeController("src", static_cast<SrcController*>(this));
+        Super::setAttributeController("keepaspectratio", static_cast<KeepAspectRatioController*>(this));
         return Super::initAttributeControllers();
     }
 

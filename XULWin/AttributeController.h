@@ -320,6 +320,27 @@ namespace XULWin
     };
 
 
+    /**
+     * This is a non-standard extension that applies to Image elements only.
+     * The attribute "keepaspectratio" has a boolean value indicating that the
+     * resized width and height should be congruent with the natural width and
+     * height.
+     */
+    class KeepAspectRatioController : public AttributeController
+    {
+    public:
+        KeepAspectRatioController(){}
+
+        virtual void get(std::string & outPageIncrement);
+
+        virtual void set(const std::string & inPageIncrement);
+
+        virtual bool getKeepAspectRatio() const = 0;
+
+        virtual void setKeepAspectRatio(bool inKeepAspectRatio) = 0;
+    };
+
+
     class PointsController : public AttributeController
     {
     public:

@@ -38,6 +38,8 @@ namespace XULWin
         
         virtual int getHeight(SizeConstraint inSizeConstraint) const;
 
+        virtual void move(int x, int y, int w, int h);
+
         virtual bool getKeepAspectRatio() const;
 
         virtual void setKeepAspectRatio(bool inKeepAspectRatio);
@@ -52,6 +54,7 @@ namespace XULWin
         void getWidthAndHeight(int & outWidth, int & outHeight) const;
 
         boost::scoped_ptr<Gdiplus::Bitmap> mImage;
+        boost::scoped_ptr<Gdiplus::Bitmap> mCachedImage;
         std::string mSrc;
         bool mKeepAspectRatio;
     };
@@ -138,6 +141,7 @@ namespace XULWin
             getWidthAndHeight(width, height);
             return width;
         }
+        // deduce width from height
         else if (mHeight && !mWidth)
         {
             int width = 0;
@@ -145,9 +149,14 @@ namespace XULWin
             getWidthAndHeight(width, height);
             return width;
         }
+        // if flex=0, then choose the natural width & height
+        else if (!mWidth && !mHeight && getFlex() == 0)
+        {
+            return mImage->GetWidth();
+        }
         else
         {
-            return Super::getWidth();
+            return Super::getWidth(inSizeConstraint);
         }
     }
         
@@ -162,6 +171,7 @@ namespace XULWin
             getWidthAndHeight(width, height);
             return height;
         }
+        // deduce height from width
         else if (mWidth && !mHeight)
         {
             int width = 0;
@@ -169,10 +179,31 @@ namespace XULWin
             getWidthAndHeight(width, height);
             return height;
         }
+        // if flex=0, then choose the natural width & height
+        else if (!mWidth && !mHeight && getFlex() == 0)
+        {
+            return mImage->GetHeight();
+        }
         else
         {
-            return Super::getHeight();
+            return Super::getHeight(inSizeConstraint);
         }
+    }
+    
+    
+    void NativeImage::move(int x, int y, int w, int h)
+    {
+        if (mImage && (w != clientRect().width() || h != clientRect().height()))
+        {
+            // create a resized copy of the original
+            mCachedImage.reset(new Gdiplus::Bitmap(w, h, PixelFormat32bppARGB));
+        	
+            Gdiplus::Graphics g(mCachedImage.get());
+            g.SetInterpolationMode(Gdiplus::InterpolationModeHighQuality);
+            g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);        	
+            g.DrawImage(mImage.get(), Gdiplus::Rect(0, 0, INT(w), INT(h)));
+        }
+        Super::move(x, y, w, h);
     }
     
     
@@ -233,7 +264,14 @@ namespace XULWin
         Gdiplus::Graphics g(inHDC);        
         g.SetInterpolationMode(Gdiplus::InterpolationModeHighQuality);
         g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
-        g.DrawImage(mImage.get(), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+        if (mCachedImage)
+        {
+            g.DrawImage(mCachedImage.get(), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+        }
+        else if (mImage)
+        {
+            g.DrawImage(mImage.get(), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+        }
     }
 
 

@@ -67,6 +67,7 @@ namespace XULWin
             attr["src"] = Utils::ToUTF8(&fileName[0]);
             attr["flex"] = "1";
             attr["width"] = "160";
+            attr["flex"] = "0";
             attr["keepaspectratio"] = "1";
             ElementPtr image = Image::Create(imageArea, attr);
             image->init();

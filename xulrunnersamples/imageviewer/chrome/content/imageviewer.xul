@@ -6,7 +6,7 @@
         width="400"
         height="400"
         >
-  
-  <vbox id="imagearea" flex="0" align="center">
-  </vbox>
+  <label value="Drag your images here."></label>
+  <hbox id="imagearea" flex="1" align="center" style="overflow:auto">
+  </hbox>
 </window>

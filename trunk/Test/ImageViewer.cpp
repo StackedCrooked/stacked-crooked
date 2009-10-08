@@ -72,6 +72,9 @@ namespace XULWin
             ElementPtr image = Image::Create(imageArea, attr);
             image->init();
         }
+        mRootElement->impl()->rebuildLayout();
+        HWND hwnd = mRootElement->impl()->downcast<NativeWindow>()->handle();
+        ::RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
     }
 
 

@@ -1198,16 +1198,43 @@ namespace XULWin
     
     void NativeControl::move(int x, int y, int w, int h)
     {
-        std::string type = mElement->type();
-        ::MoveWindow(handle(), x, y, w, h, FALSE);
+        if (NativeComponent * nativeParent = dynamic_cast<NativeComponent*>(parent()))
+        {
+			// This situation occurs if the scroll decorator created a STATIC window for
+			// the scrollable rectangular area. This new context requires that we
+			// re-adjust the x and y coords.
+            Rect scrollRect = nativeParent->clientRect();
+            ::MoveWindow(handle(), x - scrollRect.x(), y - scrollRect.y(), w, h, FALSE);
+        }
+        else
+        {
+			// If the parent is a virtual element, then we can position this control normally.
+            ::MoveWindow(handle(), x, y, w, h, FALSE);
+        }
     }
     
     
     Rect NativeControl::clientRect() const
     {
-        RECT rc;
-        ::GetClientRect(handle(), &rc);
-        return Rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+        HWND hwndParent = ::GetParent(handle());
+        if (!hwndParent)
+        {
+            RECT rc;
+            ::GetClientRect(handle(), &rc);
+        }
+
+        RECT rc_parent;
+        ::GetClientRect(hwndParent, &rc_parent);
+        ::MapWindowPoints(hwndParent, HWND_DESKTOP, (LPPOINT)&rc_parent, 2);
+
+        RECT rc_self;
+        ::GetClientRect(handle(), &rc_self);
+        ::MapWindowPoints(handle(), HWND_DESKTOP, (LPPOINT)&rc_self, 2);
+
+        
+        int x = rc_self.left - rc_parent.left;
+        int y = rc_self.top - rc_parent.top;
+        return Rect(x, y, rc_self.right - rc_self.left, rc_self.bottom - rc_self.top);
     }
     
     

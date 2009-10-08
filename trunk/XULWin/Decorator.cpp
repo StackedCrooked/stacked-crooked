@@ -670,7 +670,7 @@ namespace XULWin
         {
             mHorizontalScrollbar->impl()->move(
                 clientRect.x(),
-                clientRect.height(),
+                clientRect.y() + clientRect.height(),
                 clientRect.width(),
                 Defaults::scrollbarWidth());
             mOldHorScrollPos = 0;
@@ -678,7 +678,7 @@ namespace XULWin
         if (mOverflowY != CSSOverflow_Hidden)
         {
             mVerticalScrollbar->impl()->move(
-                clientRect.width(),
+                clientRect.x() + clientRect.width(),
                 clientRect.y(),
                 Defaults::scrollbarWidth(),
                 clientRect.height());

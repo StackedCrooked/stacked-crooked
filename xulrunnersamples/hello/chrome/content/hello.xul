@@ -3,16 +3,12 @@
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:svg="http://www.w3.org/2000/svg"
         screenX="0" 
-        screenY="300" 
+        screenY="0"
+        orient="vertical"
+        align="stretch"
         >
-  <vbox flex="1">
-    <button label="Be the one"></button>
+  <label value="Test"></label>
+  <vbox flex="1" align="stretch">
+    <button label="Be the one" ></button>
   </vbox>
-  <statusbar>
-    <statusbarpanel label="Left panel"/>
-    <spacer flex="1"/>
-    <progressmeter mode="determined" value="82"/>
-    <statusbarpanel label="Right panel"/>
-  </statusbar>
-
 </window>

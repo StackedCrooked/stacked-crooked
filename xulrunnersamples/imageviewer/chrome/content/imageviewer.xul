@@ -6,7 +6,11 @@
         width="400"
         height="400"
         >
-  <label value="Drag your images here."></label>
+  <hbox>
+    <spacer flex="1"></spacer>
+    <label value="Drag your images here."></label>
+    <spacer flex="1"></spacer>
+  </hbox>
   <hbox id="imagearea" flex="1" align="center" style="overflow:auto">
   </hbox>
 </window>

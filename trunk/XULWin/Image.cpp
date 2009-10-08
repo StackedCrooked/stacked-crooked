@@ -134,12 +134,19 @@ namespace XULWin
     
     int NativeImage::getWidth(SizeConstraint inSizeConstraint) const
     {
-        if (mWidth && mHeight && getKeepAspectRatio())
+        if (mWidth)
         {
-            int width = 0;
-            int height = 0;  
-            getWidthAndHeight(width, height);
-            return width;
+            if (mHeight && getKeepAspectRatio())
+            {
+                int width = 0;
+                int height = 0;  
+                getWidthAndHeight(width, height);
+                return width;
+            }
+            else
+            {
+                return mWidth;
+            }
         }
         // deduce width from height
         else if (mHeight && !mWidth)
@@ -162,14 +169,20 @@ namespace XULWin
         
     
     int NativeImage::getHeight(SizeConstraint inSizeConstraint) const
-    {
-        
-        if (mWidth && mHeight && getKeepAspectRatio())
+    {        
+        if (mHeight)
         {
-            int width = 0;
-            int height = 0;  
-            getWidthAndHeight(width, height);
-            return height;
+            if (mWidth && getKeepAspectRatio())
+            {
+                int width = 0;
+                int height = 0;  
+                getWidthAndHeight(width, height);
+                return height;
+            }
+            else
+            {
+                return mHeight;
+            }
         }
         // deduce height from width
         else if (mWidth && !mHeight)

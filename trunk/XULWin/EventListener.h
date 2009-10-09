@@ -13,11 +13,11 @@ namespace XULWin
     class EventListener
     {
     public:
-        virtual void handleCommand(Element * inSender, WORD inNotificationCode) = 0;        
+        virtual LRESULT handleCommand(Element * inSender, WORD inNotificationCode) = 0;        
         
-        virtual void handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam) = 0;
+        virtual LRESULT handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam) = 0;
 
-        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
+        virtual LRESULT handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam) = 0;
     };
 
 
@@ -29,7 +29,7 @@ namespace XULWin
 
         virtual ~ScopedEventListener();
 
-        typedef boost::function<void(WPARAM, LPARAM)> Action;
+        typedef boost::function<LRESULT(WPARAM, LPARAM)> Action;
 
         void connect(Element * inEl, const Action & inAction);
 
@@ -40,11 +40,11 @@ namespace XULWin
         void disconnect(Element * inEl, UINT inMessage);
 
     protected:
-        virtual void handleCommand(Element * inSender, WORD inNotificationCode);
-        virtual void handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam){}
-        virtual void handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
+        virtual LRESULT handleCommand(Element * inSender, WORD inNotificationCode);
+        virtual LRESULT handleDialogCommand(Element * inSender, WORD inNotificationCode, WPARAM wParam, LPARAM lParam) { return 1; }
+        virtual LRESULT handleMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
-        void processMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
+        LRESULT processMessage(Element * inSender, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
         typedef std::pair<Element*, UINT> MsgId;
         typedef std::map<MsgId, std::vector<Action> > MessageCallbacks;

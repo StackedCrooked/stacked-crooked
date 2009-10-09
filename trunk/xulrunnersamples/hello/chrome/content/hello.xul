@@ -2,10 +2,12 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:svg="http://www.w3.org/2000/svg"
+        orient="horizontal"
+        align="stretch"
         >
   <toolbar id="nav-toolbar" flex="1">
-    <toolbarbutton id="nav-users"  accesskey="U" label="Users"/>
-    <toolbarbutton id="nav-groups" accesskey="p" label="Groups"/>
-    <toolbarbutton id="nav-events" accesskey="E" label="Events" disabled="true"/>
+    <toolbarbutton label="Users"/>
+    <toolbarbutton label="Groups"/>
+    <toolbarbutton label="Events" disabled="true"/>
   </toolbar>
 </window>

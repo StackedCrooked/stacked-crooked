@@ -58,7 +58,7 @@ public:
         }
     }
 
-    void dropFiles(WPARAM wParam, LPARAM lParam)
+    LRESULT dropFiles(WPARAM wParam, LPARAM lParam)
     {
         std::vector<std::string> files;
         int numFiles = ::DragQueryFile((HDROP)wParam, 0xFFFFFFFF, 0, 0);
@@ -68,29 +68,33 @@ public:
             ::DragQueryFile((HDROP)wParam, idx, &fileName[0], MAX_PATH);
             files.push_back(Utils::ToUTF8(&fileName[0]));
         }
+        return 0;
     }
 
-    void showMessage(const std::string & inMessage)
+    LRESULT showMessage(const std::string & inMessage)
     {
         std::stringstream ss;
         ss << inMessage;
         ::MessageBoxA(0, ss.str().c_str(), "Message", MB_OK);
+        return 0;
     }
 
-    void showUpload()
+    LRESULT showUpload()
     {
         ::MessageBox(0, TEXT("Upload initiated!"), TEXT("Config panel"), MB_OK);
+        return 0;
     }
 
-    void addNewSet(const std::string & inSetName)
+    LRESULT addNewSet(const std::string & inSetName)
     { 
         AttributesMapping attr;
         attr["label"] = inSetName;
         ElementPtr item = MenuItem::Create(mSetsPopup, attr);
         item->init();
+        return 0;
     }
 
-    void showNewSetDialog()
+    LRESULT showNewSetDialog()
     {
         mNewSetDlg = mRunner.loadXUL("chrome://configpanel/content/newsetdialog.xul");
 
@@ -104,9 +108,10 @@ public:
         localEvents.connect(mNewSetCancel, boost::bind(&TestConfigSample::closeWindow, this, mNewSetDlg.get()));
 
         mNewSetDlg->impl()->downcast<NativeWindow>()->showModal();
+        return 0;
     }
 
-    void newSetOK()
+    LRESULT newSetOK()
     {        
         AttributesMapping attr;
         if (NativeTextBox * nativeTextBox = mNewSetTextBox->impl()->downcast<NativeTextBox>())
@@ -114,15 +119,18 @@ public:
             addNewSet(nativeTextBox->getValue());
         }
         closeWindow(mNewSetDlg.get());
+        return 0;
     }
 
-    void closeWindow(Element * inWindow)
+    LRESULT closeWindow(Element * inWindow)
     {
         if (NativeWindow * nativeWindow = inWindow->impl()->downcast<NativeWindow>())
         {
             ShowWindow(nativeWindow->handle(), SW_HIDE);
 		    PostQuitMessage(0);
+            return 0;
         }
+        return 1;
     }
 
 private:
@@ -165,10 +173,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //runConfigSample();
     //runImageViewerSample();
     XULTest::Tester tester;
-    //tester.runXULSample("hello");
+    tester.runXULSample("hello");
     //tester.runXULSample("widgets");
     //tester.runXULSample("tabbox");
-    tester.runXULSample("treeview");
+    //tester.runXULSample("treeview");
     //tester.runXULSample("configpanel");
     //tester.runXULSample("shout");
     //tester.runXULSample("svg");

@@ -56,6 +56,8 @@ namespace XULWin
 
         static int statusBarHeight() { return 14; }
 
+        static int toolbarHeight() { return 30; }
+
         namespace Attributes
         {
             static bool disabled() { return false; }

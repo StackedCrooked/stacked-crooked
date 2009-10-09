@@ -4,13 +4,16 @@
 
 #include "Element.h"
 #include "AttributeController.h"
-#include "StyleController.h"
 #include "Conversions.h"
 #include "EventListener.h"
+#include "Graphics.h"
 #include "Layout.h"
+#include "StyleController.h"
 #include "Utils/Fallible.h"
+#include "Utils/Toolbar.h"
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <map>
@@ -518,7 +521,9 @@ namespace XULWin
 
         NativeComponent(ElementImpl * inParent, const AttributesMapping & inAttributes);
 
-        virtual ~NativeComponent();        
+        virtual ~NativeComponent();             
+
+        virtual void setHandle(HWND inHandle, bool inPassOwnership);
 
         bool addEventListener(EventListener * inEventListener);
 
@@ -553,22 +558,36 @@ namespace XULWin
         static LRESULT CALLBACK MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam);
 
     protected:
+        static NativeComponent * FindComponentByHandle(HWND inHandle);
+
+        static NativeComponent * FindComponentById(int inId);
+
+        void registerHandle();
+        
+        void subclass();
+
+        void unsubclass();
+
+        void unregisterHandle();
+
         HWND mHandle;
         HMODULE mModuleHandle;
 
-        typedef std::map<int, NativeComponent*> ComponentsById;
-        static ComponentsById sComponentsById;
-
-        typedef std::map<HWND, NativeComponent*> Components;
-        static Components sComponentsByHandle;
-
-        WNDPROC mOrigProc;
 
         typedef std::set<EventListener*> EventListeners;
         EventListeners mEventListeners;
 
     private:
+        typedef std::map<int, NativeComponent*> ComponentsById;
+        static ComponentsById sComponentsById;
+
+        typedef std::map<HWND, NativeComponent*> ComponentsByHandle;
+        static ComponentsByHandle sComponentsByHandle;
+        
+        WNDPROC mOrigProc;
+
         static HMODULE sModuleHandle;
+        bool mOwnsHandle;
     };
 
 
@@ -610,6 +629,8 @@ namespace XULWin
 
         NativeWindow(const AttributesMapping & inAttributesMapping);
 
+        virtual ~NativeWindow();
+
         // BoxLayouter
         virtual Orient getOrient() const;
 
@@ -635,7 +656,7 @@ namespace XULWin
         virtual void setAttributeController(const std::string & inAttr, AttributeController * inController)
         { return Super::setAttributeController(inAttr, inController); }
 
-        void endModal();
+        LRESULT endModal();
 
         void showModal();
 
@@ -667,6 +688,9 @@ namespace XULWin
         typedef NativeComponent Super;
 
         NativeControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping, LPCTSTR inClassName, DWORD inExStyle, DWORD inStyle);
+
+        // use this constructor if you want to provide your own handle later using NativeControl::setHandle
+        NativeControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
 
         virtual ~NativeControl();
         
@@ -1508,12 +1532,17 @@ namespace XULWin
 
 
     class ToolbarImpl : public NativeControl,
-                          public BoxLayouter
+                        public Utils::Toolbar::EventHandler,
+                        public GdiplusLoader
     {
     public:
         typedef NativeControl Super;
 
         ToolbarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual ~ToolbarImpl();
+
+        virtual bool initImpl();
 
         virtual bool initAttributeControllers();
 
@@ -1521,21 +1550,15 @@ namespace XULWin
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
 
-        virtual Orient getOrient() const;
-
-        virtual Align getAlign() const;
-
-        virtual size_t numChildren() const;
-
-        virtual const ElementImpl * getChild(size_t idx) const;
-
-        virtual ElementImpl * getChild(size_t idx);
-
-        virtual Rect clientRect() const;
-
-        virtual void rebuildChildLayouts();
-
         virtual void rebuildLayout();
+
+        // Toolbar::EventHandler methods
+        virtual void onRequestFocus() {}
+
+        boost::shared_ptr<Utils::Toolbar> nativeToolbar() const { return mToolbar; }
+
+    private:
+        boost::shared_ptr<Utils::Toolbar> mToolbar;
     };
 
 
@@ -1546,6 +1569,8 @@ namespace XULWin
         typedef PassiveComponent Super;
 
         ToolbarButtonImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping);
+
+        virtual bool initImpl();
 
         virtual bool initAttributeControllers();
 

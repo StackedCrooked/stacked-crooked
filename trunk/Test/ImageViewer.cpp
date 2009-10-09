@@ -44,12 +44,12 @@ namespace XULWin
     }
 
 
-    void ImageViewer::dropFiles(WPARAM wParam, LPARAM lParam)
+    LRESULT ImageViewer::dropFiles(WPARAM wParam, LPARAM lParam)
     {
         Element * imageArea = mRootElement->getElementById("imagearea");
         if (!imageArea)
         {
-            return;
+            return 1;
         }
 
         int numFiles = ::DragQueryFile((HDROP)wParam, 0xFFFFFFFF, 0, 0);
@@ -71,6 +71,7 @@ namespace XULWin
         }
         mNativeWindow->rebuildLayout();
         ::RedrawWindow(mNativeWindow->handle(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+        return 0;
     }
 
 

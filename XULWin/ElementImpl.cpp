@@ -3,6 +3,7 @@
 #include "Defaults.h"
 #include "Layout.h"
 #include "Utils/ErrorReporter.h"
+#include "Utils/ToolbarItem.h"
 #include "Utils/WinUtils.h"
 #include "Poco/String.h"
 #include <boost/bind.hpp>
@@ -19,7 +20,7 @@ namespace XULWin
 
     int CommandId::sId = 101; // start handleCommand Ids at 101 to avoid conflicts with Windows predefined values
     
-    NativeComponent::Components NativeComponent::sComponentsByHandle;
+    NativeComponent::ComponentsByHandle NativeComponent::sComponentsByHandle;
     
     NativeComponent::ComponentsById NativeComponent::sComponentsById;
 
@@ -541,25 +542,95 @@ namespace XULWin
     NativeComponent::NativeComponent(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         ConcreteElement(inParent),
         mHandle(0),
-        mModuleHandle(sModuleHandle ? sModuleHandle : ::GetModuleHandle(0))
+        mModuleHandle(sModuleHandle ? sModuleHandle : ::GetModuleHandle(0)),
+        mOrigProc(0),
+        mOwnsHandle(true)
     {
     }
 
 
     NativeComponent::~NativeComponent()
-    {            
-        if (mHandle)
+    {   
+        if (mHandle && mOwnsHandle)
         {
-            Components::iterator it = sComponentsByHandle.find(mHandle);
-            bool found = it != sComponentsByHandle.end();
-            assert(found);
-            if (found)
-            {
-                sComponentsByHandle.erase(it);
-            }
-
+            unregisterHandle();
+            unsubclass();
             ::DestroyWindow(mHandle);
         }
+    }
+
+
+    void NativeComponent::subclass()
+    {        
+        assert(!mOrigProc);
+        mOrigProc = (WNDPROC)(LONG_PTR)::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)&NativeComponent::MessageHandler);
+    }
+
+
+    void NativeComponent::unsubclass()
+    {
+        if (mOrigProc)
+        {
+            ::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)mOrigProc);
+            mOrigProc = 0;
+        }
+    }
+
+
+    void NativeComponent::registerHandle()
+    {
+        assert (sComponentsByHandle.find(mHandle) == sComponentsByHandle.end());
+        sComponentsByHandle.insert(std::make_pair(mHandle, this));
+
+        assert (sComponentsById.find(mCommandId.intValue()) == sComponentsById.end());
+        sComponentsById.insert(std::make_pair(mCommandId.intValue(), this));
+    }
+
+
+    void NativeComponent::unregisterHandle()
+    {
+        ComponentsById::iterator itById = sComponentsById.find(mCommandId.intValue());
+        assert (itById != sComponentsById.end());
+        if (itById != sComponentsById.end())
+        {
+            sComponentsById.erase(itById);
+        }
+        
+        ComponentsByHandle::iterator itByHandle = sComponentsByHandle.find(mHandle);
+        assert (itByHandle != sComponentsByHandle.end());
+        if (itByHandle != sComponentsByHandle.end())
+        {
+            sComponentsByHandle.erase(itByHandle);
+        }
+    }
+
+
+    void NativeComponent::setHandle(HWND inHandle, bool inPassOwnership)
+    {
+        mHandle = inHandle;
+        mOwnsHandle = inPassOwnership;
+    }
+
+    
+    NativeComponent * NativeComponent::FindComponentByHandle(HWND inHandle)
+    {
+        ComponentsByHandle::iterator it = sComponentsByHandle.find(inHandle);
+        if (it != sComponentsByHandle.end())
+        {
+            return it->second;
+        }
+        return 0;
+    }
+
+    
+    NativeComponent * NativeComponent::FindComponentById(int inId)
+    {
+        ComponentsById::iterator it = sComponentsById.find(inId);
+        if (it != sComponentsById.end())
+        {
+            return it->second;
+        }
+        return 0;
     }
     
     
@@ -688,7 +759,7 @@ namespace XULWin
 					case IDTRYAGAIN:
 					case IDCONTINUE:
 					{
-                        Components::iterator focusIt = sComponentsByHandle.find(::GetFocus());
+                        ComponentsByHandle::iterator focusIt = sComponentsByHandle.find(::GetFocus());
                         if (focusIt != sComponentsByHandle.end())
                         {
                             focusIt->second->handleDialogCommand(paramLo, wParam, lParam);
@@ -705,44 +776,63 @@ namespace XULWin
                         break;
 					}
                 }
-                break;
+                return 0;
             }
             // These messages get forwarded to the child elements that produced them.
             case WM_VSCROLL:
             case WM_HSCROLL:
             {
                 HWND handle = (HWND)lParam;
-                Components::iterator it = sComponentsByHandle.find(handle);
+                ComponentsByHandle::iterator it = sComponentsByHandle.find(handle);
                 if (it != sComponentsByHandle.end())
                 {
                     it->second->handleMessage(inMessage, wParam, lParam);
                 }
-                break;
+                return 0;
             }
         }
 
         // Forward to event handlers
         EventListeners::iterator it = mEventListeners.begin(), end = mEventListeners.end();
+        bool handled = false;
         for (; it != end; ++it)
         {
-            (*it)->handleMessage(owningElement(), inMessage, wParam, lParam);
+            int result = (*it)->handleMessage(owningElement(), inMessage, wParam, lParam);
+            if (result == 0)
+            {
+                handled = true;
+            }
         }
 
 
         if (mOrigProc)
         {
-            return ::CallWindowProc(mOrigProc, mHandle, inMessage, wParam, lParam);
+            if (!handled)
+            {
+                return ::CallWindowProc(mOrigProc, mHandle, inMessage, wParam, lParam);
+            }
+            else
+            {
+                return 0;
+            }
         }
         else
         {
-            return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
+            if (!handled)
+            {
+                return ::DefWindowProc(mHandle, inMessage, wParam, lParam);
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 
     
     LRESULT CALLBACK NativeComponent::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        Components::iterator it = sComponentsByHandle.find(hWnd);
+        ComponentsByHandle::iterator it = sComponentsByHandle.find(hWnd);
         if (it != sComponentsByHandle.end())
         {
             return it->second->handleMessage(inMessage, wParam, lParam);
@@ -784,14 +874,22 @@ namespace XULWin
             WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT, Defaults::windowWidth(), Defaults::windowHeight(),
             0,
-            (HMENU)0,
+            (HMENU)0, // must be zero if not menu and not child
             mModuleHandle,
             0
         );
 
+        std::string error = Utils::getLastError(::GetLastError());
+
+
         // set default font
-        ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
-        sComponentsByHandle.insert(std::make_pair(mHandle, this));
+        ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));        
+        registerHandle();
+    }
+
+
+    NativeWindow::~NativeWindow()
+    {
     }
 
 
@@ -956,10 +1054,11 @@ namespace XULWin
     }
     
     
-    void NativeWindow::endModal()
+    LRESULT NativeWindow::endModal()
     {
         setHidden(true);
         ::PostQuitMessage(0);
+        return 0;
     }
 
 
@@ -971,12 +1070,12 @@ namespace XULWin
             {
                 rebuildLayout();
                 ::InvalidateRect(handle(), 0, FALSE);
-                break;
+                return 0;
             }
             case WM_CLOSE:
             {
                 PostQuitMessage(0);
-                break;
+                return 0;
             }
             case WM_GETMINMAXINFO:
             {
@@ -984,7 +1083,7 @@ namespace XULWin
                 MINMAXINFO * minMaxInfo = (MINMAXINFO*)lParam;
                 minMaxInfo->ptMinTrackSize.x = getWidth(Minimum) + sizeDiff.cx;
                 minMaxInfo->ptMinTrackSize.y = getHeight(Minimum) + sizeDiff.cy;
-                break;
+                return 0;
             }
             case WM_COMMAND:
             {
@@ -1004,36 +1103,28 @@ namespace XULWin
 					case IDTRYAGAIN:
 					case IDCONTINUE:
 					{
-                        Components::iterator focusIt = sComponentsByHandle.find(::GetFocus());
-                        if (focusIt != sComponentsByHandle.end())
-                        {
-                            focusIt->second->handleDialogCommand(paramLo, wParam, lParam);
-                        }
-                        break;
+                        NativeComponent * focus = FindComponentByHandle(::GetFocus());
+                        focus->handleDialogCommand(paramLo, wParam, lParam);
+                        return 0;
                     }
                     default:
                     {                        
-                        ComponentsById::iterator it = sComponentsById.find(LOWORD(wParam));
-                        if (it != sComponentsById.end())
-                        {
-                            it->second->handleCommand(wParam, lParam);
-                        }
-                        break;
+                        NativeComponent * sender = FindComponentById(LOWORD(wParam));
+                        sender->handleCommand(wParam, lParam);
+                        return 0;
 					}
                 }
-                break;
             }
             // These messages get forwarded to the child elements that produced them.
             case WM_VSCROLL:
             case WM_HSCROLL:
             {
-                HWND handle = (HWND)lParam;
-                Components::iterator it = sComponentsByHandle.find(handle);
-                if (it != sComponentsByHandle.end())
+                NativeComponent * sender = FindComponentByHandle((HWND)lParam);
+                if (sender)
                 {
-                    it->second->handleMessage(inMessage, wParam, lParam);
+                    sender->handleMessage(inMessage, wParam, lParam);
                 }
-                break;
+                return 0;
             }
         }
 
@@ -1043,17 +1134,20 @@ namespace XULWin
         {
             (*it)->handleMessage(owningElement(), inMessage, wParam, lParam);
         }
-
         return ::DefWindowProc(handle(), inMessage, wParam, lParam);
     }
 
     
     LRESULT CALLBACK NativeWindow::MessageHandler(HWND hWnd, UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        Components::iterator it = sComponentsByHandle.find(hWnd);
-        if (it != sComponentsByHandle.end())
+        NativeComponent * sender = FindComponentByHandle(hWnd);
+        if (sender)
         {
-            return it->second->handleMessage(inMessage, wParam, lParam);
+            int result = sender->handleMessage(inMessage, wParam, lParam);
+            if (result == 0)
+            {
+                return 0;
+            }
         }
         return ::DefWindowProc(hWnd, inMessage, wParam, lParam);
     }
@@ -1108,7 +1202,7 @@ namespace XULWin
     
     LRESULT VirtualComponent::handleMessage(UINT inMessage, WPARAM wParam, LPARAM lParam)
     {
-        return FALSE;
+        return 1;
     }
 
 
@@ -1164,29 +1258,19 @@ namespace XULWin
         // set default font
         ::SendMessage(mHandle, WM_SETFONT, (WPARAM)::GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(FALSE, 0));
 
-        // subclass
-        mOrigProc = (WNDPROC)(LONG_PTR)::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)&NativeControl::MessageHandler);
+        registerHandle();
+        subclass();
+    }
 
-        sComponentsByHandle.insert(std::make_pair(mHandle, this));
-        sComponentsById.insert(std::make_pair(mCommandId.intValue(), this));
+
+    NativeControl::NativeControl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
+        NativeComponent(inParent, inAttributesMapping)
+    {
     }
 
 
     NativeControl::~NativeControl()
     {
-        if (mOrigProc)
-        {
-            ::SetWindowLongPtr(mHandle, GWL_WNDPROC, (LONG)(LONG_PTR)mOrigProc);
-            mOrigProc = 0;
-        }
-
-        ComponentsById::iterator itById = sComponentsById.find(mCommandId.intValue());
-        bool foundById = itById != sComponentsById.end();
-        assert(foundById);
-        if (foundById)
-        {
-            sComponentsById.erase(itById);
-        }
     }
 
 
@@ -3646,17 +3730,36 @@ namespace XULWin
 
 
     ToolbarImpl::ToolbarImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        NativeControl(inParent, inAttributesMapping, TOOLBARCLASSNAME, 0, TBSTYLE_TRANSPARENT
-		                                                                    | TBSTYLE_LIST
-		                                                                    | TBSTYLE_TOOLTIPS
-		                                                                    | CCS_NODIVIDER
-		                                                                    | CCS_NOPARENTALIGN
-		                                                                    | CCS_NORESIZE
-		                                                                    | CCS_TOP
-		                                                                    | CCS_NODIVIDER
-		                                                                    | CCS_NORESIZE)
+        NativeControl(inParent, inAttributesMapping)
     {			
-       
+        if (NativeComponent * nativeComponent = NativeControl::GetNativeParent(inParent))
+        {
+            RECT rect;
+            rect.top = 0;
+            rect.left = 0;
+            rect.bottom = Defaults::toolbarHeight();
+            rect.right = 1000;
+            mToolbar.reset(new Utils::Toolbar(this, ::GetModuleHandle(0), nativeComponent->handle(), rect, mCommandId.intValue()));
+            setHandle(mToolbar->handle(), false);
+            registerHandle();
+            //subclass();
+        }
+    }
+
+
+    ToolbarImpl::~ToolbarImpl()
+    {
+        //unsubclass();
+        unregisterHandle();
+        mToolbar.reset();
+    }
+
+
+    bool ToolbarImpl::initImpl()
+    {
+        mToolbar->buildToolbar();
+        ShowWindow(mToolbar->handle(), SW_SHOW);
+        return Super::initImpl();
     }
 
 
@@ -3684,59 +3787,35 @@ namespace XULWin
     }
 
 
-    Orient ToolbarImpl::getOrient() const
-    {
-        return Horizontal;
-    }
-
-
-    Align ToolbarImpl::getAlign() const
-    {
-        return Center;
-    }
-
-
-    size_t ToolbarImpl::numChildren() const
-    {
-        return owningElement()->children().size();
-    }
-
-
-    const ElementImpl * ToolbarImpl::getChild(size_t idx) const
-    {
-        return owningElement()->children()[idx]->impl();
-    }
-
-
-    ElementImpl * ToolbarImpl::getChild(size_t idx)
-    {
-        return owningElement()->children()[idx]->impl();
-    }
-
-
-    Rect ToolbarImpl::clientRect() const
-    {
-        Rect clientRect(Super::clientRect());
-        // Substract from with one square to make place for the resize gripper widget
-        return Rect(clientRect.x(), clientRect.y(), clientRect.width() - Defaults::statusBarHeight(), clientRect.height());
-    }
-
-
     void ToolbarImpl::rebuildLayout()
     {
-        BoxLayouter::rebuildLayout();
-    }
-
-
-    void ToolbarImpl::rebuildChildLayouts()
-    {
-        Super::rebuildChildLayouts();
+        mToolbar->rebuildLayout();        
     }
 
 
     ToolbarButtonImpl::ToolbarButtonImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
         PassiveComponent(inParent, inAttributesMapping)
     {
+    }
+
+
+    bool ToolbarButtonImpl::initImpl()
+    {
+        if (ToolbarImpl * toolbar = parent()->downcast<ToolbarImpl>())
+        {
+            Gdiplus::Bitmap * bmp(new Gdiplus::Bitmap(L"C:\\svn\\Google Project Hosting\\stacked-crooked\\xulrunnersamples\\shout\\chrome\\skin\\StackedCrooked.jpg"));
+            boost::shared_ptr<Gdiplus::Bitmap> nullImage(bmp);
+            std::string label = getLabel();
+            Utils::ToolbarButton * button = new Utils::ToolbarButton(toolbar->nativeToolbar(),
+                                                                     mCommandId.intValue(), 
+                                                                     boost::function<void()>(),
+                                                                     label,
+                                                                     label,
+                                                                     nullImage);
+            toolbar->nativeToolbar()->add(button);
+
+        }
+        return Super::initImpl();
     }
 
 

@@ -17,7 +17,7 @@ namespace XULWin
 
         void run();
 
-        void dropFiles(WPARAM wParam, LPARAM lParam);
+        LRESULT dropFiles(WPARAM wParam, LPARAM lParam);
 
     private:
         ElementPtr mRootElement;

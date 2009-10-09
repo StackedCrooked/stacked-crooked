@@ -27,14 +27,10 @@ namespace Utils
     CommonControlsInitializer::CommonControlsInitializer() :
         mSuccess(false)
     {
-        INITCOMMONCONTROLSEX icex;
-        icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-        icex.dwICC  = ICC_WIN95_CLASSES
-				        | ICC_DATE_CLASSES
-				        | ICC_USEREX_CLASSES
-				        | ICC_COOL_CLASSES
-				        | ICC_BAR_CLASSES;
-        mSuccess = (::InitCommonControlsEx(&icex) != 0);
+		INITCOMMONCONTROLSEX icex;
+		icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+		icex.dwICC  = ICC_BAR_CLASSES | ICC_COOL_CLASSES | ICC_STANDARD_CLASSES | ICC_WIN95_CLASSES;
+		InitCommonControlsEx(&icex);
     }
     
         

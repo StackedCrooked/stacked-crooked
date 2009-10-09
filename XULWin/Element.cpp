@@ -156,7 +156,6 @@ namespace XULWin
         if (mImpl)
         {
             mImpl->initAttributeControllers();
-            mImpl->initImpl();
         }
     }
 

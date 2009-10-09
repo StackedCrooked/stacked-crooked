@@ -3,6 +3,7 @@
 #include "Decorator.h"
 #include "ChromeURL.h"
 #include "Defaults.h"
+#include "ElementCreationSupport.h"
 #include "ElementImpl.h"
 #include "Graphics.h"
 #include "Poco/Path.h"
@@ -63,7 +64,7 @@ namespace XULWin
     Image::Image(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Image::Type(),
                 inParent,
-                new MarginDecorator(new NativeImage(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeImage>(inParent, inAttributesMapping)))
     {
     }
 

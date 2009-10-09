@@ -1,0 +1,83 @@
+<!ENTITY ADD_BLOG "Add a blog">
+<!ENTITY ADD_PHOTO "Add a picture">
+<!ENTITY ADD_VIDEO "Add a video">
+<!ENTITY BLOGS "Blogs">
+<!ENTITY CHAT "Chat">
+<!ENTITY CHAT_NO_FRIENDS_ONLINE "None of your friends are online">
+<!ENTITY CLANS "Clans">
+<!ENTITY DLG_SET_HOMEPAGE "Do you want to set  as your homepage?">
+<!ENTITY DLG_SET_HOMEPAGE_TITLE "Make  my homepage">
+<!ENTITY EMPTY "empty">
+<!ENTITY EVENTS "Events">
+<!ENTITY EXPLORE "Explore">
+<!ENTITY FAQ "FAQ">
+<!ENTITY FRIENDS "Friends">
+<!ENTITY HELP "Help">
+<!ENTITY LOGIN "Log in">
+<!ENTITY LOGOUT "Log out">
+<!ENTITY LOGS "Logs">
+<!ENTITY MANAGE "Manage">
+<!ENTITY MESSAGES "Messages">
+<!ENTITY MUSIC "Music">
+<!ENTITY NEW_VERSION_AVAILABLE "A more recent version of  Toolbar is available. Click OK to go to the download page.">
+<!ENTITY NEW_VERSION_AVAILABLE_TITLE "New version available">
+<!ENTITY NOTIFICATIONS "Notifications">
+<!ENTITY PAGES "Pages">
+<!ENTITY PHOTOS "Pictures">
+<!ENTITY PROFILES "Profiles">
+<!ENTITY REPORT_PROBLEM "Report problem">
+<!ENTITY SEARCH_BLOGS "Search in Blogs">
+<!ENTITY SEARCH_CLANS "Search in Clans">
+<!ENTITY SEARCH_EVENTS "Search in Events">
+<!ENTITY SEARCH_GOOGLE "Search using Google">
+<!ENTITY SEARCH_MUSIC "Search in Music">
+<!ENTITY SEARCH "Search on ">
+<!ENTITY SEARCH_PEOPLE "Search for members">
+<!ENTITY SEARCH_PHOTOS "Search in Pictures">
+<!ENTITY SEARCH_VIDEOS "Search in Videos">
+<!ENTITY SETTINGS "Settings">
+<!ENTITY SETTINGS "Settings">
+<!ENTITY SET_HOMEPAGE "Make  your homepage">
+<!ENTITY SPOTLIGHT "Spotlight">
+<!ENTITY TOOLS "Tools">
+<!ENTITY USERS_ONLINE "members online">
+<!ENTITY VIDEOS "Videos">
+<!ENTITY VISITORS "Visitors">
+<!ENTITY WIDGETS "Widgets">
+<!ENTITY BOOKMARKS "Links">
+<!ENTITY MENU_NO_NEW_FAVLOG "No friends log">
+<!ENTITY MENU_NO_NEW_NOTIFICATIONS "No new notifications">
+<!ENTITY MENU_NO_NEW_VISITORS "No new visitors">
+<!ENTITY MENU_NO_NEW_MESSAGES "No new messages">
+<!ENTITY MENU_MARK_LOGS_AS_READ "Mark all logs as read">
+<!ENTITY MENU_MARK_NOTIFICATIONS_AS_READ "Mark all notifications as read">
+<!ENTITY MENU_MARK_VISITORS_AS_READ "Mark all visitors as read">
+<!ENTITY MENU_MARK_MESSAGES_AS_READ "Mark all messages as read">
+<!ENTITY MENU_BOOKMARK_CURRENT_PAGE "Add a link for this page...">
+<!ENTITY MENU_MANAGE_BOOKMARKS "Manage links">
+<!ENTITY MENU_IMPORT_IE_BOOKMARKS "Import Internet Explorer favourites">
+<!ENTITY MENU_MANAGE_SET_ON "Manage the set {setname} on ">
+<!ENTITY MENU_MANAGE_TAG_ON "Manage the links with tag {tagname} on ">
+<!ENTITY MENU_VIEW_SET_ON "View the set {setname} on ">
+<!ENTITY MENU_VIEW_TAG_ON "View the links with tag {tagname} on ">
+<!ENTITY MENU_REFRESH_BOOKMARKS "Refresh links">
+<!ENTITY MENU_BOOKMARKS_NOT_YET_LOADED "Log in to view your bookmarks">
+<!ENTITY MENU_IMPORT_IE_BOOKMARKS_BUSY "Importing IE Favourites">
+<!ENTITY MENU_BOOKMARKS_SETS "Sets:">
+<!ENTITY MENU_BOOKMARKS_TAGS "Tags:">
+<!ENTITY MENU_MESSAGES_NEW "Write a new message">
+<!ENTITY FRIENDSLOG "Friends log">
+<!ENTITY GRAB_TOOLTIP "Grab pictures and videos">
+<!ENTITY SIGN_TOOLTIP "Sign">
+<!ENTITY SIGN_MESSAGE "Greetings,{br}{firstname}{br}{br}Visit my :{br}{profileUrl}">
+<!ENTITY SIGN_HELP "The sign feature allows you to add your own personal  signature to a text.">
+<!ENTITY ADD_SHOUT "Add shout">
+<!ENTITY SHOW_IN_SPOTLIGHT "Show in Spotlight">
+<!ENTITY SHOUT "Shout!">
+<!ENTITY ADD_SHOUT_SUCCESS "Your shout was added to your profile.">
+<!ENTITY VISITOR_MESSAGE "{nickname} is visiting your profile">
+<!ENTITY SHOUT_FLOODING "Shout failed. You have to wait a little bit before sending another shout.">
+<!ENTITY REMOVE_USER "Remove user">
+<!ENTITY SHARE_LINK "Share">
+<!ENTITY SHARE_LINK_TOOLTIP "Share this page">
+<!ENTITY GRAB_FROM "Grab content from {website}">

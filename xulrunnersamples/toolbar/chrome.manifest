@@ -1,0 +1,4 @@
+content		toolbar				chrome/content/
+skin		toolbar		classic/1.0	chrome/skin/
+
+locale		toolbar		en-US		chrome/locale/en-US/

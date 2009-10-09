@@ -174,7 +174,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //runImageViewerSample();
     XULTest::Tester tester;
     //tester.runXULSample("hello");
-    tester.runXULSample("netlog-toolbar");
+    tester.runXULSample("toolbar");
     //tester.runXULSample("widgets");
     //tester.runXULSample("tabbox");
     //tester.runXULSample("treeview");

@@ -33,7 +33,6 @@ namespace XULWin
         FactoryMethods mFactoryMethods;
     };
 
-
 } // namespace XULWin
 
 

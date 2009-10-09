@@ -2,9 +2,7 @@
 #define DECORATOR_H_INCLUDED
 
 
-#include "Element.h"
 #include "ElementImpl.h"
-#include "Layout.h"
 
 
 namespace XULWin
@@ -265,5 +263,6 @@ namespace XULWin
     };
 
 } // namespace XULWin
+
 
 #endif // DECORATOR_H_INCLUDED

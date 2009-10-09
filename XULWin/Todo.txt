@@ -4,6 +4,7 @@ style="max-height: 300px;"
 style="overflow:hidden;"
 
 
+- Cleanup main.cpp file, move config sample (event handling) to own files
 - Fix scrollbars for image sample
 - Fix WS_TABSTOP for multiline TextBoxes
 - Drag and drop

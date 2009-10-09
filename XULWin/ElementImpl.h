@@ -21,6 +21,12 @@
 #include <CommCtrl.h>
 
 
+namespace Utils
+{
+    class ToolbarButton;
+}
+
+
 namespace XULWin
 {
     class CommandId
@@ -1563,7 +1569,9 @@ namespace XULWin
 
 
     class ToolbarButtonImpl : public PassiveComponent,
-                              public virtual LabelController
+                              public virtual DisabledController,
+                              public virtual LabelController,
+                              public virtual CSSListStyleImageController
     {
     public:
         typedef PassiveComponent Super;
@@ -1574,6 +1582,8 @@ namespace XULWin
 
         virtual bool initAttributeControllers();
 
+        virtual bool initStyleControllers();
+
         virtual int calculateWidth(SizeConstraint inSizeConstraint) const;
 
         virtual int calculateHeight(SizeConstraint inSizeConstraint) const;
@@ -1582,8 +1592,19 @@ namespace XULWin
 
         virtual void setLabel(const std::string & inLabel);
 
+        virtual bool isDisabled() const;
+
+        virtual void setDisabled(bool inDisabled);
+
+        virtual void setCSSListStyleImage(const std::string & inURL);
+
+        virtual const std::string & getCSSListStyleImage() const;
+
     private:
+        Utils::ToolbarButton * mButton;
+        bool mDisabled;
         std::string mLabel;
+        std::string mCSSListStyleImage;
     };
 
 

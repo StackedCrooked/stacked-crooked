@@ -157,7 +157,7 @@ namespace XULWin
             return width;
         }
         // if flex=0, then choose the natural width & height
-        else if (!mWidth && !mHeight && getFlex() == 0)
+        else if (mImage && !mWidth && !mHeight && getFlex() == 0)
         {
             return mImage->GetWidth();
         }
@@ -193,7 +193,7 @@ namespace XULWin
             return height;
         }
         // if flex=0, then choose the natural width & height
-        else if (!mWidth && !mHeight && getFlex() == 0)
+        else if (mImage && !mWidth && !mHeight && getFlex() == 0)
         {
             return mImage->GetHeight();
         }

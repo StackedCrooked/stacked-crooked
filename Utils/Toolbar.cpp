@@ -113,7 +113,7 @@ namespace Utils
 		ToolbarItems::const_iterator it = mToolbarItems.begin(), end = mToolbarItems.end();
 		for (; it != end; ++it)
 		{
-			const ToolbarItem * item = it->get();
+			const AbstractToolbarItem * item = it->get();
 			if (dynamic_cast<const ToolbarSpring*>(item))
 			{
 				toolbarSpringID = item->commandId();
@@ -163,7 +163,7 @@ namespace Utils
 		ToolbarItems::const_iterator it = inToolbarItems.begin(), end = inToolbarItems.end();
 		for (; it != end; ++it)
 		{
-			const ToolbarItem * item = it->get();
+			const AbstractToolbarItem * item = it->get();
 			if (dynamic_cast<const ToolbarSpring *>(item))
 			{
 				toolbarSpringID = item->commandId();
@@ -225,9 +225,9 @@ namespace Utils
 		ToolbarItems::const_iterator it = inToolbarItems.begin(), end = inToolbarItems.end();
 		for (; it != end; ++it)
 		{
-			const ToolbarItem * item = it->get();
+			const AbstractToolbarItem * abstractItem = it->get();
 
-			if (const IECustomWindow * customWindow = dynamic_cast<const IECustomWindow*>(item)) // if custom window
+			if (const IECustomWindow * customWindow = dynamic_cast<const IECustomWindow*>(abstractItem)) // if custom window
 			{
 				DWORD buttonSize = (DWORD)SendMessage(inToolbarHandle, TB_GETBUTTONSIZE, 0, 0);
 				int toolbarHeight = HIWORD(buttonSize);
@@ -246,7 +246,7 @@ namespace Utils
 				::MoveWindow(customWindow->handle(), position.left, position.top, position.right-position.left, position.bottom-position.top, TRUE);
 				offset_x = position.right + cMarginForCustomWindow;
 			}
-			else // if normal button
+            else if (const ConcreteToolbarItem * item = dynamic_cast<const ConcreteToolbarItem*>(abstractItem)) // if normal button
 			{
 				RECT rc_button;
 				SendMessage(inToolbarHandle, TB_GETRECT, item->commandId(), (LPARAM)&rc_button);
@@ -305,7 +305,7 @@ namespace Utils
 		ToolbarItems::const_iterator it = inToolbarItems.begin(), end = inToolbarItems.end();
 		for (; it != end; ++it)
 		{
-			const ToolbarItem * item = it->get();
+			const AbstractToolbarItem * item = it->get();
 			if (item->commandId() == inCommandID)
 			{
 				break;
@@ -324,7 +324,7 @@ namespace Utils
 	void Toolbar::applySpring(HWND inToolbarHandle, const ToolbarItems & inToolbarItems, int inSpringID)
 	{
 		static const int cWidthReduction = 20;
-		ToolbarItems::const_iterator it = std::find_if(inToolbarItems.begin(), inToolbarItems.end(), boost::bind(&ToolbarItem::commandId, _1) == inSpringID);
+		ToolbarItems::const_iterator it = std::find_if(inToolbarItems.begin(), inToolbarItems.end(), boost::bind(&AbstractToolbarItem::commandId, _1) == inSpringID);
 		ToolbarItems::const_iterator end = inToolbarItems.end();
 		assert (it != end);
 		if (it != end)
@@ -393,7 +393,7 @@ namespace Utils
 			ToolbarItems::const_iterator it = mToolbarItems.begin(), end = mToolbarItems.end();
 			for (; it != end; ++it)
 			{
-				const ToolbarItem * item = it->get();
+				const AbstractToolbarItem * item = it->get();
 				if (const IFocusableToolbarItem * focusableItem = dynamic_cast<const IFocusableToolbarItem *>(item))
 				{
 					if (focusableItem->hasFocus())
@@ -412,7 +412,7 @@ namespace Utils
 		ToolbarItems::const_iterator it = mToolbarItems.begin(), end = mToolbarItems.end();
 		for (; it != end; ++it)
 		{
-			const ToolbarItem * item = it->get();
+			const AbstractToolbarItem * item = it->get();
 			if (const IFocusableToolbarItem * focusableItem = dynamic_cast<const IFocusableToolbarItem *>(item))
 			{
 				if (!focusableItem->hasFocus())
@@ -425,9 +425,9 @@ namespace Utils
 	}
 
 
-	ToolbarItem * Toolbar::getToolbarItemByCommandId(int inCommandID)
+	AbstractToolbarItem * Toolbar::getToolbarItemByCommandId(int inCommandID)
 	{
-		ToolbarItems::iterator it = std::find_if(mToolbarItems.begin(), mToolbarItems.end(), boost::bind(&ToolbarItem::commandId, _1) == inCommandID);
+		ToolbarItems::iterator it = std::find_if(mToolbarItems.begin(), mToolbarItems.end(), boost::bind(&AbstractToolbarItem::commandId, _1) == inCommandID);
 		if (it != mToolbarItems.end())
 		{
 			return it->get();
@@ -436,9 +436,9 @@ namespace Utils
 	}
 
 
-	const ToolbarItem * Toolbar::getToolbarItemByCommandId(int inCommandID) const
+	const AbstractToolbarItem * Toolbar::getToolbarItemByCommandId(int inCommandID) const
 	{
-		ToolbarItems::const_iterator it = std::find_if(mToolbarItems.begin(), mToolbarItems.end(), boost::bind(&ToolbarItem::commandId, _1) == inCommandID);
+		ToolbarItems::const_iterator it = std::find_if(mToolbarItems.begin(), mToolbarItems.end(), boost::bind(&AbstractToolbarItem::commandId, _1) == inCommandID);
 		if (it != mToolbarItems.end())
 		{
 			return it->get();
@@ -447,14 +447,14 @@ namespace Utils
 	}
 
 
-	void Toolbar::add(ToolbarItem* inToolbarItem)
+	void Toolbar::add(AbstractToolbarItem* inToolbarItem)
 	{
-		ToolbarItems::iterator it = std::find_if(mToolbarItems.begin(), mToolbarItems.end(), boost::bind(&ToolbarItem::commandId, _1) == inToolbarItem->commandId());
+		ToolbarItems::iterator it = std::find_if(mToolbarItems.begin(), mToolbarItems.end(), boost::bind(&AbstractToolbarItem::commandId, _1) == inToolbarItem->commandId());
 		bool found = it != mToolbarItems.end();
 		assert(!found);
 		if (!found)
 		{
-			boost::shared_ptr<ToolbarItem> item(inToolbarItem);
+			boost::shared_ptr<AbstractToolbarItem> item(inToolbarItem);
 			mToolbarItems.push_back(item);
 		}
 	}
@@ -510,13 +510,13 @@ namespace Utils
 	}
 
 
-	const ToolbarItem * Toolbar::get(size_t inIndex) const
+	const AbstractToolbarItem * Toolbar::get(size_t inIndex) const
 	{
 		return mToolbarItems[inIndex].get();
 	}
 
 	
-	ToolbarItem * Toolbar::get(size_t inIndex)
+	AbstractToolbarItem * Toolbar::get(size_t inIndex)
 	{
 		return mToolbarItems[inIndex].get();
 	}
@@ -595,26 +595,28 @@ namespace Utils
 				LPNMHDR lpnm = (LPNMHDR)lParam;	
 				LPNMTOOLBAR lpnmTB = (LPNMTOOLBAR)lParam;
 
-				//if (lpnm->code == TTN_GETDISPINFO)
-				//{
-				//	LPTOOLTIPTEXT lpttt = (LPTOOLTIPTEXT)lParam; 		            
-				//	ToolbarItems::const_iterator it = pThis->findByCommandID(pThis->mToolbarItems, lpttt->hdr.idFrom);
-				//	bool found = it != pThis->mToolbarItems.end();
-				//	assert(found);
-				//	if (found)
-				//	{
-				//		ToolbarItem * item = it->get();
-				//		if (!item->tooltipText().empty())
-				//		{
-				//			static std::wstring fText;
-				//			fText = Utils::ToUTF16(item->tooltipText());
-				//			lpttt->lpszText = const_cast<TCHAR*>(fText.c_str());
-				//			lpttt->hinst = pThis->moduleHandle();
-				//		}
-				//	}
-				//}				
-				//else
-                if (lpnm->hwndFrom == pThis->handle() || lpnmTB->hdr.hwndFrom == pThis->handle())
+				if (lpnm->code == TTN_GETDISPINFO)
+				{
+					LPTOOLTIPTEXT lpttt = (LPTOOLTIPTEXT)lParam; 		            
+					ToolbarItems::const_iterator it = pThis->findByCommandID(pThis->mToolbarItems, lpttt->hdr.idFrom);
+					bool found = it != pThis->mToolbarItems.end();
+					assert(found);
+					if (found)
+					{
+						AbstractToolbarItem * abstractItem = it->get();
+                        if (ConcreteToolbarItem * item = dynamic_cast<ConcreteToolbarItem*>(abstractItem))
+                        {
+						    if (!item->tooltipText().empty())
+						    {
+							    static std::wstring fText;
+							    fText = Utils::ToUTF16(item->tooltipText());
+							    lpttt->lpszText = const_cast<TCHAR*>(fText.c_str());
+							    lpttt->hinst = pThis->moduleHandle();
+						    }
+                        }
+					}
+				}				
+				else if (lpnm->hwndFrom == pThis->handle() || lpnmTB->hdr.hwndFrom == pThis->handle())
 				{
 					switch(lpnm->code)
 					{
@@ -661,12 +663,15 @@ namespace Utils
 									bool found = it != pThis->mToolbarItems.end();
 									if (found)
 									{
-										ToolbarItem * item = it->get();
-										if (item->noHover())
-										{
-											item->draw(customDrawMessage->nmcd.hdc, customDrawMessage->nmcd.rc, pThis->mFont, Utils::getTextSize(pThis->handle(), item->text()));
-											return CDRF_SKIPDEFAULT;
-										}
+										AbstractToolbarItem * abstractItem = it->get();
+                                        if (ConcreteToolbarItem * item = dynamic_cast<ConcreteToolbarItem*>(abstractItem))
+                                        {
+										    if (item->noHover())
+										    {
+											    item->draw(customDrawMessage->nmcd.hdc, customDrawMessage->nmcd.rc, pThis->mFont, Utils::getTextSize(pThis->handle(), item->text()));
+											    return CDRF_SKIPDEFAULT;
+										    }
+                                        }
 									}
 									return CDRF_NOTIFYPOSTPAINT;
 								}
@@ -674,21 +679,23 @@ namespace Utils
 								{
 									ToolbarItems::const_iterator it = pThis->findByCommandID(pThis->mToolbarItems, lpnmTB->cchText);
 									bool found = it != pThis->mToolbarItems.end();
-									// we can't just assert(found); because of the lag between website-logout and the detection of that logout
 									if (!found)
 									{
-										return DefWindowProc(hWnd, inMessage, wParam, lParam);
+										break;
 									}
-									ToolbarItem * item = it->get();
-									item->draw(customDrawMessage->nmcd.hdc, customDrawMessage->nmcd.rc, pThis->mFont, Utils::getTextSize(pThis->handle(), item->text()));
-									return CDRF_DODEFAULT;
+									AbstractToolbarItem * abstractItem = it->get();
+                                    if (ConcreteToolbarItem * item = dynamic_cast<ConcreteToolbarItem*>(abstractItem))
+                                    {
+									    item->draw(customDrawMessage->nmcd.hdc, customDrawMessage->nmcd.rc, pThis->mFont, Utils::getTextSize(pThis->handle(), item->text()));									    
+                                    }
+                                    return CDRF_DODEFAULT;
 								}
 							}
 							break;
 						}
 					}
 				}
-                return 1;
+                break;
 			}
 			
 			case WM_COMMAND:
@@ -699,7 +706,7 @@ namespace Utils
 				if(sender == pThis->handle())
 				{
 					// find toolbaritem corresponding to it
-					ToolbarItem * item = pThis->getToolbarItemByCommandId(id);
+					AbstractToolbarItem * item = pThis->getToolbarItemByCommandId(id);
 					assert(item);
 					if (item)
 					{

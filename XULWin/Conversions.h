@@ -71,6 +71,14 @@ namespace XULWin
 
     SVG::PathInstructions String2PathInstructions(const std::string & inValue);
 
+    // URL looks like this:
+    // url("chrome://app/skin/logo.png");
+    // We need to convert it to this:
+    // chrome://app/skin/logo.png
+    std::string URL2String(const std::string & inURL);
+
+    std::string String2URL(const std::string & inURL);
+
 } // namespace XULWin
 
 

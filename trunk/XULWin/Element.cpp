@@ -1,10 +1,11 @@
 #include "Element.h"
+#include "ElementCreationSupport.h"
+#include "ElementFactory.h"
 #include "Decorator.h"
 #include "Defaults.h"
 #include "ElementImpl.h"
 #include "ToolbarCustomWindowDecorator.h"
 #include "Utils/ErrorReporter.h"
-#include "Poco/StringTokenizer.h"
 #include <boost/bind.hpp>
 
 
@@ -291,7 +292,7 @@ namespace XULWin
     Button::Button(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Button::Type(),
                 inParent,
-                new MarginDecorator(new NativeButton(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeButton>(inParent, inAttributesMapping)))
     {
     }
 
@@ -299,7 +300,7 @@ namespace XULWin
     Label::Label(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Label::Type(),
                 inParent,
-                new MarginDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeLabel>(inParent, inAttributesMapping)))
     {
     }
 
@@ -307,7 +308,7 @@ namespace XULWin
     Description::Description(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Description::Type(),
                 inParent,
-                new MarginDecorator(new NativeDescription(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeDescription>(inParent, inAttributesMapping)))
     {
     }
 
@@ -319,26 +320,10 @@ namespace XULWin
     }
 
 
-    template<class ControlType>
-    static ElementImpl * CreateNativeControl(Element * inParent, const AttributesMapping & inAttributesMapping)
-    {
-        if (ToolbarImpl * toolbar = inParent->impl()->downcast<ToolbarImpl>())
-        {
-            ControlType * control  = new ControlType(inParent->impl(), inAttributesMapping);
-            boost::weak_ptr<Utils::Toolbar> weakToolbar(toolbar->nativeToolbar());
-            return new ToolbarCustomWindowDecorator(control, weakToolbar);
-        }
-        else
-        {
-            return new ControlType(inParent->impl(), inAttributesMapping);
-        }
-    }
-
-
     Text::Text(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Text::Type(),
                 inParent,
-                new MarginDecorator(new NativeLabel(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeLabel>(inParent, inAttributesMapping)))
     {
     }
 
@@ -354,69 +339,8 @@ namespace XULWin
     CheckBox::CheckBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(CheckBox::Type(),
                 inParent,
-                new MarginDecorator(new NativeCheckBox(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeCheckBox>(inParent, inAttributesMapping)))
     {
-    }
-
-
-    static void GetStyles(const AttributesMapping & inAttributesMapping, StylesMapping & styles)
-    {        
-        StylesMapping::const_iterator it = inAttributesMapping.find("style");
-        if (it != inAttributesMapping.end())
-        {
-            Poco::StringTokenizer tok(it->second, ";:", Poco::StringTokenizer::TOK_IGNORE_EMPTY | Poco::StringTokenizer::TOK_TRIM);
-            Poco::StringTokenizer::Iterator it = tok.begin(), end = tok.end();
-            std::string key, value;
-            int counter = 0;
-            for (; it != end; ++it)
-            {
-                if (counter%2 == 0)
-                {
-                    key = *it;
-                }
-                else
-                {
-                    value = *it;
-                    styles.insert(std::make_pair(key, value));
-                }
-                counter++;
-            }
-        }
-    }
-
-
-    static CSSOverflow GetOverflow(const StylesMapping & inStyles,
-                                   const std::string & inOverflow)
-    {
-        StylesMapping::const_iterator it = inStyles.find(inOverflow);
-        if (it == inStyles.end())
-        {
-            it = inStyles.find("overflow");
-        }
-        if (it != inStyles.end())
-        {
-            return String2CSSOverflow(it->second, CSSOverflow_Visible);
-        }
-        return CSSOverflow_Hidden;
-    }
-
-
-    template<class VirtualType, class NativeType>
-    static ElementImpl * CreateContainer(Element * inParent, const AttributesMapping & inAttributesMapping)
-    {
-        StylesMapping styles;
-        GetStyles(inAttributesMapping, styles);
-        CSSOverflow overflowX = GetOverflow(styles, "overflow-x");
-        CSSOverflow overflowY = GetOverflow(styles, "overflow-y");
-        if (overflowX != CSSOverflow_Hidden || overflowY != CSSOverflow_Hidden)
-        {
-            NativeType * box = new NativeType(inParent->impl(), inAttributesMapping);
-            return new ScrollDecorator(inParent->impl(), box, overflowX, overflowY);
-        }
-        else
-        {
-            return new Decorator(new VirtualType(inParent->impl(), inAttributesMapping));
-        }
     }
 
 
@@ -439,8 +363,7 @@ namespace XULWin
 
     VBox::VBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(VBox::Type(),
-                inParent,
-                CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
+                inParent,CreateContainer<VirtualBox, NativeBox>(inParent, inAttributesMapping))
     {
         impl()->setOrient(Vertical);
     }
@@ -449,7 +372,7 @@ namespace XULWin
     MenuList::MenuList(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(MenuList::Type(),
                 inParent,
-                new MarginDecorator(new NativeMenuList(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeMenuList>(inParent, inAttributesMapping)))
     {
     }
         
@@ -584,7 +507,7 @@ namespace XULWin
     Separator::Separator(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Separator::Type(),
                 inParent,
-                new MarginDecorator(new NativeSeparator(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeSeparator>(inParent, inAttributesMapping)))
     {
     }
 

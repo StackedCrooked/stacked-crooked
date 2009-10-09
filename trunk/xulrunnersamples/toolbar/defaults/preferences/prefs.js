@@ -1,0 +1,1 @@
+pref("toolkit.defaultChromeURI", "chrome://toolbar/content/toolbar.xul");

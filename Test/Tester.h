@@ -5,7 +5,7 @@
 #include <string>
 
 
-namespace XULTest
+namespace XULWin
 {
 
     class Tester
@@ -17,7 +17,7 @@ namespace XULTest
     };
 
 
-} // namespace XULTest
+} // namespace XULWin
 
 
 #endif // TESTER_H_INCLUDED

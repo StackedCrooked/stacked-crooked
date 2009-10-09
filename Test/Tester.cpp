@@ -8,7 +8,7 @@ using namespace Utils;
 using namespace XULWin;
 
 
-namespace XULTest
+namespace XULWin
 {
 
     void Tester::runXULSample(const std::string & inAppName)
@@ -53,4 +53,4 @@ namespace XULTest
     }
 
 
-} // namespace XULTest
+} // namespace XULWin

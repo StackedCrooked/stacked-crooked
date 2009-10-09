@@ -184,11 +184,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\ImageViewer.cpp"
+				RelativePath=".\ConfigSample.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ImageViewer.h"
+				RelativePath=".\ConfigSample.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ImageViewerSample.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ImageViewerSample.h"
 				>
 			</File>
 			<File

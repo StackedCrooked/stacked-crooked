@@ -10,10 +10,10 @@
 namespace XULWin
 {
     class NativeWindow;
-    class ImageViewer
+    class ImageViewerSample
     {
     public:
-        ImageViewer();
+        ImageViewerSample();
 
         void run();
 

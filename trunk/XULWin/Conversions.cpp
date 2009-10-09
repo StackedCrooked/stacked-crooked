@@ -761,6 +761,48 @@ namespace XULWin
         }
         return result;
     }
+    
+    
+    std::string URL2String(const std::string & inURL)
+    {
+        std::string result;
+        //url("chrome://app/skin/logo.png");
+        bool busy = false;
+        char quote = '"';
+        for (size_t idx = 0; idx != inURL.size(); ++idx)
+        {
+            const char & c = inURL[idx];
+            if (!busy)
+            {
+                if (c == '\'' || c == '"')
+                {
+                    quote = c;
+                    busy = true;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                if (c != quote)
+                {
+                    result += c;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 
+
+    std::string String2URL(const std::string & inURL)
+    {
+        return "url(\"" + inURL + "\");";
+    }
 
 } // namespace XULWin

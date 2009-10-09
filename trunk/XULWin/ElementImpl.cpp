@@ -1,4 +1,5 @@
 #include "ElementImpl.h"
+#include "ChromeURL.h"
 #include "Decorator.h"
 #include "Defaults.h"
 #include "Layout.h"
@@ -3742,14 +3743,12 @@ namespace XULWin
             mToolbar.reset(new Utils::Toolbar(this, ::GetModuleHandle(0), nativeComponent->handle(), rect, mCommandId.intValue()));
             setHandle(mToolbar->handle(), false);
             registerHandle();
-            //subclass();
         }
     }
 
 
     ToolbarImpl::~ToolbarImpl()
     {
-        //unsubclass();
         unregisterHandle();
         mToolbar.reset();
     }
@@ -3758,6 +3757,7 @@ namespace XULWin
     bool ToolbarImpl::initImpl()
     {
         mToolbar->buildToolbar();
+        mToolbar->rebuildLayout();
         ShowWindow(mToolbar->handle(), SW_SHOW);
         return Super::initImpl();
     }
@@ -3783,7 +3783,17 @@ namespace XULWin
 
     int ToolbarImpl::calculateHeight(SizeConstraint inSizeConstraint) const
     {
-        return Defaults::statusBarHeight();
+        int result = 0;
+        for (size_t idx = 0; idx != owningElement()->children().size(); ++idx)
+        {
+            ElementImpl * child = owningElement()->children()[idx]->impl();
+            int minHeight = child->calculateHeight(inSizeConstraint);
+            if (minHeight > result)
+            {
+                result = minHeight;
+            }
+        }
+        return result;
     }
 
 
@@ -3794,7 +3804,9 @@ namespace XULWin
 
 
     ToolbarButtonImpl::ToolbarButtonImpl(ElementImpl * inParent, const AttributesMapping & inAttributesMapping) :
-        PassiveComponent(inParent, inAttributesMapping)
+        PassiveComponent(inParent, inAttributesMapping),
+        mButton(0),
+        mDisabled(false)
     {
     }
 
@@ -3803,16 +3815,20 @@ namespace XULWin
     {
         if (ToolbarImpl * toolbar = parent()->downcast<ToolbarImpl>())
         {
-            Gdiplus::Bitmap * bmp(new Gdiplus::Bitmap(L"C:\\svn\\Google Project Hosting\\stacked-crooked\\xulrunnersamples\\shout\\chrome\\skin\\StackedCrooked.jpg"));
-            boost::shared_ptr<Gdiplus::Bitmap> nullImage(bmp);
+            boost::shared_ptr<Gdiplus::Bitmap> nullImage;
             std::string label = getLabel();
-            Utils::ToolbarButton * button = new Utils::ToolbarButton(toolbar->nativeToolbar(),
-                                                                     mCommandId.intValue(), 
-                                                                     boost::function<void()>(),
-                                                                     label,
-                                                                     label,
-                                                                     nullImage);
-            toolbar->nativeToolbar()->add(button);
+            mButton = new Utils::ToolbarButton(toolbar->nativeToolbar(),
+                                               mCommandId.intValue(), 
+                                               boost::function<void()>(),
+                                               label,
+                                               label,
+                                               nullImage);
+            toolbar->nativeToolbar()->add(mButton);
+            // Now that mButton is constructed we can apply any previously set
+            // attributes.
+            setLabel(mLabel);
+            setDisabled(mDisabled);
+            setCSSListStyleImage(mCSSListStyleImage);
 
         }
         return Super::initImpl();
@@ -3822,7 +3838,15 @@ namespace XULWin
     bool ToolbarButtonImpl::initAttributeControllers()
     {
         setAttributeController("label", static_cast<LabelController*>(this));
+        setAttributeController("disabled", static_cast<DisabledController*>(this));
         return Super::initAttributeControllers();
+    }
+
+
+    bool ToolbarButtonImpl::initStyleControllers()
+    {
+        setStyleController(CSSListStyleImageController::PropertyName(), static_cast<CSSListStyleImageController*>(this));
+        return Super::initStyleControllers();
     }
 
 
@@ -3830,7 +3854,14 @@ namespace XULWin
     {
         if (ToolbarImpl * toolbarImpl = parent()->downcast<ToolbarImpl>())
         {
-            return Utils::getTextSize(toolbarImpl->handle(), getLabel()).cx;
+            int textWidth = Utils::getTextSize(toolbarImpl->handle(), getLabel()).cx;
+            int imageWidth = 0;
+            if (mButton && mButton->image())
+            {
+                imageWidth = mButton->image()->GetWidth();
+            }
+            return std::max<int>(textWidth, imageWidth);
+
         }
         return 0;
     }
@@ -3840,7 +3871,13 @@ namespace XULWin
     {
         if (ToolbarImpl * toolbarImpl = parent()->downcast<ToolbarImpl>())
         {
-            return Utils::getTextSize(toolbarImpl->handle(), getLabel()).cy;
+            int textHeight = Utils::getTextSize(toolbarImpl->handle(), getLabel()).cy;
+            int imageHeight = 0;
+            if (mButton && mButton->image())
+            {
+                imageHeight = mButton->image()->GetHeight();
+            }
+            return std::max<int>(textHeight, imageHeight);
         }
         return 0;
     }
@@ -3848,13 +3885,62 @@ namespace XULWin
     
     std::string ToolbarButtonImpl::getLabel() const
     {
+        if (mButton)
+        {
+            return mButton->text();
+        }
         return mLabel;
     }
 
     
     void ToolbarButtonImpl::setLabel(const std::string & inLabel)
     {
+        if (mButton)
+        {
+            mButton->setText(inLabel);
+        }
         mLabel = inLabel;
+    }
+
+
+    bool ToolbarButtonImpl::isDisabled() const
+    {
+        return mDisabled;
+    }
+
+
+    void ToolbarButtonImpl::setDisabled(bool inDisabled)
+    {
+        if (mButton)
+        {
+            if (ToolbarImpl * toolbar = parent()->downcast<ToolbarImpl>())
+            {
+                SendMessage(toolbar->handle(), TB_ENABLEBUTTON, (WPARAM)mCommandId.intValue(), (LPARAM)MAKELONG(inDisabled ? FALSE : TRUE, 0));
+            }
+        }
+        else
+        {
+            mDisabled = inDisabled;
+        }
+    }
+    
+    
+    void ToolbarButtonImpl::setCSSListStyleImage(const std::string & inURL)
+    {
+        if (mButton)
+        {
+            ChromeURL chromeURL(inURL, Defaults::locale());
+            std::wstring utf16URL = Utils::ToUTF16(chromeURL.convertToLocalPath());
+            boost::shared_ptr<Gdiplus::Bitmap> img(new Gdiplus::Bitmap(utf16URL.c_str()));
+            mButton->setImage(img);
+        }
+        mCSSListStyleImage = inURL;
+    }
+
+    
+    const std::string & ToolbarButtonImpl::getCSSListStyleImage() const
+    {
+        return mCSSListStyleImage;
     }
 
 

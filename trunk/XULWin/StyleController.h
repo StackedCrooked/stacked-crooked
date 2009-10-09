@@ -137,6 +137,23 @@ namespace XULWin
         virtual const RGBColor & getCSSStroke() const = 0;
     };
 
+
+    class CSSListStyleImageController : public StyleController
+    {
+    public:
+        static const char * PropertyName() { return "list-style-image"; }
+
+        virtual void get(std::string & outValue);
+
+        virtual void set(const std::string & inValue);
+
+        virtual void setCSSListStyleImage(const std::string & inURL) = 0;
+
+        virtual const std::string & getCSSListStyleImage() const = 0;
+    };
+
+    
+
 } // namespace XULWin
 
 #endif // STYLECONTROLLER_H_INCLUDED

@@ -20,7 +20,7 @@ namespace Utils
 
 	static boost::shared_ptr<Gdiplus::Bitmap> nullImage;
 
-	RECT getTextRect(const ToolbarItem * inItem, const RECT & inRect, size_t inIconWidth, size_t inIconHeight, SIZE inTextSize)
+    RECT getTextRect(const ConcreteToolbarItem * inItem, const RECT & inRect, size_t inIconWidth, size_t inIconHeight, SIZE inTextSize)
 	{
 		RECT result;
 		result.left = inRect.left + inItem->getLeftMargin();;
@@ -35,7 +35,7 @@ namespace Utils
 	}
 
 
-	ToolbarItem::ToolbarItem
+	ConcreteToolbarItem::ConcreteToolbarItem
 	(
 		boost::weak_ptr<Toolbar> inToolbar,
 		int inCommandID,
@@ -60,84 +60,84 @@ namespace Utils
 	}
 
 
-	ToolbarItem::~ToolbarItem()
+	ConcreteToolbarItem::~ConcreteToolbarItem()
 	{
 	}
 
 
-	bool ToolbarItem::noHover() const
+	bool ConcreteToolbarItem::noHover() const
 	{
 		return mNoHover;
 	}
 
 
-	int ToolbarItem::getLeftMargin() const
+	int ConcreteToolbarItem::getLeftMargin() const
 	{
 		return mLeftMargin;
 	}
 
 
-	void ToolbarItem::setLeftMargin(int inLeftMargin)
+	void ConcreteToolbarItem::setLeftMargin(int inLeftMargin)
 	{
 		mLeftMargin = inLeftMargin;
 	}
 
 
-	void ToolbarItem::setRightMargin(int inRightMargin)
+	void ConcreteToolbarItem::setRightMargin(int inRightMargin)
 	{
 		mRightMargin = inRightMargin;
 	}
 
 
-	int ToolbarItem::getRightMargin() const
+	int ConcreteToolbarItem::getRightMargin() const
 	{
 		return mRightMargin;
 	}
 
 
-	int ToolbarItem::minimumWidth() const
+	int ConcreteToolbarItem::minimumWidth() const
 	{
 		return mMinimumWidth;
 	}
 
 
-	void ToolbarItem::setMinimumWidth(int inMinimumWidth)
+	void ConcreteToolbarItem::setMinimumWidth(int inMinimumWidth)
 	{
 		mMinimumWidth = inMinimumWidth;
 	}
 
 	
-	int ToolbarItem::maximumWidth() const
+	int ConcreteToolbarItem::maximumWidth() const
 	{
 		return mMaximumWidth;
 	}
 
 
-	void ToolbarItem::setMaximumWidth(int inMaximumWidth)
+	void ConcreteToolbarItem::setMaximumWidth(int inMaximumWidth)
 	{
 		mMaximumWidth = inMaximumWidth;
 	}
 
 	
-	int ToolbarItem::maxIconHeight() const
+	int ConcreteToolbarItem::maxIconHeight() const
 	{
 		return mMaxIconHeight;
 	}
 
 	
-	void ToolbarItem::setMaxIconHeight(int inMaxIconHeight)
+	void ConcreteToolbarItem::setMaxIconHeight(int inMaxIconHeight)
 	{
 		mMaxIconHeight = inMaxIconHeight;
 	}
 
 
-	void ToolbarItem::setNoHover(bool inNoHover)
+	void ConcreteToolbarItem::setNoHover(bool inNoHover)
 	{
 		mNoHover = inNoHover;
 	}
 
 
-	bool ToolbarItem::getIndex(size_t & outIndex) const
+	bool ConcreteToolbarItem::getIndex(size_t & outIndex) const
 	{
 		if (boost::shared_ptr<Toolbar> ieToolbar = mToolbar.lock())
 		{
@@ -154,7 +154,7 @@ namespace Utils
 	}
 
 
-	RECT ToolbarItem::getRect() const
+	RECT ConcreteToolbarItem::getRect() const
 	{
 		RECT result = {0, 0, 0, 0};
 		if (boost::shared_ptr<Toolbar> ieToolbar = mToolbar.lock())
@@ -169,7 +169,7 @@ namespace Utils
 	}
 
 
-	void ToolbarItem::setVisible(bool inVisible)
+	void ConcreteToolbarItem::setVisible(bool inVisible)
 	{
 		if (boost::shared_ptr<Toolbar> ieToolbar = mToolbar.lock())
 		{
@@ -178,7 +178,7 @@ namespace Utils
 	}
 
 
-	bool ToolbarItem::isVisible() const
+	bool ConcreteToolbarItem::isVisible() const
 	{
 		if (boost::shared_ptr<Toolbar> ieToolbar = mToolbar.lock())
 		{
@@ -188,31 +188,31 @@ namespace Utils
 	}
 
 
-	int ToolbarItem::commandId() const
+	int ConcreteToolbarItem::commandId() const
 	{
 		return mCommandId;
 	}
 
 
-	int ToolbarItem::menuId() const
+	int ConcreteToolbarItem::menuId() const
 	{
 		return mMenuId;
 	}
 
 
-	const std::string & ToolbarItem::text() const
+	const std::string & ConcreteToolbarItem::text() const
 	{
 		return mText;
 	}
 
 
-	const std::string & ToolbarItem::tooltipText() const
+	const std::string & ConcreteToolbarItem::tooltipText() const
 	{
 		return mTooltipText;
 	}
 
 
-	void ToolbarItem::setText( const std::string & inText)
+	void ConcreteToolbarItem::setText( const std::string & inText)
 	{
 		mText = inText;
 		boost::shared_ptr<Toolbar> toolbar = mToolbar.lock();
@@ -233,13 +233,13 @@ namespace Utils
 	}
 
 
-	boost::shared_ptr<Gdiplus::Bitmap> ToolbarItem::image() const
+	boost::shared_ptr<Gdiplus::Bitmap> ConcreteToolbarItem::image() const
 	{
 		return mImage;
 	}
 
 
-	void ToolbarItem::setImage(boost::shared_ptr<Gdiplus::Bitmap> inImage)
+	void ConcreteToolbarItem::setImage(boost::shared_ptr<Gdiplus::Bitmap> inImage)
 	{
 		mImage = inImage;
 		if (boost::shared_ptr<Toolbar> toolbar = mToolbar.lock())
@@ -249,7 +249,7 @@ namespace Utils
 	}
 
 
-	void ToolbarItem::draw(HDC inHDC, RECT rect, HFONT hFont, SIZE inTextSize)
+	void ConcreteToolbarItem::draw(HDC inHDC, RECT rect, HFONT hFont, SIZE inTextSize)
 	{
 		size_t imageWidth = 0;
 		size_t imageHeight = 0;
@@ -300,7 +300,7 @@ namespace Utils
 		const std::string & inTooltipText,
 		boost::shared_ptr<Gdiplus::Bitmap> inImage
 	):
-		ToolbarItem
+		ConcreteToolbarItem
 		(
 			inToolbar,
 			inCommandID,
@@ -344,7 +344,7 @@ namespace Utils
 		int inMenuId,
 		bool inIsButton
 	):
-		ToolbarItem
+		ConcreteToolbarItem
 		(
 			inToolbar,
 			inCommandID,
@@ -436,7 +436,7 @@ namespace Utils
 		boost::weak_ptr<Toolbar> inToolbar,
 		int inCommandID
 	):
-		ToolbarItem
+		ConcreteToolbarItem
 		(
 			inToolbar,
 			inCommandID,
@@ -479,7 +479,7 @@ namespace Utils
 		boost::weak_ptr<Toolbar> inToolbar,
 		int inCommandID
 	):
-		ToolbarItem
+		ConcreteToolbarItem
 		(
 			inToolbar,
 			inCommandID,
@@ -499,20 +499,7 @@ namespace Utils
 	}
 
 
-	IECustomWindow::IECustomWindow
-	(
-		boost::weak_ptr<Toolbar> inToolbar,
-		int inCommandID
-	):
-		ToolbarItem
-		(
-			inToolbar,
-			inCommandID,
-			"",
-			"",
-			nullImage,
-			0
-		)
+	IECustomWindow::IECustomWindow()
 	{
 	}
 

@@ -2,6 +2,7 @@
 #include "Decorator.h"
 #include "Defaults.h"
 #include "ElementImpl.h"
+#include "ToolbarCustomWindowDecorator.h"
 #include "Utils/ErrorReporter.h"
 #include "Poco/StringTokenizer.h"
 #include <boost/bind.hpp>
@@ -108,25 +109,20 @@ namespace XULWin
         AttributesMapping::const_iterator it = inAttributes.find("style");
         if (it != inAttributes.end())
         {
-            Poco::StringTokenizer tok(it->second, ";:",
-                                      Poco::StringTokenizer::TOK_IGNORE_EMPTY
-                                      | Poco::StringTokenizer::TOK_TRIM);
+            Poco::StringTokenizer keyValuePairs(it->second, ";",
+                                                Poco::StringTokenizer::TOK_IGNORE_EMPTY
+                                                | Poco::StringTokenizer::TOK_TRIM);
 
-            Poco::StringTokenizer::Iterator it = tok.begin(), end = tok.end();
-            std::string key, value;
-            int counter = 0;
+            Poco::StringTokenizer::Iterator it = keyValuePairs.begin(), end = keyValuePairs.end();
             for (; it != end; ++it)
             {
-                if (counter%2 == 0)
+                std::string::size_type sep = it->find(":");
+                if (sep != std::string::npos && (sep + 1) < it->size())
                 {
-                    key = *it;
-                }
-                else
-                {
-                    value = *it;
+                    std::string key = it->substr(0, sep);
+                    std::string value = it->substr(sep + 1, it->size() - sep - 1);
                     setStyle(key, value);
                 }
-                counter++;
             }
         }
     }
@@ -323,6 +319,22 @@ namespace XULWin
     }
 
 
+    template<class ControlType>
+    static ElementImpl * CreateNativeControl(Element * inParent, const AttributesMapping & inAttributesMapping)
+    {
+        if (ToolbarImpl * toolbar = inParent->impl()->downcast<ToolbarImpl>())
+        {
+            ControlType * control  = new ControlType(inParent->impl(), inAttributesMapping);
+            boost::weak_ptr<Utils::Toolbar> weakToolbar(toolbar->nativeToolbar());
+            return new ToolbarCustomWindowDecorator(control, weakToolbar);
+        }
+        else
+        {
+            return new ControlType(inParent->impl(), inAttributesMapping);
+        }
+    }
+
+
     Text::Text(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(Text::Type(),
                 inParent,
@@ -334,7 +346,7 @@ namespace XULWin
     TextBox::TextBox(Element * inParent, const AttributesMapping & inAttributesMapping) :
         Element(TextBox::Type(),
                 inParent,
-                new MarginDecorator(new NativeTextBox(inParent->impl(), inAttributesMapping)))
+                new MarginDecorator(CreateNativeControl<NativeTextBox>(inParent, inAttributesMapping)))
     {
     }
 

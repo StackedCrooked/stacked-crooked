@@ -172,4 +172,16 @@ namespace XULWin
     }
 
 
+    void CSSListStyleImageController::get(std::string & outValue)
+    {
+        outValue = String2URL(getCSSListStyleImage());
+    }
+
+
+    void CSSListStyleImageController::set(const std::string & inValue)
+    {
+        setCSSListStyleImage(URL2String(inValue));
+    }
+
+
 } // namespace XULWin

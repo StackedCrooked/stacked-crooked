@@ -13,7 +13,7 @@
 namespace Utils
 {
 
-	class ToolbarItem;
+	class AbstractToolbarItem;
 	class ToolbarDropDown;
 	class ToolbarSpring;
 
@@ -25,7 +25,7 @@ namespace Utils
 			public:
 				virtual void onRequestFocus() = 0;
 			};
-			typedef std::vector<boost::shared_ptr<ToolbarItem> > ToolbarItems;
+			typedef std::vector<boost::shared_ptr<AbstractToolbarItem> > ToolbarItems;
 			
 			typedef std::map<HWND, RECT> CustomWindowPositions;
 
@@ -34,7 +34,7 @@ namespace Utils
 			~Toolbar();
 			
 
-			void add(ToolbarItem * inToolbarItem);
+			void add(AbstractToolbarItem * inToolbarItem);
 
 			size_t size() const;
 
@@ -48,14 +48,13 @@ namespace Utils
 
 			void disable(size_t inIndex);
 
+			const AbstractToolbarItem * get(size_t inIndex) const;
 
-			const ToolbarItem * get(size_t inIndex) const;
+			AbstractToolbarItem * get(size_t inIndex);
 
-			ToolbarItem * get(size_t inIndex);
+			const AbstractToolbarItem * getToolbarItemByCommandId(int inCommandID) const;
 
-			const ToolbarItem * getToolbarItemByCommandId(int inCommandID) const;
-
-			ToolbarItem * getToolbarItemByCommandId(int inCommandID);
+			AbstractToolbarItem * getToolbarItemByCommandId(int inCommandID);
 
 
 			HMODULE moduleHandle() const;

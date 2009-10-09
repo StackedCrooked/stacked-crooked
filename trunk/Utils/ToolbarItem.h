@@ -15,13 +15,36 @@ namespace Utils
 {
 
 	class Toolbar;
+    class ConcreteToolbarItem;
 
-
-	class ToolbarItem : public boost::noncopyable
+	class AbstractToolbarItem : public boost::noncopyable
 	{
 	public:			
 		friend class Toolbar;
-		ToolbarItem
+		
+        virtual ~AbstractToolbarItem() = 0{}
+		
+		virtual int flags() const = 0;
+
+		virtual void performCommand() = 0;
+
+        virtual int commandId() const = 0;
+
+    protected:
+        friend class Toolbar;
+        friend class ConcreteToolbarItem;
+
+        virtual void onPostRebuildLayout(){}
+
+        virtual void onClientRectChanged(const RECT & inNewClientRect){}
+	};
+
+
+	class ConcreteToolbarItem : public AbstractToolbarItem
+	{
+	public:			
+		friend class Toolbar;
+		ConcreteToolbarItem
 		(
 			boost::weak_ptr<Toolbar> inToolbar,
 			int inCommandID,
@@ -31,11 +54,13 @@ namespace Utils
 			int inMenuId
 		);
 		
-		virtual ~ToolbarItem();
+		virtual ~ConcreteToolbarItem();
 		
 		virtual int flags() const = 0;
 
 		virtual void performCommand() = 0;
+		
+		virtual int commandId() const;
 
 		bool noHover() const;
 
@@ -46,8 +71,6 @@ namespace Utils
 		const std::string & tooltipText() const;
 
 		boost::shared_ptr<Gdiplus::Bitmap> image() const;
-		
-		int commandId() const;
 
 		int menuId() const;
 
@@ -108,7 +131,7 @@ namespace Utils
 		int mMaxIconHeight;
 	};
 	
-	class ToolbarButton : public ToolbarItem
+	class ToolbarButton : public ConcreteToolbarItem
 	{
 	public:
 		ToolbarButton
@@ -130,7 +153,7 @@ namespace Utils
 		boost::function<void()> mAction;
 	};
 	
-	class ToolbarDropDown : public ToolbarItem
+	class ToolbarDropDown : public ConcreteToolbarItem
 	{
 	public:
 		ToolbarDropDown
@@ -167,7 +190,7 @@ namespace Utils
 	};
 	
 	// Only one spring can be added to the toolbar.
-	class ToolbarSpring : public ToolbarItem
+	class ToolbarSpring : public ConcreteToolbarItem
 	{
 	public:
 		ToolbarSpring
@@ -196,16 +219,13 @@ namespace Utils
 
 		virtual void setFocus() const = 0;
 	};
+
 	
-	class IECustomWindow : public ToolbarItem,
+	class IECustomWindow : public AbstractToolbarItem,
 						   public IFocusableToolbarItem
 	{
 	public:
-		IECustomWindow
-		(
-			boost::weak_ptr<Toolbar> inToolbar,
-			int inCommandID
-		);
+		IECustomWindow();
 
 		virtual ~IECustomWindow();
 
@@ -217,10 +237,13 @@ namespace Utils
 
 		virtual HWND handle() const = 0;
 
+        virtual int commandId() const = 0;
+
 		virtual void performCommand() {}
 	};
+
 	
-	class ToolbarSeparator : public ToolbarItem //IECustomWindow
+	class ToolbarSeparator : public ConcreteToolbarItem //IECustomWindow
 	{
 	public:
 		ToolbarSeparator

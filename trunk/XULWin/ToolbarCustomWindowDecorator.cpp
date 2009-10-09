@@ -93,7 +93,8 @@ namespace XULWin
         {
             if (ToolbarImpl * toolbar = parent()->downcast<ToolbarImpl>())
             {
-                ::MoveWindow(mCustomWindow->handle(), 0, 0, mDecoratedElement->getWidth(), mDecoratedElement->getHeight(), FALSE);
+                mDecoratedElement->move(0, 0, mDecoratedElement->getWidth(), mDecoratedElement->getHeight());
+                mDecoratedElement->rebuildLayout();
                 toolbar->nativeToolbar()->add(mCustomWindow);
             }
         }

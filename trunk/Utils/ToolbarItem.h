@@ -175,12 +175,14 @@ namespace Utils
 
 		virtual void performCommand() {}
 
-		virtual void performMenuCommand(int inMenuId) = 0;
+        virtual void performMenuCommand(int inMenuId){}
 
 		void showMenu();
 
 	protected:
-		virtual boost::shared_ptr<PopupMenu> getMenu() = 0;
+        virtual boost::shared_ptr<PopupMenu> getMenu()
+        {   boost::shared_ptr<PopupMenu> nullRes;
+            return nullRes; }
 		
 	private:
 		bool mIsButton;

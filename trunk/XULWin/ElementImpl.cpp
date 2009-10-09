@@ -3817,12 +3817,27 @@ namespace XULWin
         {
             boost::shared_ptr<Gdiplus::Bitmap> nullImage;
             std::string label = getLabel();
-            mButton = new Utils::ToolbarButton(toolbar->nativeToolbar(),
-                                               mCommandId.intValue(), 
-                                               boost::function<void()>(),
-                                               label,
-                                               label,
-                                               nullImage);
+
+            std::string buttonType = owningElement()->getAttribute("type");
+            if (buttonType == "menu")
+            {
+                mButton = new Utils::ToolbarDropDown(toolbar->nativeToolbar(),
+                                                       mCommandId.intValue(), 
+                                                       label,
+                                                       label,
+                                                       nullImage,
+                                                       0,
+                                                       false);
+            }
+            else
+            {
+                mButton = new Utils::ToolbarButton(toolbar->nativeToolbar(),
+                                                   mCommandId.intValue(), 
+                                                   boost::function<void()>(),
+                                                   label,
+                                                   label,
+                                                   nullImage);
+            }
             toolbar->nativeToolbar()->add(mButton);
             // Now that mButton is constructed we can apply any previously set
             // attributes.

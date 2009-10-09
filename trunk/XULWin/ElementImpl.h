@@ -23,7 +23,7 @@
 
 namespace Utils
 {
-    class ToolbarButton;
+    class ConcreteToolbarItem;
 }
 
 
@@ -1601,7 +1601,7 @@ namespace XULWin
         virtual const std::string & getCSSListStyleImage() const;
 
     private:
-        Utils::ToolbarButton * mButton;
+        Utils::ConcreteToolbarItem * mButton;
         bool mDisabled;
         std::string mLabel;
         std::string mCSSListStyleImage;

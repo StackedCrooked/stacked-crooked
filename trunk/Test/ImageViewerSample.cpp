@@ -1,4 +1,4 @@
-#include "Test/ImageViewer.h"
+#include "Test/ImageViewerSample.h"
 #include "XULWin/XULRunner.h"
 #include "XULWin/EventListener.h"
 #include "XULWin/Decorator.h"
@@ -13,13 +13,13 @@ using namespace Utils;
 
 namespace XULWin
 {
-    ImageViewer::ImageViewer() :
+    ImageViewerSample::ImageViewerSample() :
         mNativeWindow(0)
     {
     }
 
 
-    void ImageViewer::run()
+    void ImageViewerSample::run()
     {
         std::string chdir = "../xulrunnersamples/imageviewer/";
         CurrentDirectoryChanger curdir(chdir);
@@ -34,7 +34,7 @@ namespace XULWin
         }
 
         ScopedEventListener events;
-        events.connect(mRootElement.get(), WM_DROPFILES, boost::bind(&ImageViewer::dropFiles, this, _1, _2));
+        events.connect(mRootElement.get(), WM_DROPFILES, boost::bind(&ImageViewerSample::dropFiles, this, _1, _2));
        
         if (mNativeWindow = mRootElement->impl()->downcast<NativeWindow>())
         {
@@ -44,7 +44,7 @@ namespace XULWin
     }
 
 
-    LRESULT ImageViewer::dropFiles(WPARAM wParam, LPARAM lParam)
+    LRESULT ImageViewerSample::dropFiles(WPARAM wParam, LPARAM lParam)
     {
         Element * imageArea = mRootElement->getElementById("imagearea");
         if (!imageArea)

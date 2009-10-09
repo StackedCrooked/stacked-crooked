@@ -59,8 +59,7 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     id="Toolbar-SearchBoxButton"
     type="button"
     tooltiptext="&SEARCH_GOOGLE;"
-    style='list-style-image: url("chrome://toolbar/skin/icons/toolbar_search.png");'
-/>
+    style='list-style-image: url("chrome://toolbar/skin/icons/toolbar_search.png");'/>
 
     <toolbarseparator />
 
@@ -72,30 +71,26 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     <toolbarbutton
     id="Toolbar-Sign"
     tooltiptext="&SIGN_TOOLTIP;"
-    label="&SIGN_TOOLTIP;"
-/>
+    label="&SIGN_TOOLTIP;"/>
 
 
     <toolbarseparator />
 
     <toolbarbutton id="Toolbar-NewPhoto"
     tooltiptext="&ADD_PHOTO;"
-    label="&ADD_PHOTO;"
-/>
+    label="&ADD_PHOTO;"/>
 
 
     <toolbarbutton
     id="Toolbar-NewBlog"
     label="&ADD_BLOG;"
-    tooltiptext="&ADD_BLOG;"
-/>
+    tooltiptext="&ADD_BLOG;"/>
 
 
     <toolbarbutton
     id="Toolbar-NewVideo"
     label="&ADD_VIDEO;"
-    tooltiptext="&ADD_VIDEO;"
-/>
+    tooltiptext="&ADD_VIDEO;"/>
 
     <toolbarseparator />
 
@@ -130,8 +125,7 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 
     <toolbarbutton
     id="Toolbar-Grab"
-    label=""
-/>
+    label=""/>
 
 
     <toolbarseparator />
@@ -139,8 +133,7 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 
     <toolbarbutton
     id="Toolbar-TickerCounter"
-    label="+"
-/>
+    label="+"/>
 
 
     <hbox
@@ -169,9 +162,8 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 
     <toolbarbutton
     id="Toolbar-Shout"
-    label=""
-    tooltiptext="&ADD_SHOUT;"
-/>
+    label="Shout"
+    tooltiptext="&ADD_SHOUT;"/>
 
   </toolbar>
 

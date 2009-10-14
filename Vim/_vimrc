@@ -29,9 +29,9 @@ function MyDiff()
 endfunction
 
 set guifont=Courier_New:h10
-set lines=50
+set lines=40
 set columns=100
-winpos 40 10
+winpos 340 60
 :syntax enable
 :set hlsearch 
 :set softtabstop=4 

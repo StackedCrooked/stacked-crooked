@@ -7,24 +7,30 @@
 #include <iostream>
 
 
-template<class DataType>
-struct ContainerPolicy_Set
+template<class ContainerT>
+struct BaseContainerPolicy
 {
-    typedef std::set<DataType> Container;
-    static void insert(Container & ioContainer, const DataType & inValue)
-    {
-        ioContainer.insert(inValue);
-    }
+    typedef ContainerT Container;
 };
 
-template<class DataType>
-struct ContainerPolicy_Vector
+template<class NodeT>
+struct ContainerPolicy_Set : public BaseContainerPolicy<std::set<NodeT> >
 {
-    typedef std::vector<DataType> Container;
-    static void insert(Container & ioContainer, const DataType & inValue)
-    {
-        ioContainer.push_back(inValue);
-    }
+    static void insert(Container & ioContainer, const NodeT & inValue)
+    { ioContainer.insert(inValue); }
+
+    static void clear(Container & ioContainer)
+    { ioContainer.clear(); }
+};
+
+template<class NodeT>
+struct ContainerPolicy_Vector : public BaseContainerPolicy<std::vector<NodeT> >
+{
+    static void insert(Container & ioContainer, const NodeT & inValue)
+    { ioContainer.push_back(inValue); }
+
+    static void clear(Container & ioContainer)
+    { ioContainer.clear(); }
 };
 
 template <class PointeeType>
@@ -62,92 +68,23 @@ public:
     typedef typename PointerPolicy<This>::PointerType ChildPtr;
     typedef typename ContainerPolicy<ChildPtr>::Container Container;
 
+    typedef typename Container::iterator iterator;
+    typedef typename Container::const_iterator const_iterator;
 
-    // simple iterator
-    class const_iterator : public std::iterator<std::forward_iterator_tag, This>
-    {
-    public:
-        bool operator== (const const_iterator & rhs) const
-        { return mIterator == rhs.mIterator; }
-        
-        bool operator!= (const const_iterator & rhs) const
-        { return mIterator != rhs.mIterator; }
+    iterator begin() { return mChildren.begin(); }
+    iterator end() { return mChildren.end(); }
 
-        // preincrement
-        const_iterator operator++()
-        {
-            return const_iterator(++mIterator);
-        }
-
-        // postincrement
-        const_iterator operator++(int)
-        {
-            const_iterator tmp = *this;
-            ++*this;
-            return tmp;
-        }
-
-        // return reference to class object
-        const ChildPtr & operator*() { return *mIterator; }
-
-        // return pointer to class object
-        const ChildPtr * operator->() { return &(*mIterator); }
-
-    private:
-        friend class This;
-        const_iterator(const typename Container::const_iterator & inIterator) : mIterator(inIterator) { }
-        typename Container::const_iterator mIterator;
-    };
-
-    class iterator : public std::iterator<std::forward_iterator_tag, This>
-    {
-    public:
-        bool operator== (const iterator & rhs) const
-        { return mIterator == rhs.mIterator; }
-        
-        bool operator!= (const iterator & rhs) const
-        { return mIterator != rhs.mIterator; }
-
-        // preincrement
-        iterator operator++()
-        {
-            return iterator(++mIterator);
-        }
-
-        // postincrement
-        iterator operator++(int)
-        {
-            iterator tmp = *this;
-            ++*this;
-            return tmp;
-        }
-
-        // return reference to class object
-        const ChildPtr & operator*() { return *mIterator; }
-
-        // return pointer to class object
-        const ChildPtr * operator->() { return &(*mIterator); }
-
-    private:
-        friend class This;
-        iterator(const typename Container::iterator & inIterator) : mIterator(inIterator) { }
-        typename Container::iterator mIterator;
-    };
-
-    iterator begin() { return iterator(mChildren.begin()); }
-
-    iterator end() { return iterator(mChildren.end()); }
-
-    const_iterator begin() const { return const_iterator(mChildren.begin()); }
-
-    const_iterator end() const { return const_iterator(mChildren.end()); }
-
+    const_iterator begin() const { return mChildren.begin(); }
+    const_iterator end() const { return mChildren.end(); }
 
     void addChild(This * inItem)
     { 
         ChildPtr item(inItem);
         ContainerPolicy<ChildPtr>::insert(mChildren, item);
     }
+
+    void clearChildren()
+    { ContainerPolicy<ChildPtr>::clear(mChildren); }
 
     const DataType & data() const
     { return mData; }
@@ -159,6 +96,7 @@ private:
     DataType mData;
     Container mChildren;
 };
+
 
 typedef GenericNode<std::string, ContainerPolicy_Vector, PointerPolicy_Normal> SimpleNode;
 typedef GenericNode<std::string, ContainerPolicy_Set, PointerPolicy_Shared> SmartNode;
@@ -231,25 +169,27 @@ void testConfig()
 
     const NodeConfig & constSimpleNode(node);
     iterateContainer(constSimpleNode);
+
+    node.clearChildren();
 }
 
+template<class NodeT>
+struct OrderByData
+{
+    bool operator () (NodeT lhs, NodeT rhs)
+    {
+        return lhs->data() < rhs->data();
+    }
+};
 
 template<class NodeT>
-struct ContainerPolicy_Set_CustomOrdering
+struct ContainerPolicy_Set_CustomOrdering : public BaseContainerPolicy<std::set<NodeT, OrderByData<NodeT> > >
 {
-    struct CustomOrder
-    {
-        bool operator () (NodeT lhs, NodeT rhs)
-        {
-            return lhs->data() < rhs->data();
-        }
-    };
-    typedef std::set<NodeT, CustomOrder> Container;
-
     static void insert(Container & ioContainer, const NodeT & inValue)
-    {
-        ioContainer.insert(inValue);
-    }
+    { ioContainer.insert(inValue); }
+
+    static void clear (Container & ioContainer)
+    { ioContainer.clear(); }
 };
 
 
@@ -269,6 +209,9 @@ int main()
 
     std::cout << "Set, normal pointer, custom ordening" << std::endl;
     testConfig<GenericNode<std::string, ContainerPolicy_Set_CustomOrdering, PointerPolicy_Normal> >();
+
+    std::cout << "Set, shared pointer, custom ordening" << std::endl;
+    testConfig<GenericNode<std::string, ContainerPolicy_Set_CustomOrdering, PointerPolicy_Shared> >();
 
     std::cout << "Type 'q' + ENTER to quit";
     char c;

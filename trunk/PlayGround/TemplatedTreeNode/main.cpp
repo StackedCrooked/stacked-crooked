@@ -134,11 +134,7 @@ public:
         typename Container::iterator mIterator;
     };
 
-    iterator begin()
-    {
-        Container::iterator it = mChildren.begin();
-        return iterator(it);
-    }
+    iterator begin() { return iterator(mChildren.begin()); }
 
     iterator end() { return iterator(mChildren.end()); }
 

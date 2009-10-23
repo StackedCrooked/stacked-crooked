@@ -43,3 +43,4 @@ winpos 340 60
 :set nowritebackup 
 :set noswapfile
 
+:nunmap <C-A>

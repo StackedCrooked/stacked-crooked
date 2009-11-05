@@ -5,8 +5,8 @@ module ProcessUtils
 
   # Runs a subprocess and applies handlers for stdout and stderr.
   # +command+:: command line string to be executed by the system
-  # +outhandler+:: proc object that takes a pipe object as first and only param (may be nil)
-  # +errhandler+:: proc object that takes a pipe object as first and only param (may be nil)
+  # +outhandler+:: +Proc+ object that takes the stdout pipe (of type +IO+) as first and only parameter. This value may be +nil+ if you don't want to process the standard output stream.
+  # +errhandler+:: +Proc+ object that takes the stderr pipe (of type +IO+) as first and only parameter. This value may be +nil+ if you don't want to process the standard error stream.
   def execute_and_handle(command, outhandler, errhandler)
     Open3.popen3(command) do |_, stdout, stderr|
       if (outhandler)

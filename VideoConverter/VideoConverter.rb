@@ -20,18 +20,6 @@ class FFMPEG
   include ProcessUtils
 
   def initialize
-    @progress_pipe_parser = Proc.new do |pipe|
-      progress = 0
-      pipe.each("\r") do |line|
-        p = parse_progress_line(line)
-        if progress != p
-          progress = p
-          @progress_handler.call(progress) if @progress_handler
-        end
-      end
-      $defout.flush
-      progress
-    end
   end
 
   def parse_progress_line(line)
@@ -76,7 +64,18 @@ class FFMPEG
     @progress_handler = progress_handler
     command = "ffmpeg -i #{input_file} #{output_file}"
     outhandler = nil
-    execute_and_handle(command, nil, @progress_pipe_parser)
+    execute_and_handle(command, nil, Proc.new do |pipe|
+      progress = 0
+      pipe.each("\r") do |line|
+        p = parse_progress_line(line)
+        if progress != p
+          progress = p
+          @progress_handler.call(progress) if @progress_handler
+        end
+      end
+      $defout.flush
+      progress
+    end)
   end
 end
 

@@ -1,11 +1,11 @@
 require 'ProcessUtils.rb'
 
+# Provides an interface to the +ffmpeg+ binary.
 class FFMPEG
   include ProcessUtils
 
-  # Tries to extract progress information from a line of FFMPEG output
-  # Params:
-  # [+line+]  FFMPEG output line
+  # Tries to extract progress information from a line of ffmpeg's output.
+  # +line+::  ffmpeg output line
   def parse_progress_line(line)
     result = 0
     if line =~ /time=(\d+)\.(\d+)/ then
@@ -15,9 +15,8 @@ class FFMPEG
   end
 
 
-  # Tries to extract duration information from a line of FFMPEG output
-  # Params:
-  # [+line+]  FFMPEG output line
+  # Tries to extract duration information from a line of ffmpeg's output
+  # +line+:: ffmpeg output line
   def parse_duration(line)
     duration = 0
     if line =~ /Duration\: (\d+)\:(\d+)\:(\d+)\.(\d+)/
@@ -28,9 +27,8 @@ class FFMPEG
 
 
   # Returns the duration in seconds for a given video file.
-  # It does this by calling FFMPEG and parsing the output from the stderr channel.
-  # Params:
-  # [+file+]  Path to the media file
+  # It does this by calling ffmpeg and parsing the output from the stderr channel.
+  # +file+:: Path to the media file
   def get_duration(file)
     duration = 0
     errhandler = Proc.new do |pipe|
@@ -46,10 +44,8 @@ class FFMPEG
   end
 
   # Execute a shell command as a subprocess and report progress
-  # Params:
-  # * [+command+]           command line
-  # * [+progress_handler+]  proc object that takes number of seconds processed as first and only
-  #                         parameter
+  # +command+:: command line
+  # +progress_handler+::  proc object that takes number of seconds processed as first and only parameter
   def convert(input_file, output_file, progress_handler)
     @progress_handler = progress_handler
     command = "ffmpeg -i #{input_file} #{output_file}"

@@ -1,8 +1,13 @@
 require 'ProcessUtils.rb'
 
+
 # Provides an interface to the +ffmpeg+ binary.
 class FFMPEG
   include ProcessUtils
+
+  def initialize
+    @ffmpeg_executable = "ffmpeg"
+  end
 
   # Tries to extract progress information from a line of ffmpeg's output.
   # +line+::  ffmpeg output line
@@ -43,13 +48,13 @@ class FFMPEG
     duration
   end
 
-  # Execute a shell command as a subprocess and report progress
-  # +command+:: command line
-  # +progress_handler+::  proc object that takes number of seconds processed as first and only parameter
+  # Executes a simple ffmpeg convert command of the form <tt>ffmpeg -i <inputfile> <outputfile></tt>
+  # +input_file+:: path to the input video file
+  # +output_file+:: path for the output video file
+  # +progress_handler+:: +Proc+ object that takes a progress value (in seconds).
   def convert(input_file, output_file, progress_handler)
     @progress_handler = progress_handler
-    command = "ffmpeg -i #{input_file} #{output_file}"
-    outhandler = nil
+    command = "#{@ffmpeg_executable} -i #{input_file} #{output_file}"
     execute_and_handle(command, nil, Proc.new do |pipe|
       progress = 0
       pipe.each("\r") do |line|

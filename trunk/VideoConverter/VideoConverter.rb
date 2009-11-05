@@ -20,33 +20,13 @@ class FFMPEG
   include ProcessUtils
 
   def initialize
-    # Get the duration from ffmpeg's process output
-    @duration_parser = Proc.new do |line|
-      duration = 0
-      if line =~ /Duration\: (\d+)\:(\d+)\:(\d+)\.(\d+)/
-        duration = (($1.to_i * 60 + $2.to_i) * 60 + $3.to_i) * 10 + $4.to_i
-      end
-      duration
-    end
-
-    @progress_line_parser = Proc.new do |line|
-      result = 0
-      if line =~ /time=(\d+)\.(\d+)/ then
-        result = ($1.to_i * 10 + $2.to_i) * 100
-      end
-      result
-    end
-
-
     @progress_pipe_parser = Proc.new do |pipe|
       progress = 0
       pipe.each("\r") do |line|
-        p = @progress_line_parser.call(line)
+        p = parse_progress_line(line)
         if progress != p
           progress = p
-          if @progress_handler
-            @progress_handler.call(progress) if @progress_handler
-          end
+          @progress_handler.call(progress) if @progress_handler
         end
       end
       $defout.flush
@@ -54,13 +34,32 @@ class FFMPEG
     end
   end
 
+  def parse_progress_line(line)
+    result = 0
+    if line =~ /time=(\d+)\.(\d+)/ then
+      result = ($1.to_i * 10 + $2.to_i) * 100
+    end
+    result
+  end
+
+
+  # Get the duration from ffmpeg's process output
+  def parse_duration(line)
+    duration = 0
+    if line =~ /Duration\: (\d+)\:(\d+)\:(\d+)\.(\d+)/
+      duration = (($1.to_i * 60 + $2.to_i) * 60 + $3.to_i) * 10 + $4.to_i
+    end
+    duration
+  end
+
+
   def get_duration(file)
     duration = 0
     errhandler = Proc.new do |pipe|
       pipe.each("\n") do |line|
         # Get duration
         if (duration == 0)
-          duration = @duration_parser.call(line)
+          duration = parse_duration(line)
         end
       end
     end
@@ -85,7 +84,7 @@ end
 #
 # Configuration
 #
-$input_file = "./TestVideos/mitch.mpg"
+$input_file = "../TestVideos/mitch.mpg"
 $output_format = "flv"
 $output_file = "output.#{$output_format}"
 

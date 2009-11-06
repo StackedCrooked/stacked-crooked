@@ -1,0 +1,220 @@
+body{
+	margin:0px;
+	margin-top:25px;
+	margin-bottom:40px;
+	height:100%;
+	background-color: #f8f8f8;
+	}
+	
+img{
+	padding:3px;
+}
+
+#wrapper{
+	margin-left:auto; 
+	margin-right:auto;	
+	width:800px;
+	background-color:#fff;	
+	/* border:1px solid #CCC; */
+	padding:15px;
+	height:1055px;
+
+}
+
+#header{
+	width:800px;
+	height:150px;
+	background-color:#d1dce2;
+	padding: 0;
+	
+}
+
+#logo{
+	width:775px;
+	height:113px;
+	float:left;	
+	margin-left:15px;
+	margin-top:15px;
+/*	border:#C66 solid 1px; */
+}
+#forUser{
+	width:800px;
+	height:260px;
+	/* border:#C66 solid 1px;*/
+}
+
+/* margin-top, margin-right, margin-bottom, margin-left */
+
+#userOne{
+/*	border:#C66 solid 1px; */
+	margin: 10px 5px 5px 0px;
+ 	padding: 10px;
+ 	height: 225px;
+ 	width: 225px;
+ 	float: left;
+	text-align: center;
+}
+
+#userTwo{
+ /*	border:#C66 solid 1px;*/
+ 	margin: 75px 5px 5px 25px;
+ 	padding: 10px;
+ 	height: 100px;
+ 	width: 250px;
+ 	float: left;
+}
+
+#userThree{
+ /*	border:#C66 solid 1px; */
+ 	margin: 75px 5px 5px 25px;
+ 	padding: 10px;
+ 	height: 100px;
+ 	width: 125px;
+ 	float: left;
+}
+
+#forAdmin{
+	/*	border:#C66 solid 1px; */
+	margin-top:10px;
+	width:870px;
+	height:250px;
+}
+
+#adminOne{
+	/*border:#C66 solid 1px; */
+	margin: 10px 5px 5px 0px;
+ 	padding: 10px;
+ 	height: 225px;
+ 	width: 225px;
+ 	float: left;
+}
+
+#adminTwo{
+	/*	border:#C66 solid 1px;*/
+ 	margin: 75px 5px 5px 25px;
+ 	padding: 10px;
+ 	height: 100px;
+ 	width: 250px;
+ 	float: left;
+	
+}
+
+#adminThree{
+	/*	border:#C66 solid 1px; */
+ 	margin: 65px 5px 5px 55px;
+ 	padding: 10px;
+ 	height: 75px;
+ 	width: 125px;
+ 	float: left;
+}
+
+
+#content{
+	width:775px;
+	float:left;
+	margin-left:15px;
+	margin-top:15px;
+	/* border:#C66 solid 1px; */
+}
+
+
+#content_left{
+	width:250px;
+	height:59px;
+	display:block;
+	float:left;
+	background-image:url(../images/button.png);
+	background-repeat:no-repeat;	
+	}
+
+#content_right{
+	display:block;
+	float:left;
+	width:250px;
+	height:59px;
+	margin-left:30px;
+	background-image:url(../images/button.png);
+	background-repeat:no-repeat;
+	}
+
+
+#tutorials{
+	width:100%;
+	height:225px;
+	/* border:#afafaf solid 1px; */
+}
+
+#usingBBB{
+	margin:0px 0px 0px 0px;
+	width:350px;
+	height:150px;
+	float:left;
+	
+}
+
+#devBBB{
+	margin:0px 5px 5px 10px;
+	width:350px;
+	height:150px;
+	float:left;
+	
+}
+
+h1 {
+	font-size: 18px;
+	margin: 0;
+	font-family:"Trebuchet MS";
+	font-weight:bold;
+	color: #303030;
+	letter-spacing:0.5px;
+	background: #ccd2eb;
+}
+
+
+h2 {
+	font-size: 16px;
+	margin: 0;
+	font-family:"Trebuchet MS";
+	font-weight:bold;
+	color: #303030;
+	letter-spacing:0.5px;
+	
+}
+
+p, ol {
+	margin: 0 0 0.2em 0;
+	/* text-align: justify; */
+	font-family: Arial, Helvetica, sans-serif;
+	color: #303030;
+}
+p.small{
+	text-align: justify;
+	font-family: Arial, Helvetica, sans-serif;
+	color: #303030;
+	letter-spacing:0.5px;
+	font-size:11px;
+	font-weight:bold;
+}
+
+#footer {
+	height: 100px;
+	min-height: 74px;
+	padding: 10px 0 0 0;
+	clear:both;
+	position:center;
+}
+
+html>body #footer {
+	height: auto;
+}
+
+
+#legal {
+	clear: both;
+	padding-top: 20px;
+	text-align: center;
+	font-size: 10px;
+	/* color: #303030; */
+}
+
+

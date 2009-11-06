@@ -1,29 +1,44 @@
 require 'FFMPEG.rb'
 
-#
-# Configuration
-#
-$input_file = "../TestVideos/#{ARGV[0]}"
-$output_format = "flv"
-$output_file = "output.#{$output_format}"
+# Provides an interface to video conversion utilities
+class VideoConverter
+  def initialize
+    @converter = FFMPEG.new
+    @progress = 0
+    @duration = 1
+  end
 
-#
-# Script
-#
-converter = FFMPEG.new
+  def get_progress
+    return @progress/@duration
+  end
 
+  def get_file(vid)
+     return File.dirname(__FILE__) + "/../TestVideos/" + vid
+  end
 
-# Remove old output file
-converter.execute_and_handle("rm #{$output_file}", nil, nil)
+  def get_out_file(id)
+    return File.dirname(__FILE__) + "/" + id
+  end
+  
+  
 
-# Get duration
-duration = converter.get_duration($input_file)
+  # Returns the duration in seconds for a given video file.
+  def get_duration(vid)
+    return @converter.get_duration(get_file(vid))
+  end
 
-# Convert and report progress
-converter.convert($input_file,
-                  $output_file,
-                  Proc.new { |progress| puts((progress/duration).to_s + "%") } )
-
-# Done
-puts "Done!"
+  # Executes a simple ffmpeg convert command of the form <tt>ffmpeg -i <inputfile> <outputfile></tt>
+  # +input_file+:: path to the input video file
+  # +output_file+:: path for the output video file
+  # +progress_handler+:: +Proc+ object that takes a progress value (in seconds).
+  def convert(vid, output_file)
+    @duration = get_duration(vid)
+    if @duration == 0
+      @duration = 1
+    end
+    @converter.convert(get_file(vid),
+                       get_out_file(output_file),
+                       Proc.new { |progress| @progress = progress })
+  end
+end
 

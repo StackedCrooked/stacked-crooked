@@ -1,0 +1,17 @@
+Create AMI account
+
+vi /etc/asterisk/manager.conf
+
+Modify "enabled" to yes
+
+[general]
+enabled = yes
+
+Add the following at the bottom of the file. This entry will be used when you edit bigbluebutton.properties below.
+
+; BigBlueButton: Enable Red5 to connect
+[bbb]
+secret = secret
+permit = 0.0.0.0/0.0.0.0
+read = system,call,log,verbose,command,agent,user
+write = system,call,log,verbose,command,agent,user

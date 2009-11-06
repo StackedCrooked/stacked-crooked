@@ -4,12 +4,6 @@ require 'FFMPEG.rb'
 class VideoConverter
   def initialize
     @converter = FFMPEG.new
-    @progress = 0
-    @duration = 1
-  end
-
-  def get_progress
-    return @progress/@duration
   end
 
   def get_file(vid)
@@ -31,14 +25,10 @@ class VideoConverter
   # +input_file+:: path to the input video file
   # +output_file+:: path for the output video file
   # +progress_handler+:: +Proc+ object that takes a progress value (in seconds).
-  def convert(vid, output_file)
-    @duration = get_duration(vid)
-    if @duration == 0
-      @duration = 1
-    end
+  def convert(vid, output_file, progress_handler)
     @converter.convert(get_file(vid),
                        get_out_file(output_file),
-                       Proc.new { |progress| @progress = progress })
+                       progress_handler)
   end
 end
 

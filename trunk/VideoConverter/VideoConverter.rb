@@ -2,33 +2,47 @@ require 'FFMPEG.rb'
 
 # Provides an interface to video conversion utilities
 class VideoConverter
-  def initialize
+  def initialize(video)
     @converter = FFMPEG.new
+    @video = File.dirname(__FILE__) + "/../TestVideos/" + video
+    @progress = 0
+    @duration = 1
+    @mutex = Mutex.new
+    @cv = ConditionVariable.new
   end
-
-  def get_file(vid)
-     return File.dirname(__FILE__) + "/../TestVideos/" + vid
-  end
-
-  def get_out_file(id)
-    return File.dirname(__FILE__) + "/" + id
-  end
-  
-  
 
   # Returns the duration in seconds for a given video file.
-  def get_duration(vid)
-    return @converter.get_duration(get_file(vid))
+  def get_duration
+    @duration = @converter.get_duration(@video)
+    if @duration == 0
+      @duration = 1
+    end
+    @duration
+  end
+
+  def get_progress
+    result = 0
+    @mutex.synchronize do
+      @cv.wait(@mutex)
+      result = @progress
+    end
+    result
   end
 
   # Executes a simple ffmpeg convert command of the form <tt>ffmpeg -i <inputfile> <outputfile></tt>
   # +input_file+:: path to the input video file
   # +output_file+:: path for the output video file
   # +progress_handler+:: +Proc+ object that takes a progress value (in seconds).
-  def convert(vid, output_file, progress_handler)
-    @converter.convert(get_file(vid),
-                       get_out_file(output_file),
-                       progress_handler)
+  def convert_to(output_file)
+    @out_video = File.dirname(__FILE__) + "/" + output_file
+    Thread.new do
+      @converter.convert(@video, @out_video, Proc.new do |progress|
+        @mutex.synchronize do
+          @progress = progress
+          @cv.signal
+        end
+      end)
+    end
   end
 end
 

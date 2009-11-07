@@ -6,25 +6,25 @@ class VideoConverter
     @converter = FFMPEG.new
     @video = File.dirname(__FILE__) + "/../TestVideos/" + video
     @progress = 0
-    @duration = 1
+    @duration = get_duration
     @mutex = Mutex.new
     @cv = ConditionVariable.new
   end
 
-  # Returns the duration in seconds for a given video file.
   def get_duration
-    @duration = @converter.get_duration(@video)
-    if @duration == 0
-      @duration = 1
+    if @duration == nil
+      @duration = @converter.get_duration(@video)
     end
     @duration
   end
 
   def get_progress
     result = 0
-    @mutex.synchronize do
-      @cv.wait(@mutex)
-      result = @progress
+    if @mutex
+      @mutex.synchronize do
+        @cv.wait(@mutex)
+        result = @progress
+      end
     end
     result
   end
@@ -35,13 +35,19 @@ class VideoConverter
   # +progress_handler+:: +Proc+ object that takes a progress value (in seconds).
   def convert_to(output_file)
     @out_video = File.dirname(__FILE__) + "/" + output_file
-    Thread.new do
+    system("rm #{@out_video}")
+    t = Thread.new do
       @converter.convert(@video, @out_video, Proc.new do |progress|
         @mutex.synchronize do
-          @progress = progress
+          if @progress < get_duration()
+            @progress = (0.5 + ((100 * progress).to_f / get_duration().to_f)).to_i
+          elsif
+            @progress = 100
+          end
           @cv.signal
         end
       end)
+      @mutex = nil
     end
   end
 end

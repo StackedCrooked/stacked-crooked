@@ -5,6 +5,7 @@ require 'ProcessUtils.rb'
 class FFMPEG
   include ProcessUtils
 
+  # FFMPEG constructor.
   def initialize
     @ffmpeg_executable = "ffmpeg"
   end
@@ -20,7 +21,7 @@ class FFMPEG
   end
 
 
-  # Tries to extract duration information from a line of ffmpeg's output
+  # Tries to extract duration information from a line of ffmpeg's output.
   # Returns seconds.
   # +line+:: ffmpeg output line
   def parse_duration(line)
@@ -52,7 +53,7 @@ class FFMPEG
   # Executes a simple ffmpeg convert command of the form <tt>ffmpeg -i <inputfile> <outputfile></tt>
   # +input_file+:: path to the input video file
   # +output_file+:: path for the output video file
-  # +progress_handler+:: +Proc+ object that takes a progress value (in seconds).
+  # +progress_handler+:: +Proc+ object that takes a progress value (in seconds) as only param.
   def convert(input_file, output_file, progress_handler)
     @progress_handler = progress_handler
     command = "#{@ffmpeg_executable} -i #{input_file} #{output_file}"

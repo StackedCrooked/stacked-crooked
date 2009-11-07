@@ -14,18 +14,19 @@ class FFMPEG
   def parse_progress_line(line)
     result = 0
     if line =~ /time=(\d+)\.(\d+)/ then
-      result = ($1.to_i * 10 + $2.to_i) * 100
+      result = ((100.0 * $1.to_f) + $2.to_f) / 100.0
     end
     result
   end
 
 
   # Tries to extract duration information from a line of ffmpeg's output
+  # Returns seconds.
   # +line+:: ffmpeg output line
   def parse_duration(line)
     duration = 0
     if line =~ /Duration\: (\d+)\:(\d+)\:(\d+)\.(\d+)/
-      duration = (($1.to_i * 60 + $2.to_i) * 60 + $3.to_i) * 10 + $4.to_i
+      duration = ((($1.to_f * 60.0 + $2.to_f) * 60.0 + $3.to_f) * 10.0 + $4.to_f) / 10.0
     end
     duration
   end
@@ -59,7 +60,7 @@ class FFMPEG
       progress = 0
       pipe.each("\r") do |line|
         p = parse_progress_line(line)
-        if progress != p
+        if progress <= p
           progress = p
           @progress_handler.call(progress) if @progress_handler
         end

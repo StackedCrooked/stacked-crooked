@@ -17,4 +17,3 @@ get '/progress' do
   "Progress is now: " + $converter.get_progress.to_s
 end
 
-

@@ -14,8 +14,8 @@ class FFMPEG
   # +line+::  ffmpeg output line
   def parse_progress_line(line)
     result = 0
-    if line =~ /time=(\d+)\.(\d+)/ then
-      result = ((100.0 * $1.to_f) + $2.to_f) / 100.0
+    if line =~ /time=(\d+\.\d+)/ then
+      result = $1.to_f
     end
     result
   end

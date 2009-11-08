@@ -3,7 +3,6 @@ require 'thread'
 
 # VideoConverter enables converting of videos. It is based on FFMPEG.
 class VideoConverter
-  attr_reader :done
 
   # VideoConverter constructor.
   # +video+:: identifier for the to be converted video file
@@ -15,32 +14,38 @@ class VideoConverter
     @converter = FFMPEG.new
     @progress = 0
     @mutex = Mutex.new
-    @cv = ConditionVariable.new
     @done = false
   end
 
+  def done
+    res = false
+    @mutex.synchronize do
+      res = @done
+    end
+    res
+  end
 
   # Returns duration of the video file in seconds.
   def get_duration
-    if not @duration
+    res = 0
+    @mutex.synchronize do
       @duration = @converter.get_duration(@video)
+      res = @duration
     end
-    @duration
+    res
   end
 
   # Returns the progress in seconds of the conversion process.
   def get_progress
-    result = 0
-    if @mutex and not @done
+    res = 0
+    if not done()
       @mutex.synchronize do
-        @cv.wait(@mutex)
-        result = @progress
+        res = @progress
       end
+    else
+      res = 100
     end
-    if @done
-      result = 100
-    end
-    result
+    res
   end
 
   # Converts the video. The target codec is deduced from the +ouput_file+'s file extension.
@@ -54,16 +59,17 @@ class VideoConverter
     Thread.new do
       @converter.convert(@video, @out_video, Proc.new do |progress|
         @mutex.synchronize do
-          if @progress < get_duration()
+          if @progress < @duration
             @progress = (0.5 + ((100 * progress).to_f / get_duration().to_f)).to_i
           else
             @progress = 100
           end
-          @cv.signal
         end
       end)
-      @done = true
-      @cv.signal
+
+      @mutex.synchronize do
+        @done = true
+      end
     end
   end
 end

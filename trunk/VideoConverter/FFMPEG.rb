@@ -67,7 +67,6 @@ class FFMPEG
         end
       end
       $defout.flush
-      progress
     end)
   end
 end

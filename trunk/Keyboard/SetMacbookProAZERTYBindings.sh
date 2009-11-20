@@ -1,4 +1,3 @@
-#!/usr/bin/xmodmap
 keycode 49 = less greater
 keycode 94 = at numbersign
 add mod3 = Mode_switch

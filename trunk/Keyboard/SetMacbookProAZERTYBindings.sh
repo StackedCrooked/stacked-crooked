@@ -1,3 +1,6 @@
+keycode  14 = parenleft 5 braceleft bracketleft
+keycode  20 = parenright degree braceright bracketright
+keycode  51 = dead_grave sterling
 keycode 49 = less greater
 keycode 94 = at numbersign
 add mod3 = Mode_switch

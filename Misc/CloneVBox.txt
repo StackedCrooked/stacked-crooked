@@ -1,0 +1,3 @@
+
+VBoxManage clonehd `pwd`/Machines/Mint7-GStreamer/Snapshots/\{267dfb67-5e8e-482d-a4c9-9019affeff3a\}.vdi `pwd`/HardDisks/Mint7-DarwinStreamingServer.vdi
+

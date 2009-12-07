@@ -1,7 +1,4 @@
 set nocompatible
-source $VIMRUNTIME/vimrc_example.vim
-source $VIMRUNTIME/mswin.vim
-behave mswin
 
 set diffexpr=MyDiff()
 function MyDiff()
@@ -28,10 +25,9 @@ function MyDiff()
   silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . eq
 endfunction
 
-set guifont=Courier_New:h10
 set lines=40
 set columns=100
-winpos 340 60
+winpos 240 60
 :syntax enable
 :set hlsearch 
 :set softtabstop=4 
@@ -43,4 +39,3 @@ winpos 340 60
 :set nowritebackup 
 :set noswapfile
 
-:nunmap <C-A>

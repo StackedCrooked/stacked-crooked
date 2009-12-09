@@ -1,72 +1,98 @@
+#include "VLCPlayer.h"
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QSlider>
 #include <QTimer>
 #include <QFrame>
-#include "VLCPlayer.h"
+#include <iostream>
 
-VLCPlayer::VLCPlayer() :
-    QWidget()
+
+VLCPlayer::VLCPlayer(QWidget * parent, int inWidth, int inHeight) :
+    QWidget(parent),
+    mWidth(inWidth),
+    mHeight(inHeight)
 {
     //preparation of the vlc command
-    const char * const vlc_args[] = {
-              "-I", "dummy", /* Don't use any interface */
-              "--ignore-config", /* Don't use VLC's config */
-              "--extraintf=logger", //log anything
-              "--verbose=2", //be much more verbose then normal for debugging purpose
-              "--plugin-path=/usr/include/vlc/plugins" };
+    const char * const vlc_args[] =
+    {
+        "-I", "dummy",
+        "--ignore-config", // Don't use VLC's config.
+        "--extraintf=logger", // Log anything.
+        "--verbose=2"
+        //,"--plugin-path=/usr/lib/vlc"
+    };
 
-    _videoWidget=new QFrame(this);
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::Frame));
+    setMinimumSize(mWidth, mHeight);
 
-    _volumeSlider=new QSlider(Qt::Horizontal,this);
-    _volumeSlider->setMaximum(100); //the volume is between 0 and 100
-    _volumeSlider->setToolTip("Audio slider");
+    mVideoWidget=new QFrame(this);
+
+    mVolumeSlider=new QSlider(Qt::Horizontal,this);
+    mVolumeSlider->setMaximum(100); //the volume is between 0 and 100
+    mVolumeSlider->setToolTip("Audio slider");
 
     // Note: if you use streaming, there is no ability to use the position slider
-    _positionSlider=new QSlider(Qt::Horizontal,this);
-    _positionSlider->setMaximum(POSITION_RESOLUTION);
+    mPositionSlider=new QSlider(Qt::Horizontal,this);
+    mPositionSlider->setMaximum(POSITION_RESOLUTION);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(_videoWidget);
-    layout->addWidget(_positionSlider);
-    layout->addWidget(_volumeSlider);
+    layout->addWidget(mVideoWidget);
+    layout->addWidget(mPositionSlider);
+    layout->addWidget(mVolumeSlider);
     setLayout(layout);
 
-    _isPlaying=false;
-    poller=new QTimer(this);
+    mIsPlaying=false;
+    mPoller = new QTimer(this);
 
     //Initialize an instance of vlc
     //a structure for the exception is neede for this initalization
-    libvlc_exception_init(&_vlcexcep);
+    libvlc_exception_init(&mVLCException);
 
     //create a new libvlc instance
-    _vlcinstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args,&_vlcexcep);  //tricky calculation of the char space used
-    raise (&_vlcexcep);
+    mVLCInstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args,&mVLCException);  //tricky calculation of the char space used
+    raise (&mVLCException);
 
     // Create a media player playing environement
-    _mp = libvlc_media_player_new (_vlcinstance, &_vlcexcep);
-    raise (&_vlcexcep);
+    mVLCMediaPlayer = libvlc_media_player_new (mVLCInstance, &mVLCException);
+    raise (&mVLCException);
 
     //connect the two sliders to the corresponding slots (uses Qt's signal / slots technology)
-    connect(poller, SIGNAL(timeout()), this, SLOT(updateInterface()));
-    connect(_positionSlider, SIGNAL(sliderMoved(int)), this, SLOT(changePosition(int)));
-    connect(_volumeSlider, SIGNAL(sliderMoved(int)), this, SLOT(changeVolume(int)));
+    connect(mPoller, SIGNAL(timeout()), this, SLOT(updateInterface()));
+    connect(mPositionSlider, SIGNAL(sliderMoved(int)), this, SLOT(changePosition(int)));
+    connect(mVolumeSlider, SIGNAL(sliderMoved(int)), this, SLOT(changeVolume(int)));
 
-    poller->start(100); //start timer to trigger every 100 ms the updateInterface slot
+    mPoller->start(100); //start timer to trigger every 100 ms the updateInterface slot
+
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::Frame));
+    setMinimumSize(mWidth, mHeight);
+    updateGeometry();
 }
 
-//desctructor
+
 VLCPlayer::~VLCPlayer()
 {
     /* Stop playing */
-    libvlc_media_player_stop (_mp, &_vlcexcep);
+    libvlc_media_player_stop (mVLCMediaPlayer, &mVLCException);
 
     /* Free the media_player */
-    libvlc_media_player_release (_mp);
+    libvlc_media_player_release (mVLCMediaPlayer);
 
-    libvlc_release (_vlcinstance);
-    raise (&_vlcexcep);
+    libvlc_release (mVLCInstance);
+    raise (&mVLCException);
 }
+
+
+QSize VLCPlayer::sizeHint() const
+{
+    return QSize(mWidth, mHeight);
+}
+
+
+QSize VLCPlayer::minimumSizeHint() const
+{
+    return QSize(mWidth, mHeight);
+}
+
 
 void VLCPlayer::playFile(QString file)
 {
@@ -84,11 +110,11 @@ void VLCPlayer::playFile(QString file)
     */
 
     /* Create a new LibVLC media descriptor */
-    _m = libvlc_media_new (_vlcinstance, file.toAscii(), &_vlcexcep);
-    raise(&_vlcexcep);
+    mMedia = libvlc_media_new (mVLCInstance, file.toAscii(), &mVLCException);
+    raise(&mVLCException);
 
-    libvlc_media_player_set_media (_mp, _m, &_vlcexcep);
-    raise(&_vlcexcep);
+    libvlc_media_player_set_media (mVLCMediaPlayer, mMedia, &mVLCException);
+    raise(&mVLCException);
 
     // /!\ Please note
     //
@@ -98,69 +124,75 @@ void VLCPlayer::playFile(QString file)
 
     /* Get our media instance to use our window */
     #if defined(Q_OS_WIN)
-        libvlc_media_player_set_drawable(_mp, reinterpret_cast<unsigned int>(_videoWidget->winId()), &_vlcexcep );
-        //libvlc_media_player_set_hwnd(_mp, _videoWidget->winId(), &_vlcexcep ); // for vlc 1.0
+        libvlc_media_player_set_drawable(mVLCMediaPlayer, reinterpret_cast<unsigned int>(mVideoWidget->winId()), &mVLCException );
+        //libvlc_media_player_set_hwnd(mVLCMediaPlayer, mVideoWidget->winId(), &mVLCException ); // for vlc 1.0
     #elif defined(Q_OS_MAC)
-        libvlc_media_player_set_drawable(_mp, _videoWidget->winId(), &_vlcexcep );
-        //libvlc_media_player_set_agl (_mp, _videoWidget->winId(), &_vlcexcep); // for vlc 1.0
+        libvlc_media_player_set_drawable(mVLCMediaPlayer, mVideoWidget->winId(), &mVLCException );
+        //libvlc_media_player_set_agl (mVLCMediaPlayer, mVideoWidget->winId(), &mVLCException); // for vlc 1.0
     #else //Linux
-        libvlc_media_player_set_drawable(_mp, _videoWidget->winId(), &_vlcexcep );
-        //libvlc_media_player_set_xwindow(_mp, _videoWidget->winId(), &_vlcexcep ); // for vlc 1.0
+        libvlc_media_player_set_drawable(mVLCMediaPlayer, mVideoWidget->winId(), &mVLCException );
+        //libvlc_media_player_set_xwindow(mVLCMediaPlayer, mVideoWidget->winId(), &mVLCException ); // for vlc 1.0
     #endif
-    raise(&_vlcexcep);
+    raise(&mVLCException);
 
     /* Play */
-    libvlc_media_player_play (_mp, &_vlcexcep );
-    raise(&_vlcexcep);
+    libvlc_media_player_play (mVLCMediaPlayer, &mVLCException );
+    raise(&mVLCException);
 
-    _isPlaying=true;
+    mIsPlaying=true;
 }
+
 
 void VLCPlayer::changeVolume(int newVolume)
 {
-    libvlc_exception_clear(&_vlcexcep);
-    libvlc_audio_set_volume (_vlcinstance,newVolume , &_vlcexcep);
-    raise(&_vlcexcep);
+    libvlc_exception_clear(&mVLCException);
+    libvlc_audio_set_volume (mVLCInstance,newVolume , &mVLCException);
+    raise(&mVLCException);
 }
+
 
 void VLCPlayer::changePosition(int newPosition)
 {
-    libvlc_exception_clear(&_vlcexcep);
+    libvlc_exception_clear(&mVLCException);
     // It's possible that the vlc doesn't play anything
     // so check before
-    libvlc_media_t *curMedia = libvlc_media_player_get_media (_mp, &_vlcexcep);
-    libvlc_exception_clear(&_vlcexcep);
+    libvlc_media_t *curMedia = libvlc_media_player_get_media (mVLCMediaPlayer, &mVLCException);
+    libvlc_exception_clear(&mVLCException);
     if (curMedia == NULL)
         return;
 
     float pos=(float)(newPosition)/(float)POSITION_RESOLUTION;
-    libvlc_media_player_set_position (_mp, pos, &_vlcexcep);
-    raise(&_vlcexcep);
+    libvlc_media_player_set_position (mVLCMediaPlayer, pos, &mVLCException);
+    raise(&mVLCException);
+    updateGeometry();
 }
+
 
 void VLCPlayer::updateInterface()
 {
-    if(!_isPlaying)
+    if(!mIsPlaying)
         return;
 
     // It's possible that the vlc doesn't play anything
     // so check before
-    libvlc_media_t *curMedia = libvlc_media_player_get_media (_mp, &_vlcexcep);
-    libvlc_exception_clear(&_vlcexcep);
+    libvlc_media_t *curMedia = libvlc_media_player_get_media (mVLCMediaPlayer, &mVLCException);
+    libvlc_exception_clear(&mVLCException);
     if (curMedia == NULL)
         return;
 
-    float pos=libvlc_media_player_get_position (_mp, &_vlcexcep);
+    float pos=libvlc_media_player_get_position (mVLCMediaPlayer, &mVLCException);
     int siderPos=(int)(pos*(float)(POSITION_RESOLUTION));
-    _positionSlider->setValue(siderPos);
-    int volume=libvlc_audio_get_volume (_vlcinstance,&_vlcexcep);
-    _volumeSlider->setValue(volume);
+    mPositionSlider->setValue(siderPos);
+    int volume=libvlc_audio_get_volume (mVLCInstance,&mVLCException);
+    mVolumeSlider->setValue(volume);
 }
+
+
 void VLCPlayer::raise(libvlc_exception_t * ex)
 {
     if (libvlc_exception_raised (ex))
     {
-         fprintf (stderr, "error: %s\n", libvlc_exception_get_message(ex));
-         exit (-1);
+        std::cout << "Error: " << libvlc_exception_get_message(ex) << "\n";
+        exit (-1);
     }
 }

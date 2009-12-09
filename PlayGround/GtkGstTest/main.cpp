@@ -1,8 +1,11 @@
+extern "C"
+{
 #include <gst/gst.h>
 #include <gtk/gtk.h>
 #include <gst/interfaces/xoverlay.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
+}
 
 static gboolean expose_cb(GtkWidget * widget, GdkEventExpose * event, gpointer data)
 {

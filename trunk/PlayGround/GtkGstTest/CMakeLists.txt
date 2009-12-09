@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6) 
 project (GtkGstTest)
-add_executable (GtkGstTest main.cpp)
+add_executable (GtkGstTest main.c)
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
 
 # Set CMAKE_C_FLAGS variable with info from pkg-util
@@ -27,4 +27,4 @@ set_target_properties(GtkGstTest
                                  LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
 
 link_directories(/opt/local/lib) 
-target_link_libraries(GtkGstTest gtk-x11-2.0) 
+target_link_libraries(GtkGstTest gtk-x11-2.0 X11)

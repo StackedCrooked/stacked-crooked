@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6) 
 project (GtkGstTest)
-add_executable (GtkGstTest main.c)
+add_executable (GtkGstTest main.cpp)
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
 
 # Set CMAKE_C_FLAGS variable with info from pkg-util

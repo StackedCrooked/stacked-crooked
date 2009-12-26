@@ -87,7 +87,7 @@ private:
 
 DECLARE_INT_ATTRIBUTE(Width, "width", 0)
 DECLARE_INT_ATTRIBUTE(Height, "width", 0)
-DECLARE_BOOL_ATTRIBUTE(Hidden, "hidden", 0)
+DECLARE_BOOL_ATTRIBUTE(Hidden, "hidden", false)
 DECLARE_STRING_ATTRIBUTE(Title, "title", "")
 
 class Point
@@ -144,7 +144,9 @@ public:
         Attributes::const_iterator it = mAttributes.find(T::Name());
         if (it == mAttributes.end())
         {
-            throw std::runtime_error("No attribute found with this name.");
+            std::string name = T::Name();
+            std::string msg = "No attribute found with name '" + name + "'.";
+            throw std::runtime_error(msg.c_str());
         }
         T * attr = dynamic_cast<T*>(it->second);
         if (!attr)
@@ -203,6 +205,7 @@ int main()
     const std::string & title = comp.get<Title>();
     comp.set<Title>("test");
 
+
     std::string widthAsString;
     Width & width = comp.attribute<Width>();
     width.getStringValue(widthAsString);
@@ -220,12 +223,15 @@ int main()
                             ---------------------          ------------------
 Example usage:              comp->getTitle();              comp->get<Title>();
                             comp->setWidth(80);            comp->set<Width>(80);
+Technology:                 multiple inheritance           visitor pattern
 Attributes are defined:     per class                      per object
 Attributes are added:       at compile-time                at run-time
 Defining new attributes:    intrusive                      non-intrusive
-Attribute lookup:           string - AC mapping            string - DA mapping
+Attribute lookup:           string to object mapping       string to object mapping
 
-Dynamic attributes allow to create a small core API that can be extended.
-The attributes can be defined using C macros.
+Dynamic attributes allow to create a small core API that can be extended externally.
+Attribute controllers require you to modify the core code each time a new attribute is defined.
+So dynamic attributes follow the principle of "strong cohesion and weak coupling" more than
+attribute controllers do.
 
 **/

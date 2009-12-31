@@ -39,3 +39,4 @@ winpos 240 60
 :set nowritebackup 
 :set noswapfile
 
+:set gfn=Courier\ New:h10

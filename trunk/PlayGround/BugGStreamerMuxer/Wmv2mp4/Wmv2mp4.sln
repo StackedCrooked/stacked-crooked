@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wmv2mp4", "Wmv2mp4.vcproj", "{F01C37F2-CEC4-4B7E-A2DF-CC71E6661598}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F01C37F2-CEC4-4B7E-A2DF-CC71E6661598}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F01C37F2-CEC4-4B7E-A2DF-CC71E6661598}.Debug|Win32.Build.0 = Debug|Win32
+		{F01C37F2-CEC4-4B7E-A2DF-CC71E6661598}.Release|Win32.ActiveCfg = Release|Win32
+		{F01C37F2-CEC4-4B7E-A2DF-CC71E6661598}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

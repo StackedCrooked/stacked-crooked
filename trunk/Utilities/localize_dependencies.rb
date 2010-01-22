@@ -74,7 +74,8 @@ def copy_dependencies(input_file, output_directory)
       copy_dependencies(target, output_directory)
     end
     update_path(input_file, dependency, output_directory)
-    update_id(target, output_directory)
+    #update_id(target, output_directory)
+    puts
     puts
   end
 end

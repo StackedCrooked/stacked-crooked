@@ -28,15 +28,20 @@ def execute_and_handle(command, outpipe, errpipe)
 end
 
 
+def needs_localization(file_path)
+  return file_path.index("@executable_path") == nil &&
+         file_path.index("/usr/lib/") == nil
+end
+
+
 def get_input_file_dependencies(input_file)
   result = []
-
   execute_and_handle("otool -L #{input_file}",
                      Proc.new { |outPipe|
                        outPipe.each_line do |line|
                          if line =~ /\s+(.+dylib)\s.+/
                            filename = $1
-                           if (filename.index("@executable_path") == nil)
+                           if (needs_localization(filename))
                              puts "Dependency found: #{$1}"
                              result.push($1)
                            end
@@ -49,17 +54,15 @@ end
 
 
 def copy_dependencies(input_file, output_directory)
+  File.makedirs(output_directory)
   get_input_file_dependencies(input_file).each do |dependency|
     target = File.join(output_directory, File.basename(dependency))
     if not File.exists?(target)
       File.copy(dependency, target)
       copy_dependencies(target, output_directory)
-      puts "Copied #{dependency} to #{output_directory}."
-    else
-      puts "#{target} already exists."
     end
     update_path(input_file, dependency, output_directory)
-    puts "Updated paths."
+    update_id(target, output_directory)
   end
 end
 
@@ -74,9 +77,14 @@ end
 def update_path(input_file, cur_path, output_directory)
   update_internal_path(input_file,
                        cur_path,
-                       "@executable_path/#{File.basename(output_directory)}/#{File.basename(cur_path)}")
+                       "#{File.basename(output_directory)}/#{File.basename(cur_path)}")
+end
+
+
+def update_id(input_file, output_directory)
+  command = "install_name_tool -id #{File.join(output_directory, File.basename(input_file))} #{input_file}"
+  puts command
+  execute_and_handle(command, nil, nil)
 end
 
 copy_dependencies(ARGV[0], ARGV[1])
-
-

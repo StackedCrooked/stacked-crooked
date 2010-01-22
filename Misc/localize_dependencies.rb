@@ -29,8 +29,7 @@ end
 
 
 def needs_localization(file_path)
-  return file_path.index("@executable_path") == nil &&
-         file_path.index("/usr/lib/") == nil
+  return file_path.index("@executable_path") == nil && file_path.index("/usr/lib/") == nil
 end
 
 
@@ -48,6 +47,12 @@ def get_input_file_dependencies(input_file)
                        end
                      },
                      nil)
+
+  if result.length > 0
+    puts("Dependencies for #{input_file}:")
+    result.each { |dep| puts "  #{dep}" }
+    puts
+  end
   return result
 end
 
@@ -57,31 +62,33 @@ def copy_dependencies(input_file, output_directory)
   get_input_file_dependencies(input_file).each do |dependency|
     target = File.join(output_directory, File.basename(dependency))
     if not File.exists?(target)
-      File.copy(dependency, target)
+      if File.exists?(dependency)
+        if dependency.index("#{File.basename(ARGV[0])}") == nil
+          File.copy(dependency, target)
+        else
+          puts("Skipping #{dependency}.")
+        end
+      else
+        puts("Warning: #{dependency} was not found and is not copied to the output directory.")
+      end
       copy_dependencies(target, output_directory)
     end
     update_path(input_file, dependency, output_directory)
     update_id(target, output_directory)
+    puts
   end
 end
 
 
-def update_internal_path(input_file, old_path, new_path)
-  command = "install_name_tool -change #{old_path} #{new_path} #{input_file}"
+def update_path(input_file, old_install_name, output_directory)
+  command = "install_name_tool -change #{old_install_name} @executable_path/#{File.join(output_directory, File.basename(old_install_name))} #{input_file}"
   puts command
   execute_and_handle(command, nil, nil)
 end
 
 
-def update_path(input_file, cur_path, output_directory)
-  update_internal_path(input_file,
-                       cur_path,
-                       "#{File.basename(output_directory)}/#{File.basename(cur_path)}")
-end
-
-
 def update_id(input_file, output_directory)
-  command = "install_name_tool -id #{File.join(output_directory, File.basename(input_file))} #{input_file}"
+  command = "install_name_tool -id @executable_path/#{File.join(output_directory, File.basename(input_file))} #{input_file}"
   puts command
   execute_and_handle(command, nil, nil)
 end

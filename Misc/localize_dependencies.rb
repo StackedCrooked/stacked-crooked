@@ -88,3 +88,4 @@ def update_id(input_file, output_directory)
 end
 
 copy_dependencies(ARGV[0], ARGV[1])
+

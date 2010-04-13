@@ -40,7 +40,7 @@ openssl rsa -in tmp.key.old -passin pass:secret1 -passout pass:secret1 -out tmp.
 rm tmp.key.old
 
 # Sign the certificate with this key
-openssl x509 -days 365 -in thirdparty.pem -signkey tmp.key -passin pass:secret1 -out thirdparty-signed.pem
+openssl x509 -days 365 -in thirdparty.pem -signkey tmp.key -passin pass:secret1 -text -out thirdparty-signed.pem
 
 # Remove tempfile
 rm tmp.key

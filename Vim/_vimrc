@@ -14,3 +14,4 @@ set smartindent
 set softtabstop=4 
 set tabstop=4 
 syntax enable
+set gfn=Courier\ 10\ Pitch\ 10

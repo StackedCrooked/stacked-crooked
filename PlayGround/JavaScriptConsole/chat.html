@@ -1,0 +1,98 @@
+<html>
+    <body>
+        <div id="outputDiv" ></div>
+        <div>
+          <input type="text" id="commandInput" name="command" />
+        </div>
+        <script type="text/javascript">
+            var Chat = {};
+            Chat.init = function()
+            {     
+              document.getElementById("commandInput").onkeydown = function(evt)
+              {
+                  if (evt.keyCode == 13)
+                  {
+                      var text = document.getElementById("commandInput").value;
+                      if (text && text.length > 0)
+                      {
+                        Chat.send(text);
+                      }
+                      document.getElementById("commandInput").value = "";
+                  }
+              };
+              Chat.display("Welcome to the JavaScript console.");
+              document.getElementById("commandInput").focus();
+            };
+            
+            function getStyle(el, style)
+            {             
+              var value = el.style[style];
+              if (!value)
+              {
+                if(document.defaultView)
+                {
+                  value = document.defaultView.getComputedStyle(el, "").getPropertyValue(style);
+                }
+                else if(el.currentStyle)
+                {
+                  value = el.currentStyle[style];
+                }
+              }
+              return value;
+            }
+            
+            Chat.rebuildLayout = function()
+            {
+              var outputDiv = document.getElementById("outputDiv");
+              outputDiv.setAttribute("style", "overflow:auto;height:" + (window.innerHeight - 50) + "px");
+              outputDiv.scrollTop = outputDiv.scrollHeight;
+              
+              var commandInput = document.getElementById("commandInput");
+              var w = getStyle(outputDiv, "width");
+              var newWidth = parseInt(w.substring(0, w.length - 2), 10) - 50;
+              commandInput.setAttribute("size", newWidth/6);
+            }
+                        
+            Chat.displayCount = 0;
+            Chat.display = function(message)
+            {                 
+                var p = document.createElement("pre");
+                if ((Chat.displayCount)%2 == 0)
+                {
+                  p.setAttribute("style", "font-family: courier; background-color: lightblue;");
+                }
+                else
+                {
+                  p.setAttribute("style", "font-family: courier; background-color: white;");
+                }
+                p.innerText = message;
+                var outputDiv = document.getElementById("outputDiv").appendChild(p);
+                Chat.rebuildLayout();
+                (Chat.displayCount)++;
+                
+            };
+            
+            function handler()
+            {
+              if(this.readyState == 4)
+              {
+                if (this.status == 200)
+                {
+                  Chat.display(this.responseText);
+                }
+              }
+            }
+            
+            Chat.send = function(message)
+            {
+                var client = new XMLHttpRequest();                
+                client.onreadystatechange = handler;
+                client.open("GET", "http://localhost:4000/" + message, true);
+                client.send();
+            };            
+            
+            window.onload = Chat.init();
+        </script>    
+    
+    </body>
+</html>

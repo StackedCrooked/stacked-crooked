@@ -2,12 +2,7 @@
     <body>
         <p></p>
         <div id="outputDiv" >
-        <p style="background-color: lightgray; font-family: courier">Welcome to the JavaScript console.</p>
-        <p style="background-color: lightgray; font-family: courier">
-          <ul><li>Go to <a href=http://localhost:4000>localhost:4000</a>. Opening the chat.html file locally won't work!
-          <li>Don't forget to start the ruby server.
-          <li>Type your command. For example: "ls -al"
-          </p>
+        <p style="font-size:small; background-color: lightgray; font-family: courier">Welcome to the JavaScript console.</p>        
         </div>
         <div>
           <input type="text" id="commandInput" name="command" />
@@ -66,7 +61,7 @@
             Chat.displayCommand = function(message)
             {                 
                 var p = document.createElement("b");
-                p.setAttribute("style", "font-family: courier; background-color: white;");
+                p.setAttribute("style", "font-size:small; font-family: courier; background-color: white;");
                 p.innerText = message;
                 var outputDiv = document.getElementById("outputDiv").appendChild(p);
                 Chat.rebuildLayout();
@@ -78,7 +73,7 @@
             Chat.display = function(message)
             {                 
                 var p = document.createElement("pre");
-                p.setAttribute("style", "font-family: courier; background-color: lightgray;");
+                p.setAttribute("style", "font-size:small; font-family: courier; background-color: lightgray;");
                 p.innerText = message;
                 var outputDiv = document.getElementById("outputDiv").appendChild(p);
                 Chat.rebuildLayout();
@@ -93,6 +88,13 @@
                 if (this.status == 200)
                 {
                   Chat.display(this.responseText);
+                }
+                else
+                {
+                  Chat.display("Oops, it doesn't work...\n\
+- make sure the server is running (ruby webserver.rb)\n\
+- use this url: http://localhost:4000 (and not the local cmd.html)");
+                  Chat.display("");
                 }
               }
             }

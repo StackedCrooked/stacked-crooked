@@ -12,13 +12,12 @@ class SimpleHandler < Mongrel::HttpHandler
     if command == ""
       response.start(200) do |head,out|
         head["Content-Type"] = "text/html"
-        FileUtils.copy_stream(File.new("chat.html"), out)
+        FileUtils.copy_stream(File.new("cmd.html"), out)
       end      
     elsif command == "favicon.ico"
       # ignore this request
     else
       command = command.gsub(/%20/, " ").gsub(/%22/, "\"")
-      puts "Sanitized command: " + command
       response.start(200) do |head,out|
         head["Content-Type"] = "text/html"
         status = POpen4::popen4(command) do |stdout, stderr, stdin, pid|

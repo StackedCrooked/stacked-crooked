@@ -1,6 +1,14 @@
 <html>
     <body>
-        <div id="outputDiv" ></div>
+        <p></p>
+        <div id="outputDiv" >
+        <p style="background-color: lightgray; font-family: courier">Welcome to the JavaScript console.</p>
+        <p style="background-color: lightgray; font-family: courier">
+          <ul><li>Go to <a href=http://localhost:4000>localhost:4000</a>. Opening the chat.html file locally won't work!
+          <li>Don't forget to start the ruby server.
+          <li>Type your command. For example: "ls -al"
+          </p>
+        </div>
         <div>
           <input type="text" id="commandInput" name="command" />
         </div>
@@ -10,17 +18,18 @@
             {     
               document.getElementById("commandInput").onkeydown = function(evt)
               {
-                  if (evt.keyCode == 13)
+                if (evt.keyCode == 13)
+                {
+                  var text = document.getElementById("commandInput").value;
+                  if (text && text.length > 0)
                   {
-                      var text = document.getElementById("commandInput").value;
-                      if (text && text.length > 0)
-                      {
-                        Chat.send(text);
-                      }
-                      document.getElementById("commandInput").value = "";
+                    Chat.send(text);
+                    Chat.displayCommand(text);
                   }
+                  document.getElementById("commandInput").value = "";
+                }
               };
-              Chat.display("Welcome to the JavaScript console.");
+              Chat.display("");
               document.getElementById("commandInput").focus();
             };
             
@@ -52,19 +61,24 @@
               var newWidth = parseInt(w.substring(0, w.length - 2), 10) - 50;
               commandInput.setAttribute("size", newWidth/6);
             }
-                        
-            Chat.displayCount = 0;
+            
+            
+            Chat.displayCommand = function(message)
+            {                 
+                var p = document.createElement("b");
+                p.setAttribute("style", "font-family: courier; background-color: white;");
+                p.innerText = message;
+                var outputDiv = document.getElementById("outputDiv").appendChild(p);
+                Chat.rebuildLayout();
+                (Chat.displayCount)++;
+                
+            };
+            
+            
             Chat.display = function(message)
             {                 
                 var p = document.createElement("pre");
-                if ((Chat.displayCount)%2 == 0)
-                {
-                  p.setAttribute("style", "font-family: courier; background-color: lightblue;");
-                }
-                else
-                {
-                  p.setAttribute("style", "font-family: courier; background-color: white;");
-                }
+                p.setAttribute("style", "font-family: courier; background-color: lightgray;");
                 p.innerText = message;
                 var outputDiv = document.getElementById("outputDiv").appendChild(p);
                 Chat.rebuildLayout();
@@ -85,11 +99,11 @@
             
             Chat.send = function(message)
             {
-                var client = new XMLHttpRequest();                
+                var client = new XMLHttpRequest();  
                 client.onreadystatechange = handler;
                 client.open("GET", "http://localhost:4000/" + message, true);
                 client.send();
-            };            
+            };         
             
             window.onload = Chat.init();
         </script>    

@@ -15,12 +15,7 @@ class SimpleHandler < Mongrel::HttpHandler
         FileUtils.copy_stream(File.new("chat.html"), out)
       end      
     elsif command == "favicon.ico"
-    elsif command == "output.html"
-      puts "serving output.html"
-      response.start(200) do |head,out|
-        head["Content-Type"] = "text/html"
-        FileUtils.copy_stream(File.new("output.html"), out)
-      end
+      # ignore this request
     else
       command = command.gsub(/%20/, " ").gsub(/%22/, "\"")
       puts "Sanitized command: " + command

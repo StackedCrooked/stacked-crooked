@@ -30,6 +30,7 @@ class SimpleHandler < Mongrel::HttpHandler
           stdin.close()
           FileUtils.copy_stream(stdout, out)
           FileUtils.copy_stream(stderr, out)
+          puts "Sent response."
         end
       end
     end

@@ -5,38 +5,41 @@
 (import javax.swing.JFrame)
 (import javax.swing.JPanel)
 
-(def view-prefs {
+(def prefs {
   :block-width 10
   :block-height 10
   :screen-width 320
   :screen-height 240
 })
 
-(defn center-in-screen [frame]
-  (let [dim (.getScreenSize(Toolkit/getDefaultToolkit))
-       w (.width (.getSize frame))
-       h (.height (.getSize frame))
-       x (int (/ (- (.width dim) w) 2))
-       y (int (* 0.75(/ (- (.height dim) h) 2)))]
+(defn centerInScreen [frame]
+  (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
+          w (.width (.getSize frame))
+          h (.height (.getSize frame))
+          x (int (/ (- (.width dim) w) 2))
+          y (int (* 0.75(/ (- (.height dim) h) 2)))]
   (.setLocation frame x y)))
 
-(defn drawRectangle [p x y w h]  
-  (doto (.getGraphics p)
+(defn drawRectangle [g x y w h]
+  (doto g
     (.setColor (java.awt.Color/BLACK))
-    (.fillRect 0 0 (view-prefs :screen-width) (view-prefs :screen-height))
+    (.fillRect 0 0 (prefs :screen-width) (prefs :screen-height))
     (.setColor (java.awt.Color/BLUE))
     (.fillRect (* w (deref x)) (* h (deref y)) w h)))
     
-(defn drawGameState [panel gs]
-  (drawRectangle panel
+(defn drawGameState [gs g]
+  (drawRectangle g
                  ((gs :block) :x)
                  ((gs :block) :y)
-                 (view-prefs :block-width)
-                 (view-prefs :block-height)))
+                 (prefs :block-width)
+                 (prefs :block-height)))
 
-(defn create-panel [x y]
+(defn createPanel [gs x y]
   (doto
     (proxy [JPanel KeyListener] []
+      (paintComponent [g]
+        (proxy-super paintComponent g)
+        (drawGameState gs g))
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
@@ -64,7 +67,8 @@
           }
         }
         frame (JFrame. "Test")
-        panel (create-panel ((gamestate :block) :x)
+        panel (createPanel gamestate
+                            ((gamestate :block) :x)
                             ((gamestate :block) :y))
         ]
     (doto frame
@@ -73,9 +77,9 @@
       (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)    
       (.setVisible true))
     (.addKeyListener panel panel)
-    (center-in-screen frame)
+    (centerInScreen frame)
     (loop []
-      (drawGameState panel gamestate)
+      (.repaint panel)
       (Thread/sleep 10)
       (recur))))
 (main)

@@ -120,7 +120,31 @@
 
 (def gamestate {
   :field {
-    :buffer (make-array Integer 200)
+    :rows [
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    [ 0 0 0 0 0 0 0 0 0 0 ]
+    ]
     :width 10
     :height 20
   }
@@ -160,11 +184,17 @@
           rowIndex  (mod rotation (count grids))
           rows      (nth grids rowIndex) ]
   (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))))
+      
+(defn drawField [g field]
+  (let [ rows (field :rows)]
+    (dotimes [i (count rows)] (drawRow g 10 (+ i 10) (nth rows i)))))
     
 (defn drawGameState [gs g]
-  (let [ b (gs :block)
+  (let [ f (gs :field)
+         b (gs :block)         
          x (b :x)
          y (b :y) ]
+    (drawField g f)
     (drawBlock g b x y)))
     
 (defn rotate [block]
@@ -174,6 +204,9 @@
 (defn nextBlock []
   (dosync (alter ((gamestate :block) :type) (fn [oldBlock] (randomBlock)))))
 
+(defn moveLeft [x]
+  (if (> (deref x) 0)
+    (dosync (alter x dec))))
 
 (defn createPanel [gs x y]
   (doto
@@ -184,7 +217,7 @@
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
-          (if (== 37 keyCode) (dosync (alter x dec))
+          (if (== 37 keyCode) (moveLeft x)
           (if (== 38 keyCode) (rotate (gs :block))
           (if (== 39 keyCode) (dosync (alter x inc))
           (if (== 40 keyCode) (dosync (alter y inc))

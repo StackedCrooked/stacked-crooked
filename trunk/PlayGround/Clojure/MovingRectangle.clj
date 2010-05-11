@@ -21,6 +21,7 @@
       [ 0 1 ]
       [ 0 1 ]
       [ 0 1 ] ]    
+
     [ [ 0 0 0 0 ]
       [ 1 1 1 1 ] ]
   ]  
@@ -30,7 +31,8 @@
   :grids
   [
     [ [ 0 1 1 ]
-      [ 1 1 0 ] ]    
+      [ 1 1 0 ] ] 
+   
     [ [ 0 1 0 ]
       [ 0 1 1 ]
       [ 0 0 1 ] ]
@@ -41,7 +43,8 @@
   :grids
   [
     [ [ 1 1 0 ]
-      [ 0 1 1 ] ]    
+      [ 0 1 1 ] ]  
+  
     [ [ 0 0 1 ]
       [ 0 1 1 ]
       [ 0 1 0 ] ]
@@ -82,12 +85,15 @@
     [ [ 1 0 0 ]
       [ 1 0 0 ]
       [ 1 1 0 ] ]
+
     [ [ 0 0 0 ]
       [ 1 1 1 ]
       [ 1 0 0 ] ]
+
     [ [ 1 1 0 ]
       [ 0 1 0 ]
       [ 0 1 0 ] ]
+
     [ [ 0 0 0 ]
       [ 0 0 1 ]
       [ 1 1 1 ] ]
@@ -100,19 +106,22 @@
     [ [ 0 1 0 ]
       [ 0 1 0 ]
       [ 1 1 0 ] ]
+
     [ [ 0 0 0 ]
       [ 1 0 0 ]
       [ 1 1 1 ] ]
+
     [ [ 1 1 0 ]
       [ 1 0 0 ]
       [ 1 0 0 ] ]
+
     [ [ 0 0 0 ]
       [ 1 1 1 ]
       [ 0 0 1 ] ]
   ]
 })
 
-(def blockTypes [iBlock sBlock zBlock oBlock tBlock lBlock])
+(def blockTypes [iBlock sBlock zBlock oBlock tBlock lBlock jBlock])
 
 (defn randomBlock []
   (let [idx (mod (round (rand 1000)) (count blockTypes))]

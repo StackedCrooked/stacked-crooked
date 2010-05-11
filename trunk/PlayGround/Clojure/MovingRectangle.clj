@@ -4,15 +4,14 @@
 (import java.awt.event.KeyListener)
 (import javax.swing.JFrame)
 (import javax.swing.JPanel)
-
+              
 (def prefs {
   :block-width 10
   :block-height 10
   :screen-width 320
   :screen-height 240
 })
-
-
+  
 (def iBlock {
   :grids
   [
@@ -30,7 +29,21 @@
     ]
   ]  
 })
-              
+
+(def gamestate {
+  :field {
+    :buffer (make-array Integer 200)
+    :width 10
+    :height 20
+  }
+  :block {
+    :type (ref iBlock)
+    :rotation 0
+    :x (ref 0)
+    :y (ref 0)
+  }})
+
+
 (defn centerInScreen [frame]
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
           w (.width (.getSize frame))
@@ -50,22 +63,20 @@
   (dotimes [i (count row)]
     (if (== 1 (nth row i))
       (drawRectangle g (+ i x) y w h)))))
-    
-(defn drawGameState [gs g]
-  (
-    let [
-          block     (gs :block)
+      
+(defn drawBlock [g block x y]
+  (let [  block     (gamestate :block)
           blockType (deref (block :type))
           rotation  (block :rotation)
-          x         (block :x)
-          y         (block :y)
           grids     (blockType :grids)
-          rows      (nth grids 0)
-    ]
-    (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))
-  )
-)
-
+          rows      (nth grids 0) ]
+  (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))))
+    
+(defn drawGameState [gs g]
+  (let [ b (gs :block)
+         x (b :x)
+         y (b :y) ]
+    (drawBlock g b x y)))
 
 (defn createPanel [gs x y]
   (doto
@@ -85,18 +96,6 @@
       (keyTyped [e]))
     (.setFocusable true)))
 
-(def gamestate {
-  :field {
-    :buffer (make-array Integer 200)
-    :width 10
-    :height 20
-  }
-  :block {
-    :type (ref iBlock)
-    :rotation 0
-    :x (ref 0)
-    :y (ref 0)
-  }})
 
 (def panel
   (createPanel gamestate

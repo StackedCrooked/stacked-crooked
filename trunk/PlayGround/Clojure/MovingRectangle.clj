@@ -154,11 +154,9 @@
     [ 0 0 0 0 0 0 0 0 0 0 ]
     [ 0 0 0 0 0 0 0 0 0 0 ]
     ]
-    :width 10
-    :height 20
   }
   :block {
-    :type (ref iBlock)
+    :type (ref lBlock)
     :rotation (ref 0)
     :x (ref 0)
     :y (ref 0)
@@ -190,20 +188,19 @@
           blockType (deref (block :type))
           rotation  (deref (block :rotation))
           grids     (blockType :grids)
-          rowIndex  (mod rotation (count grids))
-          rows      (nth grids rowIndex) ]
+          gridIdx   (mod rotation (count grids))
+          rows      (nth grids gridIdx) ]
   (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))))
       
 (defn drawField [g field]
   (let [ rows (field :rows)]
-    (dotimes [i (count rows)] (drawRow g 10 (+ i 10) (nth rows i)))))
+    (dotimes [i (count rows)] (drawRow g 0 (+ i 10) (nth rows i)))))
     
 (defn drawGameState [gs g]
   (let [ f (gs :field)
          b (gs :block)         
          x (b :x)
          y (b :y) ]
-    (drawField g f)
     (drawBlock g b x y)))
     
 (defn rotate [block]
@@ -212,10 +209,23 @@
 
 (defn nextBlock []
   (dosync (alter ((gamestate :block) :type) (fn [oldBlock] (randomBlock)))))
+  
+(defn firstNonZeroElement [row]
+  (count (take-while (fn [x] (== x 0)) row)))
 
-(defn moveLeft [x]
-  (if (> (deref x) 0)
-    (dosync (alter x dec))))
+(defn minLeft [b]
+  (let [blockType (deref (b :type))
+        rotation  (deref (b :rotation))
+        grids     (blockType :grids)
+        gridIdx   (mod rotation (count grids))
+        rows      (nth grids gridIdx) ]
+    (* -1 (firstNonZeroElement
+      (reduce (fn [x y] (if (< (firstNonZeroElement x) (firstNonZeroElement y))
+                        x y)) rows)))))
+
+(defn moveLeft [b x]
+    (if (< (minLeft b) (deref x))
+      (dosync (alter x dec))))
 
 (defn createPanel [gs x y]
   (doto
@@ -226,7 +236,7 @@
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
-          (if (== 37 keyCode) (moveLeft x)
+          (if (== 37 keyCode) (moveLeft (gs :block) x)
           (if (== 38 keyCode) (rotate (gs :block))
           (if (== 39 keyCode) (dosync (alter x inc))
           (if (== 40 keyCode) (dosync (alter y inc))

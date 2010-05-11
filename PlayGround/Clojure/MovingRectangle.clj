@@ -38,7 +38,7 @@
   }
   :block {
     :type (ref iBlock)
-    :rotation 0
+    :rotation (ref 0)
     :x (ref 0)
     :y (ref 0)
   }})
@@ -67,8 +67,9 @@
 (defn drawBlock [g block x y]
   (let [  block     (gamestate :block)
           blockType (deref (block :type))
-          rotation  (block :rotation)
+          rotation  (deref (block :rotation))
           grids     (blockType :grids)
+          rowIndex  (mod rotation (count grids))
           rows      (nth grids 0) ]
   (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))))
     
@@ -114,7 +115,7 @@
     (centerInScreen frame)
     (loop []
       (.repaint panel)
-      (Thread/sleep 10)
+      (Thread/sleep 10000)
       (recur))))
 
 ;(main)

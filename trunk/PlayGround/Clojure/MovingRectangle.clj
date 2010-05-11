@@ -70,7 +70,7 @@
           rotation  (deref (block :rotation))
           grids     (blockType :grids)
           rowIndex  (mod rotation (count grids))
-          rows      (nth grids 0) ]
+          rows      (nth grids rowIndex) ]
   (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))))
     
 (defn drawGameState [gs g]
@@ -78,6 +78,9 @@
          x (b :x)
          y (b :y) ]
     (drawBlock g b x y)))
+    
+(defn rotate [block]
+  (dosync (alter (block :rotation) inc)))
 
 (defn createPanel [gs x y]
   (doto
@@ -89,7 +92,7 @@
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
           (if (== 37 keyCode) (dosync (alter x dec))
-          (if (== 38 keyCode) (dosync (alter y dec))
+          (if (== 38 keyCode) (rotate (gs :block))
           (if (== 39 keyCode) (dosync (alter x inc))
           (if (== 40 keyCode) (dosync (alter y inc))
                               (println keyCode)))))))
@@ -115,7 +118,7 @@
     (centerInScreen frame)
     (loop []
       (.repaint panel)
-      (Thread/sleep 10000)
+      (Thread/sleep 10)
       (recur))))
 
 ;(main)

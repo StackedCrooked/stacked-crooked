@@ -4,31 +4,119 @@
 (import java.awt.event.KeyListener)
 (import javax.swing.JFrame)
 (import javax.swing.JPanel)
-              
+
+(use 'clojure.contrib.math)
+
 (def prefs {
   :block-width 10
   :block-height 10
   :screen-width 320
   :screen-height 240
 })
-  
+
 (def iBlock {
   :grids
   [
-    [
-      [ 0 1 0 0 ]
-      [ 0 1 0 0 ]
-      [ 0 1 0 0 ]
-      [ 0 1 0 0 ]
-    ]    
-    [
-      [ 0 0 0 0 ]
-      [ 1 1 1 1 ]
-      [ 0 0 0 0 ]
-      [ 0 0 0 0 ]
-    ]
+    [ [ 0 1 ]
+      [ 0 1 ]
+      [ 0 1 ]
+      [ 0 1 ] ]    
+    [ [ 0 0 0 0 ]
+      [ 1 1 1 1 ] ]
   ]  
 })
+
+(def sBlock {
+  :grids
+  [
+    [ [ 0 1 1 ]
+      [ 1 1 0 ] ]    
+    [ [ 0 1 0 ]
+      [ 0 1 1 ]
+      [ 0 0 1 ] ]
+  ]  
+})
+
+(def zBlock {
+  :grids
+  [
+    [ [ 1 1 0 ]
+      [ 0 1 1 ] ]    
+    [ [ 0 0 1 ]
+      [ 0 1 1 ]
+      [ 0 1 0 ] ]
+  ]  
+})
+
+(def oBlock {
+  :grids
+  [
+    [ [ 0 0 0 ]
+      [ 0 1 1 ]
+      [ 0 1 1 ] ]
+  ]  
+})
+
+(def tBlock {
+  :grids
+  [
+    [ [ 1 1 1 ]
+      [ 0 1 0 ] ]
+      
+    [ [ 0 1 0 ]
+      [ 1 1 0 ]
+      [ 0 1 0 ] ]
+      
+    [ [ 0 1 0 ]
+      [ 1 1 1 ] ]
+      
+    [ [ 0 1 0 ]
+      [ 0 1 1 ]
+      [ 0 1 0 ] ]
+  ]  
+})
+
+(def lBlock {
+  :grids
+  [
+    [ [ 1 0 0 ]
+      [ 1 0 0 ]
+      [ 1 1 0 ] ]
+    [ [ 0 0 0 ]
+      [ 1 1 1 ]
+      [ 1 0 0 ] ]
+    [ [ 1 1 0 ]
+      [ 0 1 0 ]
+      [ 0 1 0 ] ]
+    [ [ 0 0 0 ]
+      [ 0 0 1 ]
+      [ 1 1 1 ] ]
+  ]
+})
+
+(def jBlock {
+  :grids
+  [
+    [ [ 0 1 0 ]
+      [ 0 1 0 ]
+      [ 1 1 0 ] ]
+    [ [ 0 0 0 ]
+      [ 1 0 0 ]
+      [ 1 1 1 ] ]
+    [ [ 1 1 0 ]
+      [ 1 0 0 ]
+      [ 1 0 0 ] ]
+    [ [ 0 0 0 ]
+      [ 1 1 1 ]
+      [ 0 0 1 ] ]
+  ]
+})
+
+(def blockTypes [iBlock sBlock zBlock oBlock tBlock lBlock])
+
+(defn randomBlock []
+  (let [idx (mod (round (rand 1000)) (count blockTypes))]
+    (nth blockTypes idx)))
 
 (def gamestate {
   :field {
@@ -81,6 +169,11 @@
     
 (defn rotate [block]
   (dosync (alter (block :rotation) inc)))
+  
+
+(defn nextBlock []
+  (dosync (alter ((gamestate :block) :type) (fn [oldBlock] (randomBlock)))))
+
 
 (defn createPanel [gs x y]
   (doto
@@ -95,17 +188,16 @@
           (if (== 38 keyCode) (rotate (gs :block))
           (if (== 39 keyCode) (dosync (alter x inc))
           (if (== 40 keyCode) (dosync (alter y inc))
-                              (println keyCode)))))))
+          (if (== 32 keyCode) (nextBlock)
+                              (println keyCode))))))))
       (keyReleased [e])
       (keyTyped [e]))
     (.setFocusable true)))
-
 
 (def panel
   (createPanel gamestate
     ((gamestate :block) :x)
     ((gamestate :block) :y)))
-
 
 (defn main []
   (let [frame (JFrame. "Test")]

@@ -12,6 +12,25 @@
   :screen-height 240
 })
 
+
+(def iBlock {
+  :grids
+  [
+    [
+      [ 0 1 0 0 ]
+      [ 0 1 0 0 ]
+      [ 0 1 0 0 ]
+      [ 0 1 0 0 ]
+    ]    
+    [
+      [ 0 0 0 0 ]
+      [ 1 1 1 1 ]
+      [ 0 0 0 0 ]
+      [ 0 0 0 0 ]
+    ]
+  ]  
+})
+              
 (defn centerInScreen [frame]
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
           w (.width (.getSize frame))
@@ -22,17 +41,31 @@
 
 (defn drawRectangle [g x y w h]
   (doto g
-    (.setColor (java.awt.Color/BLACK))
-    (.fillRect 0 0 (prefs :screen-width) (prefs :screen-height))
     (.setColor (java.awt.Color/BLUE))
-    (.fillRect (* w (deref x)) (* h (deref y)) w h)))
+    (.fillRect (* w x) (* h y) w h)))
+    
+(defn drawRow [g x y row]
+  (let [w (prefs :block-width)
+        h (prefs :block-height)]
+  (dotimes [i (count row)]
+    (if (== 1 (nth row i))
+      (drawRectangle g (+ i x) y w h)))))
     
 (defn drawGameState [gs g]
-  (drawRectangle g
-                 ((gs :block) :x)
-                 ((gs :block) :y)
-                 (prefs :block-width)
-                 (prefs :block-height)))
+  (
+    let [
+          block     (gs :block)
+          blockType (deref (block :type))
+          rotation  (block :rotation)
+          x         (block :x)
+          y         (block :y)
+          grids     (blockType :grids)
+          rows      (nth grids 0)
+    ]
+    (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))
+  )
+)
+
 
 (defn createPanel [gs x y]
   (doto
@@ -52,25 +85,27 @@
       (keyTyped [e]))
     (.setFocusable true)))
 
+(def gamestate {
+  :field {
+    :buffer (make-array Integer 200)
+    :width 10
+    :height 20
+  }
+  :block {
+    :type (ref iBlock)
+    :rotation 0
+    :x (ref 0)
+    :y (ref 0)
+  }})
+
+(def panel
+  (createPanel gamestate
+    ((gamestate :block) :x)
+    ((gamestate :block) :y)))
+
+
 (defn main []
-  (let [gamestate {
-          :field {
-            :buffer (make-array Integer 200)
-            :width 10
-            :height 20
-          }
-          :block {
-            :type (ref :I)
-            :rotation 0
-            :x (ref 0)
-            :y (ref 0)
-          }
-        }
-        frame (JFrame. "Test")
-        panel (createPanel gamestate
-                            ((gamestate :block) :x)
-                            ((gamestate :block) :y))
-        ]
+  (let [frame (JFrame. "Test")]
     (doto frame
       (.add panel)
       (.pack)
@@ -82,4 +117,5 @@
       (.repaint panel)
       (Thread/sleep 10)
       (recur))))
-(main)
+
+;(main)

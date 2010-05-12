@@ -8,6 +8,8 @@
 (use 'clojure.contrib.math)
 
 (def prefs {
+  :num-field-rows 20
+  :num-field-columns 10
   :block-width 10
   :block-height 10
   :screen-width 320
@@ -15,6 +17,20 @@
   :border-left 7
 })
 
+(def field (atom (vec (doall (for [_ (range (prefs :num-field-rows))] (vec (repeat (prefs :num-field-columns) false)))))))
+
+(defn get-field [x y]
+  (nth (nth @field y) x))
+
+(defn set-occupied! [x y]
+  (swap! field #(update-in % [x y] (constantly true))))
+
+(defn set-unoccupied! [x y]
+  (swap! field #(update-in % [x y] (constantly false))))
+
+(defn toggle-occupied! [x y]
+  (swap! field #(update-in % [x y] not)))
+  
 (def i-block {
   :grids
   [
@@ -122,48 +138,18 @@
   ]
 })
 
+(def active-block {
+    :type (ref l-block)
+    :rotation (ref 0)
+    :x (ref 0)
+    :y (ref 0) })
+
 (def block-types [i-block s-block z-block o-block t-block l-block j-block])
 
 (defn random-block []
   (let [idx (mod (round (rand 1000)) (count block-types))]
     (nth block-types idx)))
 
-(def gamestate {
-  :field {
-    :rows [
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    [ 0 0 0 0 0 0 0 0 0 0 ]
-    ]
-    :num-columns 10
-    :num-rows 20
-  }
-  :block {
-    :type (ref l-block)
-    :rotation (ref 0)
-    :x (ref 0)
-    :y (ref 0)
-  }})
 
   
 (def color-map {
@@ -191,7 +177,7 @@
     (draw-rectangle g (+ i x) y w h (color-map (nth row i))))))
 
 (defn draw-block [g block x y]
-  (let [  block       (gamestate :block)
+  (let [  block       active-block
           block-type  (deref (block :type))
           rotation    (deref (block :rotation))
           grids       (block-type :grids)
@@ -210,12 +196,11 @@
                 i
                 (nth rows i)))))
 
-(defn draw-gamestate [gs g]
-  (let [ f (gs :field)
-         b (gs :block)
+(defn draw-all [g]
+  (let [ b active-block
          x (b :x)
          y (b :y) ]
-    (draw-field g (gamestate :field))
+    (draw-field g (field))
     (draw-block g b x y)))
     
 (defn rotate [block]
@@ -223,7 +208,7 @@
   
 
 (defn next-block []
-  (dosync (alter ((gamestate :block) :type) (fn [oldBlock] (random-block)))))
+  (dosync (alter ((active-block) :type) (fn [oldBlock] (random-block)))))
   
 (defn first-non-zero-element [row]
   (count (take-while (fn [x] (== x 0)) row)))
@@ -271,29 +256,29 @@
       (dosync (alter x dec))))
 
 (defn move-right [b x]
-  (if (< (+ (deref x) (max-x b)) (dec ((gamestate :field) :num-columns)))
+  (if (< (+ (deref x) (max-x b)) (dec ((field) :num-columns)))
     (dosync (alter x inc))))
 
 (defn commit-block [b])
     
 (defn move-down [b y]
-  (if (< (+ (deref y) (max-y b)) (dec ((gamestate :field) :num-rows)))
+  (if (< (+ (deref y) (max-y b)) (dec ((field) :num-rows)))
     (dosync (alter y inc))
     (commit-block b)))
 
-(defn create-panel [gs x y]
+(defn create-panel [x y]
   (doto
     (proxy [JPanel KeyListener] []
       (paintComponent [g]
         (proxy-super paintComponent g)
-        (draw-gamestate gs g))
+        (draw-all g))
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
-          (if (== 37 keyCode) (move-left (gs :block) x)
-          (if (== 38 keyCode) (rotate (gs :block))
-          (if (== 39 keyCode) (move-right (gs :block) x)
-          (if (== 40 keyCode) (move-down (gs :block) y)
+          (if (== 37 keyCode) (move-left active-block x)
+          (if (== 38 keyCode) (rotate active-block)
+          (if (== 39 keyCode) (move-right active-block x)
+          (if (== 40 keyCode) (move-down active-block y)
           (if (== 32 keyCode) (next-block)
                               (println keyCode))))))))
       (keyReleased [e])
@@ -301,9 +286,9 @@
     (.setFocusable true)))
 
 (def panel
-  (create-panel gamestate
-    ((gamestate :block) :x)
-    ((gamestate :block) :y)))
+  (create-panel
+    (active-block :x)
+    (active-block :y)))
 
 (defn main []
   (let [frame (JFrame. "Test")]

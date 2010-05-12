@@ -122,11 +122,11 @@
   ]
 })
 
-(def blockTypes [i-block s-block z-block o-block t-block l-block j-block])
+(def block-types [i-block s-block z-block o-block t-block l-block j-block])
 
 (defn random-block []
-  (let [idx (mod (round (rand 1000)) (count blockTypes))]
-    (nth blockTypes idx)))
+  (let [idx (mod (round (rand 1000)) (count block-types))]
+    (nth block-types idx)))
 
 (def gamestate {
   :field {
@@ -274,9 +274,12 @@
   (if (< (+ (deref x) (max-x b)) (dec ((gamestate :field) :num-columns)))
     (dosync (alter x inc))))
 
+(defn commit-block [b])
+    
 (defn move-down [b y]
   (if (< (+ (deref y) (max-y b)) (dec ((gamestate :field) :num-rows)))
-    (dosync (alter y inc))))
+    (dosync (alter y inc))
+    (commit-block b)))
 
 (defn create-panel [gs x y]
   (doto

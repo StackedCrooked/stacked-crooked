@@ -164,6 +164,11 @@
     :y (ref 0)
   }})
 
+  
+(def colorMap {
+  0 (java.awt.Color/BLACK)
+  1 (java.awt.Color/BLUE) })
+
 
 (defn centerInScreen [frame]
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
@@ -173,17 +178,16 @@
           y (int (* 0.75(/ (- (.height dim) h) 2)))]
   (.setLocation frame x y)))
 
-(defn drawRectangle [g x y w h c]
+(defn drawRectangle [g x y w h color]
   (doto g
-    (.setColor c)
+    (.setColor color)
     (.fillRect (* w x) (* h y) w h)))
     
 (defn drawRow [g x y row]
   (let [w (prefs :block-width)
         h (prefs :block-height)]
   (dotimes [i (count row)]
-    (if (== 1 (nth row i))
-      (drawRectangle g (+ i x) y w h (java.awt.Color/BLUE))))))
+    (drawRectangle g (+ i x) y w h (colorMap (nth row i))))))
       
 (defn drawBlock [g block x y]
   (let [  block     (gamestate :block)
@@ -192,12 +196,18 @@
           grids     (blockType :grids)
           gridIdx   (mod rotation (count grids))
           rows      (nth grids gridIdx) ]
-  (dotimes [i (count rows)] (drawRow g (+ (prefs :border-left) (deref x)) (+ i (deref y)) (nth rows i)))))
+  (dotimes [i (count rows)] (drawRow  g
+                                      (+ (prefs :border-left) (deref x))
+                                      (+ i (deref y))
+                                      (nth rows i)))))
       
 (defn drawField [g field]
   (let [ rows (field :rows)]
     (dotimes [i (count rows)]
-      (drawRow g 0 (+ i 10) (nth rows i)))))
+      (drawRow  g
+                (prefs :border-left)
+                i
+                (nth rows i)))))
     
 (defn drawGameState [gs g]
   (let [ f (gs :field)
@@ -253,7 +263,7 @@
       (dosync (alter x dec))))
 
 (defn moveRight [b x]
-  (if (< (+ (deref x) (maxRight b)) ((gamestate :field) :num-columns))
+  (if (< (+ (deref x) (maxRight b)) (dec ((gamestate :field) :num-columns)))
     (dosync (alter x inc))))
 
 (defn createPanel [gs x y]

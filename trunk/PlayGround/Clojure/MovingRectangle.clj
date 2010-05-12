@@ -15,7 +15,7 @@
   :border-left 7
 })
 
-(def iBlock {
+(def i-block {
   :grids
   [
     [ [ 0 1 ]
@@ -28,7 +28,7 @@
   ]  
 })
 
-(def sBlock {
+(def s-block {
   :grids
   [
     [ [ 0 1 1 ]
@@ -40,7 +40,7 @@
   ]  
 })
 
-(def zBlock {
+(def z-block {
   :grids
   [
     [ [ 1 1 0 ]
@@ -52,7 +52,7 @@
   ]  
 })
 
-(def oBlock {
+(def o-block {
   :grids
   [
     [ [ 0 0 0 ]
@@ -61,7 +61,7 @@
   ]  
 })
 
-(def tBlock {
+(def t-block {
   :grids
   [
     [ [ 1 1 1 ]
@@ -80,7 +80,7 @@
   ]  
 })
 
-(def lBlock {
+(def l-block {
   :grids
   [
     [ [ 1 0 0 ]
@@ -101,7 +101,7 @@
   ]
 })
 
-(def jBlock {
+(def j-block {
   :grids
   [
     [ [ 0 1 0 ]
@@ -122,9 +122,9 @@
   ]
 })
 
-(def blockTypes [iBlock sBlock zBlock oBlock tBlock lBlock jBlock])
+(def blockTypes [i-block s-block z-block o-block t-block l-block j-block])
 
-(defn randomBlock []
+(defn random-block []
   (let [idx (mod (round (rand 1000)) (count blockTypes))]
     (nth blockTypes idx)))
 
@@ -158,19 +158,19 @@
     ]
   }
   :block {
-    :type (ref lBlock)
+    :type (ref l-block)
     :rotation (ref 0)
     :x (ref 0)
     :y (ref 0)
   }})
 
   
-(def colorMap {
+(def color-map {
   0 (java.awt.Color/BLACK)
   1 (java.awt.Color/BLUE) })
 
 
-(defn centerInScreen [frame]
+(defn center-in-screen [frame]
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
           w (.width (.getSize frame))
           h (.height (.getSize frame))
@@ -178,92 +178,92 @@
           y (int (* 0.75(/ (- (.height dim) h) 2)))]
   (.setLocation frame x y)))
 
-(defn drawRectangle [g x y w h color]
+(defn draw-rectangle [g x y w h color]
   (doto g
     (.setColor color)
     (.fillRect (* w x) (* h y) w h)))
     
-(defn drawRow [g x y row]
+(defn draw-row [g x y row]
   (let [w (prefs :block-width)
         h (prefs :block-height)]
   (dotimes [i (count row)]
-    (drawRectangle g (+ i x) y w h (colorMap (nth row i))))))
+    (draw-rectangle g (+ i x) y w h (color-map (nth row i))))))
       
-(defn drawBlock [g block x y]
-  (let [  block     (gamestate :block)
-          blockType (deref (block :type))
-          rotation  (deref (block :rotation))
-          grids     (blockType :grids)
-          gridIdx   (mod rotation (count grids))
-          rows      (nth grids gridIdx) ]
-  (dotimes [i (count rows)] (drawRow  g
+(defn draw-block [g block x y]
+  (let [  block       (gamestate :block)
+          block-type  (deref (block :type))
+          rotation    (deref (block :rotation))
+          grids       (block-type :grids)
+          grid-idx    (mod rotation (count grids))
+          rows        (nth grids grid-idx) ]
+  (dotimes [i (count rows)] (draw-row  g
                                       (+ (prefs :border-left) (deref x))
                                       (+ i (deref y))
                                       (nth rows i)))))
       
-(defn drawField [g field]
+(defn draw-field [g field]
   (let [ rows (field :rows)]
     (dotimes [i (count rows)]
-      (drawRow  g
+      (draw-row  g
                 (prefs :border-left)
                 i
                 (nth rows i)))))
     
-(defn drawGameState [gs g]
+(defn draw-gamestate [gs g]
   (let [ f (gs :field)
          b (gs :block)         
          x (b :x)
          y (b :y) ]
-    (drawField g (gamestate :field))
-    (drawBlock g b x y)))
+    (draw-field g (gamestate :field))
+    (draw-block g b x y)))
     
 (defn rotate [block]
   (dosync (alter (block :rotation) inc)))
   
 
-(defn nextBlock []
-  (dosync (alter ((gamestate :block) :type) (fn [oldBlock] (randomBlock)))))
+(defn next-block []
+  (dosync (alter ((gamestate :block) :type) (fn [oldBlock] (random-block)))))
   
-(defn firstNonZeroElement [row]
+(defn first-non-zero-element [row]
   (count (take-while (fn [x] (== x 0)) row)))
   
 
-(defn firstIf [collection predicate]
+(defn first-if [collection predicate]
   (count (take-while (fn [x] (not (predicate x))) collection)))
   
-(defn lastIf [collection predicate]
-  (- (dec (count collection)) (firstIf (rseq collection) predicate)))
+(defn last-if [collection predicate]
+  (- (dec (count collection)) (first-if (rseq collection) predicate)))
   
-(defn maxRight [b]
-  (let [blockType (deref (b :type))
-        rotation  (deref (b :rotation))
-        grids     (blockType :grids)
-        gridIdx   (mod rotation (count grids))
-        rows      (nth grids gridIdx) ]
-    (lastIf
+(defn max-x [b]
+  (let [block-type  (deref (b :type))
+        rotation    (deref (b :rotation))
+        grids       (block-type :grids)
+        grid-idx    (mod rotation (count grids))
+        rows        (nth grids grid-idx) ]
+    (last-if
       (reduce 
         (fn [r1 r2]
-          (let [lastNonZeroValue (fn [row] (lastIf row (comp not zero?)))]
+          (let [lastNonZeroValue (fn [row] (last-if row (comp not zero?)))]
             (if (> (lastNonZeroValue r1) (lastNonZeroValue r2)) r1 r2)))
         rows)
       (comp not zero?))))
 
-(defn minLeft [b]
-  (let [blockType (deref (b :type))
-        rotation  (deref (b :rotation))
-        grids     (blockType :grids)
-        gridIdx   (mod rotation (count grids))
-        rows      (nth grids gridIdx) ]
-    (* -1 (firstNonZeroElement
-      (reduce (fn [x y] (if (< (firstNonZeroElement x) (firstNonZeroElement y))
+(defn min-x [b]
+  (let [block-type  (deref (b :type))
+        rotation    (deref (b :rotation))
+        grids       (block-type :grids)
+        grid-idx    (mod rotation (count grids))
+        rows        (nth grids grid-idx) ]
+    (* -1 (first-non-zero-element
+      (reduce (fn [x y] (if (< (first-non-zero-element x) (first-non-zero-element y))
                         x y)) rows)))))
 
 (defn moveLeft [b x]
-    (if (< (minLeft b) (deref x))
+    (if (< (min-x b) (deref x))
       (dosync (alter x dec))))
 
 (defn moveRight [b x]
-  (if (< (+ (deref x) (maxRight b)) (dec ((gamestate :field) :num-columns)))
+  (if (< (+ (deref x) (max-x b)) (dec ((gamestate :field) :num-columns)))
     (dosync (alter x inc))))
 
 (defn createPanel [gs x y]
@@ -271,7 +271,7 @@
     (proxy [JPanel KeyListener] []
       (paintComponent [g]
         (proxy-super paintComponent g)
-        (drawGameState gs g))
+        (draw-gamestate gs g))
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
@@ -279,7 +279,7 @@
           (if (== 38 keyCode) (rotate (gs :block))
           (if (== 39 keyCode) (moveRight (gs :block) x)
           (if (== 40 keyCode) (dosync (alter y inc))
-          (if (== 32 keyCode) (nextBlock)
+          (if (== 32 keyCode) (next-block)
                               (println keyCode))))))))
       (keyReleased [e])
       (keyTyped [e]))
@@ -298,7 +298,7 @@
       (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)    
       (.setVisible true))
     (.addKeyListener panel panel)
-    (centerInScreen frame)
+    (center-in-screen frame)
     (loop []
       (.repaint panel)
       (Thread/sleep 10)

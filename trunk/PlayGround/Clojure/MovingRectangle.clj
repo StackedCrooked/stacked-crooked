@@ -130,7 +130,6 @@
 
 (def gamestate {
   :field {
-    :num-columns 10
     :rows [
     [ 0 0 0 0 0 0 0 0 0 0 ]
     [ 0 0 0 0 0 0 0 0 0 0 ]
@@ -156,6 +155,8 @@
     [ 0 0 0 0 0 0 0 0 0 0 ]
     [ 0 0 0 0 0 0 0 0 0 0 ]
     ]
+    :num-columns 10
+    :num-rows 20
   }
   :block {
     :type (ref l-block)
@@ -226,14 +227,13 @@
   
 (defn first-non-zero-element [row]
   (count (take-while (fn [x] (== x 0)) row)))
-  
 
 (defn first-if [collection predicate]
   (count (take-while (fn [x] (not (predicate x))) collection)))
   
 (defn last-if [collection predicate]
   (- (dec (count collection)) (first-if (rseq collection) predicate)))
-  
+
 (defn max-x [b]
   (let [block-type  (deref (b :type))
         rotation    (deref (b :rotation))
@@ -247,6 +247,14 @@
             (if (> (lastNonZeroValue r1) (lastNonZeroValue r2)) r1 r2)))
         rows)
       (comp not zero?))))
+  
+(defn max-y [b]
+  (let [block-type  (deref (b :type))
+        rotation    (deref (b :rotation))
+        grids       (block-type :grids)
+        grid-idx    (mod rotation (count grids))
+        rows        (nth grids grid-idx) ]
+    (- (dec (count rows)) (count (take-while (fn [row] (zero? (reduce max row))) (rseq rows))))))
 
 (defn min-x [b]
   (let [block-type  (deref (b :type))
@@ -267,7 +275,9 @@
     (dosync (alter x inc))))
 
 (defn move-down [b y]
-  (dosync (alter y inc)))
+  (if (< (+ (deref y) (max-y b)) (dec ((gamestate :field) :num-rows)))
+    (dosync (alter y inc))))
+    
   
 (defn create-panel [gs x y]
   (doto

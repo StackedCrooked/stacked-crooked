@@ -269,7 +269,7 @@
 (defn move-down [b y]
   (dosync (alter y inc)))
   
-(defn createPanel [gs x y]
+(defn create-panel [gs x y]
   (doto
     (proxy [JPanel KeyListener] []
       (paintComponent [g]
@@ -289,7 +289,7 @@
     (.setFocusable true)))
 
 (def panel
-  (createPanel gamestate
+  (create-panel gamestate
     ((gamestate :block) :x)
     ((gamestate :block) :y)))
 

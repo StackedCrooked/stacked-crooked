@@ -12,6 +12,7 @@
   :block-height 10
   :screen-width 320
   :screen-height 240
+  :border-left 7
 })
 
 (def iBlock {
@@ -171,9 +172,9 @@
           y (int (* 0.75(/ (- (.height dim) h) 2)))]
   (.setLocation frame x y)))
 
-(defn drawRectangle [g x y w h]
+(defn drawRectangle [g x y w h c]
   (doto g
-    (.setColor (java.awt.Color/BLUE))
+    (.setColor c)
     (.fillRect (* w x) (* h y) w h)))
     
 (defn drawRow [g x y row]
@@ -181,7 +182,7 @@
         h (prefs :block-height)]
   (dotimes [i (count row)]
     (if (== 1 (nth row i))
-      (drawRectangle g (+ i x) y w h)))))
+      (drawRectangle g (+ i x) y w h (java.awt.Color/BLUE))))))
       
 (defn drawBlock [g block x y]
   (let [  block     (gamestate :block)
@@ -190,11 +191,12 @@
           grids     (blockType :grids)
           gridIdx   (mod rotation (count grids))
           rows      (nth grids gridIdx) ]
-  (dotimes [i (count rows)] (drawRow g (deref x) (+ i (deref y)) (nth rows i)))))
+  (dotimes [i (count rows)] (drawRow g (+ (prefs :border-left) (deref x)) (+ i (deref y)) (nth rows i)))))
       
 (defn drawField [g field]
   (let [ rows (field :rows)]
-    (dotimes [i (count rows)] (drawRow g 0 (+ i 10) (nth rows i)))))
+    (dotimes [i (count rows)]
+      (drawRow g 0 (+ i 10) (nth rows i)))))
     
 (defn drawGameState [gs g]
   (let [ f (gs :field)

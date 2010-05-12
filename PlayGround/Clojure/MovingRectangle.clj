@@ -258,14 +258,17 @@
       (reduce (fn [x y] (if (< (first-non-zero-element x) (first-non-zero-element y))
                         x y)) rows)))))
 
-(defn moveLeft [b x]
+(defn move-left [b x]
     (if (< (min-x b) (deref x))
       (dosync (alter x dec))))
 
-(defn moveRight [b x]
+(defn move-right [b x]
   (if (< (+ (deref x) (max-x b)) (dec ((gamestate :field) :num-columns)))
     (dosync (alter x inc))))
 
+(defn move-down [b y]
+  (dosync (alter y inc)))
+  
 (defn createPanel [gs x y]
   (doto
     (proxy [JPanel KeyListener] []
@@ -275,10 +278,10 @@
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
-          (if (== 37 keyCode) (moveLeft (gs :block) x)
+          (if (== 37 keyCode) (move-left (gs :block) x)
           (if (== 38 keyCode) (rotate (gs :block))
-          (if (== 39 keyCode) (moveRight (gs :block) x)
-          (if (== 40 keyCode) (dosync (alter y inc))
+          (if (== 39 keyCode) (move-right (gs :block) x)
+          (if (== 40 keyCode) (move-down (gs :block) y)
           (if (== 32 keyCode) (next-block)
                               (println keyCode))))))))
       (keyReleased [e])

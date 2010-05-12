@@ -214,6 +214,10 @@
   
 (defn firstNonZeroElement [row]
   (count (take-while (fn [x] (== x 0)) row)))
+  
+
+(defn firstIf [collection predicate]
+  (count (take-while (fn [x] (not (predicate x))) collection)))
 
 (defn minLeft [b]
   (let [blockType (deref (b :type))

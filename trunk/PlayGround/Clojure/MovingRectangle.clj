@@ -183,13 +183,13 @@
   (doto g
     (.setColor color)
     (.fillRect (* w x) (* h y) w h)))
-    
+
 (defn draw-row [g x y row]
   (let [w (prefs :block-width)
         h (prefs :block-height)]
   (dotimes [i (count row)]
     (draw-rectangle g (+ i x) y w h (color-map (nth row i))))))
-      
+
 (defn draw-block [g block x y]
   (let [  block       (gamestate :block)
           block-type  (deref (block :type))
@@ -201,7 +201,7 @@
                                       (+ (prefs :border-left) (deref x))
                                       (+ i (deref y))
                                       (nth rows i)))))
-      
+
 (defn draw-field [g field]
   (let [ rows (field :rows)]
     (dotimes [i (count rows)]
@@ -209,10 +209,10 @@
                 (prefs :border-left)
                 i
                 (nth rows i)))))
-    
+
 (defn draw-gamestate [gs g]
   (let [ f (gs :field)
-         b (gs :block)         
+         b (gs :block)
          x (b :x)
          y (b :y) ]
     (draw-field g (gamestate :field))
@@ -247,7 +247,7 @@
             (if (> (lastNonZeroValue r1) (lastNonZeroValue r2)) r1 r2)))
         rows)
       (comp not zero?))))
-  
+
 (defn max-y [b]
   (let [block-type  (deref (b :type))
         rotation    (deref (b :rotation))
@@ -277,8 +277,7 @@
 (defn move-down [b y]
   (if (< (+ (deref y) (max-y b)) (dec ((gamestate :field) :num-rows)))
     (dosync (alter y inc))))
-    
-  
+
 (defn create-panel [gs x y]
   (doto
     (proxy [JPanel KeyListener] []

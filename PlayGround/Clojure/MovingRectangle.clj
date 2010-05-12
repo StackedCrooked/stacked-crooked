@@ -130,6 +130,7 @@
 
 (def gamestate {
   :field {
+    :num-columns 10
     :rows [
     [ 0 0 0 0 0 0 0 0 0 0 ]
     [ 0 0 0 0 0 0 0 0 0 0 ]
@@ -203,6 +204,7 @@
          b (gs :block)         
          x (b :x)
          y (b :y) ]
+    (drawField g (gamestate :field))
     (drawBlock g b x y)))
     
 (defn rotate [block]
@@ -218,6 +220,23 @@
 
 (defn firstIf [collection predicate]
   (count (take-while (fn [x] (not (predicate x))) collection)))
+  
+(defn lastIf [collection predicate]
+  (- (dec (count collection)) (firstIf (rseq collection) predicate)))
+  
+(defn maxRight [b]
+  (let [blockType (deref (b :type))
+        rotation  (deref (b :rotation))
+        grids     (blockType :grids)
+        gridIdx   (mod rotation (count grids))
+        rows      (nth grids gridIdx) ]
+    (lastIf
+      (reduce 
+        (fn [r1 r2]
+          (let [lastNonZeroValue (fn [row] (lastIf row (comp not zero?)))]
+            (if (> (lastNonZeroValue r1) (lastNonZeroValue r2)) r1 r2)))
+        rows)
+      (comp not zero?))))
 
 (defn minLeft [b]
   (let [blockType (deref (b :type))
@@ -233,6 +252,10 @@
     (if (< (minLeft b) (deref x))
       (dosync (alter x dec))))
 
+(defn moveRight [b x]
+  (if (< (+ (deref x) (maxRight b)) ((gamestate :field) :num-columns))
+    (dosync (alter x inc))))
+
 (defn createPanel [gs x y]
   (doto
     (proxy [JPanel KeyListener] []
@@ -244,7 +267,7 @@
         (let [keyCode (.getKeyCode e)]
           (if (== 37 keyCode) (moveLeft (gs :block) x)
           (if (== 38 keyCode) (rotate (gs :block))
-          (if (== 39 keyCode) (dosync (alter x inc))
+          (if (== 39 keyCode) (moveRight (gs :block) x)
           (if (== 40 keyCode) (dosync (alter y inc))
           (if (== 32 keyCode) (nextBlock)
                               (println keyCode))))))))

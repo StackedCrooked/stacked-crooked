@@ -168,7 +168,7 @@
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
           w (.width (.getSize frame))
           h (.height (.getSize frame))
-          x (int (/ (- (.width dim) w) 2))
+          x 0 ; move window to the left of the monitor for easier debugging
           y (int (* 0.75(/ (- (.height dim) h) 2)))]
   (.setLocation frame x y)))
 
@@ -186,17 +186,17 @@
           grid-idx    (mod rotation (count grids))
           rows        (nth grids grid-idx)
           num-rows    (count rows)]
-  (dotimes [i num-rows]
-    (let [current-row   (nth rows i)
+  (dotimes [rowIdx num-rows]
+    (let [current-row   (nth rows rowIdx)
           num-columns   (count current-row)]
-      (dotimes [j num-columns]
-        (if-not (zero? (nth current-row j))
-          (let [x (+ (prefs :border-left) (+ x i))
-                y (+ (prefs :border-top) (+ y j))]
+      (dotimes [colIdx num-columns]
+        (if-not (zero? (nth current-row colIdx))
+          (let [x (+ (prefs :border-left) (+ x colIdx))
+                y (+ (prefs :border-top) (+ y rowIdx))]
           (draw-rectangle g x y
                           (prefs :block-width)
                           (prefs :block-height)
-                          (get-color (nth current-row j))))))))))
+                          (get-color (nth current-row colIdx))))))))))
 
 (defn draw-field [g field]
   (dotimes [ rowIdx (count @field) ]
@@ -261,7 +261,7 @@
                         x y)) rows)))))
 
 (defn move-left [b x]
-    (if (< (min-x b) (deref x))
+  (if (< (min-x b) (deref x))
       (dosync (alter x dec))))
 
 (defn move-right [b x]

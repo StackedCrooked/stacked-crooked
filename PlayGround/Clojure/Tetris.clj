@@ -219,7 +219,7 @@ O(2N). Each item in coll is
           w (.width (.getSize frame))
           h (.height (.getSize frame))
           x 0 ; move window to the top-left of the monitor for easier debugging
-          y 0 ] ;(int (* 0.75(/ (- (.height dim) h) 2))) 
+          y 0 ] ;(int (* 0.75(/ (- (.height dim) h) 2)))
   (.setLocation frame x y)))
 
 (defn draw-rectangle [g x y w h color]
@@ -356,17 +356,15 @@ O(2N). Each item in coll is
           grid-idx    (mod rotation (count grids))
           rows        (nth grids grid-idx)
           num-rows    (count rows)]
-  (dotimes [ri num-rows]
-    (let [current-row   (nth rows ri)
-          num-columns   (count current-row)]
-      (dotimes [ci num-columns]
-        (let [cell-value (nth current-row ci)]
-          (if-not (zero? cell-value)
-            (let [c	(+ colIdx ci)
-                  r	(+ rowIdx ri)]
-              (do
-                (set-field r c cell-value)
-                )))))))
+    (dotimes [ri num-rows]
+      (let [current-row   (nth rows ri)
+            num-columns   (count current-row)]
+        (dotimes [ci num-columns]
+          (let [cell-value (nth current-row ci)]
+            (if-not (zero? cell-value)
+              (let [c	(+ colIdx ci)
+                    r	(+ rowIdx ri)]
+                (set-field r c cell-value)))))))
     (next-block)))
 
 (defn move-down [b]

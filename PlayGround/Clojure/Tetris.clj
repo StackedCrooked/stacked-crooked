@@ -167,8 +167,12 @@
                       Color/GREEN
                       Color/BLUE
                       (Color. 111 0 255)
-                      (Color. 143 0 255) ] ]    
-    (nth color-table grid-value)))
+                      (Color. 143 0 255)
+                      Color/WHITE
+                      Color/GRAY] ]
+    (if (and (not (nil? grid-value)) (>= grid-value 0) (< grid-value (count color-table)))
+      (nth color-table grid-value)
+      (Color/WHITE))))
 
 
 (defn center-in-screen [frame]
@@ -208,12 +212,14 @@
 
 (defn draw-field [g field]
   (dotimes [ rowIdx (count @field) ]
-    (dotimes [ colIdx (count (nth @field rowIdx)) ]
-      (draw-rectangle g (+ (prefs :border-left) colIdx)
-                        (+ (prefs :border-top) rowIdx)
-                        (prefs :block-width)
-                        (prefs :block-height)
-                        (get-color (get-field rowIdx colIdx))))))
+    (let [current-row (nth @field rowIdx)
+          num-cols    (count current-row) ]    
+      (dotimes [ colIdx num-cols ]
+        (draw-rectangle g (+ (prefs :border-left) colIdx)
+                          (+ (prefs :border-top) rowIdx)
+                          (prefs :block-width)
+                          (prefs :block-height)
+                          (get-color (current-row colIdx)))))))
 
 (defn draw-all [g]
   (let [ b active-block ]
@@ -280,7 +286,23 @@
     (dosync (alter (b :colIdx) inc))))
 
 (defn commit-block [block]
-  (set-field (deref (block :rowIdx)) (deref (block :colIdx)) ((deref (block :type)) :value)))
+  (let [  block-type  (deref (block :type))
+          rowIdx   	  (deref (block :rowIdx))
+          colIdx      (deref (block :colIdx))
+          rotation    (deref (block :rotation))
+          grids       (block-type :grids)
+          grid-idx    (mod rotation (count grids))
+          rows        (nth grids grid-idx)
+          num-rows    (count rows)]
+  (dotimes [ri num-rows]
+    (let [current-row   (nth rows ri)
+          num-columns   (count current-row)          ]
+      (dotimes [ci num-columns]
+        (let [cell-value (nth current-row ci)]
+          (if-not (zero? cell-value)
+            (let [c	(+ (prefs :border-left) (+ colIdx ci))
+                  r	(+ (prefs :border-top) (+ rowIdx ri))]
+              (set-field r c cell-value)))))))))
     
 (defn move-down [b]
   (if (< (+ (deref (b :rowIdx)) (max-y b)) (dec (prefs :num-rows)))
@@ -320,7 +342,7 @@
     (center-in-screen frame)
     (loop []
       (.repaint panel)
-      (Thread/sleep 10)
+      (Thread/sleep 100)
       (recur))))
 
 ;(main)

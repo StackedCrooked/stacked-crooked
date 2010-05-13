@@ -8,29 +8,29 @@
 (use 'clojure.contrib.math)
 
 (def prefs {
-  :num-field-rows 20
-  :num-field-columns 10
+  :num-rows 20
+  :num-columns 10
   :block-width 10
   :block-height 10
   :screen-width 320
   :screen-height 240
   :border-left 7
+  :border-top 2
 })
 
-(def field (atom (vec (doall (for [_ (range (prefs :num-field-rows))] (vec (repeat (prefs :num-field-columns) false)))))))
+(def field
+  (atom
+    (vec
+      (doall
+        (for [_ (range (prefs :num-rows))]
+          (vec (repeat (prefs :num-columns) 0)))))))
 
 (defn get-field [x y]
   (nth (nth @field y) x))
 
-(defn set-occupied! [x y]
-  (swap! field #(update-in % [x y] (constantly true))))
+(defn set-field [x y value]
+  (swap! field #(update-in % [x y] (constantly value))))
 
-(defn set-unoccupied! [x y]
-  (swap! field #(update-in % [x y] (constantly false))))
-
-(defn toggle-occupied! [x y]
-  (swap! field #(update-in % [x y] not)))
-  
 (def i-block {
   :grids
   [
@@ -152,9 +152,16 @@
 
 
   
-(def color-map {
-  0 (java.awt.Color/BLACK)
-  1 (java.awt.Color/BLUE) })
+(defn get-color [grid-value]
+  (let [color-table [ Color/BLACK
+                      Color/RED
+                      Color/ORANGE
+                      Color/YELLOW
+                      Color/GREEN
+                      Color/BLUE
+                      (Color. 111 0 255)
+                      (Color. 143 0 255) ] ]    
+    (nth color-table grid-value)))
 
 
 (defn center-in-screen [frame]
@@ -170,48 +177,50 @@
     (.setColor color)
     (.fillRect (* w x) (* h y) w h)))
 
-(defn draw-row [g x y row]
-  (let [w (prefs :block-width)
-        h (prefs :block-height)]
-  (dotimes [i (count row)]
-    (draw-rectangle g (+ i x) y w h (color-map (nth row i))))))
-
-(defn draw-block [g block x y]
-  (let [  block       active-block
-          block-type  (deref (block :type))
+(defn draw-block [g block]
+  (let [  block-type  (deref (block :type))
+          x           (deref (block :x))
+          y           (deref (block :y))
           rotation    (deref (block :rotation))
           grids       (block-type :grids)
           grid-idx    (mod rotation (count grids))
-          rows        (nth grids grid-idx) ]
-  (dotimes [i (count rows)] (draw-row  g
-                                      (+ (prefs :border-left) (deref x))
-                                      (+ i (deref y))
-                                      (nth rows i)))))
+          rows        (nth grids grid-idx)
+          num-rows    (count rows)]
+  (dotimes [i num-rows]
+    (let [current-row   (nth rows i)
+          num-columns   (count current-row)]
+      (dotimes [j num-columns]
+        (if-not (zero? (nth current-row j))
+          (let [x (+ (prefs :border-left) (+ x i))
+                y (+ (prefs :border-top) (+ y j))]
+          (draw-rectangle g x y
+                          (prefs :block-width)
+                          (prefs :block-height)
+                          (get-color (nth current-row j))))))))))
 
 (defn draw-field [g field]
-  (let [ rows (field :rows)]
-    (dotimes [i (count rows)]
-      (draw-row  g
-                (prefs :border-left)
-                i
-                (nth rows i)))))
+  (dotimes [ rowIdx (count @field) ]
+    (dotimes [ colIdx (count (nth @field rowIdx)) ]
+      (draw-rectangle g (+ (prefs :border-left) colIdx)
+                        (+ (prefs :border-top) rowIdx)
+                        (prefs :block-width)
+                        (prefs :block-height)
+                        (get-color 0)))))
 
 (defn draw-all [g]
-  (let [ b active-block
-         x (b :x)
-         y (b :y) ]
-    (draw-field g (field))
-    (draw-block g b x y)))
+  (let [ b active-block ]
+    (draw-field g field)
+    (draw-block g b)))
     
 (defn rotate [block]
   (dosync (alter (block :rotation) inc)))
   
 
 (defn next-block []
-  (dosync (alter ((active-block) :type) (fn [oldBlock] (random-block)))))
+  (dosync (alter (active-block :type) (fn [oldBlock] (random-block)))))
   
 (defn first-non-zero-element [row]
-  (count (take-while (fn [x] (== x 0)) row)))
+  (count (take-while #(zero? %) row)))
 
 (defn first-if [collection predicate]
   (count (take-while (fn [x] (not (predicate x))) collection)))
@@ -256,13 +265,13 @@
       (dosync (alter x dec))))
 
 (defn move-right [b x]
-  (if (< (+ (deref x) (max-x b)) (dec ((field) :num-columns)))
+  (if (< (+ (deref x) (max-x b)) (dec (prefs :num-columns)))
     (dosync (alter x inc))))
 
 (defn commit-block [b])
     
 (defn move-down [b y]
-  (if (< (+ (deref y) (max-y b)) (dec ((field) :num-rows)))
+  (if (< (+ (deref y) (max-y b)) (dec (prefs :num-rows)))
     (dosync (alter y inc))
     (commit-block b)))
 

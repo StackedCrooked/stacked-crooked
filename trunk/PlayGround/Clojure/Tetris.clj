@@ -185,8 +185,8 @@ O(2N). Each item in coll is
 
 
 (defn random-block []
-  (let [  bag       (deref bag-of-blocks)
-          bag-size  (count bag) ]
+  (let [ bag       (deref bag-of-blocks)
+         bag-size  (count bag) ]
     (if (== (deref bag-index) bag-size)
       (do     
         (dosync (alter bag-index (fn [n] 0)))
@@ -207,7 +207,9 @@ O(2N). Each item in coll is
                       Color/GREEN
                       (Color. 170 0 255)
                       Color/RED] ]
-    (if (and (not (nil? grid-value)) (>= grid-value 0) (< grid-value (count color-table)))
+    (if (and (not (nil? grid-value))
+             (>= grid-value 0)
+             (< grid-value (count color-table)))
       (nth color-table grid-value)
       (Color/WHITE))))
 
@@ -217,8 +219,7 @@ O(2N). Each item in coll is
           w (.width (.getSize frame))
           h (.height (.getSize frame))
           x 0 ; move window to the top-left of the monitor for easier debugging
-          y 0 ;(int (* 0.75(/ (- (.height dim) h) 2)))
-          ]
+          y 0 ;(int (* 0.75(/ (- (.height dim) h) 2))) ]
   (.setLocation frame x y)))
 
 (defn draw-rectangle [g x y w h color]
@@ -241,7 +242,7 @@ O(2N). Each item in coll is
           num-rows    (count rows)]
   (dotimes [ri num-rows]
     (let [current-row   (nth rows ri)
-          num-columns   (count current-row)          ]
+          num-columns   (count current-row) ]
       (dotimes [ci num-columns]
         (let [cell-value (nth current-row ci)]
           (if-not (zero? cell-value)
@@ -256,7 +257,7 @@ O(2N). Each item in coll is
   (let [ numRows (count @field) ]
     (dotimes [ rowIdx numRows ]
       (let [currentRow   (nth @field rowIdx)
-            numCols      (count currentRow) ]    
+            numCols      (count currentRow) ]
         (dotimes [ colIdx numCols ]
           (draw-rectangle g (+ (prefs :border-left) colIdx)
                             (+ (prefs :border-top) rowIdx)

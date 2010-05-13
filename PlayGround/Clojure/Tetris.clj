@@ -10,12 +10,12 @@
 (def prefs {
   :num-rows 20
   :num-columns 10
-  :block-width 10
-  :block-height 10
-  :screen-width 320
-  :screen-height 240
-  :border-left 7
-  :border-left-debug 20
+  :block-width 15
+  :block-height 15
+  :screen-width 500
+  :screen-height 400
+  :border-left 1
+  :border-left-debug 12
   :border-top 2
 })
 
@@ -180,8 +180,9 @@
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
           w (.width (.getSize frame))
           h (.height (.getSize frame))
-          x 0 ; move window to the left of the monitor for easier debugging
-          y (int (* 0.75(/ (- (.height dim) h) 2)))]
+          x 0 ; move window to the top-left of the monitor for easier debugging
+          y 0 ;(int (* 0.75(/ (- (.height dim) h) 2)))
+          ]
   (.setLocation frame x y)))
 
 (defn draw-rectangle [g x y w h color]
@@ -250,7 +251,12 @@
   
 
 (defn next-block []
-  (dosync (alter (active-block :type) (fn [oldBlock] (random-block)))))
+  (dosync
+    (alter (active-block :type) (fn [oldBlock] (random-block)))
+    (alter (active-block :rotation) (fn [oldBlock] 0))
+    (alter (active-block :rowIdx) (fn [oldBlock] 0))
+    (alter (active-block :colIdx) (fn [oldBlock] 5))
+  ))
   
 (defn first-non-zero-element [row]
   (count (take-while #(zero? %) row)))
@@ -322,13 +328,8 @@
             (let [c	(+ colIdx ci)
                   r	(+ rowIdx ri)]
               (do
-                (println "rowIdx" rowIdx)
-                (println "colIdx" colIdx)
-                (println "ri" ri)
-                (println "ci" ci)
-                (println "r" r)
-                (println "c" c)
-                (set-field r c cell-value))))))))))
+                (set-field r c cell-value)
+                (next-block))))))))))
     
 (defn move-down [b]
   (if (< (+ (deref (b :rowIdx)) (max-y b)) (dec (prefs :num-rows)))
@@ -341,7 +342,8 @@
       (paintComponent [g]
         (proxy-super paintComponent g)
         (draw-all g))
-      (getPreferredSize [] (Dimension. 320 240))
+      (getPreferredSize [] (Dimension. (prefs :screen-width)
+                                       (prefs :screen-height)))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]          
           (.repaint this)

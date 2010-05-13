@@ -15,6 +15,7 @@
   :screen-width 320
   :screen-height 240
   :border-left 7
+  :border-left-debug 20
   :border-top 2
 })
 
@@ -188,6 +189,10 @@
     (.setColor color)
     (.fillRect (* w x) (* h y) w h)))
 
+(defn draw-text [g x y w h text]
+  (doto g
+    (.drawString text (* w x) (* h y))))
+
 (defn draw-block [g block]
   (let [  block-type  (deref (block :type))
           row      	  (deref (block :rowIdx))
@@ -211,19 +216,33 @@
                             (get-color cell-value))))))))))
 
 (defn draw-field [g field]
-  (dotimes [ rowIdx (count @field) ]
-    (let [current-row (nth @field rowIdx)
-          num-cols    (count current-row) ]    
-      (dotimes [ colIdx num-cols ]
-        (draw-rectangle g (+ (prefs :border-left) colIdx)
-                          (+ (prefs :border-top) rowIdx)
-                          (prefs :block-width)
-                          (prefs :block-height)
-                          (get-color (current-row colIdx)))))))
+  (let [ numRows (count @field) ]
+    (dotimes [ rowIdx numRows ]
+      (let [currentRow   (nth @field rowIdx)
+            numCols      (count currentRow) ]    
+        (dotimes [ colIdx numCols ]
+          (draw-rectangle g (+ (prefs :border-left) colIdx)
+                            (+ (prefs :border-top) rowIdx)
+                            (prefs :block-width)
+                            (prefs :block-height)
+                            (get-color (currentRow colIdx))))))))
+
+(defn draw-debug [g field]
+  (let [ numRows (count @field) ]
+    (dotimes [ rowIdx numRows ]
+      (let [currentRow   (nth @field rowIdx)
+            numCols      (count currentRow) ]    
+        (dotimes [ colIdx numCols ]
+          (draw-text g (+ (prefs :border-left-debug) colIdx)
+                       (+ (prefs :border-top) rowIdx)
+                       (prefs :block-width)
+                       (prefs :block-height)
+                       (str (get-field rowIdx colIdx))))))))
 
 (defn draw-all [g]
   (let [ b active-block ]
     (draw-field g field)
+    (draw-debug g field)
     (draw-block g b)))
     
 (defn rotate [block]
@@ -296,13 +315,20 @@
           num-rows    (count rows)]
   (dotimes [ri num-rows]
     (let [current-row   (nth rows ri)
-          num-columns   (count current-row)          ]
+          num-columns   (count current-row)]
       (dotimes [ci num-columns]
         (let [cell-value (nth current-row ci)]
           (if-not (zero? cell-value)
-            (let [c	(+ (prefs :border-left) (+ colIdx ci))
-                  r	(+ (prefs :border-top) (+ rowIdx ri))]
-              (set-field r c cell-value)))))))))
+            (let [c	(+ colIdx ci)
+                  r	(+ rowIdx ri)]
+              (do
+                (println "rowIdx" rowIdx)
+                (println "colIdx" colIdx)
+                (println "ri" ri)
+                (println "ci" ci)
+                (println "r" r)
+                (println "c" c)
+                (set-field r c cell-value))))))))))
     
 (defn move-down [b]
   (if (< (+ (deref (b :rowIdx)) (max-y b)) (dec (prefs :num-rows)))
@@ -317,7 +343,8 @@
         (draw-all g))
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
-        (let [keyCode (.getKeyCode e)]
+        (let [keyCode (.getKeyCode e)]          
+          (.repaint this)
           (if (== 37 keyCode) (move-left active-block)
           (if (== 38 keyCode) (rotate active-block)
           (if (== 39 keyCode) (move-right active-block)
@@ -341,8 +368,8 @@
     (.addKeyListener panel panel)
     (center-in-screen frame)
     (loop []
-      (.repaint panel)
-      (Thread/sleep 100)
+      ;(.repaint panel)
+      (Thread/sleep 10)
       (recur))))
 
 ;(main)

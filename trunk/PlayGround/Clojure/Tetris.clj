@@ -7,6 +7,29 @@
 
 (use 'clojure.contrib.math)
 
+
+
+(defn sort-by-mem-keys 
+  "Like clojure/sort-by but only calls keyfn once on each item in coll." 
+  ([keyfn coll] 
+     (sort-by-mem-keys keyfn compare coll)) 
+  ([keyfn #^java.util.Comparator comp coll] 
+     (let [key-vals (map (fn [x] [(keyfn x) x]) coll) 
+           sorted-pairs (sort (fn [x y] (.compare comp (first x) (first y))) 
+                              key-vals)] 
+       (map second sorted-pairs))))
+       
+(defn shuffle 
+  "Returns a seq of coll shuffled in O(n log n) time. Space is at least 
+O(2N). Each item in coll is 
+  assigned a random number which becomes the sort key." 
+  [coll] 
+  (println "shuffle")
+  (sort-by-mem-keys (fn [_] (rand)) coll))
+
+
+
+
 (def prefs {
   :num-rows 20
   :num-columns 10
@@ -46,30 +69,48 @@
   ]  
 })
 
-(def s-block {
+(def j-block {
   :value 2
   :grids
   [
-    [ [ 0 2 2 ]
-      [ 2 2 0 ] ] 
-   
     [ [ 0 2 0 ]
-      [ 0 2 2 ]
+      [ 0 2 0 ]
+      [ 2 2 0 ] ]
+
+    [ [ 0 0 0 ]
+      [ 2 0 0 ]
+      [ 2 2 2 ] ]
+
+    [ [ 2 2 0 ]
+      [ 2 0 0 ]
+      [ 2 0 0 ] ]
+
+    [ [ 0 0 0 ]
+      [ 2 2 2 ]
       [ 0 0 2 ] ]
-  ]  
+  ]
 })
 
-(def z-block {
+(def l-block {
   :value 3
   :grids
   [
+    [ [ 3 0 0 ]
+      [ 3 0 0 ]
+      [ 3 3 0 ] ]
+
+    [ [ 0 0 0 ]
+      [ 3 3 3 ]
+      [ 3 0 0 ] ]
+
     [ [ 3 3 0 ]
-      [ 0 3 3 ] ]  
-  
-    [ [ 0 0 3 ]
-      [ 0 3 3 ]
+      [ 0 3 0 ]
       [ 0 3 0 ] ]
-  ]  
+
+    [ [ 0 0 0 ]
+      [ 0 0 3 ]
+      [ 3 3 3 ] ]
+  ]
 })
 
 (def o-block {
@@ -82,68 +123,50 @@
   ]  
 })
 
-(def t-block {
+(def s-block {
   :value 5
   :grids
   [
-    [ [ 5 5 5 ]
-      [ 0 5 0 ] ]
-      
-    [ [ 0 5 0 ]
-      [ 5 5 0 ]
-      [ 0 5 0 ] ]
-      
-    [ [ 0 5 0 ]
-      [ 5 5 5 ] ]
-      
+    [ [ 0 5 5 ]
+      [ 5 5 0 ] ] 
+   
     [ [ 0 5 0 ]
       [ 0 5 5 ]
-      [ 0 5 0 ] ]
+      [ 0 0 5 ] ]
   ]  
 })
 
-(def l-block {
+(def t-block {
   :value 6
   :grids
   [
-    [ [ 6 0 0 ]
-      [ 6 0 0 ]
-      [ 6 6 0 ] ]
-
-    [ [ 0 0 0 ]
-      [ 6 6 6 ]
-      [ 6 0 0 ] ]
-
-    [ [ 6 6 0 ]
-      [ 0 6 0 ]
+    [ [ 6 6 6 ]
       [ 0 6 0 ] ]
-
-    [ [ 0 0 0 ]
-      [ 0 0 6 ]
+      
+    [ [ 0 6 0 ]
+      [ 6 6 0 ]
+      [ 0 6 0 ] ]
+      
+    [ [ 0 6 0 ]
       [ 6 6 6 ] ]
-  ]
+      
+    [ [ 0 6 0 ]
+      [ 0 6 6 ]
+      [ 0 6 0 ] ]
+  ]  
 })
 
-(def j-block {
+(def z-block {
   :value 7
   :grids
   [
-    [ [ 0 7 0 ]
-      [ 0 7 0 ]
-      [ 7 7 0 ] ]
-
-    [ [ 0 0 0 ]
-      [ 7 0 0 ]
-      [ 7 7 7 ] ]
-
     [ [ 7 7 0 ]
-      [ 7 0 0 ]
-      [ 7 0 0 ] ]
-
-    [ [ 0 0 0 ]
-      [ 7 7 7 ]
-      [ 0 0 7 ] ]
-  ]
+      [ 0 7 7 ] ]  
+  
+    [ [ 0 0 7 ]
+      [ 0 7 7 ]
+      [ 0 7 0 ] ]
+  ]  
 })
 
 (def active-block {
@@ -152,25 +175,38 @@
     :rowIdx (ref 0)
     :colIdx (ref 0) })
 
-(def block-types [i-block s-block z-block o-block t-block l-block j-block])
+(def block-types [i-block j-block l-block o-block s-block t-block z-block])
+
+
+(def bag-of-blocks
+  (ref [i-block j-block l-block o-block s-block t-block z-block]))
+
+(def bag-index (ref 0))
+
 
 (defn random-block []
-  (let [idx (mod (round (rand 1000)) (count block-types))]
-    (nth block-types idx)))
+  (let [  bag       (deref bag-of-blocks)
+          bag-size  (count bag) ]
+    (if (== (deref bag-index) bag-size)
+      (do     
+        (dosync (alter bag-index (fn [n] 0)))
+        (dosync (alter bag-of-blocks shuffle))))
+    (let [ result (nth bag (deref bag-index)) ]
+      (dosync (alter bag-index inc))
+      (println "" (deref bag-index) "" (result :value))
+      result)))
 
 
   
 (defn get-color [grid-value]
   (let [color-table [ Color/BLACK
-                      Color/RED
-                      Color/ORANGE
+                      Color/CYAN
+                      Color/BLUE
+                      (Color. 255 165 0)
                       Color/YELLOW
                       Color/GREEN
-                      Color/BLUE
-                      (Color. 111 0 255)
-                      (Color. 143 0 255)
-                      Color/WHITE
-                      Color/GRAY] ]
+                      (Color. 170 0 255)
+                      Color/RED] ]
     (if (and (not (nil? grid-value)) (>= grid-value 0) (< grid-value (count color-table)))
       (nth color-table grid-value)
       (Color/WHITE))))
@@ -210,7 +246,7 @@
         (let [cell-value (nth current-row ci)]
           (if-not (zero? cell-value)
             (let [x	(+ (prefs :border-left) (+ col ci))
-                  y	(+ (prefs :border-top) (+ row ri))]
+                  y	(+ (prefs :border-top) (+ row ri))]                  
             (draw-rectangle g x y
                             (prefs :block-width)
                             (prefs :block-height)
@@ -255,8 +291,8 @@
     (alter (active-block :type) (fn [oldBlock] (random-block)))
     (alter (active-block :rotation) (fn [oldBlock] 0))
     (alter (active-block :rowIdx) (fn [oldBlock] 0))
-    (alter (active-block :colIdx) (fn [oldBlock] 5))
-  ))
+    (alter (active-block :colIdx) (fn [oldBlock] 5))))
+
   
 (defn first-non-zero-element [row]
   (count (take-while #(zero? %) row)))
@@ -329,8 +365,9 @@
                   r	(+ rowIdx ri)]
               (do
                 (set-field r c cell-value)
-                (next-block))))))))))
-    
+                )))))))
+    (next-block)))
+
 (defn move-down [b]
   (if (< (+ (deref (b :rowIdx)) (max-y b)) (dec (prefs :num-rows)))
     (dosync (alter (b :rowIdx) inc))
@@ -369,6 +406,8 @@
       (.setVisible true))
     (.addKeyListener panel panel)
     (center-in-screen frame)
+    (dosync (alter bag-of-blocks shuffle))
+    (next-block)
     (loop []
       ;(.repaint panel)
       (Thread/sleep 10)

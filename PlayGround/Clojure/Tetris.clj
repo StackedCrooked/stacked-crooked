@@ -25,13 +25,14 @@
         (for [_ (range (prefs :num-rows))]
           (vec (repeat (prefs :num-columns) 0)))))))
 
-(defn get-field [x y]
-  (nth (nth @field y) x))
+(defn get-field [rowIdx colIdx]
+  (nth (nth @field rowIdx) colIdx))
 
-(defn set-field [x y value]
-  (swap! field #(update-in % [x y] (constantly value))))
+(defn set-field [rowIdx colIdx value]
+  (swap! field #(update-in % [rowIdx colIdx] (constantly value))))
 
 (def i-block {
+  :value 1
   :grids
   [
     [ [ 0 1 ]
@@ -45,6 +46,7 @@
 })
 
 (def s-block {
+  :value 2
   :grids
   [
     [ [ 0 2 2 ]
@@ -57,6 +59,7 @@
 })
 
 (def z-block {
+  :value 3
   :grids
   [
     [ [ 3 3 0 ]
@@ -69,6 +72,7 @@
 })
 
 (def o-block {
+  :value 4
   :grids
   [
     [ [ 0 0 0 ]
@@ -78,6 +82,7 @@
 })
 
 (def t-block {
+  :value 5
   :grids
   [
     [ [ 5 5 5 ]
@@ -97,6 +102,7 @@
 })
 
 (def l-block {
+  :value 6
   :grids
   [
     [ [ 6 0 0 ]
@@ -118,6 +124,7 @@
 })
 
 (def j-block {
+  :value 7
   :grids
   [
     [ [ 0 7 0 ]
@@ -141,8 +148,8 @@
 (def active-block {
     :type (ref l-block)
     :rotation (ref 0)
-    :x (ref 0)
-    :y (ref 0) })
+    :rowIdx (ref 0)
+    :colIdx (ref 0) })
 
 (def block-types [i-block s-block z-block o-block t-block l-block j-block])
 
@@ -179,24 +186,25 @@
 
 (defn draw-block [g block]
   (let [  block-type  (deref (block :type))
-          x           (deref (block :x))
-          y           (deref (block :y))
+          row      	  (deref (block :rowIdx))
+          col         (deref (block :colIdx))
           rotation    (deref (block :rotation))
           grids       (block-type :grids)
           grid-idx    (mod rotation (count grids))
           rows        (nth grids grid-idx)
           num-rows    (count rows)]
-  (dotimes [rowIdx num-rows]
-    (let [current-row   (nth rows rowIdx)
-          num-columns   (count current-row)]
-      (dotimes [colIdx num-columns]
-        (if-not (zero? (nth current-row colIdx))
-          (let [x (+ (prefs :border-left) (+ x colIdx))
-                y (+ (prefs :border-top) (+ y rowIdx))]
-          (draw-rectangle g x y
-                          (prefs :block-width)
-                          (prefs :block-height)
-                          (get-color (nth current-row colIdx))))))))))
+  (dotimes [ri num-rows]
+    (let [current-row   (nth rows ri)
+          num-columns   (count current-row)          ]
+      (dotimes [ci num-columns]
+        (let [cell-value (nth current-row ci)]
+          (if-not (zero? cell-value)
+            (let [x	(+ (prefs :border-left) (+ col ci))
+                  y	(+ (prefs :border-top) (+ row ri))]
+            (draw-rectangle g x y
+                            (prefs :block-width)
+                            (prefs :block-height)
+                            (get-color cell-value))))))))))
 
 (defn draw-field [g field]
   (dotimes [ rowIdx (count @field) ]
@@ -205,7 +213,7 @@
                         (+ (prefs :border-top) rowIdx)
                         (prefs :block-width)
                         (prefs :block-height)
-                        (get-color 0)))))
+                        (get-color (get-field rowIdx colIdx))))))
 
 (defn draw-all [g]
   (let [ b active-block ]
@@ -223,7 +231,7 @@
   (count (take-while #(zero? %) row)))
 
 (defn first-if [collection predicate]
-  (count (take-while (fn [x] (not (predicate x))) collection)))
+  (count (take-while (fn [n] (not (predicate n))) collection)))
   
 (defn last-if [collection predicate]
   (- (dec (count collection)) (first-if (rseq collection) predicate)))
@@ -257,25 +265,29 @@
         grid-idx    (mod rotation (count grids))
         rows        (nth grids grid-idx) ]
     (* -1 (first-non-zero-element
-      (reduce (fn [x y] (if (< (first-non-zero-element x) (first-non-zero-element y))
-                        x y)) rows)))))
+      (reduce (fn [r1 r2]
+                (if (< (first-non-zero-element r1)
+                       (first-non-zero-element r2))
+  			      r1 r2))
+              rows)))))
 
-(defn move-left [b x]
-  (if (< (min-x b) (deref x))
-      (dosync (alter x dec))))
+(defn move-left [b]
+  (if (< (min-x b) (deref (b :colIdx)))
+      (dosync (alter (b :colIdx) dec))))
 
-(defn move-right [b x]
-  (if (< (+ (deref x) (max-x b)) (dec (prefs :num-columns)))
-    (dosync (alter x inc))))
+(defn move-right [b]
+  (if (< (+ (deref (b :colIdx)) (max-x b)) (dec (prefs :num-columns)))
+    (dosync (alter (b :colIdx) inc))))
 
-(defn commit-block [b])
+(defn commit-block [block]
+  (set-field (deref (block :rowIdx)) (deref (block :colIdx)) ((deref (block :type)) :value)))
     
-(defn move-down [b y]
-  (if (< (+ (deref y) (max-y b)) (dec (prefs :num-rows)))
-    (dosync (alter y inc))
+(defn move-down [b]
+  (if (< (+ (deref (b :rowIdx)) (max-y b)) (dec (prefs :num-rows)))
+    (dosync (alter (b :rowIdx) inc))
     (commit-block b)))
 
-(defn create-panel [x y]
+(defn create-panel []
   (doto
     (proxy [JPanel KeyListener] []
       (paintComponent [g]
@@ -284,10 +296,10 @@
       (getPreferredSize [] (Dimension. 320 240))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
-          (if (== 37 keyCode) (move-left active-block x)
+          (if (== 37 keyCode) (move-left active-block)
           (if (== 38 keyCode) (rotate active-block)
-          (if (== 39 keyCode) (move-right active-block x)
-          (if (== 40 keyCode) (move-down active-block y)
+          (if (== 39 keyCode) (move-right active-block)
+          (if (== 40 keyCode) (move-down active-block)
           (if (== 32 keyCode) (next-block)
                               (println keyCode))))))))
       (keyReleased [e])
@@ -295,9 +307,7 @@
     (.setFocusable true)))
 
 (def panel
-  (create-panel
-    (active-block :x)
-    (active-block :y)))
+  (create-panel))
 
 (defn main []
   (let [frame (JFrame. "Test")]

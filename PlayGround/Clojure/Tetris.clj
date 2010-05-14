@@ -266,7 +266,7 @@
               (let [ block-value (get-grid grid x y)
                      field-x     (+ x (deref (block :x)))
                      field-y     (+ y (deref (block :y))) ]
-                (if (not (zero? block-value))
+                (if-not (zero? block-value)
                   (if-not
                     (and (>= field-x 0)
                          (< field-x (field :width))
@@ -278,8 +278,10 @@
   (not (deref stop-condition))))
 
 
-(defn rotate [block]
-  (dosync (alter (block :rotation) inc)))
+(defn rotate [field block]
+  (dosync (alter (block :rotation) inc))
+  (if-not (check-position-valid field block)
+    (dosync (alter (block :rotation) dec))))
 
 (defn next-block []
   (dosync
@@ -340,7 +342,7 @@
         (let [keyCode (.getKeyCode e)]          
           (.repaint this)
           (if (== 37 keyCode) (move-left global-field active-block)
-          (if (== 38 keyCode) (rotate active-block)
+          (if (== 38 keyCode) (rotate global-field active-block)
           (if (== 39 keyCode) (move-right global-field active-block)
           (if (== 40 keyCode) (move-down global-field active-block)
           (if (== 32 keyCode) (next-block)

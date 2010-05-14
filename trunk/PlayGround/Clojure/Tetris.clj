@@ -3,6 +3,8 @@
 (import java.awt.Color)
 (import java.awt.Dimension)
 (import java.awt.Toolkit)
+(import java.util.Timer)
+(import java.util.TimerTask)
 (import java.awt.event.KeyListener)
 (import javax.swing.JFrame)
 (import javax.swing.JPanel)
@@ -171,6 +173,33 @@
 
 (def global-field (create-grid 10 20 0))
 
+(def lines (ref 0))
+
+(defn get-level [lines]
+  (int (/ lines 10)))
+
+; drop-interval/level on the Gameboy for levels 0 to 20
+(def level-speed-mapping [ 887 820 753 686
+                           619 552 469 368
+                           285 184 167 151
+                           134 117 100 100
+                           84  84  67  67  50 ])
+
+(def timer (ref (new Timer)))
+(declare move-down)
+(defn setGameSpeed [interval]
+  (let [task (proxy [TimerTask] []
+               (run []
+                (move-down global-field active-block)))]
+    (.cancel (deref timer))
+    (dosync (alter timer (fn [_] (new Timer))))
+    (.scheduleAtFixedRate (deref timer) task (long 0) (long interval))
+    (println "Set gamespeed to" interval)
+    (println "Lines" (deref lines))
+    (println "Level" (get-level (deref lines)))))
+
+
+
 (defn random-block []
   (let [ bag       (deref bag-of-blocks)
          bag-size  (count bag) ]
@@ -332,7 +361,9 @@
           (field :data)
           (fn [_]
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
-              (vec (flatten (conj zeroes remaining-rows)))))))))))
+              (vec (flatten (conj zeroes remaining-rows)))))))
+        (dosync (alter lines (fn [lines] (+ lines num-lines-scored))))
+        (setGameSpeed (level-speed-mapping (get-level (deref lines))))))))
 
 (defn commit-block [field block]
   (let [  block-type  (deref (block :type))
@@ -366,7 +397,6 @@
                                        (prefs :screen-height)))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]    
-          (.repaint this)
           (if (== 37 keyCode) (move-left global-field active-block)
           (if (== 38 keyCode) (rotate global-field active-block)
           (if (== 39 keyCode) (move-right global-field active-block)
@@ -380,6 +410,8 @@
 (def panel
   (create-panel))
 
+ 
+
 (defn main []
   (let [frame (JFrame. "Test")]
     (doto frame
@@ -389,9 +421,11 @@
       (.setVisible true))
     (.addKeyListener panel panel)
     (center-in-screen frame)
-    (dosync (alter bag-of-blocks shuffle))
+    (dosync (alter bag-of-blocks shuffle))    
     (next-block)
+    (setGameSpeed (level-speed-mapping (get-level (deref lines))))
     (loop []
+      (.repaint panel)      
       (Thread/sleep 10)
       (recur))))
 

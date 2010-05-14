@@ -1,5 +1,3 @@
-
-
 (in-ns 'tetris)
 (clojure.core/use 'clojure.core)
 (import java.awt.Color)
@@ -9,6 +7,7 @@
 (import javax.swing.JFrame)
 (import javax.swing.JPanel)
 (use 'clojure.contrib.math)
+
 
 ; Grid data structure
 ; -------------------
@@ -39,6 +38,7 @@
 (defn get-grid-rows [g]
   (partition (g :width) (deref (g :data))))
 
+
 ; Shuffle utility function
 ; ------------------------    
 (defn sort-by-mem-keys 
@@ -58,7 +58,6 @@
   [coll]
   (println "shuffle")
   (sort-by-mem-keys (fn [_] (rand)) coll))
-
 
 (def prefs {
   :num-rows 20
@@ -162,8 +161,8 @@
     :x (ref 0)
     :y (ref 0) })
 
-(def block-types [i-block j-block l-block o-block s-block t-block z-block])
-
+(def block-types
+  [i-block j-block l-block o-block s-block t-block z-block])
 
 (def bag-of-blocks
   (ref [i-block j-block l-block o-block s-block t-block z-block]))
@@ -183,8 +182,6 @@
       (dosync (alter bag-index inc))
       (println "" (deref bag-index) "" (result :value))
       result)))
-
-
   
 (defn get-color [grid-value]
   (let [color-table [ Color/BLACK
@@ -277,7 +274,6 @@
           (recur (inc x))))
   (not (deref stop-condition))))
 
-
 (defn rotate [field block]
   (dosync (alter (block :rotation) inc))
   (if-not (check-position-valid field block)
@@ -303,11 +299,34 @@
   (dosync (alter (b :x) dec))
   (if-not (check-position-valid f b)
     (dosync (alter (b :x) inc))))
-    
+
 (defn move-right [f b]
   (dosync (alter (b :x) inc))
   (if-not (check-position-valid f b)
     (dosync (alter (b :x) dec))))
+
+(defn contains [collection value]
+  (> (count (filter (fn [el] (== value el)) collection)) 0))
+
+(defn flatten [x]
+  (let [s? #(instance? clojure.lang.Sequential %)]
+    (filter (complement s?) (tree-seq s? seq x))))
+
+(defn clear-lines [field]
+  (let [  old-rows  (get-grid-rows field)
+          new-rows  (filter (fn [row] (not (contains row 0))) old-rows)
+          num-lines (- (count old-rows) (count new-rows)) ]
+    (if-not (empty? new-rows)
+      (dosync (alter
+        (field :data)
+        (fn [_]
+          (let [zeroes (vec (repeat (* (field :width) (count new-rows)) 0))]
+            (println "zeroes" zeroes)
+            (println "new-rows" new-rows)            
+            (vec (flatten (conj zeroes new-rows)))
+            (println "data length: " (count (deref (field :data))))
+            (println "w" (field :width))
+            (println "h" (field :height)))))))))
 
 (defn commit-block [field block]
   (let [  block-type  (deref (block :type))
@@ -328,6 +347,7 @@
     (do
       (dosync (alter (b :y) dec))
       (commit-block f b)
+      (clear-lines f)
       (next-block))))
 
 (defn create-panel []

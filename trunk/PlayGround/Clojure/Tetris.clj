@@ -245,6 +245,15 @@
                         (prefs :block-height)
                         (get-color (get-grid field x y))))))
 
+(defn draw-debug-field [g field]
+  (dotimes [x (field :width)]
+    (dotimes [y (field :height)]
+      (draw-text g (+ 12 x)
+                 (+ (prefs :border-top) y)
+                 (prefs :block-width)
+                 (prefs :block-height)
+                 (str (get-grid field x y))))))
+
 (defn draw-all [g f b]
   (draw-field g f)
   (draw-block g b))
@@ -313,20 +322,17 @@
     (filter (complement s?) (tree-seq s? seq x))))
 
 (defn clear-lines [field]
-  (let [  old-rows  (get-grid-rows field)
-          new-rows  (filter (fn [row] (not (contains row 0))) old-rows)
-          num-lines (- (count old-rows) (count new-rows)) ]
-    (if-not (empty? new-rows)
-      (dosync (alter
-        (field :data)
-        (fn [_]
-          (let [zeroes (vec (repeat (* (field :width) (count new-rows)) 0))]
-            (println "zeroes" zeroes)
-            (println "new-rows" new-rows)            
-            (vec (flatten (conj zeroes new-rows)))
-            (println "data length: " (count (deref (field :data))))
-            (println "w" (field :width))
-            (println "h" (field :height)))))))))
+  (let [  rows              (get-grid-rows field)
+          remaining-rows    (filter (fn [row] (contains row 0)) rows)
+          num-lines-scored  (- (count rows) (count remaining-rows))
+          ]
+    (if-not (zero? num-lines-scored)
+      (do
+        (dosync (alter
+          (field :data)
+          (fn [_]
+            (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
+              (vec (flatten (conj zeroes remaining-rows)))))))))))
 
 (defn commit-block [field block]
   (let [  block-type  (deref (block :type))
@@ -359,7 +365,7 @@
       (getPreferredSize [] (Dimension. (prefs :screen-width)
                                        (prefs :screen-height)))
       (keyPressed [e]
-        (let [keyCode (.getKeyCode e)]          
+        (let [keyCode (.getKeyCode e)]    
           (.repaint this)
           (if (== 37 keyCode) (move-left global-field active-block)
           (if (== 38 keyCode) (rotate global-field active-block)

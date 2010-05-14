@@ -324,7 +324,7 @@
 
 (defn move-down [f b]
   (dosync (alter (b :y) inc))
-  (if (not (check-position-valid f b))
+  (if-not (check-position-valid f b)
     (do
       (dosync (alter (b :y) dec))
       (commit-block f b)

@@ -256,7 +256,7 @@
     (last level-speed-mapping)))
 
 ; the number of lines that have to be scored in order to increment level
-(def level-up-treshold 1)
+(def level-up-treshold 10)
 
 ; get-level returns level based on number of lines that have been scored.
 ; maximum level is 20, which means an interval of 20 ms between drops 
@@ -391,23 +391,26 @@
             (if-not (zero? value)
               (paint-grid-cell g x y 0))))))))
 
-(def num-repaints
+(def frame-count
   (ref 0))
 
 (defn current-time-ms []
   (.getTime (java.util.Date.)))
 
-(def startup-time
-  (current-time-ms))
+(def start-time
+  (ref (current-time-ms)))
 
 (def fps
   (ref 0))
   
 (defn calculate-fps []
-  (let [current-time      (current-time-ms)
-        running-time-ms   (- (current-time-ms) startup-time)
-        running-time-s    (/ running-time-ms 1000) ]
-    (dosync (alter fps (fn [_] (int (round (/ @num-repaints running-time-s))))))))
+  (let [current-time        (current-time-ms)
+        time-interval-ms    (- (current-time-ms) @start-time)
+        time-interval-s     (/ time-interval-ms 1000) ]
+    (dosync
+      (alter fps (fn [_] (int (round (/ @frame-count time-interval-s)))))
+      (alter frame-count (fn [_] 0))
+      (alter start-time ( fn [_] (current-time-ms))))))
 
 (defn draw-fps [g]
   (doto g
@@ -416,7 +419,7 @@
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
-  (if (zero? (mod @num-repaints 100))
+  (if (zero? (mod @frame-count 100))
     (calculate-fps))
   (draw-fps g)
   (draw-field g f)
@@ -516,7 +519,7 @@
       (paintComponent [g]
         (proxy-super paintComponent g)
         (draw-all this g global-field active-block)
-        (dosync (alter num-repaints inc)))
+        (dosync (alter frame-count inc)))
       (getPreferredSize [] (Dimension. (prefs :screen-width)
                                        (prefs :screen-height)))
       (keyPressed [e]
@@ -547,7 +550,7 @@
     (set-game-speed (get-game-speed (get-level @lines)))
     (loop []
       (.repaint panel)
-      (Thread/sleep 10)
+      (Thread/sleep 7)
       (recur))))
       
 ; For now just start a new game

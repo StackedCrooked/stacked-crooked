@@ -10,6 +10,19 @@
 (import javax.swing.JPanel)
 (use 'clojure.contrib.math)
 
+(def prefs {
+  :grid-x 10
+  :grid-y 10
+  :num-rows 20
+  :num-columns 10
+  :block-width 15
+  :block-height 15
+  :screen-width 500
+  :screen-height 400
+  :border-left 1
+  :border-left-debug 12
+  :border-top 2 })
+
 
 ; Grid data structure
 ; -------------------
@@ -66,17 +79,6 @@
   [coll]
   (println "shuffle")
   (sort-by-mem-keys (fn [_] (rand)) coll))
-
-(def prefs {
-  :num-rows 20
-  :num-columns 10
-  :block-width 15
-  :block-height 15
-  :screen-width 500
-  :screen-height 400
-  :border-left 1
-  :border-left-debug 12
-  :border-top 2 })
 
 (def i-block {
   :value 1
@@ -312,18 +314,22 @@
           y 0 ]
   (.setLocation frame x y)))
 
-(defn draw-rectangle [g x y w h color]
-  (doto g
-    (.setColor color)
-    (.fillRect (* w x) (* h y) w h)))
+(defn paint-grid-cell [graphics i j value]
+  (let [w   (prefs :block-width)
+        h   (prefs :block-height)          
+        x   (+ (prefs :grid-x) (* i w))
+        y   (+ (prefs :grid-y) (* j h)) ]
+    (doto graphics
+      (.setColor (get-color value))
+      (.fillRect x y w h))))
 
 (defn draw-text [g x y w h text]
   (doto g
     (.drawString text (* w x) (* h y))))
 
 (defn draw-block [g block]
-  (let [  x  	      @(block :x)
-          y           @(block :y)
+  (let [  bx 	       @(block :x)
+          by          @(block :y)
           rotation    @(block :rotation)
           grids       (@(block :type) :grids)
           grid-idx    (mod rotation (count grids))
@@ -332,14 +338,9 @@
       (dotimes [j (active-grid :height)]
         (let [cell-value (get-grid active-grid i j)]
           (if-not (zero? cell-value)
-            (let [paint-x   (+ (prefs :border-left) (+ x i))
-                  paint-y   (+ (prefs :border-top) (+ y j))]
-              (draw-rectangle g
-                              paint-x
-                              paint-y
-                              (prefs :block-width)
-                              (prefs :block-height)
-                              (get-color cell-value)))))))))
+            (let [x       (+ (prefs :border-left) (+ bx i))
+                  y       (+ (prefs :border-top) (+ by j)) ]
+              (paint-grid-cell g x y cell-value))))))))
 
 (defn clear-screen [panel g]
   (doto g
@@ -349,11 +350,9 @@
 (defn draw-field [g field]
   (dotimes [x (field :width)]
     (dotimes [y (field :height)]
-      (draw-rectangle g (+ (prefs :border-left) x)
-                        (+ (prefs :border-top) y)
-                        (prefs :block-width)
-                        (prefs :block-height)
-                        (get-color (get-grid field x y))))))
+      (paint-grid-cell g (+ (prefs :border-left) x)
+                         (+ (prefs :border-top) y)
+                         (get-grid field x y)))))
 
 (defn draw-debug-field [g field]
   (dotimes [x (field :width)]
@@ -376,10 +375,7 @@
                  y      (+ j (* n 5) (prefs :border-top))
                  value  (get-grid grid i j) ]
             (if-not (zero? value)
-              (draw-rectangle  g x y
-                              (prefs :block-width)
-                              (prefs :block-height)
-                              (get-color value)))))))))
+              (paint-grid-cell g x y value))))))))
 
 (defn debug-draw-bag-of-blocks [g blocks]
   (dotimes [ n (count blocks) ]
@@ -393,10 +389,7 @@
                  y      (+ j (* n 5) (prefs :border-top))
                  value  (get-grid grid i j) ]
             (if-not (zero? value)
-              (draw-rectangle  g x y
-                              (prefs :block-width)
-                              (prefs :block-height)
-                              (Color/LIGHT_GRAY)))))))))
+              (paint-grid-cell g x y 0))))))))
 
 (def num-repaints
   (ref 0))

@@ -2,6 +2,9 @@
 (clojure.core/use 'clojure.core)
 (import java.awt.Color)
 (import java.awt.Dimension)
+(import java.awt.Font)
+(import java.awt.FontMetrics)
+(import java.awt.geom.Rectangle2D)
 (import java.awt.Toolkit)
 (import java.util.Timer)
 (import java.util.TimerTask)
@@ -20,6 +23,7 @@
   :screen-width 300
   :screen-height 330 })
 
+(def is-game-over (ref false))
 
 ; Grid data structure
 ; -------------------
@@ -266,7 +270,8 @@
 (defn set-game-speed [interval]
   (let [task (proxy [TimerTask] []
                (run []
-                (move-down global-field active-block)))]
+                (if-not (true? @is-game-over)
+                  (move-down global-field active-block))))]
     (.cancel @timer)
     (alter timer (fn [_] (new Timer)))
     (.scheduleAtFixedRate @timer task (long interval) (long interval))
@@ -420,13 +425,34 @@
 (def score (ref 0))
     
 (defn draw-stats [g]
-  (let [x (* 15 12)
-        y (* 15 8)]
+  (let [x               (* 15 12)
+        y               (* 15 8)
+        font            (.deriveFont (.getFont g)
+                                     (int java.awt.Font/BOLD)
+                                     (float 14))
+        font-metrics    (.getFontMetrics g font)
+        get-text-rect   (fn [str] (.getStringBounds font-metrics str g))
+        field-w         (* (prefs :block-width) (prefs :num-columns))
+        x-offset        (* (prefs :field-x) (prefs :block-width)) ]
     (.setColor g (Color/LIGHT_GRAY))
-    (.setFont g (.deriveFont (.getFont g) (int java.awt.Font/BOLD) (float 14)))
-    (.drawString g (str "Lines " @lines) x y)
-    (.drawString g (str "Level " (get-level @lines)) x (+ y 20))
-    (.drawString g (str "Score " @score) x (+ y 40))))
+    (.setFont g font)
+    (.drawString g (str "lines " @lines) x y)
+    (.drawString g (str "level " (get-level @lines)) x (+ y 20))
+    (.drawString g (str "score " @score) x (+ y 40))
+    (if (true? @is-game-over)
+      (do      
+        (let [text     "game over!"
+              rect    (get-text-rect text)              
+              text-w  (.getWidth rect)
+              x       (+ x-offset
+                         (int (round (/ (- field-w text-w) 2))))]
+          (.drawString g text x (+ y 60)))
+        (let [text    "press enter"
+              rect    (get-text-rect text)
+              text-w  (.getWidth rect)
+              x       (+ x-offset
+                         (int (round (/ (- field-w text-w) 2))))]
+          (.drawString g text x (+ y 80)))))))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
@@ -548,13 +574,16 @@
       (getPreferredSize [] (Dimension. (prefs :screen-width)
                                        (prefs :screen-height)))
       (keyPressed [e]
-        (let [keyCode (.getKeyCode e)]    
-          (if (== 37 keyCode) (move-left global-field active-block)
-          (if (== 38 keyCode) (rotate global-field active-block)
-          (if (== 39 keyCode) (move-right global-field active-block)
-          (if (== 40 keyCode) (move-down global-field active-block)
-          (if (== 32 keyCode) (drop-block global-field active-block)
-                              (println keyCode))))))))
+        (let [keyCode (.getKeyCode e)]
+          (if-not (true? @is-game-over)
+            (if (== 37 keyCode) (move-left global-field active-block)
+              (if (== 38 keyCode) (rotate global-field active-block)
+                (if (== 39 keyCode) (move-right global-field active-block)
+                  (if (== 40 keyCode) (move-down global-field active-block)
+                    (if (== 32 keyCode) (drop-block global-field active-block))))))
+            (if (== 10 keyCode)
+              (dosync (alter is-game-over (fn [_] false)))
+              (println keyCode)))))
       (keyReleased [e])
       (keyTyped [e]))
     (.setFocusable true)))
@@ -581,6 +610,7 @@
       
 ; For now just start a new game
 (defn game-over []
+  (alter is-game-over (fn [_] true))
   (init-blocks))
 
 ; TODO

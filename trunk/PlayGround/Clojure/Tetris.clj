@@ -416,7 +416,6 @@
   (draw-fps g)
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
-  (debug-draw-bag-of-blocks g @bag-of-blocks)
   (draw-block g b))
 
 (defn check-position-valid [field block]
@@ -553,9 +552,9 @@
 
 ; TODO
 ; ----
-; - drop block space bar
+; - statistics
 ; - game over message
 ; - high-score (internet?)
 ; - scoring
-; - statistics
+; v drop block space bar
 ;(main)

@@ -174,8 +174,7 @@
   [i-block j-block l-block o-block s-block t-block z-block])
 
 (def bag-of-blocks
-  (ref [i-block j-block l-block o-block s-block t-block z-block
-        i-block j-block l-block o-block s-block t-block z-block]))
+  (ref [i-block j-block l-block o-block s-block t-block z-block]))
 
 (def bag-index (ref 0))
 
@@ -278,15 +277,16 @@
     (println "Level" (get-level @lines))))
 
 (defn random-block []
-  (let [ bag       @bag-of-blocks
-         bag-size  (count bag) ]
+  (dosync
+    (let [ bag       @bag-of-blocks
+           bag-size  (count bag)    ]
     (if (== @bag-index bag-size)
-      (do     
-        (dosync (alter bag-index (fn [n] 0)))
-        (dosync (alter bag-of-blocks shuffle))))
-    (let [ result (nth bag @bag-index) ]
-      (dosync (alter bag-index inc))
-      result)))
+      (do
+        (alter bag-index (fn [n] 0))
+        (alter bag-of-blocks shuffle)))
+    (do
+      (alter bag-index inc)
+      (nth bag @bag-index)))))
   
 (defn get-color [grid-value]
   (let [color-table [ Color/BLACK

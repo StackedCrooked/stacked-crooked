@@ -531,8 +531,6 @@
 (def panel
   (create-panel))
 
- 
-
 (defn main []
   (let [frame (JFrame. "Test")]
     (doto frame
@@ -548,12 +546,10 @@
       (.repaint panel)
       (Thread/sleep 10)
       (recur))))
-
       
 ; For now just start a new game
 (defn game-over []
   (init-blocks))
-
 
 ; TODO
 ; ----

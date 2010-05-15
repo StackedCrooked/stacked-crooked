@@ -42,7 +42,7 @@
 
 
 ; Shuffle utility function
-; ------------------------    
+; ------------------------
 (defn sort-by-mem-keys 
   "Like clojure/sort-by but only calls keyfn once on each item in coll." 
   ([keyfn coll] 
@@ -317,6 +317,11 @@
                               (prefs :block-height)
                               (get-color cell-value)))))))))
 
+(defn clear-screen [panel g]
+  (doto g
+    (.setColor (Color/GRAY))
+    (.fillRect 0 0 (.getWidth panel) (.getHeight panel))))
+                              
 (defn draw-field [g field]
   (dotimes [x (field :width)]
     (dotimes [y (field :height)]
@@ -370,7 +375,8 @@
                               (get-color value)))))))))
 
 
-(defn draw-all [g f b]
+(defn draw-all [panel g f b]
+  (clear-screen panel g)
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
   ;(debug-draw-bag-of-blocks g @bag-of-blocks)
@@ -458,7 +464,7 @@
     (proxy [JPanel KeyListener] []
       (paintComponent [g]
         (proxy-super paintComponent g)
-        (draw-all g global-field active-block))
+        (draw-all this g global-field active-block))
       (getPreferredSize [] (Dimension. (prefs :screen-width)
                                        (prefs :screen-height)))
       (keyPressed [e]

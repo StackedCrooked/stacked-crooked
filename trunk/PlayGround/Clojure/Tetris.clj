@@ -270,7 +270,7 @@
                (run []
                 (move-down global-field active-block)))]
     (.cancel @timer)
-    (dosync (alter timer (fn [_] (new Timer))))
+    (alter timer (fn [_] (new Timer)))
     (.scheduleAtFixedRate @timer task (long interval) (long interval))
     (println "Set gamespeed to" interval)
     (println "Lines" @lines)
@@ -471,13 +471,13 @@
           num-lines-scored  (- (count rows) (count remaining-rows))
           ]
     (if-not (zero? num-lines-scored)
-      (dosync
+      (do
         (alter (field :data)
           (fn [_]
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
               (vec (flatten (conj zeroes remaining-rows))))))
-        (alter lines (fn [lines] (+ lines num-lines-scored)))
-        (set-game-speed (get-game-speed (get-level @lines)))))))
+        (alter lines (fn [lines] (+ lines num-lines-scored))))
+      (set-game-speed (get-game-speed (get-level @lines))))))
 
 (defn commit-block [field block]
   (let [  block-type  @(block :type)
@@ -547,7 +547,8 @@
     (.addKeyListener panel panel)
     (center-in-screen frame)
     (init-blocks)    
-    (set-game-speed (get-game-speed (get-level @lines)))
+    (dosync
+      (set-game-speed (get-game-speed (get-level @lines))))
     (loop []
       (.repaint panel)
       (Thread/sleep 7)

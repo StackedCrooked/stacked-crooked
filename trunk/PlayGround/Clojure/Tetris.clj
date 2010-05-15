@@ -181,7 +181,7 @@
 (def bag-index (ref 0))
 
 (def next-blocks (ref []))
-(def num-next-blocks 3)
+(def num-next-blocks 1)
 
 (defn init-blocks []
   (dosync    
@@ -420,8 +420,8 @@
 (defn draw-stats [g]
     (.setColor g (Color/LIGHT_GRAY))
     (.setFont g (.deriveFont (.getFont g) (int java.awt.Font/BOLD) (float 14)))
-    (.drawString g (str "Lines " @lines) 300 30)
-    (.drawString g (str "Level " (get-level @lines)) 300 50))
+    (.drawString g (str "Lines " @lines) 300 60)
+    (.drawString g (str "Level " (get-level @lines)) 300 80))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)

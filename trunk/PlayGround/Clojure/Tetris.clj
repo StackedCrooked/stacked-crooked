@@ -178,7 +178,9 @@
 (defn get-level [lines]
   (int (/ lines 10)))
 
-; drop-interval/level on the Gameboy for levels 0 to 20
+; speed of falling
+; number of milliseconds between falling one row
+; stolen from Gameboy
 (def level-speed-mapping [ 887 820 753 686
                            619 552 469 368
                            285 184 167 151
@@ -288,29 +290,20 @@
   (draw-block g b))
 
 (defn check-position-valid [field block]
-  (let [stop-condition (ref false)
-        grids          ((deref (block :type)) :grids)
+  (let [grids          ((deref (block :type)) :grids)
         grid-idx       (mod (deref (block :rotation)) (count grids))
         grid           (grids grid-idx)  ]
-      (loop [ x 0 ]
-        (when (and (not (deref stop-condition))
-                   (< x (grid :width)))
-          (loop [ y 0 ]
-            (when (and (not (deref stop-condition))
-                       (< y (grid :height)))
-              (let [ block-value (get-grid grid x y)
-                     field-x     (+ x (deref (block :x)))
-                     field-y     (+ y (deref (block :y))) ]
-                (if-not (zero? block-value)
-                  (if-not
-                    (and (>= field-x 0)
-                         (< field-x (field :width))
-                         (< field-y (field :height))
-                         (zero? (get-grid field field-x field-y)))
-                    (dosync (alter stop-condition (fn [_] true))))))
-              (recur (inc y))))
-          (recur (inc x))))
-  (not (deref stop-condition))))
+      (every? true? (for [x (range 0 (grid :width))
+                          y (range 0 (grid :height))
+                          :let [block-value (get-grid grid x y)
+                                field-x     (+ x @(block :x))
+                                field-y     (+ y @(block :y))]]
+                      (if (zero? block-value)
+                        true 
+                        (and (>= field-x 0)
+                             (< field-x (field :width))
+                             (< field-y (field :height))
+                             (zero? (get-grid field field-x field-y))))))))
 
 (defn rotate [field block]
   (dosync (alter (block :rotation) inc))

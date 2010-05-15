@@ -496,13 +496,14 @@
               (set-grid field (+ x block-x) (+ y block-y) value)))))))
 
 (defn move-down [f b]
-  (dosync (alter (b :y) inc))
-  (if-not (check-position-valid f b)
-    (do
-      (dosync (alter (b :y) dec))
-      (commit-block f b)
-      (clear-lines f)
-      (next-block))))
+  (dosync
+    (alter (b :y) inc)
+    (if-not (check-position-valid f b)
+      (do
+        (alter (b :y) dec)
+        (commit-block f b)
+        (clear-lines f)
+        (next-block)))))
 
 (defn drop-block [f b]
   (dosync

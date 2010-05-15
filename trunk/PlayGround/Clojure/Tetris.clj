@@ -174,7 +174,8 @@
   [i-block j-block l-block o-block s-block t-block z-block])
 
 (def bag-of-blocks
-  (ref [i-block j-block l-block o-block s-block t-block z-block]))
+  (ref [i-block j-block l-block o-block s-block t-block z-block
+        i-block j-block l-block o-block s-block t-block z-block]))
 
 (def bag-index (ref 0))
 
@@ -239,17 +240,28 @@
 
 (def lines (ref 0))
 
-(defn get-level [lines]
-  (int (/ lines 10)))
-
 ; speed of falling
 ; number of milliseconds between falling one row
-; stolen from Gameboy
-(def level-speed-mapping [ 887 820 753 686
-                           619 552 469 368
-                           285 184 167 151
-                           134 117 100 100
-                           84  84  67  67  50 ])
+; These are the same values as for the Gameboy:
+;   http://tetris.wikia.com/wiki/Tetris_(Game_Boy)
+(def level-speed-mapping [ 887 820 753 686 619
+                           552 469 368 285 184
+                           167 151 134 117 100
+                           100 84  84  67  67  50 ])
+
+(defn get-game-speed [level]
+  (if (< level (count level-speed-mapping))
+    (nth level-speed-mapping level)
+    (last level-speed-mapping)))
+
+; the number of lines that have to be scored in order to increment level
+(def level-up-treshold 1)
+
+; get-level returns level based on number of lines that have been scored.
+; maximum level is 20, which means an interval of 20 ms between drops 
+(defn get-level [lines]
+  (let [level   (int (/ lines level-up-treshold))]
+    level))
 
 (def timer (ref (new Timer)))
 (declare move-down)
@@ -469,8 +481,7 @@
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
               (vec (flatten (conj zeroes remaining-rows)))))))
         (dosync (alter lines (fn [lines] (+ lines num-lines-scored))))
-        (set-game-speed (level-speed-mapping (get-level @lines)))
-        ))))
+        (set-game-speed (get-game-speed (get-level @lines)))))))
 
 (defn commit-block [field block]
   (let [  block-type  @(block :type)
@@ -540,7 +551,7 @@
     (.addKeyListener panel panel)
     (center-in-screen frame)
     (init-blocks)    
-    (set-game-speed (level-speed-mapping (get-level @lines)))
+    (set-game-speed (get-game-speed (get-level @lines)))
     (loop []
       (.repaint panel)
       (Thread/sleep 10)
@@ -555,6 +566,6 @@
 ; - statistics
 ; - game over message
 ; - high-score (internet?)
-; - scoring
+; - scoring http://tetris.wikia.com/wiki/Scoring
 ; v drop block space bar
 ;(main)

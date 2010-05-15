@@ -17,9 +17,8 @@
   :num-columns 10
   :block-width 15
   :block-height 15
-  :screen-width 280
-  :screen-height 360
-  })
+  :screen-width 300
+  :screen-height 330 })
 
 
 ; Grid data structure
@@ -433,7 +432,7 @@
   (clear-screen panel g)
   (if (zero? (mod @frame-count 100))
     (calculate-fps))
-  (draw-fps g)
+  ;(draw-fps g)
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
   (draw-block g b)

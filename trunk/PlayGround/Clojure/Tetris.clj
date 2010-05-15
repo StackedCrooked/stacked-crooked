@@ -1,4 +1,4 @@
-(in-ns 'tetris)
+;(in-ns 'tetris)
 (clojure.core/use 'clojure.core)
 (import java.awt.Color)
 (import java.awt.Dimension)
@@ -156,12 +156,14 @@
            (create-grid-with-data 3 3 [ 0 0 7
                                         0 7 7
                                         0 7 0 ])]})
-  
+
 (def active-block {
     :type (ref l-block)
     :rotation (ref 0)
     :x (ref 0)
     :y (ref 0) })
+
+(def global-field (create-grid 10 20 0))
 
 (def block-types
   [i-block j-block l-block o-block s-block t-block z-block])
@@ -171,12 +173,40 @@
 
 (def bag-index (ref 0))
 
+(def next-blocks (ref []))
+(def num-next-blocks 2)
+
 (defn init-blocks []
-  (dosync (alter bag-of-blocks shuffle)))
+  (dosync    
+    (alter bag-of-blocks shuffle)
+    (alter next-blocks
+           (fn [_] (subvec (vec @bag-of-blocks) 1 (inc num-next-blocks))))
+    (alter bag-of-blocks
+           (fn [_] (drop (inc num-next-blocks) @bag-of-blocks)))
+))
+
+(defn next-block []
+  (dosync
+    (alter (active-block :type) (fn [_] (first @next-blocks)))
+    (alter next-blocks (fn [nb] (conj (vec (drop 1 nb)) (first @bag-of-blocks))))
+    (alter bag-of-blocks (fn [v] (vec (rest v))))
+    (if (empty? @bag-of-blocks)
+      (alter bag-of-blocks (fn [_] (shuffle block-types))))
+    (alter (active-block :rotation) (fn [_] 0))
+    (alter (active-block :x)
+      (fn [x]
+        (let [  block-type  (deref (active-block :type))
+                block-x     x
+                block-y     (deref (active-block :y))
+                grids       (block-type :grids)
+                grid-idx    (mod (deref (active-block :rotation)) (count grids))
+                block-grid  (grids grid-idx)]
+          (int (/ (- (global-field :width)
+                     (block-grid :width)) 2)))))
+    (alter (active-block :y) (fn [_] 0))))
+  
 
 
-
-(def global-field (create-grid 10 20 0))
 
 (def lines (ref 0))
 
@@ -216,7 +246,6 @@
         (dosync (alter bag-of-blocks shuffle))))
     (let [ result (nth bag (deref bag-index)) ]
       (dosync (alter bag-index inc))
-      (println "" (deref bag-index) "" (result :value))
       result)))
   
 (defn get-color [grid-value]
@@ -290,8 +319,19 @@
                  (prefs :block-height)
                  (str (get-grid field x y))))))
 
+(defn draw-debug-field [g field]
+  (dotimes [x (field :width)]
+    (dotimes [y (field :height)]
+      (draw-text g (+ 12 x)
+                 (+ (prefs :border-top) y)
+                 (prefs :block-width)
+                 (prefs :block-height)
+                 (str (get-grid field x y))))))
+
+
 (defn draw-all [g f b]
   (draw-field g f)
+  (draw-next-blocks g next-blocks)
   (draw-block g b))
 
 (defn check-position-valid [field block]
@@ -314,22 +354,6 @@
   (dosync (alter (block :rotation) inc))
   (if-not (check-position-valid field block)
     (dosync (alter (block :rotation) dec))))
-
-(defn next-block []
-  (dosync (alter (active-block :type) (fn [_] (random-block))))
-  (dosync (alter (active-block :rotation) (fn [_] 0)))
-  (dosync
-    (alter (active-block :x)
-      (fn [_]
-        (let [  block-type  (deref (active-block :type))
-                block-x     (deref (active-block :x))
-                block-y     (deref (active-block :y))
-                grids       (block-type :grids)
-                grid-idx    (mod (deref (active-block :rotation)) (count grids))
-                block-grid  (grids grid-idx)]
-          (int (/ (- (global-field :width)
-                     (block-grid :width)) 2))))))
-  (dosync (alter (active-block :y) (fn [_] 0))))
 
 (defn move-left [f b]
   (dosync (alter (b :x) dec))
@@ -421,12 +445,11 @@
       (.setVisible true))
     (.addKeyListener panel panel)
     (center-in-screen frame)
-    (init-blocks)
-    (next-block)
+    (init-blocks)    
     (set-game-speed (level-speed-mapping (get-level (deref lines))))
     (loop []
       (.repaint panel)      
       (Thread/sleep 10)
       (recur))))
 
-(main)
+;(main)

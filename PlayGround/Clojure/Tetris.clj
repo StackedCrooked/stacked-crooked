@@ -21,6 +21,12 @@
     :height h
     :data   (ref (vec (repeat (* w h) initial-value)))))
 
+(defn reset-grid [g initial-value]
+  (dosync
+    (alter (g :data)
+           (fn [_] (vec (repeat (* (g :width) (g :height))
+                                   initial-value))))))
+
 (defn create-grid-with-data [w h data]
   (struct-map grid
     :width w
@@ -177,7 +183,8 @@
 
 (defn init-blocks []
   (dosync    
-    (alter bag-of-blocks shuffle)
+    (reset-grid global-field 0)
+    (alter bag-of-blocks ( fn [_] (shuffle block-types)))
     (alter (active-block :type) (fn [_] (first @bag-of-blocks)))
     (alter (active-block :x)
           (fn [x]
@@ -190,10 +197,15 @@
               (int (/ (- (global-field :width)
                          (block-grid :width)) 2)))))
     (if-not (zero? num-next-blocks)
-      (alter next-blocks
-             (fn [_] (subvec (vec @bag-of-blocks) 1 (inc num-next-blocks)))))
+      (do
+        (println "@bag-of-blocks" (count @bag-of-blocks))
+        (alter next-blocks
+          (fn [_] (subvec (vec @bag-of-blocks) 1 (inc num-next-blocks))))))
     (alter bag-of-blocks
            (fn [_] (drop (inc num-next-blocks) @bag-of-blocks)))))
+
+(declare check-position-valid)
+(declare game-over)
 
 (defn next-block []
   (dosync    
@@ -218,7 +230,9 @@
                 block-grid  (grids grid-idx)]
           (int (/ (- (global-field :width)
                      (block-grid :width)) 2)))))
-    (alter (active-block :y) (fn [_] 0))))
+    (alter (active-block :y) (fn [_] 0)))
+  (if-not (check-position-valid global-field active-block)
+    (game-over)))
   
 
 
@@ -370,7 +384,7 @@
               (draw-rectangle  g x y
                               (prefs :block-width)
                               (prefs :block-height)
-                              (get-color value)))))))))
+                              (Color/LIGHT_GRAY)))))))))
 
 (def num-repaints
   (ref 0))
@@ -385,7 +399,7 @@
   (ref 0))
   
 (defn calculate-fps []
-  (let [current-time    (current-time-ms)
+  (let [current-time      (current-time-ms)
         running-time-ms   (- (current-time-ms) startup-time)
         running-time-s    (/ running-time-ms 1000) ]
     (dosync (alter fps (fn [_] (int (round (/ @num-repaints running-time-s))))))))
@@ -402,7 +416,7 @@
   (draw-fps g)
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
-  ;(debug-draw-bag-of-blocks g @bag-of-blocks)
+  (debug-draw-bag-of-blocks g @bag-of-blocks)
   (draw-block g b))
 
 (defn check-position-valid [field block]
@@ -524,4 +538,15 @@
       (Thread/sleep 10)
       (recur))))
 
+      
+; For now just start a new game
+(defn game-over []
+  (init-blocks))
+
+
+; TODO
+; ----
+; - game over
+; - scoring
+; - statistics
 ;(main)

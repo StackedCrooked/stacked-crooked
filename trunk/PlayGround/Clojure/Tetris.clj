@@ -319,19 +319,27 @@
                  (prefs :block-height)
                  (str (get-grid field x y))))))
 
-(defn draw-debug-field [g field]
-  (dotimes [x (field :width)]
-    (dotimes [y (field :height)]
-      (draw-text g (+ 12 x)
-                 (+ (prefs :border-top) y)
-                 (prefs :block-width)
-                 (prefs :block-height)
-                 (str (get-grid field x y))))))
+(defn draw-next-blocks [g blocks]
+  (dotimes [ n (count blocks) ]
+    (let [ block      (nth blocks n)
+           grids      (block :grids)
+           grid-idx   0
+           grid       (nth grids grid-idx) ]
+      (dotimes [ i (grid :width) ]
+        (dotimes [ j (grid :height) ]
+          (let [ x      (+ i (+ (prefs :border-left) (prefs :num-columns) 1))
+                 y      (+ j (* n 5) (prefs :border-top))
+                 value  (get-grid grid i j) ]
+            (if-not (zero? value)
+              (draw-rectangle  g x y
+                              (prefs :block-width)
+                              (prefs :block-height)
+                              (get-color value)))))))))
 
 
 (defn draw-all [g f b]
   (draw-field g f)
-  (draw-next-blocks g next-blocks)
+  (draw-next-blocks g @next-blocks)
   (draw-block g b))
 
 (defn check-position-valid [field block]
@@ -448,7 +456,7 @@
     (init-blocks)    
     (set-game-speed (level-speed-mapping (get-level (deref lines))))
     (loop []
-      (.repaint panel)      
+      (.repaint panel)
       (Thread/sleep 10)
       (recur))))
 

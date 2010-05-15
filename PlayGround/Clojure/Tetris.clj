@@ -11,17 +11,15 @@
 (use 'clojure.contrib.math)
 
 (def prefs {
-  :grid-x 10
-  :grid-y 10
+  :field-x 1
+  :field-y 1
   :num-rows 20
   :num-columns 10
   :block-width 15
   :block-height 15
-  :screen-width 500
-  :screen-height 400
-  :border-left 1
-  :border-left-debug 12
-  :border-top 2 })
+  :screen-width 280
+  :screen-height 360
+  })
 
 
 ; Grid data structure
@@ -316,8 +314,8 @@
 (defn paint-grid-cell [graphics i j value]
   (let [w   (prefs :block-width)
         h   (prefs :block-height)          
-        x   (+ (prefs :grid-x) (* i w))
-        y   (+ (prefs :grid-y) (* j h)) ]
+        x   (+ (prefs :field-x) (* i w))
+        y   (+ (prefs :field-y) (* j h)) ]
     (doto graphics
       (.setColor (get-color value))
       (.fillRect x y w h))))
@@ -337,8 +335,8 @@
       (dotimes [j (active-grid :height)]
         (let [cell-value (get-grid active-grid i j)]
           (if-not (zero? cell-value)
-            (let [x  (+ (prefs :border-left) (+ bx i))
-                  y  (+ (prefs :border-top) (+ by j))]
+            (let [x  (+ (prefs :field-x) (+ bx i))
+                  y  (+ (prefs :field-y) (+ by j))]
               (paint-grid-cell g x y cell-value))))))))
 
 (defn clear-screen [panel g]
@@ -349,15 +347,15 @@
 (defn draw-field [g field]
   (dotimes [x (field :width)]
     (dotimes [y (field :height)]
-      (paint-grid-cell g (+ (prefs :border-left) x)
-                         (+ (prefs :border-top) y)
+      (paint-grid-cell g (+ (prefs :field-x) x)
+                         (+ (prefs :field-y) y)
                          (get-grid field x y)))))
 
 (defn draw-debug-field [g field]
   (dotimes [x (field :width)]
     (dotimes [y (field :height)]
       (draw-text g (+ 12 x)
-                 (+ (prefs :border-top) y)
+                 (+ (prefs :field-y) y)
                  (prefs :block-width)
                  (prefs :block-height)
                  (str (get-grid field x y))))))
@@ -370,8 +368,8 @@
            grid       (nth grids grid-idx) ]
       (dotimes [ i (grid :width) ]
         (dotimes [ j (grid :height) ]
-          (let [ x      (+ i (+ (prefs :border-left) (prefs :num-columns) 1))
-                 y      (+ j (* n 5) (prefs :border-top))
+          (let [ x      (+ i (+ (prefs :field-x) (prefs :num-columns) 1))
+                 y      (+ 1 j (* n 5) (prefs :field-y))
                  value  (get-grid grid i j) ]
             (if-not (zero? value)
               (paint-grid-cell g x y value))))))))
@@ -384,8 +382,8 @@
            grid       (nth grids grid-idx) ]
       (dotimes [ i (grid :width) ]
         (dotimes [ j (grid :height) ]
-          (let [ x      (+ i (+ (prefs :border-left) (prefs :num-columns) 5))
-                 y      (+ j (* n 5) (prefs :border-top))
+          (let [ x      (+ i (+ (prefs :field-x) (prefs :num-columns) 5))
+                 y      (+ j (* n 5) (prefs :field-y))
                  value  (get-grid grid i j) ]
             (if-not (zero? value)
               (paint-grid-cell g x y 0))))))))
@@ -405,23 +403,31 @@
 (defn calculate-fps []
   (let [current-time        (current-time-ms)
         time-interval-ms    (- (current-time-ms) @start-time)
-        time-interval-s     (/ time-interval-ms 1000) ]
+        time-interval-s     (/ time-interval-ms 1000)
+        time-interval       (if-not (zero? time-interval-s)
+                              time-interval-s
+                              1)]
     (dosync
-      (alter fps (fn [_] (int (round (/ @frame-count time-interval-s)))))
+      (alter fps (fn [_] (int (round (/ @frame-count time-interval)))))
       (alter frame-count (fn [_] 0))
       (alter start-time ( fn [_] (current-time-ms))))))
 
 (defn draw-fps [g]
   (doto g
     (.setColor (Color/ORANGE))
-    (.drawString (str "fps " @fps) 20 20)))
+    (.drawString (str "fps " @fps) 15 (* 22 15))))
     
+
+(def score (ref 0))
     
 (defn draw-stats [g]
+  (let [x (* 15 12)
+        y (* 15 8)]
     (.setColor g (Color/LIGHT_GRAY))
     (.setFont g (.deriveFont (.getFont g) (int java.awt.Font/BOLD) (float 14)))
-    (.drawString g (str "Lines " @lines) 300 60)
-    (.drawString g (str "Level " (get-level @lines)) 300 80))
+    (.drawString g (str "Lines " @lines) x y)
+    (.drawString g (str "Level " (get-level @lines)) x (+ y 20))
+    (.drawString g (str "Score " @score) x (+ y 40))))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
@@ -467,13 +473,23 @@
     (if-not (check-position-valid f b)
       (alter (b :x) dec))))
 
+(defn update-score [num-lines-scored]
+  (let [level   (get-level @lines)
+        points  (if (== num-lines-scored 1) (* 40 (inc num-lines-scored))
+                (if (== num-lines-scored 2) (* 100 (inc num-lines-scored))
+                (if (== num-lines-scored 3) (* 300 (inc num-lines-scored))
+                (if (== num-lines-scored 4) (* 1200 (inc num-lines-scored))
+                (println "ERROR: num-lines-scored is: " num-lines-scored))))) ]
+    (alter score (fn [old-score] (+ old-score points)))))
+      
+      
 (defn contains [collection value]
   (> (count (filter (fn [el] (== value el)) collection)) 0))
 
 (defn flatten [x]
   (let [s? #(instance? clojure.lang.Sequential %)]
     (filter (complement s?) (tree-seq s? seq x))))
-
+    
 (defn clear-lines [field]
   (let [  rows              (get-grid-rows field)
           remaining-rows    (filter (fn [row] (contains row 0)) rows)
@@ -485,7 +501,8 @@
           (fn [_]
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
               (vec (flatten (conj zeroes remaining-rows))))))
-        (alter lines (fn [lines] (+ lines num-lines-scored))))
+        (alter lines (fn [lines] (+ lines num-lines-scored)))
+        (update-score num-lines-scored))
       (set-game-speed (get-game-speed (get-level @lines))))))
 
 (defn commit-block [field block]
@@ -569,9 +586,11 @@
 
 ; TODO
 ; ----
-; - statistics
+; v lines
+; v level
+; - show score http://tetris.wikia.com/wiki/Scoring
 ; - game over message
 ; - high-score (internet?)
-; - scoring http://tetris.wikia.com/wiki/Scoring
+; - scoring 
 ; v drop block space bar
 (main)

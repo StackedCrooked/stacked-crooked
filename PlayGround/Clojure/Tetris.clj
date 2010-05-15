@@ -171,6 +171,11 @@
 
 (def bag-index (ref 0))
 
+(defn init-blocks []
+  (dosync (alter bag-of-blocks shuffle)))
+
+
+
 (def global-field (create-grid 10 20 0))
 
 (def lines (ref 0))
@@ -416,7 +421,7 @@
       (.setVisible true))
     (.addKeyListener panel panel)
     (center-in-screen frame)
-    (dosync (alter bag-of-blocks shuffle))    
+    (init-blocks)
     (next-block)
     (set-game-speed (level-speed-mapping (get-level (deref lines))))
     (loop []

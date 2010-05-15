@@ -72,7 +72,6 @@
   :border-left-debug 12
   :border-top 2 })
 
-
 (def i-block {
   :value 1
   :grids [  (create-grid-with-data 2 4 [ 0 1
@@ -240,6 +239,7 @@
 
 (def timer (ref (new Timer)))
 (declare move-down)
+
 (defn set-game-speed [interval]
   (let [task (proxy [TimerTask] []
                (run []
@@ -250,8 +250,6 @@
     (println "Set gamespeed to" interval)
     (println "Lines" (deref lines))
     (println "Level" (get-level (deref lines)))))
-
-
 
 (defn random-block []
   (let [ bag       (deref bag-of-blocks)
@@ -374,9 +372,34 @@
                               (prefs :block-height)
                               (get-color value)))))))))
 
+(def num-repaints
+  (ref 0))
+
+(defn current-time-ms []
+  (.getTime (java.util.Date.)))
+
+(def startup-time
+  (current-time-ms))
+
+(def fps
+  (ref 0))
+  
+(defn calculate-fps []
+  (let [current-time    (current-time-ms)
+        running-time-ms   (- (current-time-ms) startup-time)
+        running-time-s    (/ running-time-ms 1000) ]
+    (dosync (alter fps (fn [_] (int (round (/ @num-repaints running-time-s))))))))
+
+(defn draw-fps [g]
+  (doto g
+    (.setColor (Color/ORANGE))
+    (.drawString (str "fps " @fps) 20 20)))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
+  (if (zero? (mod @num-repaints 100))
+    (calculate-fps))
+  (draw-fps g)
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
   ;(debug-draw-bag-of-blocks g @bag-of-blocks)
@@ -464,7 +487,8 @@
     (proxy [JPanel KeyListener] []
       (paintComponent [g]
         (proxy-super paintComponent g)
-        (draw-all this g global-field active-block))
+        (draw-all this g global-field active-block)
+        (dosync (alter num-repaints inc)))
       (getPreferredSize [] (Dimension. (prefs :screen-width)
                                        (prefs :screen-height)))
       (keyPressed [e]

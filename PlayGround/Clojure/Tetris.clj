@@ -174,7 +174,7 @@
 (def bag-index (ref 0))
 
 (def next-blocks (ref []))
-(def num-next-blocks 2)
+(def num-next-blocks 1)
 
 (defn init-blocks []
   (dosync    
@@ -186,7 +186,7 @@
 ))
 
 (defn next-block []
-  (dosync
+  (dosync    
     (alter (active-block :type) (fn [_] (first @next-blocks)))
     (alter next-blocks (fn [nb] (conj (vec (drop 1 nb)) (first @bag-of-blocks))))
     (alter bag-of-blocks (fn [v] (vec (rest v))))
@@ -336,10 +336,28 @@
                               (prefs :block-height)
                               (get-color value)))))))))
 
+(defn debug-draw-bag-of-blocks [g blocks]
+  (dotimes [ n (count blocks) ]
+    (let [ block      (nth blocks n)
+           grids      (block :grids)
+           grid-idx   0
+           grid       (nth grids grid-idx) ]
+      (dotimes [ i (grid :width) ]
+        (dotimes [ j (grid :height) ]
+          (let [ x      (+ i (+ (prefs :border-left) (prefs :num-columns) 5))
+                 y      (+ j (* n 5) (prefs :border-top))
+                 value  (get-grid grid i j) ]
+            (if-not (zero? value)
+              (draw-rectangle  g x y
+                              (prefs :block-width)
+                              (prefs :block-height)
+                              (get-color value)))))))))
+
 
 (defn draw-all [g f b]
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
+  ;(debug-draw-bag-of-blocks g @bag-of-blocks)
   (draw-block g b))
 
 (defn check-position-valid [field block]

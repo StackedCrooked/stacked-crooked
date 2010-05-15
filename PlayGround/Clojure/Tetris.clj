@@ -174,21 +174,26 @@
 (def bag-index (ref 0))
 
 (def next-blocks (ref []))
-(def num-next-blocks 1)
+(def num-next-blocks 0)
 
 (defn init-blocks []
   (dosync    
     (alter bag-of-blocks shuffle)
-    (alter next-blocks
-           (fn [_] (subvec (vec @bag-of-blocks) 1 (inc num-next-blocks))))
+    (if-not (zero? num-next-blocks)
+      (alter next-blocks
+             (fn [_] (subvec (vec @bag-of-blocks) 1 (inc num-next-blocks)))))
     (alter bag-of-blocks
-           (fn [_] (drop (inc num-next-blocks) @bag-of-blocks)))
-))
+           (fn [_] (drop (inc num-next-blocks) @bag-of-blocks)))))
 
 (defn next-block []
   (dosync    
-    (alter (active-block :type) (fn [_] (first @next-blocks)))
-    (alter next-blocks (fn [nb] (conj (vec (drop 1 nb)) (first @bag-of-blocks))))
+    (alter  (active-block :type)
+            (fn [_]
+              (if-not (zero? num-next-blocks)
+                (first @next-blocks)
+                (first @bag-of-blocks))))
+    (if-not (zero? num-next-blocks)
+      (alter next-blocks (fn [nb] (conj (vec (drop 1 nb)) (first @bag-of-blocks)))))
     (alter bag-of-blocks (fn [v] (vec (rest v))))
     (if (empty? @bag-of-blocks)
       (alter bag-of-blocks (fn [_] (shuffle block-types))))
@@ -357,7 +362,7 @@
 (defn draw-all [g f b]
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
-  ;(debug-draw-bag-of-blocks g @bag-of-blocks)
+  (debug-draw-bag-of-blocks g @bag-of-blocks)
   (draw-block g b))
 
 (defn check-position-valid [field block]

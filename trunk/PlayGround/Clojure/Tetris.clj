@@ -496,6 +496,17 @@
         (clear-lines f)
         (next-block)))))
 
+(defn drop-block [f b]
+  (dosync
+    (loop []
+      (when (check-position-valid f b)
+        (alter (b :y) inc)
+        (recur)))
+    (alter (b :y) dec)
+    (commit-block f b)
+    (clear-lines f)
+    (next-block)))
+
 (defn create-panel []
   (doto
     (proxy [JPanel KeyListener] []
@@ -511,7 +522,7 @@
           (if (== 38 keyCode) (rotate global-field active-block)
           (if (== 39 keyCode) (move-right global-field active-block)
           (if (== 40 keyCode) (move-down global-field active-block)
-          (if (== 32 keyCode) (next-block)
+          (if (== 32 keyCode) (drop-block global-field active-block)
                               (println keyCode))))))))
       (keyReleased [e])
       (keyTyped [e]))
@@ -546,7 +557,9 @@
 
 ; TODO
 ; ----
-; - game over
+; - drop block space bar
+; - game over message
+; - high-score (internet?)
 ; - scoring
 ; - statistics
 ;(main)

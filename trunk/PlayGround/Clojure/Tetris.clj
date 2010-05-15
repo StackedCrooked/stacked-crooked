@@ -187,7 +187,7 @@
 
 (def timer (ref (new Timer)))
 (declare move-down)
-(defn setGameSpeed [interval]
+(defn set-game-speed [interval]
   (let [task (proxy [TimerTask] []
                (run []
                 (move-down global-field active-block)))]
@@ -318,9 +318,9 @@
     (dosync (alter (block :rotation) dec))))
 
 (defn next-block []
+  (dosync (alter (active-block :type) (fn [_] (random-block))))
+  (dosync (alter (active-block :rotation) (fn [_] 0)))
   (dosync
-    (alter (active-block :type) (fn [_] (random-block)))
-    (alter (active-block :rotation) (fn [_] 0))
     (alter (active-block :x)
       (fn [_]
         (let [  block-type  (deref (active-block :type))
@@ -330,8 +330,8 @@
                 grid-idx    (mod (deref (active-block :rotation)) (count grids))
                 block-grid  (grids grid-idx)]
           (int (/ (- (global-field :width)
-                     (block-grid :width)) 2)))))
-    (alter (active-block :y) (fn [_] 0))))
+                     (block-grid :width)) 2))))))
+  (dosync (alter (active-block :y) (fn [_] 0))))
 
 (defn move-left [f b]
   (dosync (alter (b :x) dec))
@@ -363,7 +363,8 @@
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
               (vec (flatten (conj zeroes remaining-rows)))))))
         (dosync (alter lines (fn [lines] (+ lines num-lines-scored))))
-        (setGameSpeed (level-speed-mapping (get-level (deref lines))))))))
+        (set-game-speed (level-speed-mapping (get-level (deref lines))))
+        ))))
 
 (defn commit-block [field block]
   (let [  block-type  (deref (block :type))
@@ -379,13 +380,14 @@
               (set-grid field (+ x block-x) (+ y block-y) value)))))))
 
 (defn move-down [f b]
-  (dosync (alter (b :y) inc))
-  (if-not (check-position-valid f b)
-    (do
-      (dosync (alter (b :y) dec))
-      (commit-block f b)
-      (clear-lines f)
-      (next-block))))
+  (dosync
+    (dosync (alter (b :y) inc))
+    (if-not (check-position-valid f b)
+      (do
+        (dosync (alter (b :y) dec))
+        (commit-block f b)
+        (clear-lines f)
+        (next-block)))))
 
 (defn create-panel []
   (doto
@@ -423,7 +425,7 @@
     (center-in-screen frame)
     (dosync (alter bag-of-blocks shuffle))    
     (next-block)
-    (setGameSpeed (level-speed-mapping (get-level (deref lines))))
+    (set-game-speed (level-speed-mapping (get-level (deref lines))))
     (loop []
       (.repaint panel)      
       (Thread/sleep 10)

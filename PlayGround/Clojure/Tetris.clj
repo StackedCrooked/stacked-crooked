@@ -35,10 +35,9 @@
     :data   (ref (vec (repeat (* w h) initial-value)))))
 
 (defn reset-grid [g initial-value]
-  (dosync
-    (alter (g :data)
+  (alter (g :data)
            (fn [_] (vec (repeat (* (g :width) (g :height))
-                                   initial-value))))))
+                                   initial-value)))))
 
 (defn create-grid-with-data [w h data]
   (struct-map grid
@@ -54,7 +53,7 @@
 (defn set-grid [g x y value]
   (let [data  @(g :data)
         idx   (+ x (* (g :width) y)) ]
-    (dosync (alter (g :data) (fn [_] (assoc data idx value))))))
+    (alter (g :data) (fn [_] (assoc data idx value)))))
 
 (defn get-grid-rows [g]
   (partition (g :width) @(g :data)))
@@ -473,13 +472,12 @@
           num-lines-scored  (- (count rows) (count remaining-rows))
           ]
     (if-not (zero? num-lines-scored)
-      (do
-        (dosync (alter
-          (field :data)
+      (dosync
+        (alter (field :data)
           (fn [_]
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
-              (vec (flatten (conj zeroes remaining-rows)))))))
-        (dosync (alter lines (fn [lines] (+ lines num-lines-scored))))
+              (vec (flatten (conj zeroes remaining-rows))))))
+        (alter lines (fn [lines] (+ lines num-lines-scored)))
         (set-game-speed (get-game-speed (get-level @lines)))))))
 
 (defn commit-block [field block]

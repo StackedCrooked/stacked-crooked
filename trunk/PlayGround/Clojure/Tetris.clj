@@ -1,4 +1,4 @@
-;(in-ns 'tetris)
+(in-ns 'tetris)
 (clojure.core/use 'clojure.core)
 (import java.awt.Color)
 (import java.awt.Dimension)
@@ -127,7 +127,8 @@
 
 (def o-block {
   :value 4
-  :grids [ (create-grid-with-data 2 2 [ 4 4 4 4 ])]})
+  :grids [ (create-grid-with-data 2 2 [ 4 4
+                                        4 4 ])]})
 
 (def s-block {
   :value 5
@@ -326,7 +327,7 @@
     (.drawString text (* w x) (* h y))))
 
 (defn draw-block [g block]
-  (let [  bx 	       @(block :x)
+  (let [  bx 	        @(block :x)
           by          @(block :y)
           rotation    @(block :rotation)
           grids       (@(block :type) :grids)
@@ -336,8 +337,8 @@
       (dotimes [j (active-grid :height)]
         (let [cell-value (get-grid active-grid i j)]
           (if-not (zero? cell-value)
-            (let [x       (+ (prefs :border-left) (+ bx i))
-                  y       (+ (prefs :border-top) (+ by j)) ]
+            (let [x  (+ (prefs :border-left) (+ bx i))
+                  y  (+ (prefs :border-top) (+ by j))]
               (paint-grid-cell g x y cell-value))))))))
 
 (defn clear-screen [panel g]
@@ -414,6 +415,13 @@
   (doto g
     (.setColor (Color/ORANGE))
     (.drawString (str "fps " @fps) 20 20)))
+    
+    
+(defn draw-stats [g]
+    (.setColor g (Color/LIGHT_GRAY))
+    (.setFont g (.deriveFont (.getFont g) (int java.awt.Font/BOLD) (float 14)))
+    (.drawString g (str "Lines " @lines) 300 30)
+    (.drawString g (str "Level " (get-level @lines)) 300 50))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
@@ -422,7 +430,8 @@
   (draw-fps g)
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
-  (draw-block g b))
+  (draw-block g b)
+  (draw-stats g))
 
 (defn check-position-valid [field block]
   (let [grids          (@(block :type) :grids)
@@ -565,4 +574,4 @@
 ; - high-score (internet?)
 ; - scoring http://tetris.wikia.com/wiki/Scoring
 ; v drop block space bar
-;(main)
+(main)

@@ -34,17 +34,17 @@
     :data (ref data)))
     
 (defn get-grid [g x y]
-  (let [data  (deref (g :data))
+  (let [data  @(g :data)
         idx   (+ x (* (g :width) y)) ]
     (nth data idx)))
     
 (defn set-grid [g x y value]
-  (let [data  (deref (g :data))
+  (let [data  @(g :data)
         idx   (+ x (* (g :width) y)) ]
     (dosync (alter (g :data) (fn [_] (assoc data idx value))))))
 
 (defn get-grid-rows [g]
-  (partition (g :width) (deref (g :data))))
+  (partition (g :width) @(g :data)))
 
 
 ; Shuffle utility function
@@ -188,11 +188,11 @@
     (alter (active-block :type) (fn [_] (first @bag-of-blocks)))
     (alter (active-block :x)
           (fn [x]
-            (let [  block-type  (deref (active-block :type))
+            (let [  block-type  @(active-block :type)
                     block-x     x
-                    block-y     (deref (active-block :y))
+                    block-y     @(active-block :y)
                     grids       (block-type :grids)
-                    grid-idx    (mod (deref (active-block :rotation)) (count grids))
+                    grid-idx    (mod @(active-block :rotation) (count grids))
                     block-grid  (grids grid-idx)]
               (int (/ (- (global-field :width)
                          (block-grid :width)) 2)))))
@@ -222,11 +222,11 @@
     (alter (active-block :rotation) (fn [_] 0))
     (alter (active-block :x)
       (fn [x]
-        (let [  block-type  (deref (active-block :type))
+        (let [  block-type  @(active-block :type)
                 block-x     x
-                block-y     (deref (active-block :y))
+                block-y     @(active-block :y)
                 grids       (block-type :grids)
-                grid-idx    (mod (deref (active-block :rotation)) (count grids))
+                grid-idx    (mod @(active-block :rotation) (count grids))
                 block-grid  (grids grid-idx)]
           (int (/ (- (global-field :width)
                      (block-grid :width)) 2)))))
@@ -258,21 +258,21 @@
   (let [task (proxy [TimerTask] []
                (run []
                 (move-down global-field active-block)))]
-    (.cancel (deref timer))
+    (.cancel @timer)
     (dosync (alter timer (fn [_] (new Timer))))
-    (.scheduleAtFixedRate (deref timer) task (long interval) (long interval))
+    (.scheduleAtFixedRate @timer task (long interval) (long interval))
     (println "Set gamespeed to" interval)
-    (println "Lines" (deref lines))
-    (println "Level" (get-level (deref lines)))))
+    (println "Lines" @lines)
+    (println "Level" (get-level @lines))))
 
 (defn random-block []
-  (let [ bag       (deref bag-of-blocks)
+  (let [ bag       @bag-of-blocks
          bag-size  (count bag) ]
-    (if (== (deref bag-index) bag-size)
+    (if (== @bag-index bag-size)
       (do     
         (dosync (alter bag-index (fn [n] 0)))
         (dosync (alter bag-of-blocks shuffle))))
-    (let [ result (nth bag (deref bag-index)) ]
+    (let [ result (nth bag @bag-index) ]
       (dosync (alter bag-index inc))
       result)))
   
@@ -310,10 +310,10 @@
     (.drawString text (* w x) (* h y))))
 
 (defn draw-block [g block]
-  (let [  x  	        (deref (block :x))
-          y           (deref (block :y))
-          rotation    (deref (block :rotation))
-          grids       ((deref (block :type)) :grids)
+  (let [  x  	      @(block :x)
+          y           @(block :y)
+          rotation    @(block :rotation)
+          grids       (@(block :type) :grids)
           grid-idx    (mod rotation (count grids))
           active-grid (grids grid-idx)]
   (dotimes [i (active-grid :width)]
@@ -420,8 +420,8 @@
   (draw-block g b))
 
 (defn check-position-valid [field block]
-  (let [grids          ((deref (block :type)) :grids)
-        grid-idx       (mod (deref (block :rotation)) (count grids))
+  (let [grids          (@(block :type) :grids)
+        grid-idx       (mod @(block :rotation) (count grids))
         grid           (grids grid-idx)  ]
       (every? true? (for [x (range 0 (grid :width))
                           y (range 0 (grid :height))
@@ -470,15 +470,15 @@
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
               (vec (flatten (conj zeroes remaining-rows)))))))
         (dosync (alter lines (fn [lines] (+ lines num-lines-scored))))
-        (set-game-speed (level-speed-mapping (get-level (deref lines))))
+        (set-game-speed (level-speed-mapping (get-level @lines)))
         ))))
 
 (defn commit-block [field block]
-  (let [  block-type  (deref (block :type))
-          block-x     (deref (block :x))
-          block-y     (deref (block :y))
+  (let [  block-type  @(block :type)
+          block-x     @(block :x)
+          block-y     @(block :y)
           grids       (block-type :grids)
-          grid-idx    (mod (deref (block :rotation)) (count grids))
+          grid-idx    (mod @(block :rotation) (count grids))
           block-grid  (grids grid-idx)]
     (dotimes [x (block-grid :width)]
       (dotimes [y (block-grid :height)]
@@ -541,7 +541,7 @@
     (.addKeyListener panel panel)
     (center-in-screen frame)
     (init-blocks)    
-    (set-game-speed (level-speed-mapping (get-level (deref lines))))
+    (set-game-speed (level-speed-mapping (get-level @lines)))
     (loop []
       (.repaint panel)
       (Thread/sleep 10)

@@ -443,19 +443,22 @@
                              (zero? (get-grid field field-x field-y))))))))
 
 (defn rotate [field block]
-  (dosync (alter (block :rotation) inc))
-  (if-not (check-position-valid field block)
-    (dosync (alter (block :rotation) dec))))
+  (dosync
+    (alter (block :rotation) inc)
+    (if-not (check-position-valid field block)
+      (alter (block :rotation) dec))))
 
 (defn move-left [f b]
-  (dosync (alter (b :x) dec))
-  (if-not (check-position-valid f b)
-    (dosync (alter (b :x) inc))))
+  (dosync
+    (alter (b :x) dec)
+    (if-not (check-position-valid f b)
+    (alter (b :x) inc))))
 
 (defn move-right [f b]
-  (dosync (alter (b :x) inc))
-  (if-not (check-position-valid f b)
-    (dosync (alter (b :x) dec))))
+  (dosync
+    (alter (b :x) inc)
+    (if-not (check-position-valid f b)
+      (alter (b :x) dec))))
 
 (defn contains [collection value]
   (> (count (filter (fn [el] (== value el)) collection)) 0))

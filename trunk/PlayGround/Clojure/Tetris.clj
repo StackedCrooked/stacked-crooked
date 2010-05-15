@@ -87,7 +87,8 @@
                                          0 1
                                          0 1])
 
-            (create-grid-with-data 4 1 [ 1 1 1 1 ])]})
+            (create-grid-with-data 4 2 [ 0 0 0 0
+                                         1 1 1 1])]})
 
 (def j-block {
   :value 2

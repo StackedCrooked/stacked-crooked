@@ -174,11 +174,22 @@
 (def bag-index (ref 0))
 
 (def next-blocks (ref []))
-(def num-next-blocks 0)
+(def num-next-blocks 3)
 
 (defn init-blocks []
   (dosync    
     (alter bag-of-blocks shuffle)
+    (alter (active-block :type) (fn [_] (first @bag-of-blocks)))
+    (alter (active-block :x)
+          (fn [x]
+            (let [  block-type  (deref (active-block :type))
+                    block-x     x
+                    block-y     (deref (active-block :y))
+                    grids       (block-type :grids)
+                    grid-idx    (mod (deref (active-block :rotation)) (count grids))
+                    block-grid  (grids grid-idx)]
+              (int (/ (- (global-field :width)
+                         (block-grid :width)) 2)))))
     (if-not (zero? num-next-blocks)
       (alter next-blocks
              (fn [_] (subvec (vec @bag-of-blocks) 1 (inc num-next-blocks)))))
@@ -235,7 +246,7 @@
                 (move-down global-field active-block)))]
     (.cancel (deref timer))
     (dosync (alter timer (fn [_] (new Timer))))
-    (.scheduleAtFixedRate (deref timer) task (long 0) (long interval))
+    (.scheduleAtFixedRate (deref timer) task (long interval) (long interval))
     (println "Set gamespeed to" interval)
     (println "Lines" (deref lines))
     (println "Level" (get-level (deref lines)))))
@@ -362,7 +373,7 @@
 (defn draw-all [g f b]
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
-  (debug-draw-bag-of-blocks g @bag-of-blocks)
+  ;(debug-draw-bag-of-blocks g @bag-of-blocks)
   (draw-block g b))
 
 (defn check-position-valid [field block]

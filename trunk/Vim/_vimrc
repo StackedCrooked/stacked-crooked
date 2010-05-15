@@ -14,5 +14,10 @@ set smartindent
 set softtabstop=4 
 set tabstop=4 
 syntax enable
+if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
-:autocmd FileType make set noexpandtab
+elseif has("win32")
+set gfn=Courier_New:h10:cANSI
+endif
+autocmd FileType make set noexpandtab
+

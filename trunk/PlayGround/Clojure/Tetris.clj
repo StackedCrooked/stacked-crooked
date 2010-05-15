@@ -209,29 +209,28 @@
 (declare game-over)
 
 (defn next-block []
-  (dosync    
-    (alter  (active-block :type)
-            (fn [_]
-              (if-not (zero? num-next-blocks)
-                (first @next-blocks)
-                (first @bag-of-blocks))))
-    (if-not (zero? num-next-blocks)
-      (alter next-blocks (fn [nb] (conj (vec (drop 1 nb)) (first @bag-of-blocks)))))
-    (alter bag-of-blocks (fn [v] (vec (rest v))))
-    (if (empty? @bag-of-blocks)
-      (alter bag-of-blocks (fn [_] (shuffle block-types))))
-    (alter (active-block :rotation) (fn [_] 0))
-    (alter (active-block :x)
-      (fn [x]
-        (let [  block-type  @(active-block :type)
-                block-x     x
-                block-y     @(active-block :y)
-                grids       (block-type :grids)
-                grid-idx    (mod @(active-block :rotation) (count grids))
-                block-grid  (grids grid-idx)]
-          (int (/ (- (global-field :width)
-                     (block-grid :width)) 2)))))
-    (alter (active-block :y) (fn [_] 0)))
+  (alter  (active-block :type)
+          (fn [_]
+            (if-not (zero? num-next-blocks)
+              (first @next-blocks)
+              (first @bag-of-blocks))))
+  (if-not (zero? num-next-blocks)
+    (alter next-blocks (fn [nb] (conj (vec (drop 1 nb)) (first @bag-of-blocks)))))
+  (alter bag-of-blocks (fn [v] (vec (rest v))))
+  (if (empty? @bag-of-blocks)
+    (alter bag-of-blocks (fn [_] (shuffle block-types))))
+  (alter (active-block :rotation) (fn [_] 0))
+  (alter (active-block :x)
+    (fn [x]
+      (let [  block-type  @(active-block :type)
+              block-x     x
+              block-y     @(active-block :y)
+              grids       (block-type :grids)
+              grid-idx    (mod @(active-block :rotation) (count grids))
+              block-grid  (grids grid-idx)]
+        (int (/ (- (global-field :width)
+                   (block-grid :width)) 2)))))
+  (alter (active-block :y) (fn [_] 0))
   (if-not (check-position-valid global-field active-block)
     (game-over)))
   

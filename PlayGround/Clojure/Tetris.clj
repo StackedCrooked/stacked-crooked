@@ -77,7 +77,6 @@
    Space is at least O(2N). Each item in coll is assigned
    a random number which becomes the sort key." 
   [coll]
-  (println "shuffle")
   (sort-by-mem-keys (fn [_] (rand)) coll))
 
 (def i-block {
@@ -202,7 +201,6 @@
                          (block-grid :width)) 2)))))
     (if-not (zero? num-next-blocks)
       (do
-        (println "@bag-of-blocks" (count @bag-of-blocks))
         (alter next-blocks
           (fn [_] (subvec (vec @bag-of-blocks) 1 (inc num-next-blocks))))))
     (alter bag-of-blocks
@@ -275,10 +273,7 @@
                   (move-down global-field active-block))))]
     (.cancel @timer)
     (alter timer (fn [_] (new Timer)))
-    (.scheduleAtFixedRate @timer task (long interval) (long interval))
-    (println "Set gamespeed to" interval)
-    (println "Lines" @lines)
-    (println "Level" (get-level @lines))))
+    (.scheduleAtFixedRate @timer task (long interval) (long interval))))
 
 (defn random-block []
   (dosync
@@ -596,8 +591,7 @@
               (dosync
                 (alter is-game-over (fn [_] false))
                 (alter score (fn [_] 0))
-                (alter lines (fn [_] 0)))              
-              (println keyCode)))))
+                (alter lines (fn [_] 0)))))))
       (keyReleased [e])
       (keyTyped [e]))
     (.setFocusable true)))
@@ -629,11 +623,10 @@
 
 ; TODO
 ; ----
+; - high-score (internet?)
 ; v lines
 ; v level
-; - show score http://tetris.wikia.com/wiki/Scoring
-; - game over message
-; - high-score (internet?)
-; - scoring 
+; v show score http://tetris.wikia.com/wiki/Scoring
+; v game over message
 ; v drop block space bar
 (main)

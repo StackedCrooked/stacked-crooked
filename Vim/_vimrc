@@ -20,4 +20,7 @@ elseif has("win32")
 set gfn=Courier_New:h10:cANSI
 endif
 autocmd FileType make set noexpandtab
+set bs=2 ; fix backspace key
 
+; Clojure
+filetype plugin indent on

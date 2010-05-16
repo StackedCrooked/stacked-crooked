@@ -452,45 +452,69 @@
 (defn get-text-rect [g str font]
   (.getStringBounds (.getFontMetrics g (get-tetris-font g)) str g))
 
+(def text-line-height 20)
+
+(defn draw-text-column [g x y lines]
+  (dotimes [i           (count lines)]
+    (let [  y           (+ y (* i text-line-height))
+            line        (lines i)
+            text        (line :text)
+            color       (line :color)
+            ; drawString draws a string that
+            ; sits on top of it's y coord
+            ; we prefer consistency with how rects are painted (below y)
+            ; so we add the text height to the y value
+            font-height (.getHeight (get-text-rect g text (.getFont g)))
+            y-adjusted  (int (+ y font-height)) ]
+    (.setColor g color)
+    (.drawString g text x y-adjusted))))
+
+(defn half [n] (round (int (/ n 2))))
+
+(defn draw-centered-text-column [g x y lines]
+  (let [text-height (* (count lines) text-line-height)
+        y-offset    (- y (half text-height)) ]
+    (dotimes [i (count lines)]
+      (let [ line        (lines i)
+             text-rect   (get-text-rect g (line :text) (get-tetris-font g))
+             text-width  (.getWidth text-rect)
+             x-offset    (- x (half text-width)) ]
+        (.setColor g (line :color))
+        (.drawString g (line :text) x-offset (+ y-offset (* i text-line-height)))))))
+
 (defn draw-stats [g]
-  (let [x               (* 15 12)
-        y               (* 15 8)
-        field-w         (* (prefs :block-width) (prefs :num-columns))
-        field-h         (* (prefs :block-height) (prefs :num-rows))
-        x-offset        (* (prefs :field-x) (prefs :block-width))
-        y-offset        (* (prefs :field-y) (prefs :block-height))]
-    (.setColor g (Color/LIGHT_GRAY))
+  (let [lines     [ { :text (str "1x " @(stats :singles)) :color Color/LIGHT_GRAY }
+                    { :text (str "2x " @(stats :doubles)) :color Color/LIGHT_GRAY }
+                    { :text (str "3x " @(stats :triples)) :color Color/LIGHT_GRAY }
+                    { :text (str "4x " @(stats :tetrises)) :color Color/LIGHT_GRAY }
+                    { :text (str "total " @(stats :lines)) :color Color/LIGHT_GRAY }
+                    { :text (str "score " @(stats :score)) :color Color/LIGHT_GRAY }
+                    { :text (str "level " (get-level @(stats :lines)))
+                      :color Color/LIGHT_GRAY } ]
+        field-w   (* (prefs :block-width) (prefs :num-columns))
+        field-h   (* (prefs :block-height) (prefs :num-rows))
+        x-offset  (* (prefs :field-x) (prefs :block-width))
+        y-offset  (* (prefs :field-y) (prefs :block-height))
+        x         (+ x-offset field-w (prefs :block-width))
+        y         (- (+ y-offset field-h) (* (count lines) text-line-height)) ]
     (.setFont g (get-tetris-font g))
-    (.drawString g (str "lines " @(stats :lines)) x y)
-    (.drawString g (str "level " (get-level @(stats :lines))) x (+ y 20))
-    (.drawString g (str "score " @(stats :score)) x (+ y 40))))
+    (draw-text-column g x y lines)))
     
 (defn draw-game-over [g]
   (let [x-offset        (* (prefs :field-x) (prefs :block-width))
         y-offset        (* (prefs :field-y) (prefs :block-height))
         field-w         (* (prefs :block-width) (prefs :num-columns))
-        field-h         (* (prefs :block-height) (prefs :num-rows))]
-    (do      
-      (let [text            "game over!"          
-            rect            (get-text-rect g text (get-tetris-font g))              
-            text-w          (.getWidth rect)
-            text-h          (.getHeight rect)
-            x               (+ x-offset
-                               (int (round (/ (- field-w text-w) 2))))
-            y               (+ y-offset 
-                               (int (round (/ (- field-h text-h) 2))))]
-        (.setFont g (get-tetris-font g))
-        (.drawString g text x (- y 10)))
-      (let [text            "press enter"
-            rect            (get-text-rect g text (get-tetris-font g))              
-            text-w          (.getWidth rect)
-            text-h          (.getHeight rect)
-            x               (+ x-offset
-                               (int (round (/ (- field-w text-w) 2))))
-            y               (+ y-offset 
-                               (int (round (/ (- field-h text-h) 2))))]
-        (.setFont g (get-tetris-font g))
-        (.drawString g text x (+ y 10))))))
+        field-h         (* (prefs :block-height) (prefs :num-rows))
+        field-h         (* (prefs :block-height) (prefs :num-rows)) ]
+    (draw-centered-text-column g (+ x-offset (half field-w))
+                                 (+ y-offset (half field-h))
+                                 [
+                                  { :text "game over!"  :color Color/RED }
+                                  { :text ""            :color Color/LIGHT_GRAY }
+                                  { :text "press enter" :color Color/GREEN }
+                                  { :text "to start"    :color Color/GREEN }
+                                  { :text "new game"    :color Color/GREEN }
+                                   ])))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
@@ -668,4 +692,4 @@
 ; v show score http://tetris.wikia.com/wiki/Scoring
 ; v game over message
 ; v drop block space bar
-(main)
+;(main)

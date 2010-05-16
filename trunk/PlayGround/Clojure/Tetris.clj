@@ -583,11 +583,11 @@
         (let [keyCode (.getKeyCode e)]
           (if-not (true? @is-game-over)
             (if (== 37 keyCode) (move-left global-field active-block)
-              (if (== 38 keyCode) (rotate global-field active-block)
-                (if (== 39 keyCode) (move-right global-field active-block)
-                  (if (== 40 keyCode) (move-down global-field active-block)
-                    (if (== 32 keyCode) (drop-block global-field active-block))))))
-            (if (== 10 keyCode)
+            (if (== 38 keyCode) (rotate global-field active-block)
+            (if (== 39 keyCode) (move-right global-field active-block)
+            (if (== 40 keyCode) (move-down global-field active-block)
+            (if (== 32 keyCode) (drop-block global-field active-block))))))
+          (if (== 10 keyCode)
               (dosync
                 (alter is-game-over (fn [_] false))
                 (alter score (fn [_] 0))

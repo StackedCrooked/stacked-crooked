@@ -178,7 +178,7 @@
 (def block-types
   [i-block j-block l-block o-block s-block t-block z-block])
 
-(def bag-of-blocks (ref (into block-types block-types)))
+(def bag-of-blocks (ref block-types)) ;(into block-types block-types)))
 
 (def bag-index (ref 0))
 

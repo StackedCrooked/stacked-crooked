@@ -330,19 +330,20 @@
     (.drawString text (* w x) (* h y))))
 
 (defn draw-block [g block]
-  (let [  bx 	        @(block :x)
-          by          @(block :y)
-          rotation    @(block :rotation)
-          grids       (@(block :type) :grids)
-          grid-idx    (mod rotation (count grids))
-          active-grid (grids grid-idx)]
-  (dotimes [i (active-grid :width)]
-      (dotimes [j (active-grid :height)]
-        (let [cell-value (get-grid active-grid i j)]
-          (if-not (zero? cell-value)
-            (let [x  (+ (prefs :field-x) (+ bx i))
-                  y  (+ (prefs :field-y) (+ by j))]
-              (paint-grid-cell g x y cell-value))))))))
+  (if-not (true? @is-game-over)
+    (let [  bx 	        @(block :x)
+            by          @(block :y)
+            rotation    @(block :rotation)
+            grids       (@(block :type) :grids)
+            grid-idx    (mod rotation (count grids))
+            active-grid (grids grid-idx)]
+    (dotimes [i (active-grid :width)]
+        (dotimes [j (active-grid :height)]
+          (let [cell-value (get-grid active-grid i j)]
+            (if-not (zero? cell-value)
+              (let [x  (+ (prefs :field-x) (+ bx i))
+                    y  (+ (prefs :field-y) (+ by j))]
+                (paint-grid-cell g x y cell-value)))))))))
 
 (defn clear-screen [panel g]
   (doto g
@@ -366,18 +367,19 @@
                  (str (get-grid field x y))))))
 
 (defn draw-next-blocks [g blocks]
-  (dotimes [ n (count blocks) ]
-    (let [ block      (nth blocks n)
-           grids      (block :grids)
-           grid-idx   0
-           grid       (nth grids grid-idx) ]
-      (dotimes [ i (grid :width) ]
-        (dotimes [ j (grid :height) ]
-          (let [ x      (+ i (+ (prefs :field-x) (prefs :num-columns) 1))
-                 y      (+ 1 j (* n 5) (prefs :field-y))
-                 value  (get-grid grid i j) ]
-            (if-not (zero? value)
-              (paint-grid-cell g x y value))))))))
+  (if-not (true? @is-game-over)
+    (dotimes [ n (count blocks) ]
+      (let [ block      (nth blocks n)
+             grids      (block :grids)
+             grid-idx   0
+             grid       (nth grids grid-idx) ]
+        (dotimes [ i (grid :width) ]
+          (dotimes [ j (grid :height) ]
+            (let [ x      (+ i (+ (prefs :field-x) (prefs :num-columns) 1))
+                   y      (+ 1 j (* n 5) (prefs :field-y))
+                   value  (get-grid grid i j) ]
+              (if-not (zero? value)
+                (paint-grid-cell g x y value)))))))))
 
 (defn debug-draw-bag-of-blocks [g blocks]
   (dotimes [ n (count blocks) ]
@@ -434,7 +436,9 @@
         font-metrics    (.getFontMetrics g font)
         get-text-rect   (fn [str] (.getStringBounds font-metrics str g))
         field-w         (* (prefs :block-width) (prefs :num-columns))
-        x-offset        (* (prefs :field-x) (prefs :block-width)) ]
+        field-h         (* (prefs :block-height) (prefs :num-rows))
+        x-offset        (* (prefs :field-x) (prefs :block-width))
+        y-offset        (* (prefs :field-y) (prefs :block-height))]
     (.setColor g (Color/LIGHT_GRAY))
     (.setFont g font)
     (.drawString g (str "lines " @lines) x y)
@@ -445,15 +449,21 @@
         (let [text     "game over!"
               rect    (get-text-rect text)              
               text-w  (.getWidth rect)
+              text-h  (.getHeight rect)
               x       (+ x-offset
-                         (int (round (/ (- field-w text-w) 2))))]
-          (.drawString g text x (+ y 60)))
+                         (int (round (/ (- field-w text-w) 2))))
+              y       (+ y-offset 
+                         (int (round (/ (- field-h text-h) 2))))]
+          (.drawString g text x (- y 10)))
         (let [text    "press enter"
               rect    (get-text-rect text)
               text-w  (.getWidth rect)
+              text-h  (.getHeight rect)
               x       (+ x-offset
-                         (int (round (/ (- field-w text-w) 2))))]
-          (.drawString g text x (+ y 80)))))))
+                         (int (round (/ (- field-w text-w) 2))))
+              y       (+ y-offset 
+                         (int (round (/ (- field-h text-h) 2))))]
+          (.drawString g text x (+ y 10)))))))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
@@ -583,7 +593,10 @@
                   (if (== 40 keyCode) (move-down global-field active-block)
                     (if (== 32 keyCode) (drop-block global-field active-block))))))
             (if (== 10 keyCode)
-              (dosync (alter is-game-over (fn [_] false)))
+              (dosync
+                (alter is-game-over (fn [_] false))
+                (alter score (fn [_] 0))
+                (alter lines (fn [_] 0)))              
               (println keyCode)))))
       (keyReleased [e])
       (keyTyped [e]))
@@ -593,7 +606,7 @@
   (create-panel))
 
 (defn main []
-  (let [frame (JFrame. "Test")]
+  (let [frame (JFrame. "Tetris")]
     (doto frame
       (.add panel)
       (.pack)

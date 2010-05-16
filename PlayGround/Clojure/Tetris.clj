@@ -13,18 +13,6 @@
 (import javax.swing.JPanel)
 (use 'clojure.contrib.math)
 
-(def prefs {
-  :field-x 1
-  :field-y 1
-  :num-rows 20
-  :num-columns 10
-  :block-width 15
-  :block-height 15
-  :screen-width 300
-  :screen-height 330 })
-
-(def is-game-over (ref false))
-
 ; Grid data structure
 ; -------------------
 (defstruct grid :width :height)
@@ -72,12 +60,26 @@
                               key-vals)] 
        (map second sorted-pairs))))
 
-(defn shuffle 
+(defn shuffle
   "Returns a seq of coll shuffled in O(n log n) time.
    Space is at least O(2N). Each item in coll is assigned
    a random number which becomes the sort key." 
   [coll]
   (sort-by-mem-keys (fn [_] (rand)) coll))
+
+  
+; Data definitions
+; ----------------
+
+(def prefs {
+  :field-x 1
+  :field-y 1
+  :num-rows 20
+  :num-columns 10
+  :block-width 15
+  :block-height 15
+  :screen-width 300
+  :screen-height 330 })
 
 (def i-block {
   :value 1
@@ -176,13 +178,52 @@
 (def block-types
   [i-block j-block l-block o-block s-block t-block z-block])
 
-(def bag-of-blocks
-  (ref [i-block j-block l-block o-block s-block t-block z-block]))
+(def bag-of-blocks (ref (into block-types block-types)))
 
 (def bag-index (ref 0))
 
 (def next-blocks (ref []))
 (def num-next-blocks 1)
+(def is-game-over (ref false))
+
+(defn current-time-ms [] (.getTime (java.util.Date.)))
+(def timer (ref (new Timer)))
+(def frame-count (ref 0))
+(def start-time (ref (current-time-ms)))
+(def fps (ref 0))
+
+; stats
+(def stats {
+  :score (ref 0)
+  :lines (ref 0)
+  :singles (ref 0)
+  :doubles (ref 0)
+  :triples (ref 0)
+  :tetrises (ref 0)
+  :i-blocks (ref 0)
+  :j-blocks (ref 0)
+  :l-blocks (ref 0)
+  :o-blocks (ref 0)
+  :s-blocks (ref 0)
+  :t-blocks (ref 0)
+  :z-blocks (ref 0)
+})
+
+(defn reset-stats []
+  (alter (stats :score) (fn [_] 0))
+  (alter (stats :lines) (fn [_] 0))
+  (alter (stats :singles) (fn [_] 0))
+  (alter (stats :doubles) (fn [_] 0))
+  (alter (stats :triples) (fn [_] 0))
+  (alter (stats :tetrises) (fn [_] 0))
+  (alter (stats :i-blocks) (fn [_] 0))
+  (alter (stats :j-blocks) (fn [_] 0))
+  (alter (stats :l-blocks) (fn [_] 0))
+  (alter (stats :o-blocks) (fn [_] 0))
+  (alter (stats :s-blocks) (fn [_] 0))
+  (alter (stats :t-blocks) (fn [_] 0))
+  (alter (stats :z-blocks) (fn [_] 0)))
+
 
 (defn init-blocks []
   (dosync    
@@ -235,11 +276,6 @@
   (if-not (check-position-valid global-field active-block)
     (game-over)))
   
-
-
-
-(def lines (ref 0))
-
 ; speed of falling
 ; number of milliseconds between falling one row
 ; These are the same values as for the Gameboy:
@@ -263,7 +299,7 @@
   (let [level   (int (/ lines level-up-treshold))]
     level))
 
-(def timer (ref (new Timer)))
+
 (declare move-down)
 
 (defn set-game-speed [interval]
@@ -390,17 +426,6 @@
             (if-not (zero? value)
               (paint-grid-cell g x y 0))))))))
 
-(def frame-count
-  (ref 0))
-
-(defn current-time-ms []
-  (.getTime (java.util.Date.)))
-
-(def start-time
-  (ref (current-time-ms)))
-
-(def fps
-  (ref 0))
   
 (defn calculate-fps []
   (let [current-time        (current-time-ms)
@@ -418,47 +443,54 @@
   (doto g
     (.setColor (Color/ORANGE))
     (.drawString (str "fps " @fps) 15 (* 22 15))))
-    
 
-(def score (ref 0))
+(defn get-tetris-font [g]
+  (.deriveFont (.getFont g)
+               (int java.awt.Font/BOLD)
+               (float 14)))
     
+(defn get-text-rect [g str font]
+  (.getStringBounds (.getFontMetrics g (get-tetris-font g)) str g))
+
 (defn draw-stats [g]
   (let [x               (* 15 12)
         y               (* 15 8)
-        font            (.deriveFont (.getFont g)
-                                     (int java.awt.Font/BOLD)
-                                     (float 14))
-        font-metrics    (.getFontMetrics g font)
-        get-text-rect   (fn [str] (.getStringBounds font-metrics str g))
         field-w         (* (prefs :block-width) (prefs :num-columns))
         field-h         (* (prefs :block-height) (prefs :num-rows))
         x-offset        (* (prefs :field-x) (prefs :block-width))
         y-offset        (* (prefs :field-y) (prefs :block-height))]
     (.setColor g (Color/LIGHT_GRAY))
-    (.setFont g font)
-    (.drawString g (str "lines " @lines) x y)
-    (.drawString g (str "level " (get-level @lines)) x (+ y 20))
-    (.drawString g (str "score " @score) x (+ y 40))
-    (if (true? @is-game-over)
-      (do      
-        (let [text     "game over!"
-              rect    (get-text-rect text)              
-              text-w  (.getWidth rect)
-              text-h  (.getHeight rect)
-              x       (+ x-offset
-                         (int (round (/ (- field-w text-w) 2))))
-              y       (+ y-offset 
-                         (int (round (/ (- field-h text-h) 2))))]
-          (.drawString g text x (- y 10)))
-        (let [text    "press enter"
-              rect    (get-text-rect text)
-              text-w  (.getWidth rect)
-              text-h  (.getHeight rect)
-              x       (+ x-offset
-                         (int (round (/ (- field-w text-w) 2))))
-              y       (+ y-offset 
-                         (int (round (/ (- field-h text-h) 2))))]
-          (.drawString g text x (+ y 10)))))))
+    (.setFont g (get-tetris-font g))
+    (.drawString g (str "lines " @(stats :lines)) x y)
+    (.drawString g (str "level " (get-level @(stats :lines))) x (+ y 20))
+    (.drawString g (str "score " @(stats :score)) x (+ y 40))))
+    
+(defn draw-game-over [g]
+  (let [x-offset        (* (prefs :field-x) (prefs :block-width))
+        y-offset        (* (prefs :field-y) (prefs :block-height))
+        field-w         (* (prefs :block-width) (prefs :num-columns))
+        field-h         (* (prefs :block-height) (prefs :num-rows))]
+    (do      
+      (let [text            "game over!"          
+            rect            (get-text-rect g text (get-tetris-font g))              
+            text-w          (.getWidth rect)
+            text-h          (.getHeight rect)
+            x               (+ x-offset
+                               (int (round (/ (- field-w text-w) 2))))
+            y               (+ y-offset 
+                               (int (round (/ (- field-h text-h) 2))))]
+        (.setFont g (get-tetris-font g))
+        (.drawString g text x (- y 10)))
+      (let [text            "press enter"
+            rect            (get-text-rect g text (get-tetris-font g))              
+            text-w          (.getWidth rect)
+            text-h          (.getHeight rect)
+            x               (+ x-offset
+                               (int (round (/ (- field-w text-w) 2))))
+            y               (+ y-offset 
+                               (int (round (/ (- field-h text-h) 2))))]
+        (.setFont g (get-tetris-font g))
+        (.drawString g text x (+ y 10))))))
 
 (defn draw-all [panel g f b]
   (clear-screen panel g)
@@ -468,7 +500,9 @@
   (draw-field g f)
   (draw-next-blocks g @next-blocks)
   (draw-block g b)
-  (draw-stats g))
+  (draw-stats g)
+  (if (true? @is-game-over)
+    (draw-game-over g)))
 
 (defn check-position-valid [field block]
   (let [grids          (@(block :type) :grids)
@@ -505,13 +539,13 @@
       (alter (b :x) dec))))
 
 (defn update-score [num-lines-scored]
-  (let [level   (get-level @lines)
+  (let [level   (get-level @(stats :lines))
         points  (if (== num-lines-scored 1) (* 40 (inc num-lines-scored))
                 (if (== num-lines-scored 2) (* 100 (inc num-lines-scored))
                 (if (== num-lines-scored 3) (* 300 (inc num-lines-scored))
                 (if (== num-lines-scored 4) (* 1200 (inc num-lines-scored))
                 (println "ERROR: num-lines-scored is: " num-lines-scored))))) ]
-    (alter score (fn [old-score] (+ old-score points)))))
+    (alter (stats :score) (fn [old-score] (+ old-score points)))))
       
       
 (defn contains [collection value]
@@ -532,9 +566,13 @@
           (fn [_]
             (let [zeroes (vec (repeat (* (field :width) num-lines-scored) 0))]
               (vec (flatten (conj zeroes remaining-rows))))))
-        (alter lines (fn [lines] (+ lines num-lines-scored)))
+        (alter (stats :lines) (fn [lines] (+ lines num-lines-scored)))
+        (if (== num-lines-scored 1) (alter (stats :singles) inc)
+        (if (== num-lines-scored 2) (alter (stats :doubles) inc)
+        (if (== num-lines-scored 3) (alter (stats :triples) inc)
+        (if (== num-lines-scored 4) (alter (stats :tetrises) inc)))))
         (update-score num-lines-scored))
-      (set-game-speed (get-game-speed (get-level @lines))))))
+      (set-game-speed (get-game-speed (get-level @(stats :lines)))))))
 
 (defn commit-block [field block]
   (let [  block-type  @(block :type)
@@ -570,6 +608,10 @@
     (clear-lines f)
     (next-block)))
 
+(defn reset-game []
+  (alter is-game-over (fn [_] false))
+  (reset-stats))
+
 (defn create-panel []
   (doto
     (proxy [JPanel KeyListener] []
@@ -588,10 +630,7 @@
             (if (== 40 keyCode) (move-down global-field active-block)
             (if (== 32 keyCode) (drop-block global-field active-block))))))
           (if (== 10 keyCode)
-              (dosync
-                (alter is-game-over (fn [_] false))
-                (alter score (fn [_] 0))
-                (alter lines (fn [_] 0)))))))
+              (dosync (reset-game))))))
       (keyReleased [e])
       (keyTyped [e]))
     (.setFocusable true)))
@@ -610,7 +649,7 @@
     (center-in-screen frame)
     (init-blocks)    
     (dosync
-      (set-game-speed (get-game-speed (get-level @lines))))
+      (set-game-speed (get-game-speed (get-level @(stats :lines)))))
     (loop []
       (.repaint panel)
       (Thread/sleep 7)

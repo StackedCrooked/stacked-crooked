@@ -2,10 +2,10 @@
 #include <vector>
 
 
-typedef unsigned int           UInt32;
+typedef unsigned int UInt32;
 typedef UInt32 Prime;
-
 typedef std::vector<Prime> Primes;
+
 
 UInt32 FastSqrt(UInt32 n)
 {
@@ -68,7 +68,7 @@ void GetPrimes(size_t n, std::vector<UInt32> & ioPrimes)
             ioPrimes.push_back(idx);
             if (ioPrimes.size() % 10000 == 0)
             {
-                std::cout << "Found prime " << ioPrimes.size() << ": " << idx << "." << std::endl;
+                std::cout << "Found prime " << std::scientific << ioPrimes.size() << ": " << std::scientific << idx << "." << std::endl;
             }
         }
     }
@@ -78,7 +78,7 @@ void GetPrimes(size_t n, std::vector<UInt32> & ioPrimes)
 int main()
 {
     Primes primes;
-    GetPrimes(10 * 1000 * 1000, primes);
+    GetPrimes(100 * 1000 * 1000, primes);
 
     std::cout << "Found " << primes.size() << " primes." << std::endl;
     if (!primes.empty())

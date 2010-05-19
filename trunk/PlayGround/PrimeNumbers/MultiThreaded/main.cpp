@@ -29,23 +29,13 @@ void SelfTest()
 
 void CompareSpeeds(UInt32 inNumberOfPrimes)
 {
-    std::cout << "Calculating the first " << inNumberOfPrimes << " number of primes." << std::endl;
-    {
-        std::time_t startTime = time(0);
-        std::vector<UInt32> primes;
-        GetPrimes(inNumberOfPrimes, primes);
-        std::time_t elapsed = time(0) - startTime;
-        std::cout << "Test 1 took " << elapsed << "s." << std::endl;
-
-    }
+    std::cout << "Calculating the first " << inNumberOfPrimes << " prime numbers." << std::endl;
 
     {
         std::time_t startTime = time(0);
 
         std::vector<UInt32> primes1;
         GetPrimes(10000, primes1);
-
-
         const size_t cNumberOfThreads = 3;
         std::vector<UInt32> primes2;
         FindPrimesInInterval_MultiThreaded(cNumberOfThreads,
@@ -53,7 +43,14 @@ void CompareSpeeds(UInt32 inNumberOfPrimes)
                                            primes1,
                                            primes2);
         std::time_t elapsed = time(0) - startTime;
-        std::cout << "Test 2 took " << elapsed << "s." << std::endl;
+        std::cout << "Multi-threaded (3 threads): " << elapsed << "s." << std::endl;
+    }
+    {
+        std::time_t startTime = time(0);
+        std::vector<UInt32> primes;
+        GetPrimes(inNumberOfPrimes, primes);
+        std::time_t elapsed = time(0) - startTime;
+        std::cout << "Single threaded: " << elapsed << "s." << std::endl;
     }
 }
 
@@ -62,7 +59,7 @@ int main()
 {
     SelfTest();
 
-    CompareSpeeds(10 * 1000 * 1000);
+    CompareSpeeds(100 * 1000 * 1000);
 
     std::cout << "Ok. Press any character + ENTER to quit." << std::endl;
     char c;

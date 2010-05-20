@@ -16,6 +16,8 @@ set tabstop=4
 syntax enable
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
+winp 600 100
+win 100 50
 elseif has("win32")
 set gfn=Courier_New:h10:cANSI
 endif

@@ -1,4 +1,5 @@
 #include "Primes.h"
+#include "Poco/Stopwatch.h"
 #include "Poco/Thread.h"
 #include <ctime>
 #include <iostream>
@@ -27,31 +28,29 @@ void SelfTest()
 }
 
 
-void CompareSpeeds(UInt32 inNumberOfPrimes)
+void TestMultiThreaded(UInt32 inNumberOfPrimes)
 {
-    std::cout << "Calculating the first " << inNumberOfPrimes << " prime numbers." << std::endl;
+    Poco::Stopwatch Stopwatch;
+    Stopwatch.start();
+    std::vector<UInt32> primes1;
+    GetPrimes(10000, primes1);
+    const size_t cNumberOfThreads = 3;
+    std::vector<UInt32> primes2;
+    FindPrimesInInterval_MultiThreaded(cNumberOfThreads,
+                                       std::make_pair(10001, inNumberOfPrimes),
+                                       primes1,
+                                       primes2);
+    std::cout << "Multi-threaded (3 threads): " << (Stopwatch.elapsed() / 1000) << "ms." << std::endl;
+}
 
-    {
-        std::time_t startTime = time(0);
 
-        std::vector<UInt32> primes1;
-        GetPrimes(10000, primes1);
-        const size_t cNumberOfThreads = 3;
-        std::vector<UInt32> primes2;
-        FindPrimesInInterval_MultiThreaded(cNumberOfThreads,
-                                           std::make_pair(10001, inNumberOfPrimes),
-                                           primes1,
-                                           primes2);
-        std::time_t elapsed = time(0) - startTime;
-        std::cout << "Multi-threaded (3 threads): " << elapsed << "s." << std::endl;
-    }
-    {
-        std::time_t startTime = time(0);
-        std::vector<UInt32> primes;
-        GetPrimes(inNumberOfPrimes, primes);
-        std::time_t elapsed = time(0) - startTime;
-        std::cout << "Single threaded: " << elapsed << "s." << std::endl;
-    }
+void TestSingleThreaded(UInt32 inNumberOfPrimes)
+{
+    Poco::Stopwatch Stopwatch;
+    Stopwatch.start();
+    std::vector<UInt32> primes;
+    GetPrimes(inNumberOfPrimes, primes);
+    std::cout << "Single threaded: " << (Stopwatch.elapsed() / 1000) << "ms." << std::endl;
 }
 
 
@@ -59,7 +58,9 @@ int main()
 {
     SelfTest();
 
-    CompareSpeeds(100 * 1000 * 1000);
+    const UInt32 cNumberOfPrimes = 10 * 1000 * 1000;
+    TestSingleThreaded(cNumberOfPrimes);    
+    TestMultiThreaded(cNumberOfPrimes);
 
     std::cout << "Ok. Press any character + ENTER to quit." << std::endl;
     char c;

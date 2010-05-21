@@ -30,27 +30,27 @@ void SelfTest()
 
 void TestMultiThreaded(UInt32 inNumberOfPrimes)
 {
-    Poco::Stopwatch Stopwatch;
-    Stopwatch.start();
+    Poco::Stopwatch stopwatch;
+    stopwatch.start();
     std::vector<UInt32> primes1;
     GetPrimes(10000, primes1);
-    const size_t cNumberOfThreads = 3;
+    const size_t cNumberOfThreads = 4;
     std::vector<UInt32> primes2;
     FindPrimesInInterval_MultiThreaded(cNumberOfThreads,
                                        std::make_pair(10001, inNumberOfPrimes),
                                        primes1,
                                        primes2);
-    std::cout << "Multi-threaded (3 threads): " << (Stopwatch.elapsed() / 1000) << "ms." << std::endl;
+    std::cout << "Multi-threaded (3 threads): " << (stopwatch.elapsed() / 1000) << "ms." << std::endl;
 }
 
 
 void TestSingleThreaded(UInt32 inNumberOfPrimes)
 {
-    Poco::Stopwatch Stopwatch;
-    Stopwatch.start();
+    Poco::Stopwatch stopwatch;
+    stopwatch.start();
     std::vector<UInt32> primes;
     GetPrimes(inNumberOfPrimes, primes);
-    std::cout << "Single threaded: " << (Stopwatch.elapsed() / 1000) << "ms." << std::endl;
+    std::cout << "Single threaded: " << (stopwatch.elapsed() / 1000) << "ms." << std::endl;
 }
 
 

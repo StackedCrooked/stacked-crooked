@@ -1,0 +1,2 @@
+This lightweight version of boost was created using the boost bcp utility:
+bcp bind function lexical_cast noncopyable optional program_options smart_ptr signals2 ./output

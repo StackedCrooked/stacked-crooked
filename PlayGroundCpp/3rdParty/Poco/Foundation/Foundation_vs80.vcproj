@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="Foundation"
+	Name="PocoFoundation"
 	ProjectGUID="{8164D41D-B053-405B-826C-CF37AC0EF176}"
 	RootNamespace="Foundation"
 	Keyword="Win32Proj"
@@ -72,7 +72,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)Foundation.lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -143,7 +143,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)Foundation.lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

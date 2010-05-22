@@ -5,7 +5,7 @@
 #include "Poco/Net/HTTPRequestHandler.h"
 
 
-namespace HighScoreServer
+namespace HSServer
 {
 
     class HighScoreRequestHandler: public Poco::Net::HTTPRequestHandler

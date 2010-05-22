@@ -6,7 +6,7 @@
 #include "Poco/Util/ServerApplication.h"
 
 
-namespace HighScoreServer
+namespace HSServer
 {
 
     class HighScoreServer : public Poco::Util::ServerApplication

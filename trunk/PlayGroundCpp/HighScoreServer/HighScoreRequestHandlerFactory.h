@@ -7,7 +7,7 @@
 #include "Poco/Net/HTTPServerRequest.h"
 
 
-namespace HighScoreServer
+namespace HSServer
 {
 
     class HighScoreRequestHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory
@@ -16,7 +16,7 @@ namespace HighScoreServer
 	    Poco::Net::HTTPRequestHandler * createRequestHandler(const Poco::Net::HTTPServerRequest & request);
     };
 
-} // namespace HighScoreServer
+} // namespace HSServer
 
 
 #endif // HIGHSCOREREQUESTHANDLERFACTORY_H_INCLUDED

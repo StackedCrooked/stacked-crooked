@@ -1,7 +1,12 @@
 #include "HighScoreServer.h"
+#include "SQLiteSupport.h"
+
+using namespace HSServer;
+
 
 int main(int argc, char** argv)
 {
-    HighScoreServer::HighScoreServer app;
+    SQLiteSupport sqlite;
+    HighScoreServer app;
 	return app.run(argc, argv);
 }

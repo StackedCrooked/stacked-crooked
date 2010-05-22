@@ -6,7 +6,7 @@
 #include "Poco/ThreadPool.h"
 
 
-namespace HighScoreServer
+namespace HSServer
 {
 
     int HighScoreServer::main(const std::vector<std::string>& args)
@@ -28,4 +28,4 @@ namespace HighScoreServer
 	    return Poco::Util::Application::EXIT_OK;
     }
 
-} // namespace HighScoreServer
+} // namespace HSServer

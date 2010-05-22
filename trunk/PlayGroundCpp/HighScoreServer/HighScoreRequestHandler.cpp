@@ -4,7 +4,7 @@
 #include "Poco/Util/Application.h"
 
 
-namespace HighScoreServer
+namespace HSServer
 {
 
     void HighScoreRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
@@ -20,4 +20,4 @@ namespace HighScoreServer
         ostr << "<html><head><body>You have nice high scores!</body></html>";
     }
 
-} // namespace HighScoreServer
+} // namespace HSServer

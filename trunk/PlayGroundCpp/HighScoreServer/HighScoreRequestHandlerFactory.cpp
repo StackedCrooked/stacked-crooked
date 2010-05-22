@@ -2,7 +2,7 @@
 #include "Poco/Net/HTTPRequestHandler.h"
 
 
-namespace HighScoreServer
+namespace HSServer
 {
 
     Poco::Net::HTTPRequestHandler *
@@ -15,4 +15,4 @@ namespace HighScoreServer
         return 0;
     }
 
-} // namespace HighScoreServer
+} // namespace HSServer

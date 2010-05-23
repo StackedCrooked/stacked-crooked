@@ -17,7 +17,7 @@ namespace HSServer
         inResponse.setContentType("text/html");
 
         std::ostream& ostr = inResponse.send();
-        ostr << "<html><head><body>You have nice high scores!</body></html>";
+        ostr << "<html><body>You have nice high scores!</body></html>";
     }
 
 } // namespace HSServer

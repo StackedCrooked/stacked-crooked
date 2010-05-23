@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)3rdParty\Poco\Foundation\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Net\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\XML\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Util\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\SQLite\include&quot;;&quot;$(SolutionDir)3rdParty\Boost&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Foundation\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Net\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\XML\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Util\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\SQLite\include&quot;;&quot;$(SolutionDir)3rdParty\Boost&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -123,7 +123,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)3rdParty\Poco\Foundation\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Net\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\XML\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Util\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\SQLite\include&quot;;&quot;$(SolutionDir)3rdParty\Boost&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Foundation\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Net\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\XML\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Util\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\include&quot;;&quot;$(SolutionDir)3rdParty\Poco\Data\SQLite\include&quot;;&quot;$(SolutionDir)3rdParty\Boost&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -185,19 +185,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\HighScoreRequestHandler.cpp"
+				RelativePath=".\src\HighScoreRequestHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\HighScoreRequestHandlerFactory.cpp"
+				RelativePath=".\src\HighScoreRequestHandlerFactory.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\HighScoreServer.cpp"
+				RelativePath=".\src\HighScoreServer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath=".\src\main.cpp"
 				>
 			</File>
 		</Filter>
@@ -207,15 +207,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\HighScoreRequestHandler.h"
+				RelativePath=".\include\HighScoreRequestHandler.h"
 				>
 			</File>
 			<File
-				RelativePath=".\HighScoreRequestHandlerFactory.h"
+				RelativePath=".\include\HighScoreRequestHandlerFactory.h"
 				>
 			</File>
 			<File
-				RelativePath=".\HighScoreServer.h"
+				RelativePath=".\include\HighScoreServer.h"
 				>
 			</File>
 		</Filter>

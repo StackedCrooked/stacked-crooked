@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>PocoUtil</ProjectName>
+    <ProjectGuid>{6FF56CDB-787A-4714-A28C-919003F9FA6C}</ProjectGuid>
+    <RootNamespace>Util</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Build\VS80\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)Intermediate\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Build\VS80\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)Intermediate\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>.\include;..\Foundation\include;..\XML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;Util_EXPORTS;POCO_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\include;..\Foundation\include;..\XML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;Util_EXPORTS;POCO_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Poco\Util\Application.h" />
+    <ClInclude Include="include\Poco\Util\LoggingSubsystem.h" />
+    <ClInclude Include="include\Poco\Util\ServerApplication.h" />
+    <ClInclude Include="include\Poco\Util\Subsystem.h" />
+    <ClInclude Include="include\Poco\Util\AbstractConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\ConfigurationMapper.h" />
+    <ClInclude Include="include\Poco\Util\ConfigurationView.h" />
+    <ClInclude Include="include\Poco\Util\FilesystemConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\IniFileConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\LayeredConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\LoggingConfigurator.h" />
+    <ClInclude Include="include\Poco\Util\MapConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\PropertyFileConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\SystemConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\XMLConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\HelpFormatter.h" />
+    <ClInclude Include="include\Poco\Util\IntValidator.h" />
+    <ClInclude Include="include\Poco\Util\Option.h" />
+    <ClInclude Include="include\Poco\Util\OptionCallback.h" />
+    <ClInclude Include="include\Poco\Util\OptionException.h" />
+    <ClInclude Include="include\Poco\Util\OptionProcessor.h" />
+    <ClInclude Include="include\Poco\Util\OptionSet.h" />
+    <ClInclude Include="include\Poco\Util\RegExpValidator.h" />
+    <ClInclude Include="include\Poco\Util\Validator.h" />
+    <ClInclude Include="include\Poco\Util\WinRegistryConfiguration.h" />
+    <ClInclude Include="include\Poco\Util\WinRegistryKey.h" />
+    <ClInclude Include="include\Poco\Util\WinService.h" />
+    <ClInclude Include="include\Poco\Util\Util.h" />
+    <ClInclude Include="include\Poco\Util\Timer.h" />
+    <ClInclude Include="include\Poco\Util\TimerTask.h" />
+    <ClInclude Include="include\Poco\Util\TimerTaskAdapter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\LoggingSubsystem.cpp" />
+    <ClCompile Include="src\ServerApplication.cpp" />
+    <ClCompile Include="src\Subsystem.cpp" />
+    <ClCompile Include="src\AbstractConfiguration.cpp" />
+    <ClCompile Include="src\ConfigurationMapper.cpp" />
+    <ClCompile Include="src\ConfigurationView.cpp" />
+    <ClCompile Include="src\FilesystemConfiguration.cpp" />
+    <ClCompile Include="src\IniFileConfiguration.cpp" />
+    <ClCompile Include="src\LayeredConfiguration.cpp" />
+    <ClCompile Include="src\LoggingConfigurator.cpp" />
+    <ClCompile Include="src\MapConfiguration.cpp" />
+    <ClCompile Include="src\PropertyFileConfiguration.cpp" />
+    <ClCompile Include="src\SystemConfiguration.cpp" />
+    <ClCompile Include="src\XMLConfiguration.cpp" />
+    <ClCompile Include="src\HelpFormatter.cpp" />
+    <ClCompile Include="src\IntValidator.cpp" />
+    <ClCompile Include="src\Option.cpp" />
+    <ClCompile Include="src\OptionCallback.cpp" />
+    <ClCompile Include="src\OptionException.cpp" />
+    <ClCompile Include="src\OptionProcessor.cpp" />
+    <ClCompile Include="src\OptionSet.cpp" />
+    <ClCompile Include="src\RegExpValidator.cpp" />
+    <ClCompile Include="src\Validator.cpp" />
+    <ClCompile Include="src\WinRegistryConfiguration.cpp" />
+    <ClCompile Include="src\WinRegistryKey.cpp" />
+    <ClCompile Include="src\WinService.cpp" />
+    <ClCompile Include="src\Timer.cpp" />
+    <ClCompile Include="src\TimerTask.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Foundation\Foundation_vs80.vcxproj">
+      <Project>{8164d41d-b053-405b-826c-cf37ac0ef176}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Net\Net_vs80.vcxproj">
+      <Project>{b057a1fe-09f7-465e-b8b5-e1b659051d76}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\XML\XML_vs80.vcxproj">
+      <Project>{9e211743-85fe-4977-82f3-4f04b40c912d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

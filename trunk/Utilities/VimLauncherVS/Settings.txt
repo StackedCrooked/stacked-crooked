@@ -1,0 +1,8 @@
+Title: Vim Launcher
+Command: C:\Program Files\Vim\vim72\gvim.exe
+Arguments: +$(CurLine) "$(ItemPath)"
+Initial directory: $(ItemDir)
+
+Keybinding:
+Associate <Alt-X> with 
+"Tools.ExternalCommand3" for the "Text Editor" context.

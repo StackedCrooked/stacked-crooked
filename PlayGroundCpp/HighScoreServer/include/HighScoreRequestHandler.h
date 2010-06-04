@@ -3,12 +3,27 @@
 
 
 #include "Poco/Net/HTTPRequestHandler.h"
+#include <map>
 
 
 namespace HSServer
 {
 
-    class HighScoreRequestHandler: public Poco::Net::HTTPRequestHandler
+    typedef std::map<std::string, std::string> Args;
+
+    void GetArgs(const std::string & inURI, Args & outArgs);
+        
+    class GetAllHighScores : public Poco::Net::HTTPRequestHandler
+    {
+    public:	
+	    /**
+         * Returns a HTML document with the HighScores
+         */
+        void handleRequest(Poco::Net::HTTPServerRequest& inRequest,
+                           Poco::Net::HTTPServerResponse& inResponse);
+    };
+
+    class AddHighScore : public Poco::Net::HTTPRequestHandler
     {
     public:	
 	    /**

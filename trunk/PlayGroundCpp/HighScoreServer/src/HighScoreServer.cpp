@@ -1,10 +1,10 @@
 #include "HighScoreServer.h"
 #include "HighScoreRequestHandlerFactory.h"
+#include "Poco/Data/SQLite/Connector.h"
 #include "Poco/Util/Option.h"
 #include "Poco/Util/OptionSet.h"
 #include "Poco/Util/HelpFormatter.h"
 #include "Poco/ThreadPool.h"
-
 
 namespace HSServer
 {
@@ -22,6 +22,9 @@ namespace HSServer
 
         Poco::Net::ServerSocket serverSocket(port);
 	    Poco::Net::HTTPServer httpServer(new HighScoreRequestHandlerFactory, serverSocket, params);
+
+        Poco::Data::SQLite::Connector::registerConnector();
+
 	    httpServer.start();
 	    waitForTerminationRequest();
 	    httpServer.stop();

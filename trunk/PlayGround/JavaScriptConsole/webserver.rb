@@ -6,7 +6,8 @@ require 'popen4'
 
 class SimpleHandler < Mongrel::HttpHandler
   def process(request, response)
-	  command = request.params["REQUEST_PATH"][1..-1]
+	command = request.params["REQUEST_PATH"][1..-1]
+    command = command.gsub(/%20/, " ").gsub(/%22/, "\"")
     puts "Command: " + command
     body = ""
     if command == ""
@@ -16,8 +17,14 @@ class SimpleHandler < Mongrel::HttpHandler
       end      
     elsif command == "favicon.ico"
       # ignore this request
+    elsif command.match(/^cd/)
+      response.start(200) do |head,out|
+        head["Content-Type"] = "text/html"
+        dir = command[command.index(' ') + 1 .. -1]
+        puts "Dir: #{dir}"
+        Dir.chdir(dir)
+      end
     else
-      command = command.gsub(/%20/, " ").gsub(/%22/, "\"")
       response.start(200) do |head,out|
         head["Content-Type"] = "text/html"
         status = POpen4::popen4(command) do |stdout, stderr, stdin, pid|

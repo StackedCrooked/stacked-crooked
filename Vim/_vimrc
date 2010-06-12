@@ -1,5 +1,8 @@
+autocmd FileType make set noexpandtab
 colorscheme torte
+filetype plugin indent on
 set autoindent
+set bs=2
 set expandtab
 set hlsearch 
 set incsearch
@@ -14,14 +17,17 @@ set smartindent
 set softtabstop=4 
 set tabstop=4 
 syntax enable
+" Unix settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
 winp 600 100
 win 100 50
+
+
+" Windows settings
 elseif has("win32")
 set gfn=Courier_New:h10:cANSI
+winp 600 0
+win 100 50
 endif
-autocmd FileType make set noexpandtab
-set bs=2
 
-filetype plugin indent on

@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="Util"
+	Name="PocoUtil"
 	ProjectGUID="{6FF56CDB-787A-4714-A28C-919003F9FA6C}"
 	RootNamespace="Util"
 	Keyword="Win32Proj"
@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)..\Output\Windows\VS90\$(ConfigurationName)\$(ProjectName)\"
-			IntermediateDirectory="$(OutDir)Intermediate"
+			OutputDirectory="$(SolutionDir)Build\VS90\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory="$(OutDir)\Intermediate\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -74,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -94,8 +94,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)..\Output\Windows\VS90\$(ConfigurationName)\$(ProjectName)\"
-			IntermediateDirectory="$(OutDir)Intermediate"
+			OutputDirectory="$(SolutionDir)Build\VS90\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory="$(OutDir)\Intermediate\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -146,7 +146,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

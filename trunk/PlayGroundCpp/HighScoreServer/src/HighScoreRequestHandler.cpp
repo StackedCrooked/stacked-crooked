@@ -71,7 +71,7 @@ namespace HSServer
             ostr << "</tr>";
         }
        
-        ostr << "</table></body></html>";
+        ostr << "</table>End-of-body</body></html>";
     }
 
     void AddHighScore::handleRequest(Poco::Net::HTTPServerRequest& inRequest,

@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="XML"
+	Name="PocoXML"
 	ProjectGUID="{9E211743-85FE-4977-82F3-4F04B40C912D}"
 	RootNamespace="XML"
 	TargetFrameworkVersion="0"
@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)..\Output\Windows\VS90\$(ConfigurationName)\$(ProjectName)\"
-			IntermediateDirectory="$(OutDir)Intermediate"
+			OutputDirectory="$(SolutionDir)Build\VS90\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory="$(OutDir)\Intermediate\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="1"
@@ -73,7 +73,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="false"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -93,8 +93,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)..\Output\Windows\VS90\$(ConfigurationName)\$(ProjectName)\"
-			IntermediateDirectory="$(OutDir)Intermediate"
+			OutputDirectory="$(SolutionDir)Build\VS90\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory="$(OutDir)\Intermediate\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="1"
@@ -145,7 +145,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="false"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

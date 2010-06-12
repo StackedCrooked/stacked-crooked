@@ -23,11 +23,22 @@ if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
 winp 600 100
 win 100 50
+endif
 
 " Windows settings
-elseif has("win32")
+if has("win32")
 set gfn=Courier_New:h10:cANSI
 winp 600 0
 win 100 50
+endif
+
+" Menus
+if has("win32")
+menu Bookmarks.vimrc :open C:\Program Files\Vim\_vimrc<CR>
+endif
+
+" Clojure settings
+if has("win32")
+
 endif
 

@@ -1,44 +1,96 @@
+" Don't replace tabs with spaces in makefiles
 autocmd FileType make set noexpandtab
+
+" Set the colorscheme
 colorscheme torte
+
+" Set filetype dependent indention rules
 filetype plugin indent on
+
+" Set auto-indent rules
 set autoindent
+
+" Enable most intuitive backspace behavior
 set bs=2
+
+" Expand tabs to spaces
 set expandtab
+
+" Colorize search results
 set hlsearch 
+
+" Show search results while typing
 set incsearch
+
+" Disable annoying backup/swap files
 set nobackup
-set nocompatible
 set noswapfile
 set nowritebackup 
+
+" Turn off vi compatibility
+set nocompatible
+
+" Show the rules
 set ruler
+
+" Width of indention (number of spaces)
 set shiftwidth=4
+
+" Show matching brackets
 set showmatch
+
+" Set ignore case when searching using only lower case characters
+set smartcase
+
+" Smart auto-indenting when typing a new line
 set smartindent
+
+" Set tabs to 4 spaces
 set softtabstop=4 
 set tabstop=4 
+
+" Enable syntax coloring
 syntax enable
 
-" Unix settings
+" Yank until end of line
+map Y y$
+
+" Unix-specific settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
 winp 600 100
 win 100 50
 endif
 
-" Windows settings
+" Windows-specific settings
 if has("win32")
 set gfn=Courier_New:h10:cANSI
 winp 600 0
 win 100 50
 endif
 
-" Menus
+" Bookmarks menu
 if has("win32")
 menu Bookmarks.vimrc :open C:\Program Files\Vim\_vimrc<CR>
 endif
 
 " Clojure settings
 if has("win32")
-
+" Nothing yet
 endif
+
+
+" -----------------------------------------------------------------------------
+" Function keys
+" -----------------------------------------------------------------------------
+
+" Split current tab
+:map <F2> :tab split<CR>
+
+" Search for constructors in a cpp file
+:map <F3> /\(\<[A-Z]\w*\)::\1\><CR>
+
+" Search for destructors in a cpp file
+:map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
+
 

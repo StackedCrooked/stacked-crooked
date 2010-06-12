@@ -17,12 +17,12 @@ set smartindent
 set softtabstop=4 
 set tabstop=4 
 syntax enable
+
 " Unix settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
 winp 600 100
 win 100 50
-
 
 " Windows settings
 elseif has("win32")

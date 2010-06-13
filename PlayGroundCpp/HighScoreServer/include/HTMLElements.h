@@ -6,7 +6,7 @@
 #include <string>
 
 
-namespace HTMLElements
+namespace HTML
 {
 
 
@@ -53,7 +53,7 @@ namespace HTMLElements
     DECLARE_HTML_ELEMENT(td, "td")
 
 
-} // HTMLElements
+} // HTML
 
 
 #endif // HTMLELEMENTS_H_INCLUDED

@@ -4,11 +4,12 @@
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
 #include "Poco/Data/SessionFactory.h"
-#include "Poco/Data/Session.h"
 #include "Poco/Data/SQLite/Connector.h"
 #include "Poco/Data/RecordSet.h"
 #include "Poco/Util/Application.h"
+#include <boost/lexical_cast.hpp>
 #include <iostream>
+#include <sstream>
 
 
 using namespace Poco::Data;
@@ -17,6 +18,8 @@ using namespace Poco::Data;
 namespace HSServer
 {
     
+    typedef std::map<std::string, std::string> Args;
+
     void GetArgs(const std::string & inURI, Args & outArgs)
     {
         if (inURI.empty())
@@ -47,53 +50,115 @@ namespace HSServer
         }
     }
 
-
-    void CreateTable()
+    
+    HighScoreRequestHandler::HighScoreRequestHandler() :
+        mSession(SessionFactory::instance().create("SQLite", "HighScores.db"))
     {
-        SessionFactory & sessionFactory(SessionFactory::instance());
-        Session session(sessionFactory.create("SQLite", "HighScores.db"));
-        session << "CREATE TABLE IF NOT EXISTS HighScores(Score INTEGER(5))", now;
-        
+        // Create the table if it doesn't already exist
+        mSession << "CREATE TABLE IF NOT EXISTS HighScores(Name VARCHAR(20), Score INTEGER(5))", now;
     }
 
-
-    void GenerateResponse(std::ostream & ostr)
-    {
-        HTMLElements::html html(ostr);
-        HTMLElements::body body(ostr);
-        HTMLElements::p(ostr, "High Score Table");
-        HTMLElements::table table(ostr);
-        
-        Session session("SQLite", "HighScores.db");
-        Statement select(session);
-        select << "SELECT * FROM HighScores";
-        select.execute();
-        RecordSet rs(select);
-        for (size_t idx = 0; idx != rs.rowCount(); ++idx)
-        {
-            HTMLElements::tr tr(ostr);
-            HTMLElements::td td(ostr, rs.value(0, idx));
-        }
-        ostr << "</table></body></html>";
-    }
-
-
-    void GetAllHighScores::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
-                                         Poco::Net::HTTPServerResponse& inResponse)
+    
+    void HighScoreRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
+                                                Poco::Net::HTTPServerResponse& inResponse)
     {
         Poco::Util::Application& app = Poco::Util::Application::instance();
         app.logger().information("Request from " + inRequest.clientAddress().toString());
 
-        CreateTable();
-
         inResponse.setChunkedTransferEncoding(true);
         inResponse.setContentType("text/html");
-        GenerateResponse(inResponse.send());
+        try
+        {
+            generateResponse(mSession, inResponse.send());
+        }
+        catch (const std::exception & inException)
+        {
+            app.logger().critical(inException.what());
+        }
+    }
+    
+    
+    GetAllHighScores * GetAllHighScores::Create(const std::string & inURI)
+    {
+        return new GetAllHighScores;
     }
 
-    void AddHighScore::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
-                                                Poco::Net::HTTPServerResponse& inResponse)
+
+    void GetAllHighScores::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
+        HTML::html html(ostr);
+        HTML::body body(ostr);
+        HTML::p(ostr, "High Score Table");
+        HTML::table table(ostr);
+        
+        Statement select(inSession);
+        select << "SELECT * FROM HighScores";
+        select.execute();
+        RecordSet rs(select);
+        for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
+        {
+            
+            HTML::tr tr(ostr);
+            for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
+            {
+                HTML::td td(ostr, rs.value(colIdx, rowIdx));
+            }
+        }
+    }
+    
+    
+    AddHighScore * AddHighScore::Create(const std::string & inURI)
+    {
+        Args args;
+        GetArgs(inURI, args);
+
+        Args::iterator it = args.find("name");
+        if (it == args.end())
+        {
+            throw std::runtime_error("Could not find 'name' argument in GET URL for AddHighScore method.");
+        }
+
+        std::string name = it->second;
+
+        it = args.find("score");
+        if (it == args.end())
+        {
+            // TODO: create class MissingArgument
+            throw std::runtime_error("Could not find 'score' argument in GET URL for AddHighScore method.");
+        }
+
+        int score = 0;
+        try
+        {
+            score = boost::lexical_cast<int>(it->second);
+        }
+        catch (const boost::bad_lexical_cast & )
+        {
+            throw std::runtime_error("Argument 'score' must be of type INTEGER.");
+        }
+
+        return new AddHighScore(name, score);
+    }
+
+
+    AddHighScore::AddHighScore(const std::string & inName, int inScore) :
+        mName(inName),
+        mScore(inScore)
+    {
+    }
+
+
+    void AddHighScore::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
+    {
+        HTML::html html(ostr);
+        HTML::body body(ostr);
+
+        Statement insert(inSession);
+        insert << "INSERT INTO HighScores VALUES('" << mName << "', " << mScore << ")", now;
+
+        std::stringstream ss;
+        ss << "Added High Score: " << mName << ": " << mScore;
+        HTML::p p(ostr, ss.str());
     }
 
 } // namespace HSServer

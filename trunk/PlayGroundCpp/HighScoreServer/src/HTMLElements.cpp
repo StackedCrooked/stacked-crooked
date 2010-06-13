@@ -1,7 +1,7 @@
 #include "HTMLElements.h"
 
 
-namespace HTMLElements
+namespace HTML
 {
 
     IMPLEMENT_HTML_ELEMENT(html)

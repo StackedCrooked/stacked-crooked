@@ -12,11 +12,11 @@ namespace HSServer
     {
         if (inRequest.getURI().find("/method=GetAllHighScores") == 0)
         {
-            return new GetAllHighScores;
+            return GetAllHighScores::Create(inRequest.getURI());
         }
         else if (inRequest.getURI().find("/method=AddHighScore") == 0)
         {
-            return new AddHighScore;
+            return AddHighScore::Create(inRequest.getURI());
         }
         return 0;
     }

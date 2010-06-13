@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\lib\PocoSQLitemt.lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 				AdditionalLibraryDirectories="..\..\lib"
 			/>
 			<Tool
@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\lib\PocoSQLitemtd.lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 				AdditionalLibraryDirectories="..\..\lib"
 			/>
 			<Tool

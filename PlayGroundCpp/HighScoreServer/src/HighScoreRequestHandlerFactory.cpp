@@ -9,7 +9,7 @@ namespace HSServer
 
     Poco::Net::HTTPRequestHandler *
     HighScoreRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& inRequest)
-    {
+    {        
         if (inRequest.getURI().find("/method=GetAllHighScores") == 0)
         {
             return GetAllHighScores::Create(inRequest.getURI());
@@ -18,7 +18,10 @@ namespace HSServer
         {
             return AddHighScore::Create(inRequest.getURI());
         }
-        return 0;
+        else
+        {
+            return DefaultRequestHandler::Create(inRequest.getURI());
+        }
     }
 
 } // namespace HSServer

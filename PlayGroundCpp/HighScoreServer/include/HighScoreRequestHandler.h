@@ -42,6 +42,19 @@ namespace HSServer
     };
 
         
+    class DefaultRequestHandler : public HighScoreRequestHandler
+    {
+    public:        
+        static DefaultRequestHandler * Create(const std::string & inURI);
+
+    protected:
+        virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
+
+    private:
+        DefaultRequestHandler() {}
+    };
+
+        
     class GetAllHighScores : public HighScoreRequestHandler
     {
     public:        

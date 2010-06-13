@@ -13,6 +13,7 @@
 
 
 using namespace Poco::Data;
+using namespace HTML;
 
 
 namespace HSServer
@@ -55,7 +56,7 @@ namespace HSServer
         mSession(SessionFactory::instance().create("SQLite", "HighScores.db"))
     {
         // Create the table if it doesn't already exist
-        mSession << "CREATE TABLE IF NOT EXISTS HighScores(Name VARCHAR(20), Score INTEGER(5))", now;
+        mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
     }
 
     
@@ -86,10 +87,10 @@ namespace HSServer
 
     void GetAllHighScores::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML::html html(ostr);
-        HTML::body body(ostr);
-        HTML::p(ostr, "High Score Table");
-        HTML::table table(ostr);
+        HTMLElement html("html", ostr);
+        HTMLElement body("body", ostr);
+        HTMLElement p("p", "High Score Table", ostr);
+        HTMLElement table("table", ostr);
         
         Statement select(inSession);
         select << "SELECT * FROM HighScores";
@@ -97,10 +98,10 @@ namespace HSServer
         RecordSet rs(select);
         for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
         {   
-            HTML::tr tr(ostr);
+            HTMLElement tr("tr", ostr);
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
             {
-                HTML::td td(ostr, rs.value(colIdx, rowIdx));
+                HTMLElement td("td", rs.value(colIdx, rowIdx), ostr);
             }
         }
     }
@@ -148,18 +149,18 @@ namespace HSServer
 
     void AddHighScore::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML::html html(ostr);
-        HTML::body body(ostr);
+        HTMLElement html("html", ostr);
+        HTMLElement body("body", ostr);
 
         Statement insert(inSession);
 
-        insert << "INSERT INTO HighScores VALUES(?, ?)", use(mHighScore.name()),
-                                                         use(mHighScore.score());
+        insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(mHighScore.name()),
+                                                               use(mHighScore.score());
         insert.execute();
 
         std::stringstream ss;
         ss << "Added High Score: " << mHighScore.name() << ": " << mHighScore.score();
-        HTML::p p(ostr, ss.str());
+        HTMLElement p("p", ss.str(), ostr);
     }
 
 } // namespace HSServer

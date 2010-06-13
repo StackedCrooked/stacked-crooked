@@ -16,7 +16,9 @@ namespace HSServer
 
 	    int port = config().getInt("HighScoreServer.port", 9980);
 	    int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
-	    int maxThreads = config().getInt("HighScoreServer.maxThreads", 16);
+	    
+        // Only allow one thread because the database using simple locking
+        int maxThreads = config().getInt("HighScoreServer.maxThreads", 1);
         Poco::ThreadPool::defaultPool().addCapacity(maxThreads);
 		
         Poco::Net::HTTPServerParams * params = new Poco::Net::HTTPServerParams;

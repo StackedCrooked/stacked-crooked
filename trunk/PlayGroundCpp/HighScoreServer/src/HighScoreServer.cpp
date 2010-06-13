@@ -14,7 +14,7 @@ namespace HSServer
         Poco::Data::SQLite::Connector::registerConnector();
 
 
-        int port = config().getInt("HighScoreServer.port", 9980);
+        int port = config().getInt("HighScoreServer.port", 80);
         int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
         
         // Only allow one thread because the database using simple locking

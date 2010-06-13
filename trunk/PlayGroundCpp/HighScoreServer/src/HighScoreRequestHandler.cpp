@@ -76,6 +76,21 @@ namespace HSServer
         {
             app.logger().critical(inException.what());
         }
+    }    
+    
+    
+    DefaultRequestHandler * DefaultRequestHandler::Create(const std::string & inURI)
+    {
+        return new DefaultRequestHandler;
+    }
+
+
+    void DefaultRequestHandler::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
+    {
+        HTMLElement html("html", ostr);
+        HTMLElement body("body", ostr);
+        HTMLElement h1("h1", "High Score Server", ostr);
+        HTMLElement p("p", "There is nothing here.", ostr);
     }
     
     

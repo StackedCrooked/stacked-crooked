@@ -26,6 +26,21 @@ namespace HSServer
         Poco::Data::Session mSession;
     };
 
+
+    class HighScore
+    {
+    public:
+        HighScore(const std::string & inName, int inScore) : mName(inName), mScore(inScore) {}
+
+        const std::string & name() const { return mName; }
+
+        int score() const { return mScore; }
+
+    private:
+        std::string mName;
+        int mScore;
+    };
+
         
     class GetAllHighScores : public HighScoreRequestHandler
     {
@@ -49,9 +64,8 @@ namespace HSServer
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
 
     private:
-        AddHighScore(const std::string & inName, int inScore);
-        std::string mName;
-        int mScore;
+        AddHighScore(const HighScore & inHighScore);
+        HighScore mHighScore;
     };
 
 } // HighScoreServer

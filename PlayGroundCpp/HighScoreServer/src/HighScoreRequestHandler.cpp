@@ -96,8 +96,7 @@ namespace HSServer
         select.execute();
         RecordSet rs(select);
         for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
-        {
-            
+        {   
             HTML::tr tr(ostr);
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
             {
@@ -137,13 +136,12 @@ namespace HSServer
             throw std::runtime_error("Argument 'score' must be of type INTEGER.");
         }
 
-        return new AddHighScore(name, score);
+        return new AddHighScore(HighScore(name, score));
     }
 
 
-    AddHighScore::AddHighScore(const std::string & inName, int inScore) :
-        mName(inName),
-        mScore(inScore)
+    AddHighScore::AddHighScore(const HighScore & inHighScore) :
+        mHighScore(inHighScore)
     {
     }
 
@@ -154,10 +152,13 @@ namespace HSServer
         HTML::body body(ostr);
 
         Statement insert(inSession);
-        insert << "INSERT INTO HighScores VALUES('" << mName << "', " << mScore << ")", now;
+
+        insert << "INSERT INTO HighScores VALUES(?, ?)", use(mHighScore.name()),
+                                                         use(mHighScore.score());
+        insert.execute();
 
         std::stringstream ss;
-        ss << "Added High Score: " << mName << ": " << mScore;
+        ss << "Added High Score: " << mHighScore.name() << ": " << mHighScore.score();
         HTML::p p(ostr, ss.str());
     }
 

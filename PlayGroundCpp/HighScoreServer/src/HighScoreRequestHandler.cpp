@@ -1,12 +1,17 @@
 #include "HighScoreRequestHandler.h"
+#include "HTMLElements.h"
 #include "Poco/StringTokenizer.h"
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
 #include "Poco/Data/SessionFactory.h"
 #include "Poco/Data/Session.h"
+#include "Poco/Data/SQLite/Connector.h"
 #include "Poco/Data/RecordSet.h"
 #include "Poco/Util/Application.h"
 #include <iostream>
+
+
+using namespace Poco::Data;
 
 
 namespace HSServer
@@ -43,35 +48,47 @@ namespace HSServer
     }
 
 
+    void CreateTable()
+    {
+        SessionFactory & sessionFactory(SessionFactory::instance());
+        Session session(sessionFactory.create("SQLite", "HighScores.db"));
+        session << "CREATE TABLE IF NOT EXISTS HighScores(Score INTEGER(5))", now;
+        
+    }
+
+
+    void GenerateResponse(std::ostream & ostr)
+    {
+        HTMLElements::html html(ostr);
+        HTMLElements::body body(ostr);
+        HTMLElements::p(ostr, "High Score Table");
+        HTMLElements::table table(ostr);
+        
+        Session session("SQLite", "HighScores.db");
+        Statement select(session);
+        select << "SELECT * FROM HighScores";
+        select.execute();
+        RecordSet rs(select);
+        for (size_t idx = 0; idx != rs.rowCount(); ++idx)
+        {
+            HTMLElements::tr tr(ostr);
+            HTMLElements::td td(ostr, rs.value(0, idx));
+        }
+        ostr << "</table></body></html>";
+    }
+
+
     void GetAllHighScores::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
                                          Poco::Net::HTTPServerResponse& inResponse)
     {
         Poco::Util::Application& app = Poco::Util::Application::instance();
         app.logger().information("Request from " + inRequest.clientAddress().toString());
 
+        CreateTable();
+
         inResponse.setChunkedTransferEncoding(true);
         inResponse.setContentType("text/html");
-
-
-        // create a session
-        Poco::Data::Session session("SQLite", "sample.db");
-        Poco::Data::Statement select(session);
-        select << "SELECT * FROM HighScores";
-        select.execute();
-        
-        std::ostream& ostr = inResponse.send();
-        ostr << "<html><body><p>High Score Table</p><table>";
-        
-        Poco::Data::RecordSet rs(select);
-        for (size_t idx = 0; idx != rs.rowCount(); ++idx)
-        {
-            ostr << "<tr>";
-            ostr << "<td>" << (int)rs.value(0, idx) << "</td>";
-            ostr << "<td>" << (int)rs.value(1, idx) << "</td>";
-            ostr << "</tr>";
-        }
-       
-        ostr << "</table>End-of-body</body></html>";
+        GenerateResponse(inResponse.send());
     }
 
     void AddHighScore::handleRequest(Poco::Net::HTTPServerRequest& inRequest,

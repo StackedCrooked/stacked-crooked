@@ -11,6 +11,9 @@ namespace HSServer
 
     int HighScoreServer::main(const std::vector<std::string>& args)
     {
+        Poco::Data::SQLite::Connector::registerConnector();
+
+
 	    int port = config().getInt("HighScoreServer.port", 9980);
 	    int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
 	    int maxThreads = config().getInt("HighScoreServer.maxThreads", 16);
@@ -23,7 +26,6 @@ namespace HSServer
         Poco::Net::ServerSocket serverSocket(port);
 	    Poco::Net::HTTPServer httpServer(new HighScoreRequestHandlerFactory, serverSocket, params);
 
-        Poco::Data::SQLite::Connector::registerConnector();
 
 	    httpServer.start();
 	    waitForTerminationRequest();

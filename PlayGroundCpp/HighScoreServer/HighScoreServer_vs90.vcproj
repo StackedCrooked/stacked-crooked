@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\HTMLElements.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\main.cpp"
 				>
 			</File>
@@ -215,6 +219,10 @@
 			</File>
 			<File
 				RelativePath=".\include\HighScoreServer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\HTMLElements.h"
 				>
 			</File>
 		</Filter>

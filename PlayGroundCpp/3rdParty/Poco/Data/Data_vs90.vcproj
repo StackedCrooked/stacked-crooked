@@ -74,7 +74,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies=""
-				OutputFile="..\lib\PocoDatamt.lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -146,7 +146,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies=""
-				OutputFile="..\lib\PocoDatamtd.lib"
+				OutputFile="$(OutDir)$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

@@ -109,65 +109,90 @@ namespace HTML
     };
 
 
-    #define DECLARE_BLOCK_ELEMENT(CLASS, TAGNAME) \
-        class HTML_##CLASS : public HTMLBlockElement            \
-        {                                                       \
-        public:                                                 \
-            HTML_##CLASS() : HTMLBlockElement(TAGNAME) {}       \
+    #define DECLARE_BLOCK_ELEMENT(CLASS, TAGNAME)                                                 \
+        class HTML_##CLASS : public HTMLBlockElement                                              \
+        {                                                                                         \
+        public:                                                                                   \
+            HTML_##CLASS();                                                                       \
         };
 
 
-    #define DECLARE_INLINE_ELEMENT(CLASS, TAGNAME) \
-        class HTML_##CLASS : public HTMLInlineElement                                           \
-        {                                                                                       \
-        public:                                                                                 \
-            HTML_##CLASS() : HTMLInlineElement(TAGNAME) {}                                      \
-            HTML_##CLASS(const std::string & inText) : HTMLInlineElement(TAGNAME, inText) {}    \
+    #define IMPLEMENT_BLOCK_ELEMENT(CLASS, TAGNAME)                                               \
+        HTML_##CLASS::HTML_##CLASS() :                                                            \
+            HTMLBlockElement(TAGNAME)                                                             \
+        {                                                                                         \
+        }
+
+
+    #define DECLARE_INLINE_ELEMENT(CLASS, TAGNAME)                                                \
+        class HTML_##CLASS : public HTMLInlineElement                                             \
+        {                                                                                         \
+        public:                                                                                   \
+            HTML_##CLASS();                                                                       \
+            HTML_##CLASS(const std::string & inText);                                             \
         };
 
 
-    #define DECLARE_SELFCLOSING_ELEMENT(CLASS, TAGNAME) \
-        class HTML_##CLASS : public HTMLSelfClosingElement          \
-        {                                                           \
-        public:                                                     \
-            HTML_##CLASS() : HTMLSelfClosingElement(TAGNAME) {}     \
+    #define IMPLEMENT_INLINE_ELEMENT(CLASS, TAGNAME)                                              \
+        HTML_##CLASS::HTML_##CLASS() :                                                            \
+            HTMLInlineElement(TAGNAME)                                                            \
+        {                                                                                         \
+        }                                                                                         \
+        HTML_##CLASS::HTML_##CLASS(const std::string & inText) :                                  \
+            HTMLInlineElement(TAGNAME, inText)                                                    \
+        {                                                                                         \
+        }
+
+
+    #define DECLARE_SELFCLOSING_ELEMENT(CLASS, TAGNAME)                                           \
+        class HTML_##CLASS : public HTMLSelfClosingElement                                        \
+        {                                                                                         \
+        public:                                                                                   \
+            HTML_##CLASS();                                                                       \
         };
 
 
-    DECLARE_BLOCK_ELEMENT(blockquote, "blockquote");    
-    DECLARE_BLOCK_ELEMENT(body, "body");
-    DECLARE_BLOCK_ELEMENT(div, "div");
-    DECLARE_BLOCK_ELEMENT(head, "head");
-    DECLARE_BLOCK_ELEMENT(html, "html");
-    DECLARE_BLOCK_ELEMENT(table, "table");
-    DECLARE_BLOCK_ELEMENT(thead, "thead");
-    DECLARE_BLOCK_ELEMENT(tr, "tr");
-    DECLARE_BLOCK_ELEMENT(ul, "ul");
+    #define IMPLEMENT_SELFCLOSING_ELEMENT(CLASS, TAGNAME)                                         \
+        HTML_##CLASS::HTML_##CLASS() :                                                            \
+            HTMLSelfClosingElement(TAGNAME)                                                       \
+        {                                                                                         \
+        }
 
-    DECLARE_INLINE_ELEMENT(a, "a");
-    DECLARE_INLINE_ELEMENT(b, "b");
-    DECLARE_INLINE_ELEMENT(h1, "h1");
-    DECLARE_INLINE_ELEMENT(h2, "h2");
-    DECLARE_INLINE_ELEMENT(h3, "h3");
-    DECLARE_INLINE_ELEMENT(h4, "h4");
-    DECLARE_INLINE_ELEMENT(h5, "h5");
-    DECLARE_INLINE_ELEMENT(h6, "h6");
-    DECLARE_INLINE_ELEMENT(i, "i");
-    DECLARE_INLINE_ELEMENT(img, "img");
-    DECLARE_INLINE_ELEMENT(li, "li");    
-    DECLARE_INLINE_ELEMENT(nobr, "nobr");
-    DECLARE_INLINE_ELEMENT(p, "p");
-    DECLARE_INLINE_ELEMENT(pre, "pre");
-    DECLARE_INLINE_ELEMENT(span, "span");    
-    DECLARE_INLINE_ELEMENT(strong, "strong");
-    DECLARE_INLINE_ELEMENT(td, "td");
-    DECLARE_INLINE_ELEMENT(th, "th");
-    DECLARE_INLINE_ELEMENT(title, "title");
-    DECLARE_INLINE_ELEMENT(u, "u");
 
-    DECLARE_SELFCLOSING_ELEMENT(br, "br");
-    DECLARE_SELFCLOSING_ELEMENT(hr, "hr");
-    DECLARE_SELFCLOSING_ELEMENT(meta, "meta");
+    DECLARE_BLOCK_ELEMENT(blockquote, "blockquote")    
+    DECLARE_BLOCK_ELEMENT(body, "body")
+    DECLARE_BLOCK_ELEMENT(div, "div")
+    DECLARE_BLOCK_ELEMENT(head, "head")
+    DECLARE_BLOCK_ELEMENT(html, "html")
+    DECLARE_BLOCK_ELEMENT(table, "table")
+    DECLARE_BLOCK_ELEMENT(thead, "thead")
+    DECLARE_BLOCK_ELEMENT(tr, "tr")
+    DECLARE_BLOCK_ELEMENT(ul, "ul")
+
+    DECLARE_INLINE_ELEMENT(a, "a")
+    DECLARE_INLINE_ELEMENT(b, "b")
+    DECLARE_INLINE_ELEMENT(h1, "h1")
+    DECLARE_INLINE_ELEMENT(h2, "h2")
+    DECLARE_INLINE_ELEMENT(h3, "h3")
+    DECLARE_INLINE_ELEMENT(h4, "h4")
+    DECLARE_INLINE_ELEMENT(h5, "h5")
+    DECLARE_INLINE_ELEMENT(h6, "h6")
+    DECLARE_INLINE_ELEMENT(i, "i")
+    DECLARE_INLINE_ELEMENT(img, "img")
+    DECLARE_INLINE_ELEMENT(li, "li")    
+    DECLARE_INLINE_ELEMENT(nobr, "nobr")
+    DECLARE_INLINE_ELEMENT(p, "p")
+    DECLARE_INLINE_ELEMENT(pre, "pre")
+    DECLARE_INLINE_ELEMENT(span, "span")    
+    DECLARE_INLINE_ELEMENT(strong, "strong")
+    DECLARE_INLINE_ELEMENT(td, "td")
+    DECLARE_INLINE_ELEMENT(th, "th")
+    DECLARE_INLINE_ELEMENT(title, "title")
+    DECLARE_INLINE_ELEMENT(u, "u")
+
+    DECLARE_SELFCLOSING_ELEMENT(br, "br")
+    DECLARE_SELFCLOSING_ELEMENT(hr, "hr")
+    DECLARE_SELFCLOSING_ELEMENT(meta, "meta")
 
 } // HTML
 

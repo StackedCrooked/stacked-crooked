@@ -9,7 +9,6 @@
 namespace HTML
 {
     static const size_t cIndent = 2;
-    std::string whitespace(size_t n);
 
     class HTMLElement
     {

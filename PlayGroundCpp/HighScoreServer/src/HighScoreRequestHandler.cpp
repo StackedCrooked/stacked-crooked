@@ -68,9 +68,12 @@ namespace HSServer
 
         inResponse.setChunkedTransferEncoding(true);
         inResponse.setContentType("text/html");
+
+        std::ostream & outStream = inResponse.send();
+        HTML::CurrentOutStream currentOutputStream(outStream);
         try
         {
-            generateResponse(mSession, inResponse.send());
+            generateResponse(mSession, outStream);
         }
         catch (const std::exception & inException)
         {
@@ -87,10 +90,20 @@ namespace HSServer
 
     void DefaultRequestHandler::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTMLElement html("html", ostr);
-        HTMLElement body("body", ostr);
-        HTMLElement h1("h1", "High Score Server", ostr);
-        HTMLElement p("p", "There is nothing here.", ostr);
+        Html html;
+        Body body;
+        H1 h1("High Score Server");
+        P p("There is nothing here.");
+        B b("I'm bold.");Br();
+        I i("I'm scheef."); Br();
+        U u("I'm underlined.");
+        {
+            P p1;
+            B b1;
+            I i1;
+            U u1;
+            Write("Nested everything.\n");
+        }
     }
     
     
@@ -102,21 +115,20 @@ namespace HSServer
 
     void GetAllHighScores::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTMLElement html("html", ostr);
-        HTMLElement body("body", ostr);
-        HTMLElement p("p", "High Score Table", ostr);
-        HTMLElement table("table", ostr);
-        
+        Html html;
+        Body body;
+        P p("High Score Table");
+        Table table;        
         Statement select(inSession);
         select << "SELECT * FROM HighScores";
         select.execute();
         RecordSet rs(select);
         for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
         {   
-            HTMLElement tr("tr", ostr);
+            Tr tr;
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
             {
-                HTMLElement td("td", rs.value(colIdx, rowIdx), ostr);
+                Td td;
             }
         }
     }
@@ -164,8 +176,8 @@ namespace HSServer
 
     void AddHighScore::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTMLElement html("html", ostr);
-        HTMLElement body("body", ostr);
+        HTMLElement html("html");
+        HTMLElement body("body");
 
         Statement insert(inSession);
 
@@ -175,7 +187,7 @@ namespace HSServer
 
         std::stringstream ss;
         ss << "Added High Score: " << mHighScore.name() << ": " << mHighScore.score();
-        HTMLElement p("p", ss.str(), ostr);
+        HTMLElement p("p", ss.str());
     }
 
 } // namespace HSServer

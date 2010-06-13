@@ -186,6 +186,18 @@ namespace HSServer
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
             {
                 HTML_td td;
+                Poco::DynamicAny v = rs.value(colIdx, rowIdx);
+                if (v.isString())
+                {
+                    std::string s = v;
+                    Write(s);
+                }
+                else if (v.isNumeric())
+                {
+                    int i = v;
+                    std::string s = boost::lexical_cast<std::string>(i);
+                    Write(s);
+                }                
             }
         }
     }

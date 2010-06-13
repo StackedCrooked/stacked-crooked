@@ -8,50 +8,26 @@
 
 namespace HTML
 {
+    static const size_t cIndent = 2;
+    std::string whitespace(size_t n);
 
+    class HTMLElement
+    {
+    public:
+        HTMLElement(const std::string & inTagName, std::ostream & outStream);
 
-#define DECLARE_HTML_ELEMENT(HTML_ELEMENT, TAGNAME) \
-    class HTML_ELEMENT                                                  \
-    {                                                                   \
-    public:                                                             \
-        HTML_ELEMENT(std::ostream & ostr);                              \
-        HTML_ELEMENT(std::ostream & ostr, const std::string& );         \
-        ~HTML_ELEMENT();                                                \
-        static const char * TagName() { return TAGNAME; }               \
-    private:                                                            \
-        std::string mText;                                              \
-        std::ostream & mOstr;                                           \
+        HTMLElement(const std::string & inTagName, const std::string& inText, std::ostream & outStream);
+
+        ~HTMLElement();
+
+    private:
+        std::string whitespace(size_t n);
+
+        std::string mTagName;
+        std::string mText;
+        std::ostream & mOutStream;
+        static size_t sDepth;
     };
-
-#define IMPLEMENT_HTML_ELEMENT(HTML_ELEMENT) \
-    HTML_ELEMENT::HTML_ELEMENT(std::ostream & ostr) :                                       \
-        mOstr(ostr)                                                                         \
-    {                                                                                       \
-        mOstr << "<" << TagName() << ">";                                                   \
-    }                                                                                       \
-    HTML_ELEMENT::HTML_ELEMENT(std::ostream & ostr, const std::string & inText) :           \
-        mText(inText),                                                                      \
-        mOstr(ostr)                                                                         \
-    {                                                                                       \
-        mOstr << "<" << TagName() << ">" << mText << "</" << TagName() << ">";              \
-    }                                                                                       \
-    HTML_ELEMENT::~HTML_ELEMENT()                                                           \
-    {                                                                                       \
-        if (mText.empty())                                                                  \
-        {                                                                                   \
-            mOstr << "</" << TagName() << ">";                                              \
-        }                                                                                   \
-    }
-
-
-    DECLARE_HTML_ELEMENT(html, "html")
-    DECLARE_HTML_ELEMENT(head, "head")
-    DECLARE_HTML_ELEMENT(body, "body")
-    DECLARE_HTML_ELEMENT(p, "p")
-    DECLARE_HTML_ELEMENT(table, "table")
-    DECLARE_HTML_ELEMENT(tr, "tr")
-    DECLARE_HTML_ELEMENT(td, "td")
-
 
 } // HTML
 

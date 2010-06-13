@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <list>
 #include <stack>
 #include <string>
 
@@ -28,64 +29,145 @@ namespace HTML
         static std::stack<CurrentOutStream*> sInstanceStack;
     };
 
+    // Requires that a CurrentOutStream object is currently existing.
     void Write(const std::string & inText);
 
+    // Requires that a CurrentOutStream object is currently existing.
     std::string Whitespace(size_t n);
+
+
+    enum ElementType
+    {
+        ElementType_Block,
+        ElementType_Inline,
+        ElementType_SelfClosing,
+    };
+
 
     // Requires that a CurrentOutStream object is currently existing.
     class HTMLElement
     {
     public:
-        
-        HTMLElement(const std::string & inTagName);
-
-        HTMLElement(const std::string & inTagName, const std::string & inText);
-
         virtual ~HTMLElement();
 
-    private:
+        // The current element does not yet have a closing tag.
+        bool isClosed() const;
 
-        std::string openTag();
-        std::string closeTag();
-        std::string selfClosingTag();
-        std::string completeNode();
+        ElementType elementType() const;
 
-        static std::string OpenTag(const std::string & inTagName);
-        static std::string CloseTag(const std::string & inTagName);
-        static std::string OpenCloseTag(const std::string & inTagName);
-        static std::string Surround(const std::string & inTagName, const std::string & inText);
+        std::string openingTag();
+        std::string closingTag();
 
+        static std::string OpeningTag(const std::string & inTagName);
+        static std::string ClosingTag(const std::string & inTagName);
+        static std::string SelfClosingTag(const std::string & inTagName);
+        static std::string CompleteNode(const std::string & inTagName, const std::string & inText);
+
+    protected:
+        HTMLElement(const std::string & inTagName, ElementType inElementType);
+
+        bool mClosed;
         std::string mTagName;
-        std::string mText;
+        ElementType mElementType;
         std::ostream & mOutStream;
+        static HTMLElement * sActiveInstance;
+        HTMLElement * mPrevInstance;
+    };
+
+    
+    class HTMLBlockElement : public HTMLElement
+    {
+    public:
+        // Contains child elements
+        HTMLBlockElement(const std::string & inTagName);
+
+        ~HTMLBlockElement();
+    };
+
+    
+    class HTMLInlineElement : public HTMLElement
+    {
+    public:
+        // Inline without line-breaks, may contain child elements.
+        HTMLInlineElement(const std::string & inTagName);
+
+        // Contains only text and is immediately closed.
+        HTMLInlineElement(const std::string & inTagName, const std::string & inText);
+
+        ~HTMLInlineElement();
     };
 
 
-    #define DECLARE_HTML_ELEMENT(ELEMENTNAME, TAGNAME) \
-        class ELEMENTNAME : public HTMLElement                                                                  \
-        {                                                                                                       \
-        public:                                                                                                 \
-            ELEMENTNAME() : HTMLElement(TAGNAME) {}                                                             \
-            ELEMENTNAME(const std::string & inText) : HTMLElement(TAGNAME, inText) {}                           \
+    class HTMLSelfClosingElement : public HTMLElement
+    {
+    public:
+        // Contains nothing and is immediately closed.
+        // For example: <br/>.
+        HTMLSelfClosingElement(const std::string & inTagName);
+
+        ~HTMLSelfClosingElement();
+    };
+
+
+    #define DECLARE_BLOCK_ELEMENT(CLASS, TAGNAME) \
+        class HTML_##CLASS : public HTMLBlockElement            \
+        {                                                       \
+        public:                                                 \
+            HTML_##CLASS() : HTMLBlockElement(TAGNAME) {}       \
         };
 
 
-    DECLARE_HTML_ELEMENT(Html, "html");
-    DECLARE_HTML_ELEMENT(Head, "head");
-    DECLARE_HTML_ELEMENT(Body, "body");
-    DECLARE_HTML_ELEMENT(H1, "h1");
-    DECLARE_HTML_ELEMENT(H2, "h2");
-    DECLARE_HTML_ELEMENT(H3, "h3");
-    DECLARE_HTML_ELEMENT(H4, "h4");
-    DECLARE_HTML_ELEMENT(P, "p");
-    DECLARE_HTML_ELEMENT(B, "b");
-    DECLARE_HTML_ELEMENT(I, "i");
-    DECLARE_HTML_ELEMENT(U, "u");
-    DECLARE_HTML_ELEMENT(Blockquote, "blockquote");
-    DECLARE_HTML_ELEMENT(Br, "br");
-    DECLARE_HTML_ELEMENT(Table, "table");
-    DECLARE_HTML_ELEMENT(Tr, "tr");
-    DECLARE_HTML_ELEMENT(Td, "td");
+    #define DECLARE_INLINE_ELEMENT(CLASS, TAGNAME) \
+        class HTML_##CLASS : public HTMLInlineElement                                           \
+        {                                                                                       \
+        public:                                                                                 \
+            HTML_##CLASS() : HTMLInlineElement(TAGNAME) {}                                      \
+            HTML_##CLASS(const std::string & inText) : HTMLInlineElement(TAGNAME, inText) {}    \
+        };
+
+
+    #define DECLARE_SELFCLOSING_ELEMENT(CLASS, TAGNAME) \
+        class HTML_##CLASS : public HTMLSelfClosingElement          \
+        {                                                           \
+        public:                                                     \
+            HTML_##CLASS() : HTMLSelfClosingElement(TAGNAME) {}     \
+        };
+
+
+    DECLARE_BLOCK_ELEMENT(blockquote, "blockquote");    
+    DECLARE_BLOCK_ELEMENT(body, "body");
+    DECLARE_BLOCK_ELEMENT(div, "div");
+    DECLARE_BLOCK_ELEMENT(head, "head");
+    DECLARE_BLOCK_ELEMENT(html, "html");
+    DECLARE_BLOCK_ELEMENT(table, "table");
+    DECLARE_BLOCK_ELEMENT(thead, "thead");
+    DECLARE_BLOCK_ELEMENT(tr, "tr");
+    DECLARE_BLOCK_ELEMENT(ul, "ul");
+
+    DECLARE_INLINE_ELEMENT(a, "a");
+    DECLARE_INLINE_ELEMENT(b, "b");
+    DECLARE_INLINE_ELEMENT(h1, "h1");
+    DECLARE_INLINE_ELEMENT(h2, "h2");
+    DECLARE_INLINE_ELEMENT(h3, "h3");
+    DECLARE_INLINE_ELEMENT(h4, "h4");
+    DECLARE_INLINE_ELEMENT(h5, "h5");
+    DECLARE_INLINE_ELEMENT(h6, "h6");
+    DECLARE_INLINE_ELEMENT(i, "i");
+    DECLARE_INLINE_ELEMENT(img, "img");
+    DECLARE_INLINE_ELEMENT(li, "li");    
+    DECLARE_INLINE_ELEMENT(nobr, "nobr");
+    DECLARE_INLINE_ELEMENT(p, "p");
+    DECLARE_INLINE_ELEMENT(pre, "pre");
+    DECLARE_INLINE_ELEMENT(span, "span");    
+    DECLARE_INLINE_ELEMENT(strong, "strong");
+    DECLARE_INLINE_ELEMENT(td, "td");
+    DECLARE_INLINE_ELEMENT(th, "th");
+    DECLARE_INLINE_ELEMENT(title, "title");
+    DECLARE_INLINE_ELEMENT(u, "u");
+
+    DECLARE_SELFCLOSING_ELEMENT(br, "br");
+    DECLARE_SELFCLOSING_ELEMENT(hr, "hr");
+    DECLARE_SELFCLOSING_ELEMENT(meta, "meta");
 
 } // HTML
 

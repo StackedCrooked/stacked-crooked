@@ -1,11 +1,15 @@
 #include "HTMLElements.h"
+#include <assert.h>
 
 
 namespace HTML
 {
-    static size_t sDepth(0);
+
+    static int sIndent(0);
+    
 
     std::stack<CurrentOutStream *> CurrentOutStream::sInstanceStack;
+    HTMLElement * HTMLElement::sActiveInstance(0);
 
 
     CurrentOutStream::CurrentOutStream(std::ostream & outStream) :
@@ -33,11 +37,7 @@ namespace HTML
 
     void Write(const std::string & inText)
     {
-        if (inText.empty())
-        {
-            return;
-        }
-        CurrentOutStream::CurrentlyActive() << Whitespace(sDepth) << inText;
+        CurrentOutStream::CurrentlyActive() << inText;
     }
 
 
@@ -52,81 +52,147 @@ namespace HTML
     }
 
 
-    HTMLElement::HTMLElement(const std::string & inTagName) :
+    HTMLElement::HTMLElement(const std::string & inTagName, ElementType inElementType) :
         mTagName(inTagName),
-        mOutStream(CurrentOutStream::CurrentlyActive())
+        mElementType(inElementType),
+        mOutStream(CurrentOutStream::CurrentlyActive()),
+        mClosed(false),
+        mPrevInstance(sActiveInstance)
     {
-        mOutStream << Whitespace(sDepth) << openTag() << "\n";
-        sDepth++;
-    }
-
-
-    HTMLElement::HTMLElement(const std::string & inTagName, const std::string& inText) :
-        mTagName(inTagName),
-        mText(inText),
-        mOutStream(CurrentOutStream::CurrentlyActive())
-    {
-        mOutStream << Whitespace(sDepth) << completeNode() << "\n";
-        // Note: don't increment sDepth here. It won't have children.
+        sActiveInstance = this;
     }
 
 
     HTMLElement::~HTMLElement()
     {
-        if (mText.empty())
-        {
-            sDepth--;
-            mOutStream << Whitespace(sDepth) << closeTag() << "\n";            
-        }
+        mClosed = true;
+        sActiveInstance = mPrevInstance;
     }
 
 
-    std::string HTMLElement::openTag()
+    bool HTMLElement::isClosed() const
     {
-        return OpenTag(mTagName);
+        return mClosed;
     }
 
 
-    std::string HTMLElement::closeTag()
+    ElementType HTMLElement::elementType() const
     {
-        return CloseTag(mTagName);
+        return mElementType;
+    }
+
+    std::string HTMLElement::openingTag()
+    {
+        return OpeningTag(mTagName);
     }
 
 
-    std::string HTMLElement::selfClosingTag()
+    std::string HTMLElement::closingTag()
     {
-        return OpenCloseTag(mTagName);
-    }
-
-
-    std::string HTMLElement::completeNode()
-    {
-        return Surround(mTagName, mText);
+        return ClosingTag(mTagName);
     }
 
     
-    std::string HTMLElement::OpenTag(const std::string & inTagName)
+    std::string HTMLElement::OpeningTag(const std::string & inTagName)
     {
         return "<" + inTagName + ">";
     }
 
 
-    std::string HTMLElement::CloseTag(const std::string & inTagName)
+    std::string HTMLElement::ClosingTag(const std::string & inTagName)
     {
         return "</" + inTagName + ">";
     }
 
 
-    std::string HTMLElement::OpenCloseTag(const std::string & inTagName)
+    std::string HTMLElement::SelfClosingTag(const std::string & inTagName)
     {
         return "<" + inTagName + "/>";
     }
 
 
-    std::string HTMLElement::Surround(const std::string & inTagName, const std::string & inText)
+    std::string HTMLElement::CompleteNode(const std::string & inTagName, const std::string & inText)
     {
-        return OpenTag(inTagName) + inText + CloseTag(inTagName);
+        return OpeningTag(inTagName) + inText + ClosingTag(inTagName);
     }
 
+
+    HTMLBlockElement::HTMLBlockElement(const std::string & inTagName) :
+        HTMLElement(inTagName, ElementType_Block)
+    {   
+        mOutStream << Whitespace(sIndent) << openingTag() << "\n";
+        sIndent++;
+    }
+
+    
+    HTMLBlockElement::~HTMLBlockElement()
+    {
+        sIndent--;
+        mOutStream << Whitespace(sIndent) << closingTag() << "\n";
+    }
+
+
+    HTMLInlineElement::HTMLInlineElement(const std::string & inTagName, const std::string & inText) :
+        HTMLElement(inTagName, ElementType_Inline)
+    {
+        if (mPrevInstance)
+        {
+            if (mPrevInstance->elementType() == ElementType_Block || mPrevInstance->isClosed())
+            {
+                mOutStream << Whitespace(sIndent);
+            }
+        }
+
+        mOutStream << CompleteNode(inTagName, inText);
+        mClosed = true;
+        if (mPrevInstance->elementType() != ElementType_Inline || mPrevInstance->isClosed())
+        {
+            mOutStream << "\n";
+        }
+    }
+
+
+    HTMLInlineElement::HTMLInlineElement(const std::string & inTagName) :
+        HTMLElement(inTagName, ElementType_Inline)
+    {
+        if (mPrevInstance)
+        {
+            if (mPrevInstance->elementType() == ElementType_Block || mPrevInstance->isClosed())
+            {
+                mOutStream << Whitespace(sIndent);
+            }
+        }
+        mOutStream << openingTag();
+    }
+
+
+    HTMLInlineElement::~HTMLInlineElement()
+    {  
+        if (!mClosed)
+        {
+            mOutStream << closingTag();
+            mClosed = true;            
+            if (mPrevInstance->elementType() != ElementType_Inline || mPrevInstance->isClosed())
+            {
+                mOutStream << "\n";
+            }
+        }
+    }
+
+
+    HTMLSelfClosingElement::HTMLSelfClosingElement(const std::string & inTagName) :
+        HTMLElement(inTagName, ElementType_SelfClosing)
+    {
+        if (mPrevInstance && mPrevInstance->isClosed())
+        {
+            mOutStream << Whitespace(sIndent);
+        }
+        mOutStream << SelfClosingTag(mTagName);
+    }
+
+
+    HTMLSelfClosingElement::~HTMLSelfClosingElement()
+    {
+    }
 
 } // namespace HSServer

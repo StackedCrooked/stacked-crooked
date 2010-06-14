@@ -42,10 +42,10 @@ namespace HTML
     }
 
 
-    std::string Whitespace(size_t n)
+    std::string GenWhiteSpace(size_t inIndentCount)
     {
         std::string result;
-        for (size_t idx = 0; idx != cIndent*n; ++idx)
+        for (size_t idx = 0; idx != cIndent*inIndentCount; ++idx)
         {
             result += " ";
         }
@@ -121,7 +121,7 @@ namespace HTML
     Block::Block(const std::string & inTagName) :
         Element(inTagName, ElementType_Block)
     {   
-        mOutStream << Whitespace(sIndent) << openingTag() << "\n";
+        mOutStream << GenWhiteSpace(sIndent) << openingTag() << "\n";
         sIndent++;
     }
 
@@ -129,7 +129,7 @@ namespace HTML
     Block::~Block()
     {
         sIndent--;
-        mOutStream << Whitespace(sIndent) << closingTag() << "\n";
+        mOutStream << GenWhiteSpace(sIndent) << closingTag() << "\n";
     }
 
 
@@ -140,7 +140,7 @@ namespace HTML
         {
             if (mPrevInstance->elementType() == ElementType_Block || mPrevInstance->isClosed())
             {
-                mOutStream << Whitespace(sIndent);
+                mOutStream << GenWhiteSpace(sIndent);
             }
         }
 
@@ -160,7 +160,7 @@ namespace HTML
         {
             if (mPrevInstance->elementType() == ElementType_Block || mPrevInstance->isClosed())
             {
-                mOutStream << Whitespace(sIndent);
+                mOutStream << GenWhiteSpace(sIndent);
             }
         }
         mOutStream << openingTag();
@@ -186,7 +186,7 @@ namespace HTML
     {
         if (mPrevInstance && mPrevInstance->isClosed())
         {
-            mOutStream << Whitespace(sIndent);
+            mOutStream << GenWhiteSpace(sIndent);
         }
         mOutStream << SelfClosingTag(mTagName);
     }

@@ -41,9 +41,9 @@ namespace HTML
 
 
     /**
-     * Requires that at least one CurrentOutStream object is currently existing.
+     * Generates whitespace according to specified number of indents.
      */
-    std::string Whitespace(size_t n);
+    std::string GenWhiteSpace(size_t inIdentCount);
 
 
     /**

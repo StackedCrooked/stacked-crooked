@@ -1,4 +1,5 @@
 #include "HTMLElements.h"
+#include "Poco/String.h"
 #include <stdexcept>
 #include <assert.h>
 
@@ -53,9 +54,10 @@ namespace HTML
     }
 
 
-    Element::Element(const std::string & inTagName, ElementType inElementType) :
+    Element::Element(const std::string & inTagName, ElementType inElementType, const Args & inArgs) :
         mTagName(inTagName),
         mElementType(inElementType),
+        mArgs(inArgs),
         mOutStream(CurrentOutStream::CurrentlyActive()),
         mClosed(false),
         mPrevInstance(sActiveInstance)
@@ -84,7 +86,7 @@ namespace HTML
 
     std::string Element::openingTag()
     {
-        return OpeningTag(mTagName);
+        return OpeningTag(mTagName, mArgs);
     }
 
 
@@ -93,10 +95,24 @@ namespace HTML
         return ClosingTag(mTagName);
     }
 
-    
-    std::string Element::OpeningTag(const std::string & inTagName)
+
+    std::string BuildArgList(const Args & inArgs)
     {
-        return "<" + inTagName + ">";
+        std::string result;
+        Args::const_iterator it = inArgs.begin(), end = inArgs.end();
+        for (; it != end; ++it)
+        {
+            result += it->first + "=\"" + it->second + "\"";
+        }
+        return result;
+    }
+
+    
+    std::string Element::OpeningTag(const std::string & inTagName, const Args & inArgs)
+    {
+        return "<" + inTagName
+                   + (inArgs.empty() ? "" : (" " + BuildArgList(inArgs)))
+                   + ">";
     }
 
 
@@ -106,20 +122,22 @@ namespace HTML
     }
 
 
-    std::string Element::SelfClosingTag(const std::string & inTagName)
+    std::string Element::SelfClosingTag(const std::string & inTagName, const Args & inArgs)
     {
-        return "<" + inTagName + "/>";
+        return "<" + inTagName
+                   + (inArgs.empty() ? "" : (" " + BuildArgList(inArgs)))
+                   + "/>";
     }
 
 
-    std::string Element::CompleteNode(const std::string & inTagName, const std::string & inText)
+    std::string Element::CompleteNode(const std::string & inTagName, const Args & inArgs, const std::string & inText)
     {
-        return OpeningTag(inTagName) + inText + ClosingTag(inTagName);
+        return OpeningTag(inTagName, inArgs) + inText + ClosingTag(inTagName);
     }
 
 
-    Block::Block(const std::string & inTagName) :
-        Element(inTagName, ElementType_Block)
+    Block::Block(const std::string & inTagName, const Args & inArgs) :
+        Element(inTagName, ElementType_Block, inArgs)
     {   
         mOutStream << GenWhiteSpace(sIndent) << openingTag() << "\n";
         sIndent++;
@@ -133,8 +151,8 @@ namespace HTML
     }
 
 
-    Inline::Inline(const std::string & inTagName, const std::string & inText) :
-        Element(inTagName, ElementType_Inline)
+    Inline::Inline(const std::string & inTagName, const std::string & inText, const Args & inArgs) :
+        Element(inTagName, ElementType_Inline, inArgs)
     {
         if (mPrevInstance)
         {
@@ -144,7 +162,7 @@ namespace HTML
             }
         }
 
-        mOutStream << CompleteNode(inTagName, inText);
+        mOutStream << CompleteNode(inTagName, mArgs, inText);
         mClosed = true;
         if (mPrevInstance->elementType() != ElementType_Inline || mPrevInstance->isClosed())
         {
@@ -153,8 +171,8 @@ namespace HTML
     }
 
 
-    Inline::Inline(const std::string & inTagName) :
-        Element(inTagName, ElementType_Inline)
+    Inline::Inline(const std::string & inTagName, const Args & inArgs) :
+        Element(inTagName, ElementType_Inline, inArgs)
     {
         if (mPrevInstance)
         {
@@ -181,14 +199,14 @@ namespace HTML
     }
 
 
-    SelfClosing::SelfClosing(const std::string & inTagName) :
-        Element(inTagName, ElementType_SelfClosing)
+    SelfClosing::SelfClosing(const std::string & inTagName, const Args & inArgs) :
+        Element(inTagName, ElementType_SelfClosing, inArgs)
     {
         if (mPrevInstance && mPrevInstance->isClosed())
         {
             mOutStream << GenWhiteSpace(sIndent);
         }
-        mOutStream << SelfClosingTag(mTagName);
+        mOutStream << SelfClosingTag(mTagName, inArgs);
     }
 
 

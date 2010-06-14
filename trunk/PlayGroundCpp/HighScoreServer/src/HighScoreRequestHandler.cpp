@@ -90,77 +90,10 @@ namespace HSServer
 
     void DefaultRequestHandler::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML_html html;
-        HTML_body body;
-        HTML_h1 h1("High Score Server");
-        HTML_p p0("There is nothing here.");
-        HTML_p p1("Really.");
-        HTML_b b("I'm bold.");
-        HTML_br br0;
-        HTML_i i("I'm scheef.");
-        HTML_br br1;
-        HTML_u u("I'm underlined.");
-
-
-        {
-            HTML_p p2;
-            Write("This is a big scoped paragraph.");
-        }
-
-        {
-            HTML_p p1;
-            HTML_b b1;
-            HTML_i i1;
-            HTML_u u1;
-            Write("Nested");
-            HTML_br br0;
-            Write("and various");
-            HTML_br br1;
-            Write("attributes");
-            HTML_br br2;
-        }
-        {
-            HTML_table table;
-
-            // Table Header
-            {
-                HTML_thead thead0;
-                HTML_tr tr0;
-                HTML_th th0("Name");
-                HTML_th th1("Score");
-            }
-
-            // Row 0
-            {
-                HTML_tr row;
-                {
-                    HTML_td td0;
-                    Write("FRA");
-                }
-                HTML_td td1("100");
-            }
-
-            // Row 1
-            {
-                HTML_tr row;
-                HTML_td td0("JON");
-                {
-                    HTML_td td1;
-                    Write("200");
-                    HTML_br br0;
-                    Write("/");
-                    HTML_br br1;
-                    Write("250");
-                }
-            }
-
-            // Row 2
-            {
-                HTML_tr row;
-                HTML_td td0("PHI");
-                HTML_td td1("250");
-            }
-        }
+        HTML_Block("html");
+        HTML_Block("body");
+        HTML_InlineText("h1", "High Score Server");
+        HTML_InlineText("p", "There is nothing here.");
     }
     
     
@@ -172,24 +105,24 @@ namespace HSServer
 
     void GetAllHighScores::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML_html html;
-        HTML_body body;
-        HTML_p p("High Score HTML_table");
-        HTML_table table;
+        HTML_Block("html");
+        HTML_Block("body");
+        HTML_InlineText("p", "High Score Table");
+        HTML_Block("table");
         Statement select(inSession);
         select << "SELECT * FROM HighScores";
         select.execute();
         RecordSet rs(select);
         for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
         {   
-            HTML_tr tr;
+            HTML_Block("tr");
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
             {
-                HTML_td td;
+                HTML_Inline("td");
                 Poco::DynamicAny v = rs.value(colIdx, rowIdx);
                 if (v.isString())
                 {
-                    std::string s = v;
+                    std::string s = v; 
                     Write(s);
                 }
                 else if (v.isNumeric())
@@ -245,8 +178,8 @@ namespace HSServer
 
     void AddHighScore::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML_html html;
-        HTML_body body;
+        HTML_Block("html");
+        HTML_Block("body");
 
         Statement insert(inSession);
 
@@ -256,7 +189,7 @@ namespace HSServer
 
         std::stringstream ss;
         ss << "Added High Score: " << mHighScore.name() << ": " << mHighScore.score();
-        HTML_p(ss.str());
+        HTML_InlineText("p", ss.str());
     }
 
 } // namespace HSServer

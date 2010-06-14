@@ -2,6 +2,7 @@
 #define HTMLELEMENTS_H_INCLUDED
 
 
+#include "Poco/Foundation.h"
 #include <iostream>
 #include <list>
 #include <stack>
@@ -109,54 +110,38 @@ namespace HTML
     };
 
 
-    #define DECLARE_BLOCK_ELEMENT(CLASS, TAGNAME)                                                 \
-        class HTML_##CLASS : public HTMLBlockElement                                              \
-        {                                                                                         \
-        public:                                                                                   \
-            HTML_##CLASS();                                                                       \
+    #define DECLARE_BLOCK_ELEMENT(CLASS, TAGNAME) \
+        class POCO_JOIN(HTML_, CLASS) : public HTMLBlockElement { \
+        public: \
+            POCO_JOIN(HTML_, CLASS)(); \
         };
 
 
-    #define IMPLEMENT_BLOCK_ELEMENT(CLASS, TAGNAME)                                               \
-        HTML_##CLASS::HTML_##CLASS() :                                                            \
-            HTMLBlockElement(TAGNAME)                                                             \
-        {                                                                                         \
-        }
+    #define IMPLEMENT_BLOCK_ELEMENT(CLASS, TAGNAME) \
+        POCO_JOIN(HTML_, CLASS)::POCO_JOIN(HTML_, CLASS)() : HTMLBlockElement(TAGNAME) {} 
 
 
-    #define DECLARE_INLINE_ELEMENT(CLASS, TAGNAME)                                                \
-        class HTML_##CLASS : public HTMLInlineElement                                             \
-        {                                                                                         \
-        public:                                                                                   \
-            HTML_##CLASS();                                                                       \
-            HTML_##CLASS(const std::string & inText);                                             \
+    #define DECLARE_INLINE_ELEMENT(CLASS, TAGNAME) \
+        class POCO_JOIN(HTML_, CLASS) : public HTMLInlineElement { \
+        public: \
+            POCO_JOIN(HTML_, CLASS)(); \
+            POCO_JOIN(HTML_, CLASS)(const std::string & inText); \
         };
 
 
-    #define IMPLEMENT_INLINE_ELEMENT(CLASS, TAGNAME)                                              \
-        HTML_##CLASS::HTML_##CLASS() :                                                            \
-            HTMLInlineElement(TAGNAME)                                                            \
-        {                                                                                         \
-        }                                                                                         \
-        HTML_##CLASS::HTML_##CLASS(const std::string & inText) :                                  \
-            HTMLInlineElement(TAGNAME, inText)                                                    \
-        {                                                                                         \
-        }
+    #define IMPLEMENT_INLINE_ELEMENT(CLASS, TAGNAME) \
+        POCO_JOIN(HTML_, CLASS)::POCO_JOIN(HTML_, CLASS)() : HTMLInlineElement(TAGNAME) {} \
+        POCO_JOIN(HTML_, CLASS)::POCO_JOIN(HTML_, CLASS)(const std::string & inText) : HTMLInlineElement(TAGNAME, inText) {}
 
 
-    #define DECLARE_SELFCLOSING_ELEMENT(CLASS, TAGNAME)                                           \
-        class HTML_##CLASS : public HTMLSelfClosingElement                                        \
-        {                                                                                         \
-        public:                                                                                   \
-            HTML_##CLASS();                                                                       \
+    #define DECLARE_SELFCLOSING_ELEMENT(CLASS, TAGNAME) \
+        class POCO_JOIN(HTML_, CLASS) : public HTMLSelfClosingElement { \
+        public: \
+            POCO_JOIN(HTML_, CLASS)(); \
         };
 
-
-    #define IMPLEMENT_SELFCLOSING_ELEMENT(CLASS, TAGNAME)                                         \
-        HTML_##CLASS::HTML_##CLASS() :                                                            \
-            HTMLSelfClosingElement(TAGNAME)                                                       \
-        {                                                                                         \
-        }
+    #define IMPLEMENT_SELFCLOSING_ELEMENT(CLASS, TAGNAME) \
+        POCO_JOIN(HTML_, CLASS)::POCO_JOIN(HTML_, CLASS)() : HTMLSelfClosingElement(TAGNAME) {}
 
 
     DECLARE_BLOCK_ELEMENT(blockquote, "blockquote")    

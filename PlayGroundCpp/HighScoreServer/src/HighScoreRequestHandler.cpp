@@ -1,5 +1,4 @@
 #include "HighScoreRequestHandler.h"
-#include "HTMLElements.h"
 #include "Poco/StringTokenizer.h"
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
@@ -13,7 +12,6 @@
 
 
 using namespace Poco::Data;
-using namespace HTML;
 
 
 namespace HSServer
@@ -67,7 +65,6 @@ namespace HSServer
         inResponse.setContentType("text/html");
 
         std::ostream & outStream = inResponse.send();
-        HTML::CurrentOutStream currentOutputStream(outStream);
         try
         {
             generateResponse(mSession, outStream);
@@ -87,10 +84,7 @@ namespace HSServer
 
     void DefaultRequestHandler::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML_Block("html");
-        HTML_Block("body");
-        HTML_Inline("h1", "High Score Server");
-        HTML_Inline("p", "There is nothing here.");
+        ostr << "<html><body><h1>High Score Server</h1><p>There is nothing here</p></body></html>";
     }
     
     
@@ -116,22 +110,24 @@ namespace HSServer
 
     void GetAllHighScores::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML_Block("html");
-        HTML_Block("body");
-        HTML_Inline("p", "High Score Table");
-        HTML_Block("table");
+        ostr << "<html><body><h1>High Score Server</h1>";
         Statement select(inSession);
         select << "SELECT * FROM HighScores";
         select.execute();
         RecordSet rs(select);
         for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
         {   
-            HTML_Block("tr");
+            ostr << "<tr>";
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
             {                
-                HTML_Inline("td", GetStringValue(rs.value(colIdx, rowIdx), "(Unknown DynamicAny)"));
+                ostr << "<td>";
+                ostr << GetStringValue(rs.value(colIdx, rowIdx), "(Unknown DynamicAny)");
+                ostr << "</td>";
             }
+            ostr << "</tr>";
         }
+        ostr << "<p>There is nothing here</p>";
+        ostr << "</body></html>";
     }
     
     
@@ -177,18 +173,15 @@ namespace HSServer
 
     void AddHighScore::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
-        HTML_Block("html");
-        HTML_Block("body");
+        ostr << "<html><body>";
 
         Statement insert(inSession);
-
         insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(mHighScore.name()),
                                                                use(mHighScore.score());
         insert.execute();
-
         std::stringstream ss;
-        ss << "Added High Score: " << mHighScore.name() << ": " << mHighScore.score();
-        HTML_Inline("p", ss.str());
+        ostr << "Added High Score: " << mHighScore.name() << ": " << mHighScore.score();
+        ostr << "</html></body>";
     }
 
 } // namespace HSServer

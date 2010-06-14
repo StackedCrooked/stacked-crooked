@@ -10,7 +10,7 @@ namespace HTML
     
 
     std::stack<CurrentOutStream *> CurrentOutStream::sInstanceStack;
-    HTMLElement * HTMLElement::sActiveInstance(0);
+    Element * Element::sActiveInstance(0);
 
 
     CurrentOutStream::CurrentOutStream(std::ostream & outStream) :
@@ -53,7 +53,7 @@ namespace HTML
     }
 
 
-    HTMLElement::HTMLElement(const std::string & inTagName, ElementType inElementType) :
+    Element::Element(const std::string & inTagName, ElementType inElementType) :
         mTagName(inTagName),
         mElementType(inElementType),
         mOutStream(CurrentOutStream::CurrentlyActive()),
@@ -64,77 +64,77 @@ namespace HTML
     }
 
 
-    HTMLElement::~HTMLElement()
+    Element::~Element()
     {
         mClosed = true;
         sActiveInstance = mPrevInstance;
     }
 
 
-    bool HTMLElement::isClosed() const
+    bool Element::isClosed() const
     {
         return mClosed;
     }
 
 
-    ElementType HTMLElement::elementType() const
+    ElementType Element::elementType() const
     {
         return mElementType;
     }
 
-    std::string HTMLElement::openingTag()
+    std::string Element::openingTag()
     {
         return OpeningTag(mTagName);
     }
 
 
-    std::string HTMLElement::closingTag()
+    std::string Element::closingTag()
     {
         return ClosingTag(mTagName);
     }
 
     
-    std::string HTMLElement::OpeningTag(const std::string & inTagName)
+    std::string Element::OpeningTag(const std::string & inTagName)
     {
         return "<" + inTagName + ">";
     }
 
 
-    std::string HTMLElement::ClosingTag(const std::string & inTagName)
+    std::string Element::ClosingTag(const std::string & inTagName)
     {
         return "</" + inTagName + ">";
     }
 
 
-    std::string HTMLElement::SelfClosingTag(const std::string & inTagName)
+    std::string Element::SelfClosingTag(const std::string & inTagName)
     {
         return "<" + inTagName + "/>";
     }
 
 
-    std::string HTMLElement::CompleteNode(const std::string & inTagName, const std::string & inText)
+    std::string Element::CompleteNode(const std::string & inTagName, const std::string & inText)
     {
         return OpeningTag(inTagName) + inText + ClosingTag(inTagName);
     }
 
 
-    HTMLBlockElement::HTMLBlockElement(const std::string & inTagName) :
-        HTMLElement(inTagName, ElementType_Block)
+    Block::Block(const std::string & inTagName) :
+        Element(inTagName, ElementType_Block)
     {   
         mOutStream << Whitespace(sIndent) << openingTag() << "\n";
         sIndent++;
     }
 
     
-    HTMLBlockElement::~HTMLBlockElement()
+    Block::~Block()
     {
         sIndent--;
         mOutStream << Whitespace(sIndent) << closingTag() << "\n";
     }
 
 
-    HTMLInlineElement::HTMLInlineElement(const std::string & inTagName, const std::string & inText) :
-        HTMLElement(inTagName, ElementType_Inline)
+    Inline::Inline(const std::string & inTagName, const std::string & inText) :
+        Element(inTagName, ElementType_Inline)
     {
         if (mPrevInstance)
         {
@@ -153,8 +153,8 @@ namespace HTML
     }
 
 
-    HTMLInlineElement::HTMLInlineElement(const std::string & inTagName) :
-        HTMLElement(inTagName, ElementType_Inline)
+    Inline::Inline(const std::string & inTagName) :
+        Element(inTagName, ElementType_Inline)
     {
         if (mPrevInstance)
         {
@@ -167,7 +167,7 @@ namespace HTML
     }
 
 
-    HTMLInlineElement::~HTMLInlineElement()
+    Inline::~Inline()
     {  
         if (!mClosed)
         {
@@ -181,8 +181,8 @@ namespace HTML
     }
 
 
-    HTMLSelfClosingElement::HTMLSelfClosingElement(const std::string & inTagName) :
-        HTMLElement(inTagName, ElementType_SelfClosing)
+    SelfClosing::SelfClosing(const std::string & inTagName) :
+        Element(inTagName, ElementType_SelfClosing)
     {
         if (mPrevInstance && mPrevInstance->isClosed())
         {
@@ -192,45 +192,9 @@ namespace HTML
     }
 
 
-    HTMLSelfClosingElement::~HTMLSelfClosingElement()
+    SelfClosing::~SelfClosing()
     {
     }
-
-
-    IMPLEMENT_BLOCK_ELEMENT(blockquote, "blockquote")    
-    IMPLEMENT_BLOCK_ELEMENT(body, "body")
-    IMPLEMENT_BLOCK_ELEMENT(div, "div")
-    IMPLEMENT_BLOCK_ELEMENT(head, "head")
-    IMPLEMENT_BLOCK_ELEMENT(html, "html")
-    IMPLEMENT_BLOCK_ELEMENT(table, "table")
-    IMPLEMENT_BLOCK_ELEMENT(thead, "thead")
-    IMPLEMENT_BLOCK_ELEMENT(tr, "tr")
-    IMPLEMENT_BLOCK_ELEMENT(ul, "ul")
-
-    IMPLEMENT_INLINE_ELEMENT(a, "a")
-    IMPLEMENT_INLINE_ELEMENT(b, "b")
-    IMPLEMENT_INLINE_ELEMENT(h1, "h1")
-    IMPLEMENT_INLINE_ELEMENT(h2, "h2")
-    IMPLEMENT_INLINE_ELEMENT(h3, "h3")
-    IMPLEMENT_INLINE_ELEMENT(h4, "h4")
-    IMPLEMENT_INLINE_ELEMENT(h5, "h5")
-    IMPLEMENT_INLINE_ELEMENT(h6, "h6")
-    IMPLEMENT_INLINE_ELEMENT(i, "i")
-    IMPLEMENT_INLINE_ELEMENT(img, "img")
-    IMPLEMENT_INLINE_ELEMENT(li, "li")    
-    IMPLEMENT_INLINE_ELEMENT(nobr, "nobr")
-    IMPLEMENT_INLINE_ELEMENT(p, "p")
-    IMPLEMENT_INLINE_ELEMENT(pre, "pre")
-    IMPLEMENT_INLINE_ELEMENT(span, "span")    
-    IMPLEMENT_INLINE_ELEMENT(strong, "strong")
-    IMPLEMENT_INLINE_ELEMENT(td, "td")
-    IMPLEMENT_INLINE_ELEMENT(th, "th")
-    IMPLEMENT_INLINE_ELEMENT(title, "title")
-    IMPLEMENT_INLINE_ELEMENT(u, "u")
-
-    IMPLEMENT_SELFCLOSING_ELEMENT(br, "br")
-    IMPLEMENT_SELFCLOSING_ELEMENT(hr, "hr")
-    IMPLEMENT_SELFCLOSING_ELEMENT(meta, "meta")
 
 
 } // namespace HSServer

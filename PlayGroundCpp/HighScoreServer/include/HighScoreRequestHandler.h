@@ -11,6 +11,9 @@
 namespace HSServer
 {
 
+    typedef std::map<std::string, std::string> Args;
+
+
     class HighScoreRequestHandler : public Poco::Net::HTTPRequestHandler
     {
     public:
@@ -18,6 +21,9 @@ namespace HSServer
 
         void handleRequest(Poco::Net::HTTPServerRequest& inRequest,
                            Poco::Net::HTTPServerResponse& inResponse);
+
+        
+        static void GetArgs(const std::string & inURI, Args & outArgs);
 
     protected:
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr) = 0;

@@ -134,8 +134,7 @@ namespace HTML
     #define HTML_Block(TagName) HTML::Block POCO_JOIN(html_, __LINE__)(TagName);
 
     // Create a local object of type HTML::Inline with a unique variable name.
-    #define HTML_Inline(TagName) HTML::Inline POCO_JOIN(html_, __LINE__)(TagName);
-    #define HTML_InlineText(TagName, Text) HTML::Inline POCO_JOIN(html_, __LINE__)(TagName, Text);
+    #define HTML_Inline(TagName, Text) HTML::Inline POCO_JOIN(html_, __LINE__)(TagName, Text);
 
     // Create a local object of type HTML::SelfClosing with a unique variable name.
     #define HTML_SelfClosing(TagName) HTML::SelfClosing POCO_JOIN(html_,__LINE__)(TagName);

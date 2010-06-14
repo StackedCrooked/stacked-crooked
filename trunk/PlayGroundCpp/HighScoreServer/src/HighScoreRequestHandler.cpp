@@ -19,9 +19,14 @@ using namespace HTML;
 namespace HSServer
 {
     
-    typedef std::map<std::string, std::string> Args;
+    HighScoreRequestHandler::HighScoreRequestHandler() :
+        mSession(SessionFactory::instance().create("SQLite", "HighScores.db"))
+    {
+        // Create the table if it doesn't already exist
+        mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
+    }
 
-    void GetArgs(const std::string & inURI, Args & outArgs)
+    void HighScoreRequestHandler::GetArgs(const std::string & inURI, Args & outArgs)
     {
         if (inURI.empty())
         {
@@ -49,14 +54,6 @@ namespace HSServer
             }
             outArgs.insert(std::make_pair(t[0], t[1]));
         }
-    }
-
-    
-    HighScoreRequestHandler::HighScoreRequestHandler() :
-        mSession(SessionFactory::instance().create("SQLite", "HighScores.db"))
-    {
-        // Create the table if it doesn't already exist
-        mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
     }
 
     
@@ -92,8 +89,8 @@ namespace HSServer
     {
         HTML_Block("html");
         HTML_Block("body");
-        HTML_InlineText("h1", "High Score Server");
-        HTML_InlineText("p", "There is nothing here.");
+        HTML_Inline("h1", "High Score Server");
+        HTML_Inline("p", "There is nothing here.");
     }
     
     
@@ -103,11 +100,25 @@ namespace HSServer
     }
 
 
+    std::string GetStringValue(const Poco::DynamicAny & inDynamicValue, const std::string & inDefault)
+    {
+        if (inDynamicValue.isString())
+        {
+            return static_cast<std::string>(inDynamicValue);
+        }
+        else if (inDynamicValue.isNumeric())
+        {
+            return boost::lexical_cast<std::string>(static_cast<int>(inDynamicValue));
+        }
+        return inDefault;
+    }
+
+
     void GetAllHighScores::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
         HTML_Block("html");
         HTML_Block("body");
-        HTML_InlineText("p", "High Score Table");
+        HTML_Inline("p", "High Score Table");
         HTML_Block("table");
         Statement select(inSession);
         select << "SELECT * FROM HighScores";
@@ -117,20 +128,8 @@ namespace HSServer
         {   
             HTML_Block("tr");
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
-            {
-                HTML_Inline("td");
-                Poco::DynamicAny v = rs.value(colIdx, rowIdx);
-                if (v.isString())
-                {
-                    std::string s = v; 
-                    Write(s);
-                }
-                else if (v.isNumeric())
-                {
-                    int i = v;
-                    std::string s = boost::lexical_cast<std::string>(i);
-                    Write(s);
-                }                
+            {                
+                HTML_Inline("td", GetStringValue(rs.value(colIdx, rowIdx), "(Unknown DynamicAny)"));
             }
         }
     }
@@ -189,7 +188,7 @@ namespace HSServer
 
         std::stringstream ss;
         ss << "Added High Score: " << mHighScore.name() << ": " << mHighScore.score();
-        HTML_InlineText("p", ss.str());
+        HTML_Inline("p", ss.str());
     }
 
 } // namespace HSServer

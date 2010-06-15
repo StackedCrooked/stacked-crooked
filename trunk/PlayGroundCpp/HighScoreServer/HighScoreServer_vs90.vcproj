@@ -188,15 +188,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\HighScoreRequestHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\HighScoreRequestHandlerFactory.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\RequestHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\RequestHandlerFactory.cpp"
 				>
 			</File>
 		</Filter>
@@ -210,11 +210,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\HighScoreRequestHandler.h"
+				RelativePath=".\include\RequestHandler.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\HighScoreRequestHandlerFactory.h"
+				RelativePath=".\include\RequestHandlerFactory.h"
 				>
 			</File>
 		</Filter>

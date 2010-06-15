@@ -1,5 +1,5 @@
-#include "HighScoreRequestHandler.h"
-#include "HighScoreRequestHandlerFactory.h"
+#include "RequestHandler.h"
+#include "RequestHandlerFactory.h"
 #include "Poco/Data/SQLite/Connector.h"
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/HTTPServerParams.h"
@@ -41,7 +41,7 @@ namespace HSServer
 
             Poco::Net::ServerSocket serverSocket(port);
 
-            mFactory = new HighScoreRequestHandlerFactory;
+            mFactory = new RequestHandlerFactory;
             registerRequestHandlers();
             
             Poco::Net::HTTPServer httpServer(mFactory, serverSocket, params);
@@ -60,7 +60,7 @@ namespace HSServer
             mFactory->registerRequestHandler<CommitSucceeded>();            
         }
 
-        HighScoreRequestHandlerFactory * mFactory;
+        RequestHandlerFactory * mFactory;
     };
 
 } // HighScoreServer

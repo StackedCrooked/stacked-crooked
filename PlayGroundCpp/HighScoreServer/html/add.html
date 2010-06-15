@@ -53,17 +53,36 @@
             
             PostHelper.display = function(message)
             {                 
-                var p = document.createElement("pre");
-                p.setAttribute("style", "font-size:small; font-family: courier; background-color: lightgray;");
+                var p = document.createElement("p");
                 p.innerText = message;
                 document.getElementById("div_output").appendChild(p);
             };
-            
+
+
+            /*PostHelper.submit = function(path, params)
+            {
+              var form = document.createElement("form");
+              form.setAttribute("method", "post");
+              form.setAttribute("action", path);
+
+              for(var key in params)
+              {
+                var hiddenField = document.createElement("input");
+                hiddenField.setAttribute("type", "hidden");
+                hiddenField.setAttribute("name", key);
+                hiddenField.setAttribute("value", params[key]);
+                form.appendChild(hiddenField);
+              }
+              // Not entirely sure if this is necessary
+              document.body.appendChild(form);
+              form.submit();
+            }*/
+
            
             PostHelper.send = function(name, score)
             {
               var httpRequest = new XMLHttpRequest();
-              var url = "http://localhost/hs/commit&name=" + name + "&score=" + score;
+              var url = "http://localhost/hs/add"
               httpRequest.open("POST", url, true);
               httpRequest.onreadystatechange = function()
               {
@@ -81,7 +100,8 @@
                   }
                 }
               };
-              httpRequest.send();
+              var body = "name=" + name + "&score=" + score;
+              httpRequest.send(body);
             };         
             window.onload = PostHelper.init();
         </script>   

@@ -11,9 +11,9 @@
 
 namespace HSServer
 {
-    class HighScoreRequestHandler;
+    class RequestHandler;
 
-    class HighScoreRequestHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory
+    class RequestHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory
     {
     public:
         template<class T>
@@ -25,7 +25,7 @@ namespace HSServer
 	    Poco::Net::HTTPRequestHandler * createRequestHandler(const Poco::Net::HTTPServerRequest & request);
 
     private:
-        typedef boost::function<HighScoreRequestHandler*(const Poco::Net::HTTPServerRequest &)> FactoryFunction;
+        typedef boost::function<RequestHandler*(const Poco::Net::HTTPServerRequest &)> FactoryFunction;
         typedef std::map<std::string, FactoryFunction> FactoryFunctions;
         FactoryFunctions mFactoryFunctions;
     };

@@ -110,7 +110,7 @@ namespace HSServer
     }    
     
     
-    HighScoreRequestHandler * DefaultRequestHandler::Create(const std::string & inURI)
+    HighScoreRequestHandler * DefaultRequestHandler::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
         return new DefaultRequestHandler;
     }
@@ -144,7 +144,7 @@ namespace HSServer
     }
     
     
-    HighScoreRequestHandler * GetAllHighScores::Create(const std::string & inURI)
+    HighScoreRequestHandler * GetAllHighScores::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
         return new GetAllHighScores;
     }
@@ -201,7 +201,7 @@ namespace HSServer
     }
     
     
-    HighScoreRequestHandler * AddHighScore::Create(const std::string & inURI)
+    HighScoreRequestHandler * AddHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
         return new AddHighScore;
     }
@@ -220,10 +220,10 @@ namespace HSServer
     }
     
     
-    HighScoreRequestHandler * CommitHighScore::Create(const std::string & inURI)
+    HighScoreRequestHandler * CommitHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
         Args args;
-        GetArgs(inURI, args);
+        GetArgs(inRequest.getURI(), args);
         return new CommitHighScore(GetArg(args, "name"), GetArg(args, "score"));
     }
 
@@ -249,10 +249,10 @@ namespace HSServer
     }
     
     
-    HighScoreRequestHandler * CommitSucceeded::Create(const std::string & inURI)
+    HighScoreRequestHandler * CommitSucceeded::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
         Args args;
-        GetArgs(inURI, args);
+        GetArgs(inRequest.getURI(), args);
         return new CommitSucceeded(GetArg(args, "name"), GetArg(args, "score"));
     }
 

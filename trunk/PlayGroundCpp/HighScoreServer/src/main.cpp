@@ -1,3 +1,4 @@
+#include "HighScoreRequestHandler.h"
 #include "HighScoreRequestHandlerFactory.h"
 #include "Poco/Data/SQLite/Connector.h"
 #include "Poco/Net/HTTPServer.h"
@@ -16,11 +17,16 @@ namespace HSServer
 
     class HighScoreServer : public Poco::Util::ServerApplication
     {
+    public:
+        HighScoreServer() :
+          mFactory(0)
+        {
+        }
+
     protected:
         int main(const std::vector<std::string>& args)
         {
             Poco::Data::SQLite::Connector::registerConnector();
-
 
             int port = config().getInt("HighScoreServer.port", 80);
             int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
@@ -34,14 +40,27 @@ namespace HSServer
             params->setMaxThreads(maxThreads);
 
             Poco::Net::ServerSocket serverSocket(port);
-            Poco::Net::HTTPServer httpServer(new HighScoreRequestHandlerFactory, serverSocket, params);
 
-
+            mFactory = new HighScoreRequestHandlerFactory;
+            registerRequestHandlers();
+            
+            Poco::Net::HTTPServer httpServer(mFactory, serverSocket, params);
             httpServer.start();
             waitForTerminationRequest();
             httpServer.stop();
             return Poco::Util::Application::EXIT_OK;
         }
+
+    private:
+        void registerRequestHandlers()
+        {
+            mFactory->registerRequestHandler<GetAllHighScores>();
+            mFactory->registerRequestHandler<AddHighScore>();
+            mFactory->registerRequestHandler<CommitHighScore>();
+            mFactory->registerRequestHandler<CommitSucceeded>();            
+        }
+
+        HighScoreRequestHandlerFactory * mFactory;
     };
 
 } // HighScoreServer

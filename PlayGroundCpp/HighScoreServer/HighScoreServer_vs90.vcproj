@@ -184,6 +184,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\FileUtils.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\HighScoreRequestHandler.cpp"
 				>
 			</File>
@@ -206,6 +210,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\include\FileUtils.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\HighScoreRequestHandler.h"
 				>
 			</File>
@@ -215,6 +223,22 @@
 			</File>
 			<File
 				RelativePath=".\include\HighScoreServer.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="HTML"
+			>
+			<File
+				RelativePath=".\html\add.html"
+				>
+			</File>
+			<File
+				RelativePath=".\html\getall.html"
+				>
+			</File>
+			<File
+				RelativePath=".\html\index.html"
 				>
 			</File>
 		</Filter>

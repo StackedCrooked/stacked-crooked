@@ -1,0 +1,89 @@
+<html>
+    <body>
+        <h1>High Score Server</h1>
+        <table>
+          <tr>
+            <td>Name:</td>
+            <td><input type="text" id="input_name" /></td>
+          </tr>
+          <tr>
+            <td>Score:</td>
+            <td><input type="text" id="input_score" /></td>
+          </tr>          
+        </table>
+        <div id="div_output" />
+        <script type="text/javascript">
+            var PostHelper = {};
+            
+            PostHelper.init = function()
+            {     
+              PostHelper.registerInputField("input_name");
+              PostHelper.registerInputField("input_score");
+              PostHelper.display("Test");
+              document.getElementById("input_name").focus();
+            };
+			
+            PostHelper.registerInputField = function(fieldId)
+            {      
+              var inputField = document.getElementById(fieldId);
+              if (!inputField)
+              {
+                alert("Did not find input field with id: " + fieldId);
+                return;
+              }
+        
+              inputField.onkeydown = function(evt)
+              {
+                if (evt.keyCode == 13)
+                {
+                  PostHelper.submitHighScore();
+                  inputField.value = "";
+                }
+              };
+            };
+      
+      
+            PostHelper.submitHighScore = function()
+            {
+              PostHelper.send(
+                document.getElementById("input_name").value,
+                document.getElementById("input_score").value);
+            };
+      
+            
+            PostHelper.display = function(message)
+            {                 
+                var p = document.createElement("pre");
+                p.setAttribute("style", "font-size:small; font-family: courier; background-color: lightgray;");
+                p.innerText = message;
+                document.getElementById("div_output").appendChild(p);
+            };
+            
+           
+            PostHelper.send = function(name, score)
+            {
+              var httpRequest = new XMLHttpRequest();
+              var url = "http://localhost/hs/commit&name=" + name + "&score=" + score;
+              httpRequest.open("POST", url, true);
+              httpRequest.onreadystatechange = function()
+              {
+                if(httpRequest.readyState == 4)
+                {
+                  if (httpRequest.status == 200)
+                  {
+                    // The response will be a url
+                    window.location.href = httpRequest.responseText;
+                  }
+                  else
+                  {
+                    PostHelper.display("Readystate is: " + httpRequest.status);
+                    PostHelper.display("Oops, it doesn't work...\n");
+                  }
+                }
+              };
+              httpRequest.send();
+            };         
+            window.onload = PostHelper.init();
+        </script>   
+    </body>
+</html>

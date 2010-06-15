@@ -26,8 +26,10 @@ namespace HSServer
     }
 
     
-    HighScoreRequestHandler::HighScoreRequestHandler() :
-        mSession(SessionFactory::instance().create("SQLite", "HighScores.db"))
+    HighScoreRequestHandler::HighScoreRequestHandler(const std::string & inLocation, const std::string & inResponseContentType) :
+        mSession(SessionFactory::instance().create("SQLite", "HighScores.db")),
+        mLocation(inLocation),
+        mResponseContentType(inResponseContentType)
     {
         // Create the table if it doesn't already exist
         mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
@@ -76,9 +78,14 @@ namespace HSServer
     }
 
 
-    std::string HighScoreRequestHandler::getContentType() const
+    const std::string & HighScoreRequestHandler::getResponseContentType() const
     {
-        return "text/html";
+        return mResponseContentType;
+    }
+
+    const std::string & HighScoreRequestHandler::getLocation() const
+    {
+        return mLocation;
     }
 
     
@@ -89,7 +96,7 @@ namespace HSServer
         app.logger().information("Request from " + inRequest.clientAddress().toString());
 
         inResponse.setChunkedTransferEncoding(true);
-        inResponse.setContentType(getContentType());
+        inResponse.setContentType(getResponseContentType());
 
         std::ostream & outStream = inResponse.send();
         try
@@ -108,6 +115,11 @@ namespace HSServer
         return new DefaultRequestHandler;
     }
 
+    DefaultRequestHandler::DefaultRequestHandler() :
+        HighScoreRequestHandler("", "text/html")
+    {
+    }
+
 
     void DefaultRequestHandler::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {
@@ -117,6 +129,7 @@ namespace HSServer
 
 
     ErrorRequestHandler::ErrorRequestHandler(const std::string & inErrorMessage) :
+        HighScoreRequestHandler("", "text/html"),
         mErrorMessage(inErrorMessage)
     {
     }
@@ -148,6 +161,12 @@ namespace HSServer
             return boost::lexical_cast<std::string>(static_cast<int>(inDynamicValue));
         }
         return inDefault;
+    }
+    
+    
+    GetAllHighScores::GetAllHighScores() :
+        HighScoreRequestHandler("/hs/getall", "text/html")
+    {
     }
 
 
@@ -188,7 +207,8 @@ namespace HSServer
     }
 
 
-    AddHighScore::AddHighScore()
+    AddHighScore::AddHighScore() :
+        HighScoreRequestHandler(Location(), "text/html")
     {
     }
 
@@ -209,6 +229,7 @@ namespace HSServer
 
 
     CommitHighScore::CommitHighScore(const std::string & inName, const std::string & inScore) :
+        HighScoreRequestHandler(Location(), "text/plain"),
         mName(inName),
         mScore(inScore)
     {
@@ -226,13 +247,6 @@ namespace HSServer
         // This is because the client is the JavaScript application in this case.
         ostr << "http://localhost/hs/commit-succeeded&name=" << mName << "&score=" << mScore;
     }
-
-
-    std::string CommitHighScore::getContentType() const
-    {
-        // Return value is simply an URL.
-        return "text/plain";
-    }
     
     
     HighScoreRequestHandler * CommitSucceeded::Create(const std::string & inURI)
@@ -244,6 +258,7 @@ namespace HSServer
 
 
     CommitSucceeded::CommitSucceeded(const std::string & inName, const std::string & inScore) :
+        HighScoreRequestHandler(Location(), "text/html"),
         mName(inName),
         mScore(inScore)
     {

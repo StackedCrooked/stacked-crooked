@@ -3,6 +3,7 @@
 
 
 #include "Poco/Net/HTTPRequestHandler.h"
+#include "Poco/Data/RecordSet.h"
 #include "Poco/Data/Session.h"
 #include <map>
 #include <string>
@@ -28,6 +29,8 @@ namespace HSServer
     protected:
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr) = 0;
 
+        virtual std::string getContentType() const;
+
     private:
         Poco::Data::Session mSession;
     };
@@ -51,7 +54,7 @@ namespace HSServer
     class DefaultRequestHandler : public HighScoreRequestHandler
     {
     public:        
-        static DefaultRequestHandler * Create(const std::string & inURI);
+        static HighScoreRequestHandler * Create(const std::string & inURI);
 
     protected:
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
@@ -61,29 +64,71 @@ namespace HSServer
     };
 
         
+    class ErrorRequestHandler : public HighScoreRequestHandler
+    {
+    public:        
+        ErrorRequestHandler(const std::string & inErrorMessage);
+
+    protected:
+        virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
+        std::string mErrorMessage;
+    };
+
+        
     class GetAllHighScores : public HighScoreRequestHandler
     {
     public:        
-        static GetAllHighScores * Create(const std::string & inURI);
+        static HighScoreRequestHandler * Create(const std::string & inURI);
 
     protected:
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
 
     private:
         GetAllHighScores() {}
+
+        void getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows);
     };
 
 
     class AddHighScore : public HighScoreRequestHandler
     {
     public:
-        static AddHighScore * Create(const std::string & inURI);
+        static HighScoreRequestHandler * Create(const std::string & inURI);
 
     protected:
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
 
     private:
-        AddHighScore(const HighScore & inHighScore);
+        AddHighScore();
+    };
+
+
+    class CommitHighScore : public HighScoreRequestHandler
+    {
+    public:
+        static HighScoreRequestHandler * Create(const std::string & inURI);
+
+    protected:
+        virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
+
+        virtual std::string getContentType() const;
+
+    private:
+        CommitHighScore(const HighScore & inHighScore);
+        HighScore mHighScore;
+    };
+
+
+    class CommitSucceeded : public HighScoreRequestHandler
+    {
+    public:
+        static HighScoreRequestHandler * Create(const std::string & inURI);
+
+    protected:
+        virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
+
+    private:
+        CommitSucceeded(const HighScore & inHighScore);
         HighScore mHighScore;
     };
 

@@ -19,6 +19,12 @@ using namespace Poco::Data;
 
 namespace HSServer
 {
+
+    MissingArgumentException::MissingArgumentException(const std::string & inMessage) :
+        std::runtime_error(inMessage)
+    {
+    }
+
     
     HighScoreRequestHandler::HighScoreRequestHandler() :
         mSession(SessionFactory::instance().create("SQLite", "HighScores.db"))
@@ -26,6 +32,7 @@ namespace HSServer
         // Create the table if it doesn't already exist
         mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
     }
+
 
     void HighScoreRequestHandler::GetArgs(const std::string & inURI, Args & outArgs)
     {
@@ -55,6 +62,17 @@ namespace HSServer
             }
             outArgs.insert(std::make_pair(t[0], t[1]));
         }
+    }
+
+
+    const std::string & HighScoreRequestHandler::GetArg(const Args & inArgs, const std::string & inArg)
+    {
+        Args::const_iterator it = inArgs.find(inArg);
+        if (it != inArgs.end())
+        {
+            return it->second;
+        }
+        throw MissingArgumentException("Missing argument: " + inArg);
     }
 
 
@@ -186,38 +204,13 @@ namespace HSServer
     {
         Args args;
         GetArgs(inURI, args);
-
-        Args::iterator it = args.find("name");
-        if (it == args.end())
-        {
-            throw std::runtime_error("Could not find 'name' argument in the URL for CommitHighScore method.");
-        }
-
-        std::string name = it->second;
-
-        it = args.find("score");
-        if (it == args.end())
-        {
-            // TODO: create class MissingArgument
-            throw std::runtime_error("Could not find 'score' argument in GET URL for CommitHighScore method.");
-        }
-
-        int score = 0;
-        try
-        {
-            score = boost::lexical_cast<int>(it->second);
-        }
-        catch (const boost::bad_lexical_cast & )
-        {
-            return new ErrorRequestHandler("Score should be a positive number.");
-        }
-
-        return new CommitHighScore(HighScore(name, score));
+        return new CommitHighScore(GetArg(args, "name"), GetArg(args, "score"));
     }
 
 
-    CommitHighScore::CommitHighScore(const HighScore & inHighScore) :
-        mHighScore(inHighScore)
+    CommitHighScore::CommitHighScore(const std::string & inName, const std::string & inScore) :
+        mName(inName),
+        mScore(inScore)
     {
     }
 
@@ -225,13 +218,13 @@ namespace HSServer
     void CommitHighScore::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {        
         Statement insert(inSession);
-        insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(mHighScore.name()),
-                                                               use(mHighScore.score());
+        insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(mName),
+                                                               use(mScore);
         insert.execute();
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        ostr << "http://localhost/hs/commit-succeeded&name=" << mHighScore.name() << "&score=" << mHighScore.score();
+        ostr << "http://localhost/hs/commit-succeeded&name=" << mName << "&score=" << mScore;
     }
 
 
@@ -245,38 +238,13 @@ namespace HSServer
     {
         Args args;
         GetArgs(inURI, args);
-
-        Args::iterator it = args.find("name");
-        if (it == args.end())
-        {
-            throw std::runtime_error("Could not find 'name' argument in the URL for CommitHighScore method.");
-        }
-
-        std::string name = it->second;
-
-        it = args.find("score");
-        if (it == args.end())
-        {
-            // TODO: create class MissingArgument
-            throw std::runtime_error("Could not find 'score' argument in GET URL for CommitHighScore method.");
-        }
-
-        int score = 0;
-        try
-        {
-            score = boost::lexical_cast<int>(it->second);
-        }
-        catch (const boost::bad_lexical_cast & )
-        {
-            throw std::runtime_error("Score is not of type INTEGER");
-        }
-
-        return new CommitSucceeded(HighScore(name, score));
+        return new CommitSucceeded(GetArg(args, "name"), GetArg(args, "score"));
     }
 
 
-    CommitSucceeded::CommitSucceeded(const HighScore & inHighScore) :
-        mHighScore(inHighScore)
+    CommitSucceeded::CommitSucceeded(const std::string & inName, const std::string & inScore) :
+        mName(inName),
+        mScore(inScore)
     {
     }
 
@@ -286,7 +254,7 @@ namespace HSServer
         ostr << "<html>";
         ostr << "<body>";
         ostr << "<p>";
-        ostr << "Succesfully added highscore for " << mHighScore.name() << " of " << mHighScore.score() << ".";
+        ostr << "Succesfully added highscore for " << mName << " of " << mScore << ".";
         ostr << "</p>";
         ostr << "</body>";
         ostr << "</html>";

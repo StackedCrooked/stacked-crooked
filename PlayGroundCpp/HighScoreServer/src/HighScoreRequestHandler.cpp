@@ -217,7 +217,7 @@ namespace HSServer
 
     void CommitHighScore::generateResponse(Poco::Data::Session & inSession, std::ostream & ostr)
     {        
-        Statement insert(inSession);
+        Statement insert(inSession);        
         insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(mName),
                                                                use(mScore);
         insert.execute();
@@ -230,6 +230,7 @@ namespace HSServer
 
     std::string CommitHighScore::getContentType() const
     {
+        // Return value is simply an URL.
         return "text/plain";
     }
     

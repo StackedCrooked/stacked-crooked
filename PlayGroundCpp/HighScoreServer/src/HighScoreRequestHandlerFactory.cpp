@@ -14,6 +14,7 @@ namespace HSServer
         // Log the request
         Poco::Util::Application::instance().logger().information("Request with uri: " + inRequest.getURI());
 
+        
         if (inRequest.getURI() == "/hs/getall")
         {
             return GetAllHighScores::Create(inRequest.getURI());

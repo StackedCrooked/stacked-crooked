@@ -15,6 +15,13 @@ namespace HSServer
     typedef std::map<std::string, std::string> Args;
 
 
+    class MissingArgumentException : public std::runtime_error
+    {
+    public:
+        MissingArgumentException(const std::string & inMessage);
+    };
+
+
     class HighScoreRequestHandler : public Poco::Net::HTTPRequestHandler
     {
     public:
@@ -26,6 +33,9 @@ namespace HSServer
         
         static void GetArgs(const std::string & inURI, Args & outArgs);
 
+        // Throws MissingArgumentException if not found.
+        static const std::string & GetArg(const Args & inArgs, const std::string & inArg);
+
     protected:
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr) = 0;
 
@@ -33,21 +43,6 @@ namespace HSServer
 
     private:
         Poco::Data::Session mSession;
-    };
-
-
-    class HighScore
-    {
-    public:
-        HighScore(const std::string & inName, int inScore) : mName(inName), mScore(inScore) {}
-
-        const std::string & name() const { return mName; }
-
-        int score() const { return mScore; }
-
-    private:
-        std::string mName;
-        int mScore;
     };
 
         
@@ -77,7 +72,7 @@ namespace HSServer
         
     class GetAllHighScores : public HighScoreRequestHandler
     {
-    public:        
+    public:
         static HighScoreRequestHandler * Create(const std::string & inURI);
 
     protected:
@@ -93,6 +88,8 @@ namespace HSServer
     class AddHighScore : public HighScoreRequestHandler
     {
     public:
+        static const char * Path() { return "/hs/add"; }
+
         static HighScoreRequestHandler * Create(const std::string & inURI);
 
     protected:
@@ -114,8 +111,9 @@ namespace HSServer
         virtual std::string getContentType() const;
 
     private:
-        CommitHighScore(const HighScore & inHighScore);
-        HighScore mHighScore;
+        CommitHighScore(const std::string & inName, const std::string & inScore);
+        std::string mName;
+        std::string mScore;
     };
 
 
@@ -128,8 +126,9 @@ namespace HSServer
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
 
     private:
-        CommitSucceeded(const HighScore & inHighScore);
-        HighScore mHighScore;
+        CommitSucceeded(const std::string & inName, const std::string & inScore);
+        std::string mName;
+        std::string mScore;
     };
 
 } // HighScoreServer

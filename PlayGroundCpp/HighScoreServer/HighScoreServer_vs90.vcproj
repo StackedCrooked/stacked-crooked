@@ -196,10 +196,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\HighScoreServer.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\main.cpp"
 				>
 			</File>
@@ -219,10 +215,6 @@
 			</File>
 			<File
 				RelativePath=".\include\HighScoreRequestHandlerFactory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\HighScoreServer.h"
 				>
 			</File>
 		</Filter>

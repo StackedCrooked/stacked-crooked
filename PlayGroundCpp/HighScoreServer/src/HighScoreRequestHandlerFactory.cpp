@@ -1,3 +1,4 @@
+#include "HighScoreRequestHandler.h"
 #include "HighScoreRequestHandlerFactory.h"
 #include "Poco/String.h"
 #include "Poco/StringTokenizer.h"
@@ -14,31 +15,14 @@ namespace HSServer
         // Log the request
         Poco::Util::Application::instance().logger().information("Request with uri: " + inRequest.getURI());
 
-        
-        if (inRequest.getURI() == "/hs/getall")
+        FactoryFunctions::iterator it = mFactoryFunctions.find(inRequest.getURI());
+        if (it != mFactoryFunctions.end())
         {
-            return GetAllHighScores::Create(inRequest.getURI());
+            const FactoryFunction & ff(it->second);
+            return ff(inRequest);
         }
-        else if (inRequest.getURI().find("/hs/add") == 0)
-        {
-            return AddHighScore::Create(inRequest.getURI());
-        }
-        else if (inRequest.getURI().find("/hs/commit-succeeded") == 0)
-        {
-            return CommitSucceeded::Create(inRequest.getURI());
-        }
-        else if (inRequest.getURI().find("/hs/commit") == 0)
-        {
-            return CommitHighScore::Create(inRequest.getURI());
-        }
-        else if (inRequest.getURI() == "/")
-        {
-            return DefaultRequestHandler::Create(inRequest.getURI());
-        }
-        else
-        {
-            return new ErrorRequestHandler("No handler for " + inRequest.getURI());
-        }
+
+        return new ErrorRequestHandler("No handler for " + inRequest.getURI());
     }
 
 } // namespace HSServer

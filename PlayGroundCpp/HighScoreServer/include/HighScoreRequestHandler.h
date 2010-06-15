@@ -51,7 +51,7 @@ namespace HSServer
     class DefaultRequestHandler : public HighScoreRequestHandler
     {
     public:        
-        static HighScoreRequestHandler * Create(const std::string & inURI);
+        static HighScoreRequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
     protected:
         virtual void generateResponse(Poco::Data::Session & inSession, std::ostream & ostr);
@@ -75,7 +75,7 @@ namespace HSServer
     class GetAllHighScores : public HighScoreRequestHandler
     {
     public:
-        static HighScoreRequestHandler * Create(const std::string & inURI);
+        static HighScoreRequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
         static const char * Location() { return "/hs/getall"; }
 
@@ -92,7 +92,7 @@ namespace HSServer
     class AddHighScore : public HighScoreRequestHandler
     {
     public:
-        static HighScoreRequestHandler * Create(const std::string & inURI);        
+        static HighScoreRequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
         
         static const char * Location() { return "/hs/add"; }
 
@@ -107,7 +107,7 @@ namespace HSServer
     class CommitHighScore : public HighScoreRequestHandler
     {
     public:
-        static HighScoreRequestHandler * Create(const std::string & inURI);
+        static HighScoreRequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
         static const char * Location() { return "/hs/commit"; }
 
@@ -124,7 +124,7 @@ namespace HSServer
     class CommitSucceeded : public HighScoreRequestHandler
     {
     public:
-        static HighScoreRequestHandler * Create(const std::string & inURI);
+        static HighScoreRequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
         static const char * Location() { return "/hs/commit-succeeded"; }
 

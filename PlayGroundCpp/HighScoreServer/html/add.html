@@ -78,11 +78,17 @@
               form.submit();
             }*/
 
+
+            PostHelper.getURL = function(action)
+            {
+              return "http://" + window.location.hostname + "/" + action;
+            };
+
            
             PostHelper.send = function(name, score)
             {
               var httpRequest = new XMLHttpRequest();
-              var url = "http://localhost/hs/add"
+              var url = PostHelper.getURL("hs/add");
               httpRequest.open("POST", url, true);
               httpRequest.onreadystatechange = function()
               {

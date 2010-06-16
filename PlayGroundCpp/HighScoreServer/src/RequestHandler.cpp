@@ -114,24 +114,6 @@ namespace HSServer
         {
             app.logger().critical(inException.what());
         }
-    }    
-    
-    
-    RequestHandler * DefaultRequestHandler::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        return new DefaultRequestHandler;
-    }
-
-    DefaultRequestHandler::DefaultRequestHandler() :
-        RequestHandler(RequestMethod_Get, "", "text/html")
-    {
-    }
-
-
-    void DefaultRequestHandler::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
-    {
-        std::ifstream html("html/index.html");
-        Poco::StreamCopier::copyStream(html, inResponse.send());
     }
 
 

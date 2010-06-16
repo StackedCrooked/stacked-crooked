@@ -198,8 +198,76 @@ namespace HSServer
         getRows(rs, rows);
         ostr << Poco::replace<std::string>(html, "{{ROWS}}", rows);
     }
-
     
+    
+    RequestHandler * GetHighScoreXML::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    {
+        return new GetHighScoreXML;
+    }
+    
+    
+    GetHighScoreXML::GetHighScoreXML() :
+        RequestHandler(RequestMethod(), GetLocation(), "text/xml")
+    {
+    }
+
+
+    void GetHighScoreXML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    {   
+        Args args;
+        GetArgs(inRequest.getURI(), args);
+        std::stringstream whereClause;
+        if (!args.empty())
+        {
+            whereClause << " WHERE ";
+            Args::const_iterator it = args.begin(), end = args.end();
+            int count = 0;
+            for (; it != end; ++it)
+            {
+                if (count > 0)
+                {
+                    whereClause << " AND ";
+                }
+                whereClause << it->first << "='" << it->second << "'";
+                count++;
+            }
+        }
+
+
+        Statement select(mSession);
+        select << "SELECT Name, Score FROM HighScores" + whereClause.str();
+        select.execute();
+        RecordSet rs(select);
+
+        std::ostream & ostr(inResponse.send());
+        ostr << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+        ostr << "<highscores>\n";
+        for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
+        {   
+            static const std::string cEntry = "<hs name=\"{{name}}\" score=\"{{score}}\" />\n";
+            std::string entry = cEntry;
+            for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
+            {
+                std::string cellValue;
+                rs.value(colIdx, rowIdx).convert(cellValue);
+
+                // Name
+                if (colIdx == 0)
+                {
+                    entry = Poco::replace<std::string>(entry, "{{name}}", cellValue);
+                }
+                // Score
+                else
+                {
+                    entry = Poco::replace<std::string>(entry, "{{score}}", cellValue);
+                }
+            }
+            ostr << entry;
+        }
+        ostr << "</highscores>\n";
+    }
+
+
     RequestHandler * GetAddHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
         return new GetAddHighScore;

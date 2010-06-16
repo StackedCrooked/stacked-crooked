@@ -56,7 +56,7 @@ namespace HSServer
         {
             mFactory->registerRequestHandler<GetAllHighScores>();
             mFactory->registerRequestHandler<GetAddHighScore>();
-            mFactory->registerRequestHandler<AddHighScore_POST>();
+            mFactory->registerRequestHandler<PostHighScore>();
             mFactory->registerRequestHandler<CommitHighScore>();
             mFactory->registerRequestHandler<CommitSucceeded>();            
         }

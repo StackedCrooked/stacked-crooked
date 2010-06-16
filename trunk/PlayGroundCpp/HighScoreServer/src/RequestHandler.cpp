@@ -229,19 +229,19 @@ namespace HSServer
     }
 
     
-    RequestHandler * AddHighScore_POST::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    RequestHandler * PostHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        return new AddHighScore_POST;
+        return new PostHighScore;
     }
 
 
-    AddHighScore_POST::AddHighScore_POST() :
+    PostHighScore::PostHighScore() :
         RequestHandler(GetRequestMethod(), GetLocation(), "text/plain")
     {
     }
 
 
-    void AddHighScore_POST::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
+    void PostHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
                                              Poco::Net::HTTPServerResponse& inResponse)
     {
         std::string body;

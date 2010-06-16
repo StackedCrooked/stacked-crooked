@@ -2,6 +2,8 @@
 #define HIGHSCOREREQUESTHANDLER_H_INCLUDED
 
 
+#include "Exceptions.h"
+#include "RequestMethod.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Data/RecordSet.h"
 #include "Poco/Data/Session.h"
@@ -15,18 +17,10 @@ namespace HSServer
 
     typedef std::map<std::string, std::string> Args;
 
-
-    class MissingArgumentException : public std::runtime_error
-    {
-    public:
-        MissingArgumentException(const std::string & inMessage);
-    };
-
-
     class RequestHandler : public Poco::Net::HTTPRequestHandler
     {
     public:
-        RequestHandler(const std::string & inLocation, const std::string & inResponseContentType);
+        RequestHandler(RequestMethod inRequestMethod, const std::string & inLocation, const std::string & inResponseContentType);
 
         const std::string & getResponseContentType() const;
 
@@ -45,6 +39,7 @@ namespace HSServer
         Poco::Data::Session mSession;
 
     private:
+        RequestMethod mRequestMethod;
         std::string mLocation;
         std::string mResponseContentType;
     };
@@ -86,7 +81,9 @@ namespace HSServer
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * Location() { return "/hs/getall"; }
+        static const char * GetLocation() { return "/hs/getall"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
@@ -98,60 +95,35 @@ namespace HSServer
     };
 
 
-    class AddHighScoreImpl;
-
-
-    class AddHighScore : public RequestHandler
+    class AddHighScore_GET : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
-        
-        static const char * Location() { return "/hs/add"; }
 
-    protected:
+        static const char * GetLocation() { return "/hs/add"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
 
     private:
-        // In case of a GET request
-        AddHighScore(AddHighScoreImpl * inImpl);
-
-        boost::scoped_ptr<AddHighScoreImpl> mImpl;
-    };
-
-
-    class AddHighScoreImpl
-    {
-    public:
-        AddHighScoreImpl(const std::string & inContentType);
-
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest,
-                                      Poco::Net::HTTPServerResponse& inResponse) = 0;
-
-        const std::string & getContentType() const;
-
-        void setSession(Poco::Data::Session * inSession);
-
-    protected:
-        std::string mContentType;
-        Poco::Data::Session * mSession;
-    };
-
-
-    class AddHighScore_POST : public AddHighScoreImpl
-    {
-    public:
-        AddHighScore_POST();
-
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
-    };
-
-
-    class AddHighScore_GET : public AddHighScoreImpl
-    {
-    public:
         AddHighScore_GET();
+    };
+
+
+    class AddHighScore_POST : public RequestHandler
+    {
+    public:
+        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
+
+        static const char * GetLocation() { return "/hs/add"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Post; }
 
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+
+    private:
+        AddHighScore_POST();
     };
 
 
@@ -160,7 +132,9 @@ namespace HSServer
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * Location() { return "/hs/commit"; }
+        static const char * GetLocation() { return "/hs/commit"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
@@ -177,7 +151,9 @@ namespace HSServer
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * Location() { return "/hs/commit-succeeded"; }
+        static const char * GetLocation() { return "/hs/commit-succeeded"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);

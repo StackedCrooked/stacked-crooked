@@ -26,8 +26,9 @@ namespace HSServer
     }
 
     
-    RequestHandler::RequestHandler(const std::string & inLocation, const std::string & inResponseContentType) :
+    RequestHandler::RequestHandler(RequestMethod inRequestMethod, const std::string & inLocation, const std::string & inResponseContentType) :
         mSession(SessionFactory::instance().create("SQLite", "HighScores.db")),
+        mRequestMethod(inRequestMethod),
         mLocation(inLocation),
         mResponseContentType(inResponseContentType)
     {
@@ -42,10 +43,17 @@ namespace HSServer
         {
             return;
         }
-        size_t offset = 0;
-        if (inURI[0] == '/')
+
+        size_t offset = inURI.find('?');
+        if (offset != std::string::npos)
         {
-            offset = 1;
+            // Search the substring that starts one character beyone the '?' mark.
+            offset++;
+        }
+        else
+        {
+            // If no '?' was found then the entire string is considered to be a parameter list.
+            offset = 0;
         }
 
         std::string argString = inURI.substr(offset, inURI.size() - offset);
@@ -115,7 +123,7 @@ namespace HSServer
     }
 
     DefaultRequestHandler::DefaultRequestHandler() :
-        RequestHandler("", "text/html")
+        RequestHandler(RequestMethod_Get, "", "text/html")
     {
     }
 
@@ -128,7 +136,7 @@ namespace HSServer
 
 
     ErrorRequestHandler::ErrorRequestHandler(const std::string & inErrorMessage) :
-        RequestHandler("", "text/html"),
+        RequestHandler(RequestMethod_Get, "", "text/html"),
         mErrorMessage(inErrorMessage)
     {
     }
@@ -165,7 +173,7 @@ namespace HSServer
     
     
     GetAllHighScores::GetAllHighScores() :
-        RequestHandler("/hs/getall", "text/html")
+        RequestHandler(RequestMethod(), GetLocation(), "text/html")
     {
     }
 
@@ -200,81 +208,42 @@ namespace HSServer
         getRows(rs, rows);
         ostr << Poco::replace<std::string>(html, "{{ROWS}}", rows);
     }
-    
-    
-    RequestHandler * AddHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        if (inRequest.getMethod() == "GET")
-        {
-            return new AddHighScore(new AddHighScore_GET);
-        }
-        else if (inRequest.getMethod() == "POST")
-        {
-            return new AddHighScore(new AddHighScore_POST);
-        }
-        return new ErrorRequestHandler("Unsupported method: " + inRequest.getMethod());
-    }
-
-
-    AddHighScore::AddHighScore(AddHighScoreImpl * inImpl) :
-        RequestHandler(Location(), inImpl->getContentType()),
-        mImpl(inImpl)
-    {
-    }
-
-
-    void AddHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
-    {
-        mImpl->setSession(&mSession);
-        mImpl->generateResponse(inRequest, inResponse);
-    }
-
-
-    AddHighScoreImpl::AddHighScoreImpl(const std::string & inContentType) :
-        mContentType(inContentType),
-        mSession(0)
-    {
-    }
-
-
-    const std::string & AddHighScoreImpl::getContentType() const
-    {
-        return mContentType;
-    }
 
     
-    void AddHighScoreImpl::setSession(Poco::Data::Session * inSession)
+    RequestHandler * AddHighScore_GET::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        mSession = inSession;
+        return new AddHighScore_GET;
     }
 
 
     AddHighScore_GET::AddHighScore_GET() :
-        AddHighScoreImpl("text/html")
+        RequestHandler(GetRequestMethod(), GetLocation(), "text/html")
     {
     }
 
 
     void AddHighScore_GET::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
-    {
+    {        
         std::ifstream htmlFile("html/add.html");
-        Poco::StreamCopier::copyStream(htmlFile, inResponse.send());        
+        Poco::StreamCopier::copyStream(htmlFile, inResponse.send());
+    }
+
+    
+    RequestHandler * AddHighScore_POST::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    {
+        return new AddHighScore_POST;
     }
 
 
     AddHighScore_POST::AddHighScore_POST() :
-        AddHighScoreImpl("text/plain")
+        RequestHandler(GetRequestMethod(), GetLocation(), "text/plain")
     {
     }
 
 
-    void AddHighScore_POST::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void AddHighScore_POST::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
+                                             Poco::Net::HTTPServerResponse& inResponse)
     {
-        if (!mSession)
-        {
-            throw std::runtime_error("Session is null.");
-        }
-
         std::string body;
         inRequest.stream() >> body;
 
@@ -284,14 +253,14 @@ namespace HSServer
         std::string name = RequestHandler::GetArg(args, "name");
         std::string score = RequestHandler::GetArg(args, "score");
 
-        Statement insert(*mSession);
+        Statement insert(mSession);
         insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(name),
                                                                use(score);
         insert.execute();
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        inResponse.send() << "http://localhost/hs/commit-succeeded&name=" << name << "&score=" << score;        
+        inResponse.send() << "http://localhost/hs/commit-succeeded?name=" << name << "&score=" << score;        
     }
     
     
@@ -304,7 +273,7 @@ namespace HSServer
 
 
     CommitHighScore::CommitHighScore(const std::string & inName, const std::string & inScore) :
-        RequestHandler(Location(), "text/plain"),
+        RequestHandler(GetRequestMethod(), GetLocation(), "text/plain"),
         mName(inName),
         mScore(inScore)
     {
@@ -320,7 +289,7 @@ namespace HSServer
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        inResponse.send() << "http://localhost/hs/commit-succeeded&name=" << mName << "&score=" << mScore;
+        inResponse.send() << "http://localhost/hs/commit-succeeded?name=" << mName << "&score=" << mScore;
     }
     
     
@@ -333,7 +302,7 @@ namespace HSServer
 
 
     CommitSucceeded::CommitSucceeded(const std::string & inName, const std::string & inScore) :
-        RequestHandler(Location(), "text/html"),
+        RequestHandler(GetRequestMethod(), GetLocation(), "text/html"),
         mName(inName),
         mScore(inScore)
     {

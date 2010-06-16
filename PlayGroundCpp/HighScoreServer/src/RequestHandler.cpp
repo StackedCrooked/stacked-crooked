@@ -156,20 +156,6 @@ namespace HSServer
     {
         return new GetAllHighScores;
     }
-
-
-    std::string GetStringValue(const Poco::DynamicAny & inDynamicValue, const std::string & inDefault)
-    {
-        if (inDynamicValue.isString())
-        {
-            return static_cast<std::string>(inDynamicValue);
-        }
-        else if (inDynamicValue.isNumeric())
-        {
-            return boost::lexical_cast<std::string>(static_cast<int>(inDynamicValue));
-        }
-        return inDefault;
-    }
     
     
     GetAllHighScores::GetAllHighScores() :
@@ -186,7 +172,9 @@ namespace HSServer
             for (size_t colIdx = 0; colIdx != inRecordSet.columnCount(); ++colIdx)
             {                
                 outRows += "<td>";
-                outRows += GetStringValue(inRecordSet.value(colIdx, rowIdx), "(Unknown DynamicAny)");
+                std::string cellValue;
+                inRecordSet.value(colIdx, rowIdx).convert(cellValue);
+                outRows += cellValue;
                 outRows += "</td>";
             }
             outRows += "</tr>\n";

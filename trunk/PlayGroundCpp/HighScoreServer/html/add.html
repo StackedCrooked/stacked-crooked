@@ -97,7 +97,7 @@
                   if (httpRequest.status == 200)
                   {
                     // The response will be a url
-                    window.location.href = httpRequest.responseText;
+                    window.location.href = PostHelper.getURL(httpRequest.responseText);
                   }
                   else
                   {

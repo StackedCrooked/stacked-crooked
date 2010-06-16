@@ -210,19 +210,19 @@ namespace HSServer
     }
 
     
-    RequestHandler * AddHighScore_GET::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    RequestHandler * GetAddHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        return new AddHighScore_GET;
+        return new GetAddHighScore;
     }
 
 
-    AddHighScore_GET::AddHighScore_GET() :
+    GetAddHighScore::GetAddHighScore() :
         RequestHandler(GetRequestMethod(), GetLocation(), "text/html")
     {
     }
 
 
-    void AddHighScore_GET::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void GetAddHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {        
         std::ifstream htmlFile("html/add.html");
         Poco::StreamCopier::copyStream(htmlFile, inResponse.send());

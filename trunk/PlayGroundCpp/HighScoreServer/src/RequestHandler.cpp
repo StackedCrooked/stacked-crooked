@@ -166,9 +166,29 @@ namespace HSServer
 
     void GetHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {   
+        Args args;
+        GetArgs(inRequest.getURI(), args);
+        std::stringstream whereClause;
+        if (!args.empty())
+        {
+            whereClause << " WHERE ";
+            Args::const_iterator it = args.begin(), end = args.end();
+            int count = 0;
+            for (; it != end; ++it)
+            {
+                if (count > 0)
+                {
+                    whereClause << " AND ";
+                }
+                whereClause << it->first << "='" << it->second << "'";
+                count++;
+            }
+        }
+
+
         std::ostream & ostr(inResponse.send());
         Statement select(mSession);
-        select << "SELECT * FROM HighScores";
+        select << "SELECT * FROM HighScores" + whereClause.str();
         select.execute();
         RecordSet rs(select);
 

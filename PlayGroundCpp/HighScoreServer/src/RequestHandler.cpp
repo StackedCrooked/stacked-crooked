@@ -230,7 +230,7 @@ namespace HSServer
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        inResponse.send() << "http://localhost/hs/commit-succeeded?name=" << name << "&score=" << score;        
+        inResponse.send() << "hs/commit-succeeded?name=" << name << "&score=" << score;        
     }
     
     

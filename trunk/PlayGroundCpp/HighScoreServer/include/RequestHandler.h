@@ -74,6 +74,23 @@ namespace HSServer
         void getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows);
     };
 
+        
+    class GetHighScoreXML : public RequestHandler
+    {
+    public:
+        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
+
+        static const char * GetLocation() { return "/hs.xml"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+
+    private:
+        GetHighScoreXML();
+    };
+
 
     class GetAddHighScore : public RequestHandler
     {

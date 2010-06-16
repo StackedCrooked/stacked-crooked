@@ -44,26 +44,6 @@ namespace HSServer
         std::string mResponseContentType;
     };
 
-
-    class Responder
-    {
-    public:
-
-    };
-
-        
-    class DefaultRequestHandler : public RequestHandler
-    {
-    public:        
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
-
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
-
-    private:
-        DefaultRequestHandler();
-    };
-
         
     class ErrorRequestHandler : public RequestHandler
     {

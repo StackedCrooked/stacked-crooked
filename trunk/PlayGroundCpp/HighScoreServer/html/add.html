@@ -88,7 +88,7 @@
             PostHelper.send = function(name, score)
             {
               var httpRequest = new XMLHttpRequest();
-              var url = PostHelper.getURL("hs/add");
+              var url = PostHelper.getURL("hs");
               httpRequest.open("POST", url, true);
               httpRequest.onreadystatechange = function()
               {

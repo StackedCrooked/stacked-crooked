@@ -56,12 +56,12 @@ namespace HSServer
     };
 
         
-    class GetAllHighScores : public RequestHandler
+    class GetHighScore : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs/getall"; }
+        static const char * GetLocation() { return "/hs"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
@@ -69,7 +69,7 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
 
     private:
-        GetAllHighScores();
+        GetHighScore();
 
         void getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows);
     };
@@ -96,7 +96,7 @@ namespace HSServer
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs/add"; }
+        static const char * GetLocation() { return "/hs"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Post; }
 
@@ -104,25 +104,6 @@ namespace HSServer
 
     private:
         PostHighScore();
-    };
-
-
-    class CommitHighScore : public RequestHandler
-    {
-    public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
-
-        static const char * GetLocation() { return "/hs/commit"; }
-
-        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
-
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
-
-    private:
-        CommitHighScore(const std::string & inName, const std::string & inScore);
-        std::string mName;
-        std::string mScore;
     };
 
 

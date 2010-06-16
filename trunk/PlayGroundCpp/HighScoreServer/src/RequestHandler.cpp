@@ -134,19 +134,19 @@ namespace HSServer
     }
     
     
-    RequestHandler * GetAllHighScores::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    RequestHandler * GetHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        return new GetAllHighScores;
+        return new GetHighScore;
     }
     
     
-    GetAllHighScores::GetAllHighScores() :
+    GetHighScore::GetHighScore() :
         RequestHandler(RequestMethod(), GetLocation(), "text/html")
     {
     }
 
 
-    void GetAllHighScores::getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows)
+    void GetHighScore::getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows)
     {
         for (size_t rowIdx = 0; rowIdx != inRecordSet.rowCount(); ++rowIdx)
         {   
@@ -164,7 +164,7 @@ namespace HSServer
     }
 
 
-    void GetAllHighScores::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void GetHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {   
         std::ostream & ostr(inResponse.send());
         Statement select(mSession);
@@ -231,35 +231,6 @@ namespace HSServer
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
         inResponse.send() << "hs/commit-succeeded?name=" << name << "&score=" << score;        
-    }
-    
-    
-    RequestHandler * CommitHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        Args args;
-        GetArgs(inRequest.getURI(), args);
-        return new CommitHighScore(GetArg(args, "name"), GetArg(args, "score"));
-    }
-
-
-    CommitHighScore::CommitHighScore(const std::string & inName, const std::string & inScore) :
-        RequestHandler(GetRequestMethod(), GetLocation(), "text/plain"),
-        mName(inName),
-        mScore(inScore)
-    {
-    }
-
-
-    void CommitHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
-    {        
-        Statement insert(mSession);        
-        insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(mName),
-                                                               use(mScore);
-        insert.execute();
-
-        // Return an URL instead of a HTML page.
-        // This is because the client is the JavaScript application in this case.
-        inResponse.send() << "http://localhost/hs/commit-succeeded?name=" << mName << "&score=" << mScore;
     }
     
     

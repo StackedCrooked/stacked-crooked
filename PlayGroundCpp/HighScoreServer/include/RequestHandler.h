@@ -111,7 +111,7 @@ namespace HSServer
     };
 
 
-    class AddHighScore_POST : public RequestHandler
+    class PostHighScore : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
@@ -123,7 +123,7 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
 
     private:
-        AddHighScore_POST();
+        PostHighScore();
     };
 
 

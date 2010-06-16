@@ -126,11 +126,13 @@ namespace HSServer
 
     void ErrorRequestHandler::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {
-        std::ostream & ostr(inResponse.send());
-        ostr << "<html><body>";
-        ostr << "<h1>Error</h1>";
-        ostr << "<p>" + mErrorMessage + "</p>";
-        ostr << "</body></html>";
+        std::string body;
+        body += "<html><body>";
+        body += "<h1>Error</h1>";
+        body += "<p>" + mErrorMessage + "</p>";
+        body += "</body></html>";
+        inResponse.setContentLength(body.size());
+        inResponse.send() << body;
     }
     
     
@@ -186,7 +188,6 @@ namespace HSServer
         }
 
 
-        std::ostream & ostr(inResponse.send());
         Statement select(mSession);
         select << "SELECT * FROM HighScores" + whereClause.str();
         select.execute();
@@ -196,7 +197,9 @@ namespace HSServer
         HSServer::ReadEntireFile("html/getall.html", html);
         std::string rows;
         getRows(rs, rows);
-        ostr << Poco::replace<std::string>(html, "{{ROWS}}", rows);
+        std::string body = Poco::replace<std::string>(html, "{{ROWS}}", rows);
+        inResponse.setContentLength(body.size());
+        inResponse.send() << body;
     }
     
     
@@ -239,9 +242,9 @@ namespace HSServer
         select.execute();
         RecordSet rs(select);
 
-        std::ostream & ostr(inResponse.send());
-        ostr << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-        ostr << "<highscores>\n";
+        std::string body;
+        body += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+        body += "<highscores>\n";
         for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
         {   
             static const std::string cEntry = "<hs name=\"{{name}}\" score=\"{{score}}\" />\n";
@@ -262,9 +265,11 @@ namespace HSServer
                     entry = Poco::replace<std::string>(entry, "{{score}}", cellValue);
                 }
             }
-            ostr << entry;
+            body += entry;
         }
-        ostr << "</highscores>\n";
+        body += "</highscores>\n";
+        inResponse.setContentLength(body.size());
+        inResponse.send() << body;
     }
 
 
@@ -282,8 +287,10 @@ namespace HSServer
 
     void GetAddHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {        
-        std::ifstream htmlFile("html/add.html");
-        Poco::StreamCopier::copyStream(htmlFile, inResponse.send());
+        std::string body;
+        ReadEntireFile("html/add.html", body);
+        inResponse.setContentLength(body.size());
+        inResponse.send() << body;
     }
 
     
@@ -302,11 +309,11 @@ namespace HSServer
     void PostHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
                                              Poco::Net::HTTPServerResponse& inResponse)
     {
-        std::string body;
-        inRequest.stream() >> body;
+        std::string requestBody;
+        inRequest.stream() >> requestBody;
 
         Args args;
-        RequestHandler::GetArgs(body, args);
+        RequestHandler::GetArgs(requestBody, args);
 
         std::string name = RequestHandler::GetArg(args, "name");
         std::string score = RequestHandler::GetArg(args, "score");
@@ -318,7 +325,9 @@ namespace HSServer
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        inResponse.send() << "hs/commit-succeeded?name=" << name << "&score=" << score;        
+        std::string body = "hs/commit-succeeded?name=" + name + "&score=" + score;
+        inResponse.setContentLength(body.size());
+        inResponse.send() << body;
     }
     
     
@@ -340,14 +349,16 @@ namespace HSServer
 
     void CommitSucceeded::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {
-        std::ostream & ostr(inResponse.send());
-        ostr << "<html>";
-        ostr << "<body>";
-        ostr << "<p>";
-        ostr << "Succesfully added highscore for " << mName << " of " << mScore << ".";
-        ostr << "</p>";
-        ostr << "</body>";
-        ostr << "</html>";
+        std::string body;
+        body += "<html>";
+        body += "<body>";
+        body += "<p>";
+        body += "Succesfully added highscore for " + mName + " of " + mScore + ".";
+        body += "</p>";
+        body += "</body>";
+        body += "</html>";
+        inResponse.setContentLength(body.size());
+        inResponse.send() << body;
     }
 
 } // namespace HSServer

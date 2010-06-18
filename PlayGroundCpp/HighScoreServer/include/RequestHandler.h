@@ -4,6 +4,7 @@
 
 #include "Exceptions.h"
 #include "RequestMethod.h"
+#include "Utils.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Data/RecordSet.h"
 #include "Poco/Data/Session.h"
@@ -15,23 +16,30 @@
 namespace HSServer
 {
 
-    typedef std::map<std::string, std::string> Args;
-
     class RequestHandler : public Poco::Net::HTTPRequestHandler
     {
     public:
-        RequestHandler(RequestMethod inRequestMethod, const std::string & inLocation, const std::string & inResponseContentType);
+        RequestHandler(RequestMethod inRequestMethod,
+                       const std::string & inLocation,
+                       const std::string & inResponseContentType);
 
+        /**
+         * The content type of the response.
+         * Can be text/plain, text/html, text/xml, ...
+         */
         const std::string & getResponseContentType() const;
 
-        const std::string & getLocation() const;
+        /**
+         * Returns the path part of the request uri.
+         * For example "/hs".
+         */
+        const std::string & getPath() const;
 
+        /**
+         * Read the request and generate the response.
+         * Must be implemented by subclass.
+         */
         virtual void handleRequest(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
-        
-        static void GetArgs(const std::string & inURI, Args & outArgs);
-
-        // Throws MissingArgumentException if not found.
-        static const std::string & GetArg(const Args & inArgs, const std::string & inArg);
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
@@ -44,11 +52,44 @@ namespace HSServer
         std::string mResponseContentType;
     };
 
+
+    class HTMLResponder : public RequestHandler
+    {
+    public:
+        HTMLResponder(RequestMethod inRequestMethod,
+                      const std::string & inLocation);
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
+    };
+
+
+    class XMLResponder : public RequestHandler
+    {
+    public:
+        XMLResponder(RequestMethod inRequestMethod,
+                     const std::string & inLocation);
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
+    };
+
+
+    class PlainTextResponder : public RequestHandler
+    {
+    public:
+        PlainTextResponder(RequestMethod inRequestMethod,
+                     const std::string & inLocation);
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
+    };
+
         
-    class ErrorRequestHandler : public RequestHandler
+    class HTMLErrorResponse : public HTMLResponder
     {
     public:        
-        ErrorRequestHandler(const std::string & inErrorMessage);
+        HTMLErrorResponse(const std::string & inErrorMessage);
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
@@ -56,7 +97,7 @@ namespace HSServer
     };
 
         
-    class GetHighScore : public RequestHandler
+    class GetHighScoreHTML : public HTMLResponder
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
@@ -69,13 +110,13 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
 
     private:
-        GetHighScore();
+        GetHighScoreHTML();
 
         void getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows);
     };
 
         
-    class GetHighScoreXML : public RequestHandler
+    class GetHighScoreXML : public XMLResponder
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
@@ -92,7 +133,7 @@ namespace HSServer
     };
 
 
-    class GetAddHighScore : public RequestHandler
+    class GetAddHighScore : public HTMLResponder
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
@@ -108,7 +149,7 @@ namespace HSServer
     };
 
 
-    class PostHighScore : public RequestHandler
+    class PostHighScore : public PlainTextResponder
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
@@ -124,7 +165,7 @@ namespace HSServer
     };
 
 
-    class CommitSucceeded : public RequestHandler
+    class CommitSucceeded : public HTMLResponder
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);

@@ -46,7 +46,7 @@ namespace HSServer
             return ff(inRequest);
         }
 
-        return new ErrorRequestHandler("No handler for " + inRequest.getURI());
+        return new HTMLErrorResponse("No handler for " + inRequest.getURI());
     }
 
 } // namespace HSServer

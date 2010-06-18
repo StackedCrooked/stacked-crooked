@@ -54,7 +54,7 @@ namespace HSServer
     private:
         void registerRequestHandlers()
         {
-            mFactory->registerRequestHandler<GetHighScore>();
+            mFactory->registerRequestHandler<GetHighScoreHTML>();
             mFactory->registerRequestHandler<GetHighScoreXML>();
             mFactory->registerRequestHandler<GetAddHighScore>();
             mFactory->registerRequestHandler<PostHighScore>();

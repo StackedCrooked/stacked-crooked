@@ -44,6 +44,14 @@ namespace HSServer
     }
 
 
+    std::string RequestHandler::getSimpleHTML(const std::string & inTitle, const std::string & inBody)
+    {
+        std::string doc;
+        HSServer::ReadEntireFile("html/html-document-template.html", doc);
+        return Poco::replace<std::string>(Poco::replace<std::string>(doc, "{{title}}", inTitle), "{{body}}", inBody);
+    }
+
+
     const std::string & RequestHandler::getResponseContentType() const
     {
         return mResponseContentType;
@@ -104,13 +112,9 @@ namespace HSServer
 
     void HTMLErrorResponse::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {
-        std::string body;
-        body += "<html><body>";
-        body += "<h1>Error</h1>";
-        body += "<p>" + mErrorMessage + "</p>";
-        body += "</body></html>";
-        inResponse.setContentLength(body.size());
-        inResponse.send() << body;
+        std::string html = getSimpleHTML("Error", WrapHTML("p", mErrorMessage));
+        inResponse.setContentLength(html.size());
+        inResponse.send() << html;
     }
     
     
@@ -170,14 +174,12 @@ namespace HSServer
         select << "SELECT * FROM HighScores" + whereClause.str();
         select.execute();
         RecordSet rs(select);
-
-        std::string html;
-        HSServer::ReadEntireFile("html/getall.html", html);
+        
         std::string rows;
         getRows(rs, rows);
-        std::string body = Poco::replace<std::string>(html, "{{ROWS}}", rows);
-        inResponse.setContentLength(body.size());
-        inResponse.send() << body;
+        std::string html = getSimpleHTML("High Scores", WrapHTML("table", rows));
+        inResponse.setContentLength(html.size());
+        inResponse.send() << html;
     }
     
     
@@ -326,16 +328,9 @@ namespace HSServer
 
     void CommitSucceeded::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {
-        std::string body;
-        body += "<html>";
-        body += "<body>";
-        body += "<p>";
-        body += "Succesfully added highscore for " + mName + " of " + mScore + ".";
-        body += "</p>";
-        body += "</body>";
-        body += "</html>";
-        inResponse.setContentLength(body.size());
-        inResponse.send() << body;
+        std::string html = getSimpleHTML("High Score Added", WrapHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + "."));
+        inResponse.setContentLength(html.size());
+        inResponse.send() << html;
     }
 
 } // namespace HSServer

@@ -33,6 +33,13 @@ namespace HSServer
      */
     const std::string & GetArg(const Args & inArgs, const std::string & inArg);
 
+
+    /**
+     * Wraps text in a HTML tag.
+     * For example `WrapHTML("p", "Hello!");` will return "<p>Hello!</p>"
+     */
+    std::string WrapHTML(const std::string & inHTMLElement, const std::string & inText);
+
 }
 
 

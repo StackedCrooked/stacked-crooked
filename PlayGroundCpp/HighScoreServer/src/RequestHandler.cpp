@@ -40,7 +40,12 @@ namespace HSServer
         mResponseContentType(inResponseContentType)
     {
         // Create the table if it doesn't already exist
-        mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
+        static bool fFirstTime(true);
+        if (fFirstTime)
+        {
+            mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
+            fFirstTime = false;
+        }
     }
 
 

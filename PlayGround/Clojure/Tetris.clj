@@ -227,6 +227,7 @@
 (def next-blocks (ref []))
 (def num-next-blocks 1)
 (def is-game-over (ref false))
+(def hs-xml (ref (str)))
 
 (defn current-time-ms [] (.getTime (java.util.Date.)))
 (def timer (ref (new Timer)))
@@ -542,11 +543,29 @@
     (.setFont g (get-tetris-font g))
     (draw-text-column g x y lines)))
     
-(defn draw-game-over [g]
+(defn draw-high-scores [g hs-xml]
   (let [x-offset        (* (prefs :field-x) (prefs :block-width))
         y-offset        (* (prefs :field-y) (prefs :block-height))
         field-w         (* (prefs :block-width) (prefs :num-columns))
         field-h         (* (prefs :block-height) (prefs :num-rows))
+        xml-entries     (hs-xml :content)
+        num-entries     (count xml-entries)
+        hs-entries      (loop [i 0 result [] ]
+                          (if (< i num-entries)
+                            (let [xml-entry (nth xml-entries i)
+                                  name      ((xml-entry :attrs) :name)
+                                  score     ((xml-entry :attrs) :score)
+                                  text      (str name " " score) ]
+                              (recur (inc i) (conj result {:text text :color Color/BLUE})))
+                            result)) ]
+    (draw-centered-text-column g (+ x-offset (half field-w))
+                                 (+ y-offset (half field-h))
+                                 hs-entries)))
+    
+(defn draw-game-over [g]
+  (let [x-offset        (* (prefs :field-x) (prefs :block-width))
+        y-offset        (* (prefs :field-y) (prefs :block-height))
+        field-w         (* (prefs :block-width) (prefs :num-columns))
         field-h         (* (prefs :block-height) (prefs :num-rows)) ]
     (draw-centered-text-column g (+ x-offset (half field-w))
                                  (+ y-offset (half field-h))
@@ -567,8 +586,8 @@
   (draw-next-blocks g @next-blocks)
   (draw-block g b)
   (draw-stats g)
-  (if (true? @is-game-over)
-    (draw-game-over g)))
+  (if (true? @is-game-over)     
+    (draw-high-scores g @hs-xml)))
 
 (defn check-position-valid [field block]
   (let [grids          (@(block :type) :grids)
@@ -724,6 +743,7 @@
 ; For now just start a new game
 (defn game-over []
   (alter is-game-over (fn [_] true))
+  (alter hs-xml (fn [_] (clojure.xml/parse "http://www.stacked-crooked.com/hs.xml")))
   (init-blocks))
 
 ; TODO

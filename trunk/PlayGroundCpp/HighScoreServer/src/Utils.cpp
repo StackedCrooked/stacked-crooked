@@ -68,4 +68,10 @@ namespace HSServer
         throw MissingArgumentException("Missing argument: " + inArg);
     }
 
+
+    std::string WrapHTML(const std::string & inHTMLElement, const std::string & inText)
+    {
+        return "<" + inHTMLElement + ">" + inText + "</" + inHTMLElement + ">";
+    }
+
 } // namespace HSServer

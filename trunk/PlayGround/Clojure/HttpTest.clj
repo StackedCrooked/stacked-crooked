@@ -17,4 +17,4 @@
                 result))))
 
 ; Print Google homepage HTML
-(printn (get-url "http://www.google.com"))
+(println (get-url "http://www.google.com"))

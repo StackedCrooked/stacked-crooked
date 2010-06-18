@@ -9,10 +9,10 @@ LIBS= \
 	-lPocoSQLite
 
 all:
-	g++ -w -c -o HTMLElements.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/HTMLElements.cpp
-	g++ -w -c -o HighScoreRequestHandler.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/HighScoreRequestHandler.cpp
-	g++ -w -c -o HighScoreRequestHandlerFactory.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/HighScoreRequestHandlerFactory.cpp
-	g++ -w -c -o HighScoreServer.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/HighScoreServer.cpp
+	rm -f *.o
+	g++ -w -c -o RequestHandler.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/RequestHandler.cpp
+	g++ -w -c -o RequestHandlerFactory.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/RequestHandlerFactory.cpp
+	g++ -w -c -o FileUtils.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/FileUtils.cpp
 	g++ -w -c -o main.o $(INCLUDE_DIRS) $(CPP_DEFINES) src/main.cpp
 	g++ -Wall *.o -o HighScoreServer $(LIBS)
 
@@ -20,4 +20,6 @@ all:
 clean:
 	rm -f *.o
 
+install:
+	mv -f ./HighScoreServer /usr/bin/
 

@@ -13,8 +13,49 @@
 (import javax.swing.JPanel)
 (use 'clojure.contrib.math)
 
+; =============================================================================
+; HTTP Utility functions
+; =============================================================================
+(import java.net.URL)
+(import java.io.InputStreamReader)
+(import java.io.BufferedReader)
+(import java.io.OutputStreamWriter)
+
+(defn do-get-request [url-string]
+  (let [url           (URL. url-string)
+        connection    (.openConnection url)
+        is            (.getInputStream connection)
+        isr           (InputStreamReader. is)
+        in            (BufferedReader. isr)]
+    (loop [line    (.readLine in)
+           result  (str)]
+      (if (not (nil? line))
+        (do (recur (.readLine in) (str result line)))
+        result))))
+
+(defn do-post-request [url-string post-body]
+    (let [url   (URL. url-string)
+          conn  (do
+                  (let [c (.openConnection url)]
+                    (.setDoOutput c true)
+                    (.setRequestMethod c "POST")
+                    c))
+          out   (OutputStreamWriter. (.getOutputStream conn))]
+      (.write out post-body)
+      (.close out)
+      (let [in  (BufferedReader.
+                  (InputStreamReader.
+                    (.getInputStream conn)))]
+        (loop [line   (.readLine in)
+               result (str)]
+          (if (not (nil? line))
+            (do (recur (.readLine in) (str result line)))
+            result)))))
+
+
+; =============================================================================
 ; Grid data structure
-; -------------------
+; =============================================================================
 (defstruct grid :width :height)
 
 (defn create-grid [w h initial-value]
@@ -48,8 +89,9 @@
   (partition (g :width) @(g :data)))
 
 
+; =============================================================================
 ; Shuffle utility function
-; ------------------------
+; =============================================================================
 (defn sort-by-mem-keys 
   "Like clojure/sort-by but only calls keyfn once on each item in coll." 
   ([keyfn coll] 
@@ -67,10 +109,10 @@
   [coll]
   (sort-by-mem-keys (fn [_] (rand)) coll))
 
-  
-; Data definitions
-; ----------------
 
+; =============================================================================
+; Tetris
+; =============================================================================
 (def prefs {
   :field-x 1
   :field-y 1

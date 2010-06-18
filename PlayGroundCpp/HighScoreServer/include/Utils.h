@@ -14,6 +14,7 @@ namespace HSServer
      */
     void ReadEntireFile(const std::string & inPath, std::string & str);
 
+
     /**
      * Args datatype.
      */

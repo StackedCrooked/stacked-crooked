@@ -184,10 +184,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\FileUtils.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\main.cpp"
 				>
 			</File>
@@ -199,6 +195,10 @@
 				RelativePath=".\src\RequestHandlerFactory.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\src\Utils.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -207,10 +207,6 @@
 			>
 			<File
 				RelativePath=".\include\Exceptions.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\FileUtils.h"
 				>
 			</File>
 			<File
@@ -225,6 +221,10 @@
 				RelativePath=".\include\RequestMethod.h"
 				>
 			</File>
+			<File
+				RelativePath=".\include\Utils.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="HTML"
@@ -235,6 +235,10 @@
 			</File>
 			<File
 				RelativePath=".\html\getall.html"
+				>
+			</File>
+			<File
+				RelativePath=".\html\html-document-template.html"
 				>
 			</File>
 			<File

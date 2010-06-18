@@ -1,6 +1,7 @@
 #include "RequestHandler.h"
-#include "FileUtils.h"
+#include "Utils.h"
 #include "Poco/Net/HTTPServerRequest.h"
+#include "Poco/URI.h"
 #include "Poco/Net/HTTPServerResponse.h"
 #include "Poco/Data/SessionFactory.h"
 #include "Poco/Data/SQLite/Connector.h"
@@ -20,6 +21,12 @@ using namespace Poco::Data;
 namespace HSServer
 {
 
+    Poco::Logger & GetLogger()
+    {
+        return Poco::Util::Application::instance().logger();
+    }
+
+
     MissingArgumentException::MissingArgumentException(const std::string & inMessage) :
         std::runtime_error(inMessage)
     {
@@ -37,61 +44,13 @@ namespace HSServer
     }
 
 
-    void RequestHandler::GetArgs(const std::string & inURI, Args & outArgs)
-    {
-        if (inURI.empty())
-        {
-            return;
-        }
-
-        size_t offset = inURI.find('?');
-        if (offset != std::string::npos)
-        {
-            // Search the substring that starts one character beyone the '?' mark.
-            offset++;
-        }
-        else
-        {
-            // If no '?' was found then the entire string is considered to be a parameter list.
-            offset = 0;
-        }
-
-        std::string argString = inURI.substr(offset, inURI.size() - offset);
-        Poco::StringTokenizer tokenizer(argString, "&", Poco::StringTokenizer::TOK_IGNORE_EMPTY |
-                                                        Poco::StringTokenizer::TOK_TRIM);
-
-        Poco::StringTokenizer::Iterator it = tokenizer.begin(), end = tokenizer.end();
-        for (; it != end; ++it)
-        {
-            const std::string & pair = *it;
-            Poco::StringTokenizer t(pair, "=", Poco::StringTokenizer::TOK_IGNORE_EMPTY |
-                                               Poco::StringTokenizer::TOK_TRIM);
-            if (t.count() != 2)
-            {
-                continue;
-            }
-            outArgs.insert(std::make_pair(t[0], t[1]));
-        }
-    }
-
-
-    const std::string & RequestHandler::GetArg(const Args & inArgs, const std::string & inArg)
-    {
-        Args::const_iterator it = inArgs.find(inArg);
-        if (it != inArgs.end())
-        {
-            return it->second;
-        }
-        throw MissingArgumentException("Missing argument: " + inArg);
-    }
-
-
     const std::string & RequestHandler::getResponseContentType() const
     {
         return mResponseContentType;
     }
 
-    const std::string & RequestHandler::getLocation() const
+
+    const std::string & RequestHandler::getPath() const
     {
         return mLocation;
     }
@@ -100,8 +59,8 @@ namespace HSServer
     void RequestHandler::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
                                        Poco::Net::HTTPServerResponse& inResponse)
     {
-        Poco::Util::Application& app = Poco::Util::Application::instance();
-        app.logger().information("Request from " + inRequest.clientAddress().toString());
+        
+        GetLogger().information("Request from " + inRequest.clientAddress().toString());
 
         inResponse.setChunkedTransferEncoding(true);
         inResponse.setContentType(getResponseContentType());
@@ -112,19 +71,38 @@ namespace HSServer
         }
         catch (const std::exception & inException)
         {
-            app.logger().critical(inException.what());
+            GetLogger().error(inException.what());
         }
     }
 
+    
+    HTMLResponder::HTMLResponder(RequestMethod inRequestMethod,
+                                 const std::string & inLocation) :
+        RequestHandler(inRequestMethod, inLocation, "text/html")
+    {
+    }
 
-    ErrorRequestHandler::ErrorRequestHandler(const std::string & inErrorMessage) :
-        RequestHandler(RequestMethod_Get, "", "text/html"),
+    
+    XMLResponder::XMLResponder(RequestMethod inRequestMethod, const std::string & inLocation) :
+        RequestHandler(inRequestMethod, inLocation, "text/html")
+    {
+    }
+
+    
+    PlainTextResponder::PlainTextResponder(RequestMethod inRequestMethod, const std::string & inLocation) :
+        RequestHandler(inRequestMethod, inLocation, "text/plain")
+    {
+    }
+
+
+    HTMLErrorResponse::HTMLErrorResponse(const std::string & inErrorMessage) :
+        HTMLResponder(RequestMethod_Get, ""),
         mErrorMessage(inErrorMessage)
     {
     }
 
 
-    void ErrorRequestHandler::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void HTMLErrorResponse::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {
         std::string body;
         body += "<html><body>";
@@ -136,19 +114,19 @@ namespace HSServer
     }
     
     
-    RequestHandler * GetHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    RequestHandler * GetHighScoreHTML::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        return new GetHighScore;
+        return new GetHighScoreHTML;
     }
     
     
-    GetHighScore::GetHighScore() :
-        RequestHandler(GetRequestMethod(), GetLocation(), "text/html")
+    GetHighScoreHTML::GetHighScoreHTML() :
+        HTMLResponder(GetRequestMethod(), GetLocation())
     {
     }
 
 
-    void GetHighScore::getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows)
+    void GetHighScoreHTML::getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows)
     {
         for (size_t rowIdx = 0; rowIdx != inRecordSet.rowCount(); ++rowIdx)
         {   
@@ -166,7 +144,7 @@ namespace HSServer
     }
 
 
-    void GetHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void GetHighScoreHTML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
     {   
         Args args;
         GetArgs(inRequest.getURI(), args);
@@ -210,7 +188,7 @@ namespace HSServer
     
     
     GetHighScoreXML::GetHighScoreXML() :
-        RequestHandler(GetRequestMethod(), GetLocation(), "text/xml")
+        XMLResponder(GetRequestMethod(), GetLocation())
     {
     }
 
@@ -280,7 +258,7 @@ namespace HSServer
 
 
     GetAddHighScore::GetAddHighScore() :
-        RequestHandler(GetRequestMethod(), GetLocation(), "text/html")
+        HTMLResponder(GetRequestMethod(), GetLocation())
     {
     }
 
@@ -301,7 +279,7 @@ namespace HSServer
 
 
     PostHighScore::PostHighScore() :
-        RequestHandler(GetRequestMethod(), GetLocation(), "text/plain")
+        PlainTextResponder(GetRequestMethod(), GetLocation())
     {
     }
 
@@ -313,14 +291,13 @@ namespace HSServer
         inRequest.stream() >> requestBody;
 
         Args args;
-        RequestHandler::GetArgs(requestBody, args);
+        GetArgs(requestBody, args);
 
-        std::string name = RequestHandler::GetArg(args, "name");
-        std::string score = RequestHandler::GetArg(args, "score");
+        const std::string & name = GetArg(args, "name");
+        const std::string & score = GetArg(args, "score");
 
         Statement insert(mSession);
-        insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(name),
-                                                               use(score);
+        insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(name), use(score);
         insert.execute();
 
         // Return an URL instead of a HTML page.
@@ -329,8 +306,8 @@ namespace HSServer
         inResponse.setContentLength(body.size());
         inResponse.send() << body;
     }
-    
-    
+
+
     RequestHandler * CommitSucceeded::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
         Args args;
@@ -340,7 +317,7 @@ namespace HSServer
 
 
     CommitSucceeded::CommitSucceeded(const std::string & inName, const std::string & inScore) :
-        RequestHandler(GetRequestMethod(), GetLocation(), "text/html"),
+        HTMLResponder(GetRequestMethod(), GetLocation()),
         mName(inName),
         mScore(inScore)
     {

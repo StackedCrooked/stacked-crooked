@@ -143,7 +143,7 @@ namespace HSServer
     
     
     GetHighScore::GetHighScore() :
-        RequestHandler(RequestMethod(), GetLocation(), "text/html")
+        RequestHandler(GetRequestMethod(), GetLocation(), "text/html")
     {
     }
 
@@ -210,7 +210,7 @@ namespace HSServer
     
     
     GetHighScoreXML::GetHighScoreXML() :
-        RequestHandler(RequestMethod(), GetLocation(), "text/xml")
+        RequestHandler(GetRequestMethod(), GetLocation(), "text/xml")
     {
     }
 

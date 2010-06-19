@@ -138,10 +138,12 @@
   :field-y 1
   :num-rows 20
   :num-columns 10
-  :block-width 20
-  :block-height 20
-  :screen-width 400
-  :screen-height 480 })
+  :block-width 16
+  :block-height 16 })
+
+(def window-side-width 200)
+(def window-width (+ (* (+ 2 (prefs :num-columns)) (prefs :block-width)) window-side-width))
+(def window-height (* (+ 2 (prefs :num-rows)) (prefs :block-height)))
 
 (def i-block {
   :value 1
@@ -410,7 +412,8 @@
           w (.width (.getSize frame))
           h (.height (.getSize frame))
           x (half (- (.width dim) w))
-          y (half (- (.height dim) h)) ]
+          y 0 ;(half (- (.height dim) h))
+          ]
   (.setLocation frame x y)))
 
 (defn paint-grid-cell [graphics i j value]
@@ -574,8 +577,8 @@
     (draw-text-column g x y lines)))
     
 (defn draw-high-scores [g hs-xml]
-  (let [x-offset        (* (inc (prefs :field-x)) (prefs :block-width))
-        y-offset        (* (inc (prefs :field-y)) (prefs :block-height))
+  (let [x-offset        (* (+ 1 (prefs :field-x)) (prefs :block-width))
+        y-offset        (* (+ 2 (prefs :field-y)) (prefs :block-height))
         field-w         (* (prefs :block-width) (prefs :num-columns))
         field-h         (* (prefs :block-height) (prefs :num-rows))
         xml-entries     (hs-xml :content)
@@ -596,7 +599,7 @@
                                             (if (= 7 i) "8TH"
                                             (if (= 8 i) "9TH"
                                             (if (= 9 i) "10TH" "INVALID"))))))))))
-                                  text      (str index "  " score "  " name) ]
+                                  text      (str name " " score) ]
                               (recur (inc i) (conj result {:text text :color Color/YELLOW})))
                             result)) ]
     (draw-left-aligned-text-column g x-offset y-offset (into title hs-entries))))
@@ -745,8 +748,8 @@
         (proxy-super paintComponent g)
         (draw-all this g global-field active-block)
         (dosync (alter frame-count inc)))
-      (getPreferredSize [] (Dimension. (prefs :screen-width)
-                                       (prefs :screen-height)))
+      (getPreferredSize [] (Dimension. window-width
+                                       window-height))
       (keyPressed [e]
         (let [keyCode (.getKeyCode e)]
           (if-not (true? @is-game-over)

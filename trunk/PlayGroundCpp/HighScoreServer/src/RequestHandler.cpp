@@ -290,17 +290,16 @@ namespace HSServer
             {
 				std::string rawCellValue;
 				rs.value(colIdx, rowIdx).convert(rawCellValue);
-                encodedCellValue = URIEncode(rawCellValue);
 
                 // Name
                 if (colIdx == 0)
                 {
-                    entry = Poco::replace<std::string>(entry, "{{name}}", encodedCellValue);
+                    entry = Poco::replace<std::string>(entry, "{{name}}", URIEncode(rawCellValue));
                 }
                 // Score
                 else
                 {
-                    entry = Poco::replace<std::string>(entry, "{{score}}", encodedCellValue);
+                    entry = Poco::replace<std::string>(entry, "{{score}}", URIEncode(rawCellValue));
                 }
             }
             body += entry;

@@ -40,6 +40,10 @@ namespace HSServer
      */
     std::string WrapHTML(const std::string & inHTMLElement, const std::string & inText);
 
+
+    std::string URIEncode(const std::string & inRawValue);
+    std::string URIDecode(const std::string & inEncodedValue);
+
 }
 
 

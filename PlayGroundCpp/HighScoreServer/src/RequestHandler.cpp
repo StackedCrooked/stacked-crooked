@@ -256,6 +256,59 @@ namespace HSServer
         inResponse.setContentLength(body.size());
         inResponse.send() << body;
     }
+    
+    
+    RequestHandler * GetHallOfFameXML::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    {
+        return new GetHallOfFameXML;
+    }
+    
+    
+    GetHallOfFameXML::GetHallOfFameXML() :
+        XMLResponder(GetRequestMethod(), GetLocation())
+    {
+    }
+
+
+    void GetHallOfFameXML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    {   
+        Args args;
+        GetArgs(inRequest.getURI(), args);
+
+        Statement select(mSession);
+        select << "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10";
+        select.execute();
+        RecordSet rs(select);
+
+        std::string body;
+        body += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+        body += "<highscores>\n";
+        for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
+        {   
+            static const std::string cEntry = "<hs name=\"{{name}}\" score=\"{{score}}\" />\n";
+            std::string entry = cEntry;
+            for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
+            {
+                std::string cellValue;
+                rs.value(colIdx, rowIdx).convert(cellValue);
+
+                // Name
+                if (colIdx == 0)
+                {
+                    entry = Poco::replace<std::string>(entry, "{{name}}", cellValue);
+                }
+                // Score
+                else
+                {
+                    entry = Poco::replace<std::string>(entry, "{{score}}", cellValue);
+                }
+            }
+            body += entry;
+        }
+        body += "</highscores>\n";
+        inResponse.setContentLength(body.size());
+        inResponse.send() << body;
+    }
 
 
     RequestHandler * GetAddHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)

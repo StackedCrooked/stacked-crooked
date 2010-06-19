@@ -23,6 +23,22 @@
 (import java.io.BufferedReader)
 (import java.io.OutputStreamWriter)
 
+
+
+(defn uri-encode [text]
+  (.. #^String text
+    (replace " " "%20")
+    (replace "&" "%26")
+    (replace "=" "%3D")
+  ))
+    
+(defn uri-decode [text]
+  (.. #^String text
+    (replace "%20" " ")
+    (replace "%26" "&")
+    (replace "%3D" "=")
+  ))
+    
 (defn do-get-request [url-string]
   (let [url           (URL. url-string)
         connection    (.openConnection url)
@@ -36,6 +52,7 @@
         result))))
 
 (defn do-post-request [url-string post-body]
+    (println "POST body: " post-body)
     (let [url   (URL. url-string)
           conn  (do
                   (let [c (.openConnection url)]
@@ -121,10 +138,10 @@
   :field-y 1
   :num-rows 20
   :num-columns 10
-  :block-width 15
-  :block-height 15
-  :screen-width 300
-  :screen-height 330 })
+  :block-width 20
+  :block-height 20
+  :screen-width 400
+  :screen-height 480 })
 
 (def i-block {
   :value 1
@@ -229,7 +246,7 @@
 
 (def next-blocks (ref []))
 (def num-next-blocks 1)
-(def is-game-over (ref false))
+(def is-game-over (atom false))
 (def user-name (ref (str)))
 (def hs-xml (ref nil))
 
@@ -386,13 +403,14 @@
       (nth color-table grid-value)
       (Color/WHITE))))
 
+(defn half [n] (round (int (/ n 2))))
 
 (defn center-in-screen [frame]
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
           w (.width (.getSize frame))
           h (.height (.getSize frame))
-          x 0
-          y 0 ]
+          x (half (- (.width dim) w))
+          y (half (- (.height dim) h)) ]
   (.setLocation frame x y)))
 
 (defn paint-grid-cell [graphics i j value]
@@ -517,7 +535,14 @@
     (.setColor g color)
     (.drawString g text x y-adjusted))))
 
-(defn half [n] (round (int (/ n 2))))
+(defn draw-left-aligned-text-column [g x y lines]
+  (let [text-height (* (count lines) text-line-height)  ]
+    (dotimes [i (count lines)]
+      (let [ line        (lines i)
+             text-rect   (get-text-rect g (line :text) (get-tetris-font g))
+             text-width  (.getWidth text-rect) ]
+        (.setColor g (line :color))
+        (.drawString g (line :text) x (+ y (* i text-line-height)))))))
 
 (defn draw-centered-text-column [g x y lines]
   (let [text-height (* (count lines) text-line-height)
@@ -549,23 +574,32 @@
     (draw-text-column g x y lines)))
     
 (defn draw-high-scores [g hs-xml]
-  (let [x-offset        (* (prefs :field-x) (prefs :block-width))
-        y-offset        (* (prefs :field-y) (prefs :block-height))
+  (let [x-offset        (* (inc (prefs :field-x)) (prefs :block-width))
+        y-offset        (* (inc (prefs :field-y)) (prefs :block-height))
         field-w         (* (prefs :block-width) (prefs :num-columns))
         field-h         (* (prefs :block-height) (prefs :num-rows))
         xml-entries     (hs-xml :content)
         num-entries     (count xml-entries)
+        title           [ { :text "Hall of Fame" :color Color/ORANGE} ]
         hs-entries      (loop [i 0 result [] ]
-                          (if (< i num-entries)
+                          (if (and (< i num-entries) (< i 10))
                             (let [xml-entry (nth xml-entries i)
-                                  name      ((xml-entry :attrs) :name)
+                                  name      (uri-decode ((xml-entry :attrs) :name))
                                   score     ((xml-entry :attrs) :score)
-                                  text      (str name " " score) ]
-                              (recur (inc i) (conj result {:text text :color Color/BLUE})))
+                                  index     (if (= 0 i) "1ST"
+                                            (if (= 1 i) "2ND"
+                                            (if (= 2 i) "3RD"
+                                            (if (= 3 i) "4TH"
+                                            (if (= 4 i) "5TH"
+                                            (if (= 5 i) "6TH"
+                                            (if (= 6 i) "7TH"
+                                            (if (= 7 i) "8TH"
+                                            (if (= 8 i) "9TH"
+                                            (if (= 9 i) "10TH" "INVALID"))))))))))
+                                  text      (str index "  " score "  " name) ]
+                              (recur (inc i) (conj result {:text text :color Color/YELLOW})))
                             result)) ]
-    (draw-centered-text-column g (+ x-offset (half field-w))
-                                 (+ y-offset (half field-h))
-                                 hs-entries)))
+    (draw-left-aligned-text-column g x-offset y-offset (into title hs-entries))))
     
 (defn draw-game-over [g]
   (let [x-offset        (* (prefs :field-x) (prefs :block-width))
@@ -700,7 +734,7 @@
     (next-block)))
 
 (defn reset-game []
-  (alter is-game-over (fn [_] false))
+  (reset! is-game-over false)
   (alter hs-xml (fn [_] nil))
   (reset-stats))
 
@@ -749,17 +783,19 @@
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
   (JOptionPane/showInputDialog nil "What is your name?" "Name" JOptionPane/QUESTION_MESSAGE))
       
+(def domain "stacked-crooked.com")
+;(def domain "localhost")
 
 (defn do-game-over []
   (if-not (= true @is-game-over)
     (do
-      (alter is-game-over (fn [_] true))
+      (reset! is-game-over true)
       (alter user-name (fn [_] (get-user-name)))
       (if-not (nil? @user-name)
-        (let [url         "http://stacked-crooked.com/hs"
-              post-body   (str "name=" @user-name "&score=" @(stats :score))]
+        (let [url         (str "http://" domain "/hs")
+              post-body   (str "name=" (uri-encode @user-name) "&score=" @(stats :score))]
           (println "Post request" (do-post-request url post-body))))
-      (alter hs-xml (fn [_] (clojure.xml/parse "http://stacked-crooked.com/hs.xml")))
+      (alter hs-xml (fn [_] (clojure.xml/parse (str "http://" domain "/hof.xml"))))
       (init-blocks))))
 
 ; TODO

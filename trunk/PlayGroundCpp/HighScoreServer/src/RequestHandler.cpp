@@ -96,7 +96,7 @@ namespace HSServer
 
     
     XMLResponder::XMLResponder(RequestMethod inRequestMethod, const std::string & inLocation) :
-        RequestHandler(inRequestMethod, inLocation, "text/html")
+        RequestHandler(inRequestMethod, inLocation, "text/xml")
     {
     }
 

@@ -69,8 +69,7 @@ namespace HSServer
     class XMLResponder : public RequestHandler
     {
     public:
-        XMLResponder(RequestMethod inRequestMethod,
-                     const std::string & inLocation);
+        XMLResponder(RequestMethod inRequestMethod, const std::string & inLocation);
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
@@ -80,8 +79,7 @@ namespace HSServer
     class PlainTextResponder : public RequestHandler
     {
     public:
-        PlainTextResponder(RequestMethod inRequestMethod,
-                     const std::string & inLocation);
+        PlainTextResponder(RequestMethod inRequestMethod, const std::string & inLocation);
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;

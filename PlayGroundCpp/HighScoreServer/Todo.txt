@@ -1,2 +1,4 @@
+- Timestamp high scores
 - Hall of fame
 - Recent high scores
+- Include location?

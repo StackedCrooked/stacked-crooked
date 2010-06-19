@@ -134,6 +134,23 @@ namespace HSServer
         GetHighScoreXML();
     };
 
+        
+    class GetHallOfFameXML : public XMLResponder
+    {
+    public:
+        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
+
+        static const char * GetLocation() { return "/hof.xml"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+
+    private:
+        GetHallOfFameXML();
+    };
+
 
     class GetAddHighScore : public HTMLResponder
     {

@@ -56,6 +56,7 @@ namespace HSServer
         {
             mFactory->registerRequestHandler<GetHighScoreHTML>();
             mFactory->registerRequestHandler<GetHighScoreXML>();
+            mFactory->registerRequestHandler<GetHallOfFameXML>();
             mFactory->registerRequestHandler<GetAddHighScore>();
             mFactory->registerRequestHandler<PostHighScore>();
             mFactory->registerRequestHandler<CommitSucceeded>();            

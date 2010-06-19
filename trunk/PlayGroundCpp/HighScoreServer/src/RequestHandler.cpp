@@ -1,7 +1,6 @@
 #include "RequestHandler.h"
 #include "Utils.h"
 #include "Poco/Net/HTTPServerRequest.h"
-#include "Poco/URI.h"
 #include "Poco/Net/HTTPServerResponse.h"
 #include "Poco/Data/SessionFactory.h"
 #include "Poco/Data/SQLite/Connector.h"
@@ -143,9 +142,9 @@ namespace HSServer
             for (size_t colIdx = 0; colIdx != inRecordSet.columnCount(); ++colIdx)
             {                
                 outRows += "<td>";
-                std::string cellValue;
-                inRecordSet.value(colIdx, rowIdx).convert(cellValue);
-                outRows += cellValue;
+                std::string rawCellValue;
+                inRecordSet.value(colIdx, rowIdx).convert(rawCellValue);
+                outRows += URIEncode(rawCellValue);
                 outRows += "</td>";
             }
             outRows += "</tr>\n";
@@ -289,18 +288,19 @@ namespace HSServer
             std::string entry = cEntry;
             for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
             {
-                std::string cellValue;
-                rs.value(colIdx, rowIdx).convert(cellValue);
+				std::string rawCellValue;
+				rs.value(colIdx, rowIdx).convert(rawCellValue);
+                encodedCellValue = URIEncode(rawCellValue);
 
                 // Name
                 if (colIdx == 0)
                 {
-                    entry = Poco::replace<std::string>(entry, "{{name}}", cellValue);
+                    entry = Poco::replace<std::string>(entry, "{{name}}", encodedCellValue);
                 }
                 // Score
                 else
                 {
-                    entry = Poco::replace<std::string>(entry, "{{score}}", cellValue);
+                    entry = Poco::replace<std::string>(entry, "{{score}}", encodedCellValue);
                 }
             }
             body += entry;
@@ -345,15 +345,15 @@ namespace HSServer
 
 
     void PostHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
-                                             Poco::Net::HTTPServerResponse& inResponse)
+                                         Poco::Net::HTTPServerResponse& inResponse)
     {
         std::string requestBody;
         inRequest.stream() >> requestBody;
 
         Args args;
         GetArgs(requestBody, args);
-
-        const std::string & name = GetArg(args, "name");
+        
+        std::string name = URIDecode(GetArg(args, "name"));
         const std::string & score = GetArg(args, "score");
 
         Statement insert(mSession);

@@ -11,6 +11,8 @@
 (import java.awt.event.KeyListener)
 (import javax.swing.JFrame)
 (import javax.swing.JPanel)
+(import javax.swing.UIManager)
+(import javax.swing.JOptionPane)
 (use 'clojure.contrib.math)
 
 ; =============================================================================
@@ -43,6 +45,7 @@
           out   (OutputStreamWriter. (.getOutputStream conn))]
       (.write out post-body)
       (.close out)
+      (println "POST is done")
       (let [in  (BufferedReader.
                   (InputStreamReader.
                     (.getInputStream conn)))]
@@ -227,7 +230,8 @@
 (def next-blocks (ref []))
 (def num-next-blocks 1)
 (def is-game-over (ref false))
-(def hs-xml (ref (str)))
+(def user-name (ref (str)))
+(def hs-xml (ref nil))
 
 (defn current-time-ms [] (.getTime (java.util.Date.)))
 (def timer (ref (new Timer)))
@@ -291,7 +295,7 @@
            (fn [_] (drop (inc num-next-blocks) @bag-of-blocks)))))
 
 (declare check-position-valid)
-(declare game-over)
+(declare do-game-over)
 
 (defn next-block []
   (alter  (active-block :type)
@@ -317,7 +321,8 @@
                    (block-grid :width)) 2)))))
   (alter (active-block :y) (fn [_] 0))
   (if-not (check-position-valid global-field active-block)
-    (game-over)))
+    (if (= false @is-game-over)
+      (do-game-over))))
   
 ; speed of falling
 ; number of milliseconds between falling one row
@@ -348,7 +353,7 @@
 (defn set-game-speed [interval]
   (let [task (proxy [TimerTask] []
                (run []
-                (if-not (true? @is-game-over)
+                (if (= false @is-game-over)
                   (move-down global-field active-block))))]
     (.cancel @timer)
     (alter timer (fn [_] (new Timer)))
@@ -404,7 +409,7 @@
     (.drawString text (* w x) (* h y))))
 
 (defn draw-block [g block]
-  (if-not (true? @is-game-over)
+  (if (= false @is-game-over)
     (let [  bx 	        @(block :x)
             by          @(block :y)
             rotation    @(block :rotation)
@@ -441,7 +446,7 @@
                  (str (get-grid field x y))))))
 
 (defn draw-next-blocks [g blocks]
-  (if-not (true? @is-game-over)
+  (if (= false @is-game-over)
     (dotimes [ n (count blocks) ]
       (let [ block      (nth blocks n)
              grids      (block :grids)
@@ -586,8 +591,9 @@
   (draw-next-blocks g @next-blocks)
   (draw-block g b)
   (draw-stats g)
-  (if (true? @is-game-over)     
-    (draw-high-scores g @hs-xml)))
+  (if (true? @is-game-over)
+    (if-not (nil? @hs-xml)
+      (draw-high-scores g @hs-xml))))
 
 (defn check-position-valid [field block]
   (let [grids          (@(block :type) :grids)
@@ -695,6 +701,7 @@
 
 (defn reset-game []
   (alter is-game-over (fn [_] false))
+  (alter hs-xml (fn [_] nil))
   (reset-stats))
 
 (defn create-panel []
@@ -720,11 +727,9 @@
       (keyTyped [e]))
     (.setFocusable true)))
 
-(def panel
-  (create-panel))
-
 (defn main []
-  (let [frame (JFrame. "Tetris")]
+  (let [frame  (JFrame. "Tetris")
+        panel  (create-panel)]
     (doto frame
       (.add panel)
       (.pack)
@@ -736,15 +741,26 @@
     (dosync
       (set-game-speed (get-game-speed (get-level @(stats :lines)))))
     (loop []
+      (Thread/sleep 10)
       (.repaint panel)
-      (Thread/sleep 7)
       (recur))))
+  
+(defn get-user-name []
+  (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
+  (JOptionPane/showInputDialog nil "What is your name?" "Name" JOptionPane/QUESTION_MESSAGE))
       
-; For now just start a new game
-(defn game-over []
-  (alter is-game-over (fn [_] true))
-  (alter hs-xml (fn [_] (clojure.xml/parse "http://www.stacked-crooked.com/hs.xml")))
-  (init-blocks))
+
+(defn do-game-over []
+  (if-not (= true @is-game-over)
+    (do
+      (alter is-game-over (fn [_] true))
+      (alter user-name (fn [_] (get-user-name)))
+      (if-not (nil? @user-name)
+        (let [url         "http://stacked-crooked.com/hs"
+              post-body   (str "name=" @user-name "&score=" @(stats :score))]
+          (println "Post request" (do-post-request url post-body))))
+      (alter hs-xml (fn [_] (clojure.xml/parse "http://stacked-crooked.com/hs.xml")))
+      (init-blocks))))
 
 ; TODO
 ; ----

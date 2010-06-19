@@ -1,5 +1,6 @@
 #include "Exceptions.h"
 #include "Utils.h"
+#include "Poco/URI.h"
 #include <fstream>
 #include <streambuf>
 
@@ -72,6 +73,22 @@ namespace HSServer
     std::string WrapHTML(const std::string & inHTMLElement, const std::string & inText)
     {
         return "<" + inHTMLElement + ">" + inText + "</" + inHTMLElement + ">";
+    }
+
+    
+    std::string URIEncode(const std::string & inRawValue)
+    {
+        std::string result;
+        Poco::URI::encode(inRawValue, " &=", result);
+        return result;
+    }
+
+
+    std::string URIDecode(const std::string & inEncodedValue)
+    {
+        std::string result;
+        Poco::URI::decode(inEncodedValue, result);
+        return result;
     }
 
 } // namespace HSServer

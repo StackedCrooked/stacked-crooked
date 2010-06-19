@@ -804,6 +804,7 @@
 ; TODO
 ; ----
 ; - high-score (internet?)
+; - distribute as applet (if feasible)
 ; v lines
 ; v level
 ; v show score http://tetris.wikia.com/wiki/Scoring

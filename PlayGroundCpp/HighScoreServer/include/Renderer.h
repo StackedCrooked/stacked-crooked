@@ -14,14 +14,12 @@ namespace HSServer
     {
     public:
         Renderer(const std::string & inCollectionTitle,
-                 const std::string & inRecordTitle,
                  const Poco::Data::RecordSet & inRecordSet);
 
         virtual void render(std::ostream & outStream) = 0;
 
     protected:
         std::string mCollectionTitle;
-        std::string mRecordTitle;
         Poco::Data::RecordSet mRecordSet;
     };
 
@@ -33,13 +31,15 @@ namespace HSServer
                     Poco::Data::RecordSet & inRecordSet);
 
         virtual void render(std::ostream & outStream);
+
+    private:
+        std::string mRecordTitle;
     };
 
     class HTMLRenderer : public Renderer
     {
     public:
         HTMLRenderer(const std::string & inCollectionTitle,
-                     const std::string & inRecordTitle,
                      Poco::Data::RecordSet & inRecordSet);
 
         virtual void render(std::ostream & outStream);

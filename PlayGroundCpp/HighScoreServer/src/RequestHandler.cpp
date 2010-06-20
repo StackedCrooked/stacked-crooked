@@ -179,12 +179,15 @@ namespace HSServer
         select << "SELECT * FROM HighScores" + whereClause.str();
         select.execute();
         RecordSet rs(select);
-        
-        std::string rows;
-        getRows(rs, rows);
-        std::string html = getSimpleHTML("High Scores", MakeHTML("table", rows));
-        outResponse.setContentLength(html.size());
-        outResponse.send() << html;
+
+
+        HTMLRenderer renderer("High Scores", rs);
+        std::stringstream ss;
+        renderer.render(ss);
+
+        std::string xml = ss.str();
+        outResponse.setContentLength(xml.size());
+        outResponse.send() << xml;
     }
     
     
@@ -267,6 +270,38 @@ namespace HSServer
         outResponse.setContentLength(xml.size());
         outResponse.send() << xml;
 
+    }
+    
+    
+    RequestHandler * GetHallOfFameHTML::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    {
+        return new GetHallOfFameHTML;
+    }
+    
+    
+    GetHallOfFameHTML::GetHallOfFameHTML() :
+        HTMLResponder(GetRequestMethod(), GetLocation())
+    {
+    }
+
+
+    void GetHallOfFameHTML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
+    {           
+        Args args;
+        GetArgs(inRequest.getURI(), args);
+
+        Statement select(mSession);
+        select << "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10";
+        select.execute();
+        RecordSet rs(select);
+
+        HTMLRenderer renderer("Hall of Fame", rs);
+        std::stringstream ss;
+        renderer.render(ss);
+
+        std::string html = ss.str();
+        outResponse.setContentLength(html.size());
+        outResponse.send() << html;
     }
 
 

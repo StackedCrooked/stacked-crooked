@@ -102,7 +102,7 @@ namespace HSServer
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs"; }
+        static const char * GetLocation() { return "/hs.html"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
@@ -147,6 +147,23 @@ namespace HSServer
 
     private:
         GetHallOfFameXML();
+    };
+
+        
+    class GetHallOfFameHTML : public HTMLResponder
+    {
+    public:
+        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
+
+        static const char * GetLocation() { return "/hof.html"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
+
+    private:
+        GetHallOfFameHTML();
     };
 
 

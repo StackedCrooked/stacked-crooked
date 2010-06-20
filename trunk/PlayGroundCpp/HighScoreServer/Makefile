@@ -21,5 +21,6 @@ clean:
 	rm -f *.o
 
 install:
-	mv -f ./HighScoreServer /usr/bin/
+	cp -f ./HighScoreServer /usr/bin/
+	cp -f ./scripts/hsserv /etc/init.d/
 

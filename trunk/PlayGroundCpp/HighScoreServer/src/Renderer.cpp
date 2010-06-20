@@ -54,7 +54,7 @@ namespace HSServer
 
     void HTMLRenderer::renderColumn(size_t inRowIdx, size_t inColIdx, std::ostream & ostr)
     {
-        StreamHTML("td", mRecordSet.value(inColIdx, inRowIdx).convert<std::string>(), ostr);
+        StreamHTML("td", mRecordSet.value(inColIdx, inRowIdx).convert<std::string>(), HTMLFormatting_NoBreaks, ostr);
     }
     
     
@@ -69,7 +69,7 @@ namespace HSServer
     
     void HTMLRenderer::renderRow(size_t inRowIdx, std::ostream & ostr)
     {
-        StreamHTML("tr", boost::bind(&HTMLRenderer::renderColumns, this, inRowIdx, _1), ostr);
+        StreamHTML("tr", boost::bind(&HTMLRenderer::renderColumns, this, inRowIdx, _1), HTMLFormatting_OneLiner, ostr);
     }
     
     
@@ -82,15 +82,34 @@ namespace HSServer
     }
 
 
-    void HTMLRenderer::renderTable(std::ostream & ostr)
+    void HTMLRenderer::renderBody(std::ostream & ostr)
     {
-        StreamHTML("table", boost::bind(&HTMLRenderer::renderRows, this, _1), ostr);
+        StreamHTML("body", boost::bind(&HTMLRenderer::renderRows, this, _1), HTMLFormatting_ThreeLiner, ostr);
+    }
+
+
+    void HTMLRenderer::renderHead(std::ostream & ostr)
+    {
+        ostr << "<thead>\n";
+        ostr << "<tr>";
+        for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
+        {
+            StreamHTML("th", mRecordSet.columnName(colIdx), HTMLFormatting_NoBreaks, ostr);
+        }
+        ostr << "</tr>";
+        ostr << "</thead>\n";
     }
 
 
     void HTMLRenderer::render(std::ostream & ostr)
     {
-        StreamHTML("html", boost::bind(&HTMLRenderer::renderTable, this, _1), ostr);
+        ostr << "<html>\n";
+        StreamHTML("h1", mCollectionTitle, HTMLFormatting_OneLiner, ostr);
+        ostr << "<table>\n";
+        renderHead(ostr);
+        renderBody(ostr);
+        ostr << "</table>\n";
+        ostr << "</html>\n";
     }
 
 } // namespace HSServer

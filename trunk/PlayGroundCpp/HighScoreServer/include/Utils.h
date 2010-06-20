@@ -34,18 +34,25 @@ namespace HSServer
      */
     const std::string & GetArg(const Args & inArgs, const std::string & inArg);
 
+    enum HTMLFormatting
+    {
+        HTMLFormatting_NoBreaks,
+        HTMLFormatting_OneLiner,
+        HTMLFormatting_ThreeLiner
+    };
 
     /**
      * Wraps text in a HTML tag.
      * For example `MakeHTML("p", "Hello!");` will return "<p>Hello!</p>"
      */
-    std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText);
+    std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting);
 
     /**
      * Stream-based version of MakeHTML.
      */
     std::ostream & StreamHTML(const std::string & inHTMLElement,
                               const std::string & inText,
+                              HTMLFormatting inHTMLFormatting,
                               std::ostream & ostr);
 
 
@@ -56,6 +63,7 @@ namespace HSServer
      */      
     std::ostream & StreamHTML(const std::string & inHTMLElement,
                               const StreamFunction & inStreamFunction,
+                              HTMLFormatting inHTMLFormatting,
                               std::ostream & ostr);
 
 

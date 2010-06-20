@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\Renderer.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\RequestHandler.cpp"
 				>
 			</File>
@@ -207,6 +211,10 @@
 			>
 			<File
 				RelativePath=".\include\Exceptions.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\Renderer.h"
 				>
 			</File>
 			<File

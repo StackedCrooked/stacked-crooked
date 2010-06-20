@@ -43,7 +43,11 @@ namespace HSServer
         static bool fFirstTime(true);
         if (fFirstTime)
         {
-            mSession << "CREATE TABLE IF NOT EXISTS HighScores(Id INTEGER PRIMARY KEY, Name VARCHAR(20), Score INTEGER(5))", now;
+            mSession << "CREATE TABLE IF NOT EXISTS HighScores("
+                     << "Id INTEGER PRIMARY KEY, "
+                     << "Timestamp INTEGER, "
+                     << "Name VARCHAR(20), "
+                     << "Score INTEGER(5))", now;
             fFirstTime = false;
         }
     }
@@ -226,7 +230,7 @@ namespace HSServer
 
 
         Statement select(mSession);
-        select << "SELECT Name, Score FROM HighScores" + whereClause.str();
+        select << "SELECT * FROM HighScores" + whereClause.str();
         select.execute();
         RecordSet rs(select);
 
@@ -351,7 +355,7 @@ namespace HSServer
         const std::string & score = GetArg(args, "score");
 
         Statement insert(mSession);
-        insert << "INSERT INTO HighScores VALUES(NULL, ?, ?)", use(name), use(score);
+        insert << "INSERT INTO HighScores VALUES(NULL, strftime('%s', 'now'), ?, ?)", use(name), use(score);
         insert.execute();
 
         // Return an URL instead of a HTML page.

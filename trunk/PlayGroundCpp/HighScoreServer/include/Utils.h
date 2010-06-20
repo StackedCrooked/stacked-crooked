@@ -34,6 +34,13 @@ namespace HSServer
      */
     const std::string & GetArg(const Args & inArgs, const std::string & inArg);
 
+    
+    /**
+     * Transform a string into its lower-case equivalent.
+     */
+    void MakeLowerCase(std::string & inText);
+
+
     enum HTMLFormatting
     {
         HTMLFormatting_NoBreaks,

@@ -39,10 +39,10 @@ namespace HSServer
          * Read the request and generate the response.
          * Must be implemented by subclass.
          */
-        virtual void handleRequest(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void handleRequest(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
 
         std::string getSimpleHTML(const std::string & inTitle, const std::string & inBody);
 
@@ -62,7 +62,7 @@ namespace HSServer
                       const std::string & inLocation);
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
     };
 
 
@@ -72,7 +72,7 @@ namespace HSServer
         XMLResponder(RequestMethod inRequestMethod, const std::string & inLocation);
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
     };
 
 
@@ -82,7 +82,7 @@ namespace HSServer
         PlainTextResponder(RequestMethod inRequestMethod, const std::string & inLocation);
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse) = 0;
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
     };
 
         
@@ -92,7 +92,7 @@ namespace HSServer
         HTMLErrorResponse(const std::string & inErrorMessage);
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
         std::string mErrorMessage;
     };
 
@@ -107,7 +107,7 @@ namespace HSServer
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
         GetHighScoreHTML();
@@ -126,7 +126,7 @@ namespace HSServer
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
         GetHighScoreXML();
@@ -143,7 +143,7 @@ namespace HSServer
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
         GetHallOfFameXML();
@@ -159,7 +159,7 @@ namespace HSServer
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
         GetAddHighScore();
@@ -175,7 +175,7 @@ namespace HSServer
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Post; }
 
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
         PostHighScore();
@@ -192,7 +192,7 @@ namespace HSServer
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
 
     protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse);
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
         CommitSucceeded(const std::string & inName, const std::string & inScore);

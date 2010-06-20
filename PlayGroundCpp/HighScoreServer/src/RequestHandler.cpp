@@ -1,4 +1,5 @@
 #include "RequestHandler.h"
+#include "Renderer.h"
 #include "Utils.h"
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
@@ -69,17 +70,17 @@ namespace HSServer
 
     
     void RequestHandler::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
-                                       Poco::Net::HTTPServerResponse& inResponse)
+                                       Poco::Net::HTTPServerResponse& outResponse)
     {
         
         GetLogger().information("Request from " + inRequest.clientAddress().toString());
 
-        inResponse.setChunkedTransferEncoding(true);
-        inResponse.setContentType(getResponseContentType());
+        outResponse.setChunkedTransferEncoding(true);
+        outResponse.setContentType(getResponseContentType());
 
         try
         {
-            generateResponse(inRequest, inResponse);
+            generateResponse(inRequest, outResponse);
         }
         catch (const std::exception & inException)
         {
@@ -114,11 +115,11 @@ namespace HSServer
     }
 
 
-    void HTMLErrorResponse::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void HTMLErrorResponse::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {
         std::string html = getSimpleHTML("Error", WrapHTML("p", mErrorMessage));
-        inResponse.setContentLength(html.size());
-        inResponse.send() << html;
+        outResponse.setContentLength(html.size());
+        outResponse.send() << html;
     }
     
     
@@ -152,7 +153,7 @@ namespace HSServer
     }
 
 
-    void GetHighScoreHTML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void GetHighScoreHTML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {   
         Args args;
         GetArgs(inRequest.getURI(), args);
@@ -182,8 +183,8 @@ namespace HSServer
         std::string rows;
         getRows(rs, rows);
         std::string html = getSimpleHTML("High Scores", WrapHTML("table", rows));
-        inResponse.setContentLength(html.size());
-        inResponse.send() << html;
+        outResponse.setContentLength(html.size());
+        outResponse.send() << html;
     }
     
     
@@ -199,7 +200,7 @@ namespace HSServer
     }
 
 
-    void GetHighScoreXML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void GetHighScoreXML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {   
         Args args;
         GetArgs(inRequest.getURI(), args);
@@ -252,8 +253,8 @@ namespace HSServer
             body += entry;
         }
         body += "</highscores>\n";
-        inResponse.setContentLength(body.size());
-        inResponse.send() << body;
+        outResponse.setContentLength(body.size());
+        outResponse.send() << body;
     }
     
     
@@ -269,8 +270,8 @@ namespace HSServer
     }
 
 
-    void GetHallOfFameXML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
-    {   
+    void GetHallOfFameXML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
+    {           
         Args args;
         GetArgs(inRequest.getURI(), args);
 
@@ -279,34 +280,14 @@ namespace HSServer
         select.execute();
         RecordSet rs(select);
 
-        std::string body;
-        body += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-        body += "<highscores>\n";
-        for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
-        {   
-            static const std::string cEntry = "<hs name=\"{{name}}\" score=\"{{score}}\" />\n";
-            std::string entry = cEntry;
-            for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
-            {
-				std::string rawCellValue;
-				rs.value(colIdx, rowIdx).convert(rawCellValue);
+        XMLRenderer renderer("highscores", "highscore", rs);
+        std::stringstream ss;
+        renderer.render(ss);
 
-                // Name
-                if (colIdx == 0)
-                {
-                    entry = Poco::replace<std::string>(entry, "{{name}}", URIEncode(rawCellValue));
-                }
-                // Score
-                else
-                {
-                    entry = Poco::replace<std::string>(entry, "{{score}}", URIEncode(rawCellValue));
-                }
-            }
-            body += entry;
-        }
-        body += "</highscores>\n";
-        inResponse.setContentLength(body.size());
-        inResponse.send() << body;
+        std::string xml = ss.str();
+        outResponse.setContentLength(xml.size());
+        outResponse.send() << xml;
+
     }
 
 
@@ -322,12 +303,12 @@ namespace HSServer
     }
 
 
-    void GetAddHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void GetAddHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {        
         std::string body;
         ReadEntireFile("html/add.html", body);
-        inResponse.setContentLength(body.size());
-        inResponse.send() << body;
+        outResponse.setContentLength(body.size());
+        outResponse.send() << body;
     }
 
     
@@ -344,7 +325,7 @@ namespace HSServer
 
 
     void PostHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
-                                         Poco::Net::HTTPServerResponse& inResponse)
+                                         Poco::Net::HTTPServerResponse& outResponse)
     {
         std::string requestBody;
         inRequest.stream() >> requestBody;
@@ -362,8 +343,8 @@ namespace HSServer
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
         std::string body = "hs/commit-succeeded?name=" + name + "&score=" + score;
-        inResponse.setContentLength(body.size());
-        inResponse.send() << body;
+        outResponse.setContentLength(body.size());
+        outResponse.send() << body;
     }
 
 
@@ -383,11 +364,11 @@ namespace HSServer
     }
 
 
-    void CommitSucceeded::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& inResponse)
+    void CommitSucceeded::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {
         std::string html = getSimpleHTML("High Score Added", WrapHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + "."));
-        inResponse.setContentLength(html.size());
-        inResponse.send() << html;
+        outResponse.setContentLength(html.size());
+        outResponse.send() << html;
     }
 
 } // namespace HSServer

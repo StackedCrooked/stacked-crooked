@@ -597,16 +597,6 @@
                             (let [xml-entry (nth xml-entries i)
                                   name      (uri-decode ((xml-entry :attrs) :name))
                                   score     ((xml-entry :attrs) :score)
-                                  index     (if (= 0 i) "1ST"
-                                            (if (= 1 i) "2ND"
-                                            (if (= 2 i) "3RD"
-                                            (if (= 3 i) "4TH"
-                                            (if (= 4 i) "5TH"
-                                            (if (= 5 i) "6TH"
-                                            (if (= 6 i) "7TH"
-                                            (if (= 7 i) "8TH"
-                                            (if (= 8 i) "9TH"
-                                            (if (= 9 i) "10TH" "INVALID"))))))))))
                                   text      (str name " " score) ]
                               (recur (inc i) (conj result {:text text :color Color/YELLOW})))
                             result)) ]
@@ -780,6 +770,7 @@
     (set-game-speed (get-game-speed (get-level @(stats :lines))))
     (loop []
       (Thread/sleep 10)
+      (println @hs-xml)
       (.repaint panel)
       (recur))))
   
@@ -799,7 +790,7 @@
         (let [url         (str "http://" domain "/hs")
               post-body   (str "name=" (uri-encode @user-name) "&score=" @(stats :score))]
           (println "Post request" (do-post-request url post-body))))
-      (reset! hs-xml (clojure.xml/parse (str "http://" domain "/hof.xml")))
+      (reset! hs-xml (clojure.xml/parse (str "http://" domain "/hof.xml")))      
       (init-blocks))))
 
 (main)

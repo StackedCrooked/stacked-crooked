@@ -70,25 +70,96 @@ namespace HSServer
     }
 
 
-    std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText)
+    std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting)
     {
-        return "<" + inHTMLElement + ">" + inText + "</" + inHTMLElement + ">";
+        switch (inHTMLFormatting)
+        {
+            case HTMLFormatting_NoBreaks:
+            {
+                return "<" + inHTMLElement + ">" + inText + "</" + inHTMLElement + ">";
+            }
+            case HTMLFormatting_OneLiner:
+            {
+                return "<" + inHTMLElement + ">" + inText + "</" + inHTMLElement + ">\n";
+            }
+            case HTMLFormatting_ThreeLiner:
+            {
+                return "<" + inHTMLElement + ">\n" + inText + "\n</" + inHTMLElement + ">\n";
+            }
+            default:
+            {
+                throw std::logic_error("Invalid enum value.");
+            }
+        }
     }
 
 
-    std::ostream & StreamHTML(const std::string & inHTMLElement, const std::string & inText, std::ostream & ostr)
+    std::ostream & StreamHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting, std::ostream & ostr)
     {
-        return ostr << "<" << inHTMLElement << ">" << inText << "</" << inHTMLElement << ">";
+        switch (inHTMLFormatting)
+        {
+            case HTMLFormatting_NoBreaks:
+            {
+                return ostr << "<" << inHTMLElement << ">" << inText << "</" << inHTMLElement << ">";
+            }
+            case HTMLFormatting_OneLiner:
+            {
+                return ostr << "<" << inHTMLElement << ">" << inText << "</" << inHTMLElement << ">\n";
+            }
+            case HTMLFormatting_ThreeLiner:
+            {
+                return ostr << "<" << inHTMLElement << ">\n" << inText << "\n</" << inHTMLElement << ">\n";
+            }
+            default:
+            {
+                throw std::logic_error("Invalid enum value.");
+            }
+        }
     }
     
     
     std::ostream & StreamHTML(const std::string & inHTMLElement,
                               const StreamFunction & inStreamFunction,
+                              HTMLFormatting inHTMLFormatting,
                               std::ostream & ostr)
     {
-        ostr << "<" << inHTMLElement << ">";
+        switch (inHTMLFormatting)
+        {
+            case HTMLFormatting_NoBreaks:
+            case HTMLFormatting_OneLiner:
+            {
+                ostr << "<" << inHTMLElement << ">";
+                break;
+            }
+            case HTMLFormatting_ThreeLiner:
+            {
+                ostr << "<" << inHTMLElement << ">\n";
+                break;
+            }
+            default:
+            {
+                throw std::logic_error("Invalid enum value.");
+            }
+        }
         inStreamFunction(ostr);
-        ostr << "</" << inHTMLElement << ">";
+        switch (inHTMLFormatting)
+        {
+            case HTMLFormatting_NoBreaks:
+            {
+                ostr << "</" << inHTMLElement << ">";
+                break;
+            }
+            case HTMLFormatting_OneLiner:
+            case HTMLFormatting_ThreeLiner:
+            {
+                ostr << "</" << inHTMLElement << ">\n";
+                break;
+            }
+            default:
+            {
+                throw std::logic_error("Invalid enum value.");
+            }
+        }
         return ostr;
     }
 

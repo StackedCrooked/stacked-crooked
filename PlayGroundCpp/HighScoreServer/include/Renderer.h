@@ -49,7 +49,8 @@ namespace HSServer
         void renderColumns(size_t inRowIdx, std::ostream & ostr);
         void renderRow(size_t inRowIdx, std::ostream & ostr);
         void renderRows(std::ostream & ostr);
-        void renderTable(std::ostream & ostr);
+        void renderHead(std::ostream & ostr);
+        void renderBody(std::ostream & ostr);
     };
 
 

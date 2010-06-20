@@ -1,6 +1,7 @@
 #include "Exceptions.h"
 #include "Utils.h"
 #include "Poco/URI.h"
+#include <algorithm>
 #include <fstream>
 #include <streambuf>
 
@@ -68,7 +69,12 @@ namespace HSServer
         }
         throw MissingArgumentException("Missing argument: " + inArg);
     }
-
+    
+    
+    void MakeLowerCase(std::string & inText)
+    {
+        std::transform(inText.begin(), inText.end(), inText.begin(), ::tolower);
+    }
 
     std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting)
     {

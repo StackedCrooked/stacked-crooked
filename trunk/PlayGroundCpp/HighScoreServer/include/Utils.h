@@ -2,6 +2,7 @@
 #define UTILS_H_INCLUDED
 
 
+#include <boost/function.hpp>
 #include <map>
 #include <string>
 
@@ -36,9 +37,26 @@ namespace HSServer
 
     /**
      * Wraps text in a HTML tag.
-     * For example `WrapHTML("p", "Hello!");` will return "<p>Hello!</p>"
+     * For example `MakeHTML("p", "Hello!");` will return "<p>Hello!</p>"
      */
-    std::string WrapHTML(const std::string & inHTMLElement, const std::string & inText);
+    std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText);
+
+    /**
+     * Stream-based version of MakeHTML.
+     */
+    std::ostream & StreamHTML(const std::string & inHTMLElement,
+                              const std::string & inText,
+                              std::ostream & ostr);
+
+
+    typedef boost::function<void(std::ostream &)> StreamFunction;
+
+    /**
+     * Stream-based verion of MakeHTML using a callback.
+     */      
+    std::ostream & StreamHTML(const std::string & inHTMLElement,
+                              const StreamFunction & inStreamFunction,
+                              std::ostream & ostr);
 
 
     std::string URIEncode(const std::string & inRawValue);

@@ -45,8 +45,11 @@ namespace HSServer
         virtual void render(std::ostream & outStream);
 
     private:
-        virtual void renderTable(std::ostream & outRow);
-        void renderRow(size_t inRowIdx, std::ostream & outRow);
+        void renderColumn(size_t inRowIdx, size_t inColIdx, std::ostream & ostr);
+        void renderColumns(size_t inRowIdx, std::ostream & ostr);
+        void renderRow(size_t inRowIdx, std::ostream & ostr);
+        void renderRows(std::ostream & ostr);
+        void renderTable(std::ostream & ostr);
     };
 
 

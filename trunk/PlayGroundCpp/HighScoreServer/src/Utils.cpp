@@ -70,9 +70,26 @@ namespace HSServer
     }
 
 
-    std::string WrapHTML(const std::string & inHTMLElement, const std::string & inText)
+    std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText)
     {
         return "<" + inHTMLElement + ">" + inText + "</" + inHTMLElement + ">";
+    }
+
+
+    std::ostream & StreamHTML(const std::string & inHTMLElement, const std::string & inText, std::ostream & ostr)
+    {
+        return ostr << "<" << inHTMLElement << ">" << inText << "</" << inHTMLElement << ">";
+    }
+    
+    
+    std::ostream & StreamHTML(const std::string & inHTMLElement,
+                              const StreamFunction & inStreamFunction,
+                              std::ostream & ostr)
+    {
+        ostr << "<" << inHTMLElement << ">";
+        inStreamFunction(ostr);
+        ostr << "</" << inHTMLElement << ">";
+        return ostr;
     }
 
     

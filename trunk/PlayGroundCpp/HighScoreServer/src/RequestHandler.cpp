@@ -117,7 +117,7 @@ namespace HSServer
 
     void HTMLErrorResponse::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {
-        std::string html = getSimpleHTML("Error", WrapHTML("p", mErrorMessage));
+        std::string html = getSimpleHTML("Error", MakeHTML("p", mErrorMessage));
         outResponse.setContentLength(html.size());
         outResponse.send() << html;
     }
@@ -182,7 +182,7 @@ namespace HSServer
         
         std::string rows;
         getRows(rs, rows);
-        std::string html = getSimpleHTML("High Scores", WrapHTML("table", rows));
+        std::string html = getSimpleHTML("High Scores", MakeHTML("table", rows));
         outResponse.setContentLength(html.size());
         outResponse.send() << html;
     }
@@ -345,7 +345,7 @@ namespace HSServer
 
     void CommitSucceeded::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {
-        std::string html = getSimpleHTML("High Score Added", WrapHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + "."));
+        std::string html = getSimpleHTML("High Score Added", MakeHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + "."));
         outResponse.setContentLength(html.size());
         outResponse.send() << html;
     }

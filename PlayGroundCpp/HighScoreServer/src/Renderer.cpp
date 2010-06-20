@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Utils.h"
+#include <boost/bind.hpp>
 
 
 using namespace Poco::Data;
@@ -53,36 +54,45 @@ namespace HSServer
     }
 
 
-    void HTMLRenderer::renderTable(std::ostream & outRow)
+    void HTMLRenderer::renderColumn(size_t inRowIdx, size_t inColIdx, std::ostream & ostr)
     {
+        StreamHTML("td", mRecordSet.value(inColIdx, inRowIdx).convert<std::string>(), ostr);
+    }
+    
+    
+    void HTMLRenderer::renderColumns(size_t inRowIdx, std::ostream & ostr)
+    {
+        for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
+        {
+            renderColumn(inRowIdx, colIdx, ostr);
+        }
     }
     
     
     void HTMLRenderer::renderRow(size_t inRowIdx, std::ostream & ostr)
     {
-        ostr << "<tr>";
-        for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
+        StreamHTML("tr", boost::bind(&HTMLRenderer::renderColumns, this, inRowIdx, _1), ostr);
+    }
+    
+    
+    void HTMLRenderer::renderRows(std::ostream & ostr)
+    {
+        for (size_t rowIdx = 0; rowIdx != mRecordSet.rowCount(); ++rowIdx)
         {
-            ostr << "<td>";
-            ostr << mRecordSet.value(colIdx, inRowIdx).convert<std::string>();            
-            ostr << "</td>";
+            renderRow(rowIdx, ostr);
         }
-        
-        ostr << "</tr>\n";
+    }
+
+
+    void HTMLRenderer::renderTable(std::ostream & ostr)
+    {
+        StreamHTML("table", boost::bind(&HTMLRenderer::renderRows, this, _1), ostr);
     }
 
 
     void HTMLRenderer::render(std::ostream & ostr)
     {
-        ostr << "<html>\n";
-        ostr << WrapHTML("h1", mCollectionTitle);
-        ostr << "<table>";
-        for (size_t rowIdx = 0; rowIdx != mRecordSet.rowCount(); ++rowIdx)
-        {
-            renderRow(rowIdx, ostr);
-        }
-        ostr << "</table>";
-        ostr << "</html>";
+        StreamHTML("html", boost::bind(&HTMLRenderer::renderTable, this, _1), ostr);
     }
 
 } // namespace HSServer

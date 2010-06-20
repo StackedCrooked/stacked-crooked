@@ -227,34 +227,13 @@ namespace HSServer
         select.execute();
         RecordSet rs(select);
 
-        std::string body;
-        body += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-        body += "<highscores>\n";
-        for (size_t rowIdx = 0; rowIdx != rs.rowCount(); ++rowIdx)
-        {   
-            static const std::string cEntry = "<hs name=\"{{name}}\" score=\"{{score}}\" />\n";
-            std::string entry = cEntry;
-            for (size_t colIdx = 0; colIdx != rs.columnCount(); ++colIdx)
-            {
-                std::string cellValue;
-                rs.value(colIdx, rowIdx).convert(cellValue);
+        XMLRenderer renderer("highscores", "hs", rs);
+        std::stringstream ss;
+        renderer.render(ss);
 
-                // Name
-                if (colIdx == 0)
-                {
-                    entry = Poco::replace<std::string>(entry, "{{name}}", cellValue);
-                }
-                // Score
-                else
-                {
-                    entry = Poco::replace<std::string>(entry, "{{score}}", cellValue);
-                }
-            }
-            body += entry;
-        }
-        body += "</highscores>\n";
-        outResponse.setContentLength(body.size());
-        outResponse.send() << body;
+        std::string xml = ss.str();
+        outResponse.setContentLength(xml.size());
+        outResponse.send() << xml;
     }
     
     
@@ -280,7 +259,7 @@ namespace HSServer
         select.execute();
         RecordSet rs(select);
 
-        XMLRenderer renderer("highscores", "highscore", rs);
+        XMLRenderer renderer("highscores", "hs", rs);
         std::stringstream ss;
         renderer.render(ss);
 

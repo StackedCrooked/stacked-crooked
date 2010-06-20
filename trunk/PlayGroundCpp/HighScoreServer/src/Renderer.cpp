@@ -36,6 +36,10 @@ namespace HSServer
             for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
             {
                 std::string name = mRecordSet.columnName(colIdx);                
+                
+                // I choose to make all XML attribute names lower-case
+                MakeLowerCase(name);
+
                 std::string value = mRecordSet.value(colIdx, rowIdx).convert<std::string>();
                 ostr << " " << name << "=\"" << URIEncode(value) << "\"";
             }

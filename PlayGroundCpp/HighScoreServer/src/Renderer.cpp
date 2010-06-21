@@ -86,13 +86,13 @@ namespace HSServer
     }
 
 
-    void HTMLRenderer::renderBody(std::ostream & ostr)
+    void HTMLRenderer::renderTBody(std::ostream & ostr)
     {
-        StreamHTML("body", boost::bind(&HTMLRenderer::renderRows, this, _1), HTMLFormatting_ThreeLiner, ostr);
+        StreamHTML("tbody", boost::bind(&HTMLRenderer::renderRows, this, _1), HTMLFormatting_ThreeLiner, ostr);
     }
 
 
-    void HTMLRenderer::renderHead(std::ostream & ostr)
+    void HTMLRenderer::renderTHead(std::ostream & ostr)
     {
         ostr << "<thead>\n";
         ostr << "<tr>";
@@ -108,10 +108,12 @@ namespace HSServer
     void HTMLRenderer::render(std::ostream & ostr)
     {
         ostr << "<html>\n";
+        ostr << "<body>\n";
         StreamHTML("h1", mCollectionTitle, HTMLFormatting_OneLiner, ostr);
         ostr << "<table>\n";
-        renderHead(ostr);
-        renderBody(ostr);
+        renderTHead(ostr);
+        renderTBody(ostr);
+        ostr << "</body>\n";
         ostr << "</table>\n";
         ostr << "</html>\n";
     }

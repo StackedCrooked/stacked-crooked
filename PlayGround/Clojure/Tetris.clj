@@ -1,16 +1,18 @@
 ; TODO
 ; ----
+; - Correctly handle highscores if server is down
 ; - Support cancel button
 ; - High-score tabular formatting
 ; - Create an uber-jar with Leiningen (requires Linux -> VirtualBox)
 ; - Create a self-contained executable (IzPack)
 ; - Create an applet (if possible)
+; v Empty name causes freeze (fixed)
 ; v lines
 ; v level
 ; v show score http://tetris.wikia.com/wiki/Scoring
 ; v game over message
 ; v drop block space bar
-;(main)
+
 
 (in-ns 'tetris)
 (clojure.core/use 'clojure.core)
@@ -66,7 +68,6 @@
         result))))
 
 (defn do-post-request [url-string post-body]
-    (println "POST body: " post-body)
     (let [url   (URL. url-string)
           conn  (do
                   (let [c (.openConnection url)]
@@ -76,7 +77,6 @@
           out   (OutputStreamWriter. (.getOutputStream conn))]
       (.write out post-body)
       (.close out)
-      (println "POST is done")
       (let [in  (BufferedReader.
                   (InputStreamReader.
                     (.getInputStream conn)))]
@@ -769,8 +769,7 @@
     (init-blocks)    
     (set-game-speed (get-game-speed (get-level @(stats :lines))))
     (loop []
-      (Thread/sleep 10)
-      (println @hs-xml)
+      (Thread/sleep 10)      
       (.repaint panel)
       (recur))))
   
@@ -786,11 +785,12 @@
     (do
       (reset! is-game-over true)
       (reset! user-name (get-user-name))
-      (if-not (nil? @user-name)
+      (if (and (not (nil? @user-name))
+               (not (empty? @user-name)))
         (let [url         (str "http://" domain "/hs")
               post-body   (str "name=" (uri-encode @user-name) "&score=" @(stats :score))]
           (println "Post request" (do-post-request url post-body))))
-      (reset! hs-xml (clojure.xml/parse (str "http://" domain "/hof.xml")))      
+      (reset! hs-xml (clojure.xml/parse (str "http://" domain "/hof.xml")))
       (init-blocks))))
 
 (main)

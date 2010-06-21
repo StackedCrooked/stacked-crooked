@@ -41,6 +41,13 @@ namespace HSServer
     void MakeLowerCase(std::string & inText);
 
 
+    /**
+     * HTMLFormatting indicates how the html code is formatted.
+     * 
+     * - HTMLFormatting_NoBreaks    no new lines are created
+     * - HTMLFormatting_OneLiner    one new line after the closing tag
+     * - HTMLFormatting_ThreeLiner  add new line after opening and closing tag
+     */
     enum HTMLFormatting
     {
         HTMLFormatting_NoBreaks,
@@ -48,11 +55,13 @@ namespace HSServer
         HTMLFormatting_ThreeLiner
     };
 
+
     /**
      * Wraps text in a HTML tag.
      * For example `MakeHTML("p", "Hello!");` will return "<p>Hello!</p>"
      */
     std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting);
+
 
     /**
      * Stream-based version of MakeHTML.
@@ -62,18 +71,20 @@ namespace HSServer
                               HTMLFormatting inHTMLFormatting,
                               std::ostream & ostr);
 
-
-    typedef boost::function<void(std::ostream &)> StreamFunction;
-
+    
     /**
      * Stream-based verion of MakeHTML using a callback.
      */      
+    typedef boost::function<void(std::ostream &)> StreamFunction;
     std::ostream & StreamHTML(const std::string & inHTMLElement,
                               const StreamFunction & inStreamFunction,
                               HTMLFormatting inHTMLFormatting,
                               std::ostream & ostr);
 
 
+    /**
+     * URI encode/decode
+     */
     std::string URIEncode(const std::string & inRawValue);
     std::string URIDecode(const std::string & inEncodedValue);
 

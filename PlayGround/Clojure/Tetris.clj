@@ -599,12 +599,25 @@
         hs-entries      (loop [i 0 result [] ]
                           (if (and (< i num-entries) (< i 10))
                             (let [xml-entry (nth xml-entries i)
-                                  name      (uri-decode ((xml-entry :attrs) :name))
-                                  score     ((xml-entry :attrs) :score)
-                                  text      (str name " " score) ]
-                              (recur (inc i) (conj result {:text text :color Color/YELLOW})))
+                                  user-name      (uri-decode ((xml-entry :attrs) :name))
+                                  score     ((xml-entry :attrs) :score) ]
+                              (recur (inc i) (conj result {:name user-name :score score :color Color/YELLOW})))
                             result)) ]
-    (draw-left-aligned-text-column g x-offset y-offset (into title hs-entries))))
+    (dotimes [i (count hs-entries)]
+      (let [entry           (hs-entries i)
+            user-name       (entry :name)
+            user-name-rect  (get-text-rect g user-name (.getFont g))
+            score           (str (entry :score))
+            score-rect      (get-text-rect g score (.getFont g))
+            user-name-x     x-offset
+            max-x           (* (prefs :num-columns) (prefs :block-width))
+            score-width     (.getWidth score-rect)
+            score-x         (- max-x score-width)
+            text-height     (.getHeight user-name-rect)
+            y               (+ y-offset (* i text-height)) ]
+        (.setColor g (entry :color))
+        (.drawString g (str user-name) (int user-name-x) (int y))
+        (.drawString g (str score) (int score-x) (int y))))))
     
 (defn draw-game-over [g]
   (let [x-offset        (* (prefs :field-x) (prefs :block-width))

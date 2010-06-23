@@ -1,1 +1,0 @@
-copy stylers.xml "%APPDATA%\Notepad++"

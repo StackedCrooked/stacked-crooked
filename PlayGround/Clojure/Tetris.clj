@@ -56,7 +56,8 @@
   ))
     
 (defn do-get-request [url-string]
-  (let [url           (URL. url-string)
+  (try
+    (let [url           (URL. url-string)
         connection    (.openConnection url)
         is            (.getInputStream connection)
         isr           (InputStreamReader. is)
@@ -65,9 +66,11 @@
            result  (str)]
       (if (not (nil? line))
         (do (recur (.readLine in) (str result line)))
-        result))))
+        result)))
+  (catch Exception exc (println "Caught exception: " (.getMessage exc)))))
 
 (defn do-post-request [url-string post-body]
+  (try
     (let [url   (URL. url-string)
           conn  (do
                   (let [c (.openConnection url)]
@@ -84,7 +87,8 @@
                result (str)]
           (if (not (nil? line))
             (do (recur (.readLine in) (str result line)))
-            result)))))
+            result))))
+    (catch Exception exc (println "Caught exception: " (.getMessage exc)))))
 
 
 ; =============================================================================
@@ -621,14 +625,19 @@
   (clear-screen panel g)
   (if (zero? (mod @frame-count 100))
     (calculate-fps))
-  ;(draw-fps g)
+  ;(draw-fps g)  
   (draw-field g f)
-  (draw-next-blocks g @next-blocks)
-  (draw-block g b)
   (draw-stats g)
-  (if (true? @is-game-over)
-    (if-not (nil? @hs-xml)
-      (draw-high-scores g @hs-xml))))
+  (if-not (true? @is-game-over)
+    (do      
+      (draw-next-blocks g @next-blocks)
+      (draw-block g b))
+    (do
+      (if-not
+      (or (nil? @hs-xml)
+          (nil? (@hs-xml :content)))
+      (draw-high-scores g @hs-xml)
+      (draw-game-over g)))))
 
 (defn check-position-valid [field block]
   (let [grids          (@(block :type) :grids)
@@ -778,19 +787,41 @@
   (JOptionPane/showInputDialog nil "What is your name?" "Name" JOptionPane/QUESTION_MESSAGE))
       
 (def domain "stacked-crooked.com")
+;(def domain "bla.bla")
 ;(def domain "localhost")
+
+(defn get-high-scores []
+  (clojure.xml/parse (str "http://" domain "/hof.xml")))
+  
+(def get-agent (agent nil))
+(def post-agent (agent nil))
 
 (defn do-game-over []
   (if-not (= true @is-game-over)
     (do
+      (init-blocks)
       (reset! is-game-over true)
       (reset! user-name (get-user-name))
       (if (and (not (nil? @user-name))
                (not (empty? @user-name)))
         (let [url         (str "http://" domain "/hs")
               post-body   (str "name=" (uri-encode @user-name) "&score=" @(stats :score))]
-          (println "Post request" (do-post-request url post-body))))
-      (reset! hs-xml (clojure.xml/parse (str "http://" domain "/hof.xml")))
-      (init-blocks))))
+          (try
+            (clear-agent-errors post-agent)
+            (await-for 5000 (send post-agent (fn [_] (do-post-request url post-body))))
+            (catch Exception exc (println "POST high score failed: " (.getMessage exc))))
+          (let [errors (agent-errors post-agent)]
+            (if-not (nil? errors)
+              (println "POST agent errors: " (agent-errors post-agent))))
+          ))
+          
+      (try
+        (clear-agent-errors get-agent)
+        (await-for 5000 (send get-agent (fn [_] (get-high-scores))))
+        (catch Exception exc (println "get-high-scores failed:" (.getMessage exc))))
+      (if (nil? (agent-errors get-agent))
+        (reset! hs-xml @get-agent)
+        (println "Failed to get high scores. (GET agent errors: " (agent-errors post-agent) ")"))
+      )))
 
 (main)

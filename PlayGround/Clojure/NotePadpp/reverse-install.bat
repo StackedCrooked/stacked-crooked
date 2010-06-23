@@ -1,0 +1,1 @@
+copy "%APPDATA%\Notepad++\stylers.xml" .

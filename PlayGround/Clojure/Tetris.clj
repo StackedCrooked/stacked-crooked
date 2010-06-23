@@ -1,11 +1,11 @@
 ; TODO
 ; ----
-; - Correctly handle highscores if server is down
-; - Support cancel button
 ; - High-score tabular formatting
 ; - Create an uber-jar with Leiningen (requires Linux -> VirtualBox)
 ; - Create a self-contained executable (IzPack)
 ; - Create an applet (if possible)
+; v Support cancel button
+; v Correctly handle highscores if server is down
 ; v Empty name causes freeze (fixed)
 ; v lines
 ; v level

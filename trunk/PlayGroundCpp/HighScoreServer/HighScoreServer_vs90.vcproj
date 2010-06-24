@@ -184,6 +184,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\ContentType.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\main.cpp"
 				>
 			</File>
@@ -200,6 +204,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\RequestHandlerId.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\RequestMethod.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Utils.cpp"
 				>
 			</File>
@@ -209,6 +221,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\include\ContentType.h"
+				>
+			</File>
 			<File
 				RelativePath=".\include\Exceptions.h"
 				>
@@ -223,6 +239,10 @@
 			</File>
 			<File
 				RelativePath=".\include\RequestHandlerFactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\RequestHandlerId.h"
 				>
 			</File>
 			<File

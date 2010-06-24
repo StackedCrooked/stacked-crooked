@@ -3,6 +3,7 @@
 
 
 #include "Exceptions.h"
+#include "ContentType.h"
 #include "RequestMethod.h"
 #include "Utils.h"
 #include "Poco/Net/HTTPRequestHandler.h"
@@ -21,13 +22,13 @@ namespace HSServer
     public:
         RequestHandler(RequestMethod inRequestMethod,
                        const std::string & inLocation,
-                       const std::string & inResponseContentType);
+                       ContentType inContentType);
 
         /**
          * The content type of the response.
          * Can be text/plain, text/html, text/xml, ...
          */
-        const std::string & getResponseContentType() const;
+        ContentType getContentType() const;
 
         /**
          * Returns the path part of the request uri.
@@ -51,42 +52,11 @@ namespace HSServer
     private:
         RequestMethod mRequestMethod;
         std::string mLocation;
-        std::string mResponseContentType;
-    };
-
-
-    class HTMLResponder : public RequestHandler
-    {
-    public:
-        HTMLResponder(RequestMethod inRequestMethod,
-                      const std::string & inLocation);
-
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
-    };
-
-
-    class XMLResponder : public RequestHandler
-    {
-    public:
-        XMLResponder(RequestMethod inRequestMethod, const std::string & inLocation);
-
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
-    };
-
-
-    class PlainTextResponder : public RequestHandler
-    {
-    public:
-        PlainTextResponder(RequestMethod inRequestMethod, const std::string & inLocation);
-
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
+        ContentType mContentType;
     };
 
         
-    class HTMLErrorResponse : public HTMLResponder
+    class HTMLErrorResponse : public RequestHandler
     {
     public:        
         HTMLErrorResponse(const std::string & inErrorMessage);
@@ -97,14 +67,16 @@ namespace HSServer
     };
 
         
-    class GetHighScoreHTML : public HTMLResponder
+    class GetHighScoreHTML : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs.html"; }
+        static const char * GetLocation() { return "/hs"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+        
+        static ContentType GetContentType() { return ContentType_TextHTML; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
@@ -116,14 +88,16 @@ namespace HSServer
     };
 
         
-    class GetHighScoreXML : public XMLResponder
+    class GetHighScoreXML : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs.xml"; }
+        static const char * GetLocation() { return "/hs"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+        
+        static ContentType GetContentType() { return ContentType_TextXML; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
@@ -133,14 +107,16 @@ namespace HSServer
     };
 
         
-    class GetHallOfFameXML : public XMLResponder
+    class GetHallOfFameXML : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hof.xml"; }
+        static const char * GetLocation() { return "/hof"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+        
+        static ContentType GetContentType() { return ContentType_TextXML; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
@@ -150,14 +126,16 @@ namespace HSServer
     };
 
         
-    class GetHallOfFameHTML : public HTMLResponder
+    class GetHallOfFameHTML : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hof.html"; }
+        static const char * GetLocation() { return "/hof"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+        
+        static ContentType GetContentType() { return ContentType_TextHTML; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
@@ -167,7 +145,7 @@ namespace HSServer
     };
 
 
-    class GetAddHighScore : public HTMLResponder
+    class GetAddHighScore : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
@@ -175,6 +153,8 @@ namespace HSServer
         static const char * GetLocation() { return "/hs/add"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+        
+        static ContentType GetContentType() { return ContentType_TextHTML; }
 
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
@@ -183,7 +163,7 @@ namespace HSServer
     };
 
 
-    class PostHighScore : public PlainTextResponder
+    class PostHighScore : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
@@ -191,6 +171,8 @@ namespace HSServer
         static const char * GetLocation() { return "/hs"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Post; }
+        
+        static ContentType GetContentType() { return ContentType_TextPlain; }
 
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
@@ -199,7 +181,7 @@ namespace HSServer
     };
 
 
-    class CommitSucceeded : public HTMLResponder
+    class CommitSucceeded : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
@@ -207,6 +189,8 @@ namespace HSServer
         static const char * GetLocation() { return "/hs/commit-succeeded"; }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+        
+        static ContentType GetContentType() { return ContentType_TextPlain; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);

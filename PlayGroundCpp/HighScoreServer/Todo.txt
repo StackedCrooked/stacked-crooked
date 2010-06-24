@@ -1,3 +1,4 @@
+- Read accept headers
 - Timestamp high scores
 - Hall of fame
 - Recent high scores

@@ -2,6 +2,8 @@
 #define HIGHSCOREREQUESTHANDLERFACTORY_H_INCLUDED
 
 
+#include "RequestHandler.h"
+#include "RequestHandlerId.h"
 #include "RequestMethod.h"
 #include "Poco/Net/HTTPRequestHandlerFactory.h"
 #include "Poco/Net/HTTPServerRequest.h"
@@ -12,14 +14,15 @@
 
 namespace HSServer
 {
-    class RequestHandler;    
-    typedef std::pair<RequestMethod, std::string> RequestHandlerId;
 
     // Get the handler id from its type. Used for registration.
     template<class T>
     RequestHandlerId GetRequestHandlerId()
     {
-        return std::make_pair(T::GetRequestMethod(), T::GetLocation());
+        const char * location(T::GetLocation());
+        RequestMethod requestMethod(T::GetRequestMethod());
+        ContentType contentType(T::GetContentType());
+        return RequestHandlerId(location, requestMethod, contentType);
     }
     
     // Get the handler id of incoming HTTP request.

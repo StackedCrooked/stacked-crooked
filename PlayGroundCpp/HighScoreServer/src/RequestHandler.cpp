@@ -1,4 +1,5 @@
 #include "RequestHandler.h"
+#include "ContentType.h"
 #include "Renderer.h"
 #include "Utils.h"
 #include "Poco/Net/HTTPServerRequest.h"
@@ -33,11 +34,11 @@ namespace HSServer
     }
 
     
-    RequestHandler::RequestHandler(RequestMethod inRequestMethod, const std::string & inLocation, const std::string & inResponseContentType) :
+    RequestHandler::RequestHandler(RequestMethod inRequestMethod, const std::string & inLocation, ContentType inContentType) :
         mSession(SessionFactory::instance().create("SQLite", "HighScores.db")),
         mRequestMethod(inRequestMethod),
         mLocation(inLocation),
-        mResponseContentType(inResponseContentType)
+        mContentType(inContentType)
     {
         // Create the table if it doesn't already exist
         static bool fFirstTime(true);
@@ -61,9 +62,9 @@ namespace HSServer
     }
 
 
-    const std::string & RequestHandler::getResponseContentType() const
+    ContentType RequestHandler::getContentType() const
     {
-        return mResponseContentType;
+        return mContentType;
     }
 
 
@@ -78,9 +79,9 @@ namespace HSServer
     {
         
         GetLogger().information("Request from " + inRequest.clientAddress().toString());
-
+        GetLogger().information("Accept: " + inRequest.get("Accept"));
         outResponse.setChunkedTransferEncoding(true);
-        outResponse.setContentType(getResponseContentType());
+        outResponse.setContentType(ToString(getContentType()));
 
         try
         {
@@ -92,28 +93,9 @@ namespace HSServer
         }
     }
 
-    
-    HTMLResponder::HTMLResponder(RequestMethod inRequestMethod,
-                                 const std::string & inLocation) :
-        RequestHandler(inRequestMethod, inLocation, "text/html")
-    {
-    }
-
-    
-    XMLResponder::XMLResponder(RequestMethod inRequestMethod, const std::string & inLocation) :
-        RequestHandler(inRequestMethod, inLocation, "text/xml")
-    {
-    }
-
-    
-    PlainTextResponder::PlainTextResponder(RequestMethod inRequestMethod, const std::string & inLocation) :
-        RequestHandler(inRequestMethod, inLocation, "text/plain")
-    {
-    }
-
 
     HTMLErrorResponse::HTMLErrorResponse(const std::string & inErrorMessage) :
-        HTMLResponder(RequestMethod_Get, ""),
+        RequestHandler(RequestMethod_Get, "", ContentType_TextHTML),
         mErrorMessage(inErrorMessage)
     {
     }
@@ -134,7 +116,7 @@ namespace HSServer
     
     
     GetHighScoreHTML::GetHighScoreHTML() :
-        HTMLResponder(GetRequestMethod(), GetLocation())
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
@@ -202,7 +184,7 @@ namespace HSServer
     
     
     GetHighScoreXML::GetHighScoreXML() :
-        XMLResponder(GetRequestMethod(), GetLocation())
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
@@ -251,7 +233,7 @@ namespace HSServer
     
     
     GetHallOfFameXML::GetHallOfFameXML() :
-        XMLResponder(GetRequestMethod(), GetLocation())
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
@@ -284,7 +266,7 @@ namespace HSServer
     
     
     GetHallOfFameHTML::GetHallOfFameHTML() :
-        HTMLResponder(GetRequestMethod(), GetLocation())
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
@@ -316,7 +298,7 @@ namespace HSServer
 
 
     GetAddHighScore::GetAddHighScore() :
-        HTMLResponder(GetRequestMethod(), GetLocation())
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
@@ -337,7 +319,7 @@ namespace HSServer
 
 
     PostHighScore::PostHighScore() :
-        PlainTextResponder(GetRequestMethod(), GetLocation())
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
@@ -375,7 +357,7 @@ namespace HSServer
 
 
     CommitSucceeded::CommitSucceeded(const std::string & inName, const std::string & inScore) :
-        HTMLResponder(GetRequestMethod(), GetLocation()),
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType()),
         mName(inName),
         mScore(inScore)
     {

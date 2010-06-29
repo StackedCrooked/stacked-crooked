@@ -65,7 +65,6 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
         std::string mErrorMessage;
     };
-
         
     class GetHighScoreHTML : public RequestHandler
     {
@@ -83,8 +82,6 @@ namespace HSServer
 
     private:
         GetHighScoreHTML();
-
-        void getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows);
     };
 
         

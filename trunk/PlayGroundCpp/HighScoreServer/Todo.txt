@@ -1,4 +1,4 @@
-- Read accept headers
+- Read accept headers => make it work for Clojure
 - Timestamp high scores
 - Hall of fame
 - Recent high scores

@@ -121,24 +121,6 @@ namespace HSServer
     }
 
 
-    void GetHighScoreHTML::getRows(const Poco::Data::RecordSet & inRecordSet, std::string & outRows)
-    {
-        for (size_t rowIdx = 0; rowIdx != inRecordSet.rowCount(); ++rowIdx)
-        {   
-            outRows += "<tr>";
-            for (size_t colIdx = 0; colIdx != inRecordSet.columnCount(); ++colIdx)
-            {                
-                outRows += "<td>";
-                std::string rawCellValue;
-                inRecordSet.value(colIdx, rowIdx).convert(rawCellValue);
-                outRows += URIEncode(rawCellValue);
-                outRows += "</td>";
-            }
-            outRows += "</tr>\n";
-        }
-    }
-
-
     void GetHighScoreHTML::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {   
         Args args;

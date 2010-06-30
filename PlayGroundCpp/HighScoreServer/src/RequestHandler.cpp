@@ -54,14 +54,6 @@ namespace HSServer
     }
 
 
-    std::string RequestHandler::getSimpleHTML(const std::string & inTitle, const std::string & inBody)
-    {
-        std::string doc;
-        HSServer::ReadEntireFile("html/html-document-template.html", doc);
-        return Poco::replace<std::string>(Poco::replace<std::string>(doc, "{{title}}", inTitle), "{{body}}", inBody);
-    }
-
-
     ContentType RequestHandler::getContentType() const
     {
         return mContentType;
@@ -103,7 +95,7 @@ namespace HSServer
 
     void HTMLErrorResponse::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {
-        std::string html = getSimpleHTML("Error", MakeHTML("p", mErrorMessage, HTMLFormatting_OneLiner));
+        std::string html = MakeHTMLDocument("Error", MakeHTML("p", mErrorMessage, HTMLFormatting_OneLiner));
         outResponse.setContentLength(html.size());
         outResponse.send() << html;
     }
@@ -348,7 +340,7 @@ namespace HSServer
 
     void CommitSucceeded::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {
-        std::string html = getSimpleHTML("High Score Added", MakeHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + ".", HTMLFormatting_OneLiner));
+        std::string html = MakeHTMLDocument("High Score Added", MakeHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + ".", HTMLFormatting_OneLiner));
         outResponse.setContentLength(html.size());
         outResponse.send() << html;
     }

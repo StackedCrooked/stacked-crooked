@@ -36,4 +36,19 @@ namespace HSServer
         }
     }
 
+
+    bool FromString(const std::string & inText, ContentType & outContentType)
+    {
+        for (size_t idx = ContentType_Begin; idx != ContentType_End; ++idx)
+        {
+            ContentType ct = static_cast<ContentType>(idx);
+            if (inText == ToString(ct))
+            {
+                outContentType = ct;
+                return true;
+            }
+        }
+        return false;
+    }
+
 } // namespace HSServer

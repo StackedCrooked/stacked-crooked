@@ -45,8 +45,6 @@ namespace HSServer
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
 
-        std::string getSimpleHTML(const std::string & inTitle, const std::string & inBody);
-
         Poco::Data::Session mSession;
 
     private:
@@ -65,7 +63,8 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
         std::string mErrorMessage;
     };
-        
+
+
     class GetHighScoreHTML : public RequestHandler
     {
     public:

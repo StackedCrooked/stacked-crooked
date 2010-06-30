@@ -132,7 +132,9 @@ namespace HSServer
             if (it != mFactoryFunctions.end())
             {
                 const FactoryFunction & ff(it->second);
-                return ff(inRequest);
+                Poco::Net::HTTPRequestHandler * result = ff(inRequest);
+                fLogger.information("Ok, found a handler.");
+                return result;
             }
         }
         catch (const std::exception & inException)

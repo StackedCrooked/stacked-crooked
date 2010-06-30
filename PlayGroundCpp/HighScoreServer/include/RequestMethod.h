@@ -11,8 +11,8 @@ namespace HSServer
     enum RequestMethod
     {
         RequestMethod_Unknown,
-        RequestMethod_Get,
-        RequestMethod_Begin = RequestMethod_Get,
+        RequestMethod_Begin,
+        RequestMethod_Get = RequestMethod_Begin,
         RequestMethod_Post,
         RequestMethod_Put,
         RequestMethod_Delete,

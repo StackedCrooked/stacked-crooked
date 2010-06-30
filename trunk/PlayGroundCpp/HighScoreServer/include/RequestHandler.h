@@ -186,7 +186,7 @@ namespace HSServer
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
         
-        static ContentType GetContentType() { return ContentType_TextPlain; }
+        static ContentType GetContentType() { return ContentType_TextHTML; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);

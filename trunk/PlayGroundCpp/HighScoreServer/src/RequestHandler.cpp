@@ -340,7 +340,10 @@ namespace HSServer
 
     void CommitSucceeded::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {
-        std::string html = MakeHTMLDocument("High Score Added", MakeHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + ".", HTMLFormatting_OneLiner));
+        std::string body;
+        body += MakeHTML("h1", "High Score Server", HTMLFormatting_OneLiner);
+        body += MakeHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + ".", HTMLFormatting_OneLiner);
+        std::string html = MakeHTMLDocument("High Score Added", body);
         outResponse.setContentLength(html.size());
         outResponse.send() << html;
     }

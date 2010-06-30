@@ -26,7 +26,7 @@ namespace HSServer
 
         /**
          * The content type of the response.
-         * Can be text/plain, text/html, text/xml, ...
+         * Can be text/plain, text/html, application/xml, ...
          */
         ContentType getContentType() const;
 
@@ -93,7 +93,7 @@ namespace HSServer
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
         
-        static ContentType GetContentType() { return ContentType_TextXML; }
+        static ContentType GetContentType() { return ContentType_ApplicationXML; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
@@ -112,7 +112,7 @@ namespace HSServer
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
         
-        static ContentType GetContentType() { return ContentType_TextXML; }
+        static ContentType GetContentType() { return ContentType_ApplicationXML; }
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);

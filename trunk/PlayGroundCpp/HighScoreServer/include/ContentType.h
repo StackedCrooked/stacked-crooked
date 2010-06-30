@@ -14,7 +14,7 @@ namespace HSServer
         ContentType_Begin,
         ContentType_TextPlain = ContentType_Begin,
         ContentType_TextHTML,
-        ContentType_TextXML,
+        ContentType_ApplicationXML,
         ContentType_End
     };
 

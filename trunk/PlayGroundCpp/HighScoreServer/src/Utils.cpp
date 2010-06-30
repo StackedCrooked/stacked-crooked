@@ -1,5 +1,6 @@
 #include "Exceptions.h"
 #include "Utils.h"
+#include "Poco/String.h"
 #include "Poco/URI.h"
 #include <algorithm>
 #include <fstream>
@@ -75,6 +76,7 @@ namespace HSServer
     {
         std::transform(inText.begin(), inText.end(), inText.begin(), ::tolower);
     }
+
 
     std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting)
     {
@@ -169,7 +171,15 @@ namespace HSServer
         return ostr;
     }
 
-    
+
+    std::string MakeHTMLDocument(const std::string & inTitle, const std::string & inBody)
+    {
+        return Poco::replace<std::string>(Poco::replace<std::string>(cHTMLTemplate, "{{title}}", inTitle),
+                                          "{{body}}",
+                                          inBody);
+    }
+
+
     std::string URIEncode(const std::string & inRawValue)
     {
         std::string result;

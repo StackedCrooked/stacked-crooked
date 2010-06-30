@@ -10,7 +10,7 @@ namespace HSServer
 
     enum ContentType
     {
-        ContentType_Unknown = -1,
+        ContentType_Unknown,
         ContentType_TextPlain,
         ContentType_Begin = ContentType_TextPlain,
         ContentType_TextHTML,
@@ -27,6 +27,8 @@ namespace HSServer
      *   ...
      */
     const std::string & ToString(ContentType inRequestMethod);
+
+    bool FromString(const std::string & inText, ContentType & outRequestMethod);
 
 } // namespace HSServer
 

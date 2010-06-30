@@ -24,9 +24,9 @@ namespace HSServer
                 static const std::string sResult = "text/html";
                 return sResult;
             }
-            case ContentType_TextXML:
+            case ContentType_ApplicationXML:
             {
-                static const std::string sResult = "text/xml";
+                static const std::string sResult = "application/xml";
                 return sResult;
             }
             default:

@@ -48,7 +48,7 @@ namespace HSServer
         if (fMapping.empty())
         {
             fMapping["html"] = ContentType_TextHTML;
-            fMapping["xml"] = ContentType_TextXML;
+            fMapping["xml"] = ContentType_ApplicationXML;
             fMapping["txt"] = ContentType_TextPlain;
         }
 
@@ -66,7 +66,7 @@ namespace HSServer
      * The request usually contains multiple content types. We select one
      * according the the following priority list:
      *   - text/html
-     *   - text/xml
+     *   - application/xml
      *   - text/plain
      */
     ContentType GetContentType(const Poco::Net::HTTPServerRequest & inRequest)
@@ -83,9 +83,9 @@ namespace HSServer
         {
             return ContentType_TextHTML;
         }
-        else if (acceptHeader.find("text/xml") != std::string::npos)
+        else if (acceptHeader.find("application/xml") != std::string::npos)
         {
-            return ContentType_TextXML;
+            return ContentType_ApplicationXML;
         }
         else if (acceptHeader.find("text/plain") != std::string::npos)
         {

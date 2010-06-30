@@ -136,6 +136,17 @@ namespace HSServer
                 fLogger.information("Ok, found a handler.");
                 return result;
             }
+            else
+            {
+                fLogger.warning("No handler found");
+
+                // HACK (?)
+                // For some mysterious reason the next request sometimes
+                // contains the current request body. Therefore we flush
+                // it here.
+                std::string dump;
+                const_cast<Poco::Net::HTTPServerRequest&>(inRequest).stream() >> dump;
+            }
         }
         catch (const std::exception & inException)
         {

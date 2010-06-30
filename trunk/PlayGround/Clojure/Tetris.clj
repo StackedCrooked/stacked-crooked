@@ -803,8 +803,7 @@
 ;(def domain "bla.bla")
 ;(def domain "localhost")
 
-(defn get-high-scores []
-  (println (do-get-request (str "http://" domain "/hof.xml")))
+(defn get-high-scores []  
   (clojure.xml/parse (str "http://" domain "/hof.xml")))
   
 (def get-agent (agent nil))
@@ -818,7 +817,7 @@
       (reset! user-name (get-user-name))
       (if (and (not (nil? @user-name))
                (not (empty? @user-name)))
-        (let [url         (str "http://" domain "/hs")
+        (let [url         (str "http://" domain "/hs.txt")
               post-body   (str "name=" (uri-encode @user-name) "&score=" @(stats :score))]
           (try
             (clear-agent-errors post-agent)

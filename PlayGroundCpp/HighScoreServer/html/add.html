@@ -92,6 +92,7 @@
               var httpRequest = new XMLHttpRequest();
               var url = PostHelper.getURL("hs");
               httpRequest.open("POST", url, true);
+              httpRequest.setRequestHeader("Accept", "text/plain");
               httpRequest.onreadystatechange = function()
               {
                 if(httpRequest.readyState == 4)

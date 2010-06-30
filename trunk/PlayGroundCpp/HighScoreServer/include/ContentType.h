@@ -11,8 +11,8 @@ namespace HSServer
     enum ContentType
     {
         ContentType_Unknown,
-        ContentType_TextPlain,
-        ContentType_Begin = ContentType_TextPlain,
+        ContentType_Begin,
+        ContentType_TextPlain = ContentType_Begin,
         ContentType_TextHTML,
         ContentType_TextXML,
         ContentType_End

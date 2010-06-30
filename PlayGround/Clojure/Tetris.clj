@@ -804,6 +804,7 @@
 ;(def domain "localhost")
 
 (defn get-high-scores []
+  (println (do-get-request (str "http://" domain "/hof.xml")))
   (clojure.xml/parse (str "http://" domain "/hof.xml")))
   
 (def get-agent (agent nil))

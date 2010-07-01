@@ -528,7 +528,7 @@
 (defn get-tetris-font [g]
   (.deriveFont (.getFont g)
                (int java.awt.Font/BOLD)
-               (float 14)))
+               (float 10)))
     
 (defn get-text-rect [g str font]
   (.getStringBounds (.getFontMetrics g (get-tetris-font g)) str g))

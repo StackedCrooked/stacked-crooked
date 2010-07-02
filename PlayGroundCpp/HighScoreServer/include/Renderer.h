@@ -65,6 +65,12 @@ namespace HSServer
                           Poco::Data::RecordSet & inRecordSet);
 
         virtual void render(std::ostream & outStream);
+
+    private:
+        void getColumnWidths(std::vector<int> & outColWidths);
+        std::string getValue(size_t colIdx, size_t rowIdx);
+        void renderHeading(std::ostream & ostr);
+        void repeat(char c, int n, std::ostream & ostr);
     };
 
 

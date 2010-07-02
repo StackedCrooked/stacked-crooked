@@ -1,7 +1,11 @@
 #include "Exceptions.h"
 #include "Utils.h"
 #include "Poco/String.h"
+#include "Poco/DateTimeFormatter.h"
+#include "Poco/Timestamp.h"
 #include "Poco/URI.h"
+#include "Poco/Util/Application.h"
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <fstream>
 #include <streambuf>
@@ -72,11 +76,34 @@ namespace HSServer
     }
     
     
-    void MakeLowerCase(std::string & inText)
+    std::string MakeLowerCase(const std::string & inText)
     {
-        std::transform(inText.begin(), inText.end(), inText.begin(), ::tolower);
+        std::string lowerCased = inText;
+        std::transform(lowerCased.begin(), lowerCased.end(), lowerCased.begin(), ::tolower);
+        return lowerCased;
     }
 
+
+    std::string FormatTime(const std::string & inEpochTimeString)
+    {
+        try
+        {
+            return FormatTime(boost::lexical_cast<Poco::Int64>(inEpochTimeString));
+        }
+        catch (const std::exception & inExc)
+        {            
+            Poco::Util::Application::instance().logger().error("Failed to parse timestamp: " + inEpochTimeString + std::string(". Exception: ") + inExc.what());
+        }
+        return "";
+    }
+
+
+    std::string FormatTime(Poco::Int64 inEpochTime)
+    {
+        Poco::Timestamp::TimeVal tv();
+        Poco::Timestamp ts(Poco::Timestamp::resolution() * inEpochTime);
+        return Poco::DateTimeFormatter::format(ts, "%Y-%n-%d %H:%M:%S");
+    }
 
     std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting)
     {

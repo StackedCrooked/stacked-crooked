@@ -10,8 +10,10 @@ namespace HSServer
 {
 
     Renderer::Renderer(const std::string & inCollectionTitle,
+                       const std::string & inRecordTitle,
                        const Poco::Data::RecordSet & inRecordSet) :
         mCollectionTitle(inCollectionTitle),
+        mRecordTitle(inRecordTitle),
         mRecordSet(inRecordSet)
     {
     }
@@ -20,8 +22,7 @@ namespace HSServer
     XMLRenderer::XMLRenderer(const std::string & inCollectionTitle,
                              const std::string & inRecordTitle,
                              Poco::Data::RecordSet & inRecordSet) :
-        Renderer(inCollectionTitle, inRecordSet),
-        mRecordTitle(inRecordTitle)
+        Renderer(inCollectionTitle, inRecordTitle, inRecordSet)
     {
     }
 
@@ -50,8 +51,9 @@ namespace HSServer
 
 
     HTMLRenderer::HTMLRenderer(const std::string & inCollectionTitle,
+                               const std::string & inRecordTitle,
                                Poco::Data::RecordSet & inRecordSet) :
-        Renderer(inCollectionTitle, inRecordSet)
+        Renderer(inCollectionTitle, inRecordTitle, inRecordSet)
     {
     }
 

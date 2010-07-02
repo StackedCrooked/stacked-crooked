@@ -230,6 +230,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\GenericRequestHandler.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\Location.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\Renderer.h"
 				>
 			</File>

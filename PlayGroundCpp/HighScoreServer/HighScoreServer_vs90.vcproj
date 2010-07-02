@@ -230,10 +230,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\GenericRequestHandler.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\Location.h"
 				>
 			</File>
@@ -255,6 +251,10 @@
 			</File>
 			<File
 				RelativePath=".\include\RequestMethod.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\SQLRequestGenericHandler.h"
 				>
 			</File>
 			<File

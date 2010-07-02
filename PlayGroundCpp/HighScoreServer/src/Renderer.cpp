@@ -120,4 +120,33 @@ namespace HSServer
         ostr << "</html>\n";
     }
 
+
+    PlainTextRenderer::PlainTextRenderer(const std::string & inCollectionTitle,
+                                         const std::string & inRecordTitle,
+                                         Poco::Data::RecordSet & inRecordSet) :
+        Renderer(inCollectionTitle, inRecordTitle, inRecordSet)
+    {
+    }
+
+
+    void PlainTextRenderer::render(std::ostream & ostr)
+    {
+        ostr << mCollectionTitle << std::endl;
+        for (size_t idx = 0; idx < mCollectionTitle.size(); ++idx)
+        {
+            ostr << "-";
+        }
+        ostr << std::endl;
+        for (size_t rowIdx = 0; rowIdx != mRecordSet.rowCount(); ++rowIdx)
+        {
+            for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
+            {
+                std::string name = mRecordSet.columnName(colIdx);
+                std::string value = mRecordSet.value(colIdx, rowIdx).convert<std::string>();
+                ostr << name << ": " << value << std::endl;
+            }
+            ostr << std::endl;
+        }
+    }
+
 } // namespace HSServer

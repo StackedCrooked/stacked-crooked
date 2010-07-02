@@ -123,7 +123,7 @@ namespace HSServer
             Poco::Data::RecordSet rs(select);
 
             typedef GetRenderer_t<inContentType, inLocation> RenderHelper;
-            typedef RenderHelper::Type Renderer;
+            typedef typename RenderHelper::Type Renderer;
             Renderer renderer(RenderHelper::GetCollectionTitle(),
                               RenderHelper::GetRecordTitle(),
                               rs);

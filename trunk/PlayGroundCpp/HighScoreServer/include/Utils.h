@@ -2,6 +2,7 @@
 #define UTILS_H_INCLUDED
 
 
+#include "Poco/Types.h"
 #include <boost/function.hpp>
 #include <map>
 #include <string>
@@ -38,7 +39,13 @@ namespace HSServer
     /**
      * Transform a string into its lower-case equivalent.
      */
-    void MakeLowerCase(std::string & inText);
+    std::string MakeLowerCase(const std::string & inText);
+
+
+    std::string FormatTime(const std::string & inEpochTimeString);
+
+
+    std::string FormatTime(Poco::Int64 inEpochTime);
 
 
     /**

@@ -1,6 +1,9 @@
 #include "Renderer.h"
 #include "Utils.h"
+#include "Poco/Util/Application.h"
+#include "Poco/Types.h"
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 
 using namespace Poco::Data;
@@ -36,10 +39,8 @@ namespace HSServer
             ostr << "<" << mRecordTitle;
             for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
             {
-                std::string name = mRecordSet.columnName(colIdx);                
-                
                 // I choose to make all XML attribute names lower-case
-                MakeLowerCase(name);
+                std::string name = MakeLowerCase(mRecordSet.columnName(colIdx));
 
                 std::string value = mRecordSet.value(colIdx, rowIdx).convert<std::string>();
                 ostr << " " << name << "=\"" << URIEncode(value) << "\"";
@@ -127,23 +128,130 @@ namespace HSServer
         Renderer(inCollectionTitle, inRecordTitle, inRecordSet)
     {
     }
-
-
-    void PlainTextRenderer::render(std::ostream & ostr)
+    
+        
+    void PlainTextRenderer::getColumnWidths(std::vector<int> & outColWidths)
     {
-        ostr << mCollectionTitle << std::endl;
-        for (size_t idx = 0; idx < mCollectionTitle.size(); ++idx)
+        outColWidths.resize(mRecordSet.columnCount(), 0);
+
+        for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
         {
-            ostr << "-";
+            std::string name = mRecordSet.columnName(colIdx);
+            outColWidths[colIdx] = name.size();
         }
-        ostr << std::endl;
+
         for (size_t rowIdx = 0; rowIdx != mRecordSet.rowCount(); ++rowIdx)
         {
             for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
             {
-                std::string name = mRecordSet.columnName(colIdx);
-                std::string value = mRecordSet.value(colIdx, rowIdx).convert<std::string>();
-                ostr << name << ": " << value << std::endl;
+                std::string value = getValue(colIdx, rowIdx);
+                outColWidths[colIdx] = std::max<int>(outColWidths[colIdx], value.size());
+            }
+        }
+    }
+    
+    
+    std::string PlainTextRenderer::getValue(size_t colIdx, size_t rowIdx)
+    {
+        static const bool sFormatTimeStamps(true);
+
+        if (sFormatTimeStamps)
+        {
+            std::string value = mRecordSet.value(colIdx, rowIdx).convert<std::string>();
+            std::string name = mRecordSet.columnName(colIdx);
+            if (MakeLowerCase(name).find("time") != std::string::npos)
+            {
+                std::string asTime = FormatTime(value);
+                if (!asTime.empty())
+                {
+                    value = asTime;
+                }
+            }
+            return value;
+        }
+        else
+        {
+            return mRecordSet.value(colIdx, rowIdx).convert<std::string>();
+        }
+    }
+
+
+    void PlainTextRenderer::renderHeading(std::ostream & ostr)
+    {
+        for (size_t idx = 0; idx < mCollectionTitle.size() + 4; ++idx)
+        {
+            ostr << "*";
+        }
+        ostr << std::endl << "* " << mCollectionTitle << " *" << std::endl;
+        for (size_t idx = 0; idx < mCollectionTitle.size() + 4; ++idx)
+        {
+            ostr << "*";
+        }
+        ostr << std::endl;
+    }
+
+
+    void PlainTextRenderer::repeat(char c, int n, std::ostream & ostr)
+    {
+        for (int idx = 0; idx < n; ++idx)
+        {
+            ostr << c;
+        }
+    }
+
+
+    void PlainTextRenderer::render(std::ostream & ostr)
+    {
+        static const char * cSeparator = "\t";
+        // Print the heading
+        renderHeading(ostr);
+        ostr << std::endl;
+
+        // Get the column widths
+        std::vector<int> columnWidths;
+        getColumnWidths(columnWidths);
+
+        for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
+        {
+            std::string colName = mRecordSet.columnName(colIdx);
+            repeat(' ', columnWidths[colIdx] - static_cast<int>(colName.size()), ostr);
+            ostr << colName;            
+
+            if (colIdx + 1 != mRecordSet.columnCount())
+            {
+                ostr << cSeparator; // separator
+            }
+        }
+
+        ostr << std::endl;
+
+        for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
+        {
+            std::string colName = mRecordSet.columnName(colIdx);            
+            repeat(' ', columnWidths[colIdx] - static_cast<int>(colName.size()), ostr);
+            repeat('-', colName.size(), ostr);
+
+            if (colIdx + 1 != mRecordSet.columnCount())
+            {
+                ostr << cSeparator; // separator
+            }
+        }
+
+        ostr << std::endl;
+
+        // Print as table
+        for (size_t rowIdx = 0; rowIdx != mRecordSet.rowCount(); ++rowIdx)
+        {
+            for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
+            {
+                std::string value = getValue(colIdx, rowIdx);                
+                repeat(' ', columnWidths[colIdx] - static_cast<int>(value.size()), ostr);
+                ostr << value;
+
+                if (colIdx + 1 != mRecordSet.columnCount())
+                {
+                    ostr << cSeparator; // separator
+                }
             }
             ostr << std::endl;
         }

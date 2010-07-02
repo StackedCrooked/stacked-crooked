@@ -19,24 +19,24 @@ namespace HSServer
     };
 
     template<Location inLocation>
-    struct GetLocationT
+    struct GetLocation_t
     {
     };
 
     template<>
-    struct GetLocationT<Location_hs>
+    struct GetLocation_t<Location_hs>
     {
         static const char * GetValue() { return "/hs"; }
     };
 
     template<>
-    struct GetLocationT<Location_hs_add>
+    struct GetLocation_t<Location_hs_add>
     {
         static const char * GetValue() { return "/hs/add"; }
     };
 
     template<>
-    struct GetLocationT<Location_hof>
+    struct GetLocation_t<Location_hof>
     {
         static const char * GetValue() { return "/hof"; }
     };

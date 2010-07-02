@@ -1,7 +1,7 @@
 #include "RequestHandlerFactory.h"
 #include "ContentType.h"
 #include "RequestHandler.h"
-#include "GenericRequestHandler.h"
+#include "SQLRequestGenericHandler.h"
 #include "Poco/String.h"
 #include "Poco/StringTokenizer.h"
 #include "Poco/Net/HTTPRequestHandler.h"

@@ -57,6 +57,16 @@ namespace HSServer
         void renderTBody(std::ostream & ostr);
     };
 
+    class PlainTextRenderer : public Renderer
+    {
+    public:
+        PlainTextRenderer(const std::string & inCollectionTitle,
+                          const std::string & inRecordTitle,
+                          Poco::Data::RecordSet & inRecordSet);
+
+        virtual void render(std::ostream & outStream);
+    };
+
 
 } // HighScoreServer
 

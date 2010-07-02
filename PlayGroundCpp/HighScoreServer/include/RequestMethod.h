@@ -19,7 +19,7 @@ namespace HSServer
         RequestMethod_End
     };
 
-    const std::string & ToString(RequestMethod inRequestMethod);
+    const char * ToString(RequestMethod inRequestMethod);
 
 
     /**

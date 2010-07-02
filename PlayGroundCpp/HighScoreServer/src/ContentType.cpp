@@ -5,33 +5,26 @@
 namespace HSServer
 {
     
-    const std::string & ToString(ContentType inContentType)
+    const char * ToString(ContentType inContentType)
     {
         switch (inContentType)
         {
-            case ContentType_Unknown:
-            {
-                static const std::string sResult = "ContentType_Unknown";
-                return sResult;
-            }
             case ContentType_TextPlain:                
             {
-                static const std::string sResult = "text/plain";
-                return sResult;
+                return "text/plain";
             }
             case ContentType_TextHTML:
             {
-                static const std::string sResult = "text/html";
-                return sResult;
+                return "text/html";
             }
             case ContentType_ApplicationXML:
             {
-                static const std::string sResult = "application/xml";
-                return sResult;
+                return "application/xml";
             }
+            case ContentType_Unknown:
             default:
             {
-                throw std::logic_error("ToString(RequestMethod): invalid enum value of type RequestMethod.");
+                return "";
             }
         }
     }

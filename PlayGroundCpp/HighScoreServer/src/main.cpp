@@ -20,7 +20,7 @@ namespace HSServer
     {
     public:
         HighScoreServer() :
-          mFactory(0)
+            mFactory(0)
         {
         }
 
@@ -45,6 +45,7 @@ namespace HSServer
             mFactory = new RequestHandlerFactory;
             registerRequestHandlers();
             
+            // Ownership of the factory is passed to the HTTP server.
             Poco::Net::HTTPServer httpServer(mFactory, serverSocket, params);
             httpServer.start();
             waitForTerminationRequest();

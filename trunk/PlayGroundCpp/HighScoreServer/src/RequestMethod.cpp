@@ -5,38 +5,30 @@
 namespace HSServer
 {
 
-    const std::string & ToString(RequestMethod inRequestMethod)
+    const char * ToString(RequestMethod inRequestMethod)
     {
         switch (inRequestMethod)
         {
             case RequestMethod_Get:
             {
-                static std::string sResult = "GET";
-                return sResult;
+                return "GET";
             }
             case RequestMethod_Post:
             {
-                static std::string sResult = "POST";
-                return sResult;
+                return "POST";
             }
             case RequestMethod_Put:
             {
-                static std::string sResult = "PUT";
-                return sResult;
+                return "PUT";
             }
             case RequestMethod_Delete:
             {
-                static std::string sResult = "DELETE";
-                return sResult;
+                return "DELETE";
             }
             case RequestMethod_Unknown:
-            {
-                static std::string sResult = "RequestMethod_Unknown";
-                return sResult;
-            }
             default:
             {
-                throw std::logic_error("ToString(RequestMethod): invalid enum value of type RequestMethod.");
+                return "";
             }
         }
     }

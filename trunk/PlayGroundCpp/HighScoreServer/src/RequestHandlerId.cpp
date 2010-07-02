@@ -52,8 +52,8 @@ namespace HSServer
     {
         return Poco::format("{location: %s; requestMethod: %s; contentType: %s }",
                             inRequestHandlerId.location(),
-                            ToString(inRequestHandlerId.requestMethod()),
-                            ToString(inRequestHandlerId.contentType()));
+                            std::string(ToString(inRequestHandlerId.requestMethod())),
+                            std::string(ToString(inRequestHandlerId.contentType())));
     }
 
 } // namespace HSServer

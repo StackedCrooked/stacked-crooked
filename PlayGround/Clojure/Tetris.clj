@@ -53,6 +53,7 @@
     (replace "%20" " ")
     (replace "%26" "&")
     (replace "%3D" "=")
+    (replace "%3E" ">") ; TODO implement this more intelligently!
   ))
     
 (defn do-get-request [url-string]
@@ -154,8 +155,8 @@
   :field-y 1
   :num-rows 20
   :num-columns 10
-  :block-width 16
-  :block-height 16 })
+  :block-width 32
+  :block-height 32 })
 
 (def window-side-width 200)
 (def window-width (+ (* (+ 2 (prefs :num-columns)) (prefs :block-width)) window-side-width))
@@ -528,7 +529,7 @@
 (defn get-tetris-font [g]
   (.deriveFont (.getFont g)
                (int java.awt.Font/BOLD)
-               (float 10)))
+               (float 14)))
     
 (defn get-text-rect [g str font]
   (.getStringBounds (.getFontMetrics g (get-tetris-font g)) str g))
@@ -600,7 +601,7 @@
                           (if (and (< i num-entries) (< i 10))
                             (let [xml-entry       (nth xml-entries i)
                                   full-user-name  (uri-decode ((xml-entry :attrs) :name))
-                                  user-name       (apply str (take 12 full-user-name))
+                                  user-name       (apply str (take 24 full-user-name))
                                   score           ((xml-entry :attrs) :score) ]
                               (recur (inc i) (conj result {:name user-name :score score :color Color/YELLOW})))
                             result)) ]

@@ -598,9 +598,10 @@
         title           [ { :text "Hall of Fame" :color Color/ORANGE} ]
         hs-entries      (loop [i 0 result [] ]
                           (if (and (< i num-entries) (< i 10))
-                            (let [xml-entry (nth xml-entries i)
-                                  user-name      (uri-decode ((xml-entry :attrs) :name))
-                                  score     ((xml-entry :attrs) :score) ]
+                            (let [xml-entry       (nth xml-entries i)
+                                  full-user-name  (uri-decode ((xml-entry :attrs) :name))
+                                  user-name       (apply str (take 12 full-user-name))
+                                  score           ((xml-entry :attrs) :score) ]
                               (recur (inc i) (conj result {:name user-name :score score :color Color/YELLOW})))
                             result)) ]
     (dotimes [i (count hs-entries)]

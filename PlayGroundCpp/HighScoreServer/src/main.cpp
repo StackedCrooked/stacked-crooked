@@ -1,4 +1,5 @@
 #include "RequestHandler.h"
+#include "GenericRequestHandler.h"
 #include "RequestHandlerFactory.h"
 #include "Poco/Data/SQLite/Connector.h"
 #include "Poco/Net/HTTPServer.h"
@@ -54,10 +55,17 @@ namespace HSServer
     private:
         void registerRequestHandlers()
         {
-            mFactory->registerRequestHandler<GetHighScoreXML>();
-            mFactory->registerRequestHandler<GetHighScoreHTML>();
-            mFactory->registerRequestHandler<GetHallOfFameXML>();
-            mFactory->registerRequestHandler<GetHallOfFameHTML>();
+            //mFactory->registerRequestHandler<GetHighScoreXML>();
+            //mFactory->registerRequestHandler<GetHighScoreHTML>();
+            //mFactory->registerRequestHandler<GetHallOfFameXML>();
+            //mFactory->registerRequestHandler<GetHallOfFameHTML>();
+
+            mFactory->registerRequestHandler<Get_TextHTML_hs>();
+            mFactory->registerRequestHandler<Get_ApplicationXML_hs>();            
+            mFactory->registerRequestHandler<Get_TextHTML_hof>();
+            mFactory->registerRequestHandler<Get_ApplicationXML_hof>();
+
+
             mFactory->registerRequestHandler<GetAddHighScore>();
             mFactory->registerRequestHandler<PostHighScore>();
             mFactory->registerRequestHandler<CommitSucceeded>();            
@@ -66,7 +74,10 @@ namespace HSServer
         RequestHandlerFactory * mFactory;
     };
 
-} // HighScoreServer
+} // namespace HSServer
+
+
+using namespace HSServer;
 
 
 int main(int argc, char** argv)

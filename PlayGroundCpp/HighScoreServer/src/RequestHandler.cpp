@@ -141,7 +141,7 @@ namespace HSServer
         RecordSet rs(select);
 
 
-        HTMLRenderer renderer("High Scores", rs);
+        HTMLRenderer renderer("High Scores", "", rs);
         std::stringstream ss;
         renderer.render(ss);
 
@@ -255,7 +255,7 @@ namespace HSServer
         select.execute();
         RecordSet rs(select);
 
-        HTMLRenderer renderer("Hall of Fame", rs);
+        HTMLRenderer renderer("Hall of Fame", "", rs);
         std::stringstream ss;
         renderer.render(ss);
 

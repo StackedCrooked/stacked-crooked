@@ -3,6 +3,10 @@
 
 
 #include "Poco/Data/RecordSet.h"
+#include "Poco/Data/SessionFactory.h"
+#include "Poco/Data/SQLite/Connector.h"
+#include "Poco/Net/HTTPServerRequest.h"
+#include "Poco/Net/HTTPServerResponse.h"
 #include <string>
 #include <vector>
 
@@ -14,12 +18,14 @@ namespace HSServer
     {
     public:
         Renderer(const std::string & inCollectionTitle,
+                 const std::string & inRecordTitle,
                  const Poco::Data::RecordSet & inRecordSet);
 
         virtual void render(std::ostream & outStream) = 0;
 
     protected:
         std::string mCollectionTitle;
+        std::string mRecordTitle;
         Poco::Data::RecordSet mRecordSet;
     };
 
@@ -31,15 +37,13 @@ namespace HSServer
                     Poco::Data::RecordSet & inRecordSet);
 
         virtual void render(std::ostream & outStream);
-
-    private:
-        std::string mRecordTitle;
     };
 
     class HTMLRenderer : public Renderer
     {
     public:
         HTMLRenderer(const std::string & inCollectionTitle,
+                     const std::string & inRecordTitle,
                      Poco::Data::RecordSet & inRecordSet);
 
         virtual void render(std::ostream & outStream);

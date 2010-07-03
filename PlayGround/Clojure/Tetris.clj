@@ -806,7 +806,10 @@
 ;(def domain "localhost")
 
 (defn get-high-scores []  
-  (clojure.xml/parse (str "http://" domain "/hof.xml")))
+  ; we need to explicity ask for xml (using .xml) because
+  ; for some mysterious reason the accept header of the
+  ; clojure.xml/parse call is text/html.
+  (clojure.xml/parse (str "http://" domain "/hof.xml")))  
   
 (def get-agent (agent nil))
 (def post-agent (agent nil))

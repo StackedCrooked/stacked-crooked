@@ -83,6 +83,24 @@ namespace HSServer
     };
 
 
+    class GetDeleteHighScore : public RequestHandler
+    {
+    public:
+        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
+
+        static const char * GetLocation() { return "/hs/delete"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
+        
+        static ContentType GetContentType() { return ContentType_TextHTML; }
+
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
+
+    private:
+        GetDeleteHighScore();
+    };
+
+
     class PostHighScore : public RequestHandler
     {
     public:
@@ -98,6 +116,24 @@ namespace HSServer
 
     private:
         PostHighScore();
+    };
+
+
+    class DeleteHighScore : public RequestHandler
+    {
+    public:
+        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
+
+        static const char * GetLocation() { return "/hs"; }
+
+        static RequestMethod GetRequestMethod() { return RequestMethod_Delete; }
+        
+        static ContentType GetContentType() { return ContentType_TextPlain; }
+
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
+
+    private:
+        DeleteHighScore();
     };
 
 

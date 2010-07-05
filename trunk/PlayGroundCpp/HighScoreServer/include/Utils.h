@@ -27,6 +27,13 @@ namespace HSServer
      * Efficiently parses the query arguments of an URI.
      */
     void GetArgs(const std::string & inURI, Args & outArgs);
+    
+    
+    /**
+     * GetArgs with a return value instead of by reference.
+     */
+    Args GetArgs(const std::string & inURI);
+
 
     /**
      * Gets an argument by name.
@@ -34,6 +41,11 @@ namespace HSServer
      * Throws  if not found.
      */
     const std::string & GetArg(const Args & inArgs, const std::string & inArg);
+
+    /**
+     * Converts an Args object to an uri encoded arglist
+     */
+    std::string Args2String(const Args & inArgs);
 
     
     /**

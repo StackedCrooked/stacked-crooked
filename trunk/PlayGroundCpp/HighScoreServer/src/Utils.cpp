@@ -63,6 +63,14 @@ namespace HSServer
             outArgs.insert(std::make_pair(name, value));
         }
     }
+    
+    
+    Args GetArgs(const std::string & inURI)
+    {
+        Args args;
+        GetArgs(inURI, args);
+        return args;
+    }
 
 
     const std::string & GetArg(const Args & inArgs, const std::string & inArg)
@@ -73,6 +81,22 @@ namespace HSServer
             return it->second;
         }
         throw MissingArgumentException("Missing argument: " + inArg);
+    }
+
+
+    std::string Args2String(const Args & inArgs)
+    {
+        std::string result;
+        Args::const_iterator it = inArgs.begin(), end = inArgs.end();
+        for (; it != end; ++it)
+        {
+            if (!result.empty())
+            {
+                result += '&';
+            }
+            result += it->first + "=" + it->second;
+        }
+        return result;
     }
     
     

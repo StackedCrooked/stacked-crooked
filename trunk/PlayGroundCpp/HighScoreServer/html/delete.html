@@ -5,13 +5,9 @@
         <h1>High Score Server</h1>
         <table>
           <tr>
-            <td>Name:</td>
-            <td><input type="text" id="input_name" /></td>
-          </tr>
-          <tr>
-            <td>Score:</td>
-            <td><input type="text" id="input_score" /></td>
-          </tr>          
+            <td>DELETE FROM HighScores WHERE</td>
+            <td><input type="text" id="input_where" /></td>
+          </tr>        
         </table>
         <div id="div_output" />
         <script type="text/javascript">
@@ -19,9 +15,8 @@
             
             PostHelper.init = function()
             {     
-              PostHelper.registerInputField("input_name");
-              PostHelper.registerInputField("input_score");
-              document.getElementById("input_name").focus();
+              PostHelper.registerInputField("input_where");
+              document.getElementById("input_where").focus();
             };
 			
             PostHelper.registerInputField = function(fieldId)
@@ -37,18 +32,16 @@
               {
                 if (evt.keyCode == 13)
                 {
-                  PostHelper.submitHighScore();
+                  PostHelper.executeSQL();
                   inputField.value = "";
                 }
               };
             };
       
       
-            PostHelper.submitHighScore = function()
+            PostHelper.executeSQL = function()
             {
-              PostHelper.send(
-                document.getElementById("input_name").value,
-                document.getElementById("input_score").value);
+              PostHelper.send(document.getElementById("input_where").value);
             };
       
             
@@ -82,15 +75,16 @@
 
             PostHelper.getURL = function(action)
             {
-              return "http://" + window.location.hostname + "/" + action;
+              //return "http://" + window.location.hostname + "/" + action;
+              return "http://localhost/" + action;
             };
 
            
-            PostHelper.send = function(name, score)
+            PostHelper.send = function(where_clause)
             {
               var httpRequest = new XMLHttpRequest();
               var url = PostHelper.getURL("hs");
-              httpRequest.open("POST", url, true);
+              httpRequest.open("DELETE", url, true);
               httpRequest.setRequestHeader("Accept", "text/plain");
               httpRequest.onreadystatechange = function()
               {
@@ -99,16 +93,15 @@
                   if (httpRequest.status == 200)
                   {
                     // The response will be a url
-                    window.location.href = PostHelper.getURL(httpRequest.responseText);
+                    PostHelper.display(httpRequest.responseText);
                   }
                   else
                   {
-                    PostHelper.display("Readystate is: " + httpRequest.status);
-                    PostHelper.display("Oops, it doesn't work...\n");
+                    PostHelper.display("Warning: readystate is: " + httpRequest.status);
                   }
                 }
               };
-              var body = "name=" + name + "&score=" + score;
+              var body = where_clause;
               httpRequest.send(body);
             };         
             window.onload = PostHelper.init();

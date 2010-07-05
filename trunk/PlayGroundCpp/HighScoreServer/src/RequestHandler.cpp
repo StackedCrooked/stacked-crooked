@@ -192,7 +192,7 @@ namespace HSServer
 
 
     void DeleteHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
-                                        Poco::Net::HTTPServerResponse& outResponse)
+                                           Poco::Net::HTTPServerResponse& outResponse)
     {
         std::string requestBody;
         inRequest.stream() >> requestBody;

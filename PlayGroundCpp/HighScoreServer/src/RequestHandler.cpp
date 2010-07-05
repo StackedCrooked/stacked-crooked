@@ -71,7 +71,7 @@ namespace HSServer
     {
         
         GetLogger().information("Request from " + inRequest.clientAddress().toString());
-        GetLogger().information("Accept: " + inRequest.get("Accept"));
+        GetLogger().information("Request Accept header: " + inRequest.get("Accept"));
         outResponse.setChunkedTransferEncoding(true);
         outResponse.setContentType(ToString(getContentType()));
 
@@ -121,6 +121,27 @@ namespace HSServer
         outResponse.send() << body;
     }
 
+
+    RequestHandler * GetDeleteHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    {
+        return new GetDeleteHighScore;
+    }
+
+
+    GetDeleteHighScore::GetDeleteHighScore() :
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
+    {
+    }
+
+
+    void GetDeleteHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
+    {        
+        std::string body;
+        ReadEntireFile("html/delete.html", body);
+        outResponse.setContentLength(body.size());
+        outResponse.send() << body;
+    }
+
     
     RequestHandler * PostHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
     {
@@ -153,6 +174,44 @@ namespace HSServer
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
         std::string body = "hs/commit-succeeded?name=" + name + "&score=" + score;
+        outResponse.setContentLength(body.size());
+        outResponse.send() << body;
+    }
+
+    
+    RequestHandler * DeleteHighScore::Create(const Poco::Net::HTTPServerRequest & inRequest)
+    {
+        return new DeleteHighScore;
+    }
+
+
+    DeleteHighScore::DeleteHighScore() :
+        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
+    {
+    }
+
+
+    void DeleteHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
+                                        Poco::Net::HTTPServerResponse& outResponse)
+    {
+        std::string requestBody;
+        inRequest.stream() >> requestBody;
+
+        GetLogger().information("Request body is: " + requestBody);
+
+        std::string sql = Poco::replace<std::string>("DELETE FROM HighScores WHERE {{args}}",
+                                                     "{{args}}",
+                                                     Args2String(GetArgs(requestBody)));
+
+        GetLogger().information("SQL statement is: " + sql);
+
+        Statement insert(mSession);
+        insert << sql;
+        insert.execute();
+
+        // Return an URL instead of a HTML page.
+        // This is because the client is the JavaScript application in this case.
+        std::string body = "Succesfully performed the following SQL statement: " + sql;
         outResponse.setContentLength(body.size());
         outResponse.send() << body;
     }

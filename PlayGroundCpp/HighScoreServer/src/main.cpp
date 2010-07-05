@@ -65,7 +65,9 @@ namespace HSServer
             mFactory->registerRequestHandler<Get_TextPlain_hof>();
 
             mFactory->registerRequestHandler<GetAddHighScore>();
+            mFactory->registerRequestHandler<GetDeleteHighScore>();
             mFactory->registerRequestHandler<PostHighScore>();
+            mFactory->registerRequestHandler<DeleteHighScore>();
             mFactory->registerRequestHandler<CommitSucceeded>();            
         }
 

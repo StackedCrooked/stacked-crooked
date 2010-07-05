@@ -270,6 +270,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\html\delete.html"
+				>
+			</File>
+			<File
 				RelativePath=".\html\getall.html"
 				>
 			</File>

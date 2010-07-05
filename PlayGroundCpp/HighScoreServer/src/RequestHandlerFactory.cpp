@@ -106,6 +106,10 @@ namespace HSServer
         {
             return RequestMethod_Post;
         }
+        else if (inRequest.getMethod() == "DELETE")
+        {
+            return RequestMethod_Delete;
+        }
         throw std::runtime_error("Unsupported request method: " + inRequest.getMethod());
     }
 

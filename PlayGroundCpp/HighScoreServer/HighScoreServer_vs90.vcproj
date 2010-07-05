@@ -273,18 +273,6 @@
 				RelativePath=".\html\delete.html"
 				>
 			</File>
-			<File
-				RelativePath=".\html\getall.html"
-				>
-			</File>
-			<File
-				RelativePath=".\html\html-document-template.html"
-				>
-			</File>
-			<File
-				RelativePath=".\html\index.html"
-				>
-			</File>
 		</Filter>
 		<File
 			RelativePath=".\Todo.txt"

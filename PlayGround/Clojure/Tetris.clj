@@ -97,32 +97,32 @@
 ; =============================================================================
 (defstruct grid :width :height)
 
-(defn create-grid [w h initial-value]
+(defn grid-new [w h initial-value]
   (struct-map grid
     :width  w
     :height h
     :data   (atom (vec (repeat (* w h) initial-value)))))
 
-(defn reset-grid [g initial-value]
+(defn grid-clear [g initial-value]
   (reset! (g :data) (vec (repeat (* (g :width) (g :height)) initial-value))))
 
-(defn create-grid-with-data [w h data]
+(defn grid-new-from-data [w h data]
   (struct-map grid
     :width w
     :height h
     :data (atom data)))
     
-(defn get-grid [g x y]
+(defn grid-get [g x y]
   (let [data  @(g :data)
         idx   (+ x (* (g :width) y)) ]
     (nth data idx)))
     
-(defn set-grid [g x y value]
+(defn grid-set [g x y value]
   (let [data  @(g :data)
         idx   (+ x (* (g :width) y)) ]
     (reset! (g :data) (assoc data idx value))))
 
-(defn get-grid-rows [g]
+(defn grid-get-rows [g]
   (partition (g :width) @(g :data)))
 
 
@@ -164,89 +164,89 @@
 
 (def i-block {
   :value 1
-  :grids [  (create-grid-with-data 2 4 [ 0 1
-                                         0 1
-                                         0 1
-                                         0 1])
+  :grids [  (grid-new-from-data 2 4 [ 0 1
+                                      0 1
+                                      0 1
+                                      0 1])
 
-            (create-grid-with-data 4 2 [ 0 0 0 0
-                                         1 1 1 1])]})
+            (grid-new-from-data 4 2 [ 0 0 0 0
+                                      1 1 1 1])]})
 
 (def j-block {
   :value 2
-  :grids [  (create-grid-with-data 3 3 [ 0 2 0
-                                         0 2 0
-                                         2 2 0 ])
+  :grids [  (grid-new-from-data 3 3 [ 0 2 0
+                                      0 2 0
+                                      2 2 0 ])
 
-            (create-grid-with-data 3 3 [ 0 0 0
-                                         2 0 0
-                                         2 2 2 ])
+            (grid-new-from-data 3 3 [ 0 0 0
+                                      2 0 0
+                                      2 2 2 ])
 
-            (create-grid-with-data 3 3 [ 2 2 0
-                                         2 0 0
-                                         2 0 0 ])
+            (grid-new-from-data 3 3 [ 2 2 0
+                                      2 0 0
+                                      2 0 0 ])
 
-            (create-grid-with-data 3 3 [ 0 0 0
-                                         2 2 2
-                                         0 0 2 ])]})
+            (grid-new-from-data 3 3 [ 0 0 0
+                                      2 2 2
+                                      0 0 2 ])]})
 
 (def l-block {
   :value 3
-  :grids [  (create-grid-with-data 3 3 [ 3 0 0
-                                         3 0 0
-                                         3 3 0 ])
+  :grids [  (grid-new-from-data 3 3 [ 3 0 0
+                                      3 0 0
+                                      3 3 0 ])
 
-            (create-grid-with-data 3 3 [ 0 0 0
-                                         3 3 3
-                                         3 0 0 ])
+            (grid-new-from-data 3 3 [ 0 0 0
+                                      3 3 3
+                                      3 0 0 ])
 
-            (create-grid-with-data 3 3 [ 3 3 0
-                                         0 3 0
-                                         0 3 0 ])
+            (grid-new-from-data 3 3 [ 3 3 0
+                                      0 3 0
+                                      0 3 0 ])
 
-            (create-grid-with-data 3 3 [ 0 0 0
-                                         0 0 3
-                                         3 3 3 ])]})
+            (grid-new-from-data 3 3 [ 0 0 0
+                                      0 0 3
+                                      3 3 3 ])]})
 
 
 (def o-block {
   :value 4
-  :grids [ (create-grid-with-data 2 2 [ 4 4
-                                        4 4 ])]})
+  :grids [ (grid-new-from-data 2 2 [ 4 4
+                                     4 4 ])]})
 
 (def s-block {
   :value 5
-  :grids [ (create-grid-with-data 3 2 [  0 5 5 
-                                         5 5 0 ])
+  :grids [ (grid-new-from-data 3 2 [  0 5 5 
+                                      5 5 0 ])
 
-           (create-grid-with-data 3 3 [  0 5 0 
-                                         0 5 5
-                                         0 0 5 ])]})
+           (grid-new-from-data 3 3 [  0 5 0 
+                                      0 5 5
+                                      0 0 5 ])]})
 
 (def t-block {
   :value 6
-  :grids [ (create-grid-with-data 3 2 [  6 6 6
-                                         0 6 0 ])
+  :grids [ (grid-new-from-data 3 2 [  6 6 6
+                                      0 6 0 ])
 
-           (create-grid-with-data 3 3 [  0 6 0 
-                                         6 6 0
-                                         0 6 0 ]) 
+           (grid-new-from-data 3 3 [  0 6 0 
+                                      6 6 0
+                                      0 6 0 ]) 
 
-           (create-grid-with-data 3 2 [  0 6 0
+           (grid-new-from-data 3 2 [  0 6 0
                                          6 6 6 ]) 
 
-           (create-grid-with-data 3 3 [  0 6 0
-                                         0 6 6
-                                         0 6 0 ])]})
+           (grid-new-from-data 3 3 [  0 6 0
+                                      0 6 6
+                                      0 6 0 ])]})
 
 (def z-block {
   :value 7
-  :grids [ (create-grid-with-data 3 2 [ 7 7 0
-                                        0 7 7 ])  
+  :grids [ (grid-new-from-data 3 2 [ 7 7 0
+                                     0 7 7 ])  
 
-           (create-grid-with-data 3 3 [ 0 0 7
-                                        0 7 7
-                                        0 7 0 ])]})
+           (grid-new-from-data 3 3 [ 0 0 7
+                                     0 7 7
+                                     0 7 0 ])]})
 
 (def active-block {
     :type (atom l-block)
@@ -254,7 +254,7 @@
     :x (atom 0)
     :y (atom 0) })
 
-(def global-field (create-grid 10 20 0))
+(def global-field (grid-new 10 20 0))
 
 (def block-types
   [i-block j-block l-block o-block s-block t-block z-block])
@@ -309,7 +309,7 @@
 
 
 (defn init-blocks []
-    (reset-grid global-field 0)
+    (grid-clear global-field 0)
     (reset! bag-of-blocks (shuffle block-types))
     (reset! (active-block :type) (first @bag-of-blocks))
     (swap! (active-block :x)
@@ -453,7 +453,7 @@
             active-grid (grids grid-idx)]
     (dotimes [i (active-grid :width)]
         (dotimes [j (active-grid :height)]
-          (let [cell-value (get-grid active-grid i j)]
+          (let [cell-value (grid-get active-grid i j)]
             (if-not (zero? cell-value)
               (let [x  (+ (prefs :field-x) (+ bx i))
                     y  (+ (prefs :field-y) (+ by j))]
@@ -469,7 +469,7 @@
     (dotimes [y (field :height)]
       (paint-grid-cell g (+ (prefs :field-x) x)
                          (+ (prefs :field-y) y)
-                         (get-grid field x y)))))
+                         (grid-get field x y)))))
 
 (defn draw-debug-field [g field]
   (dotimes [x (field :width)]
@@ -478,7 +478,7 @@
                  (+ (prefs :field-y) y)
                  (prefs :block-width)
                  (prefs :block-height)
-                 (str (get-grid field x y))))))
+                 (str (grid-get field x y))))))
 
 (defn draw-next-blocks [g blocks]
   (if (= false @is-game-over)
@@ -491,7 +491,7 @@
           (dotimes [ j (grid :height) ]
             (let [ x      (+ i (+ (prefs :field-x) (prefs :num-columns) 1))
                    y      (+ 1 j (* n 5) (prefs :field-y))
-                   value  (get-grid grid i j) ]
+                   value  (grid-get grid i j) ]
               (if-not (zero? value)
                 (paint-grid-cell g x y value)))))))))
 
@@ -505,7 +505,7 @@
         (dotimes [ j (grid :height) ]
           (let [ x      (+ i (+ (prefs :field-x) (prefs :num-columns) 5))
                  y      (+ j (* n 5) (prefs :field-y))
-                 value  (get-grid grid i j) ]
+                 value  (grid-get grid i j) ]
             (if-not (zero? value)
               (paint-grid-cell g x y 0))))))))
 
@@ -660,7 +660,7 @@
         grid           (grids grid-idx)  ]
       (every? true? (for [x (range 0 (grid :width))
                           y (range 0 (grid :height))
-                          :let [block-value (get-grid grid x y)
+                          :let [block-value (grid-get grid x y)
                                 field-x     (+ x @(block :x))
                                 field-y     (+ y @(block :y))]]
                       (if (zero? block-value)
@@ -668,7 +668,7 @@
                         (and (>= field-x 0)
                              (< field-x (field :width))
                              (< field-y (field :height))
-                             (zero? (get-grid field field-x field-y))))))))
+                             (zero? (grid-get field field-x field-y))))))))
 
 (defn rotate [field block]
     (swap! (block :rotation) inc)
@@ -703,7 +703,7 @@
     (filter (complement s?) (tree-seq s? seq x))))
     
 (defn clear-lines [field]
-  (let [  rows              (get-grid-rows field)
+  (let [  rows              (grid-get-rows field)
           remaining-rows    (filter (fn [row] (contains row 0)) rows)
           num-lines-scored  (- (count rows) (count remaining-rows))
           ]
@@ -729,9 +729,9 @@
           block-grid  (grids grid-idx)]
     (dotimes [x (block-grid :width)]
       (dotimes [y (block-grid :height)]
-        (let [value (get-grid block-grid x y)]
+        (let [value (grid-get block-grid x y)]
             (if-not (zero? value)
-              (set-grid field (+ x block-x) (+ y block-y) value)))))))
+              (grid-set field (+ x block-x) (+ y block-y) value)))))))
 
 (defn move-down [f b]
     (swap! (b :y) inc)

@@ -74,7 +74,7 @@ namespace HSServer
     };
 
 
-} // HighScoreServer
+} // namespace HSServer
 
 
 #endif // RENDERER_H_INCLUDED

@@ -116,8 +116,8 @@ namespace HSServer
         ostr << "<table>\n";
         renderTHead(ostr);
         renderTBody(ostr);
-        ostr << "</body>\n";
         ostr << "</table>\n";
+        ostr << "</body>\n";
         ostr << "</html>\n";
     }
 

@@ -129,6 +129,7 @@ namespace HSServer
         return Poco::DateTimeFormatter::format(ts, "%Y-%n-%d %H:%M:%S");
     }
 
+
     std::string MakeHTML(const std::string & inHTMLElement, const std::string & inText, HTMLFormatting inHTMLFormatting)
     {
         switch (inHTMLFormatting)

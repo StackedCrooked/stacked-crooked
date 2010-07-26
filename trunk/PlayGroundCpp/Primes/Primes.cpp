@@ -1,6 +1,9 @@
 #include "Primes.h"
 #include "Poco/Runnable.h"
 #include "Poco/Thread.h"
+#include <iostream>
+#include <iomanip>
+#include <stdexcept>
 
 
 namespace Primes
@@ -92,30 +95,42 @@ namespace Primes
                    const Interval & inInterval,
                    std::vector<Interval> & outIntervals)
     {
-        size_t intervalWidth = inInterval.second - inInterval.first;        
-        if (inNumberOfParts > intervalWidth)
+        if (inInterval.first > inInterval.second)
         {
-            inNumberOfParts = intervalWidth;
+            throw std::logic_error("Bad interval");
+        }
+        else if (inInterval.first == inInterval.second)
+        {
+            return;
         }
 
-        size_t partitionWidth = intervalWidth / inNumberOfParts;
+        size_t range = inInterval.second - inInterval.first;
+        size_t partSize = range / inNumberOfParts;
+        size_t beginValue = inInterval.first;
 
-        size_t begin = inInterval.first;
-        for (size_t idx = 0; idx < inNumberOfParts; ++idx)
+        for (size_t idx = 0; idx != inNumberOfParts; ++idx)
         {
-            size_t end = begin + partitionWidth;
-            outIntervals.push_back(std::make_pair(begin, end));            
-            if (idx < (inNumberOfParts - 1))
+            if (idx < inNumberOfParts - 1)
             {
-                begin = end;
+                outIntervals.push_back(std::make_pair(beginValue, beginValue + partSize));
+                beginValue += partSize + 1;
             }
-            else // last interval
+            else
             {
-                outIntervals.push_back(std::make_pair(end + 1, inInterval.second));
-                break;
+                if (beginValue > inInterval.second)
+                {
+                    throw std::logic_error("Last part too small. This should not happen.");
+                }
+                outIntervals.push_back(std::make_pair(beginValue, inInterval.second));
             }
-
         }
+
+        // PRINT DEBUG
+        //for (size_t idx = 0; idx != outIntervals.size(); ++idx)
+        //{
+        //    const Interval & interval = outIntervals[idx];
+        //    std::cout << interval.first << "-" << interval.second << std::endl;
+        //}
     }
 
     class Runner : public Poco::Runnable
@@ -161,6 +176,8 @@ namespace Primes
             runners.push_back(new Runner(interval, inPrecedingPrimes));
             mThreads.back()->start(*runners[idx]);
         }
+
+        std::cout << "There are " << mThreads.size() << " threads running now." << std::endl;
 
 
         for (size_t idx = 0; idx != mThreads.size(); ++idx)

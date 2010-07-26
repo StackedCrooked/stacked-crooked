@@ -60,9 +60,7 @@ int main()
     
     const UInt32 cNumberOfPrimes = 50 * 1000 * 1000;
 
-    
-    //TestSingleThreaded(cNumberOfPrimes);    
-    for (int i = 0; i < 64; ++i)
+    for (int i = 0; i < 16; ++i)
     {
         TestMultiThreaded(cNumberOfPrimes, i + 1);    
     }

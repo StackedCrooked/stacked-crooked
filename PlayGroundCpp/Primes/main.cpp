@@ -28,24 +28,24 @@ void SelfTest()
 }
 
 
-void TestMultiThreaded(UInt32 inNumberOfPrimes)
+void TestMultiThreaded(UInt32 inNumberOfPrimes, int inNumberOfThreads)
 {
     Poco::Stopwatch stopwatch;
     stopwatch.start();
     std::vector<UInt32> primes1;
     GetPrimes(10000, primes1);
-    const size_t cNumberOfThreads = 4;
     std::vector<UInt32> primes2;
-    FindPrimesInInterval_MultiThreaded(cNumberOfThreads,
+    FindPrimesInInterval_MultiThreaded(inNumberOfThreads,
                                        std::make_pair(10001, inNumberOfPrimes),
                                        primes1,
                                        primes2);
-    std::cout << "Multi-threaded (3 threads): " << (stopwatch.elapsed() / 1000) << "ms." << std::endl;
+    std::cout << "Multi-threaded (" << inNumberOfThreads << " threads): " << (stopwatch.elapsed() / 1000) << "ms." << std::endl;
 }
 
 
 void TestSingleThreaded(UInt32 inNumberOfPrimes)
 {
+    std::cout << "Now calculating the first " << inNumberOfPrimes << " prime numbers single threaded." << std::endl;
     Poco::Stopwatch stopwatch;
     stopwatch.start();
     std::vector<UInt32> primes;
@@ -58,12 +58,14 @@ int main()
 {
     SelfTest();
     
-    std::cout << "Press ENTER to start calculating primes.";
-    std::cin.get();
+    const UInt32 cNumberOfPrimes = 50 * 1000 * 1000;
+
     
-    const UInt32 cNumberOfPrimes = 10 * 1000 * 1000;
-    TestSingleThreaded(cNumberOfPrimes);    
-    TestMultiThreaded(cNumberOfPrimes);
+    //TestSingleThreaded(cNumberOfPrimes);    
+    for (int i = 0; i < 64; ++i)
+    {
+        TestMultiThreaded(cNumberOfPrimes, i + 1);    
+    }
 
     std::cout << "Press ENTER to quit.";
     std::cin.get();

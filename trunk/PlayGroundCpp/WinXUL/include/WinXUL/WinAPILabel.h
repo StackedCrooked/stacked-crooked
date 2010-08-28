@@ -9,13 +9,15 @@
 namespace WinXUL
 {
 
-    class WinAPILabel : public NativeLabel,
-                        public WinAPIComponent
+    class WinAPILabel : public NativeLabel
     {
     public:
         WinAPILabel(HMODULE inModule, NativeComponent * inParent);
 
         virtual ~WinAPILabel();
+
+    private:
+        WinAPIComponent mComponent;
     };
 
 

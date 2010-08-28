@@ -2,11 +2,9 @@
 #define WINXUL_H_INCLUDED
 
 
-namespace WinXUL
-{
-
-
-} // namespace WinXUL
+#include "WinXUL/Component.h"
+#include "WinXUL/Decorator.h"
+#include "WinXUL/Label.h"
 
 
 #endif // WINXUL_H_INCLUDED

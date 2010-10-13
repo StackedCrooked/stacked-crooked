@@ -2,7 +2,7 @@
 autocmd FileType make set noexpandtab
 
 " Set the colorscheme
-colorscheme torte
+colorscheme pablo
 
 " Set filetype dependent indention rules
 filetype plugin indent on

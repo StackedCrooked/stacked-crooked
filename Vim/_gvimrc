@@ -1,0 +1,171 @@
+
+" Don't replace tabs with spaces in makefiles
+autocmd FileType make set noexpandtab
+
+" Set the colorscheme
+colorscheme torte
+
+" Set filetype dependent indention rules
+filetype plugin indent on
+
+" Set auto-indent rules
+set autoindent
+
+" Enable most intuitive backspace behavior
+set bs=2
+
+" Expand tabs to spaces
+set expandtab
+
+" Colorize search results
+set hlsearch 
+
+" Show search results while typing
+set incsearch
+
+" Disable annoying backup/swap files
+set nobackup
+set noswapfile
+set nowritebackup 
+
+" Turn off vi compatibility
+set nocompatible
+
+" Show the rules
+set ruler
+
+" Width of indention (number of spaces)
+set shiftwidth=4
+
+" Show matching brackets
+set showmatch
+
+" Set ignore case when searching using only lower case characters
+set smartcase
+
+" Smart auto-indenting when typing a new line
+set smartindent
+
+" Set tabs to 4 spaces
+set softtabstop=4 
+set tabstop=4 
+
+" Enable syntax coloring
+syntax enable
+
+" Yank until end of line
+map Y y$
+
+" Unix-specific settings
+if has("unix")
+set gfn=Courier\ 10\ Pitch\ 10
+winp 600 100
+win 100 50
+endif
+
+" Windows-specific settings
+if has("win32")
+set gfn=Courier_New:h10:cANSI
+winp 600 0
+win 100 50
+endif
+
+" Bookmarks menu
+if has("win32")
+menu Bookmarks.vimrc :open C:\Program Files\Vim\_vimrc<CR>
+endif
+
+" Clojure settings
+if has("win32")
+" Nothing yet
+endif
+
+
+" -----------------------------------------------------------------------------
+" Function keys
+" -----------------------------------------------------------------------------
+
+" Split current tab
+:map <F2> :tab split<CR>
+
+" Search for constructors in a cpp file
+:map <F3> /\(\<[A-Z]\w*\)::\1\><CR>
+
+" Search for destructors in a cpp file
+:map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
+
+
+" -----------------------------------------------------------------------------
+" Enable copy/paste with ctrl-c and ctrl-v
+" -----------------------------------------------------------------------------
+
+" CTRL-X and SHIFT-Del are Cut
+vnoremap <C-X> "+x
+vnoremap <S-Del> "+x
+
+" CTRL-C and CTRL-Insert are Copy
+vnoremap <C-C> "+y
+vnoremap <C-Insert> "+y
+
+" CTRL-V and SHIFT-Insert are Paste
+map <C-V>   	"+gP
+map <S-Insert>  	"+gP
+
+cmap <C-V>  	<C-R>+
+cmap <S-Insert> 	<C-R>+
+
+" Pasting blockwise and linewise selections is not possible in Insert and
+" Visual mode without the +virtualedit feature.  They are pasted as if they
+" were characterwise instead.
+" Uses the paste.vim autoload script.
+
+exe 'inoremap <script> <C-V>' paste#paste_cmd['i']
+exe 'vnoremap <script> <C-V>' paste#paste_cmd['v']
+
+imap <S-Insert> 	<C-V>
+vmap <S-Insert> 	<C-V>
+
+" Use CTRL-Q to do what CTRL-V used to do
+noremap <C-Q>   	<C-V>
+
+
+" -----------------------------------------------------------------------------
+" Enable copy/paste in block mode
+" -----------------------------------------------------------------------------
+
+" Vim support file to help with paste mappings and menus
+" Maintainer:   Bram Moolenaar <Bram@vim.org>
+" Last Change:  2006 Jun 23
+
+" Define the string to use for items that are present both in Edit, Popup and
+" Toolbar menu.  Also used in mswin.vim and macmap.vim.
+
+" Pasting blockwise and linewise selections is not possible in Insert and
+" Visual mode without the +virtualedit feature.  They are pasted as if they
+" were characterwise instead.  Add to that some tricks to leave the cursor in
+" the right position, also for "gi".
+if has("virtualedit")
+  let paste#paste_cmd = {'n': ":call paste#Paste()<CR>"}
+  let paste#paste_cmd['v'] = '"-c<Esc>' . paste#paste_cmd['n']
+  let paste#paste_cmd['i'] = 'x<BS><Esc>' . paste#paste_cmd['n'] . 'gi'
+
+  func! paste#Paste()
+    let ove = &ve
+    set ve=all
+    normal! `^
+    if @+ != ''
+      normal! "+gP
+    endif
+    let c = col(".")
+    normal! i
+    if col(".") < c " compensate for i<ESC> moving the cursor left
+      normal! l
+    endif
+    let &ve = ove
+  endfunc
+else
+  let paste#paste_cmd = {'n': "\"=@+.'xy'<CR>gPFx\"_2x"}
+  let paste#paste_cmd['v'] = '"-c<Esc>gix<Esc>' . paste#paste_cmd['n'] . '"_x'
+  let paste#paste_cmd['i'] = 'x<Esc>' . paste#paste_cmd['n'] . '"_s'
+endif
+

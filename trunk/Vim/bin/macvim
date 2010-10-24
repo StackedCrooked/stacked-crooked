@@ -1,0 +1,8 @@
+#!/bin/sh
+if test -z "$1" # if 
+then
+  open /Applications/MacVim.app
+else
+  open -a /Applications/MacVim.app $1
+fi
+

@@ -65,7 +65,7 @@ endif
 
 
 if has("mac")
-winp 640 1400
+winp 920 1400
 win 100 80
 colorscheme macvim
 set gfn=Menlo:h13

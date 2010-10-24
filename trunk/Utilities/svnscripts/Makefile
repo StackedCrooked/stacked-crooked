@@ -9,4 +9,5 @@ install: fmdiff fmdiff3 fmresolve svndiff
 	install fmdiff3 $(DESTDIR)/fmdiff3
 	install	fmresolve $(DESTDIR)/fmresolve
 	install	svnchanges $(DESTDIR)/svnchanges
+	install	svnunknowns $(DESTDIR)/svnunknowns
 	install	svndiff $(DESTDIR)/svndiff

@@ -58,15 +58,11 @@ map Y y$
 " Unix-specific settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
-winp 600 100
-win 100 50
 endif
 
 " Windows-specific settings
 if has("win32")
 set gfn=Courier_New:h10:cANSI
-winp 600 0
-win 100 50
 endif
 
 " Bookmarks menu

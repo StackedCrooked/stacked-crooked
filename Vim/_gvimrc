@@ -1,4 +1,5 @@
 " Don't replace tabs with spaces in makefiles
+set gfn=Courier\ 13\ Pitch\ 13
 autocmd FileType make set noexpandtab
 
 " Set the colorscheme
@@ -58,8 +59,16 @@ map Y y$
 " Unix-specific settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
-winp 600 100
+winp 640 1340
 win 100 50
+endif
+
+
+if has("mac")
+winp 640 1400
+win 100 80
+colorscheme macvim
+set gfn=Menlo:h13
 endif
 
 " Windows-specific settings

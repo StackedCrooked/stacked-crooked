@@ -1,0 +1,5 @@
+This patch changes meld's font color for text changes from red to black. This improves (IMO) the readability of the diff.
+
+To install:
+
+sudo ./fixmeld

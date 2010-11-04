@@ -1,0 +1,18 @@
+--- /usr/lib/meld/meldapp.py.bck	2010-11-02 12:57:45.292695443 +0100
++++ /usr/lib/meld/meldapp.py	2010-11-02 13:13:39.932070620 +0100
+@@ -398,13 +398,13 @@
+         "ignore_symlinks": prefs.Value(prefs.BOOL,0),
+         "vc_console_visible": prefs.Value(prefs.BOOL, 0),
+         "color_delete_bg" : prefs.Value(prefs.STRING, "DarkSeaGreen1"),
+-        "color_delete_fg" : prefs.Value(prefs.STRING, "Red"),
++        "color_delete_fg" : prefs.Value(prefs.STRING, "Black"),
+         "color_replace_bg" : prefs.Value(prefs.STRING, "#ddeeff"),
+         "color_replace_fg" : prefs.Value(prefs.STRING, "Black"),
+         "color_conflict_bg" : prefs.Value(prefs.STRING, "Pink"),
+         "color_conflict_fg" : prefs.Value(prefs.STRING, "Black"),
+         "color_inline_bg" : prefs.Value(prefs.STRING, "LightSteelBlue2"),
+-        "color_inline_fg" : prefs.Value(prefs.STRING, "Red"),
++        "color_inline_fg" : prefs.Value(prefs.STRING, "Black"),
+         "color_edited_bg" : prefs.Value(prefs.STRING, "gray90"),
+         "color_edited_fg" : prefs.Value(prefs.STRING, "Black"),
+         "filters" : prefs.Value(prefs.STRING,

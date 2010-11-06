@@ -67,8 +67,8 @@ endif
 if has("mac")
 winp 920 1400
 win 100 80
-colorscheme macvim
 set gfn=Menlo:h13
+set vb " Turn off audio bells
 endif
 
 " Windows-specific settings

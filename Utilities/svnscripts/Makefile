@@ -1,13 +1,10 @@
-
 .PHONY: install
 
-DESTDIR=/usr/local/bin
+DESTDIR=$(HOME)/bin
 
-install: fmdiff fmdiff3 fmresolve svndiff
+install: fmdiff svnchanges svnunknowns svndiff
 	install -d $(DESTDIR)
 	install fmdiff $(DESTDIR)/fmdiff
-	install fmdiff3 $(DESTDIR)/fmdiff3
-	install	fmresolve $(DESTDIR)/fmresolve
 	install	svnchanges $(DESTDIR)/svnchanges
 	install	svnunknowns $(DESTDIR)/svnunknowns
 	install	svndiff $(DESTDIR)/svndiff

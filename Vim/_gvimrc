@@ -60,13 +60,13 @@ map Y y$
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
 winp 640 1340
-win 100 50
+win 120 50
 endif
 
 
 if has("mac")
 winp 920 1400
-win 100 80
+win 120 80
 set gfn=Menlo:h13
 set vb " Turn off audio bells
 endif

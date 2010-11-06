@@ -1,2 +1,2 @@
-Stolen from http://ssel.vub.ac.be/ssel/internal:fmdiff .
-svndiff was added by me.
+Based on the webpage "Using FileMerge as a diff command for Subversion" (http://www.defraine.net/~brunod/fmdiff/)
+

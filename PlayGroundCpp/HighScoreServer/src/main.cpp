@@ -64,11 +64,11 @@ namespace HSServer
             mFactory->registerRequestHandler<Get_ApplicationXML_hof>();
             mFactory->registerRequestHandler<Get_TextPlain_hof>();
 
-            mFactory->registerRequestHandler<GetAddHighScore>();
-            mFactory->registerRequestHandler<GetDeleteHighScore>();
-            mFactory->registerRequestHandler<PostHighScore>();
-            mFactory->registerRequestHandler<DeleteHighScore>();
-            mFactory->registerRequestHandler<CommitSucceeded>();            
+            mFactory->registerRequestHandler<HighScorePostForm_Get>();
+            mFactory->registerRequestHandler<HighScoreDeleteForm_Get>();
+            mFactory->registerRequestHandler<HighScore_Post>();
+            mFactory->registerRequestHandler<HighScore_Delete>();
+            mFactory->registerRequestHandler<PostHighScoreOk_Get>();            
         }
 
         RequestHandlerFactory * mFactory;

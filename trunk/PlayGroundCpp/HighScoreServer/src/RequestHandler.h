@@ -4,6 +4,7 @@
 
 #include "Exceptions.h"
 #include "ContentType.h"
+#include "LocationId.h"
 #include "RequestMethod.h"
 #include "Utils.h"
 #include "Poco/Net/HTTPRequestHandler.h"
@@ -65,12 +66,12 @@ namespace HSServer
     };
 
 
-    class GetAddHighScore : public RequestHandler
+    class HighScorePostForm_Get : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
 
-        static const char * GetLocation() { return "/hs/add"; }
+        static const char * GetLocation() { return LocationId2String<LocationId_HighScorePostForm_Get>::GetValue(); }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
         
@@ -79,16 +80,16 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
-        GetAddHighScore();
+        HighScorePostForm_Get();
     };
 
 
-    class GetDeleteHighScore : public RequestHandler
+    class HighScoreDeleteForm_Get : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
 
-        static const char * GetLocation() { return "/hs/delete"; }
+        static const char * GetLocation() { return LocationId2String<LocationId_HighScoreDeleteForm_Get>::GetValue(); }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
         
@@ -97,16 +98,16 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
-        GetDeleteHighScore();
+        HighScoreDeleteForm_Get();
     };
 
 
-    class PostHighScore : public RequestHandler
+    class HighScore_Post : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs"; }
+        static const char * GetLocation() { return LocationId2String<LocationId_HighScore_Post>::GetValue(); }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Post; }
         
@@ -115,16 +116,16 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
-        PostHighScore();
+        HighScore_Post();
     };
 
 
-    class DeleteHighScore : public RequestHandler
+    class HighScore_Delete : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs"; }
+        static const char * GetLocation() { return LocationId2String<LocationId_HighScore_Delete>::GetValue(); }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Delete; }
         
@@ -133,16 +134,16 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
-        DeleteHighScore();
+        HighScore_Delete();
     };
 
 
-    class CommitSucceeded : public RequestHandler
+    class PostHighScoreOk_Get : public RequestHandler
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
 
-        static const char * GetLocation() { return "/hs/commit-succeeded"; }
+        static const char * GetLocation() { return LocationId2String<LocationId_HighScorePostOk_Get>::GetValue(); }
 
         static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
         
@@ -152,7 +153,7 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
-        CommitSucceeded(const std::string & inName, const std::string & inScore);
+        PostHighScoreOk_Get(const std::string & inName, const std::string & inScore);
         std::string mName;
         std::string mScore;
     };

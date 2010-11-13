@@ -4,7 +4,7 @@
 
 #include "RequestHandler.h"
 #include "ContentType.h"
-#include "Location.h"
+#include "LocationId.h"
 #include "Renderer.h"
 #include "RequestMethod.h"
 
@@ -12,13 +12,13 @@
 namespace HSServer
 {
 
-    template<ContentType inContentType, Location inLocation>
+    template<ContentType inContentType, LocationId inLocation>
     struct GetRenderer_t
     {
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextHTML, Location_hs>
+    struct GetRenderer_t<ContentType_TextHTML, LocationId_HighScore_Get>
     {
         typedef HTMLRenderer Type;
 
@@ -28,7 +28,7 @@ namespace HSServer
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextHTML, Location_hof>
+    struct GetRenderer_t<ContentType_TextHTML, LocationId_HallOfFame_Get>
     {
         typedef HTMLRenderer Type;
 
@@ -38,7 +38,7 @@ namespace HSServer
     };
 
     template <>
-    struct GetRenderer_t<ContentType_ApplicationXML, Location_hs>
+    struct GetRenderer_t<ContentType_ApplicationXML, LocationId_HighScore_Get>
     {
         typedef XMLRenderer Type;
 
@@ -48,7 +48,7 @@ namespace HSServer
     };
 
     template <>
-    struct GetRenderer_t<ContentType_ApplicationXML, Location_hof>
+    struct GetRenderer_t<ContentType_ApplicationXML, LocationId_HallOfFame_Get>
     {
         typedef XMLRenderer Type;
 
@@ -58,7 +58,7 @@ namespace HSServer
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextPlain, Location_hs>
+    struct GetRenderer_t<ContentType_TextPlain, LocationId_HighScore_Get>
     {
         typedef PlainTextRenderer Type;
 
@@ -68,7 +68,7 @@ namespace HSServer
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextPlain, Location_hof>
+    struct GetRenderer_t<ContentType_TextPlain, LocationId_HallOfFame_Get>
     {
         typedef PlainTextRenderer Type;
 
@@ -77,25 +77,25 @@ namespace HSServer
         static const char * GetRecordTitle() { return ""; }
     };
 
-    template<RequestMethod inRequestMethod, Location inLocation>
+    template<RequestMethod inRequestMethod, LocationId inLocation>
     struct GetSQL_t
     {
     };
 
     template<>
-    struct GetSQL_t<RequestMethod_Get, Location_hs>
+    struct GetSQL_t<RequestMethod_Get, LocationId_HighScore_Get>
     {
         static const char * GetValue() { return "SELECT * FROM HighScores"; }
     };
 
     template<>
-    struct GetSQL_t<RequestMethod_Get, Location_hof>
+    struct GetSQL_t<RequestMethod_Get, LocationId_HallOfFame_Get>
     {
         static const char * GetValue() { return "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10"; }
     };
 
 
-    template<RequestMethod inRequestMethod, ContentType inContentType, Location inLocation>
+    template<RequestMethod inRequestMethod, ContentType inContentType, LocationId inLocation>
     class SQLRequestGenericHandler : public RequestHandler
     {
     public:
@@ -113,7 +113,7 @@ namespace HSServer
         
         static ContentType GetContentType() { return inContentType; }
 
-        static const char * GetLocation() { return GetLocation_t<inLocation>::GetValue(); }
+        static const char * GetLocation() { return LocationId2String<inLocation>::GetValue(); }
 
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
         {
@@ -137,13 +137,13 @@ namespace HSServer
         }
     };
 
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       Location_hs > Get_TextHTML_hs;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, Location_hs > Get_ApplicationXML_hs;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      Location_hs > Get_TextPlain_hs;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       LocationId_HighScore_Get > Get_TextHTML_hs;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, LocationId_HighScore_Get > Get_ApplicationXML_hs;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      LocationId_HighScore_Get > Get_TextPlain_hs;
 
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       Location_hof> Get_TextHTML_hof;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, Location_hof> Get_ApplicationXML_hof;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      Location_hof> Get_TextPlain_hof;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       LocationId_HallOfFame_Get> Get_TextHTML_hof;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, LocationId_HallOfFame_Get> Get_ApplicationXML_hof;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      LocationId_HallOfFame_Get> Get_TextPlain_hof;
 
 } // namespace HSServer
 

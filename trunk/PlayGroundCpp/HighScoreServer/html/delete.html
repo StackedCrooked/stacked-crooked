@@ -53,26 +53,6 @@
             };
 
 
-            /*PostHelper.submit = function(path, params)
-            {
-              var form = document.createElement("form");
-              form.setAttribute("method", "post");
-              form.setAttribute("action", path);
-
-              for(var key in params)
-              {
-                var hiddenField = document.createElement("input");
-                hiddenField.setAttribute("type", "hidden");
-                hiddenField.setAttribute("name", key);
-                hiddenField.setAttribute("value", params[key]);
-                form.appendChild(hiddenField);
-              }
-              // Not entirely sure if this is necessary
-              document.body.appendChild(form);
-              form.submit();
-            }*/
-
-
             PostHelper.getURL = function(action)
             {
               return "http://" + window.location.hostname + "/" + action;

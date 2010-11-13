@@ -11,9 +11,7 @@
 
 
 const char * cPipeline =
-    " filesrc location=\"{{path}}\" ! decodebin2 name=d "
-    " d. ! queue ! ffmpegcolorspace ! osxvideosink sync=false "
-    " d. ! queue ! audioconvert ! audioresample ! autoaudiosink ";
+    " filesrc location=\"{{path}}\" ! decodebin2 name=d d. ! queue ! ffmpegcolorspace ! osxvideosink d. ! queue ! audioconvert ! audioresample ! autoaudiosink ";
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)

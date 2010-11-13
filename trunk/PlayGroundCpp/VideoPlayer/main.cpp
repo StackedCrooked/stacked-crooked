@@ -1,8 +1,14 @@
 #include "MainWindow.h"
-#include "GStreamer.h"
 #include <QtGui/QApplication>
 #include <QMessageBox>
 #include <string>
+
+
+extern "C"
+{
+    #include <gst/gst.h>
+    #include <glib.h>
+}
 
 
 void ShowError(const std::string & inMessage)
@@ -17,16 +23,15 @@ void ShowError(const std::string & inMessage)
 
 int run(QApplication & application)
 {
-    GStreamer::Initialize();
     MainWindow mainWindow;
     mainWindow.show();
-    GStreamer::Finalize();
     return application.exec();
 }
 
 
 int main(int argc, char *argv[])
 {
+    gst_init(&argc, &argv);
     QApplication application(argc, argv);
     try
     {

@@ -10,7 +10,7 @@ Mount the guest additions.iso
 - Click on the cd/dvd icon on the bottom of the VBox Window and select VBoxGuestAdditions.iso.
 - Navigate to the disk: Places -> VBOXADDITIONS_x.y.z
 - Get the path of the mount:
-  -> In the folder view right click the tab that sas VBOXADDITIONS_x.y.z
+  -> In the folder view right-click the tab that says VBOXADDITIONS_x.y.z
   -> Select 'Copy'
   -> Paste somewhere and now you have the path of the guest additions mount.
 - Open Terminal and cd to the guest additions mount.

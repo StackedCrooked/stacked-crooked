@@ -13,7 +13,12 @@ namespace HSServer
 
     std::string GetLocation(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        return inRequest.getURI().substr(0, inRequest.getURI().find("?"));
+        const std::string & uri = inRequest.getURI();
+        if (uri.empty())
+        {
+            throw std::runtime_error("URI is empty.");
+        }
+        return uri.substr(1, uri.find("?"));
     }
 
 

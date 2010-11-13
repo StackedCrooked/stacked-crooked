@@ -21,19 +21,13 @@ namespace HSServer
 
     const char * ToString(RequestMethod inRequestMethod);
 
-
-    /**
-     * Helper class to overload the FromString function.
-     *
-     * Experimental.
-     */
-    class RequestMethodString : public std::string
+    template<RequestMethod _RequestMethod>
+    class RequestMethodPolicy
     {
     public:
-        explicit RequestMethodString(const std::string & inValue);
+        static RequestMethod GetRequestMethod() { return _RequestMethod; }
     };
 
-    RequestMethod FromString(const RequestMethodString & inValue);
 
 } // namespace HSServer
 

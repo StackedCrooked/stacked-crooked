@@ -101,19 +101,13 @@ namespace HSServer
     }
 
 
-    RequestHandler * HighScorePostForm_Get::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        return new HighScorePostForm_Get;
-    }
-
-
-    HighScorePostForm_Get::HighScorePostForm_Get() :
+    GetHighScorePostForm::GetHighScorePostForm() :
         RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
 
-    void HighScorePostForm_Get::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
+    void GetHighScorePostForm::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {        
         std::string body;
         ReadEntireFile("html/add.html", body);
@@ -122,19 +116,13 @@ namespace HSServer
     }
 
 
-    RequestHandler * HighScoreDeleteForm_Get::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        return new HighScoreDeleteForm_Get;
-    }
-
-
-    HighScoreDeleteForm_Get::HighScoreDeleteForm_Get() :
+    GetHighScoreDeleteForm::GetHighScoreDeleteForm() :
         RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
 
-    void HighScoreDeleteForm_Get::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
+    void GetHighScoreDeleteForm::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {        
         std::string body;
         ReadEntireFile("html/delete.html", body);
@@ -142,21 +130,15 @@ namespace HSServer
         outResponse.send() << body;
     }
 
-    
-    RequestHandler * HighScore_Post::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        return new HighScore_Post;
-    }
 
-
-    HighScore_Post::HighScore_Post() :
+    PostHightScore::PostHightScore() :
         RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
 
-    void HighScore_Post::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
-                                         Poco::Net::HTTPServerResponse& outResponse)
+    void PostHightScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
+                                          Poco::Net::HTTPServerResponse& outResponse)
     {
         std::string requestBody;
         inRequest.stream() >> requestBody;
@@ -173,25 +155,19 @@ namespace HSServer
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        std::string body = LocationId2String<LocationId_HighScorePostOk_Get>::GetValue() + std::string("?name=") + name + "&score=" + score;
+        std::string body = GetLocation();
         outResponse.setContentLength(body.size());
         outResponse.send() << body;
     }
 
-    
-    RequestHandler * HighScore_Delete::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        return new HighScore_Delete;
-    }
 
-
-    HighScore_Delete::HighScore_Delete() :
+    DeleteHighScore::DeleteHighScore() :
         RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
     {
     }
 
 
-    void HighScore_Delete::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
+    void DeleteHighScore::generateResponse(Poco::Net::HTTPServerRequest& inRequest,
                                            Poco::Net::HTTPServerResponse& outResponse)
     {
         std::string requestBody;
@@ -209,38 +185,11 @@ namespace HSServer
         insert << sql;
         insert.execute();
 
-        // Return an URL instead of a HTML page.
-        // This is because the client is the JavaScript application in this case.
+        // Return a message indicating success.
         std::string body = "Succesfully performed the following SQL statement: " + sql;
         outResponse.setContentLength(body.size());
         outResponse.send() << body;
     }
 
-
-    RequestHandler * PostHighScoreOk_Get::Create(const Poco::Net::HTTPServerRequest & inRequest)
-    {
-        Args args;
-        GetArgs(inRequest.getURI(), args);
-        return new PostHighScoreOk_Get(GetArg(args, "name"), GetArg(args, "score"));
-    }
-
-
-    PostHighScoreOk_Get::PostHighScoreOk_Get(const std::string & inName, const std::string & inScore) :
-        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType()),
-        mName(inName),
-        mScore(inScore)
-    {
-    }
-
-
-    void PostHighScoreOk_Get::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
-    {
-        std::string body;
-        body += MakeHTML("h1", "High Score Server", HTMLFormatting_OneLiner);
-        body += MakeHTML("p", "Succesfully added highscore for " + mName + " of " + mScore + ".", HTMLFormatting_OneLiner);
-        std::string html = MakeHTMLDocument("High Score Added", body);
-        outResponse.setContentLength(html.size());
-        outResponse.send() << html;
-    }
 
 } // namespace HSServer

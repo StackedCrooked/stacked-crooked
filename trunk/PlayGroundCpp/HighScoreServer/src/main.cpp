@@ -56,19 +56,18 @@ namespace HSServer
     private:
         void registerRequestHandlers()
         {
-            mFactory->registerRequestHandler<Get_TextHTML_hs>();
-            mFactory->registerRequestHandler<Get_ApplicationXML_hs>();
-            mFactory->registerRequestHandler<Get_TextPlain_hs>();
+            mFactory->registerRequestHandler<GetHighScoreAsHTML>();
+            mFactory->registerRequestHandler<GetHighScoreAsXML>();
+            mFactory->registerRequestHandler<GetHighScoreAsPlainText>();
 
-            mFactory->registerRequestHandler<Get_TextHTML_hof>();
-            mFactory->registerRequestHandler<Get_ApplicationXML_hof>();
-            mFactory->registerRequestHandler<Get_TextPlain_hof>();
+            mFactory->registerRequestHandler<GetHallOfFameAsHTML>();
+            mFactory->registerRequestHandler<GetHallOfFameAsXML>();
+            mFactory->registerRequestHandler<GetHallOfFameAsPlainText>();
 
-            mFactory->registerRequestHandler<HighScorePostForm_Get>();
-            mFactory->registerRequestHandler<HighScoreDeleteForm_Get>();
-            mFactory->registerRequestHandler<HighScore_Post>();
-            mFactory->registerRequestHandler<HighScore_Delete>();
-            mFactory->registerRequestHandler<PostHighScoreOk_Get>();            
+            mFactory->registerRequestHandler<GetHighScorePostForm>();
+            mFactory->registerRequestHandler<GetHighScoreDeleteForm>();
+            mFactory->registerRequestHandler<PostHightScore>();
+            mFactory->registerRequestHandler<DeleteHighScore>();
         }
 
         RequestHandlerFactory * mFactory;

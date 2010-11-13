@@ -8,41 +8,44 @@
 namespace HSServer {
 
 
-    enum LocationId
+    // Enumeration of all the http-rest resources that our application recognizes.
+    enum ResourceId
     {
-        LocationId_Unknown,
-        LocationId_Begin,
-        LocationId_HighScore_Get = LocationId_Begin,
-        LocationId_HighScorePostForm_Get,
-        LocationId_HighScore_Post,
-        LocationId_HighScorePostOk_Get,
-        LocationId_HighScoreDeleteForm_Get,
-        LocationId_HighScore_Delete,
-        LocationId_HighScoreDeleteOk_Get,
-        LocationId_HallOfFame_Get,
-        LocationId_End
+        ResourceId_HighScore,
+        ResourceId_HighScorePostForm,
+        ResourceId_HighScorePostConfirmation,
+        ResourceId_HighScoreDeleteForm,
+        ResourceId_HighScoreDeleteConfirmation,
+        ResourceId_HallOfFame,
+
     };
 
-    template<LocationId>
-    struct LocationId2String
+    template<ResourceId>
+    struct ResourceId2String
     {
     };
 
-#define HSServer_LocationId2String(LocationId, LocationString)    \
-    template<>                                                    \
-    struct LocationId2String<LocationId>                          \
-    {                                                             \
-        static const char * GetValue() { return LocationString; } \
+#define HSServer_LocationId2String(ResourceId, ResourcePath)        \
+    template<>                                                      \
+    struct ResourceId2String<ResourceId>                            \
+    {                                                               \
+        static const char * GetLocation() { return ResourcePath; }  \
     }
 
-    HSServer_LocationId2String(LocationId_HighScore_Get,            "/hs");    
-    HSServer_LocationId2String(LocationId_HighScore_Post,           "/hs/post");
-    HSServer_LocationId2String(LocationId_HighScorePostForm_Get,    "/hs/post/form");
-    HSServer_LocationId2String(LocationId_HighScorePostOk_Get,      "/hs/post/ok");    
-    HSServer_LocationId2String(LocationId_HighScore_Delete,         "/hs/delete");
-    HSServer_LocationId2String(LocationId_HighScoreDeleteForm_Get,  "/hs/delete/form");
-    HSServer_LocationId2String(LocationId_HighScoreDeleteOk_Get,    "/hs/delete/ok");    
-    HSServer_LocationId2String(LocationId_HallOfFame_Get,           "/hof");
+    HSServer_LocationId2String(ResourceId_HighScore,                    "hs");    
+    HSServer_LocationId2String(ResourceId_HighScorePostForm,            "hs/post-form");
+    HSServer_LocationId2String(ResourceId_HighScorePostConfirmation,    "hs/post-confirmation");
+    HSServer_LocationId2String(ResourceId_HighScoreDeleteForm,          "hs/delete-form");
+    HSServer_LocationId2String(ResourceId_HighScoreDeleteConfirmation,  "hs/delete-confirmation");    
+    HSServer_LocationId2String(ResourceId_HallOfFame,                   "hof");
+
+
+    template<ResourceId _ResourceId>
+    class LocationPolicy
+    {
+    public:
+        static const char * GetLocation() { return ResourceId2String<_ResourceId>::GetLocation(); }
+    };
 
 
 } // namespace HSServer

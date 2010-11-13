@@ -12,138 +12,141 @@
 namespace HSServer
 {
 
-    template<ContentType inContentType, LocationId inLocation>
-    struct GetRenderer_t
+    template<ContentType _ContentType, ResourceId _ResourceId>
+    struct TagNamingPolicy
     {
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextHTML, LocationId_HighScore_Get>
+    struct TagNamingPolicy<ContentType_TextHTML, ResourceId_HighScore>
     {
-        typedef HTMLRenderer Type;
+        typedef HTMLRenderer RendererType;
 
-        static const char * GetCollectionTitle() { return "High Scores"; }
+        static const char * GetCollectionTagName() { return "High Scores"; }
 
-        static const char * GetRecordTitle() { return ""; }
+        static const char * GetItemTagName() { return ""; }
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextHTML, LocationId_HallOfFame_Get>
+    struct TagNamingPolicy<ContentType_TextHTML, ResourceId_HallOfFame>
     {
-        typedef HTMLRenderer Type;
+        typedef HTMLRenderer RendererType;
 
-        static const char * GetCollectionTitle() { return "Hall of Fame"; }
+        static const char * GetCollectionTagName() { return "Hall of Fame"; }
 
-        static const char * GetRecordTitle() { return ""; }
+        static const char * GetItemTagName() { return ""; }
     };
 
     template <>
-    struct GetRenderer_t<ContentType_ApplicationXML, LocationId_HighScore_Get>
+    struct TagNamingPolicy<ContentType_ApplicationXML, ResourceId_HighScore>
     {
-        typedef XMLRenderer Type;
+        typedef XMLRenderer RendererType;
 
-        static const char * GetCollectionTitle() { return "highscores"; }
+        static const char * GetCollectionTagName() { return "highscores"; }
 
-        static const char * GetRecordTitle() { return "hs"; }
+        static const char * GetItemTagName() { return "hs"; }
     };
 
     template <>
-    struct GetRenderer_t<ContentType_ApplicationXML, LocationId_HallOfFame_Get>
+    struct TagNamingPolicy<ContentType_ApplicationXML, ResourceId_HallOfFame>
     {
-        typedef XMLRenderer Type;
+        typedef XMLRenderer RendererType;
 
-        static const char * GetCollectionTitle() { return "hof"; }
+        static const char * GetCollectionTagName() { return "hof"; }
 
-        static const char * GetRecordTitle() { return "hs"; }
+        static const char * GetItemTagName() { return "hs"; }
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextPlain, LocationId_HighScore_Get>
+    struct TagNamingPolicy<ContentType_TextPlain, ResourceId_HighScore>
     {
-        typedef PlainTextRenderer Type;
+        typedef PlainTextRenderer RendererType;
 
-        static const char * GetCollectionTitle() { return "High Scores"; }
+        static const char * GetCollectionTagName() { return "High Scores"; }
 
-        static const char * GetRecordTitle() { return ""; }
+        static const char * GetItemTagName() { return ""; }
     };
 
     template <>
-    struct GetRenderer_t<ContentType_TextPlain, LocationId_HallOfFame_Get>
+    struct TagNamingPolicy<ContentType_TextPlain, ResourceId_HallOfFame>
     {
-        typedef PlainTextRenderer Type;
+        typedef PlainTextRenderer RendererType;
 
-        static const char * GetCollectionTitle() { return "Hall of Fame"; }
+        static const char * GetCollectionTagName() { return "Hall of Fame"; }
 
-        static const char * GetRecordTitle() { return ""; }
+        static const char * GetItemTagName() { return ""; }
     };
 
-    template<RequestMethod inRequestMethod, LocationId inLocation>
-    struct GetSQL_t
+    template<RequestMethod _RequestMethod, ResourceId _ResourceId>
+    struct SelectQueryPolicy
     {
     };
 
     template<>
-    struct GetSQL_t<RequestMethod_Get, LocationId_HighScore_Get>
+    struct SelectQueryPolicy<RequestMethod_Get, ResourceId_HighScore>
     {
-        static const char * GetValue() { return "SELECT * FROM HighScores"; }
+        static const char * GetSelectQuery() { return "SELECT * FROM HighScores"; }
     };
 
     template<>
-    struct GetSQL_t<RequestMethod_Get, LocationId_HallOfFame_Get>
+    struct SelectQueryPolicy<RequestMethod_Get, ResourceId_HallOfFame>
     {
-        static const char * GetValue() { return "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10"; }
+        static const char * GetSelectQuery() { return "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10"; }
     };
 
 
-    template<RequestMethod inRequestMethod, ContentType inContentType, LocationId inLocation>
-    class SQLRequestGenericHandler : public RequestHandler
+    template<RequestMethod _RequestMethod, ContentType _ContentType, ResourceId _ResourceId>
+    class SQLRequestGenericHandler : public RequestHandler,
+                                     public RequestMethodPolicy<_RequestMethod>,
+                                     public ContentTypePolicy<_ContentType>,
+                                     public LocationPolicy<_ResourceId>,
+                                     private SelectQueryPolicy<_RequestMethod, _ResourceId>,
+                                     private TagNamingPolicy<_ContentType, _ResourceId>
     {
     public:
         static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest)
-        { return new SQLRequestGenericHandler<inRequestMethod, inContentType, inLocation>(); }
+        { return new SQLRequestGenericHandler<_RequestMethod, _ContentType, _ResourceId>(); }
 
         SQLRequestGenericHandler() :
-            RequestHandler(inRequestMethod,
+            RequestHandler(GetRequestMethod(),
                            GetLocation(),
-                           inContentType)
+                           GetContentType())
         {
         }
 
-        static RequestMethod GetRequestMethod() { return inRequestMethod; }
-        
-        static ContentType GetContentType() { return inContentType; }
-
-        static const char * GetLocation() { return LocationId2String<inLocation>::GetValue(); }
-
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
         {
+            // Peform the SELECT query
             Poco::Data::Statement select(mSession);
-            select << GetSQL_t<inRequestMethod, inLocation>::GetValue();
+            select << GetSelectQuery();
             select.execute();
+
+
+            // Get the result.
             Poco::Data::RecordSet rs(select);
 
-            typedef GetRenderer_t<inContentType, inLocation> RenderHelper;
-            typedef typename RenderHelper::Type Renderer;
-            Renderer renderer(RenderHelper::GetCollectionTitle(),
-                              RenderHelper::GetRecordTitle(),
-                              rs);
 
+            // Create a textual representation for the result.
+            RendererType renderer(GetCollectionTagName(), GetItemTagName(), rs);
             std::stringstream ss;
             renderer.render(ss);
+            
 
+            // Send the response.
             std::string response = ss.str();
             outResponse.setContentLength(response.size());
             outResponse.send() << response;
         }
     };
 
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       LocationId_HighScore_Get > Get_TextHTML_hs;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, LocationId_HighScore_Get > Get_ApplicationXML_hs;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      LocationId_HighScore_Get > Get_TextPlain_hs;
 
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       LocationId_HallOfFame_Get> Get_TextHTML_hof;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, LocationId_HallOfFame_Get> Get_ApplicationXML_hof;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      LocationId_HallOfFame_Get> Get_TextPlain_hof;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       ResourceId_HighScore> GetHighScoreAsHTML;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, ResourceId_HighScore> GetHighScoreAsXML;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      ResourceId_HighScore> GetHighScoreAsPlainText;
+
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       ResourceId_HallOfFame> GetHallOfFameAsHTML;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, ResourceId_HallOfFame> GetHallOfFameAsXML;
+    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      ResourceId_HallOfFame> GetHallOfFameAsPlainText;
 
 } // namespace HSServer
 

@@ -2,8 +2,8 @@
 #include <stdexcept>
 
 
-namespace HSServer
-{
+namespace HSServer {
+
 
     const char * ToString(RequestMethod inRequestMethod)
     {
@@ -33,24 +33,5 @@ namespace HSServer
         }
     }
 
-
-    RequestMethodString::RequestMethodString(const std::string & inValue) :
-        std::string(inValue)
-    {
-    }
-
-
-    RequestMethod FromString(const RequestMethodString & inValue)
-    {
-        for (size_t idx = RequestMethod_Begin; idx != RequestMethod_End; ++idx)
-        {
-            RequestMethod requestMethod = static_cast<RequestMethod>(idx);
-            if (inValue == ToString(requestMethod))
-            {
-                return requestMethod;
-            }
-        }
-        return RequestMethod_Unknown;
-    }
 
 } // namespace HSServer

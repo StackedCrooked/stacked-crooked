@@ -5,8 +5,8 @@
 #include <string>
 
 
-namespace HSServer
-{
+namespace HSServer {
+
 
     enum ContentType
     {
@@ -29,6 +29,15 @@ namespace HSServer
     const char * ToString(ContentType inRequestMethod);
 
     bool FromString(const std::string & inText, ContentType & outRequestMethod);
+
+    
+    template<ContentType _ContentType>
+    class ContentTypePolicy
+    {
+    public:
+        static ContentType GetContentType() { return _ContentType; }
+    };
+
 
 } // namespace HSServer
 

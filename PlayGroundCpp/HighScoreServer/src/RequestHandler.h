@@ -66,97 +66,88 @@ namespace HSServer
     };
 
 
-    class HighScorePostForm_Get : public RequestHandler
+    template<class T>
+    class CreationPolicy
     {
     public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
-
-        static const char * GetLocation() { return LocationId2String<LocationId_HighScorePostForm_Get>::GetValue(); }
-
-        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
-        
-        static ContentType GetContentType() { return ContentType_TextHTML; }
-
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        HighScorePostForm_Get();
+        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest)
+        {
+            return new T;
+        }
     };
 
 
-    class HighScoreDeleteForm_Get : public RequestHandler
+    class GetHighScorePostForm : public RequestHandler,
+                                 public CreationPolicy<GetHighScorePostForm>,
+                                 public LocationPolicy<ResourceId_HighScorePostForm>,
+                                 public RequestMethodPolicy<RequestMethod_Get>,
+                                 public ContentTypePolicy<ContentType_TextHTML>
     {
     public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);        
-
-        static const char * GetLocation() { return LocationId2String<LocationId_HighScoreDeleteForm_Get>::GetValue(); }
-
-        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
-        
-        static ContentType GetContentType() { return ContentType_TextHTML; }
-
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        HighScoreDeleteForm_Get();
-    };
-
-
-    class HighScore_Post : public RequestHandler
-    {
-    public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
-
-        static const char * GetLocation() { return LocationId2String<LocationId_HighScore_Post>::GetValue(); }
-
-        static RequestMethod GetRequestMethod() { return RequestMethod_Post; }
-        
-        static ContentType GetContentType() { return ContentType_TextPlain; }
-
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        HighScore_Post();
-    };
-
-
-    class HighScore_Delete : public RequestHandler
-    {
-    public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
-
-        static const char * GetLocation() { return LocationId2String<LocationId_HighScore_Delete>::GetValue(); }
-
-        static RequestMethod GetRequestMethod() { return RequestMethod_Delete; }
-        
-        static ContentType GetContentType() { return ContentType_TextPlain; }
-
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        HighScore_Delete();
-    };
-
-
-    class PostHighScoreOk_Get : public RequestHandler
-    {
-    public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest);
-
-        static const char * GetLocation() { return LocationId2String<LocationId_HighScorePostOk_Get>::GetValue(); }
-
-        static RequestMethod GetRequestMethod() { return RequestMethod_Get; }
-        
-        static ContentType GetContentType() { return ContentType_TextHTML; }
+        typedef GetHighScorePostForm ThisType;
 
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 
     private:
-        PostHighScoreOk_Get(const std::string & inName, const std::string & inScore);
-        std::string mName;
-        std::string mScore;
+        friend class CreationPolicy<ThisType>;
+        GetHighScorePostForm();
     };
+
+
+    class GetHighScoreDeleteForm : public RequestHandler,
+                                   public CreationPolicy<GetHighScoreDeleteForm>,
+                                   public LocationPolicy<ResourceId_HighScoreDeleteForm>,
+                                   public RequestMethodPolicy<RequestMethod_Get>,
+                                   public ContentTypePolicy<ContentType_TextHTML>
+    {
+    public:
+        typedef GetHighScoreDeleteForm ThisType;
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
+
+    private:
+        friend class CreationPolicy<ThisType>;
+        GetHighScoreDeleteForm();
+    };
+
+
+    class PostHightScore : public RequestHandler,
+                           public CreationPolicy<PostHightScore>,
+                           public LocationPolicy<ResourceId_HighScore>,
+                           public RequestMethodPolicy<RequestMethod_Post>,
+                           public ContentTypePolicy<ContentType_TextPlain>
+    {
+    public:
+        typedef PostHightScore ThisType;
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
+
+    private:
+        friend class CreationPolicy<ThisType>;
+        PostHightScore();
+    };
+
+
+    class DeleteHighScore : public RequestHandler,
+                            public CreationPolicy<DeleteHighScore>,
+                            public LocationPolicy<ResourceId_HighScore>,
+                            public RequestMethodPolicy<RequestMethod_Delete>,
+                            public ContentTypePolicy<ContentType_TextPlain>
+    {
+    public:
+        typedef DeleteHighScore ThisType;
+
+    protected:
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
+
+    private:
+        friend class CreationPolicy<ThisType>;
+        DeleteHighScore();
+    };
+
 
 } // HighScoreServer
 

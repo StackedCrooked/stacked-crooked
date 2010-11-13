@@ -62,9 +62,7 @@ TARGET = VideoPlayer
 TEMPLATE = app
 SOURCES += \
     main.cpp \
-    MainWindow.cpp \
-    GStreamer.cpp
+    MainWindow.cpp
 
 HEADERS += \
-    MainWindow.h \
-    GStreamer.h
+    MainWindow.h

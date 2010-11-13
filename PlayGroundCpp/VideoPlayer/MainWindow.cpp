@@ -4,6 +4,9 @@
 #define trace() \
     qDebug("%s:%d", __FUNCTION__, __LINE__)
 
+#define trace_msg(msg) \
+    qDebug("%s:%d:%d", __FUNCTION__, __LINE__, (msg))
+
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {

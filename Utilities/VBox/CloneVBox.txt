@@ -1,3 +1,25 @@
+How to clone a VBox Instance
+============================
+
+
+- Decide which snapshot that you want to clone.
+- Use the following command to get the UUID that corresponds with the VM name:
+
+    VBoxManage showvminfo NAME
+
+- Use the VBoxManage tool to create clone of the snapshot.
+
+Usage of the VBoxManage tool
+----------------------------
+VBoxManage clonehd          <uuid>|<filename> <outputfile>
+                            [--format VDI|VMDK|VHD|RAW|<other>]
+                            [--variant Standard,Fixed,Split2G,Stream,ESX]
+                            [--type normal|writethrough|immutable|shareable]
+                            [--remember] [--existing]
+
+Example
+-------
+VBoxManage clonehd `pwd`/Machines/Mint7-GStreamer/Snapshots/\{267dfb67-5e8e-482d-a4c9-9019affeff3a\}.vdi ~/Backups/Mint7-GStreamer.vdi
 
 VBoxManage clonehd `pwd`/Machines/Mint7-GStreamer/Snapshots/\{267dfb67-5e8e-482d-a4c9-9019affeff3a\}.vdi `pwd`/HardDisks/Mint7-DarwinStreamingServer.vdi
 

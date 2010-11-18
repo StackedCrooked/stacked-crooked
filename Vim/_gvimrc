@@ -2,59 +2,10 @@
 set gfn=Courier\ 13\ Pitch\ 13
 autocmd FileType make set noexpandtab
 
+
 " Set the colorscheme
 colorscheme louver
 
-" Set filetype dependent indention rules
-filetype plugin indent on
-
-" Set auto-indent rules
-set autoindent
-
-" Enable most intuitive backspace behavior
-set bs=2
-
-" Expand tabs to spaces
-set expandtab
-
-" Colorize search results
-set hlsearch 
-
-" Show search results while typing
-set incsearch
-
-" Disable annoying backup/swap files
-set nobackup
-set noswapfile
-set nowritebackup 
-
-" Turn off vi compatibility
-set nocompatible
-
-" Show the rules
-set ruler
-
-" Width of indention (number of spaces)
-set shiftwidth=4
-
-" Show matching brackets
-set showmatch
-
-" Set ignore case when searching using only lower case characters
-set smartcase
-
-" Smart auto-indenting when typing a new line
-set smartindent
-
-" Set tabs to 4 spaces
-set softtabstop=4 
-set tabstop=4 
-
-" Enable syntax coloring
-syntax enable
-
-" Yank until end of line
-map Y y$
 
 " Unix-specific settings
 if has("unix")
@@ -64,12 +15,14 @@ win 120 50
 endif
 
 
+" Mac-specific settings
 if has("mac")
 winp 920 1400
 win 120 80
 set gfn=Menlo:h13
 set vb " Turn off audio bells
 endif
+
 
 " Windows-specific settings
 if has("win32")
@@ -78,16 +31,15 @@ winp 600 0
 win 100 50
 endif
 
+
 " Bookmarks menu
 if has("win32")
 menu Bookmarks.vimrc :open C:\Program Files\Vim\_vimrc<CR>
+elseif has("mac") || has("unix")
+menu Bookmarks._vimrc :tabnew ~/.vimrc<CR>
+menu Bookmarks._gvimrc :tabnew ~/.gvimrc<CR>
+menu Bookmarks._vim :tabnew ~/.vim<CR>
 endif
-
-" Clojure settings
-if has("win32")
-" Nothing yet
-endif
-
 
 " -----------------------------------------------------------------------------
 " Function keys
@@ -137,20 +89,7 @@ vmap <S-Insert> 	<C-V>
 noremap <C-Q>   	<C-V>
 
 
-" -----------------------------------------------------------------------------
 " Enable copy/paste in block mode
-" -----------------------------------------------------------------------------
-
-" Maintainer:   Bram Moolenaar <Bram@vim.org>
-" Last Change:  2006 Jun 23
-
-" Define the string to use for items that are present both in Edit, Popup and
-" Toolbar menu.  Also used in mswin.vim and macmap.vim.
-
-" Pasting blockwise and linewise selections is not possible in Insert and
-" Visual mode without the +virtualedit feature.  They are pasted as if they
-" were characterwise instead.  Add to that some tricks to leave the cursor in
-" the right position, also for "gi".
 if has("virtualedit")
   let paste#paste_cmd = {'n': ":call paste#Paste()<CR>"}
   let paste#paste_cmd['v'] = '"-c<Esc>' . paste#paste_cmd['n']
@@ -175,4 +114,5 @@ else
   let paste#paste_cmd['v'] = '"-c<Esc>gix<Esc>' . paste#paste_cmd['n'] . '"_x'
   let paste#paste_cmd['i'] = 'x<Esc>' . paste#paste_cmd['n'] . '"_s'
 endif
+
 

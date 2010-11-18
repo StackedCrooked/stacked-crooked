@@ -74,23 +74,19 @@ map Y y$
 " Settings for the vim-addons plugin
 " -----------------------------------------------------------------------------
 fun ActivateAddons()
+  if !exists('g:vimrc_loaded')
     let addonsDir = $HOME . "/vim-addons"
-    let foundVimAddonsDirectory = isdirectory(addonsDir)
-    if foundVimAddonsDirectory && !exists('g:vimrc_loaded')
-        echo "Loading addons. This may take a while if Vim is started for the first time.\n"
-        set runtimepath+=~/vim-addons/vim-addon-manager
-        try
-            call scriptmanager#Activate([])
-            let g:vim_script_manager['auto_install'] = 1
-            " The 'silent' command surpresses the "Press ENTER to continue" messages.
-            silent call scriptmanager#Activate(['vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
-        catch /.*/
-            echoe v:exception
-        endtry
-        let g:vimrc_loaded = 1
-    else
-        echo "Warning: No addons directory found."
-    endif
+    set runtimepath+=~/vim-addons/vim-addon-manager
+    try
+      call scriptmanager#Activate([])
+      let g:vim_script_manager['auto_install'] = 1
+      " The 'silent' command surpresses the "Press ENTER to continue" messages.
+      silent call scriptmanager#Activate(['vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
+    catch /.*/
+      echoe v:exception
+    endtry
+    let g:vimrc_loaded = 1
+  endif
 endf
 call ActivateAddons()
 

@@ -55,26 +55,6 @@ syntax enable
 " Yank until end of line
 map Y y$
 
-" Unix-specific settings
-if has("unix")
-set gfn=Courier\ 10\ Pitch\ 10
-endif
-
-" Windows-specific settings
-if has("win32")
-set gfn=Courier_New:h10:cANSI
-endif
-
-" Bookmarks menu
-if has("win32")
-menu Bookmarks.vimrc :open C:\Program Files\Vim\_vimrc<CR>
-endif
-
-" Clojure settings
-if has("win32")
-" Nothing yet
-endif
-
 
 " -----------------------------------------------------------------------------
 " Function keys
@@ -89,4 +69,26 @@ endif
 " Search for destructors in a cpp file
 :map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
 
+
+" -----------------------------------------------------------------------------
+" Settings for the vim-addons plugin
+" -----------------------------------------------------------------------------
+fun ActivateAddons()
+    if ! exists('g:vimrc_loaded')
+        set runtimepath+=~/vim-addons/vim-addon-manager
+        try
+            call scriptmanager#Activate([])
+            let g:vim_script_manager['auto_install'] = 1
+            call scriptmanager#Activate(['vcscommand'])
+            call scriptmanager#Activate(['highlight'])
+            call scriptmanager#Activate(['The_NERD_Commenter'])
+            call scriptmanager#Activate(['The_NERD_tree'])
+
+        catch /.*/
+            echoe v:exception
+        endtry
+    endif
+    let g:vimrc_loaded = 1
+endf
+call ActivateAddons()
 

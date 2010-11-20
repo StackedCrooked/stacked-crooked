@@ -12,9 +12,9 @@ REGXPCOM=$(XULRUNNER)/sdk/bin/regxpcom
 
 # Link flags 'exactly as stated' in https://developer.mozilla.org/en/XPCOM_Glue
 LD_FLAGS+= -L$(XULRUNNER_LIB) -L$(XULRUNNER_BIN) \
-		   -Wl,-z,defs \
+           -Wl,-z,defs \
            -Wl,-rpath-link,$(XULRUNNER_BIN) \
-		   -lxpcomglue_s -lxpcom -lnspr4
+           -lxpcomglue_s -lxpcom -lnspr4
 
 CPP_FLAGS+= -fPIC -shared
 

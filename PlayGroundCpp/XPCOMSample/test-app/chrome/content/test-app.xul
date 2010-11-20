@@ -13,18 +13,18 @@
 
     <script type="application/x-javascript">
         <![CDATA[
-		var TestApp = {};
-		TestApp.initialize = function() {
-			TestApp.listRegisteredClasses();
-           
-			var cid = "@mydomain.com/XPCOMSample/MyComponent;1"
-			if (!TestApp.isComponentRegistered(cid))
-			{
-				alert("Component " + cid + " is not registered.");
-			}
-		};
+        var TestApp = {};
+        TestApp.initialize = function() {
+            netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+            const cid = "@mydomain.com/XPCOMSample/MyComponent;1";
+            if (!TestApp.isComponentRegistered(cid))
+            {
+                alert("Component " + cid + " is not registered.");
+            }
+            TestApp.listRegisteredClasses();
+        };
 
-		TestApp.listRegisteredClasses = function() {
+        TestApp.listRegisteredClasses = function() {
           var properties = "";
           for (var key in Components.classes) {
             var className = Components.classes[key];
@@ -32,15 +32,15 @@
             properties += "\n";
           }
           document.getElementById("classesTextBox").setAttribute("value", properties);
-	    };
+        };
 
-		TestApp.isComponentRegistered = function(inComponentId) {
-		  return typeof(Components.classes[inComponentId]) !== 'undefined';
+        TestApp.isComponentRegistered = function(inComponentId) {
+          return typeof(Components.classes[inComponentId]) !== 'undefined';
         };
 
         window.addEventListener("load", function() {
             try {
-			  TestApp.initialize();
+              TestApp.initialize();
             }
             catch (err) {
               alert(err);

@@ -25,6 +25,7 @@ src:
 	$(CXX) $(CPP_FLAGS) -c MyComponent.cpp $(INCLUDES)
 	$(CXX) $(CPP_FLAGS) -c MyComponentModule.cpp $(INCLUDES)
 	$(CXX) -shared -o $(TARGET) *.o $(LD_FLAGS)
+	chmod 755 $(TARGET)
 	strip $(TARGET)
 
 xpt:

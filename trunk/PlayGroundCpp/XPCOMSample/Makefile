@@ -10,14 +10,12 @@ XULRUNNER_SDK_LIB=$(XULRUNNER)/sdk/lib
 INCLUDES=-include "xpcom-config.h" -I$(XULRUNNER_INCLUDE) -I/usr/include/nspr
 REGXPCOM=$(XULRUNNER)/sdk/bin/regxpcom
 
-# Link flags 'exactly as stated' in https://developer.mozilla.org/en/XPCOM_Glue
 LD_FLAGS+= -L$(XULRUNNER_LIB) -L$(XULRUNNER_BIN) \
            -Wl,-z,defs \
            -Wl,-rpath-link,$(XULRUNNER_BIN) \
            -lxpcomglue_s -lxpcom -lnspr4
 
 CPP_FLAGS+= -fPIC -shared
-
 
 all: xpt src
 

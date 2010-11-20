@@ -1,37 +1,39 @@
-XULRUNNER_INCLUDE= /usr/include/xulrunner-1.9.2.12
-XULRUNNER_LIB=/usr/lib/xulrunner-1.9.2.12
-XULRUNNER_SDK_LIB=/usr/lib/xulrunner-devel-1.9.2.12/sdk/lib
-REGXPCOM=/home/francis/svn/gst-media-player/3rdParty/XULRunnerSDK/xulrunner-sdk/sdk/bin/regxpcom
-XULRUNNER_BIN=/usr/lib/xulrunner-1.9.2.12
-XULRUNNER_COMPONENTS=/usr/lib/xulrunner-1.9.2.12/components
-XULRUNNER_SHARE=/usr/share/idl/xulrunner-1.9.2.12
-INCLUDE_DIRS = -I$(XULRUNNER_INCLUDE) -I/usr/include/nspr
-LNK_DIRS = -L$(XULRUNNER_LIB) -L$(XULRUNNER_SDK_LIB) -L$(XULRUNNER_BIN) -L/usr/lib
-LNK_FLAGS= $(LNK_DIRS) -Wl,-rpath-link=$(XULRUNNER_BIN) -lxpcomglue_s -lxpcom -lnspr4 
-CPP_FLAGS = -DXP_UNIX -D_IMPL_NS_COM -D_BSD_SOURCE
+TARGET=MyComponent.so
+CXX=c++
+XULRUNNER=$(HOME)/xulrunner-sdk
+XULRUNNER_BIN=$(XULRUNNER)/bin
+XULRUNNER_COMPONENTS=$(XULRUNNER_BIN)/components
+XULRUNNER_IDL=$(XULRUNNER)/idl
+XULRUNNER_INCLUDE=$(XULRUNNER)/include
+XULRUNNER_LIB=$(XULRUNNER)/lib
+XULRUNNER_SDK_LIB=$(XULRUNNER)/sdk/lib
+INCLUDES=-include "xpcom-config.h" -I$(XULRUNNER_INCLUDE) -I/usr/include/nspr
+REGXPCOM=$(XULRUNNER)/sdk/bin/regxpcom
+
+# Link flags 'exactly as stated' in https://developer.mozilla.org/en/XPCOM_Glue
+LD_FLAGS+= -L$(XULRUNNER_LIB) -L$(XULRUNNER_BIN) \
+		   -Wl,-z,defs \
+           -Wl,-rpath-link,$(XULRUNNER_BIN) \
+		   -lxpcomglue_s -lxpcom -lnspr4
+
+CPP_FLAGS+= -fPIC -shared
 
 
-all: xpt so
+all: xpt src
 
-MyComponentModule:
-	g++ -w -c -o MyComponentModule.o $(INCLUDE_DIRS) $(CPP_FLAGS) MyComponentModule.cpp
-
-MyComponent:
-	g++ -w -c -o MyComponent.o $(INCLUDE_DIRS) $(CPP_FLAGS) MyComponent.cpp
-
-impl: MyComponent MyComponentModule
-
-so: impl
-	g++ -shared -o MyComponent.so *.o $(LNK_FLAGS)
+src:
+	$(CXX) $(CPP_FLAGS) -c MyComponent.cpp $(INCLUDES)
+	$(CXX) $(CPP_FLAGS) -c MyComponentModule.cpp $(INCLUDES)
+	$(CXX) -shared -o $(TARGET) *.o $(LD_FLAGS)
+	strip $(TARGET)
 
 xpt:
-	$(XULRUNNER_BIN)/xpidl -m header -I$(XULRUNNER_SHARE) IMyComponent.idl
-	$(XULRUNNER_BIN)/xpidl -m typelib -I$(XULRUNNER_SHARE) IMyComponent.idl
+	$(XULRUNNER_BIN)/xpidl -m header -I$(XULRUNNER_IDL) IMyComponent.idl
+	$(XULRUNNER_BIN)/xpidl -m typelib -I$(XULRUNNER_IDL) IMyComponent.idl
 
 install:
-	cp MyComponent.so $(XULRUNNER_COMPONENTS)
-	cp IMyComponent.xpt $(XULRUNNER_COMPONENTS)
-	$(REGXPCOM) -x $(XULRUNNER_COMPONENTS)
+	cp MyComponent.so $(XULRUNNER_COMPONENTS)/
+	cp IMyComponent.xpt $(XULRUNNER_COMPONENTS)/
 	$(REGXPCOM) -x $(XULRUNNER_BIN) -a
 
 uninstall:

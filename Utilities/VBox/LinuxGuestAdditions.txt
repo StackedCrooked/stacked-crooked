@@ -1,8 +1,8 @@
 
 Enable external kernel modules
 ------------------------------
-sudo apt-get install update
-sudo apt-get install upgrade
+sudo apt-get update
+sudo apt-get upgrade
 sudo apt-get install dkms
 
 Mount the guest additions.iso

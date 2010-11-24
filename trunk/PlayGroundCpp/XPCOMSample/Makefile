@@ -1,14 +1,12 @@
 TARGET=MyComponent.so
 CXX=c++
 XULRUNNER=/home/francis/opt/XULRunnerSDK/1.9.1/xulrunner-sdk
-XULRUNNER_BIN=$(XULRUNNER)/bin
-XULRUNNER_COMPONENTS=$(XULRUNNER_BIN)/components
 INCLUDES=-include "xpcom-config.h" -I$(XULRUNNER)/sdk/include -I$(XULRUNNER)/include -I/usr/include/nspr
 REGXPCOM=$(XULRUNNER)/sdk/bin/regxpcom
 
-LD_FLAGS+= -L$(XULRUNNER)/lib -L$(XULRUNNER_BIN) \
+LD_FLAGS+= -L$(XULRUNNER)/lib -L$(XULRUNNER)/bin \
            -Wl,-z,defs \
-           -Wl,-rpath-link,$(XULRUNNER_BIN) \
+           -Wl,-rpath-link,$(XULRUNNER)/bin \
            -lxpcomglue_s -lxpcom -lnspr4
 
 CPP_FLAGS+= -fPIC -shared
@@ -23,17 +21,17 @@ src:
 	strip $(TARGET)
 
 xpt:
-	$(XULRUNNER_BIN)/xpidl -m header -I$(XULRUNNER)/idl IMyComponent.idl
-	$(XULRUNNER_BIN)/xpidl -m typelib -I$(XULRUNNER)/idl IMyComponent.idl
+	$(XULRUNNER)/sdk/bin/xpidl -m header -I$(XULRUNNER)/idl IMyComponent.idl
+	$(XULRUNNER)/sdk/bin/xpidl -m typelib -I$(XULRUNNER)/idl IMyComponent.idl
 
 install:
-	cp MyComponent.so $(XULRUNNER_COMPONENTS)/
-	cp IMyComponent.xpt $(XULRUNNER_COMPONENTS)/
-	$(REGXPCOM) -x $(XULRUNNER_BIN) -a
+	cp MyComponent.so $(XULRUNNER)/bin/components
+	cp IMyComponent.xpt $(XULRUNNER)/bin/components
+	$(REGXPCOM) -x $(XULRUNNER)/bin -a
 
 uninstall:
-	rm -f $(XULRUNNER_COMPONENTS)/MyComponent.so
-	rm -f $(XULRUNNER_COMPONENTS)/IMyComponent.xpt
+	rm -f $(XULRUNNER)/bin/components/MyComponent.so
+	rm -f $(XULRUNNER)/bin/components/IMyComponent.xpt
 
 clean:
 	rm -f *.o
@@ -42,8 +40,8 @@ clean:
 	rm -f IMyComponent.h
 
 mozclean:
-	rm -f $(XULRUNNER_COMPONENTS)/compreg.dat
-	rm -f $(XULRUNNER_COMPONENTS)/xpti.dat
+	rm -f $(XULRUNNER)/bin/components/compreg.dat
+	rm -f $(XULRUNNER)/bin/components/xpti.dat
 	rm -rf ~/.mozilla
 	rm -rf ~/.testapplicationsinc
 

@@ -1,4 +1,10 @@
+#include "xpcom-config.h"
 #include "MyComponent.h"
+
+#ifndef NS_OUTPARAM
+#pragma message("NS_OUTPARAM is not defined. Any occurences will be removed by the preprocessor.")
+#define NS_OUTPARAM 
+#endif
 
 
 NS_IMPL_ISUPPORTS1(MyComponent, IMyComponent)

@@ -1,16 +1,17 @@
 TARGET=MyComponent.so
 CXX=c++
-XULRUNNER=/home/francis/opt/XULRunnerSDK/1.9.1/xulrunner-sdk
-INCLUDES=-include "xpcom-config.h" -I$(XULRUNNER)/sdk/include -I$(XULRUNNER)/include -I/usr/include/nspr
-REGXPCOM=$(XULRUNNER)/sdk/bin/regxpcom
+XULRUNNER_ROOT=/home/francis/opt/XULRunnerSDK/1.9.0/xulrunner-sdk
+XULRUNNER_SDK=$(XULRUNNER_ROOT)/sdk
+INCLUDES=-I$(XULRUNNER_SDK)/include
+REGXPCOM=$(XULRUNNER_SDK)/bin/regxpcom
 
-LD_FLAGS+= -L$(XULRUNNER)/lib -L$(XULRUNNER)/bin \
+LD_FLAGS+= -L$(XULRUNNER_SDK)/lib -L$(XULRUNNER_SDK)/bin \
            -Wl,-z,defs \
-           -Wl,-rpath-link,$(XULRUNNER)/bin \
+           -Wl,-rpath-link,$(XULRUNNER_ROOT)/bin \
            -lxpcomglue_s -lxpcom -lnspr4
 
-CPP_FLAGS+= -fPIC -shared
-
+CPP_FLAGS+= -fno-rtti -fno-exceptions -fPIC -shared  
+ 
 all: xpt src
 
 src:
@@ -21,17 +22,18 @@ src:
 	strip $(TARGET)
 
 xpt:
-	$(XULRUNNER)/sdk/bin/xpidl -m header -I$(XULRUNNER)/idl IMyComponent.idl
-	$(XULRUNNER)/sdk/bin/xpidl -m typelib -I$(XULRUNNER)/idl IMyComponent.idl
+	$(XULRUNNER_SDK)/bin/xpidl -m header -I$(XULRUNNER_SDK)/idl IMyComponent.idl
+	$(XULRUNNER_SDK)/bin/xpidl -m typelib -I$(XULRUNNER_SDK)/idl IMyComponent.idl
 
 install:
-	cp MyComponent.so $(XULRUNNER)/bin/components
-	cp IMyComponent.xpt $(XULRUNNER)/bin/components
-	$(REGXPCOM) -x $(XULRUNNER)/bin -a
+	ln -fs $(XULRUNNER_ROOT)/bin/xulrunner ~/bin/xulrunner
+	cp MyComponent.so $(XULRUNNER_ROOT)/bin/components
+	cp IMyComponent.xpt $(XULRUNNER_ROOT)/bin/components
+	$(REGXPCOM) -x $(XULRUNNER_ROOT)/bin -a
 
 uninstall:
-	rm -f $(XULRUNNER)/bin/components/MyComponent.so
-	rm -f $(XULRUNNER)/bin/components/IMyComponent.xpt
+	rm -f $(XULRUNNER_ROOT)/bin/components/MyComponent.so
+	rm -f $(XULRUNNER_ROOT)/bin/components/IMyComponent.xpt
 
 clean:
 	rm -f *.o
@@ -40,8 +42,10 @@ clean:
 	rm -f IMyComponent.h
 
 mozclean:
-	rm -f $(XULRUNNER)/bin/components/compreg.dat
-	rm -f $(XULRUNNER)/bin/components/xpti.dat
+	rm -f $(XULRUNNER_ROOT)/bin/components/compreg.dat
+	rm -f $(XULRUNNER_ROOT)/bin/components/xpti.dat
 	rm -rf ~/.mozilla
 	rm -rf ~/.testapplicationsinc
 
+supermake:
+	sudo make uninstall ; sudo make mozclean ; make clean ; make ; sudo make install

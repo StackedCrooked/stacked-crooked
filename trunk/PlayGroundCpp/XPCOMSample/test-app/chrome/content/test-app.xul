@@ -15,11 +15,15 @@
         <![CDATA[
         var TestApp = {};
         TestApp.initialize = function() {
-            netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-            const cid = "@mydomain.com/XPCOMSample/MyComponent;1";
+            netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
+            var cid = "@stacked-crooked.com/XPCOMSample/CrookedComponent;1";
             if (!TestApp.isComponentRegistered(cid))
             {
                 alert("Component " + cid + " is not registered.");
+            }
+            else
+            {
+                alert("Component has been successfully registered!");
             }
             TestApp.listRegisteredClasses();
         };

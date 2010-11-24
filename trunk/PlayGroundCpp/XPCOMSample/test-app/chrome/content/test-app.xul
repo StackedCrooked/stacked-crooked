@@ -13,49 +13,112 @@
 
     <script type="application/x-javascript">
         <![CDATA[
-        var TestApp = {};
-        TestApp.initialize = function() {
-            netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
-            var cid = "@stacked-crooked.com/XPCOMSample/CrookedComponent;1";
-            if (!TestApp.isComponentRegistered(cid))
-            {
-                alert("Component " + cid + " is not registered.");
-            }
-            else
-            {
-                alert("Component has been successfully registered!");
-            }
-            TestApp.listRegisteredClasses();
-        };
+        try
+        {
+            var TestApp = {};
+            TestApp.logMsg = "";
 
-        TestApp.listRegisteredClasses = function() {
-          var properties = "";
-          for (var key in Components.classes) {
-            var className = Components.classes[key];
-            properties += className;
-            properties += "\n";
-          }
-          document.getElementById("classesTextBox").setAttribute("value", properties);
-        };
+            TestApp.initialize = function() {
+                netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+                var cid = "@stacked-crooked.com/XPCOMSample/CrookedComponent;1";
+                var filterTextBox = document.getElementById("filterTextBox");
+                filterTextBox.value = cid;
+                filterTextBox.setAttribute("oninput", "TestApp.updateRegisteredClasses()");
 
-        TestApp.isComponentRegistered = function(inComponentId) {
-          return typeof(Components.classes[inComponentId]) !== 'undefined';
-        };
+                var clearButton = document.getElementById("clearButton");
+                clearButton.setAttribute("oncommand", "TestApp.clearFilter();");
+                TestApp.updateRegisteredClasses();
+            };
 
-        window.addEventListener("load", function() {
-            try {
-              TestApp.initialize();
+            /**
+             * TestApp.log
+             *
+             * Enables logging in the logging textbox.
+             */
+            TestApp.log = function(msg) {
+                TestApp.logMsg += msg + "\n";
+                var logTextBox = document.getElementById("logTextBox");
+                logTextBox.value = TestApp.logMsg;
             }
-            catch (err) {
-              alert(err);
-            }
-          },
-          false);
+
+            TestApp.getFilter = function() {
+                var filterTextBox = document.getElementById("filterTextBox");
+                if (filterTextBox === null) {
+                    throw "Did not find the filter textbox element.";
+                }
+                var filter = filterTextBox.value;
+                if (filter === null) {
+                    throw "Failed to get the filter string.";
+                }
+                return filter;
+            };
+
+            TestApp.clearFilter = function() {
+                var filterTextBox = document.getElementById("filterTextBox");
+                if (filterTextBox === null) {
+                    throw "Did not find the filter textbox element.";
+                }
+                filterTextBox.value = "";
+
+                // Refresh the classes textbox.
+                TestApp.updateRegisteredClasses();
+            };
+
+            TestApp.updateRegisteredClasses = function() {
+                var matches = TestApp.getRegisteredClasses(TestApp.getFilter());
+                var text = "";
+                for (var i = 0; i < matches.length; i++) { 
+                    if (i > 0) {
+                        text += "\n";
+                    }
+                    text += matches[i];
+                }
+                var classesTextBox = document.getElementById("classesTextBox");
+                classesTextBox.value = text;
+            };
+
+            TestApp.getRegisteredClasses = function(filter) {
+                var result = [];
+                var filter = document.getElementById("filterTextBox").value;
+                for (var key in Components.classes) {
+                    var className = "" + Components.classes[key];
+                    if (className.length == 0 || className[0] !== '@') {
+                        continue;
+                    }
+
+                    if (filter === "" || className.indexOf(filter) !== -1) {
+                        result.push(className);
+                    }
+                }
+                return result;
+            };
+
+            TestApp.isComponentRegistered = function(inComponentId) {
+                return typeof(Components.classes[inComponentId]) !== "undefined";
+            };
+
+            window.addEventListener("load", function() {
+                    try {
+                        TestApp.initialize();
+                    } catch (err) {
+                        alert(err);
+                    }
+                },
+                false);
+        } catch (err) {
+            alert(err);
+        }
         ]]>
     </script>
     <groupbox flex="1">
         <caption label="Registered classes" />
+        <hbox align="center">
+            <label value="Filter:" style="text-align:right" />
+            <textbox id="filterTextBox" flex="1" />
+            <button id="clearButton" label="Clear" />
+        </hbox>
         <textbox id="classesTextBox" multiline="true" readonly="true" flex="1" />
+        <textbox id="logTextBox" hidden="true" multiline="true" readonly="true" flex="1" />
     </groupbox>
 </window>
 

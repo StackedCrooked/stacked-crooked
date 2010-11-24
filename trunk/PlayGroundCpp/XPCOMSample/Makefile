@@ -45,7 +45,6 @@ mozclean:
 	rm -f $(XULRUNNER_ROOT)/bin/components/compreg.dat
 	rm -f $(XULRUNNER_ROOT)/bin/components/xpti.dat
 	rm -rf ~/.mozilla
-	rm -rf ~/.testapplicationsinc
 
 supermake:
 	sudo make uninstall ; sudo make mozclean ; make clean ; make ; sudo make install

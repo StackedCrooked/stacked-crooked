@@ -1,0 +1,54 @@
+Build instructions
+------------------
+
+Make and install:
+
+    $ make
+    # make install
+
+
+Note that 'make install' creates a symbolic link to the correct xulrunner binary:
+
+    ln -fs $(XULRUNNER_ROOT)/bin/xulrunner ~/bin/xulrunner
+
+This assumes that ~/bin exists and is in your PATH variable.
+
+
+Super clean install:
+
+    # make supermake
+
+    this is the same as:
+
+	# sudo make uninstall ; sudo make mozclean ; make clean ; make ; sudo make install
+    
+    
+This command will also erase the ~/.mozilla directory.
+
+Be careful because this may delete important data from
+other XULRunner applications running on your system!
+
+
+Running the test application
+----------------------------
+
+Verify that you are using the correct xulrunner binary:
+
+    $ which xulrunner
+    
+       => Should be $HOME/bin/xulrunner which in turn should be a symbolic link
+          that points to $(XULRUNNER_ROOT)/bin/xulrunner (see Makefile).
+
+    $ xulrunner --version
+    
+       => Version must be smaller than or equal to 1.9.1!
+          XULRUnner 1.9.2+ no longer supports JavaScript/XPCOM connection!!!
+
+Run the test app:
+
+    $ cd test-app
+    $ xulrunner application.ini
+
+The component "@stacked-crooked.com/XPCOMSample/CrookedComponent;1" should be in the list of registered components.
+If it is not, then XPCOM registration has failed.
+

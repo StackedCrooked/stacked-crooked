@@ -91,7 +91,7 @@
                         continue;
                     }
 
-                    if (filter === "" || className.indexOf(filter) !== -1) {
+                    if (filter === "" || className.toLowerCase().indexOf(filter.toLowerCase()) !== -1) {
                         result.push(className);
                     }
                 }

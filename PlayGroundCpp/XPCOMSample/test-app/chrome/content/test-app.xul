@@ -91,6 +91,7 @@
                         continue;
                     }
 
+                    // Ignore case when matching the filter.
                     var lowFilter = filter.toLowerCase();
                     var lowClassName = className.toLowerCase();
                     if (lowClassName.indexOf(lowFilter) !== -1) {

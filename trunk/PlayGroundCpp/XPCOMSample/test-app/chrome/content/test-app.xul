@@ -91,7 +91,9 @@
                         continue;
                     }
 
-                    if (filter === "" || className.toLowerCase().indexOf(filter.toLowerCase()) !== -1) {
+                    var lowFilter = filter.toLowerCase();
+                    var lowClassName = className.toLowerCase();
+                    if (lowClassName.indexOf(lowFilter) !== -1) {
                         result.push(className);
                     }
                 }

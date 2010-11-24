@@ -3,7 +3,7 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <window id="testWindow"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    title="XPCOM Test application"
+    title="XPCOM Component Viewer"
     orient="vertical"
     align="stretch"
     screenX="240"
@@ -119,7 +119,7 @@
         ]]>
     </script>
     <groupbox flex="1">
-        <caption label="Registered classes" />
+        <caption label="List of registered XPCOM components:" />
         <hbox align="center">
             <label value="Filter:" style="text-align:right" />
             <textbox id="filterTextBox" flex="1" />

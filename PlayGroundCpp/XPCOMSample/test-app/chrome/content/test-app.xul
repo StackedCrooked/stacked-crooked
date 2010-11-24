@@ -21,7 +21,7 @@
             TestApp.initialize = function() {
                 netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
                 var cid = "@stacked-crooked.com/XPCOMSample/CrookedComponent;1";
-                var filterTextBox = document.getElementById("filterTextBox");
+                var filterTextBox = TestApp.getFilterTextBox();
                 filterTextBox.value = cid;
                 filterTextBox.setAttribute("oninput", "TestApp.updateRegisteredClasses()");
 
@@ -51,7 +51,7 @@
             };
 
             TestApp.getFilter = function() {
-                var filterTextBox = TextApp.getFilterTextBox();
+                var filterTextBox = TestApp.getFilterTextBox();
                 var filter = filterTextBox.value;
                 if (filter === null) {
                     throw "Failed to get the filter string.";
@@ -60,9 +60,12 @@
             };
 
             TestApp.clearFilter = function() {
-                var filterTextBox = TextApp.getFilterTextBox();
+                var filterTextBox = TestApp.getFilterTextBox();
                 filterTextBox.value = "";
                 TestApp.updateRegisteredClasses();
+
+                var filterTextBox = TestApp.getFilterTextBox();
+                filterTextBox.focus();
             };
 
             TestApp.updateRegisteredClasses = function() {
@@ -80,7 +83,8 @@
 
             TestApp.getRegisteredClasses = function(filter) {
                 var result = [];
-                var filter = document.getElementById("filterTextBox").value;
+                var filterTextBox = TestApp.getFilterTextBox();
+                var filter = filterTextBox.value;
                 for (var key in Components.classes) {
                     var className = "" + Components.classes[key];
                     if (className.length == 0 || className[0] !== '@') {

@@ -10,8 +10,9 @@ colorscheme louver
 " Unix-specific settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
-winp 640 1340
-win 120 50
+winp 0 24
+set lines=52
+set columns=120
 endif
 
 
@@ -114,5 +115,3 @@ else
   let paste#paste_cmd['v'] = '"-c<Esc>gix<Esc>' . paste#paste_cmd['n'] . '"_x'
   let paste#paste_cmd['i'] = 'x<Esc>' . paste#paste_cmd['n'] . '"_s'
 endif
-
-

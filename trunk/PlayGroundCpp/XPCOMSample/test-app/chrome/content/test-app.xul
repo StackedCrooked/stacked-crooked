@@ -39,13 +39,19 @@
                 TestApp.logMsg += msg + "\n";
                 var logTextBox = document.getElementById("logTextBox");
                 logTextBox.value = TestApp.logMsg;
-            }
+            };
 
-            TestApp.getFilter = function() {
+
+            TestApp.getFilterTextBox = function() {
                 var filterTextBox = document.getElementById("filterTextBox");
                 if (filterTextBox === null) {
                     throw "Did not find the filter textbox element.";
                 }
+                return filterTextBox;
+            };
+
+            TestApp.getFilter = function() {
+                var filterTextBox = TextApp.getFilterTextBox();
                 var filter = filterTextBox.value;
                 if (filter === null) {
                     throw "Failed to get the filter string.";
@@ -54,13 +60,8 @@
             };
 
             TestApp.clearFilter = function() {
-                var filterTextBox = document.getElementById("filterTextBox");
-                if (filterTextBox === null) {
-                    throw "Did not find the filter textbox element.";
-                }
+                var filterTextBox = TextApp.getFilterTextBox();
                 filterTextBox.value = "";
-
-                // Refresh the classes textbox.
                 TestApp.updateRegisteredClasses();
             };
 

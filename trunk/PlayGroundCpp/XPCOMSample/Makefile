@@ -1,16 +1,12 @@
 TARGET=MyComponent.so
 CXX=c++
-XULRUNNER=$(HOME)/xulrunner-sdk
+XULRUNNER=/home/francis/opt/XULRunnerSDK/1.9.1/xulrunner-sdk
 XULRUNNER_BIN=$(XULRUNNER)/bin
 XULRUNNER_COMPONENTS=$(XULRUNNER_BIN)/components
-XULRUNNER_IDL=$(XULRUNNER)/idl
-XULRUNNER_INCLUDE=$(XULRUNNER)/include
-XULRUNNER_LIB=$(XULRUNNER)/lib
-XULRUNNER_SDK_LIB=$(XULRUNNER)/sdk/lib
-INCLUDES=-include "xpcom-config.h" -I$(XULRUNNER_INCLUDE) -I/usr/include/nspr
+INCLUDES=-include "xpcom-config.h" -I$(XULRUNNER)/sdk/include -I$(XULRUNNER)/include -I/usr/include/nspr
 REGXPCOM=$(XULRUNNER)/sdk/bin/regxpcom
 
-LD_FLAGS+= -L$(XULRUNNER_LIB) -L$(XULRUNNER_BIN) \
+LD_FLAGS+= -L$(XULRUNNER)/lib -L$(XULRUNNER_BIN) \
            -Wl,-z,defs \
            -Wl,-rpath-link,$(XULRUNNER_BIN) \
            -lxpcomglue_s -lxpcom -lnspr4
@@ -27,8 +23,8 @@ src:
 	strip $(TARGET)
 
 xpt:
-	$(XULRUNNER_BIN)/xpidl -m header -I$(XULRUNNER_IDL) IMyComponent.idl
-	$(XULRUNNER_BIN)/xpidl -m typelib -I$(XULRUNNER_IDL) IMyComponent.idl
+	$(XULRUNNER_BIN)/xpidl -m header -I$(XULRUNNER)/idl IMyComponent.idl
+	$(XULRUNNER_BIN)/xpidl -m typelib -I$(XULRUNNER)/idl IMyComponent.idl
 
 install:
 	cp MyComponent.so $(XULRUNNER_COMPONENTS)/

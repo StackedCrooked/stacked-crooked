@@ -6,7 +6,7 @@
 
 #define MY_COMPONENT_CONTRACTID "@mydomain.com/XPCOMSample/MyComponent;1"
 #define MY_COMPONENT_CLASSNAME "A Simple XPCOM Sample"
-#define MY_COMPONENT_CID { 0xd21b0c44, 0x9519, 0x4144, { 0x5d6, 0xec, 0x0a, 0x41, 0x41, 0xbf, 0xc2 } }
+#define MY_COMPONENT_CID { 0x99d79656, 0xf804, 0x11df, { 0xaee5, 0x08, 0x00, 0x27, 0xa4, 0x54, 0x55 } } 
 
 
 class MyComponent : public IMyComponent

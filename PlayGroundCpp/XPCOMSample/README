@@ -1,5 +1,9 @@
 Build instructions
 ------------------
+On 64-bit Linux you will need to install the 32-bit version of glibc:
+
+    $ sudo apt-get install g++-multilib
+
 
 Make and install:
 
@@ -18,15 +22,11 @@ Super clean install:
 
     # make supermake
 
-    this is the same as:
+which is the same as:
 
 	# sudo make uninstall ; sudo make mozclean ; make clean ; make ; sudo make install
-    
-    
-This command will also erase the ~/.mozilla directory.
-
-Be careful because this may delete important data from
-other XULRunner applications running on your system!
+        
+This command will also erase the ~/.mozilla directory. So be careful because this may delete important data from other XULRunner applications running on your system!
 
 
 Running the test application

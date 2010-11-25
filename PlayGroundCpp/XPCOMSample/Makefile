@@ -10,14 +10,14 @@ LD_FLAGS+= -L$(XULRUNNER_SDK)/lib -L$(XULRUNNER_SDK)/bin \
            -Wl,-rpath-link,$(XULRUNNER_ROOT)/bin \
            -lxpcomglue_s -lxpcom -lnspr4
 
-CPP_FLAGS+= -fno-rtti -fno-exceptions -fPIC -shared  
+CPP_FLAGS+= -m32 -fno-rtti -fno-exceptions -fPIC -shared
  
 all: xpt src
 
 src:
 	$(CXX) $(CPP_FLAGS) -c MyComponent.cpp $(INCLUDES)
 	$(CXX) $(CPP_FLAGS) -c MyComponentModule.cpp $(INCLUDES)
-	$(CXX) -shared -o $(TARGET) *.o $(LD_FLAGS)
+	$(CXX) -m32 -shared -o $(TARGET) *.o $(LD_FLAGS)
 	chmod 755 $(TARGET)
 	strip $(TARGET)
 

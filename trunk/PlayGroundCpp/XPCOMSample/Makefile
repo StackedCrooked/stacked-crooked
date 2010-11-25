@@ -1,6 +1,6 @@
 TARGET=MyComponent.so
 CXX=c++
-XULRUNNER_ROOT=/home/francis/opt/XULRunnerSDK/1.9.0/xulrunner-sdk
+XULRUNNER_ROOT=`pwd`/../3rdParty/XULRunnerSDK/1.9.1/xulrunner-sdk
 XULRUNNER_SDK=$(XULRUNNER_ROOT)/sdk
 INCLUDES=-I$(XULRUNNER_SDK)/include
 REGXPCOM=$(XULRUNNER_SDK)/bin/regxpcom

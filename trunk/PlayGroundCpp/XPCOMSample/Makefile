@@ -1,6 +1,6 @@
 # Configuration
 # -------------
-XULRUNNER_ROOT=$(HOME)/opt/XULRunnerSDK/1.9.1/xulrunner-sdk
+XULRUNNER_ROOT=`pwd`/../3rdParty/XULRunnerSDK/1.9.1/xulrunner-sdk
 
 
 # Makefile

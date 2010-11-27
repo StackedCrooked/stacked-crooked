@@ -22,6 +22,7 @@ MyComponent::~MyComponent()
 
 NS_IMETHODIMP MyComponent::Add(PRInt32 a, PRInt32 b, PRInt32 *_retval NS_OUTPARAM)
 {
+    *_retval = a + b;
     return NS_ERROR_NOT_IMPLEMENTED;
 }
 

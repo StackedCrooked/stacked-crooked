@@ -1,16 +1,8 @@
-" Don't replace tabs with spaces in makefiles
-set gfn=Courier\ 13\ Pitch\ 13
-autocmd FileType make set noexpandtab
-
-
-" Set the colorscheme
-colorscheme louver
-
 
 " Unix-specific settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
-winp 0 24
+winp 120 24
 set lines=52
 set columns=120
 endif
@@ -41,19 +33,6 @@ menu Bookmarks._vimrc :tabnew ~/.vimrc<CR>
 menu Bookmarks._gvimrc :tabnew ~/.gvimrc<CR>
 menu Bookmarks._vim :tabnew ~/.vim<CR>
 endif
-
-" -----------------------------------------------------------------------------
-" Function keys
-" -----------------------------------------------------------------------------
-
-" Split current tab
-:map <F2> :tab split<CR>
-
-" Search for constructors in a cpp file
-:map <F3> /\(\<[A-Z]\w*\)::\1\><CR>
-
-" Search for destructors in a cpp file
-:map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
 
 
 " -----------------------------------------------------------------------------
@@ -115,3 +94,4 @@ else
   let paste#paste_cmd['v'] = '"-c<Esc>gix<Esc>' . paste#paste_cmd['n'] . '"_x'
   let paste#paste_cmd['i'] = 'x<Esc>' . paste#paste_cmd['n'] . '"_s'
 endif
+

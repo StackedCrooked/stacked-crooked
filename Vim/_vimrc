@@ -1,20 +1,23 @@
-" Don't replace tabs with spaces in makefiles
-autocmd FileType make set noexpandtab
-
-" Set the colorscheme
-colorscheme pablo
-
-" Set filetype dependent indention rules
-filetype plugin indent on
 
 " Set auto-indent rules
 set autoindent
+
+" Set filetype dependent indention rules
+filetype plugin indent on
 
 " Enable most intuitive backspace behavior
 set bs=2
 
 " Expand tabs to spaces
 set expandtab
+
+" Don't replace tabs with spaces in makefiles
+autocmd FileType make set noexpandtab
+
+" Set tabs to 4 spaces
+set softtabstop=4 
+set tabstop=4 
+set shiftwidth=4
 
 " Colorize search results
 set hlsearch 
@@ -33,9 +36,6 @@ set nocompatible
 " Show the rules
 set ruler
 
-" Width of indention (number of spaces)
-set shiftwidth=4
-
 " Show matching brackets
 set showmatch
 
@@ -44,10 +44,6 @@ set smartcase
 
 " Smart auto-indenting when typing a new line
 set smartindent
-
-" Set tabs to 4 spaces
-set softtabstop=4 
-set tabstop=4 
 
 " Enable syntax coloring
 syntax enable

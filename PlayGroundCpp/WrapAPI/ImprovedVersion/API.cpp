@@ -5,29 +5,15 @@
 namespace API {
 
 
-class ServerImpl
-{
-public:
-    Interface * createInterface()
-    {
-        mInterfaces.push_back(Interface::Create());
-        return mInterfaces.back();
-    }
-
-private:
-    std::vector<Interface*> mInterfaces;
-};
 
 
-Server::Server() :
-    mImpl(new ServerImpl)
+Server::Server()
 {
 }
 
 
 Server::~Server()
 {
-    delete mImpl;
 }
 
 
@@ -39,7 +25,8 @@ Server * Server::Create()
 
 Interface * Server::createInterface()
 {
-    return mImpl->createInterface();
+    mInterfaces.push_back(Interface::Create());
+    return mInterfaces.back();
 }
     
 

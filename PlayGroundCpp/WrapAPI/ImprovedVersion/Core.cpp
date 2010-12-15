@@ -4,27 +4,18 @@
 namespace Core {
 
 
-API::Interface * Server::createInterface()
+Server::~Server()
 {
-    return new Core::Interface();
 }
 
 
-void Interface::addStream(API::Stream * stream)
+Interface::~Interface()
 {
-    mStreams.push_back(stream);
 }
 
 
-const API::Stream * Interface::getStreamByIndex(std::size_t index) const
+Stream::~Stream()
 {
-    return mStreams.at(index);
-}
-
-
-std::size_t Interface::streamCount() const
-{
-    return mStreams.size();
 }
 
 

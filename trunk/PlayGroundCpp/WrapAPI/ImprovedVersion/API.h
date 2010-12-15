@@ -11,7 +11,6 @@ namespace API {
 
 
 class Interface;
-class ServerImpl;
 
 
 class Server
@@ -26,7 +25,7 @@ public:
 protected:
     Server();
     
-    ServerImpl * mImpl;
+    std::vector<Interface*> mInterfaces;
 };
 
 

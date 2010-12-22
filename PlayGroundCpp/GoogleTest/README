@@ -1,0 +1,14 @@
+How to run the testsuite
+------------------------
+1. Install the GTest library on your system first.
+
+2. Enter this command:
+    make testsuite
+
+  Which executes these commands:
+	export GTEST_OUTPUT=xml
+	./test
+
+This runs the testsuite and stores the results as an xml file.
+The resuling xml document is compatible with JUnit's report format.
+

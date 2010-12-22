@@ -2,6 +2,7 @@
 " Set auto-indent rules
 set autoindent
 
+
 " Set filetype dependent indention rules
 filetype plugin indent on
 
@@ -56,6 +57,8 @@ map Y y$
 " Function keys
 " -----------------------------------------------------------------------------
 
+:map <F1> :NERDTree<CR>
+
 " Split current tab
 :map <F2> :tab split<CR>
 
@@ -64,6 +67,13 @@ map Y y$
 
 " Search for destructors in a cpp file
 :map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
+
+
+" -----------------------------------------------------------------------------
+" Path settings
+" -----------------------------------------------------------------------------
+
+set path+=/usr/local/include,/opt/local/include
 
 
 " -----------------------------------------------------------------------------

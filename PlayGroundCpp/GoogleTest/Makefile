@@ -7,3 +7,4 @@ testsuite: all
 
 clean:
 	rm -f ./test *.xml
+

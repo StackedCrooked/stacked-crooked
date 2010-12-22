@@ -10,9 +10,10 @@ endif
 
 " Mac-specific settings
 if has("mac")
-winp 920 1400
-win 120 80
-set gfn=Menlo:h13
+winp 200 1400
+set lines=80
+set columns=120
+set gfn=Menlo:h11
 set vb " Turn off audio bells
 endif
 

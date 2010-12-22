@@ -6,8 +6,8 @@ Run:
     make testsuite
 
 or:
-	export GTEST_OUTPUT=xml
-	./test
+    export GTEST_OUTPUT=xml
+    ./test
 
 This runs the testsuite and stores the results as an xml file.
 The resuling xml document is compatible with JUnit's report format.

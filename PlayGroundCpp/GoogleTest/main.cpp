@@ -1,6 +1,10 @@
 #include "gtest/gtest.h"
 
 
+using testing::Test;
+using testing::InitGoogleTest;
+
+
 class Summator
 {
 public:
@@ -13,7 +17,7 @@ private:
 };
 
 
-class SummatorTest : public ::testing::Test
+class SummatorTest : public Test
 {
 protected:
     virtual void SetUp();
@@ -49,7 +53,7 @@ TEST_F(SummatorTest, ResultIsOdd)
 
 int main(int argc, char **argv)
 {
-    testing::InitGoogleTest(&argc, argv);
+    InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
 

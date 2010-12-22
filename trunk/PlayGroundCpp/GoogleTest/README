@@ -1,8 +1,8 @@
 How to run the testsuite
 ------------------------
-1. Install the GTest library on your system first.
+Install the GTest library on your system first.
 
-2. Enter this command:
+Enter this command:
     make testsuite
 
   Which executes these commands:

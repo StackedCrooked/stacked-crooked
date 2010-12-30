@@ -1,4 +1,4 @@
-#include "XULWin/RGBColor.h"
+#include "RGBColor.h"
 
 
 namespace XULWin
@@ -57,3 +57,4 @@ namespace XULWin
     }
 
 } // namespace XULWin
+

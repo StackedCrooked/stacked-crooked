@@ -2,7 +2,7 @@
 #define HSV_COLOR_H_INCLUDED
 
 
-#include "XULWin/RGBColor.h"
+#include "RGBColor.h"
 #include <algorithm>
 
 
@@ -14,20 +14,24 @@ class HSVColor
 public:
     HSVColor();
 
-	// Use hue value -1 if undefined.
-    HSVColor(float inHue, float inSaturation, float inValue);
+	HSVColor(int inHue, int inSaturation, int inValue);
 
-	// Returns value -1 if undefined
-    float hue() const;
+	bool operator==(const HSVColor & rhs) const
+	{ return mHue == rhs.mHue && mSaturation == rhs.mSaturation && mValue == rhs.mValue; }
 
-    float saturation() const;
+	bool operator!=(const HSVColor & rhs) const
+	{ return !(*this == rhs); }
 
-    float value() const;
+    int hue() const;
+
+    int saturation() const;
+
+    int value() const;
 
 private:
-    float mHue;
-    float mSaturation;
-    float mValue;
+    int mHue;
+    int mSaturation;
+    int mValue;
 };
 
 
@@ -67,3 +71,4 @@ const T & min(const T& a, const T& b, const T& c)
 
 
 #endif // HSV_COLOR_H_INCLUDED
+

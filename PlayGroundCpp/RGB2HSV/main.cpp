@@ -10,13 +10,17 @@ using namespace XULWin;
 
 inline std::ostream & operator<<(std::ostream & os, const RGBColor & inRGBColor)
 {
-	return (os << "RGB(" << std::setw(3) << std::setw(3) << inRGBColor.red() << ", " << std::setw(3) << inRGBColor.green() << ", " << std::setw(3) << inRGBColor.blue() << ")");
+	return (os << "RGB(" << std::setw(3) << inRGBColor.red()
+               << ", "   << std::setw(3) << inRGBColor.green()
+               << ", "   << std::setw(3) << inRGBColor.blue() << ")");
 }
 
 
 inline std::ostream & operator<<(std::ostream & os, const HSVColor & inHSVColor)
 {
-	return (os << "HSV(" << std::setw(3) << inHSVColor.hue() << ", " << std::setw(3) << inHSVColor.saturation() << ", " << std::setw(3) << inHSVColor.value() << ")");
+	return (os << "HSV(" << std::setw(3) << inHSVColor.hue()
+               << ", " << std::setw(3) << inHSVColor.saturation()
+               << ", " << std::setw(3) << inHSVColor.value() << ")");
 }
 
 

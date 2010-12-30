@@ -63,7 +63,7 @@ const Entry cEntries[] =
 	Entry(RGBColor(  0,   0, 255), HSVColor(240, 100, 100)),
 	Entry(RGBColor(255, 255,   0), HSVColor( 60, 100, 100)),
 	Entry(RGBColor(  0, 255, 255), HSVColor(180, 100, 100)),
-	Entry(RGBColor(255,   0, 255), HSVColor(  0,   0, 100)),
+	Entry(RGBColor(255,   0, 255), HSVColor(300, 100, 100)),
 	Entry(RGBColor(255, 255, 255), HSVColor(  0,   0, 100)),
 	Entry(RGBColor(  1,   2,   3), HSVColor(210,  67,   1)),
 	Entry(RGBColor( 10,  20,  30), HSVColor(210,  67,  12))

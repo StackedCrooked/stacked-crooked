@@ -60,35 +60,32 @@
             };
 
 
-            PostHelper.getURL = function(action)
-            {            
-              return "http://" + window.location.hostname + "/" + action;
+            PostHelper.getURL = function(action) {
+              return "http://" + window.location.hostname + ":" + window.location.port + "/" + action;
             };
 
            
             PostHelper.send = function(name, score)
             {
               var httpRequest = new XMLHttpRequest();
-              var url = PostHelper.getURL("hs");
-              httpRequest.open("POST", url, true);
-              httpRequest.setRequestHeader("Accept", "text/plain");
-              httpRequest.onreadystatechange = function()
-              {
-                if(httpRequest.readyState == 4)
-				{
-                  if (httpRequest.status == 200)
-                  {
+              httpRequest.onreadystatechange = function() {
+                if(httpRequest.readyState == 4) {
+                  if (httpRequest.status == 200) {
                     // The response will be a url
                     window.location.href = PostHelper.getURL(httpRequest.responseText);
-                  }
-                  else
-                  {
-                    PostHelper.display("Status is: " + httpRequest.status);
-                    PostHelper.display("Oops, it doesn't work...\n");
+                  } else {
+                    PostHelper.display("POST failed with status: " + httpRequest.status + ".");
                   }
                 }
               };
+              
+			  var url = PostHelper.getURL("hs");
+			  PostHelper.display("POST url: " + url);
+			  
               var body = "name=" + name + "&score=" + score;
+			  PostHelper.display("POST body: " + body);
+              
+			  httpRequest.open("POST", url, true);
               httpRequest.send(body);
             };         
             window.onload = PostHelper.init();

@@ -13,75 +13,58 @@
         <script type="text/javascript">
             var PostHelper = {};
             
-            PostHelper.init = function()
-            {     
+            PostHelper.init = function() {     
               PostHelper.registerInputField("input_where");
               document.getElementById("input_where").focus();
-            };
+            };			
 			
-            PostHelper.registerInputField = function(fieldId)
-            {      
+            PostHelper.registerInputField = function(fieldId) {      
               var inputField = document.getElementById(fieldId);
-              if (!inputField)
-              {
+              if (!inputField) {
                 alert("Did not find input field with id: " + fieldId);
                 return;
-              }
-        
-              inputField.onkeydown = function(evt)
-              {
-                if (evt.keyCode == 13)
-                {
+              }        
+              inputField.onkeydown = function(evt) {
+                if (evt.keyCode == 13) {
                   PostHelper.executeSQL();
                   inputField.value = "";
                 }
               };
-            };
+            };      
       
-      
-            PostHelper.executeSQL = function()
-            {
+            PostHelper.executeSQL = function() {
               PostHelper.send(document.getElementById("input_where").value);
-            };
-      
+            };      
             
-            PostHelper.display = function(message)
-            {                 
+            PostHelper.display = function(message) {
                 var p = document.createElement("p");
                 p.innerText = message;
                 document.getElementById("div_output").appendChild(p);
             };
 
-
             PostHelper.getURL = function(action) {
               return "http://" + window.location.hostname + ":" + window.location.port + "/" + action;
             };
-
            
-            PostHelper.send = function(where_clause)
-            {
+            PostHelper.send = function(where_clause) {
               var httpRequest = new XMLHttpRequest();
               var url = PostHelper.getURL("hs");
               httpRequest.open("DELETE", url, true);
               httpRequest.setRequestHeader("Accept", "text/plain");
-              httpRequest.onreadystatechange = function()
-              {
-                if(httpRequest.readyState == 4)
-                {
-                  if (httpRequest.status == 200)
-                  {
+              httpRequest.onreadystatechange = function() {
+                if(httpRequest.readyState == 4) {
+                  if (httpRequest.status == 200) {
                     // The response will be a url
                     PostHelper.display(httpRequest.responseText);
-                  }
-                  else
-                  {
+                  } else {
                     PostHelper.display("Warning: readystate is: " + httpRequest.status);
                   }
                 }
               };
               var body = where_clause;
               httpRequest.send(body);
-            };         
+            };
+			
             window.onload = PostHelper.init();
         </script>   
     </body>

@@ -17,56 +17,42 @@
         <script type="text/javascript">
             var PostHelper = {};
             
-            PostHelper.init = function()
-            {     
+            PostHelper.init = function() {     
               PostHelper.registerInputField("input_name");
               PostHelper.registerInputField("input_score");
               document.getElementById("input_name").focus();
-            };
+            };			
 			
-            PostHelper.registerInputField = function(fieldId)
-            {      
+            PostHelper.registerInputField = function(fieldId) {
               var inputField = document.getElementById(fieldId);
-              if (!inputField)
-              {
+              if (!inputField) {
                 alert("Did not find input field with id: " + fieldId);
                 return;
               }
-        
-              inputField.onkeydown = function(evt)
-              {
-                if (evt.keyCode == 13)
-                {
+              inputField.onkeydown = function(evt) {
+                if (evt.keyCode == 13) {
                   PostHelper.submitHighScore();
                   inputField.value = "";
                 }
               };
-            };
+            }; 			
       
-      
-            PostHelper.submitHighScore = function()
-            {
-              PostHelper.send(
-                document.getElementById("input_name").value,
-                document.getElementById("input_score").value);
-            };
-      
+            PostHelper.submitHighScore = function() {
+              PostHelper.send(document.getElementById("input_name").value,
+			                  document.getElementById("input_score").value);
+            }; 			
             
-            PostHelper.display = function(message)
-            {                 
+            PostHelper.display = function(message) {                 
                 var p = document.createElement("p");
                 p.innerText = message;
                 document.getElementById("div_output").appendChild(p);
-            };
-
+            };			
 
             PostHelper.getURL = function(action) {
               return "http://" + window.location.hostname + ":" + window.location.port + "/" + action;
-            };
-
+            };			
            
-            PostHelper.send = function(name, score)
-            {
+            PostHelper.send = function(name, score) {
               var httpRequest = new XMLHttpRequest();
               httpRequest.onreadystatechange = function() {
                 if(httpRequest.readyState == 4) {
@@ -87,7 +73,8 @@
               
 			  httpRequest.open("POST", url, true);
               httpRequest.send(body);
-            };         
+            };   
+			
             window.onload = PostHelper.init();
         </script>   
     </body>

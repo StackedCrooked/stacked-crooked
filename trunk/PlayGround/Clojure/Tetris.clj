@@ -801,15 +801,11 @@
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
   (JOptionPane/showInputDialog nil "What is your name?" "Name" JOptionPane/QUESTION_MESSAGE))
       
-(def domain "stacked-crooked.com")
-;(def domain "bla.bla")
-;(def domain "localhost")
-
 (defn get-high-scores []  
   ; we need to explicity ask for xml (using .xml) because
   ; for some mysterious reason the accept header of the
   ; clojure.xml/parse call is text/html.
-  (clojure.xml/parse (str "http://" domain "/hof.xml")))  
+  (clojure.xml/parse (str "http://stacked-crooked.com/hof.xml")))
   
 (def get-agent (agent nil))
 (def post-agent (agent nil))
@@ -822,10 +818,9 @@
       (reset! user-name (get-user-name))
       (if (and (not (nil? @user-name))
                (not (empty? @user-name)))
-        (let [url         (str "http://" domain "/hs.txt")
+        (let [url         (str "http://stacked-crooked.com/hs")
               post-body   (str "name=" (uri-encode @user-name) "&score=" @(stats :score))]
           (try
-            (clear-agent-errors post-agent)
             (await-for 5000 (send post-agent (fn [_] (do-post-request url post-body))))
             (catch Exception exc (println "POST high score failed: " (.getMessage exc))))
           (let [errors (agent-errors post-agent)]
@@ -834,7 +829,6 @@
           ))
           
       (try
-        (clear-agent-errors get-agent)
         (await-for 5000 (send get-agent (fn [_] (get-high-scores))))
         (catch Exception exc (println "get-high-scores failed:" (.getMessage exc))))
       (if (nil? (agent-errors get-agent))

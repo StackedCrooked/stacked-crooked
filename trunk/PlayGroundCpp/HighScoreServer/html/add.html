@@ -75,7 +75,7 @@
               httpRequest.onreadystatechange = function()
               {
                 if(httpRequest.readyState == 4)
-                {
+				{
                   if (httpRequest.status == 200)
                   {
                     // The response will be a url
@@ -83,7 +83,7 @@
                   }
                   else
                   {
-                    PostHelper.display("Readystate is: " + httpRequest.status);
+                    PostHelper.display("Status is: " + httpRequest.status);
                     PostHelper.display("Oops, it doesn't work...\n");
                   }
                 }

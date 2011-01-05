@@ -5,6 +5,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="HTML">
+      <UniqueIdentifier>{fe7b356d-ee7d-484b-8003-fb8eb1d182d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ContentType.cpp">
@@ -66,5 +69,13 @@
     <ClInclude Include="src\ResourceId.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="html\add.html">
+      <Filter>HTML</Filter>
+    </None>
+    <None Include="html\delete.html">
+      <Filter>HTML</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -43,6 +43,8 @@ namespace HSServer
             Poco::Data::SQLite::Connector::registerConnector();			
 
 			int port = GetPortFromArgs(args, 80);
+			std::cout << "Listening to port " << port << std::endl;
+
             int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
             
             // Only allow one thread because the database using simple locking

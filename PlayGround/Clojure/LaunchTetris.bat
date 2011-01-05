@@ -1,0 +1,1 @@
+java -cp C:\clojure\clojure.jar;C:\clojure\clojure-contrib-1.2.0.jar clojure.main -i Tetris.clj

@@ -53,9 +53,8 @@
             };
 
 
-            PostHelper.getURL = function(action)
-            {
-              return "http://" + window.location.hostname + "/" + action;
+            PostHelper.getURL = function(action) {
+              return "http://" + window.location.hostname + ":" + window.location.port + "/" + action;
             };
 
            

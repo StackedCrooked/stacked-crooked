@@ -51,7 +51,7 @@ RGBColor HSV2RGB(const HSVColor & inHSVColor);
 // Helper function: max(..) with 3 arguments
 //
 template <typename T>
-const T & max(const T& a, const T& b, const T& c)
+const T & Max(const T& a, const T& b, const T& c)
 {
 	return std::max<T>(a, std::max<T>(b, c));
 }
@@ -61,7 +61,7 @@ const T & max(const T& a, const T& b, const T& c)
 // Helper function: min(..) with 3 arguments
 //
 template <typename T>
-const T & min(const T& a, const T& b, const T& c)
+const T & Min(const T& a, const T& b, const T& c)
 {
 	return std::min<T>(a, std::min<T>(b, c));
 }

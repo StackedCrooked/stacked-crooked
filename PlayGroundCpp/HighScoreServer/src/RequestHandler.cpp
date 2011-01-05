@@ -73,7 +73,7 @@ namespace HSServer
         GetLogger().information("Request from " + inRequest.clientAddress().toString());
         GetLogger().information("Request Accept header: " + inRequest.get("Accept"));
         outResponse.setChunkedTransferEncoding(true);
-        outResponse.setContentType(ToString(getContentType()));
+		outResponse.setContentType(ToString(mContentType));
 
         try
         {

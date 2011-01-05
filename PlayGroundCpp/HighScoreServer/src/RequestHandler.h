@@ -4,7 +4,7 @@
 
 #include "Exceptions.h"
 #include "ContentType.h"
-#include "LocationId.h"
+#include "ResourceId.h"
 #include "RequestMethod.h"
 #include "Utils.h"
 #include "Poco/Net/HTTPRequestHandler.h"
@@ -74,6 +74,22 @@ namespace HSServer
         {
             return new T;
         }
+    };
+
+
+    template<ResourceId resourceId>
+    class LocationPolicy
+    {
+    public:
+        static const char * GetLocation() { return ToString(resourceId); }
+    };
+
+
+    template<RequestMethod _RequestMethod>
+    class RequestMethodPolicy
+    {
+    public:
+        static RequestMethod GetRequestMethod() { return _RequestMethod; }
     };
 
 

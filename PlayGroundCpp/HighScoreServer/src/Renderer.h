@@ -29,6 +29,7 @@ namespace HSServer
         Poco::Data::RecordSet mRecordSet;
     };
 
+
     class XMLRenderer : public Renderer
     {
     public:
@@ -38,6 +39,7 @@ namespace HSServer
 
         virtual void render(std::ostream & outStream);
     };
+
 
     class HTMLRenderer : public Renderer
     {
@@ -56,6 +58,7 @@ namespace HSServer
         void renderTHead(std::ostream & ostr);
         void renderTBody(std::ostream & ostr);
     };
+
 
     class PlainTextRenderer : public Renderer
     {

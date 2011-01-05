@@ -5,28 +5,32 @@
 #include <string>
 
 
-namespace HSServer
+namespace HSServer {
+
+
+enum RequestMethod
 {
+    RequestMethod_Begin,
+    RequestMethod_Get = RequestMethod_Begin,
+    RequestMethod_Post,
+    RequestMethod_Put,
+    RequestMethod_Delete,
+    RequestMethod_End
+};
 
-    enum RequestMethod
-    {
-        RequestMethod_Unknown,
-        RequestMethod_Begin,
-        RequestMethod_Get = RequestMethod_Begin,
-        RequestMethod_Post,
-        RequestMethod_Put,
-        RequestMethod_Delete,
-        RequestMethod_End
-    };
+	
+typedef const char * RequestMethodName;
+static const RequestMethodName cRequestMethodNames[] =
+{
+	"GET",
+	"POST",
+	"PUT",
+	"DELETE"
+};
 
-    const char * ToString(RequestMethod inRequestMethod);
 
-    template<RequestMethod _RequestMethod>
-    class RequestMethodPolicy
-    {
-    public:
-        static RequestMethod GetRequestMethod() { return _RequestMethod; }
-    };
+const char * ToString(RequestMethod inRequestMethod);
+RequestMethod ParseRequestMethod(const std::string & inMethod);
 
 
 } // namespace HSServer

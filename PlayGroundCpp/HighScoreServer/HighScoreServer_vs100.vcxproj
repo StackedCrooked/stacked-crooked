@@ -10,6 +10,49 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ContentType.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\RequestHandler.cpp" />
+    <ClCompile Include="src\RequestHandlerFactory.cpp" />
+    <ClCompile Include="src\RequestHandlerId.cpp" />
+    <ClCompile Include="src\RequestMethod.cpp" />
+    <ClCompile Include="src\ResourceId .cpp" />
+    <ClCompile Include="src\Utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\ContentType.h" />
+    <ClInclude Include="src\Exceptions.h" />
+    <ClInclude Include="src\Renderer.h" />
+    <ClInclude Include="src\RequestHandler.h" />
+    <ClInclude Include="src\RequestHandlerFactory.h" />
+    <ClInclude Include="src\RequestHandlerId.h" />
+    <ClInclude Include="src\RequestMethod.h" />
+    <ClInclude Include="src\ResourceId.h" />
+    <ClInclude Include="src\SQLRequestGenericHandler.h" />
+    <ClInclude Include="src\Utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\3rdParty\Poco\Data\Data_VS100.vcxproj">
+      <Project>{240e83c3-368d-11db-9fbc-00123fc423b5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdParty\Poco\Data\SQLite\SQLite_VS100.vcxproj">
+      <Project>{1b29820d-375f-11db-837b-00123fc423b5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdParty\Poco\Foundation\Foundation_vs100.vcxproj">
+      <Project>{8164d41d-b053-405b-826c-cf37ac0ef176}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdParty\Poco\Net\Net_vs100.vcxproj">
+      <Project>{b057a1fe-09f7-465e-b8b5-e1b659051d76}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdParty\Poco\Util\Util_vs100.vcxproj">
+      <Project>{6ff56cdb-787a-4714-a28c-919003f9fa6c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdParty\Poco\XML\XML_vs100.vcxproj">
+      <Project>{9e211743-85fe-4977-82f3-4f04b40c912d}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>HighScoreServer</ProjectName>
     <ProjectGuid>{FBE39DB3-4987-4F63-BF07-2A3DC8619050}</ProjectGuid>
@@ -38,10 +81,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Build\VS80\$(Configuration)\$(ProjectName)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Build\VS100\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)Intermediate\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Build\VS80\$(Configuration)\$(ProjectName)\</OutDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Build\VS100\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)Intermediate\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
   </PropertyGroup>
@@ -57,12 +100,14 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,17 +135,6 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="src\HighScoreRequestHandler.cpp" />
-    <ClCompile Include="src\HighScoreRequestHandlerFactory.cpp" />
-    <ClCompile Include="src\HighScoreServer.cpp" />
-    <ClCompile Include="src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\HighScoreRequestHandler.h" />
-    <ClInclude Include="include\HighScoreRequestHandlerFactory.h" />
-    <ClInclude Include="include\HighScoreServer.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

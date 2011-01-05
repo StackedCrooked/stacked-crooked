@@ -10,6 +10,7 @@
 #include "Poco/Util/HelpFormatter.h"
 #include "Poco/Util/ServerApplication.h"
 #include "Poco/ThreadPool.h"
+#include <boost/lexical_cast.hpp>
 #include <iostream>
 
 
@@ -25,11 +26,23 @@ namespace HSServer
         }
 
     protected:
+        static int GetPortFromArgs(const std::vector<std::string>& args, int inDefault)
+		{
+			for (unsigned int i = 0; i < (args.size() - 1); ++i)
+			{
+				if (args[i] == "-p" || args[i] == "--port")
+				{
+					return boost::lexical_cast<int>(args[i+1]);
+				}
+			}
+			return inDefault;
+		}
+
         int main(const std::vector<std::string>& args)
         {
-            Poco::Data::SQLite::Connector::registerConnector();
+            Poco::Data::SQLite::Connector::registerConnector();			
 
-            int port = config().getInt("HighScoreServer.port", 80);
+			int port = GetPortFromArgs(args, 80);
             int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
             
             // Only allow one thread because the database using simple locking
@@ -81,6 +94,15 @@ using namespace HSServer;
 
 int main(int argc, char** argv)
 {
-    HSServer::HighScoreServer app;
-	return app.run(argc, argv);
+	int result = 0;
+	try
+	{
+		HSServer::HighScoreServer app;
+		result = app.run(argc, argv);
+	}
+	catch (const std::exception & exc)
+	{
+		::MessageBoxA(0, exc.what(), "High Score Server", MB_OK);
+	}
+	return result;
 }

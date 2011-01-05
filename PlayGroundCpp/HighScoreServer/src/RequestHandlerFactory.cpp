@@ -103,27 +103,13 @@ namespace HSServer
 
     RequestMethod GetRequestMethod(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        if (inRequest.getMethod() == "GET")
-        {
-            return RequestMethod_Get;
-        }
-        else if (inRequest.getMethod() == "POST")
-        {
-            return RequestMethod_Post;
-        }
-        else if (inRequest.getMethod() == "DELETE")
-        {
-            return RequestMethod_Delete;
-        }
-        throw std::runtime_error("Unsupported request method: " + inRequest.getMethod());
+		return ParseRequestMethod(inRequest.getMethod());
     }
 
 
     RequestHandlerId GetRequestHandlerId(const Poco::Net::HTTPServerRequest & inRequest)
     {        
-        return RequestHandlerId(GetLocationWithoutExtension(inRequest),
-                                GetRequestMethod(inRequest),
-                                GetContentType(inRequest));
+        return RequestHandlerId(GetLocationWithoutExtension(inRequest), GetRequestMethod(inRequest));
     }
 
 

@@ -13,20 +13,15 @@ namespace HSServer
     class RequestHandlerId
     {
     public:
-        explicit RequestHandlerId(const std::string & inLocation,
-                                  RequestMethod inRequestMethod,
-                                  ContentType inContentType);
+        explicit RequestHandlerId(const std::string & inLocation, RequestMethod inRequestMethod);
 
         const std::string & location() const;
 
         RequestMethod requestMethod() const;
 
-        ContentType contentType() const;
-
     private:
         std::string mLocation;
         RequestMethod mRequestMethod;
-        ContentType mContentType;
     };
 
     bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs);

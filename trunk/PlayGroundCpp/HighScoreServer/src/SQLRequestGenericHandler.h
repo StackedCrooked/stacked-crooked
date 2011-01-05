@@ -4,7 +4,7 @@
 
 #include "RequestHandler.h"
 #include "ContentType.h"
-#include "LocationId.h"
+#include "ResourceId.h"
 #include "Renderer.h"
 #include "RequestMethod.h"
 

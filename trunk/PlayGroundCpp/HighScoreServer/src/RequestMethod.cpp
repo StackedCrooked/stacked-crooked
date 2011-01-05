@@ -5,33 +5,23 @@
 namespace HSServer {
 
 
-    const char * ToString(RequestMethod inRequestMethod)
-    {
-        switch (inRequestMethod)
-        {
-            case RequestMethod_Get:
-            {
-                return "GET";
-            }
-            case RequestMethod_Post:
-            {
-                return "POST";
-            }
-            case RequestMethod_Put:
-            {
-                return "PUT";
-            }
-            case RequestMethod_Delete:
-            {
-                return "DELETE";
-            }
-            case RequestMethod_Unknown:
-            default:
-            {
-                return "";
-            }
-        }
-    }
+const char * ToString(RequestMethod inRequestMethod)
+{
+	return cRequestMethodNames[inRequestMethod];
+}
+
+
+RequestMethod ParseRequestMethod(const std::string & inMethod)
+{
+	for (unsigned int i = RequestMethod_Begin; i < RequestMethod_End; ++i)
+	{
+		if (cRequestMethodNames[i] == inMethod)
+		{
+			return static_cast<RequestMethod>(i);
+		}
+	}
+	throw std::runtime_error("Unsupported request method: " + inMethod);
+}
 
 
 } // namespace HSServer

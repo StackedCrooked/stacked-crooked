@@ -77,6 +77,7 @@
                   (let [c (.openConnection url)]
                     (.setDoOutput c true)
                     (.setRequestMethod c "POST")
+                    (.setRequestProperty c "Accept" "text/plain") ; HACK! (Should be fixed server-side.)
                     c))
           out   (OutputStreamWriter. (.getOutputStream conn))]
       (.write out post-body)

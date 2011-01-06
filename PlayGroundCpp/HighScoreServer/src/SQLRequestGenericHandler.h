@@ -108,9 +108,9 @@ namespace HSServer
         { return new SQLRequestGenericHandler<_RequestMethod, _ContentType, _ResourceId>(); }
 
         SQLRequestGenericHandler() :
-            RequestHandler(GetRequestMethod(),
-                           GetLocation(),
-                           GetContentType())
+            RequestHandler(this->GetRequestMethod(),
+                           this->GetLocation(),
+                           this->GetContentType())
         {
         }
 
@@ -118,7 +118,7 @@ namespace HSServer
         {
             // Peform the SELECT query
             Poco::Data::Statement select(mSession);
-            select << GetSelectQuery();
+            select << this->GetSelectQuery();
             select.execute();
 
 
@@ -127,7 +127,9 @@ namespace HSServer
 
 
             // Create a textual representation for the result.
-            RendererType renderer(GetCollectionTagName(), GetItemTagName(), rs);
+            typename TagNamingPolicy<_ContentType, _ResourceId>::RendererType renderer(
+				this->GetCollectionTagName(),
+				this->GetItemTagName(), rs);
             std::stringstream ss;
             renderer.render(ss);
             

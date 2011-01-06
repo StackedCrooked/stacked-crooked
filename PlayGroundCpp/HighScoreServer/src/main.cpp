@@ -104,7 +104,11 @@ int main(int argc, char** argv)
 	}
 	catch (const std::exception & exc)
 	{
+#ifdef _WIN32
 		::MessageBoxA(0, exc.what(), "High Score Server", MB_OK);
+#else
+		std::cout << exc.what() << std::endl;
+#endif
 	}
 	return result;
 }

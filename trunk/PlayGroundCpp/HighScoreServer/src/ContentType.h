@@ -30,14 +30,6 @@ namespace HSServer {
 
     bool FromString(const std::string & inText, ContentType & outRequestMethod);
 
-    
-    template<ContentType _ContentType>
-    class ContentTypePolicy
-    {
-    public:
-        static ContentType GetContentType() { return _ContentType; }
-    };
-
 
 } // namespace HSServer
 

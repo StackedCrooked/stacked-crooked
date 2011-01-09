@@ -54,7 +54,7 @@ namespace HSServer
     }
 
 
-    ContentType RequestHandler::getContentType() const
+    ContentType RequestHandler::contentType() const
     {
         return mContentType;
     }
@@ -102,7 +102,7 @@ namespace HSServer
 
 
     GetHighScorePostForm::GetHighScorePostForm() :
-        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
+        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
     {
     }
 
@@ -117,7 +117,7 @@ namespace HSServer
 
 
     GetHighScoreDeleteForm::GetHighScoreDeleteForm() :
-        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
+        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
     {
     }
 
@@ -132,7 +132,7 @@ namespace HSServer
 
 
     PostHightScore::PostHightScore() :
-        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
+        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
     {
     }
 
@@ -162,7 +162,7 @@ namespace HSServer
 
 
     DeleteHighScore::DeleteHighScore() :
-        RequestHandler(GetRequestMethod(), GetLocation(), GetContentType())
+        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
     {
     }
 

@@ -29,7 +29,7 @@ namespace HSServer
          * The content type of the response.
          * Can be text/plain, text/html, application/xml, ...
          */
-        ContentType getContentType() const;
+        ContentType contentType() const;
 
         /**
          * Returns the path part of the request uri.
@@ -96,8 +96,7 @@ namespace HSServer
     class GetHighScorePostForm : public RequestHandler,
                                  public CreationPolicy<GetHighScorePostForm>,
                                  public LocationPolicy<ResourceId_HighScorePostForm>,
-                                 public RequestMethodPolicy<RequestMethod_Get>,
-                                 public ContentTypePolicy<ContentType_TextHTML>
+                                 public RequestMethodPolicy<RequestMethod_Get>
     {
     public:
         typedef GetHighScorePostForm ThisType;
@@ -114,8 +113,7 @@ namespace HSServer
     class GetHighScoreDeleteForm : public RequestHandler,
                                    public CreationPolicy<GetHighScoreDeleteForm>,
                                    public LocationPolicy<ResourceId_HighScoreDeleteForm>,
-                                   public RequestMethodPolicy<RequestMethod_Get>,
-                                   public ContentTypePolicy<ContentType_TextHTML>
+                                   public RequestMethodPolicy<RequestMethod_Get>
     {
     public:
         typedef GetHighScoreDeleteForm ThisType;
@@ -132,8 +130,7 @@ namespace HSServer
     class PostHightScore : public RequestHandler,
                            public CreationPolicy<PostHightScore>,
                            public LocationPolicy<ResourceId_HighScore>,
-                           public RequestMethodPolicy<RequestMethod_Post>,
-                           public ContentTypePolicy<ContentType_TextPlain>
+                           public RequestMethodPolicy<RequestMethod_Post>
     {
     public:
         typedef PostHightScore ThisType;
@@ -150,8 +147,7 @@ namespace HSServer
     class DeleteHighScore : public RequestHandler,
                             public CreationPolicy<DeleteHighScore>,
                             public LocationPolicy<ResourceId_HighScore>,
-                            public RequestMethodPolicy<RequestMethod_Delete>,
-                            public ContentTypePolicy<ContentType_TextPlain>
+                            public RequestMethodPolicy<RequestMethod_Delete>
     {
     public:
         typedef DeleteHighScore ThisType;

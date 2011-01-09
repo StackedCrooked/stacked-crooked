@@ -34,7 +34,7 @@
     <ClCompile Include="src\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResourceId .cpp">
+    <ClCompile Include="src\ResourceId.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

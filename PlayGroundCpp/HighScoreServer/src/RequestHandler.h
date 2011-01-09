@@ -22,12 +22,12 @@ namespace HSServer
     {
     public:
         RequestHandler(ResourceId inResourceId,
-                       RequestMethod inRequestMethod,
+                       Method inMethod,
                        ContentType inContentType);
 
         inline ResourceId resourceId() const { return mResourceId; }
 
-        inline RequestMethod requestMethod() const { return mRequestMethod; }
+        inline Method requestMethod() const { return mMethod; }
 
         inline ContentType contentType() const { return mContentType; }
 
@@ -44,7 +44,7 @@ namespace HSServer
 
     private:
         ResourceId mResourceId;
-        RequestMethod mRequestMethod;
+        Method mMethod;
         ContentType mContentType;
     };
 
@@ -60,15 +60,15 @@ namespace HSServer
     };
 
 
-    template<class SubClass, ResourceId _ResourceId, RequestMethod _RequestMethod, ContentType _ContentType>
+    template<class SubClass, ResourceId _ResourceId, Method _Method, ContentType _ContentType>
     class GenericRequestHandler : public RequestHandler
     {
     public:
         inline static ResourceId GetResourceId()
         { return _ResourceId; }
         
-        inline static RequestMethod GetRequestMethod()
-        { return _RequestMethod; }
+        inline static Method GetMethod()
+        { return _Method; }
 
         inline static ContentType GetContentType()
         { return _ContentType; }
@@ -77,7 +77,7 @@ namespace HSServer
         { return new SubClass; }
 
         GenericRequestHandler() :
-            RequestHandler(_ResourceId, _RequestMethod, _ContentType)
+            RequestHandler(_ResourceId, _Method, _ContentType)
         {
         }
 
@@ -87,7 +87,7 @@ namespace HSServer
 
     class GetHighScorePostForm : public GenericRequestHandler<GetHighScorePostForm,
                                                               ResourceId_HighScorePostForm,
-                                                              RequestMethod_Get,
+                                                              Method_Get,
                                                               ContentType_TextHTML>
     {
     protected:
@@ -97,7 +97,7 @@ namespace HSServer
     
     class GetHighScoreDeleteForm : public GenericRequestHandler<GetHighScoreDeleteForm,
                                                                 ResourceId_HighScoreDeleteForm,
-                                                                RequestMethod_Delete,
+                                                                Method_Delete,
                                                                 ContentType_TextHTML>
     {
     protected:
@@ -107,7 +107,7 @@ namespace HSServer
     
     class PostHightScore : public GenericRequestHandler<PostHightScore,
                                                         ResourceId_HighScore,
-                                                        RequestMethod_Post,
+                                                        Method_Post,
                                                         ContentType_TextPlain>
     {
     protected:
@@ -117,7 +117,7 @@ namespace HSServer
     
     class DeleteHighScore : public GenericRequestHandler<DeleteHighScore,
                                                          ResourceId_HighScore,
-                                                         RequestMethod_Delete,
+                                                         Method_Delete,
                                                          ContentType_TextPlain>
     {
     protected:

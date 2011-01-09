@@ -19,7 +19,7 @@ namespace HSServer
     template<class T>
     RequestHandlerId GetRequestHandlerId()
     {
-        return RequestHandlerId(T::GetResourceId(), T::GetRequestMethod());
+        return RequestHandlerId(T::GetResourceId(), T::GetMethod());
     }
     
     // Get the handler id of incoming HTTP request.

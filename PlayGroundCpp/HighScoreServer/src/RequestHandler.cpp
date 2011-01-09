@@ -34,10 +34,10 @@ namespace HSServer
     }
 
     
-    RequestHandler::RequestHandler(ResourceId inResourceId, RequestMethod inRequestMethod, ContentType inContentType) :
+    RequestHandler::RequestHandler(ResourceId inResourceId, Method inMethod, ContentType inContentType) :
         mSession(SessionFactory::instance().create("SQLite", "HighScores.db")),
         mResourceId(inResourceId),
-        mRequestMethod(inRequestMethod),
+        mMethod(inMethod),
         mContentType(inContentType)
     {
         // Create the table if it doesn't already exist
@@ -75,7 +75,7 @@ namespace HSServer
 
 
     HTMLErrorResponse::HTMLErrorResponse(const std::string & inErrorMessage) :
-        RequestHandler(ResourceId_End, RequestMethod_Get, ContentType_TextHTML),
+        RequestHandler(ResourceId_End, Method_Get, ContentType_TextHTML),
         mErrorMessage(inErrorMessage)
     {
     }

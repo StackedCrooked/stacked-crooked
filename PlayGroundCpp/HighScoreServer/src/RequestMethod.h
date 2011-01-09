@@ -3,34 +3,61 @@
 
 
 #include <string>
+#include <stdexcept>
 
 
 namespace HSServer {
 
 
-enum RequestMethod
+/**
+ * Method
+ *
+ * Enumerates the HTTP methods.
+ */
+enum Method
 {
-    RequestMethod_Begin,
-    RequestMethod_Get = RequestMethod_Begin,
-    RequestMethod_Post,
-    RequestMethod_Put,
-    RequestMethod_Delete,
-    RequestMethod_End
-};
-
-	
-typedef const char * RequestMethodName;
-static const RequestMethodName cRequestMethodNames[] =
-{
-	"GET",
-	"POST",
-	"PUT",
-	"DELETE"
+    Method_Nil,
+    Method_Begin,
+    Method_Get = Method_Begin,
+    Method_Post,
+    Method_Put,
+    Method_Delete,
+    Method_End
 };
 
 
-const char * ToString(RequestMethod inRequestMethod);
-RequestMethod ParseRequestMethod(const std::string & inMethod);
+typedef const char * MethodName;
+
+
+/**
+ * ToString
+ *
+ * Converts a MethodName to a string object.
+ */
+inline MethodName ToString(Method inMethod)
+{
+    if (inMethod < Method_Begin || inMethod >= Method_End)
+    {
+        throw std::out_of_range("Method");
+    }
+    static const MethodName cMethodNames[] =
+    {
+        "NULL",
+	    "GET",
+	    "POST",
+	    "PUT",
+	    "DELETE"
+    };
+    return cMethodNames[int(inMethod)];
+}
+
+
+/**
+ * ParseMethod
+ *
+ * Converts a string object back into a method enum.
+ */
+Method ParseMethod(const std::string & inMethod);
 
 
 } // namespace HSServer

@@ -98,7 +98,6 @@ namespace HSServer
     template<RequestMethod _RequestMethod, ContentType _ContentType, ResourceId _ResourceId>
     class SQLRequestGenericHandler : public RequestHandler,
                                      public RequestMethodPolicy<_RequestMethod>,
-                                     public ContentTypePolicy<_ContentType>,
                                      public LocationPolicy<_ResourceId>,
                                      private SelectQueryPolicy<_RequestMethod, _ResourceId>,
                                      private TagNamingPolicy<_ContentType, _ResourceId>
@@ -110,7 +109,7 @@ namespace HSServer
         SQLRequestGenericHandler() :
             RequestHandler(this->GetRequestMethod(),
                            this->GetLocation(),
-                           this->GetContentType())
+                           _ContentType)
         {
         }
 

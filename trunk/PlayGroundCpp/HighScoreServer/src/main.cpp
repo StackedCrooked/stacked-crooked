@@ -71,13 +71,13 @@ namespace HSServer
     private:
         void registerRequestHandlers()
         {
-            mFactory->registerRequestHandler<GetHighScoreAsHTML>();
-            mFactory->registerRequestHandler<GetHighScoreAsXML>();
-            mFactory->registerRequestHandler<GetHighScoreAsPlainText>();
+            mFactory->registerRequestHandler<GetHighScore_HTML>();
+            mFactory->registerRequestHandler<GetHighScore_XML>();
+            mFactory->registerRequestHandler<GetHighScore_Text>();
 
-            mFactory->registerRequestHandler<GetHallOfFameAsHTML>();
-            mFactory->registerRequestHandler<GetHallOfFameAsXML>();
-            mFactory->registerRequestHandler<GetHallOfFameAsPlainText>();
+            mFactory->registerRequestHandler<GetHallOfFame_HTML>();
+            mFactory->registerRequestHandler<GetHallOfFame_XML>();
+            mFactory->registerRequestHandler<GetHallOfFame_Text>();
 
             mFactory->registerRequestHandler<GetHighScorePostForm>();
             mFactory->registerRequestHandler<GetHighScoreDeleteForm>();

@@ -20,7 +20,7 @@ ResourceId ParseResourceId(const std::string & inResourceId)
 			return static_cast<ResourceId>(i);
 		}
 	}
-	throw std::logic_error("Invalid ResourceId value.");
+    throw std::invalid_argument("inResourceId");
 }
 
 

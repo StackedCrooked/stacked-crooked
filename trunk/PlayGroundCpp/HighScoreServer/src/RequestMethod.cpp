@@ -7,6 +7,10 @@ namespace HSServer {
 
 const char * ToString(RequestMethod inRequestMethod)
 {
+    if (inRequestMethod < RequestMethod_Begin || inRequestMethod >= RequestMethod_End)
+    {
+        throw std::out_of_range("RequestMethod");
+    }
 	return cRequestMethodNames[inRequestMethod];
 }
 

@@ -95,25 +95,14 @@ namespace HSServer
     };
 
 
-    template<RequestMethod _RequestMethod, ContentType _ContentType, ResourceId _ResourceId>
-    class SQLRequestGenericHandler : public RequestHandler,
-                                     public RequestMethodPolicy<_RequestMethod>,
-                                     public LocationPolicy<_ResourceId>,
-                                     private SelectQueryPolicy<_RequestMethod, _ResourceId>,
-                                     private TagNamingPolicy<_ContentType, _ResourceId>
+    template<class T, ResourceId _ResourceId, RequestMethod _RequestMethod, ContentType _ContentType>
+    class SQLRequestGenericHandler : public GenericRequestHandler<T, _ResourceId, _RequestMethod, _ContentType>,
+                                     public TagNamingPolicy<_ContentType, _ResourceId>,
+                                     public SelectQueryPolicy<_RequestMethod, _ResourceId>
     {
     public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest)
-        { return new SQLRequestGenericHandler<_RequestMethod, _ContentType, _ResourceId>(); }
-
-        SQLRequestGenericHandler() :
-            RequestHandler(this->GetRequestMethod(),
-                           this->GetLocation(),
-                           _ContentType)
-        {
-        }
-
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest,
+                                      Poco::Net::HTTPServerResponse& outResponse)
         {
             // Peform the SELECT query
             Poco::Data::Statement select(mSession);
@@ -139,15 +128,61 @@ namespace HSServer
             outResponse.send() << response;
         }
     };
+    
+    
+    class GetHighScore_HTML : public SQLRequestGenericHandler<
+        GetHighScore_HTML,
+        ResourceId_HighScore,
+        RequestMethod_Get,
+        ContentType_TextHTML>
+    {
+    };
+    
+    
+    class GetHighScore_XML : public SQLRequestGenericHandler<
+        GetHighScore_XML,
+        ResourceId_HighScore,
+        RequestMethod_Get,
+        ContentType_ApplicationXML>
+    {
+    };
+    
+    
+    class GetHighScore_Text : public SQLRequestGenericHandler<
+        GetHighScore_Text,
+        ResourceId_HighScore,
+        RequestMethod_Get,
+        ContentType_TextPlain>
+    {
+    };
+    
+    
+    class GetHallOfFame_HTML : public SQLRequestGenericHandler<
+        GetHallOfFame_HTML,
+        ResourceId_HallOfFame,
+        RequestMethod_Get,
+        ContentType_TextHTML>
+    {
+    };
+    
+    
+    class GetHallOfFame_XML : public SQLRequestGenericHandler<
+        GetHallOfFame_XML,
+        ResourceId_HallOfFame,
+        RequestMethod_Get,
+        ContentType_ApplicationXML>
+    {
+    };
+    
+    
+    class GetHallOfFame_Text : public SQLRequestGenericHandler<
+        GetHallOfFame_Text,
+        ResourceId_HallOfFame,
+        RequestMethod_Get,
+        ContentType_TextPlain>
+    {
+    };
 
-
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       ResourceId_HighScore> GetHighScoreAsHTML;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, ResourceId_HighScore> GetHighScoreAsXML;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      ResourceId_HighScore> GetHighScoreAsPlainText;
-
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextHTML,       ResourceId_HallOfFame> GetHallOfFameAsHTML;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_ApplicationXML, ResourceId_HallOfFame> GetHallOfFameAsXML;
-    typedef SQLRequestGenericHandler<RequestMethod_Get, ContentType_TextPlain,      ResourceId_HallOfFame> GetHallOfFameAsPlainText;
 
 } // namespace HSServer
 

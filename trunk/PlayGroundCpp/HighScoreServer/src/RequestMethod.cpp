@@ -5,26 +5,16 @@
 namespace HSServer {
 
 
-const char * ToString(RequestMethod inRequestMethod)
+Method ParseMethod(const std::string & inMethod)
 {
-    if (inRequestMethod < RequestMethod_Begin || inRequestMethod >= RequestMethod_End)
-    {
-        throw std::out_of_range("RequestMethod");
-    }
-	return cRequestMethodNames[inRequestMethod];
-}
-
-
-RequestMethod ParseRequestMethod(const std::string & inMethod)
-{
-	for (unsigned int i = RequestMethod_Begin; i < RequestMethod_End; ++i)
+	for (unsigned int i = Method_Begin; i < Method_End; ++i)
 	{
-		if (cRequestMethodNames[i] == inMethod)
+		if (ToString(static_cast<Method>(i)) == inMethod)
 		{
-			return static_cast<RequestMethod>(i);
+			return static_cast<Method>(i);
 		}
 	}
-	throw std::runtime_error("Unsupported request method: " + inMethod);
+    throw std::invalid_argument("inMethod");
 }
 
 

@@ -77,28 +77,28 @@ namespace HSServer
         static const char * GetItemTagName() { return ""; }
     };
 
-    template<RequestMethod _RequestMethod, ResourceId _ResourceId>
+    template<Method _Method, ResourceId _ResourceId>
     struct SelectQueryPolicy
     {
     };
 
     template<>
-    struct SelectQueryPolicy<RequestMethod_Get, ResourceId_HighScore>
+    struct SelectQueryPolicy<Method_Get, ResourceId_HighScore>
     {
         static const char * GetSelectQuery() { return "SELECT * FROM HighScores"; }
     };
 
     template<>
-    struct SelectQueryPolicy<RequestMethod_Get, ResourceId_HallOfFame>
+    struct SelectQueryPolicy<Method_Get, ResourceId_HallOfFame>
     {
         static const char * GetSelectQuery() { return "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10"; }
     };
 
 
-    template<class T, ResourceId _ResourceId, RequestMethod _RequestMethod, ContentType _ContentType>
-    class SQLRequestGenericHandler : public GenericRequestHandler<T, _ResourceId, _RequestMethod, _ContentType>,
+    template<class T, ResourceId _ResourceId, Method _Method, ContentType _ContentType>
+    class SQLRequestGenericHandler : public GenericRequestHandler<T, _ResourceId, _Method, _ContentType>,
                                      public TagNamingPolicy<_ContentType, _ResourceId>,
-                                     public SelectQueryPolicy<_RequestMethod, _ResourceId>
+                                     public SelectQueryPolicy<_Method, _ResourceId>
     {
     public:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest,
@@ -133,7 +133,7 @@ namespace HSServer
     class GetHighScore_HTML : public SQLRequestGenericHandler<
         GetHighScore_HTML,
         ResourceId_HighScore,
-        RequestMethod_Get,
+        Method_Get,
         ContentType_TextHTML>
     {
     };
@@ -142,7 +142,7 @@ namespace HSServer
     class GetHighScore_XML : public SQLRequestGenericHandler<
         GetHighScore_XML,
         ResourceId_HighScore,
-        RequestMethod_Get,
+        Method_Get,
         ContentType_ApplicationXML>
     {
     };
@@ -151,7 +151,7 @@ namespace HSServer
     class GetHighScore_Text : public SQLRequestGenericHandler<
         GetHighScore_Text,
         ResourceId_HighScore,
-        RequestMethod_Get,
+        Method_Get,
         ContentType_TextPlain>
     {
     };
@@ -160,7 +160,7 @@ namespace HSServer
     class GetHallOfFame_HTML : public SQLRequestGenericHandler<
         GetHallOfFame_HTML,
         ResourceId_HallOfFame,
-        RequestMethod_Get,
+        Method_Get,
         ContentType_TextHTML>
     {
     };
@@ -169,7 +169,7 @@ namespace HSServer
     class GetHallOfFame_XML : public SQLRequestGenericHandler<
         GetHallOfFame_XML,
         ResourceId_HallOfFame,
-        RequestMethod_Get,
+        Method_Get,
         ContentType_ApplicationXML>
     {
     };
@@ -178,7 +178,7 @@ namespace HSServer
     class GetHallOfFame_Text : public SQLRequestGenericHandler<
         GetHallOfFame_Text,
         ResourceId_HallOfFame,
-        RequestMethod_Get,
+        Method_Get,
         ContentType_TextPlain>
     {
     };

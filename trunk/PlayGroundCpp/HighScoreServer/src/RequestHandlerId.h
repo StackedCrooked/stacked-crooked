@@ -13,15 +13,15 @@ namespace HSServer {
 class RequestHandlerId
 {
 public:
-    explicit RequestHandlerId(ResourceId inResourceId, RequestMethod inRequestMethod);
+    explicit RequestHandlerId(ResourceId inResourceId, Method inMethod);
 
     inline ResourceId resourceId() const { return mResourceId; }
 
-    inline RequestMethod requestMethod() const { return mRequestMethod; }
+    inline Method requestMethod() const { return mMethod; }
 
 private:
     ResourceId mResourceId;
-    RequestMethod mRequestMethod;
+    Method mMethod;
 };
 
 bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs);

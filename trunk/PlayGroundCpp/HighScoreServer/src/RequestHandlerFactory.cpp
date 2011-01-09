@@ -101,15 +101,15 @@ namespace HSServer
     }
 
 
-    RequestMethod GetRequestMethod(const Poco::Net::HTTPServerRequest & inRequest)
+    Method GetMethod(const Poco::Net::HTTPServerRequest & inRequest)
     {
-		return ParseRequestMethod(inRequest.getMethod());
+		return ParseMethod(inRequest.getMethod());
     }
 
 
     RequestHandlerId GetRequestHandlerId(const Poco::Net::HTTPServerRequest & inRequest)
     {        
-        return RequestHandlerId(ParseResourceId(GetLocationWithoutExtension(inRequest)), GetRequestMethod(inRequest));
+        return RequestHandlerId(ParseResourceId(GetLocationWithoutExtension(inRequest)), GetMethod(inRequest));
     }
 
 

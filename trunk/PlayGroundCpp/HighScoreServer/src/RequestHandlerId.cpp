@@ -8,9 +8,9 @@ namespace HSServer {
 
 
 RequestHandlerId::RequestHandlerId(ResourceId inResourceId,
-                                    RequestMethod inRequestMethod) :
+                                    Method inMethod) :
     mResourceId(inResourceId),
-    mRequestMethod(inRequestMethod)
+    mMethod(inMethod)
 {
 }
 

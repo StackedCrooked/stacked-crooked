@@ -26,9 +26,9 @@ namespace HSServer {
      *   ContentType_TextHTML => "text/html"
      *   ...
      */
-    const char * ToString(ContentType inRequestMethod);
+    const char * ToString(ContentType inMethod);
 
-    bool FromString(const std::string & inText, ContentType & outRequestMethod);
+    bool FromString(const std::string & inText, ContentType & outMethod);
 
 
 } // namespace HSServer

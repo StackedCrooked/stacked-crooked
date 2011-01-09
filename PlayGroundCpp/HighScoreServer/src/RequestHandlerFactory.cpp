@@ -109,7 +109,7 @@ namespace HSServer
 
     RequestHandlerId GetRequestHandlerId(const Poco::Net::HTTPServerRequest & inRequest)
     {        
-        return RequestHandlerId(GetLocationWithoutExtension(inRequest), GetRequestMethod(inRequest));
+        return RequestHandlerId(ParseResourceId(GetLocationWithoutExtension(inRequest)), GetRequestMethod(inRequest));
     }
 
 
@@ -128,9 +128,7 @@ namespace HSServer
             if (it != mFactoryFunctions.end())
             {
                 const FactoryFunction & ff(it->second);
-                Poco::Net::HTTPRequestHandler * result = ff(inRequest);
-                fLogger.information("Ok, found a handler.");
-                return result;
+                return ff();
             }
             else
             {

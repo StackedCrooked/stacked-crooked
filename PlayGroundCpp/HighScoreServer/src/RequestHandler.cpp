@@ -34,10 +34,10 @@ namespace HSServer
     }
 
     
-    RequestHandler::RequestHandler(RequestMethod inRequestMethod, const std::string & inLocation, ContentType inContentType) :
+    RequestHandler::RequestHandler(ResourceId inResourceId, RequestMethod inRequestMethod, ContentType inContentType) :
         mSession(SessionFactory::instance().create("SQLite", "HighScores.db")),
+        mResourceId(inResourceId),
         mRequestMethod(inRequestMethod),
-        mLocation(inLocation),
         mContentType(inContentType)
     {
         // Create the table if it doesn't already exist
@@ -51,18 +51,6 @@ namespace HSServer
                      << "Score INTEGER(5))", now;
             fFirstTime = false;
         }
-    }
-
-
-    ContentType RequestHandler::contentType() const
-    {
-        return mContentType;
-    }
-
-
-    const std::string & RequestHandler::getPath() const
-    {
-        return mLocation;
     }
 
     
@@ -87,7 +75,7 @@ namespace HSServer
 
 
     HTMLErrorResponse::HTMLErrorResponse(const std::string & inErrorMessage) :
-        RequestHandler(RequestMethod_Get, "", ContentType_TextHTML),
+        RequestHandler(ResourceId_End, RequestMethod_Get, ContentType_TextHTML),
         mErrorMessage(inErrorMessage)
     {
     }
@@ -101,12 +89,6 @@ namespace HSServer
     }
 
 
-    GetHighScorePostForm::GetHighScorePostForm() :
-        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
-    {
-    }
-
-
     void GetHighScorePostForm::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {        
         std::string body;
@@ -116,24 +98,12 @@ namespace HSServer
     }
 
 
-    GetHighScoreDeleteForm::GetHighScoreDeleteForm() :
-        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
-    {
-    }
-
-
     void GetHighScoreDeleteForm::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
     {        
         std::string body;
         ReadEntireFile("html/delete.html", body);
         outResponse.setContentLength(body.size());
         outResponse.send() << body;
-    }
-
-
-    PostHightScore::PostHightScore() :
-        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
-    {
     }
 
 
@@ -155,15 +125,9 @@ namespace HSServer
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        std::string body = GetLocation();
+        std::string body = cResourceLocations[GetResourceId()];
         outResponse.setContentLength(body.size());
         outResponse.send() << body;
-    }
-
-
-    DeleteHighScore::DeleteHighScore() :
-        RequestHandler(GetRequestMethod(), GetLocation(), ContentType_TextHTML)
-    {
     }
 
 

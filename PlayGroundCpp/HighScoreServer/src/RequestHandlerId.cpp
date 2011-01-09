@@ -4,44 +4,36 @@
 #include <stdio.h>
 
 
-namespace HSServer
+namespace HSServer {
+
+
+RequestHandlerId::RequestHandlerId(ResourceId inResourceId,
+                                    RequestMethod inRequestMethod) :
+    mResourceId(inResourceId),
+    mRequestMethod(inRequestMethod)
 {
-    
-    RequestHandlerId::RequestHandlerId(const std::string & inLocation,
-                                       RequestMethod inRequestMethod) :
-        mLocation(inLocation),
-        mRequestMethod(inRequestMethod)
-    {
-    }
+}
 
-    const std::string & RequestHandlerId::location() const
-    {
-        return mLocation;
-    }
 
-    RequestMethod RequestHandlerId::requestMethod() const
+bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs)
+{
+    if (lhs.requestMethod() != rhs.requestMethod())
     {
-        return mRequestMethod;
+        return lhs.requestMethod() < rhs.requestMethod();
     }
-
-    bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs)
+    else
     {
-        if (lhs.requestMethod() != rhs.requestMethod())
-        {
-            return lhs.requestMethod() < rhs.requestMethod();
-        }
-        else
-        {
-            return lhs.location() < rhs.location();
-        }
+        return lhs.resourceId() < rhs.resourceId();
     }
+}
     
     
-    std::string ToString(const RequestHandlerId & inRequestHandlerId)
-    {
-        return Poco::format("{ location: %s; requestMethod: %s }",
-                            inRequestHandlerId.location(),
-                            std::string(ToString(inRequestHandlerId.requestMethod())));
-    }
+std::string ToString(const RequestHandlerId & inRequestHandlerId)
+{
+    return Poco::format("{ location: %s; requestMethod: %s }",
+                        std::string(cResourceLocations[inRequestHandlerId.resourceId()]),
+                        std::string(ToString(inRequestHandlerId.requestMethod())));
+}
+
 
 } // namespace HSServer

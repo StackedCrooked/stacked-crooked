@@ -21,21 +21,15 @@ namespace HSServer
     class RequestHandler : public Poco::Net::HTTPRequestHandler
     {
     public:
-        RequestHandler(RequestMethod inRequestMethod,
-                       const std::string & inLocation,
+        RequestHandler(ResourceId inResourceId,
+                       RequestMethod inRequestMethod,
                        ContentType inContentType);
 
-        /**
-         * The content type of the response.
-         * Can be text/plain, text/html, application/xml, ...
-         */
-        ContentType contentType() const;
+        inline ResourceId resourceId() const { return mResourceId; }
 
-        /**
-         * Returns the path part of the request uri.
-         * For example "/hs".
-         */
-        const std::string & getPath() const;
+        inline RequestMethod requestMethod() const { return mRequestMethod; }
+
+        inline ContentType contentType() const { return mContentType; }
 
         /**
          * Read the request and generate the response.
@@ -49,8 +43,8 @@ namespace HSServer
         Poco::Data::Session mSession;
 
     private:
+        ResourceId mResourceId;
         RequestMethod mRequestMethod;
-        std::string mLocation;
         ContentType mContentType;
     };
 
@@ -66,100 +60,69 @@ namespace HSServer
     };
 
 
-    template<class T>
-    class CreationPolicy
+    template<class SubClass, ResourceId _ResourceId, RequestMethod _RequestMethod, ContentType _ContentType>
+    class GenericRequestHandler : public RequestHandler
     {
     public:
-        static RequestHandler * Create(const Poco::Net::HTTPServerRequest & inRequest)
+        inline static ResourceId GetResourceId()
+        { return _ResourceId; }
+        
+        inline static RequestMethod GetRequestMethod()
+        { return _RequestMethod; }
+
+        inline static ContentType GetContentType()
+        { return _ContentType; }
+
+        static RequestHandler * Create()
+        { return new SubClass; }
+
+        GenericRequestHandler() :
+            RequestHandler(_ResourceId, _RequestMethod, _ContentType)
         {
-            return new T;
         }
+
+        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
     };
 
 
-    template<ResourceId resourceId>
-    class LocationPolicy
+    class GetHighScorePostForm : public GenericRequestHandler<GetHighScorePostForm,
+                                                              ResourceId_HighScorePostForm,
+                                                              RequestMethod_Get,
+                                                              ContentType_TextHTML>
     {
-    public:
-        static const char * GetLocation() { return ToString(resourceId); }
-    };
-
-
-    template<RequestMethod _RequestMethod>
-    class RequestMethodPolicy
-    {
-    public:
-        static RequestMethod GetRequestMethod() { return _RequestMethod; }
-    };
-
-
-    class GetHighScorePostForm : public RequestHandler,
-                                 public CreationPolicy<GetHighScorePostForm>,
-                                 public LocationPolicy<ResourceId_HighScorePostForm>,
-                                 public RequestMethodPolicy<RequestMethod_Get>
-    {
-    public:
-        typedef GetHighScorePostForm ThisType;
-
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        friend class CreationPolicy<ThisType>;
-        GetHighScorePostForm();
     };
 
-
-    class GetHighScoreDeleteForm : public RequestHandler,
-                                   public CreationPolicy<GetHighScoreDeleteForm>,
-                                   public LocationPolicy<ResourceId_HighScoreDeleteForm>,
-                                   public RequestMethodPolicy<RequestMethod_Get>
+    
+    class GetHighScoreDeleteForm : public GenericRequestHandler<GetHighScoreDeleteForm,
+                                                                ResourceId_HighScoreDeleteForm,
+                                                                RequestMethod_Delete,
+                                                                ContentType_TextHTML>
     {
-    public:
-        typedef GetHighScoreDeleteForm ThisType;
-
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        friend class CreationPolicy<ThisType>;
-        GetHighScoreDeleteForm();
     };
 
-
-    class PostHightScore : public RequestHandler,
-                           public CreationPolicy<PostHightScore>,
-                           public LocationPolicy<ResourceId_HighScore>,
-                           public RequestMethodPolicy<RequestMethod_Post>
+    
+    class PostHightScore : public GenericRequestHandler<PostHightScore,
+                                                        ResourceId_HighScore,
+                                                        RequestMethod_Post,
+                                                        ContentType_TextPlain>
     {
-    public:
-        typedef PostHightScore ThisType;
-
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        friend class CreationPolicy<ThisType>;
-        PostHightScore();
     };
 
-
-    class DeleteHighScore : public RequestHandler,
-                            public CreationPolicy<DeleteHighScore>,
-                            public LocationPolicy<ResourceId_HighScore>,
-                            public RequestMethodPolicy<RequestMethod_Delete>
+    
+    class DeleteHighScore : public GenericRequestHandler<DeleteHighScore,
+                                                         ResourceId_HighScore,
+                                                         RequestMethod_Delete,
+                                                         ContentType_TextPlain>
     {
-    public:
-        typedef DeleteHighScore ThisType;
-
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-
-    private:
-        friend class CreationPolicy<ThisType>;
-        DeleteHighScore();
     };
-
 
 } // HighScoreServer
 

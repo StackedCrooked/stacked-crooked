@@ -2,31 +2,32 @@
 #define REQUESTHANDLERID_H_INCLUDED
 
 
+#include "ResourceId.h"
 #include "RequestMethod.h"
 #include "ContentType.h"
 #include <string>
 
 
-namespace HSServer
+namespace HSServer {
+
+class RequestHandlerId
 {
+public:
+    explicit RequestHandlerId(ResourceId inResourceId, RequestMethod inRequestMethod);
 
-    class RequestHandlerId
-    {
-    public:
-        explicit RequestHandlerId(const std::string & inLocation, RequestMethod inRequestMethod);
+    inline ResourceId resourceId() const { return mResourceId; }
 
-        const std::string & location() const;
+    inline RequestMethod requestMethod() const { return mRequestMethod; }
 
-        RequestMethod requestMethod() const;
+private:
+    ResourceId mResourceId;
+    RequestMethod mRequestMethod;
+};
 
-    private:
-        std::string mLocation;
-        RequestMethod mRequestMethod;
-    };
+bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs);
 
-    bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs);
+std::string ToString(const RequestHandlerId & inRequestHandlerId);
 
-    std::string ToString(const RequestHandlerId & inRequestHandlerId);
 
 } // namespace HSServer
 

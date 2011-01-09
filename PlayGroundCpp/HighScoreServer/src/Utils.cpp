@@ -148,7 +148,7 @@ namespace HSServer
             }
             default:
             {
-                throw std::logic_error("Invalid enum value.");
+                throw std::invalid_argument("HTMLFormatting");
             }
         }
     }

@@ -406,7 +406,7 @@
       (nth bag @bag-index))))
   
 (defn get-color [grid-value]
-  (let [color-table [ Color/BLACK
+  (let [color-table [ Color/WHITE
                       Color/CYAN
                       Color/BLUE
                       (Color. 255 165 0)
@@ -420,6 +420,38 @@
       (nth color-table grid-value)
       (Color/WHITE))))
 
+; light colors
+(defn get-light-color [grid-value]
+  (let [color-table [ Color/WHITE
+                      (Color. 127 255 255)
+                      (Color. 127 127 255)
+                      (Color. 255 210 127)
+                      (Color. 255 255 127)
+                      (Color. 127 255 127)
+                      (Color. 211 139 255)
+                      (Color. 255 127 127)] ]
+    (if (and (not (nil? grid-value))
+             (>= grid-value 0)
+             (< grid-value (count color-table)))
+      (nth color-table grid-value)
+      (Color/WHITE ))))
+
+; dark colors
+(defn get-dark-color [grid-value]
+  (let [color-table [ Color/WHITE
+                      (Color. 0 127 217)
+                      (Color. 0 0 127)
+                      (Color. 127 82 0)
+                      (Color. 127 127 0)
+                      (Color. 0 127 0)
+                      (Color. 80 16 120)
+                      (Color. 127 0 0)] ]
+    (if (and (not (nil? grid-value))
+             (>= grid-value 0)
+             (< grid-value (count color-table)))
+      (nth color-table grid-value)
+      (Color/WHITE  ))))
+
 (defn half [n] (round (int (/ n 2))))
 
 (defn center-in-screen [frame]
@@ -430,7 +462,8 @@
           y 0 ;(half (- (.height dim) h))
           ]
   (.setLocation frame x y)))
-
+  
+  
 (defn paint-grid-cell [graphics i j value]
   (let [w   (prefs :block-width)
         h   (prefs :block-height)          
@@ -438,7 +471,13 @@
         y   (+ (prefs :field-y) (* j h)) ]
     (doto graphics
       (.setColor (get-color value))
-      (.fillRect x y w h))))
+      (.fillRect (+ x 1) (+ y 1) (- w 2) (- h 2))
+	  (.setColor (get-light-color value))
+      (.drawLine x (- (+ y h) 1) x y)
+      (.drawLine x y (- (+ x w) 1) y)
+	  (.setColor (get-dark-color value))
+      (.drawLine (+ x 1) (- (+ y h) 1) (- (+ x w) 1) (- (+ y h) 1))
+      (.drawLine (- (+ x w) 1) (- (+ y h) 1) (- (+ x w) 1) (+ y 1)))))
 
 (defn draw-text [g x y w h text]
   (doto g

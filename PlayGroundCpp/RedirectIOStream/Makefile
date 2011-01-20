@@ -1,9 +1,6 @@
 
 all:
-	g++ -o test -I/opt/local/include -Iinclude main.cpp src/ScopedMuter.cpp
-
-debug:
-	g++ -o test -ggdb -I/opt/local/include -Iinclude main.cpp src/ScopedMuter.cpp
+	g++ -o test -Wall -Werror -I/opt/local/include main.cpp ScopedMuter.cpp
 
 clean:
 	find . -name "*.o" | xargs rm

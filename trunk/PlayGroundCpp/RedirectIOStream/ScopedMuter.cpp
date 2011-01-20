@@ -5,8 +5,14 @@
 #include <iostream>
 
 
-struct ScopedMuter::FakeSink : public boost::iostreams::sink
+struct ScopedMuter::FakeSink
 {
+    // Indicate that we work with UTF8 strings.
+    typedef char char_type;
+    
+    // Indicate that this is an output device.
+    typedef boost::iostreams::sink_tag category;
+
 	std::streamsize write(const char*, std::streamsize n)
 	{
 		// Do nothing.

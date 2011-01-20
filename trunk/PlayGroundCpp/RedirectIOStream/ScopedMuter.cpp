@@ -1,4 +1,4 @@
-#include "Crooked/ScopedMuter.h"
+#include "ScopedMuter.h"
 #include <boost/iostreams/concepts.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 #include <boost/noncopyable.hpp>
@@ -10,9 +10,10 @@ namespace Crooked {
 
 struct ScopedMuter::FakeSink : public boost::iostreams::sink
 {
-	std::streamsize write(const char*, std::streamsize)
+	std::streamsize write(const char*, std::streamsize n)
 	{
 		// Do nothing.
+        return n;
 	}
 };
 

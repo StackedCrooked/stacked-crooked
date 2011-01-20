@@ -5,9 +5,6 @@
 #include <iostream>
 
 
-namespace Crooked {
-
-
 struct ScopedMuter::FakeSink : public boost::iostreams::sink
 {
 	std::streamsize write(const char*, std::streamsize n)
@@ -51,5 +48,3 @@ ScopedMuter::~ScopedMuter()
 	delete mImpl;
 }
 
-
-} // namespace Crooked

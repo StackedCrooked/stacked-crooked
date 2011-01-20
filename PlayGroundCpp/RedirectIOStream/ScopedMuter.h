@@ -5,9 +5,6 @@
 #include <ostream>
 
 
-namespace Crooked {
-
-	
 class ScopedMuter
 {
 public:
@@ -24,9 +21,6 @@ private:
 	struct Impl;
 	Impl * mImpl;
 };
-
-
-} // namespace Crooked
 
 
 #endif // SCOPEDMUTER_H

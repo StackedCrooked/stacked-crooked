@@ -1,6 +1,6 @@
 
 all:
-	g++ -o test -Wall -Werror -I/opt/local/include main.cpp ScopedMuter.cpp
+	g++ -o test -Wall -Werror -I/opt/local/include main.cpp ScopedMuter.cpp ScopedRedirect.cpp
 
 clean:
 	find . -name "*.o" | xargs rm

@@ -1,0 +1,11 @@
+This is an experiment to determine if it is possible to combine Pimpl idiom with smart pointers.
+
+Conclusion:
+
+The impl object can be stored in a smart pointer on 2 conditions:
+
+- The main class has a user-defined destructor.
+- This user-defined destructor is defined in the CPP file and not in the H file. The destructor may be empty.
+
+If these two conditions are met then it's possible to use either boost::scoped_ptr, boost::shared_ptr or std::auto_ptr for storing the implementation pointer.
+

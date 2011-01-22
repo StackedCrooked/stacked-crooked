@@ -80,7 +80,7 @@ void test_auto()
 
 // Swap implemented with move-semantics
 template<class T>
-void my_swap(T & lhs, T & rhs)
+void moving_swap(T & lhs, T & rhs)
 {
     T tmp(std::move(lhs));
     lhs = std::move(rhs);
@@ -134,8 +134,9 @@ public:
     // Assignment operator
     Array& operator=(Array && rhs)
     {
-        std::swap(mData, rhs.mData);
-        std::swap(mLength, rhs.mLength);
+        std::cout << "This is the move operator.\n";
+        moving_swap(mData, rhs.mData);
+        moving_swap(mLength, rhs.mLength);
         return *this;
     }
 
@@ -155,7 +156,10 @@ public:
     }
 
 private:
+    // non-copyable
     Array(const Array&);
+    Array& operator=(const Array&);
+
     int * mData;
     int mLength;
 };
@@ -180,7 +184,7 @@ void test_move_semantics()
 
     std::cout << "Swap with std::move.\n";
     std::vector<double> w;
-    my_swap(v, w);
+    moving_swap(v, w);
     assert(v.empty());
     assert(w.size() == 4);
     std::cout << "Done.\n\n";
@@ -208,6 +212,17 @@ void test_move_semantics()
             std::cout << array0[idx];
         }
         std::cout << "\nDone.\n\n";
+    }
+
+
+    // Test move operator
+    {
+        std::cout << "Testing move operator.\n";
+        Array array(10, 0);
+        Array other_array(5, 0);
+
+        // Invokes the move operator
+        array = std::move(other_array);
     }
 
     // Test move constructor 1

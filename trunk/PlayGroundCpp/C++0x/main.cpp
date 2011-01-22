@@ -6,7 +6,7 @@
 #include <string>
 
 
-#define TRACE std::cout << __PRETTY_FUNCTION__ << std::endl;
+#define TRACE std::cout << __FILE__ << ":" << __LINE__ << "\t\t\t" << __PRETTY_FUNCTION__ << std::endl;
 
 
 void test_auto()
@@ -92,11 +92,25 @@ class Array
 {
 public:
     // Constructor taking length
-    Array(const std::string & inName, int inLength, int inInitialValue = 0) :
-        mName(inName),
-        mData(malloc(inLength * sizeof(int))),
+    Array(int inLength, int inInitialValue = 0) :
+        mData(static_cast<int*>(malloc(inLength * sizeof(int)))),
         mLength(inLength)
     {
+        for (int idx = 0; idx < mLength; ++idx)
+        {
+            mData[idx] = inInitialValue;
+        }
+    }
+
+    Array(const std::vector<int> & inData) :
+        mData(0),
+        mLength(static_cast<int>(inData.size()))
+    {
+        mData = static_cast<int*>(malloc(mLength * sizeof(int)));
+        for (int idx = 0; idx < mLength; ++idx)
+        {
+            mData[idx] = inData[idx];
+        }
     }
 
 
@@ -108,10 +122,10 @@ public:
 
     // Move constructor
     Array(Array && rhs) :
-        mName("Copy of " + rhs.mName),
         mData(rhs.mData),
         mLength(rhs.mLength)
     {
+        std::cout << "This is the move constructor.\n";
         // Invalidate the right-hand side
         rhs.mData = 0;
         rhs.mLength = 0;
@@ -120,7 +134,6 @@ public:
     // Assignment operator
     Array& operator=(Array && rhs)
     {
-        std::swap(mName, rhs.mName);
         std::swap(mData, rhs.mData);
         std::swap(mLength, rhs.mLength);
         return *this;
@@ -133,20 +146,30 @@ public:
 
     const int & operator[](size_t inIndex) const 
     {
-        return static_cast<int*>(mData)[inIndex];
+        return mData[inIndex];
     }
 
     int & operator[](size_t inIndex)
     {
-        return static_cast<int*>(mData)[inIndex];
+        return mData[inIndex];
     }
 
 private:
     Array(const Array&);
-    std::string mName;
-    void * mData;
+    int * mData;
     int mLength;
 };
+
+
+Array MakeArray(int inFrom, int inTo, int inStep)
+{
+    std::vector<int> helper;
+    for (size_t idx = inFrom; idx < inTo; idx += inStep)
+    {
+        helper.push_back(inFrom + idx);
+    }
+    return Array(helper);
+}
 
 
 void test_move_semantics()
@@ -170,7 +193,7 @@ void test_move_semantics()
     // Simple Array test
     {
         std::cout << "Testing Array Normal Construction\n";
-        Array array0("array", 10, 0);
+        Array array0(10, 0);
         for (size_t idx = 0; idx < array0.length(); ++idx)
         {
             array0[idx] = idx;
@@ -187,10 +210,55 @@ void test_move_semantics()
         std::cout << "\nDone.\n\n";
     }
 
-    // Test move constructor
+    // Test move constructor 1
     {
-        std::cout << "Testing Array move constructor\n";
-        Array array3(Array("anonymous", 10, 2));
+        std::cout << "Testing Array move constructor 1\n";
+        Array array1(Array(10, 2));
+        std::cout << "Done.\n\n";
+    }
+
+
+    // Test move constructor 2
+    {
+        std::cout << "Testing Array move constructor 2\n";
+        Array array2(MakeArray(10, 20, 3));
+        for (size_t idx = 0; idx < array2.length(); ++idx)
+        {
+            std::cout << array2[idx] << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "Done.\n\n";
+    }
+
+    // Test move constructor 3
+    {
+        std::cout << "Testing Array move constructor 3\n";
+        Array array3(10, 3);
+        for (size_t idx = 0; idx < array3.length(); ++idx)
+        {
+            array3[idx] *= idx;
+            std::cout << array3[idx] << " ";
+        }
+        std::cout << std::endl;
+
+        // Print the array length before it's moved.
+        std::cout << "Before move\narray3 length: " << array3.length() << std::endl;
+
+        // Move the array
+        Array array3_moved = std::move(array3);
+
+        // Print the array lengths after the move.
+        std::cout << "\nAfter move:\narray3 length: " << array3.length() << std::endl;
+
+        std::cout << "array3_moved length: " << array3_moved.length() << std::endl;
+
+        // Print the contents of the moved array
+        std::cout << "array3_moved contents:\n";
+        for (size_t idx = 0; idx < array3_moved.length(); ++idx)
+        {
+            std::cout << array3_moved[idx] << " ";
+        }
+        std::cout << std::endl;
         std::cout << "Done.\n\n";
     }
 }

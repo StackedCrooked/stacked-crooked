@@ -96,3 +96,19 @@ fun ActivateAddons()
 endf
 call ActivateAddons()
 
+
+" -----------------------------------------------------------------------------
+" OpenFile. Modelled after to web browser "Open Link in New Tab"-command.
+" -----------------------------------------------------------------------------
+:function OpenFile()
+:  let tab_id = expand("%")
+:  tab split
+:  tabmove
+:  normal gf
+:  while tab_id != expand("%")
+:    tabprev
+:  endw
+:  normal j
+:endfunction
+
+:map <C-G> :call OpenFile()<CR>

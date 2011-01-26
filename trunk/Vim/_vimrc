@@ -98,7 +98,7 @@ call ActivateAddons()
 
 
 " -----------------------------------------------------------------------------
-" OpenFile. Modelled after to web browser "Open Link in New Tab"-command.
+" OpenFile. Modelled after the Firefox "Open Link in New Tab"-command.
 " -----------------------------------------------------------------------------
 :function OpenFile()
 :  let tab_id = expand("%")
@@ -112,3 +112,4 @@ call ActivateAddons()
 :endfunction
 
 :map <C-G> :call OpenFile()<CR>
+

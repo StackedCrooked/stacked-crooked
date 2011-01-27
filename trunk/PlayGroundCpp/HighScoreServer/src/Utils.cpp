@@ -18,7 +18,7 @@ namespace HSServer
     {
         std::ifstream t(inPath.c_str());
 
-        t.seekg(0, std::ios::end);   
+        t.seekg(0, std::ios::end);
         str.reserve(t.tellg());
         t.seekg(0, std::ios::beg);
 
@@ -63,8 +63,8 @@ namespace HSServer
             outArgs.insert(std::make_pair(name, value));
         }
     }
-    
-    
+
+
     Args GetArgs(const std::string & inURI)
     {
         Args args;
@@ -98,8 +98,8 @@ namespace HSServer
         }
         return result;
     }
-    
-    
+
+
     std::string MakeLowerCase(const std::string & inText)
     {
         std::string lowerCased = inText;
@@ -115,7 +115,7 @@ namespace HSServer
             return FormatTime(boost::lexical_cast<Poco::Int64>(inEpochTimeString));
         }
         catch (const std::exception & inExc)
-        {            
+        {
             Poco::Util::Application::instance().logger().error("Failed to parse timestamp: " + inEpochTimeString + std::string(". Exception: ") + inExc.what());
         }
         return "";
@@ -176,8 +176,8 @@ namespace HSServer
             }
         }
     }
-    
-    
+
+
     std::ostream & StreamHTML(const std::string & inHTMLElement,
                               const StreamFunction & inStreamFunction,
                               HTMLFormatting inHTMLFormatting,

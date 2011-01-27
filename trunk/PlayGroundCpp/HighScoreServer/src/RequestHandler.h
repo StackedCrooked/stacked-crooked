@@ -25,6 +25,8 @@ namespace HSServer
                        Method inMethod,
                        ContentType inContentType);
 
+        virtual ~RequestHandler() {}
+
         inline ResourceId resourceId() const { return mResourceId; }
 
         inline Method requestMethod() const { return mMethod; }
@@ -40,18 +42,20 @@ namespace HSServer
     protected:
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
 
-        Poco::Data::Session mSession;
+        Poco::Data::Session & getSession() { return mSession; }
+        const Poco::Data::Session & getSession() const { return mSession; }
 
     private:
+        Poco::Data::Session mSession;
         ResourceId mResourceId;
         Method mMethod;
         ContentType mContentType;
     };
 
-        
+
     class HTMLErrorResponse : public RequestHandler
     {
-    public:        
+    public:
         HTMLErrorResponse(const std::string & inErrorMessage);
 
     protected:
@@ -64,13 +68,13 @@ namespace HSServer
     class GenericRequestHandler : public RequestHandler
     {
     public:
-        inline static ResourceId GetResourceId()
+        static ResourceId GetResourceId()
         { return _ResourceId; }
-        
-        inline static Method GetMethod()
+
+        static Method GetMethod()
         { return _Method; }
 
-        inline static ContentType GetContentType()
+        static ContentType GetContentType()
         { return _ContentType; }
 
         static RequestHandler * Create()
@@ -80,6 +84,8 @@ namespace HSServer
             RequestHandler(_ResourceId, _Method, _ContentType)
         {
         }
+
+        virtual ~GenericRequestHandler() {}
 
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
     };
@@ -94,7 +100,7 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
     };
 
-    
+
     class GetHighScoreDeleteForm : public GenericRequestHandler<GetHighScoreDeleteForm,
                                                                 ResourceId_HighScoreDeleteForm,
                                                                 Method_Delete,
@@ -104,7 +110,7 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
     };
 
-    
+
     class PostHightScore : public GenericRequestHandler<PostHightScore,
                                                         ResourceId_HighScore,
                                                         Method_Post,
@@ -114,7 +120,7 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
     };
 
-    
+
     class DeleteHighScore : public GenericRequestHandler<DeleteHighScore,
                                                          ResourceId_HighScore,
                                                          Method_Delete,

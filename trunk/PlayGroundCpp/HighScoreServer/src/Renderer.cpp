@@ -63,8 +63,8 @@ namespace HSServer
     {
         StreamHTML("td", mRecordSet.value(inColIdx, inRowIdx).convert<std::string>(), HTMLFormatting_NoBreaks, ostr);
     }
-    
-    
+
+
     void HTMLRenderer::renderColumns(size_t inRowIdx, std::ostream & ostr)
     {
         for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
@@ -72,14 +72,14 @@ namespace HSServer
             renderColumn(inRowIdx, colIdx, ostr);
         }
     }
-    
-    
+
+
     void HTMLRenderer::renderRow(size_t inRowIdx, std::ostream & ostr)
     {
         StreamHTML("tr", boost::bind(&HTMLRenderer::renderColumns, this, inRowIdx, _1), HTMLFormatting_OneLiner, ostr);
     }
-    
-    
+
+
     void HTMLRenderer::renderRows(std::ostream & ostr)
     {
         for (size_t rowIdx = 0; rowIdx != mRecordSet.rowCount(); ++rowIdx)
@@ -128,8 +128,8 @@ namespace HSServer
         Renderer(inCollectionTitle, inRecordTitle, inRecordSet)
     {
     }
-    
-        
+
+
     void PlainTextRenderer::getColumnWidths(std::vector<int> & outColWidths)
     {
         outColWidths.resize(mRecordSet.columnCount(), 0);
@@ -149,8 +149,8 @@ namespace HSServer
             }
         }
     }
-    
-    
+
+
     std::string PlainTextRenderer::getValue(size_t colIdx, size_t rowIdx)
     {
         static const bool sFormatTimeStamps(true);
@@ -215,7 +215,7 @@ namespace HSServer
         {
             std::string colName = mRecordSet.columnName(colIdx);
             repeat(' ', columnWidths[colIdx] - static_cast<int>(colName.size()), ostr);
-            ostr << colName;            
+            ostr << colName;
 
             if (colIdx + 1 != mRecordSet.columnCount())
             {
@@ -227,7 +227,7 @@ namespace HSServer
 
         for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
         {
-            std::string colName = mRecordSet.columnName(colIdx);            
+            std::string colName = mRecordSet.columnName(colIdx);
             repeat(' ', columnWidths[colIdx] - static_cast<int>(colName.size()), ostr);
             repeat('-', colName.size(), ostr);
 
@@ -244,7 +244,7 @@ namespace HSServer
         {
             for (size_t colIdx = 0; colIdx != mRecordSet.columnCount(); ++colIdx)
             {
-                std::string value = getValue(colIdx, rowIdx);                
+                std::string value = getValue(colIdx, rowIdx);
                 repeat(' ', columnWidths[colIdx] - static_cast<int>(value.size()), ostr);
                 ostr << value;
 

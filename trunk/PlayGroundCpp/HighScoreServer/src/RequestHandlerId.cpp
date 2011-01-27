@@ -26,8 +26,8 @@ bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs)
         return lhs.resourceId() < rhs.resourceId();
     }
 }
-    
-    
+
+
 std::string ToString(const RequestHandlerId & inRequestHandlerId)
 {
     return Poco::format("{ location: %s; requestMethod: %s }",

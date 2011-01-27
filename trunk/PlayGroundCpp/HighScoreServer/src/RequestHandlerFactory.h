@@ -21,7 +21,7 @@ namespace HSServer
     {
         return RequestHandlerId(T::GetResourceId(), T::GetMethod());
     }
-    
+
     // Get the handler id of incoming HTTP request.
     RequestHandlerId GetRequestHandlerId(const Poco::Net::HTTPServerRequest & inRequest);
 
@@ -35,7 +35,7 @@ namespace HSServer
             mFactoryFunctions.insert(std::make_pair(GetRequestHandlerId<T>(), boost::bind(T::Create)));
         }
 
-	    Poco::Net::HTTPRequestHandler * createRequestHandler(const Poco::Net::HTTPServerRequest & request);
+        Poco::Net::HTTPRequestHandler * createRequestHandler(const Poco::Net::HTTPServerRequest & request);
 
     private:
         typedef boost::function<RequestHandler*()> FactoryFunction;

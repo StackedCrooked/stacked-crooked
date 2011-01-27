@@ -1,7 +1,8 @@
 CPP_DEFINES=
-INCLUDE_DIRS=-Iinclude
+INCLUDE_DIRS=-Iinclude -I/opt/local/include
 LIBS= \
-    -lPocoFoundation \
+	-L/opt/local/lib \
+	-lPocoFoundation \
 	-lPocoNet \
 	-lPocoXML \
 	-lPocoUtil \

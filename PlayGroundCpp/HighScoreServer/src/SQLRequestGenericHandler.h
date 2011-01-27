@@ -17,81 +17,9 @@ namespace HSServer
     {
     };
 
-    template <>
-    struct TagNamingPolicy<ContentType_TextHTML, Resource_HighScore::Id>
-    {
-        typedef HTMLRenderer RendererType;
-
-        static const char * GetCollectionTagName() { return "High Scores"; }
-
-        static const char * GetItemTagName() { return ""; }
-    };
-
-    template <>
-    struct TagNamingPolicy<ContentType_TextHTML, Resource_HallOfFame::Id>
-    {
-        typedef HTMLRenderer RendererType;
-
-        static const char * GetCollectionTagName() { return "Hall of Fame"; }
-
-        static const char * GetItemTagName() { return ""; }
-    };
-
-    template <>
-    struct TagNamingPolicy<ContentType_ApplicationXML, Resource_HighScore::Id>
-    {
-        typedef XMLRenderer RendererType;
-
-        static const char * GetCollectionTagName() { return "highscores"; }
-
-        static const char * GetItemTagName() { return "hs"; }
-    };
-
-    template <>
-    struct TagNamingPolicy<ContentType_ApplicationXML, Resource_HallOfFame::Id>
-    {
-        typedef XMLRenderer RendererType;
-
-        static const char * GetCollectionTagName() { return "hof"; }
-
-        static const char * GetItemTagName() { return "hs"; }
-    };
-
-    template <>
-    struct TagNamingPolicy<ContentType_TextPlain, Resource_HighScore::Id>
-    {
-        typedef PlainTextRenderer RendererType;
-
-        static const char * GetCollectionTagName() { return "High Scores"; }
-
-        static const char * GetItemTagName() { return ""; }
-    };
-
-    template <>
-    struct TagNamingPolicy<ContentType_TextPlain, Resource_HallOfFame::Id>
-    {
-        typedef PlainTextRenderer RendererType;
-
-        static const char * GetCollectionTagName() { return "Hall of Fame"; }
-
-        static const char * GetItemTagName() { return ""; }
-    };
-
     template<Method _Method, ResourceId _ResourceId>
     struct SelectQueryPolicy
     {
-    };
-
-    template<>
-    struct SelectQueryPolicy<Method_Get, Resource_HighScore::Id>
-    {
-        static const char * GetSelectQuery() { return "SELECT * FROM HighScores"; }
-    };
-
-    template<>
-    struct SelectQueryPolicy<Method_Get, Resource_HallOfFame::Id>
-    {
-        static const char * GetSelectQuery() { return "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10"; }
     };
 
 
@@ -128,60 +56,6 @@ namespace HSServer
             outResponse.setContentLength(response.size());
             outResponse.send() << response;
         }
-    };
-
-
-    class GetHighScore_HTML : public SQLRequestGenericHandler<
-        GetHighScore_HTML,
-        Resource_HighScore::Id,
-        Method_Get,
-        ContentType_TextHTML>
-    {
-    };
-
-
-    class GetHighScore_XML : public SQLRequestGenericHandler<
-        GetHighScore_XML,
-        Resource_HighScore::Id,
-        Method_Get,
-        ContentType_ApplicationXML>
-    {
-    };
-
-
-    class GetHighScore_Text : public SQLRequestGenericHandler<
-        GetHighScore_Text,
-        Resource_HighScore::Id,
-        Method_Get,
-        ContentType_TextPlain>
-    {
-    };
-
-
-    class GetHallOfFame_HTML : public SQLRequestGenericHandler<
-        GetHallOfFame_HTML,
-        Resource_HallOfFame::Id,
-        Method_Get,
-        ContentType_TextHTML>
-    {
-    };
-
-
-    class GetHallOfFame_XML : public SQLRequestGenericHandler<
-        GetHallOfFame_XML,
-        Resource_HallOfFame::Id,
-        Method_Get,
-        ContentType_ApplicationXML>
-    {
-    };
-
-
-    class GetHallOfFame_Text : public SQLRequestGenericHandler<
-        GetHallOfFame_Text,
-        Resource_HallOfFame::Id,
-        Method_Get,
-        ContentType_TextPlain>
-    {
     };
 
 

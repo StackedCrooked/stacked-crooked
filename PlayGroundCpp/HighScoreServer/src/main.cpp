@@ -1,3 +1,4 @@
+#include "Config.h"
 #include "RequestHandler.h"
 #include "SQLRequestGenericHandler.h"
 #include "RequestHandlerFactory.h"
@@ -19,6 +20,11 @@ using Poco::Util::OptionSet;
 
 
 namespace HSServer {
+
+
+// Declaration only.
+Poco::Logger & GetLogger();
+
 
 class HighScoreServer : public Poco::Util::ServerApplication
 {
@@ -89,7 +95,7 @@ protected:
         std::cout << "Listening to port " << mPortNumber << std::endl;
 
         mFactory = new RequestHandlerFactory;
-        registerRequestHandlers();
+        RegisterRequestHandlers(*mFactory);
 
         // Ownership of the factory is passed to the HTTP server.
         Poco::Net::HTTPServer httpServer(mFactory, serverSocket, params);
@@ -100,26 +106,6 @@ protected:
     }
 
 private:
-    void registerRequestHandlers()
-    {
-        // HighScore
-        mFactory->registerRequestHandler<GetHighScore_HTML>();
-        mFactory->registerRequestHandler<GetHighScore_XML>();
-        mFactory->registerRequestHandler<GetHighScore_Text>();
-        mFactory->registerRequestHandler<PostHightScore>();
-        mFactory->registerRequestHandler<DeleteHighScore>();
-
-        // HighScorePostForm
-        mFactory->registerRequestHandler<GetHighScorePostForm>();
-
-        // HighScoreDeleteForm
-        mFactory->registerRequestHandler<GetHighScoreDeleteForm>();
-
-        // HallOfFame
-        mFactory->registerRequestHandler<GetHallOfFame_HTML>();
-        mFactory->registerRequestHandler<GetHallOfFame_XML>();
-        mFactory->registerRequestHandler<GetHallOfFame_Text>();
-    }
 
     RequestHandlerFactory * mFactory;
     int mPortNumber;

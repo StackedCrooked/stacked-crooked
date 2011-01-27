@@ -27,8 +27,8 @@ namespace HSServer
      * Efficiently parses the query arguments of an URI.
      */
     void GetArgs(const std::string & inURI, Args & outArgs);
-    
-    
+
+
     /**
      * GetArgs with a return value instead of by reference.
      */
@@ -47,7 +47,7 @@ namespace HSServer
      */
     std::string Args2String(const Args & inArgs);
 
-    
+
     /**
      * Transform a string into its lower-case equivalent.
      */
@@ -62,7 +62,7 @@ namespace HSServer
 
     /**
      * HTMLFormatting indicates how the html code is formatted.
-     * 
+     *
      * - HTMLFormatting_NoBreaks    no new lines are created
      * - HTMLFormatting_OneLiner    one new line after the closing tag
      * - HTMLFormatting_ThreeLiner  add new line after opening and closing tag
@@ -90,10 +90,10 @@ namespace HSServer
                               HTMLFormatting inHTMLFormatting,
                               std::ostream & ostr);
 
-    
+
     /**
      * Stream-based verion of MakeHTML using a callback.
-     */      
+     */
     typedef boost::function<void(std::ostream &)> StreamFunction;
     std::ostream & StreamHTML(const std::string & inHTMLElement,
                               const StreamFunction & inStreamFunction,
@@ -101,7 +101,7 @@ namespace HSServer
                               std::ostream & ostr);
 
 
-    static const char * cHTMLTemplate = 
+    static const char * cHTMLTemplate =
         "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
         "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
         "<head>"

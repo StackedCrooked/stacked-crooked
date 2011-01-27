@@ -27,30 +27,30 @@ namespace HSServer
 
     protected:
         static int GetPortFromArgs(const std::vector<std::string>& args, int inDefault)
-		{
-			for (unsigned int i = 0; i < (args.size() - 1); ++i)
-			{
-				if (args[i] == "-p" || args[i] == "--port")
-				{
-					return boost::lexical_cast<int>(args[i+1]);
-				}
-			}
-			return inDefault;
-		}
+        {
+            for (unsigned int i = 0; i < (args.size() - 1); ++i)
+            {
+                if (args[i] == "-p" || args[i] == "--port")
+                {
+                    return boost::lexical_cast<int>(args[i+1]);
+                }
+            }
+            return inDefault;
+        }
 
         int main(const std::vector<std::string>& args)
         {
-            Poco::Data::SQLite::Connector::registerConnector();			
+            Poco::Data::SQLite::Connector::registerConnector();
 
-			int port = GetPortFromArgs(args, 80);
-			std::cout << "Listening to port " << port << std::endl;
+            int port = GetPortFromArgs(args, 80);
+            std::cout << "Listening to port " << port << std::endl;
 
             int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
-            
+
             // Only allow one thread because the database using simple locking
             int maxThreads = config().getInt("HighScoreServer.maxThreads", 1);
             Poco::ThreadPool::defaultPool().addCapacity(maxThreads);
-            
+
             Poco::Net::HTTPServerParams * params = new Poco::Net::HTTPServerParams;
             params->setMaxQueued(maxQueued);
             params->setMaxThreads(maxThreads);
@@ -59,7 +59,7 @@ namespace HSServer
 
             mFactory = new RequestHandlerFactory;
             registerRequestHandlers();
-            
+
             // Ownership of the factory is passed to the HTTP server.
             Poco::Net::HTTPServer httpServer(mFactory, serverSocket, params);
             httpServer.start();
@@ -96,19 +96,19 @@ using namespace HSServer;
 
 int main(int argc, char** argv)
 {
-	int result = 0;
-	try
-	{
-		HSServer::HighScoreServer app;
-		result = app.run(argc, argv);
-	}
-	catch (const std::exception & exc)
-	{
+    int result = 0;
+    try
+    {
+        HSServer::HighScoreServer app;
+        result = app.run(argc, argv);
+    }
+    catch (const std::exception & exc)
+    {
 #ifdef _WIN32
-		::MessageBoxA(0, exc.what(), "High Score Server", MB_OK);
+        ::MessageBoxA(0, exc.what(), "High Score Server", MB_OK);
 #else
-		std::cout << exc.what() << std::endl;
+        std::cout << exc.what() << std::endl;
 #endif
-	}
-	return result;
+    }
+    return result;
 }

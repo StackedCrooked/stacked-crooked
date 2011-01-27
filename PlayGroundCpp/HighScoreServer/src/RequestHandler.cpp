@@ -33,7 +33,7 @@ namespace HSServer
     {
     }
 
-    
+
     RequestHandler::RequestHandler(ResourceId inResourceId, Method inMethod, ContentType inContentType) :
         mSession(SessionFactory::instance().create("SQLite", "HighScores.db")),
         mResourceId(inResourceId),
@@ -53,15 +53,15 @@ namespace HSServer
         }
     }
 
-    
+
     void RequestHandler::handleRequest(Poco::Net::HTTPServerRequest& inRequest,
                                        Poco::Net::HTTPServerResponse& outResponse)
     {
-        
+
         GetLogger().information("Request from " + inRequest.clientAddress().toString());
         GetLogger().information("Request Accept header: " + inRequest.get("Accept"));
         outResponse.setChunkedTransferEncoding(true);
-		outResponse.setContentType(ToString(mContentType));
+        outResponse.setContentType(ToString(mContentType));
 
         try
         {
@@ -90,7 +90,7 @@ namespace HSServer
 
 
     void GetHighScorePostForm::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
-    {        
+    {
         std::string body;
         ReadEntireFile("html/add.html", body);
         outResponse.setContentLength(body.size());
@@ -99,7 +99,7 @@ namespace HSServer
 
 
     void GetHighScoreDeleteForm::generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
-    {        
+    {
         std::string body;
         ReadEntireFile("html/delete.html", body);
         outResponse.setContentLength(body.size());
@@ -115,11 +115,11 @@ namespace HSServer
 
         Args args;
         GetArgs(requestBody, args);
-        
+
         std::string name = URIDecode(GetArg(args, "name"));
         const std::string & score = GetArg(args, "score");
 
-        Statement insert(mSession);
+        Statement insert(getSession());
         insert << "INSERT INTO HighScores VALUES(NULL, strftime('%s', 'now'), ?, ?)", use(name), use(score);
         insert.execute();
 
@@ -145,7 +145,7 @@ namespace HSServer
 
         GetLogger().information("SQL statement is: " + sql);
 
-        Statement insert(mSession);
+        Statement insert(getSession());
         insert << sql;
         insert.execute();
 

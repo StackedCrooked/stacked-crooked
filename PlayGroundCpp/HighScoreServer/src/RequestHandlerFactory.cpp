@@ -103,12 +103,12 @@ namespace HSServer
 
     Method GetMethod(const Poco::Net::HTTPServerRequest & inRequest)
     {
-		return ParseMethod(inRequest.getMethod());
+        return ParseMethod(inRequest.getMethod());
     }
 
 
     RequestHandlerId GetRequestHandlerId(const Poco::Net::HTTPServerRequest & inRequest)
-    {        
+    {
         return RequestHandlerId(ParseResourceId(GetLocationWithoutExtension(inRequest)), GetMethod(inRequest));
     }
 
@@ -121,10 +121,10 @@ namespace HSServer
 
         try
         {
-            fLogger.information("Request with uri: " + inRequest.getURI());        
+            fLogger.information("Request with uri: " + inRequest.getURI());
             fLogger.information("Request id: " + ToString(GetRequestHandlerId(inRequest)));
 
-            FactoryFunctions::iterator it = mFactoryFunctions.find(GetRequestHandlerId(inRequest));            
+            FactoryFunctions::iterator it = mFactoryFunctions.find(GetRequestHandlerId(inRequest));
             if (it != mFactoryFunctions.end())
             {
                 const FactoryFunction & ff(it->second);

@@ -43,10 +43,10 @@ inline MethodName ToString(Method inMethod)
     static const MethodName cMethodNames[] =
     {
         "NULL",
-	    "GET",
-	    "POST",
-	    "PUT",
-	    "DELETE"
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
     };
     return cMethodNames[int(inMethod)];
 }

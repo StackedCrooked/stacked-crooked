@@ -4,12 +4,12 @@
 
 namespace HSServer
 {
-    
+
     const char * ToString(ContentType inContentType)
     {
         switch (inContentType)
         {
-            case ContentType_TextPlain:                
+            case ContentType_TextPlain:
             {
                 return "text/plain";
             }

@@ -64,6 +64,7 @@ protected:
     virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
 };
 
+
 template <>
 struct TagNamingPolicy<ContentType_TextHTML, HighScore::Id>
 {
@@ -129,6 +130,7 @@ struct SelectQueryPolicy<Method_Get, HighScore::Id>
 {
     static const char * GetSelectQuery() { return "SELECT * FROM HighScores"; }
 };
+
 
 template<>
 struct SelectQueryPolicy<Method_Get, HallOfFame::Id>

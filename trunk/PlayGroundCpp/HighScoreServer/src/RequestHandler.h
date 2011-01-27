@@ -90,46 +90,6 @@ namespace HSServer
         virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse) = 0;
     };
 
-
-    class GetHighScorePostForm : public GenericRequestHandler<GetHighScorePostForm,
-                                                              Resource_HighScorePostForm::Id,
-                                                              Method_Get,
-                                                              ContentType_TextHTML>
-    {
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-    };
-
-
-    class GetHighScoreDeleteForm : public GenericRequestHandler<GetHighScoreDeleteForm,
-                                                                Resource_HighScoreDeleteForm::Id,
-                                                                Method_Get,
-                                                                ContentType_TextHTML>
-    {
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-    };
-
-
-    class PostHightScore : public GenericRequestHandler<PostHightScore,
-                                                        Resource_HighScore::Id,
-                                                        Method_Post,
-                                                        ContentType_TextPlain>
-    {
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-    };
-
-
-    class DeleteHighScore : public GenericRequestHandler<DeleteHighScore,
-                                                         Resource_HighScore::Id,
-                                                         Method_Delete,
-                                                         ContentType_TextPlain>
-    {
-    protected:
-        virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
-    };
-
 } // HighScoreServer
 
 

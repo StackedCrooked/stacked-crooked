@@ -95,26 +95,13 @@ public:
 
 
 #define DEFINE_HTTP_RESOURCE(RESOURCE_NAME, RESOURCE_LOCATION) \
-struct Resource_##RESOURCE_NAME : public Resource { \
+struct RESOURCE_NAME : public Resource { \
     enum { Id = __LINE__ }; \
     static ResourceId GetId() { return Id; } \
     static const char * GetLocation() { return RESOURCE_LOCATION; } \
-    Resource_##RESOURCE_NAME() : Resource(Id, GetLocation()) {} \
+    RESOURCE_NAME() : Resource(Id, GetLocation()) {} \
 }; \
-static Registrator<Resource_##RESOURCE_NAME> gRegistrator_##RESOURCE_NAME;
-
-
-
-//
-// Define the resources
-//
-DEFINE_HTTP_RESOURCE(HighScore, "hs")
-DEFINE_HTTP_RESOURCE(HighScorePostForm, "hs/post-form")
-DEFINE_HTTP_RESOURCE(HighScorePostConfirmation, "hs/post-confirmation")
-DEFINE_HTTP_RESOURCE(HighScoreDeleteForm, "hs/delete-form")
-DEFINE_HTTP_RESOURCE(HighScoreDeleteConfirmation, "hs/delete-confirmation")
-DEFINE_HTTP_RESOURCE(HallOfFame, "hof")
-DEFINE_HTTP_RESOURCE(ErrorPage, "error-page")
+static Registrator<RESOURCE_NAME> gRegistrator_##RESOURCE_NAME;
 
 
 } // namespace HSServer

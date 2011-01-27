@@ -12,6 +12,7 @@ LIBS = \
 
 SRC = \
     src/main.cpp \
+    src/Config.cpp \
     src/ContentType.cpp \
     src/Renderer.cpp \
     src/RequestHandler.cpp \

@@ -9,11 +9,23 @@ LIBS= \
 	-lPocoData \
 	-lPocoSQLite
 
+
+SRC = \
+    src/ContentType.cpp \
+    src/main.cpp \
+    src/Renderer.cpp \
+    src/RequestHandler.cpp \
+    src/RequestHandlerFactory.cpp \
+    src/RequestHandlerId.cpp \
+    src/RequestMethod.cpp \
+    src/ResourceId.cpp \
+    src/Utils.cpp
+
 all:
-	g++ -o HighScoreServer $(INCLUDE_DIRS) $(CPP_DEFINES) $(LIBS) src/*.cpp
+	g++ -o HighScoreServer $(INCLUDE_DIRS) $(CPP_DEFINES) $(LIBS) $(SRC)
 
 clean:
-	rm -f *.o
+	find . -name "*.o" | xargs rm
 
 install:
 	cp -f ./HighScoreServer /usr/bin/

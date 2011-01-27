@@ -75,7 +75,7 @@ namespace HSServer
 
 
     HTMLErrorResponse::HTMLErrorResponse(const std::string & inErrorMessage) :
-        RequestHandler(ResourceId_End, Method_Get, ContentType_TextHTML),
+        RequestHandler(Resource_ErrorPage::Id, Method_Get, ContentType_TextHTML),
         mErrorMessage(inErrorMessage)
     {
     }
@@ -125,7 +125,7 @@ namespace HSServer
 
         // Return an URL instead of a HTML page.
         // This is because the client is the JavaScript application in this case.
-        std::string body = cResourceLocations[GetResourceId()];
+        std::string body = ResourceManager::Instance().getResourceLocation(GetResourceId());
         outResponse.setContentLength(body.size());
         outResponse.send() << body;
     }

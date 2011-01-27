@@ -18,7 +18,7 @@ namespace HSServer
     };
 
     template <>
-    struct TagNamingPolicy<ContentType_TextHTML, ResourceId_HighScore>
+    struct TagNamingPolicy<ContentType_TextHTML, Resource_HighScore::Id>
     {
         typedef HTMLRenderer RendererType;
 
@@ -28,7 +28,7 @@ namespace HSServer
     };
 
     template <>
-    struct TagNamingPolicy<ContentType_TextHTML, ResourceId_HallOfFame>
+    struct TagNamingPolicy<ContentType_TextHTML, Resource_HallOfFame::Id>
     {
         typedef HTMLRenderer RendererType;
 
@@ -38,7 +38,7 @@ namespace HSServer
     };
 
     template <>
-    struct TagNamingPolicy<ContentType_ApplicationXML, ResourceId_HighScore>
+    struct TagNamingPolicy<ContentType_ApplicationXML, Resource_HighScore::Id>
     {
         typedef XMLRenderer RendererType;
 
@@ -48,7 +48,7 @@ namespace HSServer
     };
 
     template <>
-    struct TagNamingPolicy<ContentType_ApplicationXML, ResourceId_HallOfFame>
+    struct TagNamingPolicy<ContentType_ApplicationXML, Resource_HallOfFame::Id>
     {
         typedef XMLRenderer RendererType;
 
@@ -58,7 +58,7 @@ namespace HSServer
     };
 
     template <>
-    struct TagNamingPolicy<ContentType_TextPlain, ResourceId_HighScore>
+    struct TagNamingPolicy<ContentType_TextPlain, Resource_HighScore::Id>
     {
         typedef PlainTextRenderer RendererType;
 
@@ -68,7 +68,7 @@ namespace HSServer
     };
 
     template <>
-    struct TagNamingPolicy<ContentType_TextPlain, ResourceId_HallOfFame>
+    struct TagNamingPolicy<ContentType_TextPlain, Resource_HallOfFame::Id>
     {
         typedef PlainTextRenderer RendererType;
 
@@ -83,13 +83,13 @@ namespace HSServer
     };
 
     template<>
-    struct SelectQueryPolicy<Method_Get, ResourceId_HighScore>
+    struct SelectQueryPolicy<Method_Get, Resource_HighScore::Id>
     {
         static const char * GetSelectQuery() { return "SELECT * FROM HighScores"; }
     };
 
     template<>
-    struct SelectQueryPolicy<Method_Get, ResourceId_HallOfFame>
+    struct SelectQueryPolicy<Method_Get, Resource_HallOfFame::Id>
     {
         static const char * GetSelectQuery() { return "SELECT Name, Score FROM HighScores ORDER BY Score DESC LIMIT 10"; }
     };
@@ -133,7 +133,7 @@ namespace HSServer
 
     class GetHighScore_HTML : public SQLRequestGenericHandler<
         GetHighScore_HTML,
-        ResourceId_HighScore,
+        Resource_HighScore::Id,
         Method_Get,
         ContentType_TextHTML>
     {
@@ -142,7 +142,7 @@ namespace HSServer
 
     class GetHighScore_XML : public SQLRequestGenericHandler<
         GetHighScore_XML,
-        ResourceId_HighScore,
+        Resource_HighScore::Id,
         Method_Get,
         ContentType_ApplicationXML>
     {
@@ -151,7 +151,7 @@ namespace HSServer
 
     class GetHighScore_Text : public SQLRequestGenericHandler<
         GetHighScore_Text,
-        ResourceId_HighScore,
+        Resource_HighScore::Id,
         Method_Get,
         ContentType_TextPlain>
     {
@@ -160,7 +160,7 @@ namespace HSServer
 
     class GetHallOfFame_HTML : public SQLRequestGenericHandler<
         GetHallOfFame_HTML,
-        ResourceId_HallOfFame,
+        Resource_HallOfFame::Id,
         Method_Get,
         ContentType_TextHTML>
     {
@@ -169,7 +169,7 @@ namespace HSServer
 
     class GetHallOfFame_XML : public SQLRequestGenericHandler<
         GetHallOfFame_XML,
-        ResourceId_HallOfFame,
+        Resource_HallOfFame::Id,
         Method_Get,
         ContentType_ApplicationXML>
     {
@@ -178,7 +178,7 @@ namespace HSServer
 
     class GetHallOfFame_Text : public SQLRequestGenericHandler<
         GetHallOfFame_Text,
-        ResourceId_HallOfFame,
+        Resource_HallOfFame::Id,
         Method_Get,
         ContentType_TextPlain>
     {

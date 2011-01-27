@@ -13,14 +13,17 @@ namespace HSServer {
 class RequestHandlerId
 {
 public:
-    explicit RequestHandlerId(ResourceId inResourceId, Method inMethod);
+    explicit RequestHandlerId(ResourceId inResourceId, Method inMethod, ContentType inContentType);
 
     inline ResourceId resourceId() const { return mResourceId; }
+
+    inline ContentType preferredContentType() const { return mContentType; }
 
     inline Method requestMethod() const { return mMethod; }
 
 private:
     ResourceId mResourceId;
+    ContentType mContentType;
     Method mMethod;
 };
 

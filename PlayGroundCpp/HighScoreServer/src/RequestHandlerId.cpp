@@ -8,31 +8,39 @@ namespace HSServer {
 
 
 RequestHandlerId::RequestHandlerId(ResourceId inResourceId,
-                                    Method inMethod) :
+                                    Method inMethod,
+                                    ContentType inContentType) :
     mResourceId(inResourceId),
-    mMethod(inMethod)
+    mMethod(inMethod),
+    mContentType(inContentType)
 {
 }
 
 
-bool operator < (const RequestHandlerId & lhs, const RequestHandlerId & rhs)
+bool operator< (const RequestHandlerId & lhs, const RequestHandlerId & rhs)
 {
-    if (lhs.requestMethod() != rhs.requestMethod())
+    if (lhs.resourceId() != rhs.resourceId())
     {
-        return lhs.requestMethod() < rhs.requestMethod();
+        return lhs.resourceId() < rhs.resourceId();
+    }
+    else if (lhs.preferredContentType() != rhs.preferredContentType())
+    {
+        return lhs.preferredContentType() < rhs.preferredContentType();
     }
     else
     {
-        return lhs.resourceId() < rhs.resourceId();
+        return lhs.requestMethod() < rhs.requestMethod();
     }
 }
 
 
 std::string ToString(const RequestHandlerId & inRequestHandlerId)
 {
-    return Poco::format("{ location: %s; requestMethod: %s }",
-                        std::string(cResourceLocations[inRequestHandlerId.resourceId()]),
-                        std::string(ToString(inRequestHandlerId.requestMethod())));
+    return Poco::format("{ location: %s; requestMethod: %s ; contentType: %s}",
+                        ResourceManager::Instance().getResourceLocation(inRequestHandlerId.resourceId()),
+                        std::string(ToString(inRequestHandlerId.requestMethod())),
+                        std::string(ToString(inRequestHandlerId.preferredContentType()))
+                        );
 }
 
 

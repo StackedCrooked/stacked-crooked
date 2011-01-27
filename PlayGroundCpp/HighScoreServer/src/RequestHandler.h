@@ -92,7 +92,7 @@ namespace HSServer
 
 
     class GetHighScorePostForm : public GenericRequestHandler<GetHighScorePostForm,
-                                                              ResourceId_HighScorePostForm,
+                                                              Resource_HighScorePostForm::Id,
                                                               Method_Get,
                                                               ContentType_TextHTML>
     {
@@ -102,8 +102,8 @@ namespace HSServer
 
 
     class GetHighScoreDeleteForm : public GenericRequestHandler<GetHighScoreDeleteForm,
-                                                                ResourceId_HighScoreDeleteForm,
-                                                                Method_Delete,
+                                                                Resource_HighScoreDeleteForm::Id,
+                                                                Method_Get,
                                                                 ContentType_TextHTML>
     {
     protected:
@@ -112,7 +112,7 @@ namespace HSServer
 
 
     class PostHightScore : public GenericRequestHandler<PostHightScore,
-                                                        ResourceId_HighScore,
+                                                        Resource_HighScore::Id,
                                                         Method_Post,
                                                         ContentType_TextPlain>
     {
@@ -122,7 +122,7 @@ namespace HSServer
 
 
     class DeleteHighScore : public GenericRequestHandler<DeleteHighScore,
-                                                         ResourceId_HighScore,
+                                                         Resource_HighScore::Id,
                                                          Method_Delete,
                                                          ContentType_TextPlain>
     {

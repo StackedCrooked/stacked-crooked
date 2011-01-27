@@ -1,18 +1,18 @@
-CPP_DEFINES=
-INCLUDE_DIRS=-Iinclude -I/opt/local/include
-LIBS= \
-	-L/opt/local/lib \
-	-lPocoFoundation \
-	-lPocoNet \
-	-lPocoXML \
-	-lPocoUtil \
-	-lPocoData \
-	-lPocoSQLite
+CPP_DEFINES = -ggdb3
+INCLUDE_DIRS = -Iinclude -I/opt/local/include
+LIBS = \
+    -L/opt/local/lib \
+    -lPocoFoundation \
+    -lPocoNet \
+    -lPocoXML \
+    -lPocoUtil \
+    -lPocoData \
+    -lPocoSQLite
 
 
 SRC = \
-    src/ContentType.cpp \
     src/main.cpp \
+    src/ContentType.cpp \
     src/Renderer.cpp \
     src/RequestHandler.cpp \
     src/RequestHandlerFactory.cpp \
@@ -23,6 +23,9 @@ SRC = \
 
 all:
 	g++ -o HighScoreServer $(INCLUDE_DIRS) $(CPP_DEFINES) $(LIBS) $(SRC)
+
+cpp:
+	g++ -E HighScoreServer $(INCLUDE_DIRS) $(CPP_DEFINES) $(LIBS) $(SRC)
 
 clean:
 	find . -name "*.o" | xargs rm

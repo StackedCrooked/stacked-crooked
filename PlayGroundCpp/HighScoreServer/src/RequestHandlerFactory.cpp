@@ -101,6 +101,12 @@ namespace HSServer
     }
 
 
+    ResourceId GetResourceId(const Poco::Net::HTTPServerRequest & inRequest)
+    {
+        return ResourceManager::Instance().getResourceId(GetLocationWithoutExtension(inRequest));
+    }
+
+
     Method GetMethod(const Poco::Net::HTTPServerRequest & inRequest)
     {
         return ParseMethod(inRequest.getMethod());
@@ -109,7 +115,9 @@ namespace HSServer
 
     RequestHandlerId GetRequestHandlerId(const Poco::Net::HTTPServerRequest & inRequest)
     {
-        return RequestHandlerId(ParseResourceId(GetLocationWithoutExtension(inRequest)), GetMethod(inRequest));
+        return RequestHandlerId(GetResourceId(inRequest),
+                                GetMethod(inRequest),
+                                GetContentType(inRequest));
     }
 
 
@@ -121,6 +129,13 @@ namespace HSServer
 
         try
         {
+            if (inRequest.getURI() == "/favicon.ico")
+            {
+                std::string dump;
+                const_cast<Poco::Net::HTTPServerRequest&>(inRequest).stream() >> dump;
+                throw new HTMLErrorResponse("Favicon is not supported.");
+            }
+            fLogger.information("---");
             fLogger.information("Request with uri: " + inRequest.getURI());
             fLogger.information("Request id: " + ToString(GetRequestHandlerId(inRequest)));
 

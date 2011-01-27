@@ -14,79 +14,117 @@
 #include <iostream>
 
 
-namespace HSServer
+using Poco::Util::Option;
+using Poco::Util::OptionSet;
+
+
+namespace HSServer {
+
+class HighScoreServer : public Poco::Util::ServerApplication
 {
-
-    class HighScoreServer : public Poco::Util::ServerApplication
+public:
+    HighScoreServer() :
+        mFactory(0),
+        mPortNumber(9090)
     {
-    public:
-        HighScoreServer() :
-            mFactory(0)
-        {
-        }
+    }
 
-    protected:
-        static int GetPortFromArgs(const std::vector<std::string>& args, int inDefault)
+protected:
+    static int GetPortFromArgs(const std::vector<std::string>& args, int inDefault)
+    {
+        for (size_t idx = 0; (idx + 1) < args.size(); ++idx)
         {
-            for (unsigned int i = 0; i < (args.size() - 1); ++i)
+            if (args[idx] == "-p" || args[idx] == "--port")
             {
-                if (args[i] == "-p" || args[i] == "--port")
-                {
-                    return boost::lexical_cast<int>(args[i+1]);
-                }
+                return boost::lexical_cast<int>(args[idx + 1]);
             }
-            return inDefault;
         }
+        return inDefault;
+    }
 
-        int main(const std::vector<std::string>& args)
+    void handleOption(const std::string& name, const std::string& value)
+    {
+        ServerApplication::handleOption(name, value);
+
+        if (name == "port")
         {
-            Poco::Data::SQLite::Connector::registerConnector();
-
-            int port = GetPortFromArgs(args, 80);
-            std::cout << "Listening to port " << port << std::endl;
-
-            int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
-
-            // Only allow one thread because the database using simple locking
-            int maxThreads = config().getInt("HighScoreServer.maxThreads", 1);
-            Poco::ThreadPool::defaultPool().addCapacity(maxThreads);
-
-            Poco::Net::HTTPServerParams * params = new Poco::Net::HTTPServerParams;
-            params->setMaxQueued(maxQueued);
-            params->setMaxThreads(maxThreads);
-
-            Poco::Net::ServerSocket serverSocket(port);
-
-            mFactory = new RequestHandlerFactory;
-            registerRequestHandlers();
-
-            // Ownership of the factory is passed to the HTTP server.
-            Poco::Net::HTTPServer httpServer(mFactory, serverSocket, params);
-            httpServer.start();
-            waitForTerminationRequest();
-            httpServer.stop();
-            return Poco::Util::Application::EXIT_OK;
+            try
+            {
+                mPortNumber = boost::lexical_cast<unsigned int>(value);
+            }
+            catch (const boost::bad_lexical_cast &)
+            {
+                throw std::runtime_error("Invalid port number: " + value);
+            }
         }
+    }
 
-    private:
-        void registerRequestHandlers()
-        {
-            mFactory->registerRequestHandler<GetHighScore_HTML>();
-            mFactory->registerRequestHandler<GetHighScore_XML>();
-            mFactory->registerRequestHandler<GetHighScore_Text>();
+    void defineOptions(OptionSet& options)
+    {
+        ServerApplication::defineOptions(options);
 
-            mFactory->registerRequestHandler<GetHallOfFame_HTML>();
-            mFactory->registerRequestHandler<GetHallOfFame_XML>();
-            mFactory->registerRequestHandler<GetHallOfFame_Text>();
+        options.addOption(
+            Option("port", "p", "Port number for incoming HTTP requests")
+                .required(false)
+                .repeatable(false)
+                .argument("port"));
+    }
 
-            mFactory->registerRequestHandler<GetHighScorePostForm>();
-            mFactory->registerRequestHandler<GetHighScoreDeleteForm>();
-            mFactory->registerRequestHandler<PostHightScore>();
-            mFactory->registerRequestHandler<DeleteHighScore>();
-        }
+    int main(const std::vector<std::string>& args)
+    {
+        Poco::Data::SQLite::Connector::registerConnector();
 
-        RequestHandlerFactory * mFactory;
-    };
+
+        int maxQueued  = config().getInt("HighScoreServer.maxQueued", 100);
+
+        // Only allow one thread because the database using simple locking
+        int maxThreads = config().getInt("HighScoreServer.maxThreads", 1);
+        Poco::ThreadPool::defaultPool().addCapacity(maxThreads);
+
+        Poco::Net::HTTPServerParams * params = new Poco::Net::HTTPServerParams;
+        params->setMaxQueued(maxQueued);
+        params->setMaxThreads(maxThreads);
+
+        Poco::Net::ServerSocket serverSocket(mPortNumber);
+        std::cout << "Listening to port " << mPortNumber << std::endl;
+
+        mFactory = new RequestHandlerFactory;
+        registerRequestHandlers();
+
+        // Ownership of the factory is passed to the HTTP server.
+        Poco::Net::HTTPServer httpServer(mFactory, serverSocket, params);
+        httpServer.start();
+        waitForTerminationRequest();
+        httpServer.stop();
+        return Poco::Util::Application::EXIT_OK;
+    }
+
+private:
+    void registerRequestHandlers()
+    {
+        // HighScore
+        mFactory->registerRequestHandler<GetHighScore_HTML>();
+        mFactory->registerRequestHandler<GetHighScore_XML>();
+        mFactory->registerRequestHandler<GetHighScore_Text>();
+        mFactory->registerRequestHandler<PostHightScore>();
+        mFactory->registerRequestHandler<DeleteHighScore>();
+
+        // HighScorePostForm
+        mFactory->registerRequestHandler<GetHighScorePostForm>();
+
+        // HighScoreDeleteForm
+        mFactory->registerRequestHandler<GetHighScoreDeleteForm>();
+
+        // HallOfFame
+        mFactory->registerRequestHandler<GetHallOfFame_HTML>();
+        mFactory->registerRequestHandler<GetHallOfFame_XML>();
+        mFactory->registerRequestHandler<GetHallOfFame_Text>();
+    }
+
+    RequestHandlerFactory * mFactory;
+    int mPortNumber;
+};
+
 
 } // namespace HSServer
 
@@ -104,11 +142,13 @@ int main(int argc, char** argv)
     }
     catch (const std::exception & exc)
     {
-#ifdef _WIN32
+    #ifdef _WIN32
         ::MessageBoxA(0, exc.what(), "High Score Server", MB_OK);
-#else
+    #else
         std::cout << exc.what() << std::endl;
-#endif
+    #endif
     }
     return result;
 }
+
+

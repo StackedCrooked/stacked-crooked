@@ -1,3 +1,5 @@
+" Disable Ex mode (bastard!)
+:map Q <Nop>
 
 " Set auto-indent rules
 set autoindent

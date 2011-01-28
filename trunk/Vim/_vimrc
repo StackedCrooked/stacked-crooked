@@ -1,9 +1,12 @@
-" Disable Ex mode (bastard!)
-:map Q <Nop>
+" -----------------------------------------------------------------------------
+"  General Settings
+" -----------------------------------------------------------------------------
+
+" Add common search paths
+set path+=/usr/local/include,/opt/local/include
 
 " Set auto-indent rules
 set autoindent
-
 
 " Set filetype dependent indention rules
 filetype plugin indent on
@@ -51,31 +54,28 @@ set smartindent
 " Enable syntax coloring
 syntax enable
 
+
+" -----------------------------------------------------------------------------
+" Key mappings
+" -----------------------------------------------------------------------------
+
+" Disable Ex mode (bastard!)
+:map Q <Nop>
+
 " Yank until end of line
 map Y y$
 
-
-" -----------------------------------------------------------------------------
-" Function keys
-" -----------------------------------------------------------------------------
-
+" F1: Open the NERDTree
 :map <F1> :NERDTree<CR>
 
-" Split current tab
+" F2: Duplicate current tab
 :map <F2> :tab split<CR>
 
-" Search for constructors in a cpp file
+" F3: Search constructors in a cpp file
 :map <F3> /\(\<[A-Z]\w*\)::\1\><CR>
 
-" Search for destructors in a cpp file
+" F4: Search destructors in a cpp file
 :map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
-
-
-" -----------------------------------------------------------------------------
-" Path settings
-" -----------------------------------------------------------------------------
-
-set path+=/usr/local/include,/opt/local/include
 
 
 " -----------------------------------------------------------------------------

@@ -1,3 +1,6 @@
+" -----------------------------------------------------------------------------
+" Look and feel settings
+" -----------------------------------------------------------------------------
 
 " Unix-specific settings
 if has("unix")
@@ -16,7 +19,6 @@ set columns=174
 set gfn=Menlo:h11
 set vb " Turn off audio bells
 endif
-
 
 " Windows-specific settings
 if has("win32")
@@ -49,11 +51,11 @@ vnoremap <C-C> "+y
 vnoremap <C-Insert> "+y
 
 " CTRL-V and SHIFT-Insert are Paste
-map <C-V>   	"+gP
-map <S-Insert>  	"+gP
+map <C-V>       "+gP
+map <S-Insert>  "+gP
 
-cmap <C-V>  	<C-R>+
-cmap <S-Insert> 	<C-R>+
+cmap <C-V>      <C-R>+
+cmap <S-Insert>     <C-R>+
 
 " Pasting blockwise and linewise selections is not possible in Insert and
 " Visual mode without the +virtualedit feature.  They are pasted as if they
@@ -63,11 +65,11 @@ cmap <S-Insert> 	<C-R>+
 exe 'inoremap <script> <C-V>' paste#paste_cmd['i']
 exe 'vnoremap <script> <C-V>' paste#paste_cmd['v']
 
-imap <S-Insert> 	<C-V>
-vmap <S-Insert> 	<C-V>
+imap <S-Insert>     <C-V>
+vmap <S-Insert>     <C-V>
 
 " Use CTRL-Q to do what CTRL-V used to do
-noremap <C-Q>   	<C-V>
+noremap <C-Q>       <C-V>
 
 
 " Enable copy/paste in block mode

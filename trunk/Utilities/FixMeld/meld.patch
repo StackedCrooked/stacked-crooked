@@ -1,5 +1,5 @@
---- /usr/lib/meld/meldapp.py.bck	2010-11-02 12:57:45.292695443 +0100
-+++ /usr/lib/meld/meldapp.py	2010-11-02 13:13:39.932070620 +0100
+--- /usr/lib/meld/meld/preferences.py.bck	2010-11-02 12:57:45.292695443 +0100
++++ /usr/lib/meld/meld/preferences.py	2010-11-02 13:13:39.932070620 +0100
 @@ -398,13 +398,13 @@
          "ignore_symlinks": prefs.Value(prefs.BOOL,0),
          "vc_console_visible": prefs.Value(prefs.BOOL, 0),

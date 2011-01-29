@@ -113,5 +113,6 @@ call ActivateAddons()
 :  normal j
 :endfunction
 
+" Map CTRL-G to the OpenFile function
 :map <C-G> :call OpenFile()<CR>
 

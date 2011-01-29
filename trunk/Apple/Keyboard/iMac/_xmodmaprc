@@ -1,4 +1,5 @@
 keycode 94 = grave asciitilde
+keycode 112 = Previous
 keycode 182 = Insert
 keycode 0x5A = 0
 keycode 0x57 = 1

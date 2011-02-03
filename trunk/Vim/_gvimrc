@@ -10,7 +10,6 @@ set lines=52
 set columns=120
 endif
 
-
 " Mac-specific settings
 if has("mac")
 winp 77 1412
@@ -20,7 +19,6 @@ set gfn=Menlo:h11
 set vb " Turn off audio bells
 endif
 
-
 " Windows-specific settings
 if has("win32")
 set gfn=Courier_New:h10:cANSI
@@ -28,6 +26,8 @@ winp 600 0
 win 100 50
 endif
 
+" Enable right-click
+set mousemodel=popup
 
 " Bookmarks menu
 if has("win32")

@@ -8,3 +8,5 @@ keycode 87 = KP_1
 keycode 88 = KP_2
 keycode 89 = KP_3
 keycode 90 = KP_0
+remove Lock = Caps_Lock
+keysym Caps_Lock = Escape

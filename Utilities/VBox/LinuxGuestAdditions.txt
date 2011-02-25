@@ -5,16 +5,8 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install dkms
 
-Mount the guest additions.iso
------------------------------
-- Click on the cd/dvd icon on the bottom of the VBox Window and select VBoxGuestAdditions.iso.
-- Navigate to the disk: Places -> VBOXADDITIONS_x.y.z
-- Get the path of the mount:
-  -> In the folder view right-click the tab that says VBOXADDITIONS_x.y.z
-  -> Select 'Copy'
-  -> Paste somewhere and now you have the path of the guest additions mount.
-- Open Terminal and cd to the guest additions mount.
-- Install the guest additions that corresponds with your architecture. For example:
-    sudo ./VBoxLinuxAdditions-x86.run
-- Done.
+Install the disk additions
+--------------------------
+cd /media/VBOXADDITIONS_x.y.z
+sudo ./VBoxLinuxAdditions.run
 

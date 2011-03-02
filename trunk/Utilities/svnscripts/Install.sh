@@ -2,6 +2,7 @@
 ln -fs `pwd`/svnchanges $HOME/bin/svnchanges 
 ln -fs `pwd`/svndiff $HOME/bin/svndiff 
 ln -fs `pwd`/svnunknowns $HOME/bin/svnunknowns 
+ln -fs `pwd`/svnadds $HOME/bin/svnadds 
 
 # fmdiff is a Mac only tool
 if [[ "`uname`" == 'Darwin' ]]; then

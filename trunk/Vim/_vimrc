@@ -56,6 +56,17 @@ syntax enable
 
 
 " -----------------------------------------------------------------------------
+"  File types
+" -----------------------------------------------------------------------------
+
+" SWIG.
+" Requires the 'swig' plugin which is automatically
+" installed by the ActivateAddons() function below.
+au BufNewFile,BufRead *.i set filetype=swig 
+au BufNewFile,BufRead *.swg set filetype=swig 
+
+
+" -----------------------------------------------------------------------------
 " Key mappings
 " -----------------------------------------------------------------------------
 
@@ -89,7 +100,7 @@ fun ActivateAddons()
       call scriptmanager#Activate([])
       let g:vim_script_manager['auto_install'] = 1
       " The 'silent' command surpresses the "Press ENTER to continue" messages.
-      silent call scriptmanager#Activate(['vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
+      silent call scriptmanager#Activate(['swig', 'vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
     catch /.*/
       echoe v:exception
     endtry

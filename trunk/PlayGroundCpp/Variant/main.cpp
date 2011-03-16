@@ -53,6 +53,12 @@ public:
     Variant() { }
 
     template<class T>
+    Variant(T inValue) :
+        mImpl(new VariantImpl<typename TypeWrapper<T>::TYPE>(inValue))
+    {
+    }
+
+    template<class T>
     typename TypeWrapper<T>::REFTYPE getValue()
     {
         return dynamic_cast<VariantImpl<typename TypeWrapper<T>::TYPE>&>(*mImpl.get()).mValue;
@@ -109,20 +115,12 @@ private:
 };
 
 
-template<class T>
-static Variant MakeVariant(typename TypeWrapper<T>::CONSTREFTYPE inValue)
-{
-    Variant var;
-    var.setValue<T>(inValue);
-    return var;
-}
-
-
 /**
- * DynamicObject allows you to add member variables at runtime.
+ * DynamicObject is a class that allows you to add "member variables" at runtime.
  *
- * The variable type is used as key. Therefore only one object of any type can be added.
- * Use a container type if you need to store multiple values of one type.
+ * These "member variables" are unnamed. Their type-id is used as identifier.
+ * Therefore only one object of any type can be added. You can use a container
+ * type or a wrapper class if you need to store multiple objects of the same type.
  *
  * Usage example:
  *   DynamicObject obj;
@@ -137,23 +135,31 @@ static Variant MakeVariant(typename TypeWrapper<T>::CONSTREFTYPE inValue)
 class DynamicObject
 {
 public:
+
+    /**
+     * Add a new dynamic member or overwrite an existing one.
+     */
     template<class T>
-    void set(typename TypeWrapper<T>::CONSTREFTYPE inValue)
+    void setDynamicMember(typename TypeWrapper<T>::CONSTREFTYPE inValue)
     {
-        mMembers.insert(std::make_pair(&typeid(typename TypeWrapper<T>::TYPE),
-                                       MakeVariant<T>(inValue)));
+        mMembers[&typeid(typename TypeWrapper<T>::TYPE)] = Variant(inValue);
     }
 
-
+    /**
+     * Check if a dynamic member of a certain type exists.
+     */
     template<class T>
-    bool has() const
+    bool hasDynamicMember() const
     {
         const std::type_info * typeInfo = &typeid(typename TypeWrapper<T>::TYPE);
         return mMembers.find(typeInfo) != mMembers.end();
     }
 
+    /**
+     * Get reference
+     */
     template<class T>
-    typename TypeWrapper<T>::CONSTREFTYPE get() const
+    typename TypeWrapper<T>::CONSTREFTYPE getDynamicMember() const
     {
         const std::type_info * typeInfo = &typeid(typename TypeWrapper<T>::TYPE);
         Members::const_iterator it = mMembers.find(typeInfo);
@@ -164,8 +170,11 @@ public:
         return it->second.getValue<T>();
     }
 
+    /**
+     * Get const reference
+     */
     template<class T>
-    typename TypeWrapper<T>::REFTYPE get()
+    typename TypeWrapper<T>::REFTYPE getDynamicMember()
     {
         const std::type_info * typeInfo = &typeid(typename TypeWrapper<T>::TYPE);
         Members::iterator it = mMembers.find(typeInfo);
@@ -188,26 +197,39 @@ struct Foo {};
 int main()
 {
     DynamicObject obj;
-    obj.set<int>(3);
-    obj.set<std::string>("Hello");
-    obj.set<bool>(false);
-    std::cout << "int: "     << obj.get<int>() << std::endl;
-    std::cout << "string: " << obj.get<std::string>() << std::endl;
-    std::cout << "bool: " << obj.get<bool>() << std::endl;
+    obj.setDynamicMember<int>(3);
+
+    // Get the int as reference
+    int & theInt = obj.getDynamicMember<int>();
+    std::cout << "int: " << theInt << std::endl;
+
+    // Update the int via the ref
+    theInt = 5;
+
+    // "const int &", "cont int" and "const int &" are all considered the same type
+    std::cout << "int&: " << obj.getDynamicMember<int &>() << std::endl;
+    std::cout << "const int: " << obj.getDynamicMember<const int>() << std::endl;
+    std::cout << "const int &: " << obj.getDynamicMember<const int &>() << std::endl;
+
+    // Store a string and bool
+    obj.setDynamicMember<std::string>("Hello");
+    obj.setDynamicMember<bool>(false);
+    std::cout << "string: " << obj.getDynamicMember<std::string>() << std::endl;
+    std::cout << "bool: " << obj.getDynamicMember<bool>() << std::endl;
 
     // This would throw
     try
     {
-        obj.get< std::vector<int> >();
+        obj.getDynamicMember< std::vector<int> >();
     }
     catch (const std::exception & exc)
     {
         std::cout << "Hah! " << exc.what() << std::endl;
     }
 
-    std::cout << "Has char? Answer: " << (obj.has<char>() ? "Yes" : "No") << "!" << std::endl;
-    std::cout << "Has int? Answer: " << (obj.has<int>() ? "Yes" : "No") << "!" << std::endl;
-    std::cout << "Has Foo? Answer: " << (obj.has<Foo>() ? "Yes" : "No") << "!" << std::endl;
+    std::cout << "Has char? Answer: " << (obj.hasDynamicMember<char>() ? "Yes" : "No") << "!" << std::endl;
+    std::cout << "Has int? Answer: " << (obj.hasDynamicMember<int>() ? "Yes" : "No") << "!" << std::endl;
+    std::cout << "Has Foo? Answer: " << (obj.hasDynamicMember<Foo>() ? "Yes" : "No") << "!" << std::endl;
     return 0;
 }
 

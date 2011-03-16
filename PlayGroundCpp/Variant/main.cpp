@@ -132,7 +132,7 @@ static Variant MakeVariant(typename TypeWrapper<T>::CONSTREFTYPE inValue)
  *   const std::string & msg = obj.get<std::string>(); // get the string as const ref
  *
  * This can be used to get/set private implementation details from within a .cpp file.
- * Friend classes will be able to access these from another .cpp file.
+ * Other classes that have this knowledge can then access this data from their .cpp file.
  */
 class DynamicObject
 {

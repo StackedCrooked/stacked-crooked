@@ -2,6 +2,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include <typeinfo>
 #include <boost/shared_ptr.hpp>
 
@@ -117,6 +118,22 @@ static Variant MakeVariant(typename TypeWrapper<T>::CONSTREFTYPE inValue)
 }
 
 
+/**
+ * DynamicObject allows you to add member variables at runtime.
+ *
+ * The variable type is used as key. Therefore only one object of any type can be added.
+ * Use a container type if you need to store multiple values of one type.
+ *
+ * Usage example:
+ *   DynamicObject obj;
+ *   obj.set<int>(3); // add an int
+ *   obj.set<std::string>("Hello"); // add a string object
+ *   int & var = obj.get<int>(); // get the int as ref
+ *   const std::string & msg = obj.get<std::string>(); // get the string as const ref
+ *
+ * This can be used to get/set private implementation details from within a .cpp file.
+ * Friend classes will be able to access these from another .cpp file.
+ */
 class DynamicObject
 {
 public:
@@ -125,6 +142,14 @@ public:
     {
         mMembers.insert(std::make_pair(&typeid(typename TypeWrapper<T>::TYPE),
                                        MakeVariant<T>(inValue)));
+    }
+
+
+    template<class T>
+    bool has() const
+    {
+        const std::type_info * typeInfo = &typeid(typename TypeWrapper<T>::TYPE);
+        return mMembers.find(typeInfo) != mMembers.end();
     }
 
     template<class T>
@@ -146,7 +171,7 @@ public:
         Members::iterator it = mMembers.find(typeInfo);
         if (it == mMembers.end())
         {
-            throw std::logic_error(std::string("Dynamic object does not contain objects of type: ") + typeid(typename TypeWrapper<T>::TYPE).name());
+            throw std::logic_error(std::string("Dynamic object does not contain objects of type: ") + typeid(typename TypeWrapper<T>::TYPE).name() + std::string("."));
         }
         return it->second.getValue<T>();
     }
@@ -155,6 +180,9 @@ private:
     typedef std::map<const std::type_info*, Variant> Members;
     Members mMembers;
 };
+
+
+struct Foo {};
 
 
 int main()
@@ -166,9 +194,20 @@ int main()
     std::cout << "int: "     << obj.get<int>() << std::endl;
     std::cout << "string: " << obj.get<std::string>() << std::endl;
     std::cout << "bool: " << obj.get<bool>() << std::endl;
-    int & intVal = obj.get<int>();
-    intVal = 1234;
-    std::cout << "int: "     << obj.get<int>() << std::endl;
+
+    // This would throw
+    try
+    {
+        obj.get< std::vector<int> >();
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << "Hah! " << exc.what() << std::endl;
+    }
+
+    std::cout << "Has char? Answer: " << (obj.has<char>() ? "Yes" : "No") << "!" << std::endl;
+    std::cout << "Has int? Answer: " << (obj.has<int>() ? "Yes" : "No") << "!" << std::endl;
+    std::cout << "Has Foo? Answer: " << (obj.has<Foo>() ? "Yes" : "No") << "!" << std::endl;
     return 0;
 }
 

@@ -1,4 +1,4 @@
 INCLUDE=-I../3rdParty/Boost
 
 all:
-	g++ -o test $(INCLUDE) main.cpp
+	g++ -ggdb -O0 -o test $(INCLUDE) main.cpp

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <typeinfo>
@@ -47,6 +48,9 @@ struct TypeWrapper<T&>
 };
 
 
+/**
+ * Variant class allows you to store any type.
+ */
 class Variant
 {
 public:
@@ -61,19 +65,20 @@ public:
     template<class T>
     typename TypeWrapper<T>::REFTYPE getValue()
     {
-        return dynamic_cast<VariantImpl<typename TypeWrapper<T>::TYPE>&>(*mImpl.get()).mValue;
+        return const_cast<typename TypeWrapper<T>::REFTYPE>(static_cast<const Variant*>(this)->getValue<typename TypeWrapper<T>::CONSTREFTYPE>());
     }
+
     template<class T>
     typename TypeWrapper<T>::CONSTREFTYPE getValue() const
     {
         const VariantImpl<typename TypeWrapper<T>::TYPE> * impl = dynamic_cast<const VariantImpl<typename TypeWrapper<T>::TYPE>*>(mImpl.get());
         if (!impl)
         {
-            std::string msg = "Types don't match. Own type: " + mImpl->getClassName();
-            msg += ". Requested type: ";
-            msg += typeid(typename TypeWrapper<T>::TYPE).name();
-            msg += ".";
-            throw std::logic_error(msg);
+            std::stringstream ss;
+            ss << "Type mismatch!"
+               << " Our type: " << mImpl->getClassName() << "."
+               << " Requested type: " << typeid(typename TypeWrapper<T>::TYPE).name() << ".";
+            throw std::logic_error(ss.str());
         }
         return impl->mValue;
     }
@@ -118,7 +123,7 @@ private:
 /**
  * DynamicObject is a class that allows you to add "member variables" at runtime.
  *
- * These "member variables" are unnamed. Their type-id is used as identifier.
+ * These "member variables" are unnamed. Their type-id is used as identifier instead.
  * Therefore only one object of any type can be added. You can use a container
  * type or a wrapper class if you need to store multiple objects of the same type.
  *
@@ -126,15 +131,19 @@ private:
  *   DynamicObject obj;
  *   obj.set<int>(3); // add an int
  *   obj.set<std::string>("Hello"); // add a string object
- *   int & var = obj.get<int>(); // get the int as ref
+ *   int var = obj.get<int>(); // get the int
  *   const std::string & msg = obj.get<std::string>(); // get the string as const ref
  *
- * This can be used to get/set private implementation details from within a .cpp file.
+ * It can be used to get/set private implementation details from within a .cpp file.
  * Other classes that have this knowledge can then access this data from their .cpp file.
  */
 class DynamicObject
 {
 public:
+    /**
+     * Virtual destructor make this class suitable for inheritance.
+     */
+    virtual ~DynamicObject() {}
 
     /**
      * Add a new dynamic member or overwrite an existing one.
@@ -221,6 +230,17 @@ int main()
     try
     {
         obj.getDynamicMember< std::vector<int> >();
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << "Hah! " << exc.what() << std::endl;
+    }
+
+    // This would also throw
+    try
+    {
+        Variant v(2);
+        v.getValue<std::string>();
     }
     catch (const std::exception & exc)
     {

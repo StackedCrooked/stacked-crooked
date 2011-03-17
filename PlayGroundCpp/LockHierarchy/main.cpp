@@ -73,11 +73,88 @@ template<class SubType>
 SubType * Singleton<SubType>::sInstance(0);
 
 
+class AbstractMutex : Noncopyable
+{
+public:
+    AbstractMutex(int inRank) :
+        mRank(inRank)
+    {
+    }
+
+    virtual ~AbstractMutex()
+    {
+    }
+
+    int rank() const
+    {
+        return mRank;
+    }
+
+private:
+    int mRank;
+};
+
+
+// Forward declaration
+template<class RankedMutexType>
+class RankedScopedLock;
+
+
+template<class RankedMutexType, class MutexType>
+class GenericRankedMutex : public AbstractMutex
+{
+public:
+    typedef RankedMutexType RankedMutex;
+    typedef typename MutexType NativeMutex;
+    typedef RankedScopedLock<RankedMutex> ScopedLock;
+
+    GenericRankedMutex() :
+        AbstractMutex(RankedMutex::Rank)
+    {
+    }
+
+    virtual ~GenericRankedMutex()
+    {
+    }
+
+    NativeMutex & getMutex()
+    {
+        return mMutex;
+    }
+
+    const NativeMutex & getMutex() const
+    {
+        return mMutex;
+    }
+
+private:
+    NativeMutex mMutex;
+};
+
+
+template<class MutexType>
+class BottomMutex : public GenericRankedMutex<BottomMutex<MutexType>, MutexType>
+{
+public:
+    enum { Rank = 0 };
+};
+
+
+template<class LowerRankedMutexType>
+class RankedMutex : public GenericRankedMutex<RankedMutex<LowerRankedMutexType>, typename LowerRankedMutexType::NativeMutex>
+{
+public:
+    typedef LowerRankedMutexType LowerRankedMutex;
+
+    enum { Rank = LowerRankedMutexType::Rank + 1 };
+};
+
+
 template<class MutexType>
 class RankChecker : public Singleton<RankChecker<MutexType> >
 {
 public:
-    typedef MutexType Mutex;
+    typedef MutexType NativeMutex;
 
     template<class MutexType>
     void push(MutexType & inMutex)
@@ -104,104 +181,32 @@ public:
 
 private:
     std::vector<int> mGlobalRanks;
-    Mutex mGlobalRanksMutex;
+    NativeMutex mGlobalRanksMutex;
 };
 
 
 template<class RankedMutexType>
-class RankedMutexLock : Noncopyable
+class RankedScopedLock : Noncopyable
 {
 public:
     typedef RankedMutexType RankedMutex;
-    typedef typename RankedMutex::Mutex Mutex;
+    typedef typename RankedMutex::NativeMutex NativeMutex;
 
-    RankedMutexLock(RankedMutexType & inRankedMutex) :
+    RankedScopedLock(RankedMutexType & inRankedMutex) :
         mRankedMutex(inRankedMutex)
     {
-        RankChecker<Mutex>::Instance().push(mRankedMutex);
+        RankChecker<NativeMutex>::Instance().push(mRankedMutex);
         LockMutex(mRankedMutex.getMutex());
     }
 
-    ~RankedMutexLock()
+    ~RankedScopedLock()
     {
         UnlockMutex(mRankedMutex.getMutex());
-        RankChecker<Mutex>::Instance().pop();
+        RankChecker<NativeMutex>::Instance().pop();
     }
 
 private:
     RankedMutex & mRankedMutex;
-};
-
-
-class AbstractMutex : Noncopyable
-{
-public:
-    AbstractMutex(int inRank) :
-        mRank(inRank)
-    {
-    }
-
-    virtual ~AbstractMutex()
-    {
-    }
-
-    int rank() const
-    {
-        return mRank;
-    }
-
-private:
-    int mRank;
-};
-
-
-template<class RankedMutexType, class MutexType>
-class GenericRankedMutex : public AbstractMutex
-{
-public:
-    typedef RankedMutexType RankedMutex;
-    typedef typename MutexType Mutex;
-    typedef RankedMutexLock<RankedMutex> ScopedLock;
-
-    GenericRankedMutex() :
-        AbstractMutex(RankedMutex::Rank)
-    {
-    }
-
-    virtual ~GenericRankedMutex()
-    {
-    }
-
-    Mutex & getMutex()
-    {
-        return mMutex;
-    }
-
-    const Mutex & getMutex() const
-    {
-        return mMutex;
-    }
-
-private:
-    Mutex mMutex;
-};
-
-
-template<class MutexType>
-class BottomMutex : public GenericRankedMutex<BottomMutex<MutexType>, MutexType>
-{
-public:
-    enum { Rank = 0 };
-};
-
-
-template<class LowerRankedMutexType>
-class RankedMutex : public GenericRankedMutex<RankedMutex<LowerRankedMutexType>, typename LowerRankedMutexType::Mutex>
-{
-public:
-    typedef LowerRankedMutexType LowerRankedMutex;
-
-    enum { Rank = LowerRankedMutexType::Rank + 1 };
 };
 
 
@@ -221,7 +226,6 @@ int main()
     try
     {
         RankChecker<Poco::Mutex>::Initializer theRankCheckerInit;
-        BottomMutex<Poco::Mutex> m;
         L0Mutex m0;
         L1Mutex m1;
         L2Mutex m2;
@@ -240,7 +244,6 @@ int main()
     try
     {
         RankChecker<Poco::Mutex>::Initializer theRankCheckerInit;
-        BottomMutex<Poco::Mutex> m;
         L0Mutex m0;
         L1Mutex m1;
         L2Mutex m2;

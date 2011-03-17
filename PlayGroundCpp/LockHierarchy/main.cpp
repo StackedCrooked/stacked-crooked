@@ -1,84 +1,147 @@
-#include "Poco/Foundation.h"
-#include "Poco/Mutex.h"
+#include <cassert>
 #include <iostream>
 #include <vector>
 
 
-typedef Poco::Mutex Mutex;
-void LockMutex(Mutex & inMutex)
+class Noncopyable
+{
+protected:
+  Noncopyable() {}
+  ~Noncopyable() {}
+private:  // emphasize the following members are private
+  Noncopyable( const Noncopyable& );
+  const Noncopyable& operator=( const Noncopyable& );
+};
+
+
+template<class MutexType>
+void LockMutex(MutexType & inMutex)
 {
     inMutex.lock();
 }
 
 
-void UnlockMutex(Mutex & inMutex)
+template<class MutexType>
+void UnlockMutex(MutexType & inMutex)
 {
     inMutex.unlock();
 }
 
 
-static std::vector<int> sGlobalRanks;
-static Mutex sGlobalRanksMutex;
-
-
-template<class _RankedMutexType>
-class RankedMutexLock
+template<class SubType>
+class Singleton : Noncopyable
 {
 public:
-    typedef _RankedMutexType RankedMutex;
-    RankedMutexLock(_RankedMutexType & inRankedMutex) :
+    // Create a scoped object in your main function.
+    struct Initializer : Noncopyable
+    {
+        Initializer()
+        { Singleton<SubType>::CreateInstance(); }
+        
+        ~Initializer()
+        { Singleton<SubType>::DestroyInstance(); }
+    };
+
+    static SubType & Instance()
+    {
+        assert(sInstance);
+        return *sInstance;
+    }
+
+protected:
+    Singleton() {}
+    ~Singleton() {}
+
+private:
+    static void CreateInstance()
+    {
+        assert(!sInstance);
+        sInstance = new SubType;
+    }
+
+    static void DestroyInstance()
+    {
+        delete sInstance;
+        sInstance = 0;
+    }
+    
+    static SubType * sInstance;
+};
+
+
+template<class SubType>
+SubType * Singleton<SubType>::sInstance(0);
+
+
+template<class MutexType>
+class RankChecker : public Singleton<RankChecker<MutexType> >
+{
+public:
+    typedef MutexType Mutex;
+
+    template<class MutexType>
+    void push(MutexType & inMutex)
+    {
+        LockMutex(mGlobalRanksMutex);
+        if (mGlobalRanks.empty() || inMutex.rank() <= mGlobalRanks.back())
+        {
+            mGlobalRanks.push_back(inMutex.rank());
+            UnlockMutex(mGlobalRanksMutex);
+        }
+        else
+        {
+            UnlockMutex(mGlobalRanksMutex);
+            throw std::runtime_error("Rank is higher than previous.");
+        }
+    }
+
+    void pop()
+    {
+        LockMutex(mGlobalRanksMutex);
+        mGlobalRanks.pop_back();
+        UnlockMutex(mGlobalRanksMutex);
+    }
+
+private:
+    std::vector<int> mGlobalRanks;
+    Mutex mGlobalRanksMutex;
+};
+
+
+template<class RankedMutexType>
+class RankedMutexLock : Noncopyable
+{
+public:
+    typedef RankedMutexType RankedMutex;
+    typedef typename RankedMutex::Mutex Mutex;
+
+    RankedMutexLock(RankedMutexType & inRankedMutex) :
         mRankedMutex(inRankedMutex)
     {
-        CheckRank();
+        RankChecker<Mutex>::Instance().push(mRankedMutex);
         LockMutex(mRankedMutex.getMutex());
     }
 
     ~RankedMutexLock()
     {
         UnlockMutex(mRankedMutex.getMutex());
-
-        LockMutex(sGlobalRanksMutex);
-        sGlobalRanks.pop_back();
-        UnlockMutex(sGlobalRanksMutex);
+        RankChecker<Mutex>::Instance().pop();
     }
 
 private:
-    RankedMutexLock(const RankedMutexLock &);
-    RankedMutexLock& operator=(const RankedMutexLock &);
-
-    void CheckRank()
-    {
-        LockMutex(sGlobalRanksMutex);
-        //std::cout << "sGlobalRanks.size(): " << sGlobalRanks.size() << std::endl;
-        if (sGlobalRanks.empty() || mRankedMutex.rank() <= sGlobalRanks.back())
-        {
-            //std::cout << "Pushing " << mRankedMutex.rank() << std::endl;
-            sGlobalRanks.push_back(mRankedMutex.rank());
-            UnlockMutex(sGlobalRanksMutex);
-        }
-        else
-        {
-            UnlockMutex(sGlobalRanksMutex);
-            //std::cout << "mRankedMutex.rank(): " << mRankedMutex.rank() << std::endl;
-            //std::cout << "GlobalRank: " << sGlobalRanks.back()  << std::endl << std::flush;
-            throw std::runtime_error("Rank is higher than previous.");
-        }
-    }
-
     RankedMutex & mRankedMutex;
 };
 
 
-
-class AbstractMutexWrapper
+class AbstractMutex : Noncopyable
 {
 public:
-    AbstractMutexWrapper(int inRank) :
+    AbstractMutex(int inRank) :
         mRank(inRank)
     {
     }
 
-    virtual ~AbstractMutexWrapper()
+    virtual ~AbstractMutex()
     {
     }
 
@@ -92,101 +155,76 @@ private:
 };
 
 
-
-template<class _MutexType>
-class MutexWrapper : public AbstractMutexWrapper
+template<class RankedMutexType, class MutexType>
+class GenericRankedMutex : public AbstractMutex
 {
 public:
-    typedef _MutexType MutexType;
+    typedef RankedMutexType RankedMutex;
+    typedef typename MutexType Mutex;
+    typedef RankedMutexLock<RankedMutex> ScopedLock;
 
-    MutexWrapper(int inRank) :
-        AbstractMutexWrapper(inRank)
+    GenericRankedMutex() :
+        AbstractMutex(RankedMutex::Rank)
     {
     }
 
-    virtual ~MutexWrapper()
+    virtual ~GenericRankedMutex()
     {
-
     }
 
-    MutexType & getMutex()
-    {
-        return mMutex;
-    }
-
-    const MutexType & getMutex() const
+    Mutex & getMutex()
     {
         return mMutex;
     }
 
-protected:
+    const Mutex & getMutex() const
+    {
+        return mMutex;
+    }
+
 private:
-    MutexType mMutex;
-    int mRank;
+    Mutex mMutex;
 };
 
 
-template<class _MutexType>
-class BottomMutex : public MutexWrapper<_MutexType>
+template<class MutexType>
+class BottomMutex : public GenericRankedMutex<BottomMutex<MutexType>, MutexType>
 {
 public:
-    typedef MutexWrapper<_MutexType> Super;
-    typedef BottomMutex This;
-    typedef typename Super::MutexType MutexType;
-    typedef RankedMutexLock<This> ScopedLock;
-
-    enum
-    {
-        Rank = 0
-    };
-
-
-    BottomMutex() :
-        Super(Rank)
-    {
-    }
+    enum { Rank = 0 };
 };
 
 
-template<class _LowerRankedMutex>
-class RankedMutex : public MutexWrapper<typename _LowerRankedMutex::MutexType>
+template<class LowerRankedMutexType>
+class RankedMutex : public GenericRankedMutex<RankedMutex<LowerRankedMutexType>, typename LowerRankedMutexType::Mutex>
 {
 public:
-    typedef MutexWrapper<typename _LowerRankedMutex::MutexType> Super;
-    typedef RankedMutex<_LowerRankedMutex> This;
-    typedef RankedMutexLock<This> ScopedLock;
+    typedef LowerRankedMutexType LowerRankedMutex;
 
-    enum
-    {
-        Rank = _LowerRankedMutex::Rank + 1
-    };
-
-    RankedMutex() :
-        Super(Rank)
-    {
-    }
-
-    virtual ~RankedMutex()
-    {
-    }
+    enum { Rank = LowerRankedMutexType::Rank + 1 };
 };
 
 
-typedef BottomMutex<Mutex  > L0Mutex;
-typedef RankedMutex<L0Mutex>      L1Mutex;
-typedef RankedMutex<L1Mutex>      L2Mutex;
-typedef RankedMutex<L2Mutex>      L3Mutex;
-typedef RankedMutex<L3Mutex>      L4Mutex;
+#include "Poco/Foundation.h"
+#include "Poco/Mutex.h"
+
+
+typedef BottomMutex<Poco::Mutex> L0Mutex;
+typedef RankedMutex<L0Mutex> L1Mutex;
+typedef RankedMutex<L1Mutex> L2Mutex;
+typedef RankedMutex<L2Mutex> L3Mutex;
+typedef RankedMutex<L3Mutex> L4Mutex;
 
 
 int main()
 {
-    L0Mutex m0;
-    L1Mutex m1;
-    L2Mutex m2;
-
     try
     {
+        RankChecker<Poco::Mutex>::Initializer theRankCheckerInit;
+        BottomMutex<Poco::Mutex> m;
+        L0Mutex m0;
+        L1Mutex m1;
+        L2Mutex m2;
         std::cout << "Expect success: ";
         L2Mutex::ScopedLock l2(m2);
         L1Mutex::ScopedLock l1(m1);
@@ -201,18 +239,21 @@ int main()
 
     try
     {
+        RankChecker<Poco::Mutex>::Initializer theRankCheckerInit;
+        BottomMutex<Poco::Mutex> m;
+        L0Mutex m0;
+        L1Mutex m1;
+        L2Mutex m2;
         std::cout << "Expect exception: ";
-        L1Mutex::ScopedLock l1(m1);
         L0Mutex::ScopedLock l0(m0);
         L2Mutex::ScopedLock l2(m2);
+        L1Mutex::ScopedLock l1(m1);
         std::cout << "Huh?" << std::endl;
     }
     catch (const std::exception & exc)
     {
         std::cout << "Indeed: " << exc.what() << std::endl;
     }
-
-
     return 0;
 }
 

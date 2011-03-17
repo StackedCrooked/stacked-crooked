@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LockHierarchy_vs80", "LockHierarchy\LockHierarchy_vs80.vcproj", "{FBE39DB3-4987-4F63-BF07-2A3DC8619050}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8164D41D-B053-405B-826C-CF37AC0EF176} = {8164D41D-B053-405B-826C-CF37AC0EF176}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Foundation", "3rdParty\Poco\Foundation\Foundation_vs80.vcproj", "{8164D41D-B053-405B-826C-CF37AC0EF176}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FBE39DB3-4987-4F63-BF07-2A3DC8619050}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FBE39DB3-4987-4F63-BF07-2A3DC8619050}.Debug|Win32.Build.0 = Debug|Win32
+		{FBE39DB3-4987-4F63-BF07-2A3DC8619050}.Release|Win32.ActiveCfg = Release|Win32
+		{FBE39DB3-4987-4F63-BF07-2A3DC8619050}.Release|Win32.Build.0 = Release|Win32
+		{8164D41D-B053-405B-826C-CF37AC0EF176}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8164D41D-B053-405B-826C-CF37AC0EF176}.Debug|Win32.Build.0 = Debug|Win32
+		{8164D41D-B053-405B-826C-CF37AC0EF176}.Release|Win32.ActiveCfg = Release|Win32
+		{8164D41D-B053-405B-826C-CF37AC0EF176}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

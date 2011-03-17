@@ -3,9 +3,6 @@
 #include <vector>
 
 
-namespace Threading {
-
-
 class Noncopyable
 {
 protected:
@@ -15,20 +12,6 @@ private:  // emphasize the following members are private
   Noncopyable( const Noncopyable& );
   const Noncopyable& operator=( const Noncopyable& );
 };
-
-
-template<class MutexType>
-void LockMutex(MutexType & inMutex)
-{
-    inMutex.lock();
-}
-
-
-template<class MutexType>
-void UnlockMutex(MutexType & inMutex)
-{
-    inMutex.unlock();
-}
 
 
 template<class SubType>
@@ -76,209 +59,228 @@ template<class SubType>
 SubType * Singleton<SubType>::sInstance(0);
 
 
-class AbstractMutex : Noncopyable
-{
-public:
-    AbstractMutex(int inRank) :
-        mRank(inRank)
-    {
-    }
-
-    virtual ~AbstractMutex()
-    {
-    }
-
-    int rank() const
-    {
-        return mRank;
-    }
-
-private:
-    int mRank;
-};
-
-
-// Forward declaration
-template<class RankedMutexType>
-class RankedScopedLock;
-
-
-template<class RankedMutexType, class MutexType>
-class GenericRankedMutex : public AbstractMutex
-{
-public:
-    typedef RankedMutexType RankedMutex;
-    typedef typename MutexType NativeMutex;
-    typedef RankedScopedLock<RankedMutex> ScopedLock;
-
-    GenericRankedMutex() :
-        AbstractMutex(RankedMutex::Layer)
-    {
-    }
-
-    virtual ~GenericRankedMutex()
-    {
-    }
-
-    NativeMutex & getMutex()
-    {
-        return mMutex;
-    }
-
-    const NativeMutex & getMutex() const
-    {
-        return mMutex;
-    }
-
-private:
-    NativeMutex mMutex;
-};
-
-
 template<class NativeMutexType>
-class RootMutex : public GenericRankedMutex<RootMutex<NativeMutexType>, NativeMutexType>
+struct GenericThreadLibrary
 {
-public:
-    enum { Layer = 0 };
-};
-
-
-template<class LowerMutex>
-class RankedMutex : public GenericRankedMutex<RankedMutex<LowerMutex>, typename LowerMutex::NativeMutex>
-{
-public:
-    typedef LowerMutex LowerRankedMutex;
-
-    enum { Layer = LowerMutex::Layer + 1 };
-};
-
-
-template<class MutexType>
-class RankChecker : public Singleton<RankChecker<MutexType> >
-{
-public:
-    typedef MutexType NativeMutex;
-
-    template<class MutexType>
-    void push(MutexType & inMutex)
-    {
-        LockMutex(mGlobalRanksMutex);
-        if (mGlobalRanks.empty() || inMutex.rank() <= mGlobalRanks.back())
-        {
-            mGlobalRanks.push_back(inMutex.rank());
-            UnlockMutex(mGlobalRanksMutex);
-        }
-        else
-        {
-            UnlockMutex(mGlobalRanksMutex);
-            throw std::runtime_error("Layer is higher than previous.");
-        }
-    }
-
-    void pop()
-    {
-        LockMutex(mGlobalRanksMutex);
-        mGlobalRanks.pop_back();
-        UnlockMutex(mGlobalRanksMutex);
-    }
-
-private:
-    std::vector<int> mGlobalRanks;
-    NativeMutex mGlobalRanksMutex;
-};
-
-
-template<class RankedMutexType>
-class RankedScopedLock : Noncopyable
-{
-public:
-    typedef RankedMutexType RankedMutex;
-    typedef typename RankedMutex::NativeMutex NativeMutex;
-
-    RankedScopedLock(RankedMutexType & inRankedMutex) :
-        mRankedMutex(inRankedMutex)
-    {
-        RankChecker<NativeMutex>::Instance().push(mRankedMutex);
-        LockMutex(mRankedMutex.getMutex());
-    }
-
-    ~RankedScopedLock()
-    {
-        UnlockMutex(mRankedMutex.getMutex());
-        RankChecker<NativeMutex>::Instance().pop();
-    }
-
-private:
-    RankedMutex & mRankedMutex;
-};
-
-
-template<class NativeMutexType>
-class Initializer
-{
-public:
     typedef NativeMutexType NativeMutex;
-    typedef RankChecker<NativeMutex> RankChecker;
-    typedef RootMutex<NativeMutex> RootMutex;    
-
-    Initializer() : mRankCheckerInitializer()
+    
+    static void LockMutex(NativeMutex & inNativeMutex)
     {
+        inNativeMutex.lock();
     }
-        
-private:
-    typedef typename RankChecker::Initializer RankCheckerInit;
-    RankCheckerInit mRankCheckerInitializer;
-};
+    
+    static void UnlockMutex(NativeMutex & inNativeMutex)
+    {
+        inNativeMutex.unlock();
+    }
 
 
-} // namespace Threading
+    class AbstractMutex : Noncopyable
+    {
+    public:
+        AbstractMutex(int inRank) :
+            mRank(inRank)
+        {
+        }
+
+        virtual ~AbstractMutex()
+        {
+        }
+
+        int rank() const
+        {
+            return mRank;
+        }
+
+    private:
+        int mRank;
+    };
 
 
+    // Forward declaration
+    template<class HMutexType>
+    class ScopedLock;
+
+
+    template<class ThisType>
+    class GenericRankedMutex : public AbstractMutex
+    {
+    public:
+        typedef ThisType This;
+        typedef ScopedLock<This> ScopedLock;
+
+        GenericRankedMutex() :
+            AbstractMutex(This::Level)
+        {
+        }
+
+        virtual ~GenericRankedMutex()
+        {
+        }
+
+        NativeMutex & getMutex()
+        {
+            return mMutex;
+        }
+
+        const NativeMutex & getMutex() const
+        {
+            return mMutex;
+        }
+
+    private:
+        NativeMutex mMutex;
+    };
+
+    
+    class Level0Mutex : public GenericRankedMutex<Level0Mutex>
+    {
+    public:
+        enum { Level = 0 };
+    };
+
+
+    template<class LowerMutexType>
+    class LevelNMutex : public GenericRankedMutex< LevelNMutex<LowerMutexType> >
+    {
+    public:
+        typedef LowerMutexType LowerMutex;
+
+        enum { Level = LowerMutex::Level + 1 };
+    };
+
+
+    typedef LevelNMutex<Level0Mutex> Level1Mutex;
+    typedef LevelNMutex<Level1Mutex> Level2Mutex;
+    typedef LevelNMutex<Level2Mutex> Level3Mutex;
+    typedef LevelNMutex<Level3Mutex> Level4Mutex;
+    typedef LevelNMutex<Level4Mutex> Level5Mutex;
+    typedef LevelNMutex<Level5Mutex> Level6Mutex;
+    typedef LevelNMutex<Level6Mutex> Level7Mutex;
+    typedef LevelNMutex<Level7Mutex> Level8Mutex;
+    typedef LevelNMutex<Level8Mutex> Level9Mutex;
+
+
+    class RankChecker : public Singleton<RankChecker>
+    {
+    public:
+        void push(int inRank)
+        {
+            LockMutex(mNativeMutex);
+            if (mCurrentRanks.empty() || inRank < mCurrentRanks.back())
+            {
+                mCurrentRanks.push_back(inRank);
+                UnlockMutex(mNativeMutex);
+            }
+            else
+            {
+                UnlockMutex(mNativeMutex);
+                throw std::runtime_error("Level is higher than previous.");
+            }
+        }
+
+        void pop()
+        {
+            LockMutex(mNativeMutex);
+            mCurrentRanks.pop_back();
+            UnlockMutex(mNativeMutex);
+        }
+
+    private:
+        std::vector<int> mCurrentRanks;
+        NativeMutex mNativeMutex;
+    };
+
+
+    template<class HierarchicalMutexType>
+    class ScopedLock : Noncopyable
+    {
+    public:
+        typedef HierarchicalMutexType LevelNMutex;
+
+        ScopedLock(LevelNMutex & inHierarchicalMutex) :
+            mHierarchicalMutex(inHierarchicalMutex)
+        {
+            RankChecker::Instance().push(mHierarchicalMutex.rank());
+            LockMutex(mHierarchicalMutex.getMutex());
+        }
+
+        ~ScopedLock()
+        {
+            UnlockMutex(mHierarchicalMutex.getMutex());
+            RankChecker::Instance().pop();
+        }
+
+    private:
+        LevelNMutex & mHierarchicalMutex;
+    };
+
+
+    // Create a scoped and named object to initalize the treading lib;
+    struct Initializer
+    {
+    private:
+        typename Singleton<RankChecker>::Initializer mRankCheckerInitializer;
+
+
+#define INIT_THREAD_LIBRARY(NativeMutexType) \
+    typedef GenericThreadLibrary<NativeMutexType> ThreadLibrary; \
+    typedef ThreadLibrary::Level0Mutex Level0Mutex; \
+    typedef ThreadLibrary::Level1Mutex Level1Mutex; \
+    typedef ThreadLibrary::Level2Mutex Level2Mutex;
+    };
+
+
+}; // struct GenericThreadLibrary
+
+
+
+//
+// BEGIN USER CODE
+//
 #include "Poco/Foundation.h"
 #include "Poco/Mutex.h"
 
 
-// Choose a native mutex type.
-typedef Threading::Initializer<Poco::Mutex> ThreadInitializer;
+//
+// Init the thread library using Poco::Mutex.
+//
+INIT_THREAD_LIBRARY(Poco::Mutex)
 
 
-
+//
+// Main function
+//
 int main()
 {
-    ThreadInitializer scopedThreadInitializer;
+    ThreadLibrary::Initializer theThreadLibraryInitializer;
 
-    typedef ThreadInitializer::RootMutex RootMutex;
-    typedef Threading::RankedMutex<RootMutex> L1Mutex;
-    typedef Threading::RankedMutex<L1Mutex> L2Mutex;
-
-    RootMutex m0;
-    L1Mutex m1;
-    L2Mutex m2;
+    Level0Mutex theLevel0Mutex;
+    Level1Mutex theLevel1Mutex;
+    Level2Mutex theLevel2Mutex;
     
     try
     {
-        std::cout << "Good locking: ";
-        L2Mutex::ScopedLock l2(m2);
-        L1Mutex::ScopedLock l1(m1);
-        RootMutex::ScopedLock l0(m0);
-        std::cout << "OK" << std::endl;
+        Level2Mutex::ScopedLock level2Lock(theLevel2Mutex);
+        Level1Mutex::ScopedLock level1Lock(theLevel1Mutex);
+        Level0Mutex::ScopedLock level0Lock(theLevel0Mutex);
+        std::cout << "PASS" << std::endl;
     }
     catch (const std::exception & exc)
     {
-        std::cout << exc.what() << std::endl;
+        std::cout << "FAIL: " << exc.what() << std::endl;
     }
 
     try
     {
-        std::cout << "Bad locking: ";
-        RootMutex::ScopedLock l0(m0);
-        L2Mutex::ScopedLock l2(m2);
-        L1Mutex::ScopedLock l1(m1);
-        std::cout << "An exception should have been thrown. Something is wrong here." << std::endl;
+        Level1Mutex::ScopedLock level1Lock(theLevel1Mutex);
+        Level0Mutex::ScopedLock level0Lock(theLevel0Mutex);
+        Level2Mutex::ScopedLock level2Lock(theLevel2Mutex);
+        std::cout << "FAIL" << std::endl;
     }
-    catch (const std::exception & exc)
+    catch (const std::exception & )
     {
-        std::cout << exc.what() << std::endl;
+        std::cout << "PASS" << std::endl;
     }
     return 0;
 }

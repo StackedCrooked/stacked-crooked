@@ -1,1 +1,4 @@
-Fixes iMac keyboard bindings for Linux.
+Host: Mac, Guest: Linux
+
+Allows you to use a Mac keyboard (English International) on a Linux machine.
+

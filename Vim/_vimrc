@@ -39,11 +39,19 @@ set nowritebackup
 " Turn off vi compatibility
 set nocompatible
 
-" Show the rules
+" Show the ruler at the bottom
 set ruler
 
-" Show matching brackets
-set showmatch
+" Display tabs and trailing spaces
+set list
+set listchars=tab:»\ ,trail:·,nbsp:·
+
+" Some stuff to get the mouse going in term
+set mouse=a
+set ttymouse=xterm2
+
+" Show nice title in xterm
+set title
 
 " Set ignore case when searching using only lower case characters
 set smartcase
@@ -53,6 +61,9 @@ set smartindent
 
 " Enable syntax coloring
 syntax enable
+
+" Set colorscheme
+colorscheme default
 
 
 " -----------------------------------------------------------------------------
@@ -92,7 +103,7 @@ map Y y$
 " -----------------------------------------------------------------------------
 " Settings for the vim-addons plugin
 " -----------------------------------------------------------------------------
-fun ActivateAddons()
+fun! ActivateAddons()
   if !exists('g:vimrc_loaded')
     let addonsDir = $HOME . "/vim-addons"
     set runtimepath+=~/vim-addons/vim-addon-manager
@@ -113,16 +124,16 @@ call ActivateAddons()
 " -----------------------------------------------------------------------------
 " OpenFile. Modelled after the Firefox "Open Link in New Tab"-command.
 " -----------------------------------------------------------------------------
-:function OpenFile()
-:  let tab_id = expand("%")
-:  tab split
-:  tabmove
-:  normal gf
-:  while tab_id != expand("%")
-:    tabprev
-:  endw
-:  normal j
-:endfunction
+fun! OpenFile()
+  let tab_id = expand("%")
+  tab split
+  tabmove
+  normal gf
+  while tab_id != expand("%")
+    tabprev
+  endw
+  normal j
+endf
 
 " Map CTRL-G to the OpenFile function
 :map <C-G> :call OpenFile()<CR>

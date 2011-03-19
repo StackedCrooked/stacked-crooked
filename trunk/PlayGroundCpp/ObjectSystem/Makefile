@@ -1,3 +1,7 @@
+PROJECTDIR=${`pwd`}
+INCLUDE=-Iinclude/Crooked
+SRC=src/main.cpp src/Object.cpp
 
 all:
-	g++ -o test main.cpp
+	echo $(PROJECTDIR)
+	g++ -o test $(INCLUDE) $(SRC)

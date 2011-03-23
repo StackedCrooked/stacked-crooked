@@ -25,6 +25,12 @@ set hlsearch
 " Show search results while typing
 set incsearch
 
+" Set auto-indent rules
+set autoindent
+
+" Set filetype dependent indention rules
+filetype plugin indent on
+
 " Disable annoying backup/swap files
 set nobackup
 set noswapfile

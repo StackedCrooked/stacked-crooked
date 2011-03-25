@@ -3,97 +3,109 @@
 #include <typeinfo>
 
 #define TRACE std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
+#define TRACE_MIXIN std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
+#define TRACE_BASE std::cout << "\n" << __PRETTY_FUNCTION__ << std::endl << std::flush;
 
 template<class BaseType>
 struct Savable : public BaseType {
-    std::string ToString() { return "..."; }
-
-    Savable() {}
+    Savable() { TRACE_MIXIN }
 
     template<class Arg0>
-    Savable(Arg0 & arg0) : BaseType(arg0) {}
+    Savable(Arg0 & arg0) : BaseType(arg0) { TRACE_MIXIN }
 
     template<class Arg0, class Arg1>
-    Savable(Arg0 & arg0, Arg1 & arg1) : BaseType(arg0, arg1) {}
+    Savable(Arg0 & arg0, Arg1 & arg1) : BaseType(arg0, arg1) { TRACE_MIXIN }
+
+    void Save(const std::string & inFileName) {}
 };
 
 template<class BaseType>
 struct Loadable : public BaseType {
-    void Load() {}
-
-    Loadable() {}
+    Loadable() { TRACE_MIXIN }
 
     template<class Arg0>
-    Loadable(Arg0 & arg0) : BaseType(arg0) {}
+    Loadable(Arg0 & arg0) : BaseType(arg0) { TRACE_MIXIN }
 
     template<class Arg0, class Arg1>
-    Loadable(Arg0 & arg0, Arg1 & arg1) : BaseType(arg0, arg1) {}
+    Loadable(Arg0 & arg0, Arg1 & arg1) : BaseType(arg0, arg1) { TRACE_MIXIN }
+
+    void Load(const std::string & inFileName) {}
 };
 
 namespace CopyLand { // Test with a copyable Arg0 object
 
-struct MyObject {};
+struct MyObject  {};
 
 struct ValueBase {
-    ValueBase(MyObject inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    ValueBase(MyObject inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     MyObject mObject;
     std::string mTest;
 };
 
 struct ConstValueBase {
-    ConstValueBase(const MyObject inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    ConstValueBase(const MyObject inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     const MyObject mObject;
     std::string mTest;
 };
 
 struct PtrBase {
-    PtrBase(MyObject * inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    PtrBase(MyObject * inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     MyObject * mObject;
     std::string mTest;
 };
 
 struct ConstPtrBase {
-    ConstPtrBase(const MyObject * inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    ConstPtrBase(const MyObject * inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     const MyObject * mObject;
     std::string mTest;
 };
 
 struct RefBase {
-    RefBase(MyObject & inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    RefBase(MyObject & inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     MyObject & mObject;
     std::string mTest;
 };
 
 struct ConstRefBase {
-    ConstRefBase(const MyObject & inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    ConstRefBase(const MyObject & inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     const MyObject & mObject;
     std::string mTest;
 };
 
 struct LoadableAndSavableValueBase : public Loadable<Savable<ValueBase> > {
-    LoadableAndSavableValueBase(MyObject inObject, const std::string & inTest) : Loadable<Savable<ValueBase> >(inObject, inTest) {}
+    LoadableAndSavableValueBase(MyObject inObject, const std::string & inTest) :
+        Loadable<Savable<ValueBase> >(inObject, inTest) { TRACE }
 };
 
 struct LoadableAndSavableConstValueBase : public Loadable<Savable<ConstValueBase> > {
-    LoadableAndSavableConstValueBase(const MyObject inObject, const std::string & inTest) : Loadable<Savable<ConstValueBase> >(inObject, inTest) {}
+    LoadableAndSavableConstValueBase(const MyObject inObject, const std::string & inTest) :
+        Loadable<Savable<ConstValueBase> >(inObject, inTest) { TRACE }
 };
 
 struct LoadableAndSavablePtrBase : public Loadable<Savable<PtrBase> > {
-    LoadableAndSavablePtrBase(MyObject * inObject, const std::string & inTest) : Loadable<Savable<PtrBase> >(inObject, inTest) {}
+    LoadableAndSavablePtrBase(MyObject * inObject, const std::string & inTest) :
+         Loadable<Savable<PtrBase> >(inObject, inTest) { TRACE }
 };
 
 struct LoadableAndSavableRefBase : public Loadable<Savable<RefBase> > {
-public:
-    LoadableAndSavableRefBase(MyObject & inObject, const std::string & inTest) : Loadable<Savable<RefBase> >(inObject, inTest) {}
+    LoadableAndSavableRefBase(MyObject & inObject, const std::string & inTest) :
+        Loadable<Savable<RefBase> >(inObject, inTest) { TRACE }
 };
 
 struct LoadableAndSavableConstPtrBase : public Loadable<Savable<ConstPtrBase> > {
-    LoadableAndSavableConstPtrBase(const MyObject * inObject, const std::string & inTest) : Loadable<Savable<ConstPtrBase> >(inObject, inTest) {}
+    LoadableAndSavableConstPtrBase(const MyObject * inObject, const std::string & inTest) :
+        Loadable<Savable<ConstPtrBase> >(inObject, inTest) { TRACE }
 };
 
 struct LoadableAndSavableConstRefBase : public Loadable<Savable<ConstRefBase> > {
-public:
-    LoadableAndSavableConstRefBase(const MyObject & inObject, const std::string & inTest) : Loadable<Savable<ConstRefBase> >(inObject, inTest) {}
+    LoadableAndSavableConstRefBase(const MyObject & inObject, const std::string & inTest) :
+        Loadable<Savable<ConstRefBase> >(inObject, inTest) { TRACE }
 };
 
 void test() {
@@ -119,41 +131,47 @@ struct MyObject {
 };
 
 struct PtrBase {
-    PtrBase(MyObject * inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    PtrBase(MyObject * inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     MyObject * mObject; std::string mTest;
 };
 
 struct ConstPtrBase {
-    ConstPtrBase(const MyObject * inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    ConstPtrBase(const MyObject * inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     const MyObject * mObject; std::string mTest;
 };
 
 struct RefBase {
-    RefBase(MyObject & inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    RefBase(MyObject & inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     MyObject & mObject; std::string mTest;
 };
 
 struct ConstRefBase {
-    ConstRefBase(const MyObject & inObject, const std::string & inTest) : mObject(inObject), mTest(inTest) { TRACE }
+    ConstRefBase(const MyObject & inObject, const std::string & inTest) :
+        mObject(inObject), mTest(inTest) { TRACE_BASE }
     const MyObject & mObject; std::string mTest;
 };
 
 struct LoadableAndSavablePtrBase : public Loadable<Savable<PtrBase> > {
-    LoadableAndSavablePtrBase(MyObject * inObject, const std::string & inTest) : Loadable<Savable<PtrBase> >(inObject, inTest) {}
+    LoadableAndSavablePtrBase(MyObject * inObject, const std::string & inTest) :
+        Loadable<Savable<PtrBase> >(inObject, inTest)  { TRACE }
 };
 
 struct LoadableAndSavableRefBase : public Loadable<Savable<RefBase> > {
-public:
-    LoadableAndSavableRefBase(MyObject & inObject, const std::string & inTest) : Loadable<Savable<RefBase> >(inObject, inTest) {}
+    LoadableAndSavableRefBase(MyObject & inObject, const std::string & inTest) :
+        Loadable<Savable<RefBase> >(inObject, inTest)  { TRACE }
 };
 
 struct LoadableAndSavableConstPtrBase : public Loadable<Savable<ConstPtrBase> > {
-    LoadableAndSavableConstPtrBase(const MyObject * inObject, const std::string & inTest) : Loadable<Savable<ConstPtrBase> >(inObject, inTest) {}
+    LoadableAndSavableConstPtrBase(const MyObject * inObject, const std::string & inTest) :
+        Loadable<Savable<ConstPtrBase> >(inObject, inTest)  { TRACE }
 };
 
 struct LoadableAndSavableConstRefBase : public Loadable<Savable<ConstRefBase> > {
-public:
-    LoadableAndSavableConstRefBase(const MyObject & inObject, const std::string & inTest) : Loadable<Savable<ConstRefBase> >(inObject, inTest) {}
+    LoadableAndSavableConstRefBase(const MyObject & inObject, const std::string & inTest) :
+        Loadable<Savable<ConstRefBase> >(inObject, inTest)  { TRACE }
 };
 
 void test() {

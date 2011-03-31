@@ -105,10 +105,10 @@ fun! ActivateAddons()
     let addonsDir = $HOME . "/vim-addons"
     set runtimepath+=~/vim-addons/vim-addon-manager
     try
-      call scriptmanager#Activate([])
-      let g:vim_script_manager['auto_install'] = 1
+      call vam#ActivateAddons([])
+      let g:vim_addon_manager['auto_install'] = 1
       " The 'silent' command surpresses the "Press ENTER to continue" messages.
-      silent call scriptmanager#Activate(['swig', 'vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
+      silent call vam#ActivateAddons(['swig', 'vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
     catch /.*/
       echoe v:exception
     endtry

@@ -5,7 +5,8 @@ for dep in $DEPENDENCIES; do
 done
 VIM_ADDONS=$HOME/vim-addons
 if [ -d $VIM_ADDONS ]; then
-    echo "$VIM_ADDONS already exists. Aborting."
+    echo "The directory $VIM_ADDONS already exists."
+    echo "Exiting."
     exit 1
 fi
 mkdir $VIM_ADDONS

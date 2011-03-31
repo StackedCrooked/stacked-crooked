@@ -42,10 +42,6 @@ set nocompatible
 " Show the ruler at the bottom
 set ruler
 
-" Display tabs and trailing spaces
-set list
-set listchars=tab:»\ ,trail:·,nbsp:·
-
 " Some stuff to get the mouse going in term
 set mouse=a
 set ttymouse=xterm2

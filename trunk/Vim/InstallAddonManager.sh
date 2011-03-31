@@ -1,9 +1,11 @@
 #!/bin/bash
-type git &>/dev/null || { echo "Please install git first." >&2; exit 1; }
-type curl &>/dev/null || { echo "Please install curl first." >&2; exit 1; }
+DEPENDENCIES="git curl hg bzr"
+for dep in $DEPENDENCIES; do
+    type ${dep} &>/dev/null || { echo "Please install ${dep} first." >&2; exit 1; }
+done
 VIM_ADDONS=$HOME/vim-addons
 if [ -d $VIM_ADDONS ]; then
-    echo "$VIM_ADDONS already exists."
+    echo "$VIM_ADDONS already exists. Aborting."
     exit 1
 fi
 mkdir $VIM_ADDONS

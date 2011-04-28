@@ -4,32 +4,20 @@
 #include <vector>
 #include <boost/bind.hpp>
 
-
-template<class ValueType, class Predicate>
-struct Condition
+template<class ForwardIterator, class OutputIterator>
+void copy_if(ForwardIterator begin, ForwardIterator end, OutputIterator out, bool (*inPredicate)(typename ForwardIterator::value_type))
 {
-	typedef ValueType argument_type; 
+    typedef typename ForwardIterator::value_type ArgType;
+    typedef std::pointer_to_unary_function<ArgType, bool> Wrapper;
 
-	Condition(const Predicate & inPredicate) :
-		mPredicate(inPredicate)
-	{
-	}
-
-	bool operator()(argument_type arg) const
-	{
-		return mPredicate(arg);
-	}
-
-	Predicate mPredicate;
-};
-
-
-template<class ForwardIterator, class OutputIterator, class Predicate>
-void copy_if(ForwardIterator begin, ForwardIterator end, OutputIterator out, Predicate inPredicate)
-{
-	std::remove_copy_if(begin, end, out, std::not1(Condition<typename ForwardIterator::value_type, Predicate>(inPredicate)));
+    std::remove_copy_if(begin, end, out, std::unary_negate<Wrapper>(Wrapper(inPredicate)));
 }
 
+template<class ForwardIterator, class OutputIterator, class Functor>
+void copy_if(ForwardIterator begin, ForwardIterator end, OutputIterator out, Functor inFunctor)
+{
+    std::remove_copy_if(begin, end, out, std::unary_negate<Functor>(inFunctor));
+}
 
 template<class Container>
 void Print(const Container & inContainer)
@@ -47,10 +35,17 @@ void Print(const Container & inContainer)
 }
 
 
-bool IsOdd(int value)
+bool IsOdd(int inValue)
 {
-	return (value % 2) == 1;
+    return inValue % 2 == 1;
 }
+
+
+struct IsOddFunctor : public std::unary_function<int, bool>
+{
+    bool operator() (const int & inValue) const { return inValue % 2 == 1; }
+};
+
 
 int main()
 {
@@ -60,9 +55,14 @@ int main()
 	numbers.push_back(2);
 	numbers.push_back(3);
 	numbers.push_back(4);
+	numbers.push_back(5);
 
 	std::vector<int> copy;
-	copy_if(numbers.begin(), numbers.end(), std::back_inserter(copy), &IsOdd);
+	copy_if(numbers.begin(), numbers.end(), std::back_inserter(copy), IsOdd);
+	Print(copy);
+
+    copy.clear();
+	copy_if(numbers.begin(), numbers.end(), std::back_inserter(copy), IsOddFunctor());
 	Print(copy);
 
 	return 0;

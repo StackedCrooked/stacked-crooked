@@ -4,14 +4,14 @@
 #include <vector>
 #include <boost/bind.hpp>
 
-template<class ForwardIterator, class OutputIterator>
-void copy_if(ForwardIterator begin, ForwardIterator end, OutputIterator out, bool (*inPredicate)(typename ForwardIterator::value_type))
-{
-    typedef typename ForwardIterator::value_type ArgType;
-    typedef std::pointer_to_unary_function<ArgType, bool> Wrapper;
 
-    std::remove_copy_if(begin, end, out, std::unary_negate<Wrapper>(Wrapper(inPredicate)));
+template<class ForwardIterator, class OutputIterator, class ArgType>
+void copy_if(ForwardIterator begin, ForwardIterator end, OutputIterator out, bool (*inPredicate)(ArgType))
+{
+    typedef std::pointer_to_unary_function<ArgType, bool> Adapter;
+    std::remove_copy_if(begin, end, out, std::unary_negate<Adapter>(Adapter(inPredicate)));
 }
+
 
 template<class ForwardIterator, class OutputIterator, class Functor>
 void copy_if(ForwardIterator begin, ForwardIterator end, OutputIterator out, Functor inFunctor)
@@ -35,7 +35,7 @@ void Print(const Container & inContainer)
 }
 
 
-bool IsOdd(int inValue)
+bool IsOdd(const int & inValue)
 {
     return inValue % 2 == 1;
 }
@@ -58,7 +58,8 @@ int main()
 	numbers.push_back(5);
 
 	std::vector<int> copy;
-	copy_if(numbers.begin(), numbers.end(), std::back_inserter(copy), IsOdd);
+	//copy_if(numbers.begin(), numbers.end(), std::back_inserter(copy), IsOdd);
+    std::remove_copy_if(numbers.begin(), numbers.end(), std::back_inserter(copy), IsOdd);
 	Print(copy);
 
     copy.clear();

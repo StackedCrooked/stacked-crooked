@@ -6,12 +6,12 @@
 
 void testMute()
 {
-	std::cout << "Before mute" << std::endl;
-	{
-		ScopedMuter mute(std::cout);
-		std::cout << "During mute." << std::endl;
-	}
-	std::cout << "After mute" << std::endl;
+    std::cout << "Before mute" << std::endl;
+    {
+        ScopedMuter mute(std::cout);
+        std::cout << "During mute." << std::endl;
+    }
+    std::cout << "After mute" << std::endl;
 }
 
 
@@ -32,5 +32,5 @@ int main()
 {
     testMute();
     testRedirect();
-	return 0;
+    return 0;
 }

@@ -8,16 +8,16 @@
 class ScopedRedirect
 {
 public:
-	ScopedRedirect(std::ostream & inFrom, std::ostream & inTo);
-	
-	~ScopedRedirect();
-	
+    ScopedRedirect(std::ostream & inFrom, std::ostream & inTo);
+
+    ~ScopedRedirect();
+
 private:
-	ScopedRedirect(const ScopedRedirect&);
-	ScopedRedirect& operator=(const ScopedRedirect&);
-	
-	struct Impl;
-	Impl * mImpl;
+    ScopedRedirect(const ScopedRedirect&);
+    ScopedRedirect& operator=(const ScopedRedirect&);
+
+    struct Impl;
+    Impl * mImpl;
 };
 
 

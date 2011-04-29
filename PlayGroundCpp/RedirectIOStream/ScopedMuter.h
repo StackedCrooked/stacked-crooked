@@ -8,18 +8,18 @@
 class ScopedMuter
 {
 public:
-	ScopedMuter(std::ostream & inOutStream);
-	
-	~ScopedMuter();
-	
+    ScopedMuter(std::ostream & inOutStream);
+
+    ~ScopedMuter();
+
 private:
-	ScopedMuter(const ScopedMuter&);
-	ScopedMuter& operator=(const ScopedMuter&);
-	
-	struct FakeSink;
-	
-	struct Impl;
-	Impl * mImpl;
+    ScopedMuter(const ScopedMuter&);
+    ScopedMuter& operator=(const ScopedMuter&);
+
+    struct FakeSink;
+
+    struct Impl;
+    Impl * mImpl;
 };
 
 

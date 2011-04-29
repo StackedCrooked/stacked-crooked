@@ -4,17 +4,17 @@
 
 struct ScopedRedirect::Impl
 {
-	Impl(std::ostream & inOriginal, std::ostream & inRedirect) :
+    Impl(std::ostream & inOriginal, std::ostream & inRedirect) :
         mOriginal(inOriginal),
         mRedirect(inRedirect)
-	{
+    {
         mOriginal.rdbuf(mRedirect.rdbuf(mOriginal.rdbuf()));
-	}
+    }
 
-	~Impl()
-	{
+    ~Impl()
+    {
         mOriginal.rdbuf(mRedirect.rdbuf(mOriginal.rdbuf()));
-	}
+    }
 
     std::ostream & mOriginal;
     std::ostream & mRedirect;
@@ -22,13 +22,13 @@ struct ScopedRedirect::Impl
 
 
 ScopedRedirect::ScopedRedirect(std::ostream & inOriginal, std::ostream & inRedirect) :
-	mImpl(new Impl(inOriginal, inRedirect))
+    mImpl(new Impl(inOriginal, inRedirect))
 {
 }
 
 
 ScopedRedirect::~ScopedRedirect()
 {
-	delete mImpl;
+    delete mImpl;
 }
 

@@ -28,13 +28,13 @@ struct EnumInfo;
             for (std::size_t idx = 0; idx < size(); ++idx) { \
                 if (names[idx] == inName) return values[idx]; \
             } \
-            throw std::runtime_error("Not found: " + inName); \
+            throw std::runtime_error("Color name not found: " + inName); \
         } \
         static const char * ToString(Tag inValue) { \
             for (std::size_t idx = 0; idx < size(); ++idx) { \
                 if (values[idx] == inValue) return names[idx]; \
             } \
-            throw std::runtime_error("Not found: " + boost::lexical_cast<std::string>(inValue)); \
+            throw std::runtime_error("Color index not found: " + boost::lexical_cast<std::string>(inValue)); \
         } \
     };\
     EnumInfo<Tag>::Values EnumInfo<Tag>::values = { \
@@ -72,46 +72,66 @@ struct EnumeratorInfo;
 
 
 
-ENUM(RGB, 3, (Red, Green, Blue))
+ENUM(Color, 7, (Red, Orange, Yellow, Green, Blue, Indigo, Violet));
 
 
-int main()
+
+template<class Enum>
+void TestEnum()
 {
-    std::cout << "Tag: " << EnumInfo<RGB>::name() << std::endl;
-    std::cout << "First: " << EnumInfo<RGB>::first() << std::endl;
-    std::cout << "Last: " << EnumInfo<RGB>::last() << std::endl;
-    std::cout << "Size: " << EnumInfo<RGB>::size() << std::endl;
-    for (int i = 0; i < EnumInfo<RGB>::size(); ++i)
+    std::cout << "Tag: " << EnumInfo<Enum>::name() << std::endl;
+    std::cout << "First: " << EnumInfo<Enum>::first() << std::endl;
+    std::cout << "Last: " << EnumInfo<Enum>::last() << std::endl;
+    std::cout << "Size: " << EnumInfo<Enum>::size() << std::endl;
+    for (int i = 0; i < EnumInfo<Enum>::size(); ++i)
     {
-        std::cout << EnumInfo<RGB>::names[i] << "=" << EnumInfo<RGB>::values[i] << std::endl;
+        std::cout << EnumInfo<Enum>::names[i] << "=" << EnumInfo<Enum>::values[i] << std::endl;
     }
 
-    std::cout << EnumeratorInfo<RGB, Red>::name() << std::endl;
-    std::cout << EnumeratorInfo<RGB, Green>::name() << std::endl;
-    std::cout << EnumeratorInfo<RGB, Blue>::name() << std::endl;
+    //std::cout << EnumeratorInfo<Enum, Red>::name() << std::endl;
+    //std::cout << EnumeratorInfo<Enum, Green>::name() << std::endl;
+    //std::cout << EnumeratorInfo<Enum, Blue>::name() << std::endl;
 
     try
     {
         {
-            std::cout << "Please input a color name (Red, Green or Blue): ";
+            std::cout << "Please input a color name. (Possible values are ";
+            for (Enum i = EnumInfo<Enum>::first(); i <= EnumInfo<Enum>::last(); i = static_cast<Enum>(static_cast<int>(i) + 1))
+            {
+                if (i != EnumInfo<Enum>::first())
+                {
+                    std::cout << ", ";
+                }
+                std::cout << EnumInfo<Enum>::names[i];
+            }
+            std::cout << "): ";
             std::string colorName;
             std::cin >> colorName;
 
-            RGB rgb = EnumInfo<RGB>::FromString(colorName);
-            std::cout << "This color has the value: " << rgb << "." << std::endl
-                      << "And it's name is: "         << EnumInfo<RGB>::ToString(rgb)
+            Enum enumValue = EnumInfo<Enum>::FromString(colorName);
+            std::cout << "This color has the value: " << enumValue << "." << std::endl
+                      << "And it's name is: "         << EnumInfo<Enum>::ToString(enumValue)
                       << std::endl << std::flush;
 
         }
 
         {
-            std::cout << "Please input a enumerator value (0, 1 or 2): ";
+            std::cout << "Please input a enumerator value. (Possible values are ";
+            for (Enum i = EnumInfo<Enum>::first(); i <= EnumInfo<Enum>::last(); i = static_cast<Enum>(static_cast<int>(i) + 1))
+            {
+                if (i != EnumInfo<Enum>::first())
+                {
+                    std::cout << ", ";
+                }
+                std::cout << i;
+            }
+            std::cout << "): ";
             int enumerator;
             std::cin >> enumerator;
-            if (enumerator >= EnumInfo<RGB>::first() && enumerator <= EnumInfo<RGB>::last())
+            if (enumerator >= EnumInfo<Enum>::first() && enumerator <= EnumInfo<Enum>::last())
             {
-                RGB rgb = static_cast<RGB>(enumerator);
-                std::cout << "The corresponding color name is: " << EnumInfo<RGB>::ToString(rgb) << std::endl << std::flush;
+                Enum enumValue = static_cast<Enum>(enumerator);
+                std::cout << "The corresponding color name is: " << EnumInfo<Enum>::ToString(enumValue) << std::endl << std::flush;
             }
 
         }
@@ -120,5 +140,10 @@ int main()
     {
         std::cerr << exc.what() << std::endl;
     }
+}
+
+int main()
+{
+    TestEnum<Color>();
     return 0;
 }

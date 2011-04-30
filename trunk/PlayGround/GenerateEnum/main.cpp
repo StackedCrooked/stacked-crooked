@@ -44,6 +44,8 @@
 
 #define ENUM_IMPL(Name, Memb) \
     enum Name { BOOST_PP_LIST_FOR_EACH_I(ENUM_IMPL_MEMBER, 0, Memb) }; \
+    Name Name##Array[] = { BOOST_PP_LIST_FOR_EACH_I(ENUM_IMPL_MEMBER, 0, Memb) }; \
+    std::size_t Name##Count = sizeof(Name##Array) / sizeof(Name); \
     inline std::string EnumToString(Name x) { \
         static std::string cv[] = { BOOST_PP_LIST_FOR_EACH_I(ENUM_IMPL_STRING, 0, Memb) }; \
         BOOST_ASSERT(x >= 0 && x < BOOST_PP_LIST_SIZE(Memb)); \
@@ -67,9 +69,9 @@ template <typename T> T StringToEnum(const std::string &);
 
 
 //
-// Define the "Letter" enum
+// Define the "Color" enum
 //
-ENUM(Letter, A, B, C, D, E)
+ENUM(Color, Red, Orange, Yellow, Green, Blue, Indigo, Violet)
 
 
 //
@@ -80,14 +82,27 @@ ENUM(Note, Do, Re, Mi, Fa, Sol, La, Si)
 
 int main()
 {
-    Letter letter_C = C;
-    std::cout << "Serializing C: " << EnumToString(letter_C) << std::endl;
-    std::cout << "Index of C is " << StringToEnum<Letter>("C") << std::endl;
+    for (std::size_t idx = 0; idx < ColorCount; ++idx)
+    {
+        if (idx != 0)
+        {
+            std::cout << ", ";
+        }
+        Color color = ColorArray[idx];
+        std::cout << EnumToString(color) << ": " << color;
+    }
+    std::cout << std::endl << "Color count: " << ColorCount << std::endl << std::endl;
 
-    Note note_Re = Re;
-    std::cout << "Serializing Re: " << EnumToString(note_Re) << std::endl;
-    std::cout << "Index of Re is " << StringToEnum<Note>("Re") << std::endl;
-
+    for (std::size_t idx = 0; idx < NoteCount; ++idx)
+    {
+        if (idx != 0)
+        {
+            std::cout << ", ";
+        }
+        Note note = NoteArray[idx];
+        std::cout << EnumToString(note) << ": " << note;
+    }
+    std::cout << std::endl << "Note count: " << ColorCount << std::endl;
     return 0;
 }
 

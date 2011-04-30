@@ -1,10 +1,11 @@
+#include <boost/lexical_cast.hpp>
 #include <boost/preprocessor.hpp>
+#include <stdexcept>
 #include <iostream>
 
 
 #define DEFINE_ENUM(Tag, Size, Enumerator) \
     enum Tag { BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(Size, Enumerator)) };
-
 
 template<typename T>
 struct EnumInfo;
@@ -23,6 +24,18 @@ struct EnumInfo;
         static int size() { return Size; } \
         static Tag first() { return First; } \
         static Tag last() { return Last; } \
+        static Tag FromString(const std::string & inName) { \
+            for (std::size_t idx = 0; idx < size(); ++idx) { \
+                if (names[idx] == inName) return values[idx]; \
+            } \
+            throw std::runtime_error("Not found: " + inName); \
+        } \
+        static const char * ToString(Tag inValue) { \
+            for (std::size_t idx = 0; idx < size(); ++idx) { \
+                if (values[idx] == inValue) return names[idx]; \
+            } \
+            throw std::runtime_error("Not found: " + boost::lexical_cast<std::string>(inValue)); \
+        } \
     };\
     EnumInfo<Tag>::Values EnumInfo<Tag>::values = { \
         BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(Size, Enumerator)) \
@@ -77,6 +90,35 @@ int main()
     std::cout << EnumeratorInfo<RGB, Green>::name() << std::endl;
     std::cout << EnumeratorInfo<RGB, Blue>::name() << std::endl;
 
+    try
+    {
+        {
+            std::cout << "Please input a color name (Red, Green or Blue): ";
+            std::string colorName;
+            std::cin >> colorName;
 
+            RGB rgb = EnumInfo<RGB>::FromString(colorName);
+            std::cout << "This color has the value: " << rgb << "." << std::endl
+                      << "And it's name is: "         << EnumInfo<RGB>::ToString(rgb)
+                      << std::endl << std::flush;
+
+        }
+
+        {
+            std::cout << "Please input a enumerator value (0, 1 or 2): ";
+            int enumerator;
+            std::cin >> enumerator;
+            if (enumerator >= EnumInfo<RGB>::first() && enumerator <= EnumInfo<RGB>::last())
+            {
+                RGB rgb = static_cast<RGB>(enumerator);
+                std::cout << "The corresponding color name is: " << EnumInfo<RGB>::ToString(rgb) << std::endl << std::flush;
+            }
+
+        }
+    }
+    catch (const std::exception & exc)
+    {
+        std::cerr << exc.what() << std::endl;
+    }
     return 0;
 }

@@ -36,10 +36,10 @@ template<class Enum, Enum _Enumerator>
 struct EnumeratorInfo;
 
 
-#define DEFINE_ENUMVALUEINFO_SPECIALIZATION(Dummy, Tag, Value) \
-    template<> struct EnumeratorInfo<Tag, Value> { \
-        static const char * name() { return #Value; } \
-        static Tag value() { return Value; } \
+#define DEFINE_ENUMVALUEINFO_SPECIALIZATION(Dummy, Enum, Enumerator) \
+    template<> struct EnumeratorInfo<Enum, Enumerator> { \
+        static const char * name() { return #Enumerator; } \
+        static Enum value() { return Enumerator; } \
     };
 
 

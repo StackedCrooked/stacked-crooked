@@ -45,12 +45,13 @@ struct EnumInfo;
     };
 
 
-template<class Enum, Enum _Enumerator>
+template<class TEnum, TEnum TEnumerator>
 struct EnumeratorInfo;
 
 
 #define DEFINE_ENUMVALUEINFO_SPECIALIZATION(Dummy, Enum, Enumerator) \
     template<> struct EnumeratorInfo<Enum, Enumerator> { \
+        typedef Enum EnumType; \
         static const char * name() { return #Enumerator; } \
         static Enum value() { return Enumerator; } \
     };
@@ -87,10 +88,6 @@ void TestEnum()
     {
         std::cout << EnumInfo<Enum>::names[i] << "=" << EnumInfo<Enum>::values[i] << std::endl;
     }
-
-    //std::cout << EnumeratorInfo<Enum, Red>::name() << std::endl;
-    //std::cout << EnumeratorInfo<Enum, Green>::name() << std::endl;
-    //std::cout << EnumeratorInfo<Enum, Blue>::name() << std::endl;
 
     try
     {
@@ -135,6 +132,7 @@ void TestEnum()
             }
 
         }
+        std::cout << std::endl << std::flush;
     }
     catch (const std::exception & exc)
     {
@@ -142,8 +140,22 @@ void TestEnum()
     }
 }
 
+template<class TEnumType, TEnumType Enumerator>
+void TestEnumerator()
+{
+    typedef typename EnumeratorInfo<TEnumType, Enumerator>::EnumType Enum; 
+    std::cout << "The enumerator value is: " << EnumeratorInfo<Enum, Enumerator>::value() << "." << std::endl;
+    std::cout << "The enumerator name is: " << EnumeratorInfo<Enum, Enumerator>::name() << "." << std::endl;
+    std::cout << "The enumerator belongs to the " << EnumInfo<Enum>::name() << " enum." << std::endl;
+    std::cout << std::endl << std::flush;
+}
+
+
 int main()
 {
     TestEnum<Color>();
+    TestEnumerator<Color, Yellow>();
+    TestEnumerator<Color, Orange>();
     return 0;
 }
+

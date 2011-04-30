@@ -12,7 +12,7 @@ struct EnumTypeInfo;
 #define VALUE_TO_STRING(Dummy0, Dummy1, Element) \
     BOOST_PP_STRINGIZE(Element)
 
-#define DEFINE_ENUMINFO_SPECIALIZATION(Name, N, _Values, First, Last) \
+#define DEFINE_ENUMTYPEINFO_SPECIALIZATION(Name, N, _Values, First, Last) \
     template<> struct EnumTypeInfo<Name> \
     { \
         static const char * name() { return #Name; } \
@@ -34,7 +34,7 @@ struct EnumTypeInfo;
 
 #define ENUM(Name, N, Values) \
     DEFINE_ENUM(Name, N, Values) \
-    DEFINE_ENUMINFO_SPECIALIZATION( \
+    DEFINE_ENUMTYPEINFO_SPECIALIZATION( \
         Name, \
         N, \
         Values, \

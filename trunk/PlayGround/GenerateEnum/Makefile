@@ -1,8 +1,6 @@
 INCLUDE=-I/opt/local/include
 
-all: cpp build
-
-build:
+all:
 	g++ -o test $(INCLUDE) main.cpp
 
 cpp:

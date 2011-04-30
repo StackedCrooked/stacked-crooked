@@ -26,15 +26,11 @@ struct EnumInfo
         static Name first() { return First; } \
         static Name last() { return Last; } \
     };\
-    EnumInfo<Name>::Values EnumInfo<Name>::values = { BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(N, _Values)) }; \
+    EnumInfo<Name>::Values EnumInfo<Name>::values = { \
+        BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(N, _Values)) \
+    }; \
     EnumInfo<Name>::Names EnumInfo<Name>::names = { \
-        BOOST_PP_LIST_ENUM( \
-            BOOST_PP_LIST_TRANSFORM( \
-                VALUE_TO_STRING, \
-                N, \
-                BOOST_PP_TUPLE_TO_LIST(N, _Values) \
-            ) \
-        ) \
+        BOOST_PP_LIST_ENUM(BOOST_PP_LIST_TRANSFORM(VALUE_TO_STRING, N, BOOST_PP_TUPLE_TO_LIST(N, _Values))) \
     };
 
 

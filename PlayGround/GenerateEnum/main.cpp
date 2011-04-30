@@ -34,6 +34,36 @@ template<class TEnum, TEnum TEnumerator>
 struct EnumeratorInfo;
 
 
+/**
+ * The ENUM macro allows you to define a new enum along with accompanying
+ * code for parsing and serializing the enumerator values.
+ *
+ * Usage example:
+ *
+ *    // Define the enum
+ *    ENUM(HTTPRequestMethod, 9, (HEAD, GET, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH))
+ *
+ *    // Get data
+ *    EnumInfo<HTTPRequestMethod>::name() // returns "HTTPRequestMethod"
+ *    EnumumeratorInfo<HTTPRequestMethod, HEAD>::name() // returns "HEAD"
+ *
+ *    // Etc...
+ *
+ */
+#define ENUM(Tag, Size, Values) \
+    DEFINE_ENUM(Tag, Size, Values) \
+    DEFINE_ENUMINFO_SPECIALIZATION( \
+        Tag, \
+        Size, \
+        Values, \
+        BOOST_PP_LIST_FIRST(BOOST_PP_TUPLE_TO_LIST(Size, Values)), \
+        BOOST_PP_LIST_FIRST(BOOST_PP_LIST_REVERSE(BOOST_PP_TUPLE_TO_LIST(Size, Values)))) \
+    BOOST_PP_LIST_FOR_EACH( \
+        DEFINE_ENUMERATORINFO_SPECIALIZATION, \
+        Tag, \
+        BOOST_PP_TUPLE_TO_LIST(Size, Values))
+
+
 //
 // Macros for internal use
 //
@@ -81,30 +111,6 @@ struct EnumeratorInfo;
         static const char * name() { return #Enumerator; } \
         static Enum value() { return Enumerator; } \
     };
-
-
-/**
- * The ENUM macro allows you to define a new enum along with accompanying
- * code for parsing and serializing the enumerator values.
- *
- * Usage example:
- *
- *    ENUM(HTTPRequestMethod, 9, (HEAD, GET, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH))
- *
- *
- */
-#define ENUM(Tag, Size, Values) \
-    DEFINE_ENUM(Tag, Size, Values) \
-    DEFINE_ENUMINFO_SPECIALIZATION( \
-        Tag, \
-        Size, \
-        Values, \
-        BOOST_PP_LIST_FIRST(BOOST_PP_TUPLE_TO_LIST(Size, Values)), \
-        BOOST_PP_LIST_FIRST(BOOST_PP_LIST_REVERSE(BOOST_PP_TUPLE_TO_LIST(Size, Values)))) \
-    BOOST_PP_LIST_FOR_EACH( \
-        DEFINE_ENUMERATORINFO_SPECIALIZATION, \
-        Tag, \
-        BOOST_PP_TUPLE_TO_LIST(Size, Values))
 
 
 //

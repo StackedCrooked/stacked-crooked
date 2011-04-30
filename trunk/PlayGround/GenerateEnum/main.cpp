@@ -144,53 +144,58 @@ template<class Enum>
 void TestEnum()
 {
     std::cout << "=== Enum Test ===" << std::endl;
+
+    // Test string => value mapping
     try
     {
+        std::cout << "Please input an enumerator name. (Possible values are ";
+        for (Enum i = EnumInfo<Enum>::first(); i <= EnumInfo<Enum>::last(); i = static_cast<Enum>(static_cast<int>(i) + 1))
         {
-            std::cout << "Please input an enumerator name. (Possible values are ";
-            for (Enum i = EnumInfo<Enum>::first(); i <= EnumInfo<Enum>::last(); i = static_cast<Enum>(static_cast<int>(i) + 1))
+            if (i != EnumInfo<Enum>::first())
             {
-                if (i != EnumInfo<Enum>::first())
-                {
-                    std::cout << ", ";
-                }
-                std::cout << EnumInfo<Enum>::names[i];
+                std::cout << ", ";
             }
-            std::cout << "): ";
-            std::string enumeratorName;
-            std::cin >> enumeratorName;
-
-            Enum enumValue = EnumInfo<Enum>::FromString(enumeratorName);
-            std::cout << "This enumerator has the value: " << enumValue << "." << std::endl
-                      << "And its name is: "         << EnumInfo<Enum>::ToString(enumValue)
-                      << std::endl << std::flush;
-
+            std::cout << EnumInfo<Enum>::names[i];
         }
+        std::cout << "): ";
+        std::string enumeratorName;
+        std::cin >> enumeratorName;
 
-        {
-            std::cout << "Please input a enumerator value. (Possible values are ";
-            for (Enum i = EnumInfo<Enum>::first(); i <= EnumInfo<Enum>::last(); i = static_cast<Enum>(static_cast<int>(i) + 1))
-            {
-                if (i != EnumInfo<Enum>::first())
-                {
-                    std::cout << ", ";
-                }
-                std::cout << i;
-            }
-            std::cout << "): ";
-            int enumerator;
-            std::cin >> enumerator;
-            if (enumerator >= EnumInfo<Enum>::first() && enumerator <= EnumInfo<Enum>::last())
-            {
-                Enum enumValue = static_cast<Enum>(enumerator);
-                std::cout << "The corresponding enumerator name is: " << EnumInfo<Enum>::ToString(enumValue) << std::endl << std::flush;
-            }
-
-        }
+        Enum enumValue = EnumInfo<Enum>::FromString(enumeratorName);
+        std::cout << "This enumerator has the value: " << enumValue << "." << std::endl
+                  << "And its name is: "         << EnumInfo<Enum>::ToString(enumValue)
+                  << std::endl << std::flush;
     }
     catch (const std::exception & exc)
     {
-        std::cerr << exc.what() << std::endl << std::flush;
+        std::cout << exc.what() << std::endl << std::flush;
+    }
+
+    // Test value => string mapping
+    try
+    {
+        std::cout << "Please input a numerical enumerator value. (Possible values are ";
+        for (Enum i = EnumInfo<Enum>::first(); i <= EnumInfo<Enum>::last(); i = static_cast<Enum>(static_cast<int>(i) + 1))
+        {
+            if (i != EnumInfo<Enum>::first())
+            {
+                std::cout << ", ";
+            }
+            std::cout << i;
+        }
+        std::cout << "): ";
+        int enumerator;
+        std::cin >> enumerator;
+        if (enumerator >= EnumInfo<Enum>::first() && enumerator <= EnumInfo<Enum>::last())
+        {
+            Enum enumValue = static_cast<Enum>(enumerator);
+            std::cout << "The corresponding enumerator name is: " << EnumInfo<Enum>::ToString(enumValue) << std::endl << std::flush;
+        }
+
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << exc.what() << std::endl << std::flush;
     }
 
     PauseConsole("Press any key to start the next test (or quit if this was the last one).");

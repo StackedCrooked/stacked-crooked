@@ -2,59 +2,59 @@
 #include <iostream>
 
 
-#define DEFINE_ENUM(Name, N, Values) \
-    enum Name { BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(N, Values)) };
+#define DEFINE_ENUM(Tag, Size, Enumerator) \
+    enum Tag { BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(Size, Enumerator)) };
 
 
 template<typename T>
-struct EnumTypeInfo;
+struct EnumInfo;
 
 #define VALUE_TO_STRING(Dummy0, Dummy1, Element) \
     BOOST_PP_STRINGIZE(Element)
 
-#define DEFINE_ENUMTYPEINFO_SPECIALIZATION(Name, N, _Values, First, Last) \
-    template<> struct EnumTypeInfo<Name> \
+#define DEFINE_ENUMTYPEINFO_SPECIALIZATION(Tag, Size, Enumerator, First, Last) \
+    template<> struct EnumInfo<Tag> \
     { \
-        static const char * name() { return #Name; } \
-        typedef const Name Values[N]; \
+        static const char * name() { return #Tag; } \
+        typedef const Tag Values[Size]; \
         static Values values; \
-        typedef const char * Names[N]; \
+        typedef const char * Names[Size]; \
         static Names names; \
-        static int size() { return N; } \
-        static Name first() { return First; } \
-        static Name last() { return Last; } \
+        static int size() { return Size; } \
+        static Tag first() { return First; } \
+        static Tag last() { return Last; } \
     };\
-    EnumTypeInfo<Name>::Values EnumTypeInfo<Name>::values = { \
-        BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(N, _Values)) \
+    EnumInfo<Tag>::Values EnumInfo<Tag>::values = { \
+        BOOST_PP_LIST_ENUM(BOOST_PP_TUPLE_TO_LIST(Size, Enumerator)) \
     }; \
-    EnumTypeInfo<Name>::Names EnumTypeInfo<Name>::names = { \
-        BOOST_PP_LIST_ENUM(BOOST_PP_LIST_TRANSFORM(VALUE_TO_STRING, N, BOOST_PP_TUPLE_TO_LIST(N, _Values))) \
+    EnumInfo<Tag>::Names EnumInfo<Tag>::names = { \
+        BOOST_PP_LIST_ENUM(BOOST_PP_LIST_TRANSFORM(VALUE_TO_STRING, Size, BOOST_PP_TUPLE_TO_LIST(Size, Enumerator))) \
     };
 
 
-template<class EnumType, EnumType _EnumValue>
-struct EnumValueInfo;
+template<class Enum, Enum _Enumerator>
+struct EnumeratorInfo;
 
 
-#define DEFINE_ENUMVALUEINFO_SPECIALIZATION(Dummy, Type, Value) \
-    template<> struct EnumValueInfo<Type, Value> { \
+#define DEFINE_ENUMVALUEINFO_SPECIALIZATION(Dummy, Tag, Value) \
+    template<> struct EnumeratorInfo<Tag, Value> { \
         static const char * name() { return #Value; } \
-        static Type value() { return Value; } \
+        static Tag value() { return Value; } \
     };
 
 
-#define ENUM(Name, N, Values) \
-    DEFINE_ENUM(Name, N, Values) \
+#define ENUM(Tag, Size, Values) \
+    DEFINE_ENUM(Tag, Size, Values) \
     DEFINE_ENUMTYPEINFO_SPECIALIZATION( \
-        Name, \
-        N, \
+        Tag, \
+        Size, \
         Values, \
-        BOOST_PP_LIST_FIRST(BOOST_PP_TUPLE_TO_LIST(N, Values)), \
-        BOOST_PP_LIST_FIRST(BOOST_PP_LIST_REVERSE(BOOST_PP_TUPLE_TO_LIST(N, Values)))) \
+        BOOST_PP_LIST_FIRST(BOOST_PP_TUPLE_TO_LIST(Size, Values)), \
+        BOOST_PP_LIST_FIRST(BOOST_PP_LIST_REVERSE(BOOST_PP_TUPLE_TO_LIST(Size, Values)))) \
     BOOST_PP_LIST_FOR_EACH( \
         DEFINE_ENUMVALUEINFO_SPECIALIZATION, \
-        Name, \
-        BOOST_PP_TUPLE_TO_LIST(N, Values))
+        Tag, \
+        BOOST_PP_TUPLE_TO_LIST(Size, Values))
 
 
 
@@ -64,17 +64,19 @@ ENUM(RGB, 3, (Red, Green, Blue))
 
 int main()
 {
-    std::cout << "Name: " << EnumTypeInfo<RGB>::name() << std::endl;
-    std::cout << "First: " << EnumTypeInfo<RGB>::first() << std::endl;
-    std::cout << "Last: " << EnumTypeInfo<RGB>::last() << std::endl;
-    std::cout << "Size: " << EnumTypeInfo<RGB>::size() << std::endl;
-    for (int i = 0; i < EnumTypeInfo<RGB>::size(); ++i)
+    std::cout << "Tag: " << EnumInfo<RGB>::name() << std::endl;
+    std::cout << "First: " << EnumInfo<RGB>::first() << std::endl;
+    std::cout << "Last: " << EnumInfo<RGB>::last() << std::endl;
+    std::cout << "Size: " << EnumInfo<RGB>::size() << std::endl;
+    for (int i = 0; i < EnumInfo<RGB>::size(); ++i)
     {
-        std::cout << EnumTypeInfo<RGB>::names[i] << "=" << EnumTypeInfo<RGB>::values[i] << std::endl;
+        std::cout << EnumInfo<RGB>::names[i] << "=" << EnumInfo<RGB>::values[i] << std::endl;
     }
 
-    std::cout << EnumValueInfo<RGB, Red>::name() << std::endl;
-    std::cout << EnumValueInfo<RGB, Green>::name() << std::endl;
-    std::cout << EnumValueInfo<RGB, Blue>::name() << std::endl;
+    std::cout << EnumeratorInfo<RGB, Red>::name() << std::endl;
+    std::cout << EnumeratorInfo<RGB, Green>::name() << std::endl;
+    std::cout << EnumeratorInfo<RGB, Blue>::name() << std::endl;
+
+
     return 0;
 }

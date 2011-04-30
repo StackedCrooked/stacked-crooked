@@ -32,6 +32,17 @@ struct EnumTypeInfo;
     };
 
 
+template<class EnumType, EnumType _EnumValue>
+struct EnumValueInfo;
+
+
+#define DEFINE_ENUMVALUEINFO_SPECIALIZATION(Dummy, Type, Value) \
+    template<> struct EnumValueInfo<Type, Value> { \
+        static const char * name() { return #Value; } \
+        static Type value() { return Value; } \
+    };
+
+
 #define ENUM(Name, N, Values) \
     DEFINE_ENUM(Name, N, Values) \
     DEFINE_ENUMTYPEINFO_SPECIALIZATION( \
@@ -39,7 +50,13 @@ struct EnumTypeInfo;
         N, \
         Values, \
         BOOST_PP_LIST_FIRST(BOOST_PP_TUPLE_TO_LIST(N, Values)), \
-        BOOST_PP_LIST_FIRST(BOOST_PP_LIST_REVERSE(BOOST_PP_TUPLE_TO_LIST(N, Values))))
+        BOOST_PP_LIST_FIRST(BOOST_PP_LIST_REVERSE(BOOST_PP_TUPLE_TO_LIST(N, Values)))) \
+    BOOST_PP_LIST_FOR_EACH( \
+        DEFINE_ENUMVALUEINFO_SPECIALIZATION, \
+        Name, \
+        BOOST_PP_TUPLE_TO_LIST(N, Values))
+
+
 
 
 ENUM(RGB, 3, (Red, Green, Blue))
@@ -55,5 +72,9 @@ int main()
     {
         std::cout << EnumTypeInfo<RGB>::names[i] << "=" << EnumTypeInfo<RGB>::values[i] << std::endl;
     }
+
+    std::cout << EnumValueInfo<RGB, Red>::name() << std::endl;
+    std::cout << EnumValueInfo<RGB, Green>::name() << std::endl;
+    std::cout << EnumValueInfo<RGB, Blue>::name() << std::endl;
     return 0;
 }

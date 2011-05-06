@@ -1,8 +1,9 @@
 #!/bin/bash
 DEPENDENCIES="git curl hg bzr"
 for dep in $DEPENDENCIES; do
-    type ${dep} &>/dev/null || { echo "Please install ${dep} first." >&2; exit 1; }
+    type ${dep} &>/dev/null || { echo "${dep} not found. Dependencies: ${DEPENDENCIES}." >&2; exit 1; }
 done
+
 VIM_ADDONS=$HOME/vim-addons
 if [ -d $VIM_ADDONS ]; then
     echo "The directory $VIM_ADDONS already exists."

@@ -75,6 +75,7 @@ public:
 
 
 std::size_t MyClassWithRefcount::sInstanceCount = 0;
+std::size_t gNumCopies = 0;
 
 
 template<class Container>
@@ -85,6 +86,7 @@ time_t TestCopy(const Container & inContainer, std::size_t n)
     for (std::size_t idx = 0; idx < n; ++idx)
     {
         volatile Container copy = inContainer;
+        gNumCopies += const_cast<const Container&>(copy).size();
     }
     return static_cast<time_t>(0.5 + (double(stopwatch.elapsed()) / 1000.0));
 }
@@ -150,6 +152,8 @@ int main(int argc, char ** argv)
 
     TestVector(n);
     TestSet(n);
+
+    std::cout << "Total number of copies: " << gNumCopies << std::endl;
     return 0;
 }
 

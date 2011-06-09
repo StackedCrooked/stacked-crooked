@@ -328,7 +328,7 @@ void testNode()
 template<class T>
 struct LockMany : boost::noncopyable
 {
-    // With ownership, because we are newing the nodes here.
+    // No ownership here to prevent cycles causing infinite recursion on destruction.
     typedef GenericNode<Mutex*, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
 
     LockMany() :
@@ -430,6 +430,6 @@ int main()
 {
     testNode();
     testLockMany();
-    std::cout << "End of program" << std::endl << std::flush;
+    std::cout << "Everything turned out better than expected." << std::endl << std::flush;
     return 0;
 }

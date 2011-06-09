@@ -324,7 +324,7 @@ template<class T>
 struct LockMany
 {
     // With ownership, because we are newing the nodes here.
-    typedef GenericNode<T, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
+    typedef GenericNode<Mutex*, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
 
     LockMany() :
         mRootNode(),
@@ -334,7 +334,7 @@ struct LockMany
 
     void lock(Mutex & inMutex)
     {
-        MutexNode * node = getMutexNode(inMutex.mChar);
+        MutexNode * node = getMutexNode(&inMutex);
         mLastNode->insert(node);
         mLastNode = node;
     }
@@ -344,19 +344,19 @@ struct LockMany
         mMutexNodes.clear();
     }
 
-    MutexNode * getMutexNode(char c)
+    MutexNode * getMutexNode(Mutex * inMutex)
     {
-        typename MutexNodes::iterator it = mMutexNodes.find(c);
+        typename MutexNodes::iterator it = mMutexNodes.find(inMutex);
         if (it == mMutexNodes.end())
         {
-            MutexNode * theMutexNode = new MutexNode(c);
-            mMutexNodes.insert(std::make_pair(c, theMutexNode));
+            MutexNode * theMutexNode = new MutexNode(inMutex);
+            mMutexNodes.insert(std::make_pair(inMutex, theMutexNode));
             return theMutexNode;
         }
         return it->second.get();
     }
 
-    typedef std::map<char, boost::shared_ptr<MutexNode> > MutexNodes;
+    typedef std::map<Mutex*, boost::shared_ptr<MutexNode> > MutexNodes;
     MutexNodes mMutexNodes;
     MutexNode mRootNode;
     MutexNode * mLastNode;

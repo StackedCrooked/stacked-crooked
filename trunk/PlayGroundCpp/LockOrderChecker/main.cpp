@@ -326,7 +326,7 @@ void testNode()
 
 
 template<class T>
-struct LockMany
+struct LockMany : boost::noncopyable
 {
     // With ownership, because we are newing the nodes here.
     typedef GenericNode<Mutex*, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;

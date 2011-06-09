@@ -1,3 +1,4 @@
+#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cassert>
 #include <iostream>
@@ -8,22 +9,13 @@
 #include <vector>
 
 
-struct Node;
-struct NodeComparator;
-typedef Node* NodePtr;
-typedef std::set<NodePtr, NodeComparator> NodeSet;
 
-
-struct NodeComparator
+template<class T>
+struct Node : boost::noncopyable
 {
-    bool operator()(NodePtr lhs, NodePtr rhs) const;
-};
-
-
-struct Node
-{
-    Node(const std::string & inName) :
-        mName(inName)
+    Node(const std::string & inName, T * inT) :
+        mName(inName),
+        mT(inT)
     {
     }
 
@@ -35,20 +27,25 @@ struct Node
 
     const std::string & name() const { return mName; }
 
+    T * value() { return mT; }
+
+    const T * value() const { return mT; }
+
+    typedef Node<T> This;
+    typedef std::set<This*> NodeSet;
+
     std::string mName;
+    T * mT;
     NodeSet mChildNodes;
 };
 
 
-bool NodeComparator::operator()(NodePtr lhs, NodePtr rhs) const
-{
-    return lhs->name() < rhs->name();
-}
-
-
-bool HasCycles(const Node & inNode, NodeSet & ioPreviousNodes, std::size_t inRecursionDepth)
+template<class T>
+bool HasCycles(const Node<T> & inNode, typename Node<T>::NodeSet & ioPreviousNodes, std::size_t inRecursionDepth)
 {
     assert(inRecursionDepth < 100);
+
+    typedef typename Node<T>::NodeSet NodeSet;
 
     const NodeSet & childNodes = inNode.mChildNodes;
     std::size_t childCount = childNodes.size();
@@ -56,12 +53,12 @@ bool HasCycles(const Node & inNode, NodeSet & ioPreviousNodes, std::size_t inRec
 
     if (!childNodes.empty())
     {
-        for (NodeSet::const_iterator it = childNodes.begin(),
-                                     end = childNodes.end();
+        for (typename NodeSet::const_iterator it = childNodes.begin(),
+                                              end = childNodes.end();
              it != end;
              ++it)
         {
-            Node & child = **it;
+            Node<T> & child = **it;
             if (ioPreviousNodes.find(&child) != ioPreviousNodes.end())
             {
                 return true;
@@ -82,27 +79,36 @@ bool HasCycles(const Node & inNode, NodeSet & ioPreviousNodes, std::size_t inRec
 }
 
 
-bool HasCycles(const Node & inNode)
+template<class T>
+bool HasCycles(const Node<T> & inNode)
 {
-    NodeSet previousNodes; // empty for now
+    typename Node<T>::NodeSet previousNodes; // empty for now
     return HasCycles(inNode, previousNodes, 1);
 }
 
 
+struct Mutex
+{
+};
+
+
+
+
+
 int main()
 {
-    Node a("a");
+    Node<int> a("a", NULL);
     assert(!HasCycles(a));
 
-    Node b("b");
+    Node<int> b("b", NULL);
     a.append(b);
     assert(!HasCycles(a));
 
-    Node c("c");
+    Node<int> c("c", NULL);
     a.append(b).append(c);
     assert(!HasCycles(a));
 
-    Node d("d");
+    Node<int> d("d", NULL);
     a.append(b).append(c).append(d);
     assert(!HasCycles(a));
 

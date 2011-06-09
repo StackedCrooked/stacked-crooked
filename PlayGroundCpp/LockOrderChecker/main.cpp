@@ -1,3 +1,4 @@
+#include <boost/bind.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <cassert>
@@ -7,6 +8,20 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+
+#define AssertTrueWithFileAndWithLine(file, line, statement) \
+    if (true == (statement)) \
+    { \
+        std::cout << file << ":" << line << ": " << #statement << ": OK\n"; \
+    } \
+    else \
+    { \
+        std::cout << "FAIL: " << #statement << "\n"; \
+    }
+
+
+#define AssertTrue(statement) AssertTrueWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
 template<class ValueType>
@@ -96,12 +111,14 @@ struct PointerPolicy_Shared
 };
 
 
-template <class DataType,
+template <class TDataType,
           template <class> class ContainerPolicy,
           template <class> class PointerPolicy>
 class GenericNode
 {
 public:
+    typedef TDataType DataType;
+
     GenericNode() { }
 
     GenericNode(const DataType & inData) : mData(inData) { }
@@ -140,9 +157,6 @@ public:
         return mChildren.end();
     }
 
-    /**
-     * Takes ownership.
-     */
     void insert(This * inItem)
     {
         ChildPtr item(inItem);
@@ -227,6 +241,10 @@ bool HasCycles(const GenericNode<T, C, P> & inNode)
 struct Mutex
 {
     Mutex(char inChar) : mChar(inChar) {}
+
+    void lock() {}
+    void unlock() {}
+
     char mChar;
 };
 
@@ -255,8 +273,9 @@ void Lock(T & a, T & b, T& c, T & d)
 }
 
 
-int main()
+void testNode()
 {
+    // Defined the tree with PointerPolicy_Normal_NoOwnership to void deleting stack-allocated objects.
     typedef GenericNode<Mutex, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
     MutexNode a('a');
     MutexNode b('b');
@@ -264,42 +283,108 @@ int main()
     MutexNode d('d');
 
     Lock(a, b);
-    assert(!HasCycles(a));
-    assert(!HasCycles(b));
-    assert(!HasCycles(c));
-    assert(!HasCycles(d));
+    AssertTrue(!HasCycles(a));
+    AssertTrue(!HasCycles(b));
+    AssertTrue(!HasCycles(c));
+    AssertTrue(!HasCycles(d));
 
     Lock(a, c);
-    assert(!HasCycles(a));
-    assert(!HasCycles(b));
-    assert(!HasCycles(c));
-    assert(!HasCycles(d));
+    AssertTrue(!HasCycles(a));
+    AssertTrue(!HasCycles(b));
+    AssertTrue(!HasCycles(c));
+    AssertTrue(!HasCycles(d));
 
     Lock(a, b, c);
-    assert(!HasCycles(a));
-    assert(!HasCycles(b));
-    assert(!HasCycles(c));
-    assert(!HasCycles(d));
+    AssertTrue(!HasCycles(a));
+    AssertTrue(!HasCycles(b));
+    AssertTrue(!HasCycles(c));
+    AssertTrue(!HasCycles(d));
 
     Lock(a, b, d);
-    assert(!HasCycles(a));
-    assert(!HasCycles(b));
-    assert(!HasCycles(c));
-    assert(!HasCycles(d));
+    AssertTrue(!HasCycles(a));
+    AssertTrue(!HasCycles(b));
+    AssertTrue(!HasCycles(c));
+    AssertTrue(!HasCycles(d));
 
     Lock(a, b, c, d);
-    assert(!HasCycles(a));
-    assert(!HasCycles(b));
-    assert(!HasCycles(c));
-    assert(!HasCycles(d));
+    AssertTrue(!HasCycles(a));
+    AssertTrue(!HasCycles(b));
+    AssertTrue(!HasCycles(c));
+    AssertTrue(!HasCycles(d));
 
     Lock(a, b, d, c);
-    assert(HasCycles(a));
-    assert(HasCycles(b));
-    assert(HasCycles(c));
-    assert(HasCycles(d));
+    AssertTrue(HasCycles(a));
+    AssertTrue(HasCycles(b));
+    AssertTrue(HasCycles(c));
+    AssertTrue(HasCycles(d));
+}
 
 
-    std::cout << "Done!" << std::endl;
+template<class T>
+struct LockMany
+{
+    // With ownership, because we are newing the nodes here.
+    typedef GenericNode<T, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
+
+    LockMany() :
+        mRootNode(),
+        mLastNode(&mRootNode)
+    {
+    }
+
+    void lock(Mutex & inMutex)
+    {
+        MutexNode * node = getMutexNode(inMutex.mChar);
+        mLastNode->insert(node);
+        mLastNode = node;
+    }
+
+    void unlockAll()
+    {
+        mMutexNodes.clear();
+    }
+
+    MutexNode * getMutexNode(char c)
+    {
+        typename MutexNodes::iterator it = mMutexNodes.find(c);
+        if (it == mMutexNodes.end())
+        {
+            MutexNode * theMutexNode = new MutexNode(c);
+            mMutexNodes.insert(std::make_pair(c, theMutexNode));
+            return theMutexNode;
+        }
+        return it->second.get();
+    }
+
+    typedef std::map<char, boost::shared_ptr<MutexNode> > MutexNodes;
+    MutexNodes mMutexNodes;
+    MutexNode mRootNode;
+    MutexNode * mLastNode;
+};
+
+
+void testLockMany()
+{
+    LockMany<char> locker;
+
+    Mutex a('a');
+    Mutex b('b');
+
+
+    locker.lock(a);
+    locker.lock(b);
+    AssertTrue(!HasCycles(locker.mRootNode));
+
+    locker.lock(a);
+    AssertTrue(HasCycles(locker.mRootNode));
+
+}
+
+
+int main()
+{
+    testNode();
+    testLockMany();
+    std::cout << "End of program" << std::endl << std::flush;
     return 0;
 }

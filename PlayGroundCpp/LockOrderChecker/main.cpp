@@ -13,7 +13,7 @@
 template<class T>
 struct Node : boost::noncopyable
 {
-    Node(const std::string & inName, T * inT) :
+    Node(const std::string & inName, const T & inT) :
         mName(inName),
         mT(inT)
     {
@@ -27,15 +27,15 @@ struct Node : boost::noncopyable
 
     const std::string & name() const { return mName; }
 
-    T * value() { return mT; }
+    T & value() { return mT; }
 
-    const T * value() const { return mT; }
+    const T & value() const { return mT; }
 
     typedef Node<T> This;
     typedef std::set<This*> NodeSet;
 
     std::string mName;
-    T * mT;
+    T mT;
     NodeSet mChildNodes;
 };
 
@@ -97,18 +97,18 @@ struct Mutex
 
 int main()
 {
-    Node<int> a("a", NULL);
+    Node<int> a("a", 1);
     assert(!HasCycles(a));
 
-    Node<int> b("b", NULL);
+    Node<int> b("b", 2);
     a.append(b);
     assert(!HasCycles(a));
 
-    Node<int> c("c", NULL);
+    Node<int> c("c", 3);
     a.append(b).append(c);
     assert(!HasCycles(a));
 
-    Node<int> d("d", NULL);
+    Node<int> d("d", 4);
     a.append(b).append(c).append(d);
     assert(!HasCycles(a));
 

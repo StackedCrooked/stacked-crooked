@@ -178,14 +178,17 @@ private:
 template<class T,
          template<class> class C,
          template<class> class P>
-bool HasCycles(const GenericNode<T, C, P> & inNode, typename GenericNode<T, C, P>::Container & ioPreviousNodes, std::size_t inRecursionDepth)
+bool HasCycles(const GenericNode<T, C, P> & inNode,
+               typename GenericNode<T, C, P>::Container inPreviousNodes,
+               std::size_t inRecursionDepth)
 {
     if (inRecursionDepth >= 10)
     {
         return false;
     }
 
-    typedef typename GenericNode<T, C, P>::Container Container;
+    typedef GenericNode<T, C, P> Node;
+    typedef typename Node::Container Container;
 
     if (!inNode.empty())
     {
@@ -195,20 +198,18 @@ bool HasCycles(const GenericNode<T, C, P> & inNode, typename GenericNode<T, C, P
              ++it)
         {
             GenericNode<T, C, P> & child = **it;
-            char value = child.data().mChar;
-            if (ioPreviousNodes.find(&child) != ioPreviousNodes.end())
+            if (inPreviousNodes.find(&child) != inPreviousNodes.end())
             {
                 return true;
             }
             else
             {
-                if (HasCycles(child, ioPreviousNodes, inRecursionDepth + 1))
+                inPreviousNodes.insert(&const_cast<Node&>(inNode));
+                if (HasCycles(child, inPreviousNodes, inRecursionDepth + 1))
                 {
                     return true;
                 }
-                ioPreviousNodes.insert(&child);
             }
-            value = '0';
         }
     }
     return false;
@@ -257,12 +258,46 @@ void Lock(T & a, T & b, T& c, T & d)
 int main()
 {
     typedef GenericNode<Mutex, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
-    MutexNode a('a'), b('b'), c('c'), d('d');
+    MutexNode a('a');
+    MutexNode b('b');
+    MutexNode c('c');
+    MutexNode d('d');
 
     Lock(a, b);
+    assert(!HasCycles(a));
+    assert(!HasCycles(b));
+    assert(!HasCycles(c));
+    assert(!HasCycles(d));
+
     Lock(a, c);
+    assert(!HasCycles(a));
+    assert(!HasCycles(b));
+    assert(!HasCycles(c));
+    assert(!HasCycles(d));
+
     Lock(a, b, c);
     assert(!HasCycles(a));
+    assert(!HasCycles(b));
+    assert(!HasCycles(c));
+    assert(!HasCycles(d));
+
+    Lock(a, b, d);
+    assert(!HasCycles(a));
+    assert(!HasCycles(b));
+    assert(!HasCycles(c));
+    assert(!HasCycles(d));
+
+    Lock(a, b, c, d);
+    assert(!HasCycles(a));
+    assert(!HasCycles(b));
+    assert(!HasCycles(c));
+    assert(!HasCycles(d));
+
+    Lock(a, b, d, c);
+    assert(HasCycles(a));
+    assert(HasCycles(b));
+    assert(HasCycles(c));
+    assert(HasCycles(d));
 
 
     std::cout << "Done!" << std::endl;

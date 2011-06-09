@@ -175,6 +175,11 @@ public:
         return ContainerPolicy<ChildPtr>::empty(mChildren);
     }
 
+    DataType & data()
+    {
+        return mData;
+    }
+
     const DataType & data() const
     {
         return mData;
@@ -195,7 +200,7 @@ template<class T,
          template<class> class C,
          template<class> class P>
 bool HasCycles(const GenericNode<T, C, P> & inNode,
-               typename GenericNode<T, C, P>::Container inPreviousNodes)
+               std::vector<T*> inPreviousNodes = std::vector<T*>())
 {
     typedef GenericNode<T, C, P> Node;
     typedef typename Node::Container Container;
@@ -208,13 +213,13 @@ bool HasCycles(const GenericNode<T, C, P> & inNode,
              ++it)
         {
             GenericNode<T, C, P> & child = **it;
-            if (inPreviousNodes.find(&child) != inPreviousNodes.end())
+            if (std::find(inPreviousNodes.begin(), inPreviousNodes.end(), &child.data()) != inPreviousNodes.end())
             {
                 return true;
             }
             else
             {
-                inPreviousNodes.insert(&const_cast<Node&>(inNode));
+                inPreviousNodes.push_back(const_cast<T*>(&inNode.data()));
 
                 // Previous nodes object is passed by value!
                 // This is an important aspect of the algorithm!
@@ -226,14 +231,6 @@ bool HasCycles(const GenericNode<T, C, P> & inNode,
         }
     }
     return false;
-}
-
-
-template<class T, template<class> class C, template<class> class P>
-bool HasCycles(const GenericNode<T, C, P> & inNode)
-{
-    typename GenericNode<T, C, P>::Container previousNodes; // empty for now
-    return HasCycles(inNode, previousNodes);
 }
 
 

@@ -10,18 +10,18 @@
 #include <vector>
 
 
-#define AssertTrueWithFileAndWithLine(file, line, statement) \
+#define VerifyWithFileAndWithLine(file, line, statement) \
     if (true == (statement)) \
     { \
         std::cout << file << ":" << line << ": " << #statement << ": OK\n"; \
     } \
     else \
     { \
-        std::cout << "FAIL: " << #statement << "\n"; \
+        std::cout << file << ":" << line << ": " << #statement << ": *** FAIL ***\n"; \
     }
 
 
-#define AssertTrue(statement) AssertTrueWithFileAndWithLine(__FILE__, __LINE__, statement);
+#define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
 template<class ValueType>
@@ -143,6 +143,7 @@ public:
     {
         return mChildren.begin();
     }
+
     iterator end()
     {
         return mChildren.end();
@@ -152,6 +153,7 @@ public:
     {
         return mChildren.begin();
     }
+
     const_iterator end() const
     {
         return mChildren.end();
@@ -193,14 +195,8 @@ template<class T,
          template<class> class C,
          template<class> class P>
 bool HasCycles(const GenericNode<T, C, P> & inNode,
-               typename GenericNode<T, C, P>::Container inPreviousNodes,
-               std::size_t inRecursionDepth)
+               typename GenericNode<T, C, P>::Container inPreviousNodes)
 {
-    if (inRecursionDepth >= 10)
-    {
-        return false;
-    }
-
     typedef GenericNode<T, C, P> Node;
     typedef typename Node::Container Container;
 
@@ -219,7 +215,10 @@ bool HasCycles(const GenericNode<T, C, P> & inNode,
             else
             {
                 inPreviousNodes.insert(&const_cast<Node&>(inNode));
-                if (HasCycles(child, inPreviousNodes, inRecursionDepth + 1))
+
+                // Previous nodes object is passed by value!
+                // This is an important aspect of the algorithm!
+                if (HasCycles(child, inPreviousNodes))
                 {
                     return true;
                 }
@@ -234,7 +233,7 @@ template<class T, template<class> class C, template<class> class P>
 bool HasCycles(const GenericNode<T, C, P> & inNode)
 {
     typename GenericNode<T, C, P>::Container previousNodes; // empty for now
-    return HasCycles(inNode, previousNodes, 1);
+    return HasCycles(inNode, previousNodes);
 }
 
 
@@ -283,40 +282,46 @@ void testNode()
     MutexNode d('d');
 
     Lock(a, b);
-    AssertTrue(!HasCycles(a));
-    AssertTrue(!HasCycles(b));
-    AssertTrue(!HasCycles(c));
-    AssertTrue(!HasCycles(d));
+    Verify(!HasCycles(a));
+    Verify(!HasCycles(b));
+    Verify(!HasCycles(c));
+    Verify(!HasCycles(d));
 
     Lock(a, c);
-    AssertTrue(!HasCycles(a));
-    AssertTrue(!HasCycles(b));
-    AssertTrue(!HasCycles(c));
-    AssertTrue(!HasCycles(d));
+    Verify(!HasCycles(a));
+    Verify(!HasCycles(b));
+    Verify(!HasCycles(c));
+    Verify(!HasCycles(d));
+
+    Lock(b, d);
+    Verify(!HasCycles(a));
+    Verify(!HasCycles(b));
+    Verify(!HasCycles(c));
+    Verify(!HasCycles(d));
 
     Lock(a, b, c);
-    AssertTrue(!HasCycles(a));
-    AssertTrue(!HasCycles(b));
-    AssertTrue(!HasCycles(c));
-    AssertTrue(!HasCycles(d));
+    Verify(!HasCycles(a));
+    Verify(!HasCycles(b));
+    Verify(!HasCycles(c));
+    Verify(!HasCycles(d));
 
     Lock(a, b, d);
-    AssertTrue(!HasCycles(a));
-    AssertTrue(!HasCycles(b));
-    AssertTrue(!HasCycles(c));
-    AssertTrue(!HasCycles(d));
+    Verify(!HasCycles(a));
+    Verify(!HasCycles(b));
+    Verify(!HasCycles(c));
+    Verify(!HasCycles(d));
 
     Lock(a, b, c, d);
-    AssertTrue(!HasCycles(a));
-    AssertTrue(!HasCycles(b));
-    AssertTrue(!HasCycles(c));
-    AssertTrue(!HasCycles(d));
+    Verify(!HasCycles(a));
+    Verify(!HasCycles(b));
+    Verify(!HasCycles(c));
+    Verify(!HasCycles(d));
 
     Lock(a, b, d, c);
-    AssertTrue(HasCycles(a));
-    AssertTrue(HasCycles(b));
-    AssertTrue(HasCycles(c));
-    AssertTrue(HasCycles(d));
+    Verify(HasCycles(a));
+    Verify(HasCycles(b));
+    Verify(HasCycles(c));
+    Verify(HasCycles(d));
 }
 
 
@@ -332,6 +337,11 @@ struct LockMany
     {
     }
 
+    ~LockMany()
+    {
+        unlockAll();
+    }
+
     void lock(Mutex & inMutex)
     {
         MutexNode * node = getMutexNode(&inMutex);
@@ -341,7 +351,7 @@ struct LockMany
 
     void unlockAll()
     {
-        mMutexNodes.clear();
+        mLastNode = &mRootNode;
     }
 
     MutexNode * getMutexNode(Mutex * inMutex)
@@ -367,17 +377,52 @@ void testLockMany()
 {
     LockMany<char> locker;
 
-    Mutex a('a');
-    Mutex b('b');
+    Mutex a('1');
+    Mutex b('2');
+    Mutex c('3');
 
-
+    // Ok
     locker.lock(a);
     locker.lock(b);
-    AssertTrue(!HasCycles(locker.mRootNode));
+    Verify(!HasCycles(locker.mRootNode));
+    Verify(!HasCycles(*locker.getMutexNode(&a)));
+    Verify(!HasCycles(*locker.getMutexNode(&b)));
+    locker.unlockAll();
 
+    // Ok
     locker.lock(a);
-    AssertTrue(HasCycles(locker.mRootNode));
+    locker.lock(b);
+    Verify(!HasCycles(locker.mRootNode));
+    Verify(!HasCycles(*locker.getMutexNode(&a)));
+    Verify(!HasCycles(*locker.getMutexNode(&b)));
+    locker.unlockAll();
 
+    // Ok
+    locker.lock(b);
+    locker.lock(c);
+    Verify(!HasCycles(locker.mRootNode));
+    Verify(!HasCycles(*locker.getMutexNode(&a)));
+    Verify(!HasCycles(*locker.getMutexNode(&b)));
+    Verify(!HasCycles(*locker.getMutexNode(&c)));
+    locker.unlockAll();
+
+    // Ok
+    locker.lock(a);
+    locker.lock(c);
+    Verify(!HasCycles(locker.mRootNode));
+    Verify(!HasCycles(*locker.getMutexNode(&a)));
+    Verify(!HasCycles(*locker.getMutexNode(&b)));
+    Verify(!HasCycles(*locker.getMutexNode(&c)));
+    locker.unlockAll();
+
+    // Test inconsistent locking order here:
+    locker.lock(b);
+    locker.lock(a);
+    Verify(HasCycles(locker.mRootNode));
+    Verify(HasCycles(*locker.getMutexNode(&a)));
+    Verify(HasCycles(*locker.getMutexNode(&b)));
+    Verify(!HasCycles(*locker.getMutexNode(&c))); // no cycles here
+    locker.unlockAll();
 }
 
 

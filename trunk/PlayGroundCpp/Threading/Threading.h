@@ -52,30 +52,37 @@ template<class Variable, class Mutex>
 class ScopedAccessor;
 
 
-template<class VariableType,
-         class MutexType>
+/**
+ * ThreadSafe can be used to create a thread-safe object.
+ * Access to the held object can be obtained by creating a ScopedAccessor object.
+ */
+template<class VariableType, class MutexType>
 class ThreadSafe
 {
 public:
     typedef VariableType Variable;
     typedef MutexType Mutex;
-    typedef ThreadSafe<Variable, Mutex> This;
+
+    ThreadSafe() :
+        mData(new Data(new Variable()))
+    {
+    }
 
     ThreadSafe(Variable * inVariable) :
         mData(new Data(inVariable))
     {
     }
 
-    ThreadSafe(const This & rhs) :
+    ThreadSafe(const ThreadSafe<Variable, Mutex> & rhs) :
         mData(rhs.mData)
     {
         ++mData->mRefCount;
     }
 
-    This & operator=(const This & rhs)
+    ThreadSafe<Variable, Mutex> & operator=(const ThreadSafe<Variable, Mutex> & rhs)
     {
         // Implement operator= using the copy/swap idiom:
-        This tmp(rhs);
+        ThreadSafe<Variable, Mutex> tmp(rhs);
         std::swap(mData, tmp.mData);
         return *this;
     }
@@ -119,13 +126,10 @@ private:
  * ScopedAccessor creates an atomic scope that allows access
  * to the variable held by the ThreadSafe wrapper.
  */
-template<typename VariableType,
-         class MutexType>
+template<typename Variable, class Mutex>
 class ScopedAccessor
 {
 public:
-    typedef VariableType Variable;
-    typedef MutexType Mutex;
     typedef ThreadSafe<Variable, Mutex> ThreadSafeVariable;
     typedef ScopedAccessor<Variable, Mutex> This;
 

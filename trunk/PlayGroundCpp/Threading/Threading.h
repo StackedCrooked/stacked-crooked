@@ -9,38 +9,18 @@
 namespace Threading {
 
 
-enum ExclusionMechanism
+static pthread_mutex_t GetFastNativeMutex()
 {
-    ExclusionMechanism_Normal,
-    ExclusionMechanism_Recursive
-};
+    pthread_mutex_t result = PTHREAD_MUTEX_INITIALIZER;
+    return result;
+}
 
 
-// Traits class
-template<ExclusionMechanism>
-struct Traits;
-
-
-template<>
-struct Traits<ExclusionMechanism_Normal>
+pthread_mutex_t GetRecursiveNativeMutex()
 {
-    static pthread_mutex_t GetNativeMutex()
-    {
-        pthread_mutex_t result = PTHREAD_MUTEX_INITIALIZER;
-        return result;
-    }
-};
-
-
-template<>
-struct Traits<ExclusionMechanism_Recursive>
-{
-    pthread_mutex_t GetNativeMutex()
-    {
-        pthread_mutex_t result = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-        return result;
-    }
-};
+    pthread_mutex_t result = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+    return result;
+}
 
 
 static void Lock(pthread_mutex_t & inMutex)
@@ -55,46 +35,42 @@ static void Unlock(pthread_mutex_t & inMutex)
 }
 
 
-// Mutex class
-template<ExclusionMechanism>
-class GenericMutex;
-
-
-template<ExclusionMechanism Exclusion_>
-class GenericScopedLock
+template<class MutexType>
+class ScopedLock
 {
 public:
-    GenericScopedLock(GenericMutex<Exclusion_> & inMutex) :
+    typedef MutexType Mutex;
+
+    ScopedLock(Mutex & inMutex) :
         mMutex(inMutex)
     {
         mMutex.lock();
     }
 
-    ~GenericScopedLock()
+    ~ScopedLock()
     {
         mMutex.unlock();
     }
 
 private:
-    GenericScopedLock(const GenericScopedLock&);
-    GenericScopedLock& operator=(const GenericScopedLock&);
+    ScopedLock(const ScopedLock&);
+    ScopedLock& operator=(const ScopedLock&);
 
-    GenericMutex<Exclusion_> & mMutex;
+    Mutex & mMutex;
 };
 
 
-template<ExclusionMechanism Exclusion_>
-class GenericMutex
+class FastMutex
 {
 public:
-    typedef GenericScopedLock<Exclusion_> ScopedLock;
+    typedef Threading::ScopedLock<FastMutex> ScopedLock;
 
-    GenericMutex() :
-        mNativeMutex(Traits<Exclusion_>::GetNativeMutex())
+    FastMutex() :
+        mNativeMutex(GetFastNativeMutex())
     {
     }
 
-    ~GenericMutex()
+    ~FastMutex()
     {
     }
 
@@ -103,21 +79,41 @@ public:
     void unlock() { Unlock(mNativeMutex); }
 
 private:
-    GenericMutex(const GenericMutex&);
-    GenericMutex& operator=(const GenericMutex&);
+    FastMutex(const FastMutex&);
+    FastMutex& operator=(const FastMutex&);
 
-    friend class GenericScopedLock<Exclusion_>;
+    friend class Threading::ScopedLock<FastMutex>;
 
     pthread_mutex_t mNativeMutex;
 };
 
 
-// Define the FastMutex type
-typedef GenericMutex<ExclusionMechanism_Normal> FastMutex;
+class RecursiveMutex
+{
+public:
+    typedef Threading::ScopedLock<RecursiveMutex> ScopedLock;
 
+    RecursiveMutex() :
+        mNativeMutex(GetRecursiveNativeMutex())
+    {
+    }
 
-// Define the RecursiveMutex type
-typedef GenericMutex<ExclusionMechanism_Recursive> RecursiveMutex;
+    ~RecursiveMutex()
+    {
+    }
+
+    void lock() { Lock(mNativeMutex); }
+
+    void unlock() { Unlock(mNativeMutex); }
+
+private:
+    RecursiveMutex(const RecursiveMutex&);
+    RecursiveMutex& operator=(const RecursiveMutex&);
+
+    friend class Threading::ScopedLock<RecursiveMutex>;
+
+    pthread_mutex_t mNativeMutex;
+};
 
 
 template<class Variable>
@@ -194,6 +190,10 @@ public:
     const Variable & get() const { return mThreadSafeVariable.getVariable(); }
 
     Variable & get() { return mThreadSafeVariable.getVariable(); }
+
+    const Variable * operator->() const { return &mThreadSafeVariable.getVariable(); }
+
+    Variable * operator->() { return &mThreadSafeVariable.getVariable(); }
 
 private:
     // non-copyable

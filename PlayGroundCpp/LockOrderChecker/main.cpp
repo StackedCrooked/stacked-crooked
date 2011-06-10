@@ -196,13 +196,13 @@ private:
 };
 
 
-template<class T,
-         template<class> class C,
-         template<class> class P>
-bool HasCycles(const GenericNode<T, C, P> & inNode,
-               std::vector<T*> inPreviousNodes = std::vector<T*>())
+template<class ValueType,
+         template<class> class ContainerType,
+         template<class> class PointerType>
+bool HasCycles(const GenericNode<ValueType, ContainerType, PointerType> & inNode,
+               std::vector<ValueType*> inPreviousNodes = std::vector<ValueType*>())
 {
-    typedef GenericNode<T, C, P> Node;
+    typedef GenericNode<ValueType, ContainerType, PointerType> Node;
     typedef typename Node::Container Container;
 
     if (!inNode.empty())
@@ -212,14 +212,14 @@ bool HasCycles(const GenericNode<T, C, P> & inNode,
              it != end;
              ++it)
         {
-            GenericNode<T, C, P> & child = **it;
+            GenericNode<ValueType, ContainerType, PointerType> & child = **it;
             if (std::find(inPreviousNodes.begin(), inPreviousNodes.end(), &child.data()) != inPreviousNodes.end())
             {
                 return true;
             }
             else
             {
-                inPreviousNodes.push_back(const_cast<T*>(&inNode.data()));
+                inPreviousNodes.push_back(const_cast<ValueType*>(&inNode.data()));
 
                 // Previous nodes object is passed by value!
                 // This is an important aspect of the algorithm!

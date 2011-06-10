@@ -200,7 +200,7 @@ template<class ValueType,
          template<class> class ContainerType,
          template<class> class PointerType>
 bool HasCycles(const GenericNode<ValueType, ContainerType, PointerType> & inNode,
-               std::vector<ValueType*> inPreviousNodes = std::vector<ValueType*>())
+               std::vector<const ValueType*> inPreviousNodes = std::vector<const ValueType*>())
 {
     typedef GenericNode<ValueType, ContainerType, PointerType> Node;
     typedef typename Node::Container Container;
@@ -219,7 +219,7 @@ bool HasCycles(const GenericNode<ValueType, ContainerType, PointerType> & inNode
             }
             else
             {
-                inPreviousNodes.push_back(const_cast<ValueType*>(&inNode.data()));
+                inPreviousNodes.push_back(&inNode.data());
 
                 // Previous nodes object is passed by value!
                 // This is an important aspect of the algorithm!

@@ -25,9 +25,11 @@ public:
 
     void stop()
     {
+        // Interrput the controller thread, which will result in the interruption of the worker threads.
         mControllerThread->interrupt();
     }
 
+    // Print the entire vector
     void print()
     {
         ScopedAccessor<Characters, PosixMutex> accessor(mCharacters);
@@ -38,17 +40,20 @@ public:
         }
     }
 
-
     void startImpl()
     {
+        // Start the two worker threads
         mAppendDigitsThread.reset(new boost::thread(boost::bind(&Tester::appendLetters, this)));
         mAppendLettersThread.reset(new boost::thread(boost::bind(&Tester::appendDigits, this)));
     }
 
+
+    // Continuously append digits 0123456789 to the vector followed by a newline.
     void appendDigits()
     {
         while (true)
         {
+            // Create an atomic scope
             ScopedAccessor<Characters, PosixMutex> accessor(mCharacters);
             Characters & characters = accessor.get();
 
@@ -61,10 +66,12 @@ public:
         }
     }
 
+    // Continuously append digits ABCDEFGHIJKLMNOPQRSTUVWXYZ to the vector followed by a newline.
     void appendLetters()
     {
         while (true)
         {
+            // Create an atomic scope
             ScopedAccessor<Characters, PosixMutex> accessor(mCharacters);
             Characters & characters = accessor.get();
 
@@ -89,13 +96,21 @@ public:
 int main()
 {
     Tester tester;
+
+    // Start the worker threads
     tester.start();
+
+    // Sleep 500 ms
     boost::xtime duration = {0, 500 * 1000 * 1000};
     boost::this_thread::sleep(duration);
-    tester.stop();
-    tester.print();
 
+    // Interrupt the treads
+    tester.stop();
+
+    // Print the results
+    tester.print();
 
     std::cout << "Everything went better than expected." << std::endl;
     return 0;
 }
+

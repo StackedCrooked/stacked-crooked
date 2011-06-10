@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-using namespace Threading;
+using Threading::ThreadSafe;
 
 
 struct Point
@@ -19,14 +19,15 @@ struct Worker
     {
     }
 
-    ThreadSafe<Point> mPoint;
+    ThreadSafe<Point, Threading::PosixMutex> mPoint;
 };
 
 int main()
 {
-    Worker w0;
-    Worker w1 = w0;
-    Worker w2;
-    w2 = w1;
+    Worker worker;
+    worker = Worker();
+    Worker worker2 = worker;
+
+    std::cout << "Everything went better than expected." << std::endl;
     return 0;
 }

@@ -2,43 +2,17 @@
 #define THREADING_H_INCLUDED
 
 
-#include <pthread.h>
+#include <boost/noncopyable.hpp>
 #include <algorithm>
+#include <pthread.h>
 
 
 namespace Threading {
 
 
-static pthread_mutex_t GetFastNativeMutex()
-{
-    pthread_mutex_t result = PTHREAD_MUTEX_INITIALIZER;
-    return result;
-}
-
-
-static pthread_mutex_t GetRecursiveNativeMutex()
-{
-    pthread_mutex_t result = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-    return result;
-}
-
-
-static void Lock(pthread_mutex_t & inMutex)
-{
-    pthread_mutex_lock(&inMutex);
-}
-
-
-static void Unlock(pthread_mutex_t & inMutex)
-{
-    pthread_mutex_unlock(&inMutex);
-}
-
-
 template<class MutexType>
-class ScopedLock
+struct ScopedLock : boost::noncopyable
 {
-public:
     typedef MutexType Mutex;
 
     ScopedLock(Mutex & inMutex) :
@@ -52,131 +26,56 @@ public:
         mMutex.unlock();
     }
 
-private:
-    ScopedLock(const ScopedLock&);
-    ScopedLock& operator=(const ScopedLock&);
-
     Mutex & mMutex;
 };
 
 
-class FastMutex
+struct PosixMutex : boost::noncopyable
 {
-public:
-    typedef Threading::ScopedLock<FastMutex> ScopedLock;
+    PosixMutex() { pthread_mutex_init(&mMutex, NULL); }
 
-    FastMutex() :
-        mNativeMutex(GetFastNativeMutex()),
-        mIsLocked(false)
-    {
-    }
+    ~PosixMutex() { pthread_mutex_destroy(&mMutex); }
 
-    ~FastMutex()
-    {
-        if (mIsLocked)
-        {
-            unlock();
-        }
-    }
+    pthread_mutex_t & getMutex() { return mMutex; }
 
-    bool isLocked() const
-    {
-        return mIsLocked;
-    }
+    const pthread_mutex_t & getMutex() const { return mMutex; }
 
-    void lock()
-    {
-        Lock(mNativeMutex);
-        mIsLocked = true;
-    }
+    void lock() { pthread_mutex_lock(&mMutex); }
 
-    void unlock()
-    {
-        mIsLocked = false;
-        Unlock(mNativeMutex);
-    }
+    void unlock() { pthread_mutex_unlock(&mMutex); }
 
-private:
-    FastMutex(const FastMutex&);
-    FastMutex& operator=(const FastMutex&);
-
-    friend class Threading::ScopedLock<FastMutex>;
-
-    pthread_mutex_t mNativeMutex;
-    bool mIsLocked;
+    pthread_mutex_t mMutex;
 };
 
 
-class RecursiveMutex
-{
-public:
-    typedef Threading::ScopedLock<RecursiveMutex> ScopedLock;
-
-    RecursiveMutex() :
-        mNativeMutex(GetRecursiveNativeMutex()),
-        mIsLocked(false)
-    {
-    }
-
-    ~RecursiveMutex()
-    {
-        if (mIsLocked)
-        {
-            unlock();
-        }
-    }
-
-    bool isLocked() const
-    {
-        return mIsLocked;
-    }
-
-    void lock()
-    {
-        Lock(mNativeMutex);
-        mIsLocked = true;
-    }
-
-    void unlock()
-    {
-        mIsLocked = false;
-        Unlock(mNativeMutex);
-    }
-
-private:
-    RecursiveMutex(const RecursiveMutex&);
-    RecursiveMutex& operator=(const RecursiveMutex&);
-
-    friend class Threading::ScopedLock<RecursiveMutex>;
-
-    pthread_mutex_t mNativeMutex;
-    bool mIsLocked;
-};
-
-
-template<class Variable>
+template<class Variable, class Mutex>
 class ScopedAccessor;
 
 
-template<class Variable>
+template<class VariableType,
+         class MutexType>
 class ThreadSafe
 {
 public:
+    typedef VariableType Variable;
+    typedef MutexType Mutex;
+    typedef ThreadSafe<Variable, Mutex> This;
+
     ThreadSafe(Variable * inVariable) :
         mData(new Data(inVariable))
     {
     }
 
-    ThreadSafe(const ThreadSafe<Variable> & rhs) :
+    ThreadSafe(const This & rhs) :
         mData(rhs.mData)
     {
         ++mData->mRefCount;
     }
 
-    ThreadSafe<Variable> & operator=(const ThreadSafe<Variable> & rhs)
+    This & operator=(const This & rhs)
     {
         // Implement operator= using the copy/swap idiom:
-        ThreadSafe<Variable> tmp(rhs);
+        This tmp(rhs);
         std::swap(mData, tmp.mData);
         return *this;
     }
@@ -190,9 +89,9 @@ public:
     }
 
 private:
-    friend class ScopedAccessor<Variable>;
+    friend class ScopedAccessor<Variable, Mutex>;
 
-    FastMutex & getMutex() { return mData->mMutex; }
+    Mutex & getMutex() { return mData->mMutex; }
 
     const Variable & getVariable() const { return *mData->mVariable; }
 
@@ -208,7 +107,7 @@ private:
         }
 
         Variable * mVariable;
-        FastMutex mMutex;
+        Mutex mMutex;
         unsigned mRefCount;
     };
 
@@ -216,11 +115,17 @@ private:
 };
 
 
-template<typename Variable>
+template<typename VariableType,
+         class MutexType>
 class ScopedAccessor
 {
 public:
-    ScopedAccessor(ThreadSafe<Variable> & inThreadSafeVariable) :
+    typedef VariableType Variable;
+    typedef MutexType Mutex;
+    typedef ThreadSafe<Variable, Mutex> ThreadSafeVariable;
+    typedef ScopedAccessor<Variable, Mutex> This;
+
+    ScopedAccessor(ThreadSafeVariable & inThreadSafeVariable) :
         mThreadSafeVariable(inThreadSafeVariable),
         mScopedLock(inThreadSafeVariable.getMutex())
     {
@@ -236,11 +141,11 @@ public:
 
 private:
     // non-copyable
-    ScopedAccessor(const ScopedAccessor<Variable> & rhs);
-    ScopedAccessor& operator=(const ScopedAccessor<Variable>& rhs);
+    ScopedAccessor(const This & rhs);
+    ScopedAccessor& operator=(const This & rhs);
 
-    ThreadSafe<Variable> & mThreadSafeVariable;
-    FastMutex::ScopedLock mScopedLock;
+    ThreadSafeVariable & mThreadSafeVariable;
+    ScopedLock<Mutex> mScopedLock;
 };
 
 

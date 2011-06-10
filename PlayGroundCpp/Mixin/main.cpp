@@ -6,6 +6,36 @@
 #define TRACE_MIXIN std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
 #define TRACE_BASE std::cout << "\n" << __PRETTY_FUNCTION__ << std::endl << std::flush;
 
+
+template <typename T>
+struct TypeWrapper
+{
+    typedef T TYPE;
+};
+
+
+template <typename T>
+struct TypeWrapper<const T>
+{
+    typedef const T TYPE;
+};
+
+
+template <typename T>
+struct TypeWrapper<const T&>
+{
+    typedef const T& TYPE;
+};
+
+
+template <typename T>
+struct TypeWrapper<T&>
+{
+    typedef T& TYPE;
+};
+
+
+
 // Savable is a mixin class for saving object state to file.
 template<class BaseType>
 struct Savable : public BaseType {
@@ -14,12 +44,12 @@ struct Savable : public BaseType {
     }
 
     template<class Arg0>
-    Savable(Arg0 & arg0) : BaseType(arg0) {
+    Savable(typename TypeWrapper<Arg0>::TYPE arg0) : BaseType(arg0) {
         TRACE_MIXIN
     }
 
     template<class Arg0, class Arg1>
-    Savable(Arg0 & arg0, Arg1 & arg1) : BaseType(arg0, arg1) {
+    Savable(typename TypeWrapper<Arg0>::TYPE arg0, typename TypeWrapper<Arg1>::TYPE arg1) : BaseType(arg0, arg1) {
         TRACE_MIXIN
     }
 
@@ -34,12 +64,12 @@ struct Loadable : public BaseType {
     }
 
     template<class Arg0>
-    Loadable(Arg0 & arg0) : BaseType(arg0) {
+    Loadable(typename TypeWrapper<Arg0>::TYPE arg0) : BaseType(arg0) {
         TRACE_MIXIN
     }
 
     template<class Arg0, class Arg1>
-    Loadable(Arg0 & arg0, Arg1 & arg1) : BaseType(arg0, arg1) {
+    Loadable(typename TypeWrapper<Arg0>::TYPE arg0, typename TypeWrapper<Arg1>::TYPE arg1) : BaseType(arg0, arg1) {
         TRACE_MIXIN
     }
 
@@ -235,13 +265,13 @@ struct LoadableAndSavableConstRefBase : public Loadable<Savable<ConstRefBase> > 
 
 // Also include a test with std::type_info.
 struct TypeInfo {
-    TypeInfo(const std::type_info & inTypeInfo) : mTypeInfo(inTypeInfo) {}
+    TypeInfo(const std::type_info * inTypeInfo) : mTypeInfo(inTypeInfo) {}
 
-    const std::type_info & mTypeInfo;
+    const std::type_info * mTypeInfo;
 };
 
 struct LoadableAndSavableTypeInfo : public Loadable<Savable<TypeInfo> > {
-    LoadableAndSavableTypeInfo() : Loadable<Savable<TypeInfo> >(typeid(this)) {}
+    LoadableAndSavableTypeInfo() : Loadable<Savable<TypeInfo> >(&typeid(this)) {}
 };
 
 void test() {

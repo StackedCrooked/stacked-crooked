@@ -12,21 +12,21 @@ struct Point
     int y;
 };
 
+struct Worker
+{
+    Worker() :
+        mPoint(new Point(3, 4))
+    {
+    }
+
+    ThreadSafe<Point> mPoint;
+};
+
 int main()
 {
-    FastMutex theFastMutex;
-    FastMutex::ScopedLock theScopedLock(theFastMutex);
-
-    typedef ThreadSafe<Point> TSPoint;
-    TSPoint tsPoint(new Point(3, 4));
-    ScopedAccessor<Point> pointAccess(tsPoint);
-    std::cout << "x: " << pointAccess.get().x << std::endl;
-    std::cout << "y: " << pointAccess.get().y << std::endl;
-
-    std::cout << "x: " << pointAccess->x << std::endl;
-    std::cout << "y: " << pointAccess->y << std::endl;
-
-
-    std::cout << "Everything went better than expected." << std::endl << std::flush;
+    Worker w0;
+    Worker w1 = w0;
+    Worker w2;
+    w2 = w1;
     return 0;
 }

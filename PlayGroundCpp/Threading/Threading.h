@@ -13,9 +13,7 @@ namespace Threading {
 template<class MutexType>
 struct ScopedLock : boost::noncopyable
 {
-    typedef MutexType Mutex;
-
-    ScopedLock(Mutex & inMutex) :
+    ScopedLock(MutexType & inMutex) :
         mMutex(inMutex)
     {
         mMutex.lock();
@@ -26,12 +24,14 @@ struct ScopedLock : boost::noncopyable
         mMutex.unlock();
     }
 
-    Mutex & mMutex;
+    MutexType & mMutex;
 };
 
 
 struct PosixMutex : boost::noncopyable
 {
+    typedef ScopedLock<PosixMutex> ScopedLock;
+
     PosixMutex() { pthread_mutex_init(&mMutex, NULL); }
 
     ~PosixMutex() { pthread_mutex_destroy(&mMutex); }
@@ -115,6 +115,10 @@ private:
 };
 
 
+/**
+ * ScopedAccessor creates an atomic scope that allows access
+ * to the variable held by the ThreadSafe wrapper.
+ */
 template<typename VariableType,
          class MutexType>
 class ScopedAccessor

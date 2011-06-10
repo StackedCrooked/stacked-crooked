@@ -2,127 +2,124 @@
 #define THREADING_H_INCLUDED
 
 
+#include <pthread.h>
+
+
 namespace Threading {
 
 
-enum LockType
+enum ExclusionMechanism
 {
-    LockType_Fast,
-    LockType_Recursive
+    ExclusionMechanism_Normal,
+    ExclusionMechanism_Recursive
 };
 
-
-// Mutex class
-template<LockType LockType_> class Mutex;
-
-// ScopedLock class
-template<typename> class ScopedLock;
 
 // Traits class
-template<LockType> struct Traits;
+template<ExclusionMechanism>
+struct Traits;
 
 
 template<>
-struct Traits<LockType_Fast>
+struct Traits<ExclusionMechanism_Normal>
 {
-    typedef Mutex<LockType_Fast> Mutex;
-
     static pthread_mutex_t GetNativeMutex()
     {
-        pthread_mutex_t result = PTHREAD_MUTEX_INITIALIZER_NP;
+        pthread_mutex_t result = PTHREAD_MUTEX_INITIALIZER;
         return result;
     }
-
-    static void Lock(Mutex & inMutex)
-    { pthread_mutex_lock(inMutex.GetNativeMutex()); }
-
-    static void Unlock(Mutex & inMutex)
-    { pthread_mutex_unlock(inMutex.GetNativeMutex()); }
 };
 
 
 template<>
-struct Traits<LockType_Recursive>
+struct Traits<ExclusionMechanism_Recursive>
 {
-    typedef Mutex<LockType_Recursive> Mutex;
-
     pthread_mutex_t GetNativeMutex()
     {
         pthread_mutex_t result = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
         return result;
     }
-
-    static void Lock(Mutex & inMutex)
-    { pthread_mutex_lock(inMutex.GetNativeMutex()); }
-
-    static void Unlock(Mutex & inMutex)
-    { pthread_mutex_unlock(inMutex.GetNativeMutex()); }
 };
 
 
-template<LockType LockType_>
-class Mutex
+static void Lock(pthread_mutex_t & inMutex)
+{
+    pthread_mutex_lock(&inMutex);
+}
+
+
+static void Unlock(pthread_mutex_t & inMutex)
+{
+    pthread_mutex_unlock(&inMutex);
+}
+
+
+// Mutex class
+template<ExclusionMechanism>
+class GenericMutex;
+
+
+template<ExclusionMechanism Exclusion_>
+class GenericScopedLock
 {
 public:
-    typedef Mutex<LockType_> This;
-    typedef Traits<LockType_> Traits;
-    typedef ScopedLock<LockType_> ScopedLock;
-
-    Mutex() :
-        mMutex(Traits::GetNativeMutex())
-    {
-    }
-
-    ~Mutex()
-    {
-    }
-
-    void lock() { Lock(mMutex); }
-
-    void unlock() { Unlock(mMutex); }
-
-private:
-    Mutex(const Mutex&);
-    Mutex& operator=(const Mutex&);
-
-    friend class ScopedLock<LockType_>;
-
-    pthread_mutex_t mMutex;
-};
-
-
-template<LockType LockType_>
-class ScopedLock
-{
-public:
-    typedef Mutex<LockType_> Mutex;
-
-    ScopedLock(Mutex & inMutex) :
+    GenericScopedLock(GenericMutex<Exclusion_> & inMutex) :
         mMutex(inMutex)
     {
         mMutex.lock();
     }
 
-    ~ScopedLock()
+    ~GenericScopedLock()
     {
         mMutex.unlock();
     }
 
 private:
-    Mutex & mMutex;
+    GenericScopedLock(const GenericScopedLock&);
+    GenericScopedLock& operator=(const GenericScopedLock&);
+
+    GenericMutex<Exclusion_> & mMutex;
+};
+
+
+template<ExclusionMechanism Exclusion_>
+class GenericMutex
+{
+public:
+    typedef GenericScopedLock<Exclusion_> ScopedLock;
+
+    GenericMutex() :
+        mNativeMutex(Traits<Exclusion_>::GetNativeMutex())
+    {
+    }
+
+    ~GenericMutex()
+    {
+    }
+
+    void lock() { Lock(mNativeMutex); }
+
+    void unlock() { Unlock(mNativeMutex); }
+
+private:
+    GenericMutex(const GenericMutex&);
+    GenericMutex& operator=(const GenericMutex&);
+
+    friend class GenericScopedLock<Exclusion_>;
+
+    pthread_mutex_t mNativeMutex;
 };
 
 
 // Define the FastMutex type
-typedef Mutex<LockType_Fast> FastMutex;
+typedef GenericMutex<ExclusionMechanism_Normal> FastMutex;
 
 
 // Define the RecursiveMutex type
-typedef Mutex<LockType_Recursive> RecursiveMutex;
+typedef GenericMutex<ExclusionMechanism_Recursive> RecursiveMutex;
 
 
 } // namespace Threading
 
 
 #endif // THREADING_H_INCLUDED
-

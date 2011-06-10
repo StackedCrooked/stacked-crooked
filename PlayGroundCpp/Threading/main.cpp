@@ -19,9 +19,12 @@ int main()
 
     typedef ThreadSafe<Point> TSPoint;
     TSPoint tsPoint(new Point(3, 4));
-    ScopedAccessor<Point> locker(tsPoint);
-    std::cout << "x: " << locker.get().x << std::endl;
-    std::cout << "y: " << locker.get().y << std::endl;
+    ScopedAccessor<Point> pointAccess(tsPoint);
+    std::cout << "x: " << pointAccess.get().x << std::endl;
+    std::cout << "y: " << pointAccess.get().y << std::endl;
+
+    std::cout << "x: " << pointAccess->x << std::endl;
+    std::cout << "y: " << pointAccess->y << std::endl;
 
 
     std::cout << "Everything went better than expected." << std::endl << std::flush;

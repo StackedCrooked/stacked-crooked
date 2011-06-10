@@ -16,7 +16,7 @@ static pthread_mutex_t GetFastNativeMutex()
 }
 
 
-pthread_mutex_t GetRecursiveNativeMutex()
+static pthread_mutex_t GetRecursiveNativeMutex()
 {
     pthread_mutex_t result = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
     return result;
@@ -66,17 +66,35 @@ public:
     typedef Threading::ScopedLock<FastMutex> ScopedLock;
 
     FastMutex() :
-        mNativeMutex(GetFastNativeMutex())
+        mNativeMutex(GetFastNativeMutex()),
+        mIsLocked(false)
     {
     }
 
     ~FastMutex()
     {
+        if (mIsLocked)
+        {
+            unlock();
+        }
     }
 
-    void lock() { Lock(mNativeMutex); }
+    bool isLocked() const
+    {
+        return mIsLocked;
+    }
 
-    void unlock() { Unlock(mNativeMutex); }
+    void lock()
+    {
+        Lock(mNativeMutex);
+        mIsLocked = true;
+    }
+
+    void unlock()
+    {
+        mIsLocked = false;
+        Unlock(mNativeMutex);
+    }
 
 private:
     FastMutex(const FastMutex&);
@@ -85,6 +103,7 @@ private:
     friend class Threading::ScopedLock<FastMutex>;
 
     pthread_mutex_t mNativeMutex;
+    bool mIsLocked;
 };
 
 
@@ -94,17 +113,35 @@ public:
     typedef Threading::ScopedLock<RecursiveMutex> ScopedLock;
 
     RecursiveMutex() :
-        mNativeMutex(GetRecursiveNativeMutex())
+        mNativeMutex(GetRecursiveNativeMutex()),
+        mIsLocked(false)
     {
     }
 
     ~RecursiveMutex()
     {
+        if (mIsLocked)
+        {
+            unlock();
+        }
     }
 
-    void lock() { Lock(mNativeMutex); }
+    bool isLocked() const
+    {
+        return mIsLocked;
+    }
 
-    void unlock() { Unlock(mNativeMutex); }
+    void lock()
+    {
+        Lock(mNativeMutex);
+        mIsLocked = true;
+    }
+
+    void unlock()
+    {
+        mIsLocked = false;
+        Unlock(mNativeMutex);
+    }
 
 private:
     RecursiveMutex(const RecursiveMutex&);
@@ -113,6 +150,7 @@ private:
     friend class Threading::ScopedLock<RecursiveMutex>;
 
     pthread_mutex_t mNativeMutex;
+    bool mIsLocked;
 };
 
 
@@ -132,7 +170,7 @@ public:
     ThreadSafe(const ThreadSafe<Variable> & rhs) :
         mData(rhs.mData)
     {
-        mData->mRefCount++;
+        ++mData->mRefCount;
     }
 
     ThreadSafe<Variable> & operator=(const ThreadSafe<Variable> & rhs)
@@ -168,6 +206,7 @@ private:
             mRefCount(1)
         {
         }
+
         Variable * mVariable;
         FastMutex mMutex;
         unsigned mRefCount;

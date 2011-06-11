@@ -131,11 +131,9 @@ private:
  * to the variable held by the ThreadSafe wrapper.
  */
 template<typename Variable>
-class ScopedAccessor
+class ScopedAccessor : boost::noncopyable
 {
 public:
-    typedef ScopedAccessor<Variable> This;
-
     ScopedAccessor(ThreadSafe<Variable> & inThreadSafeVariable) :
         mThreadSafeVariable(inThreadSafeVariable),
         mScopedLock(inThreadSafeVariable.getMutex())
@@ -151,17 +149,19 @@ public:
     Variable * operator->() { return &mThreadSafeVariable.getVariable(); }
 
 private:
-    // non-copyable
-    ScopedAccessor(const This & rhs);
-    ScopedAccessor& operator=(const This & rhs);
-
     ThreadSafe<Variable> & mThreadSafeVariable;
     ScopedLock mScopedLock;
 };
 
 
 /**
- * Conventient syntax for creating an atomic scope.
+ * Conventient syntax for creating an atomic scope:
+ *
+ *   ThreadSafe<Foo> threadSafeFoo;
+ *   ATOMIC_SCOPE(Foo, threadSafeFoo, foo) {
+ *     // foo is a non-const reference of Foo
+ *     foo.bar();
+ *   }
  */
 #define ATOMIC_SCOPE(VariableType, inThreadSafeVariable, theRef) \
     for (int i = 0; i++ == 0; ) \

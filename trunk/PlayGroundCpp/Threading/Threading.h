@@ -7,17 +7,36 @@
 #include <pthread.h>
 
 
-//
-// Emulate namespace with templated struct
-//
-template<class MutexType>
-struct GenericThreading {
+
+namespace Threading {
 
 
-typedef MutexType Mutex;
-template<class> class ScopedAccessor;
+/**
+ * Mutex class for the posix platform
+ */
+class Mutex : boost::noncopyable
+{
+public:
+    Mutex() { pthread_mutex_init(&mMutex, NULL); }
+
+    ~Mutex() { pthread_mutex_destroy(&mMutex); }
+
+    void lock() { pthread_mutex_lock(&mMutex); }
+
+    void unlock() { pthread_mutex_unlock(&mMutex); }
+
+    pthread_mutex_t & getMutex() { return mMutex; }
+
+    const pthread_mutex_t & getMutex() const { return mMutex; }
+
+private:
+    pthread_mutex_t mMutex;
+};
 
 
+/**
+ * The ScopedLock keeps a Mutex object locked during its lifetime.
+ */
 class ScopedLock : boost::noncopyable
 {
 public:
@@ -37,6 +56,8 @@ private:
 };
 
 
+// Forward declaration.
+template<class> class ScopedAccessor;
 
 
 /**
@@ -65,7 +86,7 @@ public:
 
     ThreadSafe<Variable> & operator=(const ThreadSafe<Variable> & rhs)
     {
-        // Implement operator= using the copy/swap idiom:
+        // Using the copy/swap idiom:
         ThreadSafe<Variable> tmp(rhs);
         std::swap(mData, tmp.mData);
         return *this;
@@ -105,7 +126,6 @@ private:
     Data * mData;
 };
 
-
 /**
  * ScopedAccessor creates an atomic scope that allows access
  * to the variable held by the ThreadSafe wrapper.
@@ -140,6 +160,7 @@ private:
 };
 
 
-}; // struct GenericThreading
+} // namespace Threading
+
 
 #endif // THREADING_H_INCLUDED

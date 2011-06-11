@@ -5,31 +5,13 @@
 #include <vector>
 
 
-struct PosixMutex : boost::noncopyable
-{
-    PosixMutex() { pthread_mutex_init(&mMutex, NULL); }
-
-    ~PosixMutex() { pthread_mutex_destroy(&mMutex); }
-
-    pthread_mutex_t & getMutex() { return mMutex; }
-
-    const pthread_mutex_t & getMutex() const { return mMutex; }
-
-    void lock() { pthread_mutex_lock(&mMutex); }
-
-    void unlock() { pthread_mutex_unlock(&mMutex); }
-
-    pthread_mutex_t mMutex;
-};
+using Threading::Mutex;
+using Threading::ScopedAccessor;
+using Threading::ScopedLock;
+using Threading::ThreadSafe;
 
 
-typedef GenericThreading<PosixMutex> Threading;
-
-
-#define using_namespace(namespacename) public namespacename
-
-
-class Tester : using_namespace(Threading)
+class Tester
 {
 public:
     Tester() :
@@ -145,7 +127,7 @@ int main()
     // Print the results
     tester.print();
 
-    std::cout << "Everything went better than expected." << std::endl;
+    std::cout << "Everything is OK." << std::endl;
     return 0;
 }
 

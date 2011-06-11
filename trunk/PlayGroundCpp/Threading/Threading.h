@@ -25,10 +25,6 @@ public:
 
     void unlock() { pthread_mutex_unlock(&mMutex); }
 
-    pthread_mutex_t & getMutex() { return mMutex; }
-
-    const pthread_mutex_t & getMutex() const { return mMutex; }
-
 private:
     pthread_mutex_t mMutex;
 };

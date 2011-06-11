@@ -7,12 +7,17 @@
 #include <pthread.h>
 
 
+
 namespace Threading {
 
 
+template<class, class> class ScopedAccessor;
+
+
 template<class Mutex>
-struct ScopedLock : boost::noncopyable
+class ScopedLock : boost::noncopyable
 {
+public:
     ScopedLock(Mutex & inMutex) :
         mMutex(inMutex)
     {
@@ -24,32 +29,11 @@ struct ScopedLock : boost::noncopyable
         mMutex.unlock();
     }
 
+private:
     Mutex & mMutex;
 };
 
 
-struct PosixMutex : boost::noncopyable
-{
-    typedef ScopedLock<PosixMutex> ScopedLock;
-
-    PosixMutex() { pthread_mutex_init(&mMutex, NULL); }
-
-    ~PosixMutex() { pthread_mutex_destroy(&mMutex); }
-
-    pthread_mutex_t & getMutex() { return mMutex; }
-
-    const pthread_mutex_t & getMutex() const { return mMutex; }
-
-    void lock() { pthread_mutex_lock(&mMutex); }
-
-    void unlock() { pthread_mutex_unlock(&mMutex); }
-
-    pthread_mutex_t mMutex;
-};
-
-
-template<class Variable, class Mutex>
-class ScopedAccessor;
 
 
 /**
@@ -127,10 +111,9 @@ template<typename Variable, class Mutex>
 class ScopedAccessor
 {
 public:
-    typedef ThreadSafe<Variable, Mutex> ThreadSafeVariable;
     typedef ScopedAccessor<Variable, Mutex> This;
 
-    ScopedAccessor(ThreadSafeVariable & inThreadSafeVariable) :
+    ScopedAccessor(ThreadSafe<Variable, Mutex> & inThreadSafeVariable) :
         mThreadSafeVariable(inThreadSafeVariable),
         mScopedLock(inThreadSafeVariable.getMutex())
     {
@@ -149,11 +132,68 @@ private:
     ScopedAccessor(const This & rhs);
     ScopedAccessor& operator=(const This & rhs);
 
-    ThreadSafeVariable & mThreadSafeVariable;
+    ThreadSafe<Variable, Mutex> & mThreadSafeVariable;
     ScopedLock<Mutex> mScopedLock;
 };
 
 
+namespace Posix {
+
+
+struct Mutex : boost::noncopyable
+{
+    Mutex() { pthread_mutex_init(&mMutex, NULL); }
+
+    ~Mutex() { pthread_mutex_destroy(&mMutex); }
+
+    pthread_mutex_t & getMutex() { return mMutex; }
+
+    const pthread_mutex_t & getMutex() const { return mMutex; }
+
+    void lock() { pthread_mutex_lock(&mMutex); }
+
+    void unlock() { pthread_mutex_unlock(&mMutex); }
+
+    pthread_mutex_t mMutex;
+};
+
+
+
+typedef Threading::ScopedLock<Mutex> ScopedLock;
+
+
+template<class> class ThreadSafe;
+
+
+//
+// We use inheritance to emulate template typedefs which
+// are not supported in C++03 (but will be in C++11).
+//
+template<class Variable>
+class ScopedAccessor : public Threading::ScopedAccessor<Variable, Mutex>
+{
+public:
+    typedef Threading::ScopedAccessor<Variable, Mutex> Base;
+
+    ScopedAccessor(ThreadSafe<Variable> & inThreadSafe) : Base(inThreadSafe) { }
+};
+
+
+template<class Variable>
+class ThreadSafe : public Threading::ThreadSafe<Variable, Mutex>
+{
+public:
+    typedef Threading::ThreadSafe<Variable, Mutex> Base;
+
+    ThreadSafe() : Base() { }
+
+    ThreadSafe(Variable * inVariable) : Base(inVariable) { }
+
+    ThreadSafe(const Threading::ThreadSafe<Variable, Mutex> & rhs) : Base(rhs) {}
+};
+
+
+} // namespace Posix
 } // namespace Threading
 
 

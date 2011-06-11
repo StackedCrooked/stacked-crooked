@@ -5,7 +5,7 @@
 #include <vector>
 
 
-using namespace Threading;
+using namespace Threading::Posix;
 
 
 class Tester
@@ -25,14 +25,25 @@ public:
 
     void stop()
     {
-        // Interrput the controller thread, which will result in the interruption of the worker threads.
-        mControllerThread->interrupt();
+        setQuitFlag();
+    }
+
+    bool setQuitFlag()
+    {
+        ScopedLock lock(mQuitFlagMutex);
+        mQuitFlag = true;
+    }
+
+    bool getQuitFlag() const
+    {
+        ScopedLock lock(mQuitFlagMutex);
+        return mQuitFlag;
     }
 
     // Print the entire vector
     void print()
     {
-        ScopedAccessor<Characters, PosixMutex> accessor(mCharacters);
+        ScopedAccessor<Characters> accessor(mCharacters);
         Characters & characters = accessor.get();
         for (std::size_t idx = 0; idx < characters.size(); ++idx)
         {
@@ -51,10 +62,10 @@ public:
     // Continuously append digits 0123456789 to the vector followed by a newline.
     void appendDigits()
     {
-        while (true)
+        while (!getQuitFlag())
         {
             // Create an atomic scope
-            ScopedAccessor<Characters, PosixMutex> accessor(mCharacters);
+            ScopedAccessor<Characters> accessor(mCharacters);
             Characters & characters = accessor.get();
 
             for (char c = '0'; c <= '9'; ++c)
@@ -69,10 +80,10 @@ public:
     // Continuously append digits ABCDEFGHIJKLMNOPQRSTUVWXYZ to the vector followed by a newline.
     void appendLetters()
     {
-        while (true)
+        while (!getQuitFlag())
         {
             // Create an atomic scope
-            ScopedAccessor<Characters, PosixMutex> accessor(mCharacters);
+            ScopedAccessor<Characters> accessor(mCharacters);
             Characters & characters = accessor.get();
 
             for (char c = 'A'; c <= 'Z'; ++c)
@@ -85,11 +96,14 @@ public:
     }
 
     typedef std::vector<char> Characters;
-    ThreadSafe<Characters, PosixMutex> mCharacters;
+    ThreadSafe<Characters> mCharacters;
 
     boost::scoped_ptr<boost::thread> mControllerThread;
     boost::scoped_ptr<boost::thread> mAppendDigitsThread;
     boost::scoped_ptr<boost::thread> mAppendLettersThread;
+
+    bool mQuitFlag;
+    mutable Mutex mQuitFlagMutex;
 };
 
 

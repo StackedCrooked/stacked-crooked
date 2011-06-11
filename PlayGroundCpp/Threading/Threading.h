@@ -7,10 +7,6 @@
 #include <pthread.h>
 
 
-
-namespace Threading {
-
-
 /**
  * Mutex class for the posix platform
  */
@@ -60,10 +56,12 @@ template<class> class ScopedAccessor;
  * ThreadSafe can be used to create a thread-safe object.
  * Access to the held object can be obtained by creating a ScopedAccessor object.
  */
-template<class Variable>
+template<class VariableT>
 class ThreadSafe
 {
 public:
+    typedef VariableT Variable;
+
     ThreadSafe() :
         mData(new Data(new Variable()))
     {
@@ -152,21 +150,19 @@ private:
 
 
 /**
- * Conventient syntax for creating an atomic scope:
+ * Utility for creating an atomic scope.
+ * Usage example:
  *
- *   ThreadSafe<Foo> threadSafeFoo;
- *   ATOMIC_SCOPE(Foo, threadSafeFoo, foo) {
- *     // foo is a non-const reference of Foo
+ *   ThreadSafe<Foo> foo;
+ *   ATOMIC_SCOPE(Foo, foo) {
+ *     // foo has type "Foo &"
  *     foo.bar();
  *   }
  */
-#define ATOMIC_SCOPE(VariableType, inThreadSafeVariable, theRef) \
+#define ATOMIC_SCOPE(Type, name) \
     for (int i = 0; i++ == 0; ) \
-    for (Threading::ScopedAccessor<VariableType> theScopedAccessor(inThreadSafeVariable); i++ == 1; ) \
-    for (VariableType & theRef = theScopedAccessor.get(); i++ == 2; )
-
-
-} // namespace Threading
+    for (ScopedAccessor<Type> accessor(name); i++ == 1; ) \
+    for (Type & name = accessor.get(); i++ == 2; )
 
 
 #endif // THREADING_H_INCLUDED

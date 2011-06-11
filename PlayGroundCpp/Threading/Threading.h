@@ -142,32 +142,4 @@ private:
 
 }; // struct GenericThreading
 
-
-namespace Posix {
-
-
-struct Mutex : boost::noncopyable
-{
-    Mutex() { pthread_mutex_init(&mMutex, NULL); }
-
-    ~Mutex() { pthread_mutex_destroy(&mMutex); }
-
-    pthread_mutex_t & getMutex() { return mMutex; }
-
-    const pthread_mutex_t & getMutex() const { return mMutex; }
-
-    void lock() { pthread_mutex_lock(&mMutex); }
-
-    void unlock() { pthread_mutex_unlock(&mMutex); }
-
-    pthread_mutex_t mMutex;
-};
-
-
-typedef GenericThreading<Posix::Mutex> Threading;
-
-
-} // namespace Posix
-
-
 #endif // THREADING_H_INCLUDED

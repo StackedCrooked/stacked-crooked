@@ -1,6 +1,7 @@
 #include "Threading.h"
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <boost/foreach.hpp>
 #include <iostream>
 #include <vector>
 
@@ -46,11 +47,12 @@ public:
     // Print the entire vector
     void print()
     {
-        ScopedAccessor<Characters> accessor(mCharacters);
-        Characters & characters = accessor.get();
-        for (std::size_t idx = 0; idx < characters.size(); ++idx)
+        ATOMIC_SCOPE(Characters, mCharacters, characters)
         {
-            std::cout << characters[idx];
+            for (std::size_t idx = 0; idx < characters.size(); ++idx)
+            {
+                std::cout << characters[idx];
+            }
         }
     }
 
@@ -68,15 +70,14 @@ public:
         while (!getQuitFlag())
         {
             // Create an atomic scope
-            ScopedAccessor<Characters> accessor(mCharacters);
-            Characters & characters = accessor.get();
-
-            for (char c = '0'; c <= '9'; ++c)
+            ATOMIC_SCOPE(Characters, mCharacters, characters)
             {
-                characters.push_back(c);
+                for (char c = '0'; c <= '9'; ++c)
+                {
+                    characters.push_back(c);
+                }
+                characters.push_back('\n');
             }
-            characters.push_back('\n');
-            boost::this_thread::interruption_point();
         }
     }
 
@@ -86,15 +87,15 @@ public:
         while (!getQuitFlag())
         {
             // Create an atomic scope
-            ScopedAccessor<Characters> accessor(mCharacters);
-            Characters & characters = accessor.get();
-
-            for (char c = 'A'; c <= 'Z'; ++c)
+            ATOMIC_SCOPE(Characters, mCharacters, characters)
             {
-                characters.push_back(c);
+                std::cout << "SCOPE: appendLetters\n";
+                for (char c = 'A'; c <= 'Z'; ++c)
+                {
+                    characters.push_back(c);
+                }
+                characters.push_back('\n');
             }
-            characters.push_back('\n');
-            boost::this_thread::interruption_point();
         }
     }
 
@@ -121,7 +122,7 @@ int main()
     boost::xtime duration = {0, 500 * 1000 * 1000};
     boost::this_thread::sleep(duration);
 
-    // Interrupt the treads
+    // Stop all threads.
     tester.stop();
 
     // Print the results

@@ -103,13 +103,18 @@ private:
 
     Variable & getVariable() { return *mData->mVariable; }
 
-    struct Data
+    struct Data : boost::noncopyable
     {
         Data(Variable * inVariable) :
             mVariable(inVariable),
             mMutex(),
             mRefCount(1)
         {
+        }
+
+        ~Data()
+        {
+            delete mVariable;
         }
 
         Variable * mVariable;

@@ -160,6 +160,15 @@ private:
 };
 
 
+/**
+ * Conventient syntax for creating an atomic scope.
+ */
+#define ATOMIC_SCOPE(VariableType, theThreadSafeVariable, theVariable) \
+    for (int i = 0; i++ == 0; ) \
+        for (ScopedAccessor<VariableType> theAccessor(theThreadSafeVariable); i++ == 1;) \
+            for (VariableType & theVariable(theAccessor.get()); i++ == 2;)
+
+
 } // namespace Threading
 
 

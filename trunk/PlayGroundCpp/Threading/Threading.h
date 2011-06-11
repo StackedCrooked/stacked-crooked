@@ -163,10 +163,10 @@ private:
 /**
  * Conventient syntax for creating an atomic scope.
  */
-#define ATOMIC_SCOPE(VariableType, theThreadSafeVariable, theVariable) \
+#define ATOMIC_SCOPE(VariableType, inThreadSafeVariable, theRef) \
     for (int i = 0; i++ == 0; ) \
-        for (ScopedAccessor<VariableType> theAccessor(theThreadSafeVariable); i++ == 1;) \
-            for (VariableType & theVariable(theAccessor.get()); i++ == 2;)
+    for (Threading::ScopedAccessor<VariableType> theScopedAccessor(inThreadSafeVariable); i++ == 1; ) \
+    for (VariableType & theRef = theScopedAccessor.get(); i++ == 2; )
 
 
 } // namespace Threading

@@ -26,7 +26,10 @@ struct PosixMutex : boost::noncopyable
 typedef GenericThreading<PosixMutex> Threading;
 
 
-class Tester
+#define using_namespace(namespacename) public namespacename
+
+
+class Tester : using_namespace(Threading)
 {
 public:
     Tester() :
@@ -48,20 +51,20 @@ public:
 
     bool setQuitFlag()
     {
-        Threading::ScopedLock lock(mQuitFlagMutex);
+        ScopedLock lock(mQuitFlagMutex);
         mQuitFlag = true;
     }
 
     bool getQuitFlag() const
     {
-        Threading::ScopedLock lock(mQuitFlagMutex);
+        ScopedLock lock(mQuitFlagMutex);
         return mQuitFlag;
     }
 
     // Print the entire vector
     void print()
     {
-        Threading::ScopedAccessor<Characters> accessor(mCharacters);
+        ScopedAccessor<Characters> accessor(mCharacters);
         Characters & characters = accessor.get();
         for (std::size_t idx = 0; idx < characters.size(); ++idx)
         {
@@ -83,7 +86,7 @@ public:
         while (!getQuitFlag())
         {
             // Create an atomic scope
-            Threading::ScopedAccessor<Characters> accessor(mCharacters);
+            ScopedAccessor<Characters> accessor(mCharacters);
             Characters & characters = accessor.get();
 
             for (char c = '0'; c <= '9'; ++c)
@@ -101,7 +104,7 @@ public:
         while (!getQuitFlag())
         {
             // Create an atomic scope
-            Threading::ScopedAccessor<Characters> accessor(mCharacters);
+            ScopedAccessor<Characters> accessor(mCharacters);
             Characters & characters = accessor.get();
 
             for (char c = 'A'; c <= 'Z'; ++c)
@@ -114,14 +117,14 @@ public:
     }
 
     typedef std::vector<char> Characters;
-    Threading::ThreadSafe<Characters> mCharacters;
+    ThreadSafe<Characters> mCharacters;
 
     boost::scoped_ptr<boost::thread> mControllerThread;
     boost::scoped_ptr<boost::thread> mAppendDigitsThread;
     boost::scoped_ptr<boost::thread> mAppendLettersThread;
 
     bool mQuitFlag;
-    mutable Threading::Mutex mQuitFlagMutex;
+    mutable Mutex mQuitFlagMutex;
 };
 
 

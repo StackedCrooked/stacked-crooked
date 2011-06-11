@@ -10,10 +10,10 @@
 namespace Threading {
 
 
-template<class MutexType>
+template<class Mutex>
 struct ScopedLock : boost::noncopyable
 {
-    ScopedLock(MutexType & inMutex) :
+    ScopedLock(Mutex & inMutex) :
         mMutex(inMutex)
     {
         mMutex.lock();
@@ -24,7 +24,7 @@ struct ScopedLock : boost::noncopyable
         mMutex.unlock();
     }
 
-    MutexType & mMutex;
+    Mutex & mMutex;
 };
 
 
@@ -56,13 +56,10 @@ class ScopedAccessor;
  * ThreadSafe can be used to create a thread-safe object.
  * Access to the held object can be obtained by creating a ScopedAccessor object.
  */
-template<class VariableType, class MutexType>
+template<class Variable, class Mutex>
 class ThreadSafe
 {
 public:
-    typedef VariableType Variable;
-    typedef MutexType Mutex;
-
     ThreadSafe() :
         mData(new Data(new Variable()))
     {

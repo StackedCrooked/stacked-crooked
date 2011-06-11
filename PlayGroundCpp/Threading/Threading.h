@@ -7,14 +7,17 @@
 #include <pthread.h>
 
 
+//
+// Emulate namespace with templated struct
+//
+template<class MutexType>
+struct GenericThreading {
 
-namespace Threading {
+
+typedef MutexType Mutex;
+template<class> class ScopedAccessor;
 
 
-template<class, class> class ScopedAccessor;
-
-
-template<class Mutex>
 class ScopedLock : boost::noncopyable
 {
 public:
@@ -40,7 +43,7 @@ private:
  * ThreadSafe can be used to create a thread-safe object.
  * Access to the held object can be obtained by creating a ScopedAccessor object.
  */
-template<class Variable, class Mutex>
+template<class Variable>
 class ThreadSafe
 {
 public:
@@ -54,16 +57,16 @@ public:
     {
     }
 
-    ThreadSafe(const ThreadSafe<Variable, Mutex> & rhs) :
+    ThreadSafe(const ThreadSafe<Variable> & rhs) :
         mData(rhs.mData)
     {
         ++mData->mRefCount;
     }
 
-    ThreadSafe<Variable, Mutex> & operator=(const ThreadSafe<Variable, Mutex> & rhs)
+    ThreadSafe<Variable> & operator=(const ThreadSafe<Variable> & rhs)
     {
         // Implement operator= using the copy/swap idiom:
-        ThreadSafe<Variable, Mutex> tmp(rhs);
+        ThreadSafe<Variable> tmp(rhs);
         std::swap(mData, tmp.mData);
         return *this;
     }
@@ -77,7 +80,7 @@ public:
     }
 
 private:
-    friend class ScopedAccessor<Variable, Mutex>;
+    friend class ScopedAccessor<Variable>;
 
     Mutex & getMutex() { return mData->mMutex; }
 
@@ -107,13 +110,13 @@ private:
  * ScopedAccessor creates an atomic scope that allows access
  * to the variable held by the ThreadSafe wrapper.
  */
-template<typename Variable, class Mutex>
+template<typename Variable>
 class ScopedAccessor
 {
 public:
-    typedef ScopedAccessor<Variable, Mutex> This;
+    typedef ScopedAccessor<Variable> This;
 
-    ScopedAccessor(ThreadSafe<Variable, Mutex> & inThreadSafeVariable) :
+    ScopedAccessor(ThreadSafe<Variable> & inThreadSafeVariable) :
         mThreadSafeVariable(inThreadSafeVariable),
         mScopedLock(inThreadSafeVariable.getMutex())
     {
@@ -132,9 +135,12 @@ private:
     ScopedAccessor(const This & rhs);
     ScopedAccessor& operator=(const This & rhs);
 
-    ThreadSafe<Variable, Mutex> & mThreadSafeVariable;
-    ScopedLock<Mutex> mScopedLock;
+    ThreadSafe<Variable> & mThreadSafeVariable;
+    ScopedLock mScopedLock;
 };
+
+
+}; // struct GenericThreading
 
 
 namespace Posix {
@@ -158,43 +164,10 @@ struct Mutex : boost::noncopyable
 };
 
 
-
-typedef Threading::ScopedLock<Mutex> ScopedLock;
-
-
-template<class> class ThreadSafe;
-
-
-//
-// We use inheritance to emulate template typedefs which
-// are not supported in C++03 (but will be in C++11).
-//
-template<class Variable>
-class ScopedAccessor : public Threading::ScopedAccessor<Variable, Mutex>
-{
-public:
-    typedef Threading::ScopedAccessor<Variable, Mutex> Base;
-
-    ScopedAccessor(ThreadSafe<Variable> & inThreadSafe) : Base(inThreadSafe) { }
-};
-
-
-template<class Variable>
-class ThreadSafe : public Threading::ThreadSafe<Variable, Mutex>
-{
-public:
-    typedef Threading::ThreadSafe<Variable, Mutex> Base;
-
-    ThreadSafe() : Base() { }
-
-    ThreadSafe(Variable * inVariable) : Base(inVariable) { }
-
-    ThreadSafe(const Threading::ThreadSafe<Variable, Mutex> & rhs) : Base(rhs) {}
-};
+typedef GenericThreading<Posix::Mutex> Threading;
 
 
 } // namespace Posix
-} // namespace Threading
 
 
 #endif // THREADING_H_INCLUDED

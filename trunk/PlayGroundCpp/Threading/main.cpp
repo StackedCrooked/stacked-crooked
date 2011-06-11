@@ -7,12 +7,6 @@
 #include <vector>
 
 
-using Threading::Mutex;
-using Threading::ScopedAccessor;
-using Threading::ScopedLock;
-using Threading::ThreadSafe;
-
-
 class Tester
 {
 public:
@@ -48,11 +42,11 @@ public:
     // Print the entire vector
     void print()
     {
-        ATOMIC_SCOPE(Characters, mCharacters, characters)
+        ATOMIC_SCOPE(Characters, mCharacters)
         {
-            for (std::size_t idx = 0; idx < characters.size(); ++idx)
+            for (std::size_t idx = 0; idx < mCharacters.size(); ++idx)
             {
-                std::cout << characters[idx];
+                std::cout << mCharacters[idx];
             }
         }
     }
@@ -64,20 +58,18 @@ public:
         mAppendLettersThread.reset(new boost::thread(boost::bind(&Tester::appendDigits, this)));
     }
 
-
     // Continuously append digits 0123456789 to the vector followed by a newline.
     void appendDigits()
     {
         while (!getQuitFlag())
         {
-            // Create an atomic scope
-            ATOMIC_SCOPE(Characters, mCharacters, characters)
+            ATOMIC_SCOPE(Characters, mCharacters)
             {
                 for (char c = '0'; c <= '9'; ++c)
                 {
-                    characters.push_back(c);
+                    mCharacters.push_back(c);
                 }
-                characters.push_back('\n');
+                mCharacters.push_back('\n');
             }
         }
     }
@@ -87,15 +79,13 @@ public:
     {
         while (!getQuitFlag())
         {
-            // Create an atomic scope
-            ATOMIC_SCOPE(Characters, mCharacters, characters)
+            ATOMIC_SCOPE(Characters, mCharacters)
             {
-                std::cout << "SCOPE: appendLetters\n";
                 for (char c = 'A'; c <= 'Z'; ++c)
                 {
-                    characters.push_back(c);
+                    mCharacters.push_back(c);
                 }
-                characters.push_back('\n');
+                mCharacters.push_back('\n');
             }
         }
     }
@@ -132,4 +122,3 @@ int main()
     std::cout << "Everything is OK." << std::endl;
     return 0;
 }
-

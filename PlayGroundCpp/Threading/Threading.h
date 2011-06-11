@@ -160,26 +160,11 @@ private:
 };
 
 
-struct AutoAnyBase {};
-
-template<class T>
-struct AutoAny : AutoAnyBase
-{
-    AutoAny(const T & t) :
-        item(t)
-    {
-    }
-    mutable T item;
-};
-
-
-
 /**
  * Conventient syntax for creating an atomic scope.
  */
-#define ATOMIC_SCOPE(theThreadSafeVariable, theVariable) \
+#define ATOMIC_SCOPE(VariableType, theThreadSafeVariable, theVariable) \
     for (int i = 0; i++ == 0; ) \
-        AutoAnyBase & theThreadSafeVariable \
         for (ScopedAccessor<VariableType> theAccessor(theThreadSafeVariable); i++ == 1;) \
             for (VariableType & theVariable(theAccessor.get()); i++ == 2;)
 

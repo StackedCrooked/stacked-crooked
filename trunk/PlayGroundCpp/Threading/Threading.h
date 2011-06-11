@@ -122,6 +122,7 @@ private:
     Data * mData;
 };
 
+
 /**
  * ScopedAccessor creates an atomic scope that allows access
  * to the variable held by the ThreadSafe wrapper.

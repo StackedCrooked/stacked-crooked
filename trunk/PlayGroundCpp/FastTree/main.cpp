@@ -1,3 +1,4 @@
+#include <boost/bind.hpp>
 #include <algorithm>
 #include <functional>
 #include <cassert>
@@ -33,11 +34,8 @@ struct Data
 };
 
 
-template<typename Value>
-std::size_t Insert(Value * buffer,
-            std::size_t size,
-            std::size_t maxsize,
-            Value & value)
+template<typename Value, typename Cmp>
+std::size_t Insert(Value * buffer, std::size_t size, std::size_t maxsize, Value & value, Cmp cmp)
 {
     std::cout << "size: " << size << ", maxsize: " << maxsize << std::endl;
     if (maxsize == 0)
@@ -52,31 +50,23 @@ std::size_t Insert(Value * buffer,
     }
     
     Value & first = buffer[0];
-    if (value > first)
+    if (cmp(value, first))
     {
         std::swap(value, first);
-        return 1 + Insert(buffer + 1, size - 1, maxsize - 1, value);
+        return 1 + Insert(buffer + 1, size - 1, maxsize - 1, value, cmp);
     }
     else
     {
-        return 1 + Insert(buffer + 1, size - 1, maxsize - 1, value);
+        return 1 + Insert(buffer + 1, size - 1, maxsize - 1, value, cmp);
     }
 }
 
 
-/*template<typename T, typename FwdIt, typename Comp>
-void Insert(FwdIt it, const FwdIt end, T & value, Comp comp = std::less<T>)
+template<typename Value>
+std::size_t Insert(Value * buffer, std::size_t size, std::size_t maxsize, Value & value)
 {
-    for (; it != end; ++it)
-    {
-        T & cur = *it;
-        if (comp(value, cur))
-        {
-            std::swap(value, cur);
-        }
-    }
-}*/
-
+    Insert(buffer, size, maxsize, value, std::less<int>());
+}
 
 
 int main()
@@ -109,9 +99,5 @@ int main()
         }
         std::cout << std::endl;
     }
-
-
-
-
     return 0;
 }

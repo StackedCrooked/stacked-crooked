@@ -80,9 +80,9 @@ public:
 
     ThreadSafe<Variable> & operator=(const ThreadSafe<Variable> & rhs)
     {
-        // Using the copy/swap idiom:
-        ThreadSafe<Variable> tmp(rhs);
-        std::swap(mData, tmp.mData);
+        // Using the copy & swap idiom:
+        ThreadSafe<Variable> copy(rhs);
+        swap(copy);
         return *this;
     }
 
@@ -92,6 +92,11 @@ public:
         {
             delete mData;
         }
+    }
+
+    void swap(ThreadSafe<Variable> & rhs)
+    {
+        std::swap(mData, rhs.mData);
     }
 
 private:
@@ -164,10 +169,11 @@ private:
  *     foo.bar();
  *   }
  */
+#define FOR_BLOCK(DECL) if(bool _c_ = false) ; else for(DECL;!_c_;_c_=true)
+
 #define ATOMIC_SCOPE(Type, name) \
-    for (int i = 0; i++ == 0; ) \
-    for (ScopedAccessor<Type> accessor(name); i++ == 1; ) \
-    for (Type & name = accessor.get(); i++ == 2; )
+    FOR_BLOCK(ScopedAccessor<Type> accessor(name)) \
+        FOR_BLOCK(Type & name = accessor.get())
 
 
 #endif // THREADING_H_INCLUDED

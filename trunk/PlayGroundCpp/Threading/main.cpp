@@ -121,14 +121,14 @@ int main()
     tester.start();
 
     // Sleep 500 ms
-    boost::xtime duration = {0, 10 * 1000 * 1000};
+    boost::xtime duration = {0, 500 * 1000 * 1000};
     boost::this_thread::sleep(duration);
 
     // Stop all threads.
     tester.stop();
 
     // Print the results
-    //tester.print();
+    tester.print();
 
     std::cout << "Everything is OK." << std::endl;
     return 0;

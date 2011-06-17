@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <functional>
+#include <cassert>
 #include <iostream>
 
 
@@ -16,10 +19,99 @@ struct Node<T, N, MaxDepth, MaxDepth>
 };
 
 
+template<unsigned N>
+struct Buffer
+{
+    char data[N];
+};
+
+
+struct Data
+{
+    int mScore;
+    Buffer<200> mGrid;
+};
+
+
+template<typename Value>
+std::size_t Insert(Value * buffer,
+            std::size_t size,
+            std::size_t maxsize,
+            Value & value)
+{
+    std::cout << "size: " << size << ", maxsize: " << maxsize << std::endl;
+    if (maxsize == 0)
+    {
+        return size;
+    }
+
+    if (size == 0)
+    {
+        buffer[0] = value;
+        return 1;
+    }
+    
+    Value & first = buffer[0];
+    if (value > first)
+    {
+        std::swap(value, first);
+        return 1 + Insert(buffer + 1, size - 1, maxsize - 1, value);
+    }
+    else
+    {
+        return 1 + Insert(buffer + 1, size - 1, maxsize - 1, value);
+    }
+}
+
+
+/*template<typename T, typename FwdIt, typename Comp>
+void Insert(FwdIt it, const FwdIt end, T & value, Comp comp = std::less<T>)
+{
+    for (; it != end; ++it)
+    {
+        T & cur = *it;
+        if (comp(value, cur))
+        {
+            std::swap(value, cur);
+        }
+    }
+}*/
+
+
+
 int main()
 {
-    // Binary tree five levels deep
-    Node<char, 2, 1> node;
-    std::cout << sizeof(node) << std::endl;
+    const std::size_t cBufferSize = 5;
+    int buffer[cBufferSize];
+    buffer[0] = 0;
+    buffer[1] = 0;
+    buffer[2] = 0;
+    buffer[3] = 0;
+    buffer[4] = 0;
+
+
+    int values[] = {11, 24, 7, 31, 41, 93, 91, 62, 19, 91, 98, 6, 63, 9, 23, 42, 46, 18, 89, 18 };
+    int * value = values;
+
+    std::size_t size = 0;
+    for (int idx = 0; idx < sizeof(values)/sizeof(int); ++idx)
+    {
+        size = Insert(&buffer[0], size, cBufferSize, *value++);
+        assert(size <= cBufferSize);
+        std::cout << "Size is now " << size << ": ";
+        for (std::size_t j = 0; j < size; ++j)
+        {
+            if (j != 0)
+            {
+                std::cout << ", ";
+            }
+            std::cout << int(buffer[j]);
+        }
+        std::cout << std::endl;
+    }
+
+
+
+
     return 0;
 }

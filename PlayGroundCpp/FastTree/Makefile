@@ -1,4 +1,5 @@
+INCLUDE=-I/opt/local/include
 
 all:
-	g++ -o test main.cpp
+	g++ -o test $(INCLUDE) main.cpp
 

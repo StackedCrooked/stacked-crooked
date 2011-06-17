@@ -69,6 +69,12 @@ std::size_t Insert(Value * buffer, std::size_t size, std::size_t maxsize, Value 
 }
 
 
+template<typename T>
+bool IsGreaterThanOrEqualTo(const T & a, const T & b)
+{
+    return a >= b;
+}
+
 int main()
 {
     const std::size_t cBufferSize = 5;
@@ -86,7 +92,7 @@ int main()
     std::size_t size = 0;
     for (int idx = 0; idx < sizeof(values)/sizeof(int); ++idx)
     {
-        size = Insert(&buffer[0], size, cBufferSize, *value++);
+        size = Insert(&buffer[0], size, cBufferSize, *value++, boost::bind(&IsGreaterThanOrEqualTo<int>, _1, _2));
         assert(size <= cBufferSize);
         std::cout << "Size is now " << size << ": ";
         for (std::size_t j = 0; j < size; ++j)

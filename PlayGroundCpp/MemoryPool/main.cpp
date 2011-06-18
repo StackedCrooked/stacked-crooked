@@ -1,5 +1,7 @@
+#include "Poco/Stopwatch.h"
 #include <cassert>
 #include <ctime>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -139,9 +141,10 @@ typedef std::basic_string< char, std::char_traits<char>, nonstd::allocator<char>
 } // namespace nonstd
 
 
-clock_t TestPerformance(std::size_t inNumIterations)
+Poco::Timestamp::TimeDiff TestPerformance(std::size_t inNumIterations)
 {
-    clock_t start = clock();
+    Poco::Stopwatch s;
+    s.start();
 
     long long totalSize = 0;
 
@@ -152,13 +155,14 @@ clock_t TestPerformance(std::size_t inNumIterations)
         totalSize += v.size();
     }
 
-    return start - clock();
+    return s.elapsed();
 }
 
 
-clock_t TestPerformanceWithPool(std::size_t inNumIterations)
+Poco::Timestamp::TimeDiff TestPerformanceWithPool(std::size_t inNumIterations)
 {
-    clock_t start = clock();
+    Poco::Stopwatch s;
+    s.start();
 
     nonstd::Pool<std::size_t> pool(100 * 1000);
     long long totalSize = 0;
@@ -169,27 +173,24 @@ clock_t TestPerformanceWithPool(std::size_t inNumIterations)
         totalSize += v.size();
     }
 
-    return start - clock();
+    return s.elapsed();
 }
 
 
-unsigned ConvertToMs(clock_t inDuration)
+unsigned ConvertToMs(Poco::Timestamp::TimeDiff inDuration)
 {
-    double result = static_cast<double>(inDuration) / static_cast<double>(CLOCKS_PER_SEC);
-    result /= 1000.0;
-    return static_cast<unsigned>(0.5 + result);
+    return inDuration / 1000;
 }
 
 
 int main()
 {
-
     std::size_t numIterations = 1000;
 
-    clock_t normal = 0;
-    clock_t pool = 0;
+    Poco::Timestamp::TimeDiff normal = 0;
+    Poco::Timestamp::TimeDiff pool = 0;
 
-    for (std::size_t idx = 0; idx < 1000; ++idx)
+    for (std::size_t idx = 0; idx < 20000; ++idx)
     {
         normal += TestPerformance(numIterations);
         pool += TestPerformanceWithPool(numIterations);

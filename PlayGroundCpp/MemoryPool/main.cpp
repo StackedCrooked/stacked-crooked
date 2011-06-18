@@ -175,7 +175,9 @@ clock_t TestPerformanceWithPool(std::size_t inNumIterations)
 
 unsigned ConvertToMs(clock_t inDuration)
 {
-    return static_cast<unsigned>(inDuration / (1000 * CLOCKS_PER_SEC));
+    double result = static_cast<double>(inDuration) / static_cast<double>(CLOCKS_PER_SEC);
+    result /= 1000.0;
+    return static_cast<unsigned>(0.5 + result);
 }
 
 

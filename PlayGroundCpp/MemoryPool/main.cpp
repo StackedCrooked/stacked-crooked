@@ -8,118 +8,9 @@
 
 namespace nonstd {
 
-enum NoArg {};
-
-template<
-class T01 = NoArg, class T02 = NoArg, class T03 = NoArg,
-      class T04 = NoArg, class T05 = NoArg, class T06 = NoArg,
-      class T07 = NoArg, class T08 = NoArg, class T09 = NoArg,
-      class T10 = NoArg, class T11 = NoArg, class T12 = NoArg
-      >
-struct ArgPack;
-
-template<
->
-struct ArgPack<
-        NoArg, NoArg, NoArg, NoArg, NoArg, NoArg,
-        NoArg, NoArg, NoArg, NoArg, NoArg, NoArg
-        >
-    {};
-
-typedef ArgPack<
-NoArg, NoArg, NoArg, NoArg, NoArg, NoArg,
-       NoArg, NoArg, NoArg, NoArg, NoArg, NoArg
-       >                                           EmptyArgPack;
-
-inline ArgPack<> args()
-{
-    return ArgPack<>();
-}
-
-template<class T01 >
-struct ArgPack<T01, NoArg, NoArg, NoArg, NoArg, NoArg,
-        NoArg, NoArg, NoArg, NoArg, NoArg, NoArg>
-{
-    T01 const & a01;
-    ArgPack(T01 const & v01) : a01(v01)
-    {
-    }
-};
-
-template<class T01, class T02 >
-struct ArgPack<T01, T02, NoArg, NoArg, NoArg, NoArg,
-        NoArg, NoArg, NoArg, NoArg, NoArg, NoArg>
-{
-    T01 const & a01;
-    T02 const & a02;
-    ArgPack(T01 const & v01, T02 const & v02) : a01(v01), a02(v02)
-    {
-    }
-};
-
-template< class T01 >
-inline ArgPack< T01 > args(T01 const & a01) { return ArgPack< T01 >(a01); }
-
-template< class T01, class T02 >
-inline ArgPack< T01 , T02 > args(T01 const & a01, T02 const & a02) { return ArgPack< T01, T02 >(a01, a02); }
-
-
-
-template< typename Type >
-class ConstructorArgForwarder
-    : public Type
-{
-public:
-    typedef Type        Base;
-
-    // TODO: remove
-    virtual ~ConstructorArgForwarder() {}
-
-    ConstructorArgForwarder(EmptyArgPack const &)
-        : Base()
-    {}
-
-    template< class T01 >
-    ConstructorArgForwarder(
-        ArgPack< T01 > const & args
-    )
-        : Base(args.a01)
-    {}
-
-    template< class T01, class T02 >
-    ConstructorArgForwarder(
-        ArgPack< T01, T02 > const & args
-    )
-        : Base(args.a01, args.a02)
-    {}
-
-    template< class T01, class T02, class T03 >
-    ConstructorArgForwarder(
-        ArgPack< T01, T02, T03 > const & args
-    )
-        : Base(args.a01, args.a02, args.a03)
-    {}
-
-    // And more, up to max 12 arguments.
-};
-
-
-struct PoolBase
-{
-    PoolBase()
-    {
-    }
-
-    virtual ~PoolBase()
-    {
-    }
-
-    static std::set<PoolBase*> mPools;
-};
-
 
 template<class T>
-struct Pool : public PoolBase
+struct Pool
 {
     static Pool<T> & Get()
     {
@@ -169,6 +60,10 @@ struct Pool : public PoolBase
         return result;
     }
 
+    /**
+     * Increments the counter of freed memory.
+     * Once this counter equal the amout of used memory, then both counters are set to zero.
+     */
     void destroy(T * inValue, std::size_t n)
     {
         mFreed += n;
@@ -208,19 +103,18 @@ template<typename T>
 struct allocator
 {
     typedef std::allocator<T> std_allocator;
-    typedef typename std_allocator::value_type       value_type;
+    typedef typename std_allocator::value_type      value_type;
     typedef typename std_allocator::size_type       size_type;
     typedef typename std_allocator::difference_type difference_type;
     typedef typename std_allocator::reference       reference;
     typedef typename std_allocator::const_reference const_reference;
-    typedef typename std_allocator::pointer      pointer;
-    typedef typename std_allocator::const_pointer    const_pointer;
+    typedef typename std_allocator::pointer         pointer;
+    typedef typename std_allocator::const_pointer   const_pointer;
 
-    Pool<T> & GetPool()
+    inline Pool<T> & pool()
     {
         return Pool<T>::Get();
     }
-
 
     template<typename U>
     struct rebind
@@ -230,12 +124,12 @@ struct allocator
 
     inline pointer allocate(size_type n, typename std::allocator<void>::const_pointer = 0)
     {
-        return GetPool().create(n);
+        return pool().create(n);
     }
 
     inline void deallocate(pointer p, size_type n)
     {
-        GetPool().destroy(p, n);
+        pool().destroy(p, n);
     }
 
     inline size_type max_size() const
@@ -268,27 +162,6 @@ struct allocator
 typedef std::basic_string< char, std::char_traits<char>, nonstd::allocator<char> > string;
 
 
-template<typename T>
-class vector : public ConstructorArgForwarder< std::vector<T, nonstd::allocator<T> > >
-{
-public:
-    typedef std::vector<T, nonstd::allocator<T> > VectorBase;
-    typedef ConstructorArgForwarder< VectorBase > Base;
-
-    vector() :
-        Base(EmptyArgPack())
-    {
-    }
-
-    template<class Args>
-    vector(const Args & args) :
-        Base(args)
-    {
-    }
-
-};
-
-
 } // namespace nonstd
 
 
@@ -315,9 +188,9 @@ void TestVector()
     std::vector<int, nonstd::allocator<int> > w = v;
     v = w;
 
-    nonstd::vector<int>();
-    nonstd::vector<int>(nonstd::args(1));
-    nonstd::vector<int>(nonstd::args(10, 0));
+    std::vector<int, nonstd::allocator<int> >();
+    std::vector<int, nonstd::allocator<int> >(1);
+    std::vector<int, nonstd::allocator<int> >(10, 0);
 
     new std::vector<double, nonstd::allocator<double> >(1); // leak
 }

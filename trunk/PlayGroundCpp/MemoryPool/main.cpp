@@ -25,7 +25,8 @@ struct Pool
 
     Pool(std::size_t inItemCount) :
         mData(inItemCount * sizeof(T)),
-        mUsed(0)
+        mUsed(0),
+        mFreed(0)
     {
         sInstances.push_back(this);
     }
@@ -50,8 +51,13 @@ struct Pool
     /**
      * Does not free.
      */
-    inline void destroy(T * , std::size_t )
+    inline void destroy(T * , std::size_t n)
     {
+        mFreed += n;
+        if (mFreed == mUsed)
+        {
+            mFreed = mUsed = 0;
+        }
     }
 
     std::size_t size() const
@@ -67,6 +73,7 @@ struct Pool
 private:
     std::vector<T> mData;
     std::size_t mUsed;
+    std::size_t mFreed;
     static std::vector< Pool<T>* > sInstances;
 };
 
@@ -141,37 +148,25 @@ typedef std::basic_string< char, std::char_traits<char>, nonstd::allocator<char>
 } // namespace nonstd
 
 
-Poco::Timestamp::TimeDiff TestPerformance(std::size_t inNumIterations)
+Poco::Timestamp::TimeDiff TestPerformance(std::size_t n, std::size_t & size)
 {
     Poco::Stopwatch s;
     s.start();
 
-    long long totalSize = 0;
-
-    std::vector<std::size_t> v;
-    for (std::size_t idx = 0; idx < inNumIterations; ++idx)
-    {
-        v.push_back(idx);
-        totalSize += v.size();
-    }
+    std::vector<std::size_t> vec(n);
+    size = vec.size();
 
     return s.elapsed();
 }
 
 
-Poco::Timestamp::TimeDiff TestPerformanceWithPool(std::size_t inNumIterations)
+Poco::Timestamp::TimeDiff TestPerformanceWithPool(std::size_t n, std::size_t & size)
 {
     Poco::Stopwatch s;
     s.start();
 
-    nonstd::Pool<std::size_t> pool(100 * 1000);
-    long long totalSize = 0;
-    std::vector<std::size_t, nonstd::allocator<std::size_t> > v;
-    for (std::size_t idx = 0; idx < inNumIterations; ++idx)
-    {
-        v.push_back(idx);
-        totalSize += v.size();
-    }
+    std::vector<std::size_t, nonstd::allocator<std::size_t> > vec(n);
+    size = vec.size();
 
     return s.elapsed();
 }
@@ -185,18 +180,28 @@ unsigned ConvertToMs(Poco::Timestamp::TimeDiff inDuration)
 
 int main()
 {
-    std::size_t numIterations = 1000;
+    static const std::size_t numIterations = 5000;
+
+
 
     Poco::Timestamp::TimeDiff normal = 0;
     Poco::Timestamp::TimeDiff pool = 0;
 
-    for (std::size_t idx = 0; idx < 20000; ++idx)
+    // These counters are used to prevent GCC from optimizating out the entire test routine.
+    std::size_t size = 0;
+    std::size_t totalPoolSize = 0;
+
+    nonstd::Pool<std::size_t> thepool(1024 * 1024);
+    for (std::size_t idx = 0; idx < 1024 * 1024; ++idx)
     {
-        normal += TestPerformance(numIterations);
-        pool += TestPerformanceWithPool(numIterations);
+        normal += TestPerformance(numIterations, size);
+        pool += TestPerformanceWithPool(numIterations, totalPoolSize);
     }
 
-    std::cout << "Normal: " << ConvertToMs(normal) << std::endl;
-    std::cout << "Pool: " << ConvertToMs(pool) << std::endl;
+    std::cout << "Total non-pool size: " << size << std::endl;
+    std::cout << "Total pool size: " << totalPoolSize << std::endl << std::endl;
+
+    std::cout << "Normal: " << ConvertToMs(normal) << " ms" << std::endl;
+    std::cout << "Pool: " << ConvertToMs(pool) << " ms" << std::endl;
     return 0;
 }

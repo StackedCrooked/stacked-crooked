@@ -1,5 +1,6 @@
 #include <cassert>
 #include <string>
+#include <set>
 #include <vector>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
@@ -103,27 +104,57 @@ public:
 };
 
 
-template<class T>
-struct Pool
+struct PoolBase
 {
-    static Pool<T> & SharedInstance()
+    PoolBase()
     {
-        static Pool<T> fInstance(1024);
-        return fInstance;
     }
 
-    Pool(std::size_t inItemCount) :
+    virtual ~PoolBase()
+    {
+    }
+
+    static std::set<PoolBase*> mPools;
+};
+
+
+template<class T>
+struct Pool : public PoolBase
+{
+    static Pool<T> & Get()
+    {
+        if (!sInstances.empty())
+        {
+            return *sInstances.back();
+        }
+        else
+        {
+            static Pool<T> fSharedInstance("Shared Pool", 1024);
+            return fSharedInstance;
+        }
+    }
+
+    Pool(const std::string & inName, std::size_t inItemCount) :
+        mName(inName),
         mData(inItemCount * sizeof(T)),
         mUsed(),
         mFreed(),
         mTop()
     {
-        std::cout << "Create pool" << std::endl;
+        sInstances.push_back(this);
     }
 
     ~Pool()
     {
-        std::cout << "Pool Stats\n----------\n";
+        assert(sInstances.back() == this);
+        sInstances.pop_back();
+
+        std::cout << mName << std::endl;
+        for (std::size_t idx = 0; idx < mName.size(); ++idx)
+        {
+            std::cout << "-";
+        }
+        std::cout << std::endl;
         std::cout << "Type: " << typeid(T).name() << std::endl;
         std::cout << "Top load: " << sizeof(T) * mTop << " bytes" << std::endl;
         std::cout << "Leaked: " << sizeof(T) * (mUsed - mFreed) << " bytes " << std::endl << std::endl << std::flush;
@@ -159,11 +190,18 @@ struct Pool
         return mData.size();
     }
 
+private:
+    std::string mName;
     std::vector<T> mData;
     std::size_t mUsed;
     std::size_t mFreed;
     std::size_t mTop;
+    static std::vector< Pool<T>* > sInstances;
 };
+
+
+template<typename T>
+std::vector< Pool<T>* > Pool<T>::sInstances;
 
 
 template<typename T>
@@ -178,6 +216,11 @@ struct allocator
     typedef typename std_allocator::pointer      pointer;
     typedef typename std_allocator::const_pointer    const_pointer;
 
+    Pool<T> & GetPool()
+    {
+        return Pool<T>::Get();
+    }
+
 
     template<typename U>
     struct rebind
@@ -187,12 +230,12 @@ struct allocator
 
     inline pointer allocate(size_type n, typename std::allocator<void>::const_pointer = 0)
     {
-        return Pool<T>::SharedInstance().create(n);
+        return GetPool().create(n);
     }
 
     inline void deallocate(pointer p, size_type n)
     {
-        Pool<T>::SharedInstance().destroy(p, n);
+        GetPool().destroy(p, n);
     }
 
     inline size_type max_size() const
@@ -202,24 +245,22 @@ struct allocator
 
     inline void construct(pointer p, const T & t)
     {
-        std::cout << "construct " << (void *)p << std::endl << std::flush;
         new(p) T(t);
     }
 
     inline void destroy(pointer p)
     {
-        std::cout << "construct " << (void *)p << std::endl << std::flush;
         p->~T();
     }
 
-    inline bool operator==(const allocator & rhs) const
+    inline bool operator==(const allocator<T> & ) const
     {
-        return true; //return this == &rhs;
+        return true;
     }
 
-    inline bool operator!=(const allocator & rhs) const
+    inline bool operator!=(const allocator<T> & ) const
     {
-        return this != &rhs;
+        return false;
     }
 };
 
@@ -253,14 +294,14 @@ public:
 
 void TestString()
 {
-    nonstd::string s = "s";
-    nonstd::string t = "Hello World!";
-    s = "s2";
-    t = "t2";
+    nonstd::Pool<char> theScopedCharPool("Outer char pool", 1024);
 
-    new nonstd::string("leak");
+    nonstd::string s = "Abc";
 
-    std::cout << s << std::endl;
+    {
+        nonstd::Pool<char> theScopedCharPool("Inner char pool", 1024);
+        nonstd::string t = "def";
+    }
 }
 
 

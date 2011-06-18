@@ -174,15 +174,13 @@ Poco::Timestamp::TimeDiff TestPerformanceWithPool(std::size_t n, std::size_t & s
 
 unsigned ConvertToMs(Poco::Timestamp::TimeDiff inDuration)
 {
-    return inDuration / 1000;
+    return static_cast<unsigned>(inDuration / 1000);
 }
 
 
 int main()
 {
     static const std::size_t numIterations = 5000;
-
-
 
     Poco::Timestamp::TimeDiff normal = 0;
     Poco::Timestamp::TimeDiff pool = 0;

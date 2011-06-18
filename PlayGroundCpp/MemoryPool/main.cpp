@@ -1,9 +1,9 @@
 #include <cassert>
+#include <ctime>
+#include <stdexcept>
 #include <string>
-#include <set>
 #include <vector>
 #include <iostream>
-#include <boost/lexical_cast.hpp>
 
 
 namespace nonstd {
@@ -14,65 +14,42 @@ struct Pool
 {
     static Pool<T> & Get()
     {
-        if (!sInstances.empty())
+        if (sInstances.empty())
         {
-            return *sInstances.back();
+            throw std::logic_error("There is no pool.");
         }
-        else
-        {
-            static Pool<T> fSharedInstance("Shared Pool", 1024);
-            return fSharedInstance;
-        }
+        return *sInstances.back();
     }
 
-    Pool(const std::string & inName, std::size_t inItemCount) :
-        mName(inName),
+    Pool(std::size_t inItemCount) :
         mData(inItemCount * sizeof(T)),
-        mUsed(),
-        mFreed(),
-        mTop()
+        mUsed(0)
     {
         sInstances.push_back(this);
     }
 
     ~Pool()
     {
-        assert(sInstances.back() == this);
         sInstances.pop_back();
-
-        std::cout << mName << std::endl;
-        for (std::size_t idx = 0; idx < mName.size(); ++idx)
-        {
-            std::cout << "-";
-        }
-        std::cout << std::endl;
-        std::cout << "Type: " << typeid(T).name() << std::endl;
-        std::cout << "Top load: " << sizeof(T) * mTop << " bytes" << std::endl;
-        std::cout << "Leaked: " << sizeof(T) * (mUsed - mFreed) << " bytes " << std::endl << std::endl << std::flush;
     }
 
-    T * create(std::size_t n)
+    inline T * create(std::size_t n)
     {
+        if (mUsed + n > capacity())
+        {
+            throw std::bad_alloc();
+        }
+
         T * result = &mData[mUsed];
         mUsed += n;
-        assert(mUsed < capacity());
-        mTop = std::max<std::size_t>(mUsed, mTop);
         return result;
     }
 
     /**
-     * Increments the counter of freed memory.
-     * Once this counter equal the amout of used memory, then both counters are set to zero.
+     * Does not free.
      */
-    void destroy(T * inValue, std::size_t n)
+    inline void destroy(T * , std::size_t )
     {
-        mFreed += n;
-        assert(mFreed <= mUsed);
-        if (mFreed == mUsed)
-        {
-            mFreed = 0;
-            mUsed = 0;
-        }
     }
 
     std::size_t size() const
@@ -86,11 +63,8 @@ struct Pool
     }
 
 private:
-    std::string mName;
     std::vector<T> mData;
     std::size_t mUsed;
-    std::size_t mFreed;
-    std::size_t mTop;
     static std::vector< Pool<T>* > sInstances;
 };
 
@@ -165,40 +139,61 @@ typedef std::basic_string< char, std::char_traits<char>, nonstd::allocator<char>
 } // namespace nonstd
 
 
-void TestString()
+clock_t TestPerformance(std::size_t inNumIterations)
 {
-    nonstd::Pool<char> pool("Outer pool", 1024);
-    nonstd::string s = "Abc";
+    clock_t start = clock();
+
+    long long totalSize = 0;
+
+    std::vector<std::size_t> v;
+    for (std::size_t idx = 0; idx < inNumIterations; ++idx)
     {
-        nonstd::Pool<char> pool("Inner pool", 512);
-        nonstd::string t = "def";
+        v.push_back(idx);
+        totalSize += v.size();
     }
+
+    return start - clock();
 }
 
 
-void TestVector()
+clock_t TestPerformanceWithPool(std::size_t inNumIterations)
 {
-    std::vector<int, nonstd::allocator<int> > v;
-    v.push_back(1);
-    v.size();
-    v.clear();
-    v.resize(10);
-    v.reserve(20);
+    clock_t start = clock();
 
-    std::vector<int, nonstd::allocator<int> > w = v;
-    v = w;
+    nonstd::Pool<std::size_t> pool(100 * 1000);
+    long long totalSize = 0;
+    std::vector<std::size_t, nonstd::allocator<std::size_t> > v;
+    for (std::size_t idx = 0; idx < inNumIterations; ++idx)
+    {
+        v.push_back(idx);
+        totalSize += v.size();
+    }
 
-    std::vector<int, nonstd::allocator<int> >();
-    std::vector<int, nonstd::allocator<int> >(1);
-    std::vector<int, nonstd::allocator<int> >(10, 0);
+    return start - clock();
+}
 
-    new std::vector<double, nonstd::allocator<double> >(1); // leak
+
+unsigned ConvertToMs(clock_t inDuration)
+{
+    return static_cast<unsigned>(inDuration / (1000 * CLOCKS_PER_SEC));
 }
 
 
 int main()
 {
-    TestString();
-    TestVector();
+
+    std::size_t numIterations = 1000;
+
+    clock_t normal = 0;
+    clock_t pool = 0;
+
+    for (std::size_t idx = 0; idx < 1000; ++idx)
+    {
+        normal += TestPerformance(numIterations);
+        pool += TestPerformanceWithPool(numIterations);
+    }
+
+    std::cout << "Normal: " << ConvertToMs(normal) << std::endl;
+    std::cout << "Pool: " << ConvertToMs(pool) << std::endl;
     return 0;
 }

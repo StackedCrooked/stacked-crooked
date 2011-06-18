@@ -1,9 +1,6 @@
 INCLUDE=-I/opt/local/include
-CXXFLAGS=-Wall -Werror -ggdb
+CXXFLAGS=-Wall -Werror -O3
 LFLAGS=
 
 all:
 	g++ -o test $(INCLUDE) $(CXXFLAGS) $(LFLAGS) main.cpp
-
-cpp:
-	g++ -E $(INCLUDE) $(CXXFLAGS) $(LFLAGS) main.cpp

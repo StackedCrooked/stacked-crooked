@@ -294,12 +294,10 @@ public:
 
 void TestString()
 {
-    nonstd::Pool<char> theScopedCharPool("Outer char pool", 1024);
-
+    nonstd::Pool<char> pool("Outer pool", 1024);
     nonstd::string s = "Abc";
-
     {
-        nonstd::Pool<char> theScopedCharPool("Inner char pool", 1024);
+        nonstd::Pool<char> pool("Inner pool", 512);
         nonstd::string t = "def";
     }
 }

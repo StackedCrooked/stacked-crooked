@@ -2,6 +2,7 @@
 #include <cassert>
 #include <ctime>
 #include <numeric>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -16,6 +17,7 @@ struct Pool
 {
     static Pool<T> & Get()
     {
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
         if (sInstances.empty())
         {
             throw std::logic_error("There is no pool.");
@@ -79,7 +81,7 @@ private:
 
 
 template<typename T>
-std::vector< Pool<T>* > Pool<T>::sInstances;
+std::vector<Pool<T>*> Pool<T>::sInstances;
 
 
 template<typename T>
@@ -94,6 +96,16 @@ struct allocator
     typedef typename std_allocator::pointer         pointer;
     typedef typename std_allocator::const_pointer   const_pointer;
 
+    allocator() throw() {}
+
+    allocator(const allocator<T> &) throw() {}
+
+    template<class U>
+    allocator(const allocator<U> & ) throw() {}
+
+    ~allocator() throw() {}
+
+
     inline Pool<T> & pool()
     {
         return Pool<T>::Get();
@@ -104,6 +116,9 @@ struct allocator
     {
         typedef allocator<U> other;
     };
+
+    pointer       address(reference value)       const { return &value; }
+    const_pointer address(const_reference value) const { return &value; }
 
     inline pointer allocate(size_type n, typename std::allocator<void>::const_pointer = 0)
     {
@@ -129,17 +144,35 @@ struct allocator
     {
         p->~T();
     }
-
-    inline bool operator==(const allocator<T> & ) const
-    {
-        return true;
-    }
-
-    inline bool operator!=(const allocator<T> & ) const
-    {
-        return false;
-    }
 };
+
+template<typename T>
+inline bool operator==(const allocator<T> &, const allocator<T> & )
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
+    return true; // types are equal
+}
+
+template<typename T>
+inline bool operator!=(const allocator<T> & lhs, const allocator<T> & rhs)
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
+    return !operator==(lhs, rhs);
+}
+
+template<typename T, typename U>
+inline bool operator==(const allocator<T> &, const allocator<U> & )
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
+    return false; // types are not equal
+}
+
+template<typename T, typename U>
+inline bool operator!=(const allocator<T> & lhs, const allocator<U> & rhs)
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
+    return !operator ==(lhs, rhs);
+}
 
 
 typedef std::basic_string< char, std::char_traits<char>, nonstd::allocator<char> > string;
@@ -148,25 +181,50 @@ typedef std::basic_string< char, std::char_traits<char>, nonstd::allocator<char>
 } // namespace nonstd
 
 
-Poco::Timestamp::TimeDiff TestPerformance(std::size_t n, std::size_t & size)
+template<unsigned n>
+struct Buffer
 {
-    Poco::Stopwatch s;
-    s.start();
+    char data[n];
+};
 
-    std::vector<std::size_t> vec(n);
-    size = vec.size();
 
-    return s.elapsed();
+template<unsigned n>
+bool operator< (const Buffer<n> & lhs, const Buffer<n> & rhs)
+{
+    return lhs.data < rhs.data;
 }
 
 
-Poco::Timestamp::TimeDiff TestPerformanceWithPool(std::size_t n, std::size_t & size)
+typedef Buffer<128> Data;
+
+
+typedef std::vector<Data, std::allocator<Data>    > NormalVector;
+typedef std::vector<Data, nonstd::allocator<Data> > PoolVector;
+
+typedef std::set<Data, std::less<Data>, std::allocator<Data>    > NormalSet;
+typedef std::set<Data, std::less<Data>, nonstd::allocator<Data> > PoolSet;
+
+void Insert(NormalVector & container, const Data & data) { container.push_back(data); }
+void Insert(PoolVector & container,   const Data & data) {   container.push_back(data); }
+
+void Insert(NormalSet & container, const Data & data) {   container.insert(data); }
+void Insert(PoolSet & container,   const Data & data) {   container.insert(data); }
+
+
+template<class ContainerType>
+Poco::Timestamp::TimeDiff TestPerformance(std::size_t n, std::size_t & size)
 {
+    typedef typename ContainerType::value_type Data;
+
     Poco::Stopwatch s;
     s.start();
 
-    std::vector<std::size_t, nonstd::allocator<std::size_t> > vec(n);
-    size = vec.size();
+    ContainerType container;
+    for (std::size_t idx = 0; idx < n; ++idx)
+    {
+        Insert(container, Data());
+    }
+    size += container.size();
 
     return s.elapsed();
 }
@@ -180,24 +238,30 @@ unsigned ConvertToMs(Poco::Timestamp::TimeDiff inDuration)
 
 int main()
 {
-    static const std::size_t numIterations = 5000;
+    static const std::size_t numOuterLoopIterations = 1000;
+    static const std::size_t numInnerLoopIterations = 1000;
 
     Poco::Timestamp::TimeDiff normal = 0;
     Poco::Timestamp::TimeDiff pool = 0;
 
     // These counters are used to prevent GCC from optimizating out the entire test routine.
-    std::size_t size = 0;
-    std::size_t totalPoolSize = 0;
+    std::size_t normalCounter = 0;
+    std::size_t poolCounter = 0;
 
-    nonstd::Pool<std::size_t> thepool(1024 * 1024);
-    for (std::size_t idx = 0; idx < 1024 * 1024; ++idx)
+
+    nonstd::Pool< Data > theScopedPool(numOuterLoopIterations);
+
+    for (std::size_t idx = 0; idx < numOuterLoopIterations; ++idx)
     {
-        normal += TestPerformance(numIterations, size);
-        pool += TestPerformanceWithPool(numIterations, totalPoolSize);
+        normal += TestPerformance<NormalVector>(numInnerLoopIterations, normalCounter);
+        pool   += TestPerformance<PoolVector>(numInnerLoopIterations, poolCounter);
+
+        normal += TestPerformance<NormalSet>(numInnerLoopIterations, normalCounter);
+        pool   += TestPerformance<PoolSet>(numInnerLoopIterations, poolCounter);
     }
 
-    std::cout << "Total non-pool size: " << size << std::endl;
-    std::cout << "Total pool size: " << totalPoolSize << std::endl << std::endl;
+    std::cout << "Total non-pool size: " << normalCounter << std::endl;
+    std::cout << "Total pool size: " << poolCounter << std::endl << std::endl;
 
     std::cout << "Normal: " << ConvertToMs(normal) << " ms" << std::endl;
     std::cout << "Pool: " << ConvertToMs(pool) << " ms" << std::endl;

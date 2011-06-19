@@ -13,12 +13,14 @@ namespace nonstd {
 
 
 template<class T>
-struct Pool
+struct Pool;
+
+template<>
+struct Pool<char>
 {
+    typedef char T;
     static Pool<T> & Get()
     {
-        // "Pretty Function" reveals the requested types.
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
         if (sInstances.empty())
         {
             throw std::logic_error("There is no pool.");
@@ -26,8 +28,8 @@ struct Pool
         return *sInstances.back();
     }
 
-    Pool(std::size_t inItemCount) :
-        mData(inItemCount * sizeof(T)),
+    Pool(std::size_t inTotalSize) :
+        mData(inTotalSize),
         mUsed(0),
         mFreed(0)
     {
@@ -41,6 +43,7 @@ struct Pool
 
     inline T * create(std::size_t n)
     {
+
         if (mUsed + n > capacity())
         {
             throw std::bad_alloc();
@@ -81,8 +84,7 @@ private:
 };
 
 
-template<typename T>
-std::vector<Pool<T>*> Pool<T>::sInstances;
+std::vector<Pool<char>*> Pool<char>::sInstances;
 
 
 template<typename T>
@@ -107,9 +109,9 @@ struct allocator
     ~allocator() throw() {}
 
 
-    inline Pool<T> & pool()
+    inline Pool<char> & pool()
     {
-        return Pool<T>::Get();
+        return Pool<char>::Get();
     }
 
     template<typename U>
@@ -123,12 +125,12 @@ struct allocator
 
     inline pointer allocate(size_type n, typename std::allocator<void>::const_pointer = 0)
     {
-        return pool().create(n);
+        return reinterpret_cast<pointer>(pool().create(sizeof(T) * n));
     }
 
     inline void deallocate(pointer p, size_type n)
     {
-        pool().destroy(p, n);
+        pool().destroy(reinterpret_cast<char*>(p), sizeof(T) * n);
     }
 
     inline size_type max_size() const
@@ -201,11 +203,11 @@ typedef std::vector<Data, nonstd::allocator<Data> > PoolVector;
 typedef std::set<Data, std::less<Data>, std::allocator<Data>    > NormalSet;
 typedef std::set<Data, std::less<Data>, nonstd::allocator<Data> > PoolSet;
 
-void Insert(NormalVector & container, const Data & data) { container.push_back(data); }
-void Insert(PoolVector & container,   const Data & data) {   container.push_back(data); }
+inline void Insert(NormalVector & container, const Data & data) { container.push_back(data); }
+inline void Insert(PoolVector & container,   const Data & data) {   container.push_back(data); }
 
-void Insert(NormalSet & container, const Data & data) {   container.insert(data); }
-void Insert(PoolSet & container,   const Data & data) {   container.insert(data); }
+inline void Insert(NormalSet & container, const Data & data) {   container.insert(data); }
+inline void Insert(PoolSet & container,   const Data & data) {   container.insert(data); }
 
 
 template<class ContainerType>
@@ -233,34 +235,60 @@ unsigned ConvertToMs(Poco::Timestamp::TimeDiff inDuration)
 }
 
 
+void PrintResults(const std::string & inTitle,
+                  Poco::Timestamp::TimeDiff inNormalTime,
+                  Poco::Timestamp::TimeDiff inPoolTime)
+{
+    std::cout << inTitle << std::endl;
+    for (std::size_t idx = 0; idx < inTitle.size(); ++idx)
+    {
+        std::cout << "-";
+    }
+    std::cout << std::endl;
+    std::cout << "Normal: " << ConvertToMs(inNormalTime) << " ms" << std::endl;
+    std::cout << "Pool  : " << ConvertToMs(inPoolTime) << " ms" << std::endl << std::endl;
+}
+
+
 int main()
 {
     static const std::size_t numOuterLoopIterations = 1000;
     static const std::size_t numInnerLoopIterations = 1000;
 
-    Poco::Timestamp::TimeDiff normal = 0;
-    Poco::Timestamp::TimeDiff pool = 0;
+    Poco::Stopwatch timer;
+    timer.start();
+
+    Poco::Timestamp::TimeDiff normal_vector = 0;
+    Poco::Timestamp::TimeDiff pool_vector = 0;
+
+    Poco::Timestamp::TimeDiff normal_set = 0;
+    Poco::Timestamp::TimeDiff pool_set = 0;
 
     // These counters are used to prevent GCC from optimizating out the entire test routine.
     std::size_t normalCounter = 0;
     std::size_t poolCounter = 0;
 
+    nonstd::Pool<char> theScopedPool(1024 * 1024);
 
-    nonstd::Pool< Data > theScopedPool(numOuterLoopIterations);
+    std::cout << "Pool creation took " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl;
+    timer.restart();
 
     for (std::size_t idx = 0; idx < numOuterLoopIterations; ++idx)
     {
-        normal += TestPerformance<NormalVector>(numInnerLoopIterations, normalCounter);
-        pool   += TestPerformance<PoolVector>(numInnerLoopIterations, poolCounter);
+        normal_vector += TestPerformance<NormalVector>(numInnerLoopIterations, normalCounter);
+        pool_vector   += TestPerformance<PoolVector>(numInnerLoopIterations, poolCounter);
 
-        normal += TestPerformance<NormalSet>(numInnerLoopIterations, normalCounter);
-        pool   += TestPerformance<PoolSet>(numInnerLoopIterations, poolCounter);
+        normal_set += TestPerformance<NormalSet>(numInnerLoopIterations, normalCounter);
+        pool_set   += TestPerformance<PoolSet>(numInnerLoopIterations, poolCounter);
     }
 
-    std::cout << "Total non-pool size: " << normalCounter << std::endl;
+    std::cout << "Total time: " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl;
+
+    std::cout << "Total non-pool size: " << normalCounter << std::endl << std::endl;
     std::cout << "Total pool size: " << poolCounter << std::endl << std::endl;
 
-    std::cout << "Normal: " << ConvertToMs(normal) << " ms" << std::endl;
-    std::cout << "Pool: " << ConvertToMs(pool) << " ms" << std::endl;
+    PrintResults("Vector Test", normal_vector, normal_set);
+
+    PrintResults("Set Test", pool_vector, pool_set);
     return 0;
 }

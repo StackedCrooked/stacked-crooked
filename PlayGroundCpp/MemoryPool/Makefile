@@ -1,5 +1,5 @@
 INCLUDE=-I/opt/local/include
-CXXFLAGS=-Wall -Werror -ggdb -O0
+CXXFLAGS=-Wall -Werror -O3
 LFLAGS=-L/opt/local/lib -lPocoFoundation
 
 all:

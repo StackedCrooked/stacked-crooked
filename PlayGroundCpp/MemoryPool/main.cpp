@@ -234,11 +234,7 @@ void PrintResults(const std::string & inTitle,
                   Poco::Timestamp::TimeDiff inPoolTime)
 {
     std::cout << inTitle << std::endl;
-    for (std::size_t idx = 0; idx < inTitle.size(); ++idx)
-    {
-        std::cout << "-";
-    }
-    std::cout << std::endl;
+    std::cout << std::string(inTitle.size(), '=') << std::endl;
     std::cout << "Normal  : " << ConvertToMs(inNormalTime) << " ms" << std::endl;
     std::cout << "Pool    : " << ConvertToMs(inPoolTime) << " ms" << std::endl;
     std::cout << "Speedup : " << std::setprecision(2) << double(inNormalTime) / double(inPoolTime) << std::endl;
@@ -279,7 +275,7 @@ int main()
     }
 
     // Print it out, and delete it with "\r".
-    std::cout << normalCounter << poolCounter << "\r";
+    std::clog << "Counters: " << normalCounter << ", " << poolCounter << std::endl;
 
     std::cout << "Total time: " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl << std::endl;
 

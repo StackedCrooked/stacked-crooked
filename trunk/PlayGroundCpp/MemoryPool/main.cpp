@@ -17,6 +17,7 @@ struct Pool
 {
     static Pool<T> & Get()
     {
+        // "Pretty Function" reveals the requested types.
         std::cout << __PRETTY_FUNCTION__ << std::endl;
         if (sInstances.empty())
         {
@@ -149,28 +150,24 @@ struct allocator
 template<typename T>
 inline bool operator==(const allocator<T> &, const allocator<T> & )
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
     return true; // types are equal
 }
 
 template<typename T>
 inline bool operator!=(const allocator<T> & lhs, const allocator<T> & rhs)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
     return !operator==(lhs, rhs);
 }
 
 template<typename T, typename U>
 inline bool operator==(const allocator<T> &, const allocator<U> & )
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
     return false; // types are not equal
 }
 
 template<typename T, typename U>
 inline bool operator!=(const allocator<T> & lhs, const allocator<U> & rhs)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl << std::flush;
     return !operator ==(lhs, rhs);
 }
 

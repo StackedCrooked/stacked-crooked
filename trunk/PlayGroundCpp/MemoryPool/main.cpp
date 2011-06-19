@@ -1,25 +1,21 @@
 #include "Poco/Stopwatch.h"
 #include <cassert>
 #include <ctime>
+#include <iomanip>
+#include <iostream>
 #include <numeric>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <iostream>
 
 
 namespace nonstd {
 
 
-template<class T>
-struct Pool;
-
-template<>
-struct Pool<char>
+struct Pool
 {
-    typedef char T;
-    static Pool<T> & Get()
+    static Pool & Get()
     {
         if (sInstances.empty())
         {
@@ -41,25 +37,29 @@ struct Pool<char>
         sInstances.pop_back();
     }
 
+    template<class T>
     inline T * create(std::size_t n)
     {
-
-        if (mUsed + n > capacity())
+        std::size_t size = sizeof(T) * n;
+        if (mUsed + size > capacity())
         {
             throw std::bad_alloc();
         }
 
-        T * result = &mData[mUsed];
-        mUsed += n;
+        T * result = reinterpret_cast<T*>(&mData[mUsed]);
+        mUsed += size;
         return result;
     }
 
     /**
      * Does not free.
      */
+    template<class T>
     inline void destroy(T * , std::size_t n)
     {
-        mFreed += n;
+        std::size_t size = n * sizeof(T);
+        mFreed += size;
+        assert(mFreed <= mUsed);
         if (mFreed == mUsed)
         {
             mFreed = mUsed = 0;
@@ -77,14 +77,14 @@ struct Pool<char>
     }
 
 private:
-    std::vector<T> mData;
+    std::vector<char> mData;
     std::size_t mUsed;
     std::size_t mFreed;
-    static std::vector< Pool<T>* > sInstances;
+    static std::vector< Pool* > sInstances;
 };
 
 
-std::vector<Pool<char>*> Pool<char>::sInstances;
+std::vector<Pool*> Pool::sInstances;
 
 
 template<typename T>
@@ -101,18 +101,12 @@ struct allocator
 
     allocator() throw() {}
 
-    allocator(const allocator<T> &) throw() {}
+    allocator(const allocator &) throw() {}
 
     template<class U>
     allocator(const allocator<U> & ) throw() {}
 
     ~allocator() throw() {}
-
-
-    inline Pool<char> & pool()
-    {
-        return Pool<char>::Get();
-    }
 
     template<typename U>
     struct rebind
@@ -125,12 +119,12 @@ struct allocator
 
     inline pointer allocate(size_type n, typename std::allocator<void>::const_pointer = 0)
     {
-        return reinterpret_cast<pointer>(pool().create(sizeof(T) * n));
+        return Pool::Get().create<T>(n);
     }
 
     inline void deallocate(pointer p, size_type n)
     {
-        pool().destroy(reinterpret_cast<char*>(p), sizeof(T) * n);
+        Pool::Get().destroy(p, n);
     }
 
     inline size_type max_size() const
@@ -140,7 +134,7 @@ struct allocator
 
     inline void construct(pointer p, const T & t)
     {
-        new(p) T(t);
+        new(p) T (t);
     }
 
     inline void destroy(pointer p)
@@ -268,7 +262,7 @@ int main()
     std::size_t normalCounter = 0;
     std::size_t poolCounter = 0;
 
-    nonstd::Pool<char> theScopedPool(1024 * 1024);
+    nonstd::Pool theScopedPool(10 * 1024 * 1024); // 10 MB
 
     std::cout << "Pool creation took " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl;
     timer.restart();
@@ -287,8 +281,8 @@ int main()
     std::cout << "Total non-pool size: " << normalCounter << std::endl << std::endl;
     std::cout << "Total pool size: " << poolCounter << std::endl << std::endl;
 
-    PrintResults("Vector Test", normal_vector, normal_set);
+    PrintResults("Vector Test", normal_vector, pool_vector);
 
-    PrintResults("Set Test", pool_vector, pool_set);
+    PrintResults("Set Test", normal_set, pool_set);
     return 0;
 }

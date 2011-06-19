@@ -246,8 +246,8 @@ void PrintResults(const std::string & inTitle,
 
 int main()
 {
-    static const std::size_t numOuterLoopIterations = 1000;
-    static const std::size_t numInnerLoopIterations = 1000;
+    static const std::size_t numOuterLoopIterations = 2000;
+    static const std::size_t numInnerLoopIterations = 2000;
 
     Poco::Stopwatch timer;
     timer.start();
@@ -276,10 +276,10 @@ int main()
         pool_set   += TestPerformance<PoolSet>(numInnerLoopIterations, poolCounter);
     }
 
-    std::cout << "Total time: " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl;
+    // Print it out, and delete it with "\r".
+    std::cout << normalCounter << poolCounter << "\r";
 
-    std::cout << "Total non-pool size: " << normalCounter << std::endl << std::endl;
-    std::cout << "Total pool size: " << poolCounter << std::endl << std::endl;
+    std::cout << "Total time: " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl << std::endl;
 
     PrintResults("Vector Test", normal_vector, pool_vector);
 

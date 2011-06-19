@@ -188,7 +188,7 @@ bool operator< (const Buffer<n> & lhs, const Buffer<n> & rhs)
 }
 
 
-typedef Buffer<128> Data;
+typedef Buffer<1024> Data;
 
 
 typedef std::vector<Data, std::allocator<Data>    > NormalVector;
@@ -239,8 +239,10 @@ void PrintResults(const std::string & inTitle,
         std::cout << "-";
     }
     std::cout << std::endl;
-    std::cout << "Normal: " << ConvertToMs(inNormalTime) << " ms" << std::endl;
-    std::cout << "Pool  : " << ConvertToMs(inPoolTime) << " ms" << std::endl << std::endl;
+    std::cout << "Normal  : " << ConvertToMs(inNormalTime) << " ms" << std::endl;
+    std::cout << "Pool    : " << ConvertToMs(inPoolTime) << " ms" << std::endl;
+    std::cout << "Speedup : " << std::setprecision(2) << double(inNormalTime) / double(inPoolTime) << std::endl;
+    std::cout << std::endl;
 }
 
 

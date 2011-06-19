@@ -1,6 +1,4 @@
 #include "Poco/Stopwatch.h"
-#include <cassert>
-#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
@@ -38,7 +36,7 @@ struct Pool
     }
 
     template<class T>
-    inline T * create(std::size_t n)
+    inline T * allocate(std::size_t n = 1)
     {
         std::size_t size = sizeof(T) * n;
         if (mUsed + size > capacity())
@@ -51,15 +49,10 @@ struct Pool
         return result;
     }
 
-    /**
-     * Does not free.
-     */
     template<class T>
-    inline void destroy(T * , std::size_t n)
+    inline void deallocate(T *, size_t n = 1)
     {
-        std::size_t size = n * sizeof(T);
-        mFreed += size;
-        assert(mFreed <= mUsed);
+        mFreed += sizeof(T) * n;
         if (mFreed == mUsed)
         {
             mFreed = mUsed = 0;
@@ -86,6 +79,30 @@ private:
 
 std::vector<Pool*> Pool::sInstances;
 
+
+template<class T>
+inline void * Allocate(std::size_t n = 1) { return Pool::Get().allocate<T>(n); }
+
+template<class T>
+inline void Deallocate(T * t, std::size_t n = 1) { Pool::Get().deallocate<T>(t, n); }
+
+template<typename T>
+inline T * New() { return new (Allocate<T>()) T; }
+
+template<typename T, typename A0>
+inline T * New(const A0 & a0) { return new (Allocate<T>()) T(a0); }
+
+template<typename T, typename A0, typename A1>
+inline T * New(const A0 & a0, const A1 & a1) { return new (Allocate<T>()) T(a0, a1); }
+
+template<typename T, typename A0, typename A1, typename A2>
+inline T * New(const A0 & a0, const A1 & a1, const A2 & a2) { return new (Allocate<T>()) T(a0, a1, a2); }
+
+template<typename T, typename A0, typename A1, typename A2, typename A3>
+inline T * New(const A0 & a0, const A1 & a1, const A2 & a2, const A3 & a3) { return new (Allocate<T>()) T(a0, a1, a2, a3); }
+
+template<typename T>
+inline void Delete(T* t) { Deallocate<T>(t); }
 
 template<typename T>
 struct allocator
@@ -119,12 +136,12 @@ struct allocator
 
     inline pointer allocate(size_type n, typename std::allocator<void>::const_pointer = 0)
     {
-        return Pool::Get().create<T>(n);
+        return Pool::Get().allocate<T>(n);
     }
 
     inline void deallocate(pointer p, size_type n)
     {
-        Pool::Get().destroy(p, n);
+        Pool::Get().deallocate(p, n);
     }
 
     inline size_type max_size() const
@@ -142,6 +159,7 @@ struct allocator
         p->~T();
     }
 };
+
 
 template<typename T>
 inline bool operator==(const allocator<T> &, const allocator<T> & )
@@ -242,8 +260,23 @@ void PrintResults(const std::string & inTitle,
 }
 
 
+void TestNew()
+{
+    nonstd::Pool theScopedPool(1024 * 1024); // 1 MB
+    using nonstd::New;
+
+    nonstd::New<Data>();
+    nonstd::string * test = nonstd::New<nonstd::string>("Hello");
+    nonstd::string * underline = nonstd::New<nonstd::string>(test->size(), '-');
+
+    // optional, automatic deletion will happen when theScopedPool is destroyed
+    nonstd::Delete(underline);
+}
+
+
 int main()
 {
+    TestNew();
     static const std::size_t numOuterLoopIterations = 2000;
     static const std::size_t numInnerLoopIterations = 2000;
 
@@ -252,7 +285,6 @@ int main()
 
     Poco::Timestamp::TimeDiff normal_vector = 0;
     Poco::Timestamp::TimeDiff pool_vector = 0;
-
     Poco::Timestamp::TimeDiff normal_set = 0;
     Poco::Timestamp::TimeDiff pool_set = 0;
 
@@ -280,7 +312,6 @@ int main()
     std::cout << "Total time: " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl << std::endl;
 
     PrintResults("Vector Test", normal_vector, pool_vector);
-
     PrintResults("Set Test", normal_set, pool_set);
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "Poco/Stopwatch.h"
+#include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
@@ -38,7 +39,10 @@ struct Pool
     template<class T>
     inline T * allocate(std::size_t n = 1)
     {
-        std::size_t size = sizeof(T) * n;
+        static const int segment_size = sizeof(void*);
+        std::size_t size_unpadded = n * sizeof(T);
+        std::size_t padding = (segment_size - (size_unpadded % segment_size)) % segment_size;
+        std::size_t size = size_unpadded + padding;
         if (mUsed + size > capacity())
         {
             throw std::bad_alloc();
@@ -59,7 +63,7 @@ struct Pool
         }
     }
 
-    std::size_t size() const
+    std::size_t used() const
     {
         return mUsed;
     }
@@ -260,23 +264,33 @@ void PrintResults(const std::string & inTitle,
 }
 
 
-void TestNew()
+void SelfTest()
 {
     nonstd::Pool theScopedPool(1024 * 1024); // 1 MB
     using nonstd::New;
 
-    nonstd::New<Data>();
-    nonstd::string * test = nonstd::New<nonstd::string>("Hello");
-    nonstd::string * underline = nonstd::New<nonstd::string>(test->size(), '-');
+    nonstd::string test = "Hello";
+    assert(test == "Hello");
+    assert(test.size() == std::string("Hello").size());
 
-    // optional, automatic deletion will happen when theScopedPool is destroyed
-    nonstd::Delete(underline);
+    nonstd::string underline(test.size(), '-');
+    assert(underline == "-----");
+
+    std::vector<char, std::allocator<char> > v1(17);
+    std::vector<char, nonstd::allocator<char> > v2(17);
+    assert(v1.size() == v2.size());
+    assert(v2.capacity() == v2.capacity());
+    for (char c = 'a'; c != 'z'; ++c)
+    {
+        v1[c] = v2[c] = c;
+        assert(v1[c] == v2[c]);
+    }
+    assert(!memcmp(v1.data(), v2.data(), v1.size()));
 }
 
 
-int main()
+void Benchmark()
 {
-    TestNew();
     static const std::size_t numOuterLoopIterations = 2000;
     static const std::size_t numInnerLoopIterations = 2000;
 
@@ -313,5 +327,12 @@ int main()
 
     PrintResults("Vector Test", normal_vector, pool_vector);
     PrintResults("Set Test", normal_set, pool_set);
+}
+
+
+int main()
+{
+    SelfTest();
+    Benchmark();
     return 0;
 }

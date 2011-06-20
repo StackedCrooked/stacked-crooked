@@ -2,10 +2,12 @@
 #include <cassert>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <numeric>
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 
@@ -219,12 +221,17 @@ typedef std::vector<Data, nonstd::allocator<Data> > PoolVector;
 typedef std::set<Data, std::less<Data>, std::allocator<Data>    > NormalSet;
 typedef std::set<Data, std::less<Data>, nonstd::allocator<Data> > PoolSet;
 
+typedef std::map<unsigned, Data, std::less<unsigned>,    std::allocator<std::pair<const unsigned, Data> > > NormalMap;
+typedef std::map<unsigned, Data, std::less<unsigned>, nonstd::allocator<std::pair<const unsigned, Data> > > PoolMap;
+
 inline void Insert(NormalVector & container, const Data & data) { container.push_back(data); }
 inline void Insert(PoolVector & container,   const Data & data) {   container.push_back(data); }
 
 inline void Insert(NormalSet & container, const Data & data) {   container.insert(data); }
 inline void Insert(PoolSet & container,   const Data & data) {   container.insert(data); }
 
+inline void Insert(NormalMap & container, const std::pair<const unsigned, Data> & data) { container.insert(data); }
+inline void Insert(PoolMap & container,   const std::pair<const unsigned, Data> & data) { container.insert(data); }
 
 template<class ContainerType>
 Poco::Timestamp::TimeDiff TestPerformance(std::size_t n, std::size_t & size)
@@ -299,6 +306,8 @@ void Benchmark()
 
     Poco::Timestamp::TimeDiff normal_vector = 0;
     Poco::Timestamp::TimeDiff pool_vector = 0;
+    Poco::Timestamp::TimeDiff normal_map = 0;
+    Poco::Timestamp::TimeDiff pool_map = 0;
     Poco::Timestamp::TimeDiff normal_set = 0;
     Poco::Timestamp::TimeDiff pool_set = 0;
 
@@ -316,6 +325,9 @@ void Benchmark()
         normal_vector += TestPerformance<NormalVector>(numInnerLoopIterations, normalCounter);
         pool_vector   += TestPerformance<PoolVector>(numInnerLoopIterations, poolCounter);
 
+        normal_map += TestPerformance<NormalMap>(numInnerLoopIterations, normalCounter);
+        pool_map   += TestPerformance<PoolMap>(numInnerLoopIterations, poolCounter);
+
         normal_set += TestPerformance<NormalSet>(numInnerLoopIterations, normalCounter);
         pool_set   += TestPerformance<PoolSet>(numInnerLoopIterations, poolCounter);
     }
@@ -326,6 +338,7 @@ void Benchmark()
     std::cout << "Total time: " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl << std::endl;
 
     PrintResults("Vector Test", normal_vector, pool_vector);
+    PrintResults("Map Test", normal_map, pool_map);
     PrintResults("Set Test", normal_set, pool_set);
 }
 

@@ -332,11 +332,8 @@ void Benchmark()
         pool_set   += TestPerformance<PoolSet>(numInnerLoopIterations, poolCounter);
     }
 
-    // Print it out, and delete it with "\r".
     std::clog << "Counters: " << normalCounter << ", " << poolCounter << std::endl;
-
     std::cout << "Total time: " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl << std::endl;
-
     PrintResults("Vector Test", normal_vector, pool_vector);
     PrintResults("Map Test", normal_map, pool_map);
     PrintResults("Set Test", normal_set, pool_set);

@@ -13,7 +13,6 @@
 
 namespace nonstd {
 
-
 struct Pool
 {
     static Pool & Get()
@@ -38,13 +37,21 @@ struct Pool
         sInstances.pop_back();
     }
 
+    template<typename T>
+    struct TypeInfo
+    {
+        enum {
+            SegmentSize = sizeof(void*),
+            UnpaddedSize = sizeof(T),
+            Padding = SegmentSize - (UnpaddedSize % SegmentSize),
+            PaddedSize = UnpaddedSize + Padding
+        };
+    };
+
     template<class T>
     inline T * allocate(std::size_t n = 1)
     {
-        static const int segment_size = sizeof(void*);
-        std::size_t size_unpadded = n * sizeof(T);
-        std::size_t padding = (segment_size - (size_unpadded % segment_size)) % segment_size;
-        std::size_t size = size_unpadded + padding;
+        std::size_t size = n * TypeInfo<T>::PaddedSize;
         if (mUsed + size > capacity())
         {
             throw std::bad_alloc();
@@ -58,7 +65,7 @@ struct Pool
     template<class T>
     inline void deallocate(T *, size_t n = 1)
     {
-        mFreed += sizeof(T) * n;
+        mFreed += n * TypeInfo<T>::PaddedSize;
         if (mFreed == mUsed)
         {
             mFreed = mUsed = 0;

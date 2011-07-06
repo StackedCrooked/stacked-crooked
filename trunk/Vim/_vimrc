@@ -42,14 +42,11 @@ set nocompatible
 " Show the ruler at the bottom
 set ruler
 
-" Some stuff to get the mouse going in term
-set mouse=a
-set ttymouse=xterm2
-
 " Show nice title in xterm
 set title
 
 " Set ignore case when searching using only lower case characters
+set ignorecase
 set smartcase
 
 " Enable syntax coloring

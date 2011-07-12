@@ -22,6 +22,9 @@ set shiftwidth=4
 " Colorize search results
 set hlsearch 
 
+" Show line numbers
+set number
+
 " Show search results while typing
 set incsearch
 

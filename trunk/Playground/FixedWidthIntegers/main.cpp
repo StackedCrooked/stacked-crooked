@@ -65,6 +65,10 @@ typedef Unsigned<2>::Type UInt16;
 typedef Unsigned<4>::Type UInt32;
 typedef Unsigned<8>::Type UInt64;
 
+typedef Signed<1>::Type Int8;
+typedef Signed<2>::Type Int16;
+typedef Signed<4>::Type Int32;
+typedef Signed<8>::Type Int64;
 
 int main()
 {
@@ -72,6 +76,11 @@ int main()
     std::cout << "sizeof(UInt16) = " << sizeof(UInt16) << std::endl;
     std::cout << "sizeof(UInt32) = " << sizeof(UInt32) << std::endl;
     std::cout << "sizeof(UInt64) = " << sizeof(UInt64) << std::endl;
+
+    std::cout << "sizeof(Int8) = " << sizeof(Int8) << std::endl;
+    std::cout << "sizeof(Int16) = " << sizeof(Int16) << std::endl;
+    std::cout << "sizeof(Int32) = " << sizeof(Int32) << std::endl;
+    std::cout << "sizeof(Int64) = " << sizeof(Int64) << std::endl;
     return 0;
 }
 

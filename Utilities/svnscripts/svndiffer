@@ -3,7 +3,7 @@
 if [[ "`uname`" == 'Darwin' ]]; then
     COMMAND="opendiff"
 else
-    COMMAND="gvim -d"
+    COMMAND="vimdiff"
 fi
 
 $COMMAND $6 $7 2>/dev/null

@@ -1,3 +1,0 @@
-#!/bin/sh
-# Subversion passes $6 as HEAD file and $7 as modified file.
-opendiff $6 $7 2>/dev/null &

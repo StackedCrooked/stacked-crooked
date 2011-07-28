@@ -18,13 +18,14 @@ public:
     {
         // Multiple passes are sometimes required.
         ExpressionPtr result = getDNFImpl();
-        int count = 0;
+        int safety = 0;
         while (!result->isDNF())
         {
+            std::cout << "Pass " << ": " << result->toString() << std::endl;
             result = result->getDNFImpl();
-            if (count++ == 20)
+            if (safety++ > 100)
             {
-                throw;
+                throw std::runtime_error("Maximum number of DNF passes exceeded.");
             }
         }
         return result;
@@ -150,10 +151,6 @@ public:
         return mRight;
     }
 
-    Type leftType() const { return left()->getType(); }
-
-    Type rightType() const { return right()->getType(); }
-
     std::string getKeyWord() const
     {
         if (getType() == Type_And)
@@ -187,7 +184,7 @@ private:
         std::string leftString = left()->toString();
 
         // Reduce brackets so that we see (A and B and C) instead of ((A and B) and C)
-        if ((getType() != leftType()) && (leftType() != Type_Unary))
+        if ((getType() != left()->getType()) && (left()->getType() != Type_Unary))
         {
             leftString = group(leftString);
         }
@@ -197,7 +194,7 @@ private:
         // A and (B or C)
 
         // Reduce brackets so that we see (A and B and C) instead of ((A and B) and C)
-        if ((getType() != rightType()) && (rightType() != Type_Unary))
+        if ((getType() != right()->getType()) && (right()->getType() != Type_Unary))
         {
             rightString = group(rightString);
         }
@@ -312,16 +309,16 @@ ExpressionPtr OrExpression::getDNFImpl() const
     BinaryExpression * rightAnd = dynamic_cast<AndExpression*>(right());
     if (leftLeaf && rightAnd)
     {
-        return Or(And(leftLeaf, rightAnd->left()->getDNF()),
-                  And(leftLeaf, rightAnd->right()->getDNF()));
+        return Or(And(leftLeaf, rightAnd->left()),
+                  And(leftLeaf, rightAnd->right()));
     }
 
     // (A and B) or C => (A and C) or (B and C)
     BinaryExpression * leftAnd = dynamic_cast<AndExpression*>(left());
     if (leftAnd && rightLeaf)
     {
-        return Or(And(leftAnd->left()->getDNF(),  rightLeaf),
-                  And(leftAnd->right()->getDNF(), rightLeaf));
+        return Or(And(leftAnd->left(),  rightLeaf),
+                  And(leftAnd->right(), rightLeaf));
     }
 
     return Or(left()->getDNF(), right()->getDNF());
@@ -330,7 +327,7 @@ ExpressionPtr OrExpression::getDNFImpl() const
 
 bool AndExpression::isDNFImpl() const
 {
-    if (leftType() == Type_Or || rightType() == Type_Or)
+    if (left()->getType() == Type_Or || right()->getType() == Type_Or)
     {
         return false;
     }
@@ -348,34 +345,18 @@ ExpressionPtr AndExpression::getDNFImpl() const
         return clone();
     }
 
-    OrExpression * leftOr = dynamic_cast<OrExpression*>(left());
-    OrExpression * rightOr = dynamic_cast<OrExpression*>(right());
-
-    // (A or B) and (C or D) => (A and C) or (A and D) or (B and C) or (B and D)
-    if (leftOr && rightOr)
-    {
-        ExpressionPtr a = leftOr->left()->getDNF();
-        ExpressionPtr b = leftOr->right()->getDNF();
-        ExpressionPtr c = rightOr->left()->getDNF();
-        ExpressionPtr d = rightOr->right()->getDNF();
-        return Or(Or(And(a, c),
-                     And(a, d)),
-                  Or(And(b, c),
-                     And(b, d)));
-    }
-
     // (A or B) and C => (A and C) or (B and C)
-    if (leftOr && rightLeaf)
+    if (OrExpression * leftOr = dynamic_cast<OrExpression*>(left()))
     {
-        return Or(And(leftOr->left()->getDNF(),  rightLeaf),
-                  And(leftOr->right()->getDNF(), rightLeaf));
+        return Or(And(leftOr->left(),  right()),
+                  And(leftOr->right(), right()));
     }
 
     // A and (B or C) -> (A and B) or (A and C)
-    if (leftLeaf && rightOr)
+    if (OrExpression * rightOr = dynamic_cast<OrExpression*>(right()))
     {
-        return Or(And(leftLeaf, rightOr->left()->getDNF()),
-                  And(leftLeaf, rightOr->right()->getDNF()));
+        return Or(And(left(), rightOr->left()),
+                  And(left(), rightOr->right()));
     }
 
     return And(left()->getDNF(), right()->getDNF());
@@ -398,41 +379,61 @@ void test(ExpressionPtr expr)
 }
 
 
-int main()
+void run()
 {
 
-    // A and (B or C)
     test(And(A, Or(B, C)));
 
-    // (A or B) and C
     test(And(Or(A, B), C));
 
-    // (A or B) and (C or D)
     test(And(Or(A, B),
              Or(C, D)));
 
-    // (A or B) and (C or D) and (E or F)
+    test(And(Or(A, B, C),
+             Or(D, E, F)));
+
     test(And(Or(A, B),
              Or(C, D),
              Or(E, F)));
 
-    // (A and B) or (A and C)
     test(Or(And(A, B),
             And(C, D)));
 
-    // (A and B) or (A and C)
+    test(Or(And(A, B, C),
+             And(D, E, F)));
+
     test(Or(And(A, B),
             And(C, D),
             And(E, F)));
 
-    // (A and B) or (A and C)
-    test(And(Or(A, B, C),
-             Or(D, E, F)));
 
-    // TODO: Fix FAIL!!
-    // (A and B) and (E or F))
-//    test(And(And(A, B),
-//             Or(E, F)));
+    test(And(And(Or(A, B),
+                 And(C, D)),
+             And(E, F)));
 
+    test(And(And(A, B),
+             Or(E, F)));
+
+    test(And(And(A, B),
+             Or(C, D, And(E, F))));
+
+    test(And(Or(A, B),
+             And(C, D),
+             Or(E, F)));
+
+    test(And(A, Or(B, And(C, Or(D, And(E, F))))));
+}
+
+
+int main()
+{
+    try
+    {
+        run();
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << exc.what() << std::endl;
+    }
     return 0;
 }

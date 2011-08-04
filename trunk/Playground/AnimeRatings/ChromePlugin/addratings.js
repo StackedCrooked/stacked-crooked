@@ -24,14 +24,18 @@ function parseXML(xml, titleNode) {
     if (scores.length > 0) {
         var score = scores[0];
         var actualScore = score.childNodes[0].nodeValue;
-        var child = document.createElement("a");
 
         var ids = doc.getElementsByTagName("id");
         var id = ids[0];
         var actualId = id.childNodes[0].nodeValue;
 
+        var whitespace = document.createTextNode("\u00A0");
+        titleNode.parentNode.appendChild(whitespace);
+
+        var child = document.createElement("a");
         child.href = "http://myanimelist.net/anime/" + actualId;
         child.innerText = "(MyAnimeList score: " + actualScore + ")";
+
         titleNode.parentNode.appendChild(child);
     }
 }
@@ -39,12 +43,11 @@ function parseXML(xml, titleNode) {
 
 function findTitles() {
     var titles = document.getElementsByTagName("a");
-    for (var i = 39; i < titles.length; ++i) {
+    for (var i = 0; i < titles.length; ++i) {
         var titleNode = titles[i];
         if (titleNode.innerText) {
             getMALScore(parseXML, titleNode);
         }
-        break;
     }
 }
 findTitles();

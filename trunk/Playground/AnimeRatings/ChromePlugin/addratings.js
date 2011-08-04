@@ -1,5 +1,5 @@
 
-function getMALScore(callback, title) {
+function getMALScore(callback, titleNode) {
   var xmlhttp = new window.XMLHttpRequest();
   xmlhttp.onreadystatechange = function(data) {
     if (xmlhttp.readyState == 4) {
@@ -12,7 +12,7 @@ function getMALScore(callback, title) {
   }
   // Note that any URL fetched here must be matched by a permission in
   // the manifest.json file!
-  var url = "http://myanimelist.net/api/anime/search.xml?q=" + title;
+  var url = "http://myanimelist.net/api/anime/search.xml?q=" + titleNode.innerText;
   xmlhttp.open('GET', url, true);
   xmlhttp.send();
 }
@@ -37,12 +37,10 @@ function parseXML(xml) {
 
 function findTitles() {
     var titles = document.getElementsByTagName("a");
-    for (var i = 40; i < titles.length; ++i) {
-        var title = titles[i];
-        if (title.innerText) {
-            getMALScore(function(xml) {
-                parseXML(xml);
-            }, title.innerText);
+    for (var i = 39; i < titles.length; ++i) {
+        var titleNode = titles[i];
+        if (titleNode.innerText) {
+            getMALScore(parseXML, titleNode);
         }
         break;
     }

@@ -4,9 +4,9 @@ function getMALScore(callback, titleNode) {
   xmlhttp.onreadystatechange = function(data) {
     if (xmlhttp.readyState == 4) {
       if (xmlhttp.status == 200) {
-        callback(xmlhttp.responseText);
+        callback(xmlhttp.responseText, titleNode);
       } else {
-        callback(null);
+        callback(null, titleNode);
       }
     }
   }
@@ -18,7 +18,7 @@ function getMALScore(callback, titleNode) {
 }
 
 
-function parseXML(xml) {
+function parseXML(xml, titleNode) {
     alert(xml);
     var parser = new DOMParser();
     alert("parser: " + parser);
@@ -31,6 +31,7 @@ function parseXML(xml) {
         alert("score: " + score);
         var actualScore = score.childNodes[0].nodeValue;
         alert("actualScore: " + actualScore);
+        titleNode.innerText = titleNode.innerText + " " + actualScore;
     }
 }
 

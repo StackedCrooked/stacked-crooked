@@ -17,24 +17,34 @@ function getMALScore(callback, titleNode) {
 
 
 function parseXML(xml, titleNode) {
+    alert(xml);
     var parser = new DOMParser();
     var doc = parser.parseFromString(xml, "text/xml");
     var scores = doc.getElementsByTagName("score");
     if (scores.length > 0) {
         var score = scores[0];
         var actualScore = score.childNodes[0].nodeValue;
-        titleNode.innerText = titleNode.innerText + " " + actualScore;
+        var child = document.createElement("a");
+
+        var ids = doc.getElementsByTagName("id");
+        var id = ids[0];
+        var actualId = id.childNodes[0].nodeValue;
+
+        child.href = "http://myanimelist.net/anime/" + actualId;
+        child.innerText = "(MyAnimeList score: " + actualScore + ")";
+        titleNode.parentNode.appendChild(child);
     }
 }
 
 
 function findTitles() {
     var titles = document.getElementsByTagName("a");
-    for (var i = 0; i < titles.length; ++i) {
+    for (var i = 39; i < titles.length; ++i) {
         var titleNode = titles[i];
         if (titleNode.innerText) {
             getMALScore(parseXML, titleNode);
         }
+        break;
     }
 }
 findTitles();

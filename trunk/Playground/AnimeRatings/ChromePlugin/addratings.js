@@ -17,7 +17,6 @@ function getMALScore(callback, titleNode) {
 
 
 function parseXML(xml, titleNode) {
-    alert(xml);
     var parser = new DOMParser();
     var doc = parser.parseFromString(xml, "text/xml");
     var scores = doc.getElementsByTagName("score");

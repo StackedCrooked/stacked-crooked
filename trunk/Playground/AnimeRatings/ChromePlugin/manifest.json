@@ -1,15 +1,11 @@
 {
-    "name": "Anime Ratings",
+    "name": "Test Authentication",
     "version": "1.0",
-    "description": "Shows anime ratings next to anime titles in a Web page.",
+    "description": "Test Authentication",
     "permissions": [
-        "cookies",
-        "http://myanimelist.net/*"
+        "tabs",
+        "*://*/*"
     ],
-    "content_scripts": [ {
-        "matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_2011"],
-        "run_at": "document_end",
-        "js": ["addratings.js"]
-    } ]
+    "background_page": "background.html"
 }
 

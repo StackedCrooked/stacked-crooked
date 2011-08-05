@@ -4,7 +4,7 @@
     "description": "Shows anime ratings next to anime titles in a Web page.",
     "permissions": [
         "cookies",
-        "http://myanimelist.net/"
+        "http://myanimelist.net/*"
     ],
     "content_scripts": [ {
         "matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_2011"],

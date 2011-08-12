@@ -17,9 +17,6 @@ function assert(obj) {
 }
 
 
-
-var login = null;
-
 function log(value) {
 		console.log(JSON.stringify(value));
 }
@@ -29,7 +26,7 @@ function getAuthorization(login) {
 	return "Basic " + Base64.encode(login);
 }
 
-function PerformHTTPRequest(url, login, callback) {
+function PerformHTTPRequest(url, auth, callback) {
 		var http = new window.XMLHttpRequest();
 		http.onreadystatechange = function() {
 				if (http.readyState == 4) {
@@ -43,19 +40,15 @@ function PerformHTTPRequest(url, login, callback) {
 				}
 		};
 		http.open('GET', url, true);
-		var auth = getAuthorization(login);
 		http.setRequestHeader('Authorization', auth);
 		http.send();
 }
 
 function Search(word, callback) {
-		if (login === null) {
-				login = "StackedCrooked:Ostrov99";
-		}
-
+		var auth = "Basic U3RhY2tlZENyb29rZWQ6T3N0cm92OTk=";
 		var url = encodeURI("http://myanimelist.net/api/anime/search.xml?q=" + word);
 		PerformHTTPRequest(
-				url, login,
+				url, auth,
 				function(response) {
 						callback(response);
 				}

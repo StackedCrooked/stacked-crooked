@@ -1,7 +1,7 @@
 #!/bin/bash
 # Subversion passes $6 as HEAD file and $7 as modified file.
 if [[ "`uname`" == 'Darwin' ]]; then
-    COMMAND="opendiff"
+    COMMAND="vimdiff"
 else
     COMMAND="vimdiff"
 fi

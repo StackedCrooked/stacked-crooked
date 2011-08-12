@@ -1,0 +1,71 @@
+<script src="base64.js" ></script>
+<script>
+try {
+
+var login = null;
+
+function log(value) {
+    console.log(JSON.stringify(value));
+}
+
+
+function getAuthorization(login) {
+  return "Basic " + Base64.encode(login);
+}
+
+function PerformHTTPRequest(url, login, callback) {
+    var http = new window.XMLHttpRequest();
+    http.onreadystatechange = function() {
+        if (http.readyState == 4) {
+            if (http.status == 200) {
+                log(http);
+                callback(http.responseText);
+            }
+            else {
+                log(http);
+            }
+        }
+    };
+    http.open('GET', url, true);
+    var auth = getAuthorization(login);
+    http.setRequestHeader('Authorization', auth);
+    http.send();
+}
+
+function Search(word, callback) {
+    if (login === null) {
+        login = "StackedCrooked:Ostrov99";
+    }
+
+    var url = encodeURI("http://myanimelist.net/api/anime/search.xml?q=" + word);
+    PerformHTTPRequest(
+        url, login,
+        function(response) {
+            callback(response);
+        }
+    );
+}
+
+function GetScore(title, callback) {
+    Search(title, function(xml) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(xml, "text/xml");
+        var scores = doc.getElementsByTagName("score");
+        if (scores.length > 0) {
+            var score = scores[0];
+            var actualScore = score.childNodes[0].nodeValue;
+            callback(actualScore);
+        }
+    });
+}
+
+chrome.extension.onRequest.addListener( function(request, sender, callback) {
+    GetScore(request.title, callback);
+});
+
+} catch(exc) {
+ console.log(JSON.stringify(exc));
+}
+
+</script>
+

@@ -158,7 +158,11 @@ ar.getLinks = function(callback) {
 // Application Entry Point
 //
 ar.getLinks(function(linkNode) {
-	ar.getMALInfo(linkNode.title, function(linkInfo) {
+
+	// Hack: replace '×' (cross-sign) with 'x' (letter 'x') because
+	// myanimelist doesn't return any results for 'Hunter × Hunter'.
+	var title = linkNode.title.replace("×", "x");
+	ar.getMALInfo(title, function(linkInfo) {
 		linkInfo.node = linkNode;
 		ar.addToDOM(linkInfo);
 	});

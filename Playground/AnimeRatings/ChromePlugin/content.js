@@ -79,7 +79,27 @@ ar.getLinks = function(callback) {
 //
 ar.getLinks(function(linkItem) {
 	ar.log(linkItem.title);
+
+	var parent = linkItem.node.parentNode;
+	var space = document.createTextNode("\u00a0");
+	parent.appendChild(space);
+
+	var malLink = document.createElement("a");
+	malLink.setAttribute("href", "http://www.myanimelist.net");
+	parent.appendChild(malLink);
+
+	var malTitle = document.createTextNode("MAL");
+	malLink.appendChild(malTitle);
+
 });
+
+
+// SAMPLE CODE FOR DOM MODIFICATION WITH JAVASCRIPT
+//	var x = document.createTextNode("test");
+//	var win = window.content;
+//	var el = win.document.getElementById('userNickname');
+//	el.appendChild(x);
+
 
 
 } catch (exc) {

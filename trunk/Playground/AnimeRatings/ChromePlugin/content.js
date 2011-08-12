@@ -86,13 +86,27 @@ ar.addToDOM = function(linkItem) {
 		assertProperty(entry, "score");
 		assertProperty(entry, "url");
 
-
 		var parent = node.parentNode;
-		var space = "\u00a0";
-		var spaceNode = document.createTextNode(space + space);
-		parent.appendChild(spaceNode);
 
 		parent.appendChild(document.createElement("br"));
+
+		// Score 0.00 means that there are not enough votes
+		// to determine a weighted score. These results are
+		// not interesting for our application.
+		if (entry.score === "0.00") {
+			continue;
+		}
+
+		var small = document.createElement("small");
+		parent.appendChild(small);
+		parent = small;
+
+		if (parseInt(entry.score,10) >= 7) {
+			var bold = document.createElement("b");
+			parent.appendChild(bold);
+			parent = bold;
+		}
+
 		parent.appendChild(document.createTextNode("\u00a0\u00a0"));
 
 		var malLink = document.createElement("a");
@@ -128,7 +142,6 @@ ar.getLinks = function(callback) {
 	for (var i = 0; i < linkNodes.length; ++i) {
 		var linkNode = linkNodes[i];
 		callback(linkNode);
-		if (i == 10) { return; }
 	}
 };
 

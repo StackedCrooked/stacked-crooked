@@ -78,6 +78,15 @@ ar.addToDOM = function(linkItem) {
 
 	var node = linkItem.node;
 	var entries = linkItem.entries;
+	var parent = node.parentNode;
+
+	var ul = document.createElement("ul");
+	parent.appendChild(ul);
+	parent = ul;
+
+	var small = document.createElement("small");
+	parent.appendChild(small);
+	parent = small;
 
 	for (var i = 0; i < entries.length; ++i) {
 
@@ -86,10 +95,6 @@ ar.addToDOM = function(linkItem) {
 		assertProperty(entry, "score");
 		assertProperty(entry, "url");
 
-		var parent = node.parentNode;
-
-		parent.appendChild(document.createElement("br"));
-
 		// Score 0.00 means that there are not enough votes
 		// to determine a weighted score. These results are
 		// not interesting for our application.
@@ -97,11 +102,12 @@ ar.addToDOM = function(linkItem) {
 			continue;
 		}
 
-		var small = document.createElement("small");
-		parent.appendChild(small);
-		parent = small;
+		var li = document.createElement("li");
+		parent.appendChild(li);
+		parent = li;
 
-		if (parseInt(entry.score,10) >= 7) {
+		var oldParent = parent;
+		if (parseInt(entry.score,10) >= 8) {
 			var bold = document.createElement("b");
 			parent.appendChild(bold);
 			parent = bold;
@@ -116,6 +122,8 @@ ar.addToDOM = function(linkItem) {
 		var entryText = entry.title + " (" + entry.score + ")";
 		var malScoreText = document.createTextNode(entryText);
 		malLink.appendChild(malScoreText);
+
+		parent = oldParent;
 	}
 };
 

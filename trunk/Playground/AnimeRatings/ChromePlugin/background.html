@@ -83,23 +83,28 @@ function getMalInfo(arg, callback) {
 			console.log(entry);
 
 			var titleNodes = entry.getElementsByTagName("title");
-			assert(titleNodes !== undefined);
-			assert(titleNodes !== null);
-			assert(titleNodes.length === 1);
-			var entryTitle = titleNodes[0].childNodes[0].nodeValue;
+			var entryTitle = "";
+			if (titleNodes !== undefined &&
+				titleNodes !== null &&
+				titleNodes.length > 0) {
+				entryTitle = titleNodes[0].childNodes[0].nodeValue;
+			}
 
 			var scoreNodes = entry.getElementsByTagName("score");
-			assert(scoreNodes !== undefined);
-			assert(scoreNodes !== null);
-			assert(scoreNodes.length === 1);
-			var entryScore = scoreNodes[0].childNodes[0].nodeValue;
+			var entryScore = "0.00";
+			if (scoreNodes !== undefined &&
+				scoreNodes !== null &&
+				scoreNodes.length > 0) {
+				entryScore = scoreNodes[0].childNodes[0].nodeValue;
+			}
 
 			var idNodes = entry.getElementsByTagName("id");
-			assert(idNodes !== undefined);
-			assert(idNodes !== null);
-			assert(idNodes.length === 1);
-			var entryUrl = "http://myanimelist.net/anime/" + idNodes[0].childNodes[0].nodeValue;
-
+			var entryUrl = "";
+			if (idNodes !== undefined &&
+				idNodes !== null &&
+				idNodes.length > 0) {
+				entryUrl = "http://myanimelist.net/anime/" + idNodes[0].childNodes[0].nodeValue;
+			}
 			result.entries.push({title: entryTitle, score: entryScore, url: entryUrl});
 		}
 		callback(result);

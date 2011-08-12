@@ -80,7 +80,7 @@ ar.addToDOM = function(linkItem) {
 	var node = linkItem.node;
 	var parent = node.parentNode;
 	var space = "\u00a0";
-	var spaceNode = document.createTextNode(space);
+	var spaceNode = document.createTextNode(space + space);
 	parent.appendChild(spaceNode);
 
 	var malLink = document.createElement("a");
@@ -129,14 +129,6 @@ ar.getLinks(function(linkNode) {
 		ar.addToDOM(linkInfo);
 	});
 });
-
-
-// SAMPLE CODE FOR DOM MODIFICATION WITH JAVASCRIPT
-//	var x = document.createTextNode("test");
-//	var win = window.content;
-//	var el = win.document.getElementById('userNickname');
-//	el.appendChild(x);
-
 
 
 } catch (exc) {

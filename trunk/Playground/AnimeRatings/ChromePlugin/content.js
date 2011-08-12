@@ -49,7 +49,7 @@ ar.getMWPages = function() {
 	throw "Could not find root node for the anime titles.";
 };
 
-ar.getLinks = function(mwpages) {
+ar.getLinksImpl = function(mwpages) {
 	var result = [];
 	var lis = mwpages.getElementsByTagName("li");
 	for (var i = 0; i < lis.length; ++i) {
@@ -65,17 +65,21 @@ ar.getLinks = function(mwpages) {
 };
 
 
-/// Define point
-ar.main = function() {
-	var links = ar.getLinks(ar.getMWPages());
-	for (var i = 0; i < links.length; ++i) {
-		ar.log(links[i].title);
+ar.getLinks = function(callback) {
+	var linkNodes = this.getLinksImpl(this.getMWPages());
+	for (var i = 0; i < linkNodes.length; ++i) {
+		var linkNode = linkNodes[i];
+		callback({title: linkNode.title, node: linkNode});
 	}
 };
 
 
-/// Start application
-ar.main();
+//
+// Application Entry Point
+//
+ar.getLinks(function(linkItem) {
+	ar.log(linkItem.title);
+});
 
 
 } catch (exc) {

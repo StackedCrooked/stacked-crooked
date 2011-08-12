@@ -74,12 +74,7 @@ ar.getLinks = function(callback) {
 };
 
 
-//
-// Application Entry Point
-//
-ar.getLinks(function(linkItem) {
-	ar.log(linkItem.title);
-
+ar.addToDOM = function(linkItem) {
 	var parent = linkItem.node.parentNode;
 	var space = document.createTextNode("\u00a0");
 	parent.appendChild(space);
@@ -90,7 +85,15 @@ ar.getLinks(function(linkItem) {
 
 	var malTitle = document.createTextNode("MAL");
 	malLink.appendChild(malTitle);
+};
 
+
+//
+// Application Entry Point
+//
+ar.getLinks(function(linkItem) {
+	ar.log(linkItem.title);
+	ar.addToDOM(linkItem);
 });
 
 

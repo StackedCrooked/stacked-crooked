@@ -1,28 +1,21 @@
 function AnimeRatings() {
 
 	/// Redefine alert
-	var _debug = true;
+	this._debug = true;
 	this.alert = function(msg) {
 		if (!confirm(msg + '\n\nPress Cancel to stop debugging.')) {
-			_debug = false;
+			this._debug = false;
 		}
 	};
 	window.alert = this.alert;
 
 
-	this.onResponse = function(response) {
-		if (response.success !== true) {
-			throw "Invalid response: " + JSON.stringify(response);
-		}
+	this.sendRequest = function(arg, callback) {
 
-		if (response.action !== undefined && response.action !== null) {
-			response.action();
-		}
-	};
-
-
-	this.sendRequest = function(arg) {
-		chrome.extension.sendRequest(arg, this.onResponse);
+		chrome.extension.sendRequest(arg, function(response) {
+			assertProperty(response, "success");
+			callback(response);
+		});
 	};
 
 
@@ -31,6 +24,20 @@ function AnimeRatings() {
 	};
 	window.log = this.log;
 
+}
+
+
+function assertProperty(obj, prop) {
+	if (obj[prop] === undefined) {
+		throw arguments.callee.caller.toString() + "\n\nMissing property: '" + prop + "'.";
+	}
+}
+
+
+function assert(obj) {
+	if (obj === undefined || obj === null || obj === false) {
+		throw "Failed assert: " + arguments.callee.caller.toString();
+	}
 }
 
 
@@ -65,35 +72,62 @@ ar.getLinksImpl = function(mwpages) {
 };
 
 
+ar.addToDOM = function(linkItem) {
+	assertProperty(linkItem, "node");
+	assertProperty(linkItem, "url");
+	assertProperty(linkItem, "score");
+
+	var node = linkItem.node;
+	var parent = node.parentNode;
+	var space = "\u00a0";
+	var spaceNode = document.createTextNode(space);
+	parent.appendChild(spaceNode);
+
+	var malLink = document.createElement("a");
+	malLink.setAttribute("href", linkItem.url);
+	parent.appendChild(malLink);
+
+	var malScoreText = document.createTextNode(linkItem.score);
+	malLink.appendChild(malScoreText);
+};
+
+
+ar.getMALInfo = function(title, callback) {
+	var linkInfo = {};
+	linkInfo.title = title;
+	this.sendRequest(
+		{action: "getMalInfo", arg: linkInfo},
+		function(linkInfo) {
+			assert(linkInfo);
+			assert(linkInfo.success);
+			if (linkInfo.success === true) {
+				assertProperty(linkInfo, "url");
+				assertProperty(linkInfo, "score");
+				callback(linkInfo);
+			}
+		}
+	);
+};
+
+
 ar.getLinks = function(callback) {
 	var linkNodes = this.getLinksImpl(this.getMWPages());
 	for (var i = 0; i < linkNodes.length; ++i) {
 		var linkNode = linkNodes[i];
-		callback({title: linkNode.title, node: linkNode});
+		callback(linkNode);
+		return;
 	}
-};
-
-
-ar.addToDOM = function(linkItem) {
-	var parent = linkItem.node.parentNode;
-	var space = document.createTextNode("\u00a0");
-	parent.appendChild(space);
-
-	var malLink = document.createElement("a");
-	malLink.setAttribute("href", "http://www.myanimelist.net");
-	parent.appendChild(malLink);
-
-	var malTitle = document.createTextNode("MAL");
-	malLink.appendChild(malTitle);
 };
 
 
 //
 // Application Entry Point
 //
-ar.getLinks(function(linkItem) {
-	ar.log(linkItem.title);
-	ar.addToDOM(linkItem);
+ar.getLinks(function(linkNode) {
+	ar.getMALInfo(linkNode.title, function(linkInfo) {
+		linkInfo.node = linkNode;
+		ar.addToDOM(linkInfo);
+	});
 });
 
 
@@ -106,6 +140,11 @@ ar.getLinks(function(linkItem) {
 
 
 } catch (exc) {
-	alert(JSON.stringify(exc));
+	if (typeof(exc) === "string") {
+		alert(exc);
+	}
+	else {
+		alert(JSON.stringify(exc));
+	}
 }
 

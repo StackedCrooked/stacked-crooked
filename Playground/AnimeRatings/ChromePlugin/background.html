@@ -2,7 +2,22 @@
 <script>
 try {
 
-/*
+
+function assertProperty(obj, prop) {
+	if (obj[prop] === undefined) {
+		throw arguments.callee.caller.toString() + "\n\nMissing property: '" + prop + "'.";
+	}
+}
+
+
+function assert(obj) {
+	if (obj === undefined || obj === null || obj === false) {
+		throw "Failed assert: " + arguments.callee.caller.toString();
+	}
+}
+
+
+
 var login = null;
 
 function log(value) {
@@ -47,33 +62,52 @@ function Search(word, callback) {
 		);
 }
 
-function GetScore(title, callback) {
-		Search(title, function(xml) {
-				var parser = new DOMParser();
-				var doc = parser.parseFromString(xml, "text/xml");
-				var scores = doc.getElementsByTagName("score");
-				if (scores.length > 0) {
-						var score = scores[0];
-						var actualScore = score.childNodes[0].nodeValue;
-						callback(actualScore);
-				}
-		});
+function getMalInfo(arg, callback) {
+	assertProperty(arg, "title");
+	Search(arg.title, function(xml) {
+		var parser = new DOMParser();
+		var doc = parser.parseFromString(xml, "text/xml");
+		var animes = doc.getElementsByTagName("anime");
+		if (animes.length === 0) {
+			console.log("WARNING: No result set is empty!");
+			result.success = false;
+			callback(result);
+		}
+		else {
+			var anime = animes[0];
+			var result = {};
+			result.success = true;
+
+			var scoreNodes = anime.getElementsByTagName("score");
+			assert(scoreNodes !== undefined);
+			assert(scoreNodes !== null);
+			assert(scoreNodes.length === 1);
+			result.score = scoreNodes[0].childNodes[0].nodeValue;
+
+			var idNodes = anime.getElementsByTagName("id");
+			assert(idNodes !== undefined);
+			assert(idNodes !== null);
+			assert(idNodes.length === 1);
+			result.url = "http://myanimelist.net/anime/" + idNodes[0].childNodes[0].nodeValue;
+			callback(result);
+		}
+	});
 }
-*/
+
 
 chrome.extension.onRequest.addListener( function(request, sender, callback) {
 	if (request.action === "log") {
 		console.log(JSON.stringify(request.arg));
 		request.success = true;
+		request.sender = sender;
 		callback(request);
 	}
-	/*else if (request.action === "get_score") {
-		GetScore(request.arg, callback);
+	else if (request.action === "getMalInfo") {
+		getMalInfo(request.arg, callback);
 	}
 	else {
-		throw "The request does not have a field named 'action'." +
-			  "\nRequest:\n" + JSON.stringify(request);
-	}*/
+		throw "Invalid request: " + JSON.stringify(request);
+	}
 });
 
 } catch(exc) {

@@ -8,7 +8,7 @@
 		],
 		"background_page": "background.html",
 		"content_scripts": [ {
-				"matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_2011"],
+				"matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_*"],
 				"run_at": "document_end",
 				"js": ["content.js"]
 		} ]

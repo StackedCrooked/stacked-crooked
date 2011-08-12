@@ -27,63 +27,82 @@ function getAuthorization(login) {
 }
 
 function PerformHTTPRequest(url, auth, callback) {
-		var http = new window.XMLHttpRequest();
-		http.onreadystatechange = function() {
-				if (http.readyState == 4) {
-						if (http.status == 200) {
-								log(http);
-								callback(http.responseText);
-						}
-						else {
-								log(http);
-						}
-				}
-		};
-		http.open('GET', url, true);
-		http.setRequestHeader('Authorization', auth);
-		http.send();
+	var http = new window.XMLHttpRequest();
+	http.onreadystatechange = function() {
+		if (http.readyState == 4) {
+			if (http.status == 200) {
+				callback({success: true, value: http.responseText});
+			}
+			else {
+				console.log(JSON.stringify(http));
+				callback({success: false, value: http.status});
+			}
+		}
+	};
+	http.open('GET', url, true);
+	http.setRequestHeader('Authorization', auth);
+	http.send();
 }
 
 function Search(word, callback) {
-		var auth = "Basic U3RhY2tlZENyb29rZWQ6T3N0cm92OTk=";
-		var url = encodeURI("http://myanimelist.net/api/anime/search.xml?q=" + word);
-		PerformHTTPRequest(
-				url, auth,
-				function(response) {
-						callback(response);
-				}
-		);
+	var auth = "Basic U3RhY2tlZENyb29rZWQ6T3N0cm92OTk=";
+	var url = encodeURI("http://myanimelist.net/api/anime/search.xml?q=" + word);
+	PerformHTTPRequest(url, auth, function(response) {
+		callback(response);
+	});
 }
 
 function getMalInfo(arg, callback) {
 	assertProperty(arg, "title");
-	Search(arg.title, function(xml) {
+	Search(arg.title, function(response) {
+		var result = {};
+		if (result.success === false) {
+			result.success = false;
+			result.reason = response.value;
+			callback(result);
+			return;
+		}
+
+		var xml = response.value;
 		var parser = new DOMParser();
 		var doc = parser.parseFromString(xml, "text/xml");
-		var animes = doc.getElementsByTagName("anime");
-		if (animes.length === 0) {
-			console.log("WARNING: No result set is empty!");
+		var entries = doc.getElementsByTagName("entry");
+		if (entries.length === 0) {
+			console.log("WARNING: The result set is empty!");
 			result.success = false;
+			result.reason = "Result set is empty.";
 			callback(result);
+			return;
 		}
-		else {
-			var anime = animes[0];
-			var result = {};
-			result.success = true;
 
-			var scoreNodes = anime.getElementsByTagName("score");
+		console.log("entries.length: " + entries.length);
+		result.success = true;
+		result.entries = [];
+		for (var i = 0; i < entries.length; ++i) {
+			var entry = entries[i];
+			console.log(entry);
+
+			var titleNodes = entry.getElementsByTagName("title");
+			assert(titleNodes !== undefined);
+			assert(titleNodes !== null);
+			assert(titleNodes.length === 1);
+			var entryTitle = titleNodes[0].childNodes[0].nodeValue;
+
+			var scoreNodes = entry.getElementsByTagName("score");
 			assert(scoreNodes !== undefined);
 			assert(scoreNodes !== null);
 			assert(scoreNodes.length === 1);
-			result.score = scoreNodes[0].childNodes[0].nodeValue;
+			var entryScore = scoreNodes[0].childNodes[0].nodeValue;
 
-			var idNodes = anime.getElementsByTagName("id");
+			var idNodes = entry.getElementsByTagName("id");
 			assert(idNodes !== undefined);
 			assert(idNodes !== null);
 			assert(idNodes.length === 1);
-			result.url = "http://myanimelist.net/anime/" + idNodes[0].childNodes[0].nodeValue;
-			callback(result);
+			var entryUrl = "http://myanimelist.net/anime/" + idNodes[0].childNodes[0].nodeValue;
+
+			result.entries.push({title: entryTitle, score: entryScore, url: entryUrl});
 		}
+		callback(result);
 	});
 }
 

@@ -62,12 +62,12 @@ function GetScore(title, callback) {
 */
 
 chrome.extension.onRequest.addListener( function(request, sender, callback) {
-	console.log("onRequest: " + request);
-	callback("alright");
-	/*if (request.action === "log") {
+	if (request.action === "log") {
 		console.log(JSON.stringify(request.arg));
+		request.success = true;
+		callback(request);
 	}
-	else if (request.action === "get_score") {
+	/*else if (request.action === "get_score") {
 		GetScore(request.arg, callback);
 	}
 	else {

@@ -74,21 +74,35 @@ ar.getLinksImpl = function(mwpages) {
 
 ar.addToDOM = function(linkItem) {
 	assertProperty(linkItem, "node");
-	assertProperty(linkItem, "url");
-	assertProperty(linkItem, "score");
+	assertProperty(linkItem, "entries");
 
 	var node = linkItem.node;
-	var parent = node.parentNode;
-	var space = "\u00a0";
-	var spaceNode = document.createTextNode(space + space);
-	parent.appendChild(spaceNode);
+	var entries = linkItem.entries;
 
-	var malLink = document.createElement("a");
-	malLink.setAttribute("href", linkItem.url);
-	parent.appendChild(malLink);
+	for (var i = 0; i < entries.length; ++i) {
 
-	var malScoreText = document.createTextNode(linkItem.score);
-	malLink.appendChild(malScoreText);
+		var entry = entries[i];
+
+		assertProperty(entry, "score");
+		assertProperty(entry, "url");
+
+
+		var parent = node.parentNode;
+		var space = "\u00a0";
+		var spaceNode = document.createTextNode(space + space);
+		parent.appendChild(spaceNode);
+
+		parent.appendChild(document.createElement("br"));
+		parent.appendChild(document.createTextNode("\u00a0\u00a0"));
+
+		var malLink = document.createElement("a");
+		malLink.setAttribute("href", entry.url);
+		parent.appendChild(malLink);
+
+		var entryText = entry.title + " (" + entry.score + ")";
+		var malScoreText = document.createTextNode(entryText);
+		malLink.appendChild(malScoreText);
+	}
 };
 
 
@@ -101,8 +115,7 @@ ar.getMALInfo = function(title, callback) {
 			assert(linkInfo);
 			assert(linkInfo.success);
 			if (linkInfo.success === true) {
-				assertProperty(linkInfo, "url");
-				assertProperty(linkInfo, "score");
+				assertProperty(linkInfo, "entries");
 				callback(linkInfo);
 			}
 		}
@@ -115,7 +128,7 @@ ar.getLinks = function(callback) {
 	for (var i = 0; i < linkNodes.length; ++i) {
 		var linkNode = linkNodes[i];
 		callback(linkNode);
-		return;
+		if (i == 10) { return; }
 	}
 };
 

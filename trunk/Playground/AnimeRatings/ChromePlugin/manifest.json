@@ -1,16 +1,16 @@
 {
-    "name": "Test Authentication",
-    "version": "1.0",
-    "description": "Test Authentication",
-    "permissions": [
-        "tabs",
-        "http://*/*"
-    ],
-    "background_page": "background.html",
-    "content_scripts": [ {
-        "matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_2011"],
-        "run_at": "document_end",
-        "js": ["content.js"]
-    } ]
+		"name": "Insert Anime Ratings",
+		"version": "1.0",
+		"description": "Inserts Anime Ratings",
+		"permissions": [
+				"tabs",
+				"http://*/*"
+		],
+		"background_page": "background.html",
+		"content_scripts": [ {
+				"matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_2011"],
+				"run_at": "document_end",
+				"js": ["content.js"]
+		} ]
 }
 

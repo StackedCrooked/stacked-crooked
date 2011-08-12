@@ -1,4 +1,5 @@
+JSL=./jsl
 
 all:
-	./jsl -conf jsl.conf -process background.html 1>&2
-	./jsl -conf jsl.conf -process content.js 1>&2
+	${JSL} -conf jsl.conf -process content.js -nologo -nofilelisting -nocontext 1>&2
+	${JSL} -conf jsl.conf -process background.html -nologo -nofilelisting -nocontext 1>&2

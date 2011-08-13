@@ -52,61 +52,56 @@ function Search(title, callback) {
 	});
 }
 
+function getInnerText(node) {
+	if (node.childNodes.length === 0) {
+		return null;
+	}
+	return node.childNodes[0].nodeValue;
+}
+
+function getNodeValue(node, prop) {
+	var children = node.getElementsByTagName(prop);
+	if (children.length === 0) {
+		return null;
+	}
+	return getInnerText(children[0]);
+}
+
+
 function getMalInfo(arg, callback) {
 	assertProperty(arg, "title");
+
 	Search(arg.title, function(response) {
 		var result = {};
-		if (result.success === false) {
-			result.success = false;
+		result.success = false;
+		result.entries = [];
+		if (response.success === false) {
 			result.reason = response.value;
 			callback(result);
 			return;
 		}
 
-		var xml = response.value;
 		var parser = new DOMParser();
-		var doc = parser.parseFromString(xml, "text/xml");
+		var doc = parser.parseFromString(response.value, "text/xml");
 		var entries = doc.getElementsByTagName("entry");
 		if (entries.length === 0) {
-			console.log("WARNING: The result set is empty!");
-			result.success = false;
 			result.reason = "Result set is empty.";
 			callback(result);
 			return;
 		}
 
-		console.log("entries.length: " + entries.length);
-		result.success = true;
-		result.entries = [];
 		for (var i = 0; i < entries.length; ++i) {
-			var entry = entries[i];
-			console.log(entry);
+			var node = entries[i];
 
-			var titleNodes = entry.getElementsByTagName("title");
-			var entryTitle = "";
-			if (titleNodes !== undefined &&
-				titleNodes !== null &&
-				titleNodes.length > 0) {
-				entryTitle = titleNodes[0].childNodes[0].nodeValue;
-			}
-
-			var scoreNodes = entry.getElementsByTagName("score");
-			var entryScore = "0.00";
-			if (scoreNodes !== undefined &&
-				scoreNodes !== null &&
-				scoreNodes.length > 0) {
-				entryScore = scoreNodes[0].childNodes[0].nodeValue;
-			}
-
-			var idNodes = entry.getElementsByTagName("id");
-			var entryUrl = "";
-			if (idNodes !== undefined &&
-				idNodes !== null &&
-				idNodes.length > 0) {
-				entryUrl = "http://myanimelist.net/anime/" + idNodes[0].childNodes[0].nodeValue;
-			}
-			result.entries.push({title: entryTitle, score: entryScore, url: entryUrl});
+			var entry = {
+				url: "http://myanimelist.net/anime/" + getNodeValue(node, "id"),
+				title: getNodeValue(node, "title"),
+				score: getNodeValue(node, "score")
+			};
+			result.entries.push(entry);
 		}
+
+		result.success = true;
 		callback(result);
 	});
 }

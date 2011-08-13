@@ -26,11 +26,9 @@ function PerformHTTPRequest(url, auth, callback) {
 	http.onreadystatechange = function() {
 		if (http.readyState == 4) {
 			if (http.status == 200) {
-				console.log(JSON.stringify(http));
 				callback({success: true, value: http.responseText});
 			}
 			else {
-				console.log(JSON.stringify(http));
 				callback({success: false, value: http.status});
 			}
 		}
@@ -98,7 +96,6 @@ function getMalInfo(arg, callback) {
 		else {
 			result.success = false;
 		}
-		console.log(JSON.stringify(result));
 		callback(result);
 	});
 }

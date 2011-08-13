@@ -17,11 +17,6 @@ function assert(obj) {
 }
 
 
-function log(value) {
-		console.log(JSON.stringify(value));
-}
-
-
 function getAuthorization(login) {
 	return "Basic " + Base64.encode(login);
 }
@@ -31,6 +26,7 @@ function PerformHTTPRequest(url, auth, callback) {
 	http.onreadystatechange = function() {
 		if (http.readyState == 4) {
 			if (http.status == 200) {
+				console.log(JSON.stringify(http));
 				callback({success: true, value: http.responseText});
 			}
 			else {
@@ -59,49 +55,50 @@ function getInnerText(node) {
 	return node.childNodes[0].nodeValue;
 }
 
-function getNodeValue(node, prop) {
-	var children = node.getElementsByTagName(prop);
-	if (children.length === 0) {
-		return null;
-	}
-	return getInnerText(children[0]);
-}
-
-
 function getMalInfo(arg, callback) {
-	assertProperty(arg, "title");
 
 	Search(arg.title, function(response) {
-		var result = {};
-		result.success = false;
-		result.entries = [];
+
 		if (response.success === false) {
-			result.reason = response.value;
-			callback(result);
+			callback({ success: false, entries : [] });
 			return;
 		}
 
+		var result = {
+			entries : []
+		};
+
 		var parser = new DOMParser();
-		var doc = parser.parseFromString(response.value, "text/xml");
+		var xmlText = response.value;
+		var doc = parser.parseFromString(xmlText, "text/xml");
 		var entries = doc.getElementsByTagName("entry");
-		if (entries.length === 0) {
-			result.reason = "Result set is empty.";
-			callback(result);
-			return;
-		}
 
 		for (var i = 0; i < entries.length; ++i) {
 			var node = entries[i];
+			var titles = node.getElementsByTagName("title");
+			var scores = node.getElementsByTagName("score");
+			var ids = node.getElementsByTagName("id");
+			var start_dates = node.getElementsByTagName("start_date");
 
-			var entry = {
-				url: "http://myanimelist.net/anime/" + getNodeValue(node, "id"),
-				title: getNodeValue(node, "title"),
-				score: getNodeValue(node, "score")
-			};
-			result.entries.push(entry);
+			if (titles.length === 1 && scores.length === 1 && ids.length === 1) {
+				var entry = {
+					title: getInnerText(titles[0]),
+					score: getInnerText(scores[0]),
+					id: getInnerText(ids[0]),
+					start_date : getInnerText(start_dates[0])
+				};
+
+				result.entries.push(entry);
+			}
 		}
 
-		result.success = true;
+		if (entries.length !== 0) {
+			result.success = true;
+		}
+		else {
+			result.success = false;
+		}
+		console.log(JSON.stringify(result));
 		callback(result);
 	});
 }
@@ -109,7 +106,6 @@ function getMalInfo(arg, callback) {
 
 chrome.extension.onRequest.addListener( function(request, sender, callback) {
 	if (request.action === "log") {
-		console.log(JSON.stringify(request.arg));
 		request.success = true;
 		request.sender = sender;
 		callback(request);

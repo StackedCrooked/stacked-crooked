@@ -1,33 +1,5 @@
 function AnimeRatings() {
 
-	this.sendRequest = function(arg, callback) {
-
-		chrome.extension.sendRequest(arg, function(response) {
-			assertProperty(response, "success");
-			callback(response);
-		});
-	};
-
-
-	this.log = function(message) {
-		this.sendRequest({ action: "log", arg: message }, this.onResponse);
-	};
-	window.log = this.log;
-
-}
-
-
-function assertProperty(obj, prop) {
-	if (obj[prop] === undefined) {
-		throw arguments.callee.caller.toString() + "\n\nMissing property: '" + prop + "'.";
-	}
-}
-
-
-function assert(obj) {
-	if (obj === undefined || obj === null || obj === false) {
-		throw "Failed assert: " + arguments.callee.caller.toString();
-	}
 }
 
 
@@ -35,6 +7,14 @@ try {
 
 
 var animeRatings = new AnimeRatings();
+
+
+animeRatings.sendRequest = function(arg, callback) {
+	chrome.extension.sendRequest(arg, function(response) {
+		callback(response);
+	});
+};
+
 
 animeRatings.getMWPages = function() {
 	var divs = document.getElementsByTagName("div");
@@ -45,6 +25,7 @@ animeRatings.getMWPages = function() {
 	}
 	return null;
 };
+
 
 animeRatings.getLinksImpl = function(mwpages) {
 	var result = [];
@@ -112,18 +93,18 @@ animeRatings.addToDOM = function(linkItem) {
 		parent = malLink;
 
 
-		if (parseInt(entry.score,10) >= 7) {
+		if (parseFloat(entry.score,10) >= 7.5) {
 			var bold = document.createElement("b");
 			parent.appendChild(bold);
 			parent = bold;
 
-			if (parseInt(entry.score, 10) >= 9) {
+			if (parseFloat(entry.score, 10) >= 8) {
 				var span = document.createElement("span");
 				span.setAttribute("style", "color: red;");
 				parent.appendChild(span);
 				parent = span;
 			}
-			else if (parseInt(entry.score, 10) >= 8) {
+			else if (parseFloat(entry.score, 10) >= 7.5) {
 				var span2 = document.createElement("span");
 				span2.setAttribute("style", "color: green;");
 				parent.appendChild(span2);
@@ -146,8 +127,6 @@ animeRatings.getMALInfo = function(title, callback) {
 	this.sendRequest(
 		{action: "getMalInfo", arg: linkInfo},
 		function(linkInfo) {
-			assert(linkInfo);
-			assert(linkInfo.success);
 			callback(linkInfo);
 		}
 	);
@@ -172,7 +151,8 @@ animeRatings.improveTitle = function(title) {
 		"A Channel": "A-Channel",
 		"×" : "x",
 		"ō" : "ou",
-		" (manga)": ""
+		" (manga)": "",
+		" (anime)": ""
 	};
 
 	for (var key in mapping) {

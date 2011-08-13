@@ -1,15 +1,5 @@
 function AnimeRatings() {
 
-	/// Redefine alert
-	this._debug = true;
-	this.alert = function(msg) {
-		if (!confirm(msg + '\n\nPress Cancel to stop debugging.')) {
-			this._debug = false;
-		}
-	};
-	window.alert = this.alert;
-
-
 	this.sendRequest = function(arg, callback) {
 
 		chrome.extension.sendRequest(arg, function(response) {
@@ -53,7 +43,7 @@ animeRatings.getMWPages = function() {
 			return divs[i];
 		}
 	}
-	throw "Could not find root node for the anime titles.";
+	return null;
 };
 
 animeRatings.getLinksImpl = function(mwpages) {
@@ -64,9 +54,6 @@ animeRatings.getLinksImpl = function(mwpages) {
 		if (links.length > 0) {
 			result.push(links[0]);
 		}
-	}
-	if (result.length === 0) {
-		throw "No page links were found.";
 	}
 	return result;
 };
@@ -168,7 +155,11 @@ animeRatings.getMALInfo = function(title, callback) {
 
 
 animeRatings.getLinks = function(callback) {
-	var linkNodes = this.getLinksImpl(this.getMWPages());
+	var mwPages = this.getMWPages();
+	if (mwPages === null) {
+		return;
+	}
+	var linkNodes = this.getLinksImpl(mwPages);
 	for (var i = 0; i < linkNodes.length; ++i) {
 		var linkNode = linkNodes[i];
 		callback(linkNode);

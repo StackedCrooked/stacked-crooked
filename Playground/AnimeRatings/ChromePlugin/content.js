@@ -73,19 +73,13 @@ animeRatings.getLinksImpl = function(mwpages) {
 
 
 animeRatings.addToDOM = function(linkItem) {
-
-	assertProperty(linkItem, "node");
-
 	var node = linkItem.node;
 	var parent = node.parentNode;
 
 
 	if (linkItem.success === false) {
-		assertProperty(linkItem, "reason");
 		parent.appendChild(document.createTextNode(linkItem.reason));
 	}
-
-	assertProperty(linkItem, "entries");
 
 	var entries = linkItem.entries;
 
@@ -99,9 +93,6 @@ animeRatings.addToDOM = function(linkItem) {
 	for (var i = 0; i < entries.length; ++i) {
 
 		var entry = entries[i];
-
-		assertProperty(entry, "score");
-		assertProperty(entry, "url");
 
 		// Score 0.00 means that there are not enough votes
 		// to determine a weighted score. These results are
@@ -125,10 +116,10 @@ animeRatings.addToDOM = function(linkItem) {
 		}
 
 		var malLink = document.createElement("a");
-		malLink.setAttribute("href", entry.url);
+		malLink.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
 		parent.appendChild(malLink);
 
-		var entryText = entry.title + " (" + entry.score + ")";
+		var entryText = entry.start_date + " " + entry.title + " (" + entry.score + ")";
 		var malScoreText = document.createTextNode(entryText);
 		malLink.appendChild(malScoreText);
 
@@ -181,7 +172,6 @@ animeRatings.improveTitle = function(title) {
 // Application Entry Point
 //
 animeRatings.getLinks(function(linkNode) {
-
 	var title = animeRatings.improveTitle(linkNode.title);
 
 	animeRatings.getMALInfo(title, function(linkInfo) {

@@ -90,6 +90,16 @@ animeRatings.addToDOM = function(linkItem) {
 	}
 
 	var oldParent = parent;
+
+	entries.sort(function(lhs, rhs) {
+		if (lhs.start_date < rhs.start_date) {
+			return -1;
+		}
+		else if (lhs.start_date == rhs.start_date) {
+			return 0;
+		}
+		return 1;
+	});
 	for (var i = 0; i < entries.length; ++i) {
 
 		var entry = entries[i];
@@ -109,19 +119,34 @@ animeRatings.addToDOM = function(linkItem) {
 		parent.appendChild(small);
 		parent = small;
 
-		if (parseInt(entry.score,10) >= 8) {
-			var bold = document.createElement("b");
-			parent.appendChild(bold);
-			parent = bold;
-		}
-
 		var malLink = document.createElement("a");
 		malLink.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
 		parent.appendChild(malLink);
+		parent = malLink;
 
-		var entryText = entry.start_date + " " + entry.title + " (" + entry.score + ")";
+
+		if (parseInt(entry.score,10) >= 7) {
+			var bold = document.createElement("b");
+			parent.appendChild(bold);
+			parent = bold;
+
+			if (parseInt(entry.score, 10) >= 9) {
+				var span = document.createElement("span");
+				span.setAttribute("style", "color: red;");
+				parent.appendChild(span);
+				parent = span;
+			}
+			else if (parseInt(entry.score, 10) >= 8) {
+				var span2 = document.createElement("span");
+				span2.setAttribute("style", "color: green;");
+				parent.appendChild(span2);
+				parent = span2;
+			}
+		}
+
+		var entryText = entry.start_date.split("-")[0] + " " + entry.title + " (" + entry.score + ")";
 		var malScoreText = document.createTextNode(entryText);
-		malLink.appendChild(malScoreText);
+		parent.appendChild(malScoreText);
 
 		parent = oldParent;
 	}

@@ -44,9 +44,9 @@ function assert(obj) {
 try {
 
 
-var ar = new AnimeRatings();
+var animeRatings = new AnimeRatings();
 
-ar.getMWPages = function() {
+animeRatings.getMWPages = function() {
 	var divs = document.getElementsByTagName("div");
 	for (var i = 0; i < divs.length; ++i) {
 		if (divs[i].id == "mw-pages") {
@@ -56,7 +56,7 @@ ar.getMWPages = function() {
 	throw "Could not find root node for the anime titles.";
 };
 
-ar.getLinksImpl = function(mwpages) {
+animeRatings.getLinksImpl = function(mwpages) {
 	var result = [];
 	var lis = mwpages.getElementsByTagName("li");
 	for (var i = 0; i < lis.length; ++i) {
@@ -72,22 +72,30 @@ ar.getLinksImpl = function(mwpages) {
 };
 
 
-ar.addToDOM = function(linkItem) {
+animeRatings.addToDOM = function(linkItem) {
+
 	assertProperty(linkItem, "node");
-	assertProperty(linkItem, "entries");
 
 	var node = linkItem.node;
-	var entries = linkItem.entries;
 	var parent = node.parentNode;
 
-	var ul = document.createElement("ul");
-	parent.appendChild(ul);
-	parent = ul;
 
-	var small = document.createElement("small");
-	parent.appendChild(small);
-	parent = small;
+	if (linkItem.success === false) {
+		assertProperty(linkItem, "reason");
+		parent.appendChild(document.createTextNode(linkItem.reason));
+	}
 
+	assertProperty(linkItem, "entries");
+
+	var entries = linkItem.entries;
+
+	if (parent.getElementsByTagName("ul").length === 0) {
+		var ul = document.createElement("ul");
+		parent.appendChild(ul);
+		parent = ul;
+	}
+
+	var oldParent = parent;
 	for (var i = 0; i < entries.length; ++i) {
 
 		var entry = entries[i];
@@ -99,21 +107,22 @@ ar.addToDOM = function(linkItem) {
 		// to determine a weighted score. These results are
 		// not interesting for our application.
 		if (entry.score === "0.00") {
-			continue;
+			entry.score = "?";
 		}
 
 		var li = document.createElement("li");
 		parent.appendChild(li);
 		parent = li;
 
-		var oldParent = parent;
+		var small = document.createElement("small");
+		parent.appendChild(small);
+		parent = small;
+
 		if (parseInt(entry.score,10) >= 8) {
 			var bold = document.createElement("b");
 			parent.appendChild(bold);
 			parent = bold;
 		}
-
-		parent.appendChild(document.createTextNode("\u00a0\u00a0"));
 
 		var malLink = document.createElement("a");
 		malLink.setAttribute("href", entry.url);
@@ -128,7 +137,7 @@ ar.addToDOM = function(linkItem) {
 };
 
 
-ar.getMALInfo = function(title, callback) {
+animeRatings.getMALInfo = function(title, callback) {
 	var linkInfo = {};
 	linkInfo.title = title;
 	this.sendRequest(
@@ -136,16 +145,13 @@ ar.getMALInfo = function(title, callback) {
 		function(linkInfo) {
 			assert(linkInfo);
 			assert(linkInfo.success);
-			if (linkInfo.success === true) {
-				assertProperty(linkInfo, "entries");
-				callback(linkInfo);
-			}
+			callback(linkInfo);
 		}
 	);
 };
 
 
-ar.getLinks = function(callback) {
+animeRatings.getLinks = function(callback) {
 	var linkNodes = this.getLinksImpl(this.getMWPages());
 	for (var i = 0; i < linkNodes.length; ++i) {
 		var linkNode = linkNodes[i];
@@ -154,17 +160,33 @@ ar.getLinks = function(callback) {
 };
 
 
+animeRatings.improveTitle = function(title) {
+	var mapping = {
+		"A Channel": "A-Channel",
+		"×" : "x",
+		"ō" : "ou",
+		" (manga)": ""
+	};
+
+	for (var key in mapping) {
+		var value = mapping[key];
+		title = title.replace(key, value);
+	}
+
+	return title;
+};
+
+
 //
 // Application Entry Point
 //
-ar.getLinks(function(linkNode) {
+animeRatings.getLinks(function(linkNode) {
 
-	// Hack: replace '×' (cross-sign) with 'x' (letter 'x') because
-	// myanimelist doesn't return any results for 'Hunter × Hunter'.
-	var title = linkNode.title.replace("×", "x");
-	ar.getMALInfo(title, function(linkInfo) {
+	var title = animeRatings.improveTitle(linkNode.title);
+
+	animeRatings.getMALInfo(title, function(linkInfo) {
 		linkInfo.node = linkNode;
-		ar.addToDOM(linkInfo);
+		animeRatings.addToDOM(linkInfo);
 	});
 });
 

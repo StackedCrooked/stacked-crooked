@@ -44,9 +44,9 @@ function PerformHTTPRequest(url, auth, callback) {
 	http.send();
 }
 
-function Search(word, callback) {
+function Search(title, callback) {
 	var auth = "Basic QW5pbWVSYXRpbmdzOkNocm9tZQ==";
-	var url = encodeURI("http://myanimelist.net/api/anime/search.xml?q=" + word);
+	var url = "http://myanimelist.net/api/anime/search.xml?q=" + encodeURIComponent(title);
 	PerformHTTPRequest(url, auth, function(response) {
 		callback(response);
 	});

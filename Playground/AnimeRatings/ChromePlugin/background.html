@@ -3,25 +3,12 @@
 try {
 
 
-function assertProperty(obj, prop) {
-	if (obj[prop] === undefined) {
-		throw arguments.callee.caller.toString() + "\n\nMissing property: '" + prop + "'.";
-	}
-}
-
-
-function assert(obj) {
-	if (obj === undefined || obj === null || obj === false) {
-		throw "Failed assert: " + arguments.callee.caller.toString();
-	}
-}
-
-
 function getAuthorization(login) {
 	return "Basic " + Base64.encode(login);
 }
 
-function PerformHTTPRequest(url, auth, callback) {
+
+function performHTTPGETRequest(url, auth, callback) {
 	var http = new window.XMLHttpRequest();
 	http.onreadystatechange = function() {
 		if (http.readyState == 4) {
@@ -38,24 +25,18 @@ function PerformHTTPRequest(url, auth, callback) {
 	http.send();
 }
 
-function Search(title, callback) {
+function searchMAL(title, callback) {
 	var auth = "Basic QW5pbWVSYXRpbmdzOkNocm9tZQ==";
 	var url = "http://myanimelist.net/api/anime/search.xml?q=" + encodeURIComponent(title);
-	PerformHTTPRequest(url, auth, function(response) {
+	performHTTPGETRequest(url, auth, function(response) {
 		callback(response);
 	});
 }
 
-function getInnerText(node) {
-	if (node.childNodes.length === 0) {
-		return null;
-	}
-	return node.childNodes[0].nodeValue;
-}
 
 function getMalInfo(arg, callback) {
 
-	Search(arg.title, function(response) {
+	searchMAL(arg.title, function(response) {
 
 		if (response.success === false) {
 			callback({ success: false, entries : [] });
@@ -79,6 +60,15 @@ function getMalInfo(arg, callback) {
 			var start_dates = node.getElementsByTagName("start_date");
 
 			if (titles.length === 1 && scores.length === 1 && ids.length === 1) {
+
+				// Local utility function
+				function getInnerText(node) {
+					if (node.childNodes.length === 0) {
+						return null;
+					}
+					return node.childNodes[0].nodeValue;
+				}
+
 				var entry = {
 					title: getInnerText(titles[0]),
 					score: getInnerText(scores[0]),

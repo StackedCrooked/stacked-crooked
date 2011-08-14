@@ -1,7 +1,7 @@
 {
-		"name": "Insert Anime Ratings",
+		"name": "Anime Ratings",
 		"version": "1.0",
-		"description": "Inserts Anime Ratings",
+		"description": "Inserts Anime Ratings into Wikipedia summary pages.",
 		"permissions": [
 				"tabs",
 				"http://*/*"

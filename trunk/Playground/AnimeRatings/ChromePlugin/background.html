@@ -16,6 +16,7 @@ function performHTTPGETRequest(url, auth, callback) {
 				callback({success: true, value: http.responseText});
 			}
 			else {
+				console.log("Failure (" + http.status + "): " + url);
 				callback({success: false, value: http.status});
 			}
 		}

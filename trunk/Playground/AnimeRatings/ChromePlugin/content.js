@@ -141,9 +141,14 @@ animeRatings.getLinks = function(callback) {
 };
 
 
+/**
+ * Workaround: improves search results
+ */
 animeRatings.improveTitle = function(title) {
+
 	var mapping = {
 		"A Channel": "A-Channel",
+		"Ano Hi Mita Hana no Namae o Bokutachi wa Mada Shiranai": "Ano Hi Mita Hana",
 		"×" : "x",
 		"ō" : "ou",
 		"ä" : "a",
@@ -156,7 +161,6 @@ animeRatings.improveTitle = function(title) {
 		var value = mapping[key];
 		title = title.replace(key, value);
 	}
-
 	return title;
 };
 

@@ -87,17 +87,9 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 
 
 	if (parseFloat(entry.score,10) >= 7) {
-
-		parent = animeRatings.decorate(parent, "b");
-
-		if (parseFloat(entry.score, 10) >= 9) {
-			parent.setAttribute("style", "color: red;");
-		}
-		else if (parseFloat(entry.score, 10) >= 8) {
-			parent.setAttribute("style", "color: orange;");
-		}
-		else {
-			parent.setAttribute("style", "color: green;");
+		parent.setAttribute("style", "color: green;");
+		if (parseFloat(entry.score, 10) >= 8) {
+			parent = animeRatings.decorate(parent, "strong");
 		}
 	}
 

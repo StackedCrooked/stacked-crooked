@@ -23,13 +23,13 @@ animeRatings.getMWPages = function() {
 			return divs[i];
 		}
 	}
-	return null;
+	return [];
 };
 
 
-animeRatings.getLinksImpl = function(mwpages) {
+animeRatings.getLinksImpl = function() {
 	var result = [];
-	var lis = mwpages.getElementsByTagName("li");
+	var lis = this.getMWPages().getElementsByTagName("li");
 	for (var i = 0; i < lis.length; ++i) {
 		var links = lis[i].getElementsByTagName("a");
 		if (links.length > 0) {
@@ -44,21 +44,7 @@ animeRatings.addToDOM = function(linkItem) {
 	var node = linkItem.node;
 	var parent = node.parentNode;
 
-
-	if (linkItem.success === false) {
-		parent.appendChild(document.createTextNode(linkItem.reason));
-	}
-
 	var entries = linkItem.entries;
-
-	if (parent.getElementsByTagName("ul").length === 0) {
-		var ul = document.createElement("ul");
-		parent.appendChild(ul);
-		parent = ul;
-	}
-
-	var oldParent = parent;
-
 	entries.sort(function(lhs, rhs) {
 		if (lhs.start_date < rhs.start_date) {
 			return -1;
@@ -68,13 +54,20 @@ animeRatings.addToDOM = function(linkItem) {
 		}
 		return 1;
 	});
+
+	if (parent.getElementsByTagName("ul").length === 0) {
+		var ul = document.createElement("ul");
+		parent.appendChild(ul);
+		parent = ul;
+	}
+
+	var oldParent = parent;
 	for (var i = 0; i < entries.length; ++i) {
 
 		var entry = entries[i];
 
 		// Score 0.00 means that there are not enough votes
-		// to determine a weighted score. These results are
-		// not interesting for our application.
+		// to determine a weighted score.
 		if (entry.score === "0.00") {
 			entry.score = "?";
 		}
@@ -93,23 +86,23 @@ animeRatings.addToDOM = function(linkItem) {
 		parent = malLink;
 
 
-		if (parseFloat(entry.score,10) >= 7.5) {
+		if (parseFloat(entry.score,10) >= 7) {
 			var bold = document.createElement("b");
 			parent.appendChild(bold);
 			parent = bold;
 
-			if (parseFloat(entry.score, 10) >= 8) {
-				var span = document.createElement("span");
+			var span = document.createElement("span");
+			if (parseFloat(entry.score, 10) >= 9) {
 				span.setAttribute("style", "color: red;");
-				parent.appendChild(span);
-				parent = span;
 			}
-			else if (parseFloat(entry.score, 10) >= 7.5) {
-				var span2 = document.createElement("span");
-				span2.setAttribute("style", "color: green;");
-				parent.appendChild(span2);
-				parent = span2;
+			else if (parseFloat(entry.score, 10) >= 8) {
+				span.setAttribute("style", "color: orange;");
 			}
+			else {
+				span.setAttribute("style", "color: green;");
+			}
+			parent.appendChild(span);
+			parent = span;
 		}
 
 		var entryText = entry.start_date.split("-")[0] + " " + entry.title + " (" + entry.score + ")";
@@ -134,11 +127,7 @@ animeRatings.getMALInfo = function(title, callback) {
 
 
 animeRatings.getLinks = function(callback) {
-	var mwPages = this.getMWPages();
-	if (mwPages === null) {
-		return;
-	}
-	var linkNodes = this.getLinksImpl(mwPages);
+	var linkNodes = this.getLinksImpl();
 	for (var i = 0; i < linkNodes.length; ++i) {
 		var linkNode = linkNodes[i];
 		callback(linkNode);
@@ -151,6 +140,8 @@ animeRatings.improveTitle = function(title) {
 		"A Channel": "A-Channel",
 		"×" : "x",
 		"ō" : "ou",
+		"ä" : "a",
+		"½" : "1/2",
 		" (manga)": "",
 		" (anime)": ""
 	};
@@ -172,7 +163,9 @@ animeRatings.getLinks(function(linkNode) {
 
 	animeRatings.getMALInfo(title, function(linkInfo) {
 		linkInfo.node = linkNode;
-		animeRatings.addToDOM(linkInfo);
+		if (linkInfo.success === true) {
+			animeRatings.addToDOM(linkInfo);
+		}
 	});
 });
 

@@ -146,11 +146,15 @@ animeRatings.getLinks = function(callback) {
  */
 animeRatings.improveTitle = function(title) {
 
-	// Improve entire titles if required
+	// If the title contains a fragment, then only search for the mapped fragment.
 	var titles = {
-		"Poppy Hill" : "Kokurikozaka Kara",
 		"A Channel": "A-Channel",
 		"Ano Hi Mita Hana": "Ano Hi Mita Hana",
+		"Doraemon" : "Doraemon",
+		"Infinite Stratos" : "Infinite Stratos",
+		"Maji de Watashi ni Koishinasai!" : "Maji de Watashi ni Koi Shinasai!",
+		"Mawaru-Penguindrum" : "Mawaru Penguindrum",
+		"Poppy Hill" : "Kokurikozaka Kara",
 		"Heaven's Lost Property" : "Heaven's Lost Property"
 	};
 
@@ -166,6 +170,7 @@ animeRatings.improveTitle = function(title) {
 
 		"×" : "x",
 		"ō" : "ou",
+		"ū" : "uu",
 		"ä" : "a",
 		"½" : "1/2",
 		" (manga)": "",

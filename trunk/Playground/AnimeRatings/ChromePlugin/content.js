@@ -45,6 +45,13 @@ animeRatings.getLinksImpl = function() {
 };
 
 
+animeRatings.decorate = function(parent, name) {
+	var el = document.createElement(name);
+	parent.appendChild(el);
+	return el;
+};
+
+
 animeRatings.addEntryToDOM = function(parent, entry) {
 
 	// Score 0.00 means that there are not enough votes
@@ -53,19 +60,12 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 		entry.score = "?";
 	}
 
-	var li = document.createElement("li");
-	parent.appendChild(li);
-	parent = li;
+	parent = animeRatings.decorate(parent, "li");
 
-	var small = document.createElement("small");
-	parent.appendChild(small);
-	parent = small;
+	parent = animeRatings.decorate(parent, "a");
+	parent.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
 
-	var malLink = document.createElement("a");
-	malLink.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
-	parent.appendChild(malLink);
-	parent = malLink;
-
+	parent = animeRatings.decorate(parent, "small");
 
 	if (parseFloat(entry.score,10) >= 7) {
 		var bold = document.createElement("b");
@@ -89,6 +89,7 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 	var entryText = entry.start_date.split("-")[0] + " " + entry.title + " (" + entry.score + ")";
 	var malScoreText = document.createTextNode(entryText);
 	parent.appendChild(malScoreText);
+
 };
 
 
@@ -120,7 +121,7 @@ animeRatings.addToDOM = function(linkItem) {
 			this.addEntryToDOM(parent, entry);
 		}
 		catch (exc) {
-			console.log(exc);
+			//alert(exc);
 		}
 		parent = oldParent;
 	}

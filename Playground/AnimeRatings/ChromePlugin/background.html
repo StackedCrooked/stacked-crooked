@@ -3,11 +3,6 @@
 try {
 
 
-function getAuthorization(login) {
-	return "Basic " + Base64.encode(login);
-}
-
-
 function performHTTPGETRequest(url, auth, callback) {
 	var http = new window.XMLHttpRequest();
 	http.onreadystatechange = function() {

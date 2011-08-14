@@ -65,16 +65,18 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 	parent = animeRatings.decorate(parent, "a");
 	parent.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
 
-	parent = animeRatings.decorate(parent, "small");
 
 	if (parseFloat(entry.score,10) >= 7) {
+
 		parent = animeRatings.decorate(parent, "b");
+
 		if (parseFloat(entry.score, 10) >= 9) {
-			parent = animeRatings.decorate(parent, "span");
 			parent.setAttribute("style", "color: red;");
-		} else if (parseFloat(entry.score, 10) >= 8) {
+		}
+		else if (parseFloat(entry.score, 10) >= 8) {
 			parent.setAttribute("style", "color: orange;");
-		} else {
+		}
+		else {
 			parent.setAttribute("style", "color: green;");
 		}
 	}
@@ -100,9 +102,8 @@ animeRatings.addToDOM = function(linkItem) {
 	});
 
 	if (parent.getElementsByTagName("ul").length === 0) {
-		var ul = document.createElement("ul");
-		parent.appendChild(ul);
-		parent = ul;
+		parent = animeRatings.decorate(parent, "small");
+		parent = animeRatings.decorate(parent, "ul");
 	}
 
 	var oldParent = parent;

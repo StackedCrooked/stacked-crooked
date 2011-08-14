@@ -180,19 +180,21 @@ animeRatings.improveTitle = function(title) {
 
 	// Improve fragments
 	var fragments = {
-
 		"×" : "x",
 		"ō" : "ou",
 		"ū" : "uu",
 		"ä" : "a",
 		"½" : "1/2",
+		" (anime)": "",
 		" (manga)": "",
-		" (anime)": ""
+		" (novel series)" : ""
 	};
 
 	for (var fragmentKey in fragments) {
 		var fragment = fragments[fragmentKey];
-		title = title.replace(fragmentKey, fragment);
+		while (title.search(fragmentKey) !== -1) {
+			title = title.replace(fragmentKey, fragment);
+		}
 	}
 
 	return title;

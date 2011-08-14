@@ -146,9 +146,24 @@ animeRatings.getLinks = function(callback) {
  */
 animeRatings.improveTitle = function(title) {
 
-	var mapping = {
+	// Improve entire titles if required
+	var titles = {
+		"Poppy Hill" : "Kokurikozaka Kara",
 		"A Channel": "A-Channel",
-		"Ano Hi Mita Hana no Namae o Bokutachi wa Mada Shiranai": "Ano Hi Mita Hana",
+		"Ano Hi Mita Hana": "Ano Hi Mita Hana",
+		"Heaven's Lost Property" : "Heaven's Lost Property"
+	};
+
+	for (var titleKey in titles) {
+		if (title.search(titleKey) !== -1) {
+			title = titles[titleKey];
+			break;
+		}
+	}
+
+	// Improve fragments
+	var fragments = {
+
 		"×" : "x",
 		"ō" : "ou",
 		"ä" : "a",
@@ -157,10 +172,11 @@ animeRatings.improveTitle = function(title) {
 		" (anime)": ""
 	};
 
-	for (var key in mapping) {
-		var value = mapping[key];
-		title = title.replace(key, value);
+	for (var fragmentKey in fragments) {
+		var fragment = fragments[fragmentKey];
+		title = title.replace(fragmentKey, fragment);
 	}
+
 	return title;
 };
 

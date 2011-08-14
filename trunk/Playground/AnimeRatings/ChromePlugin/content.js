@@ -185,9 +185,9 @@ animeRatings.improveTitle = function(title) {
 		"ū" : "uu",
 		"ä" : "a",
 		"½" : "1/2",
-		" (anime)": "",
-		" (manga)": "",
-		" (novel series)" : ""
+		"(anime)": "",
+		"(manga)": "",
+		"(novel series)" : ""
 	};
 
 	for (var fragmentKey in fragments) {
@@ -196,6 +196,9 @@ animeRatings.improveTitle = function(title) {
 			title = title.replace(fragmentKey, fragment);
 		}
 	}
+
+	// Trim
+	title = title.replace(/^\s+|\s+$/g, "");
 
 	return title;
 };

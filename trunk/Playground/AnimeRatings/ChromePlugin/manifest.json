@@ -3,9 +3,14 @@
 		"version": "1.0",
 		"description": "Inserts Anime Ratings into Wikipedia summary pages.",
 		"permissions": [
-				"tabs",
-				"http://*/*"
+			"tabs",
+			"http://*/*"
 		],
+		"icons": {
+			"16": "icon16.png",
+			"48": "icon48.png",
+			"128": "icon128.png"
+		},
 		"background_page": "background.html",
 		"content_scripts": [ {
 				"matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_*"],

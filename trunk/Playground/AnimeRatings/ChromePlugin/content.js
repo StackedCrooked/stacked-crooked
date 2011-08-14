@@ -85,8 +85,8 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 	parent = animeRatings.decorate(parent, "a");
 	parent.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
 
-	parent.setAttribute("style", "color: green;");
 	if (parseFloat(entry.score, 10) >= 8) {
+		parent.setAttribute("style", "background-color:yellow;");
 		parent = animeRatings.decorate(parent, "strong");
 	}
 

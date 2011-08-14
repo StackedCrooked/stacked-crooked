@@ -176,7 +176,10 @@ animeRatings.improveTitle = function(title) {
 		"ä" : "a",
 		"½" : "1/2",
 		"(anime)": "",
+		"(film)": "",
 		"(manga)": "",
+		"(movie)": "",
+		"(video game)": "",
 		"(novel series)" : ""
 	};
 

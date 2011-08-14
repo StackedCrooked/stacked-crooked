@@ -182,8 +182,13 @@ animeRatings.improveTitle = function(title) {
 
 	for (var fkey in fmapping) {
 		var fragment = fmapping[fkey];
-		while (result.search(fkey) !== -1) {
+		var count = 0;
+		while (result.search(fkey) !== -1 && count < 10) {
 			result = result.replace(fkey, fragment);
+			count++;
+		}
+		if (count >= 10) {
+			this.log("Problematic replacement: " + result + ", with key: " + fkey);
 		}
 	}
 
@@ -222,10 +227,5 @@ animeRatings.getNext(links);
 
 
 } catch (exc) {
-	if (typeof(exc) === "string") {
-		animeRatings.log(exc);
-	}
-	else {
-		animeRatings.log(JSON.stringify(exc));
-	}
+	animeRatings.log(exc);
 }

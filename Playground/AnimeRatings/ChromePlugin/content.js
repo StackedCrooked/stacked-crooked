@@ -23,18 +23,24 @@ animeRatings.getMWPages = function() {
 			return divs[i];
 		}
 	}
-	return [];
+	throw "MW Pages not found";
 };
 
 
 animeRatings.getLinksImpl = function() {
 	var result = [];
-	var lis = this.getMWPages().getElementsByTagName("li");
-	for (var i = 0; i < lis.length; ++i) {
-		var links = lis[i].getElementsByTagName("a");
-		if (links.length > 0) {
-			result.push(links[0]);
+	try {
+		var lis = this.getMWPages().getElementsByTagName("li");
+		for (var i = 0; i < lis.length; ++i) {
+			var links = lis[i].getElementsByTagName("a");
+			if (links.length > 0) {
+				result.push(links[0]);
+			}
 		}
+	}
+	catch (exc) {
+		// MW pages not found on this page.
+		// This can happen for summary pages like "Category:Anime_of_the_2000s"
 	}
 	return result;
 };

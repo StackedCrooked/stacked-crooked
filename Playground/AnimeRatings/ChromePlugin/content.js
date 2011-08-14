@@ -46,7 +46,7 @@ animeRatings.getMWPages = function() {
 };
 
 
-animeRatings.getLinksImpl = function() {
+animeRatings.getLinks = function() {
 	var result = [];
 	try {
 		var lis = this.getMWPages().getElementsByTagName("li");
@@ -142,15 +142,6 @@ animeRatings.addToDOM = function(linkItem) {
 };
 
 
-animeRatings.getLinks = function(callback) {
-	var linkNodes = this.getLinksImpl();
-	for (var i = 0; i < linkNodes.length; ++i) {
-		var linkNode = linkNodes[i];
-		callback(linkNode);
-	}
-};
-
-
 /**
  * Workaround: improves search results
  */
@@ -203,13 +194,14 @@ animeRatings.improveTitle = function(title) {
 };
 
 
-//
-// Application Entry Point
-//
-animeRatings.getLinks(function(linkNode) {
-	var title = animeRatings.improveTitle(linkNode.title);
+animeRatings.getNext = function(links) {
+	if (links.length === 0) {
+		return;
+	}
 
-	animeRatings.getMALInfo(title, function(linkInfo) {
+	var linkNode = links.pop();
+	var title = animeRatings.improveTitle(linkNode.title);
+	this.getMALInfo(title, function(linkInfo) {
 		linkInfo.node = linkNode;
 		if (linkInfo.success === true) {
 			animeRatings.addToDOM(linkInfo);
@@ -217,8 +209,16 @@ animeRatings.getLinks(function(linkNode) {
 		else {
 			animeRatings.informFailure(linkInfo);
 		}
+		animeRatings.getNext(links);
 	});
-});
+};
+
+
+//
+// Application Entry Point
+//
+var links = animeRatings.getLinks().reverse();
+animeRatings.getNext(links);
 
 
 } catch (exc) {

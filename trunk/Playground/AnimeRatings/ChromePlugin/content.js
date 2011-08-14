@@ -85,12 +85,9 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 	parent = animeRatings.decorate(parent, "a");
 	parent.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
 
-
-	if (parseFloat(entry.score,10) >= 7) {
-		parent.setAttribute("style", "color: green;");
-		if (parseFloat(entry.score, 10) >= 8) {
-			parent = animeRatings.decorate(parent, "strong");
-		}
+	parent.setAttribute("style", "color: green;");
+	if (parseFloat(entry.score, 10) >= 8) {
+		parent = animeRatings.decorate(parent, "strong");
 	}
 
 	var entryText = entry.start_date.split("-")[0] + " " + entry.title + " (" + entry.score + ")";

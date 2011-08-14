@@ -86,6 +86,19 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 };
 
 
+animeRatings.informFailure = function(linkItem) {
+	var node = linkItem.node;
+	var parent = node.parentNode;
+
+	if (parent.getElementsByTagName("ul").length === 0) {
+		parent = this.decorate(parent, "small");
+		parent = this.decorate(parent, "ul");
+	}
+	parent = animeRatings.decorate(parent, "li");
+	parent.appendChild(document.createTextNode("Not found"));
+};
+
+
 animeRatings.addToDOM = function(linkItem) {
 	var node = linkItem.node;
 	var parent = node.parentNode;
@@ -102,8 +115,8 @@ animeRatings.addToDOM = function(linkItem) {
 	});
 
 	if (parent.getElementsByTagName("ul").length === 0) {
-		parent = animeRatings.decorate(parent, "small");
-		parent = animeRatings.decorate(parent, "ul");
+		parent = this.decorate(parent, "small");
+		parent = this.decorate(parent, "ul");
 	}
 
 	var oldParent = parent;
@@ -196,6 +209,9 @@ animeRatings.getLinks(function(linkNode) {
 		linkInfo.node = linkNode;
 		if (linkInfo.success === true) {
 			animeRatings.addToDOM(linkInfo);
+		}
+		else {
+			animeRatings.informFailure(linkInfo);
 		}
 	});
 });

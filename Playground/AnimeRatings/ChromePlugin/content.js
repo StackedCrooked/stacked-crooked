@@ -15,6 +15,26 @@ animeRatings.sendRequest = function(arg, callback) {
 };
 
 
+animeRatings.log = function(message) {
+	this.sendRequest(
+		{action: "log", arg: message},
+		function() {}
+	);
+};
+
+
+animeRatings.getMALInfo = function(title, callback) {
+	var linkInfo = {};
+	linkInfo.title = title;
+	this.sendRequest(
+		{action: "getMalInfo", arg: linkInfo},
+		function(linkInfo) {
+			callback(linkInfo);
+		}
+	);
+};
+
+
 animeRatings.getMWPages = function() {
 	var divs = document.getElementsByTagName("div");
 	for (var i = 0; i < divs.length; ++i) {
@@ -133,18 +153,6 @@ animeRatings.addToDOM = function(linkItem) {
 };
 
 
-animeRatings.getMALInfo = function(title, callback) {
-	var linkInfo = {};
-	linkInfo.title = title;
-	this.sendRequest(
-		{action: "getMalInfo", arg: linkInfo},
-		function(linkInfo) {
-			callback(linkInfo);
-		}
-	);
-};
-
-
 animeRatings.getLinks = function(callback) {
 	var linkNodes = this.getLinksImpl();
 	for (var i = 0; i < linkNodes.length; ++i) {
@@ -159,8 +167,10 @@ animeRatings.getLinks = function(callback) {
  */
 animeRatings.improveTitle = function(title) {
 
+	var result = title;
+
 	// If the title contains a fragment, then only search for the mapped fragment.
-	var titles = {
+	var tmapping = {
 		"A Channel": "A-Channel",
 		"Ano Hi Mita Hana": "Ano Hi Mita Hana",
 		"Doraemon" : "Doraemon",
@@ -171,15 +181,15 @@ animeRatings.improveTitle = function(title) {
 		"Heaven's Lost Property" : "Heaven's Lost Property"
 	};
 
-	for (var titleKey in titles) {
-		if (title.search(titleKey) !== -1) {
-			title = titles[titleKey];
+	for (var tkey in tmapping) {
+		if (result.search(tkey) !== -1) {
+			result = tmapping[tkey];
 			break;
 		}
 	}
 
 	// Improve fragments
-	var fragments = {
+	var fmapping = {
 		"×" : "x",
 		"ō" : "ou",
 		"ū" : "uu",
@@ -190,17 +200,17 @@ animeRatings.improveTitle = function(title) {
 		"(novel series)" : ""
 	};
 
-	for (var fragmentKey in fragments) {
-		var fragment = fragments[fragmentKey];
-		while (title.search(fragmentKey) !== -1) {
-			title = title.replace(fragmentKey, fragment);
+	for (var fkey in fmapping) {
+		var fragment = fmapping[fkey];
+		while (result.search(fkey) !== -1) {
+			result = result.replace(fkey, fragment);
 		}
 	}
 
 	// Trim
-	title = title.replace(/^\s+|\s+$/g, "");
+	result = result.replace(/^\s+|\s+$/g, "");
 
-	return title;
+	return result;
 };
 
 
@@ -224,9 +234,9 @@ animeRatings.getLinks(function(linkNode) {
 
 } catch (exc) {
 	if (typeof(exc) === "string") {
-		alert(exc);
+		animeRatings.log(exc);
 	}
 	else {
-		alert(JSON.stringify(exc));
+		animeRatings.log(JSON.stringify(exc));
 	}
 }

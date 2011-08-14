@@ -119,9 +119,7 @@ function getMalInfo(arg, callback) {
 
 chrome.extension.onRequest.addListener( function(request, sender, callback) {
 	if (request.action === "log") {
-		request.success = true;
-		request.sender = sender;
-		callback(request);
+		console.log(request.arg);
 	}
 	else if (request.action === "getMalInfo") {
 		getMalInfo(request.arg, callback);

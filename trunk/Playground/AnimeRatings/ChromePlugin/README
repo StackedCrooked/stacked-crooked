@@ -1,0 +1,13 @@
+Installation Instructions:
+
+- Download and unzip the plugin
+- Start Google Chrome
+- Go to the Extensions page (Tools->Extensions)
+- Click the '+' button next to "Developer mode"
+- Click: "Load unpacked extension..." and point it to unpacked plugin
+- Click the 'Reload' button
+- Visit one of these pages: 
+    http://en.wikipedia.org/wiki/Category:Anime_of_2011
+    http://en.wikipedia.org/wiki/Category:Anime_of_2010
+    http://en.wikipedia.org/wiki/Category:Anime_of_2009
+    ...

@@ -68,28 +68,19 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 	parent = animeRatings.decorate(parent, "small");
 
 	if (parseFloat(entry.score,10) >= 7) {
-		var bold = document.createElement("b");
-		parent.appendChild(bold);
-		parent = bold;
-
-		var span = document.createElement("span");
+		parent = animeRatings.decorate(parent, "b");
 		if (parseFloat(entry.score, 10) >= 9) {
-			span.setAttribute("style", "color: red;");
+			parent = animeRatings.decorate(parent, "span");
+			parent.setAttribute("style", "color: red;");
+		} else if (parseFloat(entry.score, 10) >= 8) {
+			parent.setAttribute("style", "color: orange;");
+		} else {
+			parent.setAttribute("style", "color: green;");
 		}
-		else if (parseFloat(entry.score, 10) >= 8) {
-			span.setAttribute("style", "color: orange;");
-		}
-		else {
-			span.setAttribute("style", "color: green;");
-		}
-		parent.appendChild(span);
-		parent = span;
 	}
 
 	var entryText = entry.start_date.split("-")[0] + " " + entry.title + " (" + entry.score + ")";
-	var malScoreText = document.createTextNode(entryText);
-	parent.appendChild(malScoreText);
-
+	parent.appendChild(document.createTextNode(entryText));
 };
 
 
@@ -121,7 +112,7 @@ animeRatings.addToDOM = function(linkItem) {
 			this.addEntryToDOM(parent, entry);
 		}
 		catch (exc) {
-			//alert(exc);
+			console.log(exc);
 		}
 		parent = oldParent;
 	}

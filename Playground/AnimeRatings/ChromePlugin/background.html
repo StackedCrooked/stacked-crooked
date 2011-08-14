@@ -55,16 +55,28 @@ function getInnerText(node) {
 
 function getMalInfo(arg, callback) {
 
+	var cache = localStorage.getItem(arg.title);
+	if (cache !== null) {
+		//console.log("HIT: " + arg.title);
+		var result = JSON.parse(cache);
+		callback(result);
+		return;
+	}
+
+	console.log("MISS: " + arg.title);
+
 	searchMAL(arg.title, function(response) {
 
-		if (response.success === false) {
-			callback({ success: false, entries : [] });
-			return;
-		}
-
 		var result = {
+			success: false,
 			entries : []
 		};
+
+		if (response.success === false) {
+			localStorage.setItem(arg.title, JSON.stringify(result));
+			callback(result);
+			return;
+		}
 
 		var parser = new DOMParser();
 		var xmlText = response.value;
@@ -106,7 +118,9 @@ function getMalInfo(arg, callback) {
 		else {
 			result.success = false;
 		}
+		localStorage.setItem(arg.title, JSON.stringify(result));
 		callback(result);
+
 	});
 }
 

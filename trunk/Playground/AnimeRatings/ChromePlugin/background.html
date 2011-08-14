@@ -34,6 +34,30 @@ function searchMAL(title, callback) {
 }
 
 
+function htmlDecode(input){
+  var e = document.createElement('div');
+  e.innerHTML = input;
+  return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+}
+
+
+function xmlDecode(input){
+  var result = input;
+  result = result.replace(/</g,  "&lt;");
+  result = result.replace(/>/g,  "&gt;");
+  result = result.replace(/\n/g, "&#10;");
+  return htmlDecode(result);
+}
+
+
+function getInnerText(node) {
+	if (node.childNodes.length === 0) {
+		return "";
+	}
+	return node.childNodes[0].nodeValue;
+}
+
+
 function getMalInfo(arg, callback) {
 
 	searchMAL(arg.title, function(response) {
@@ -49,25 +73,26 @@ function getMalInfo(arg, callback) {
 
 		var parser = new DOMParser();
 		var xmlText = response.value;
-		var doc = parser.parseFromString(xmlText, "text/xml");
+		var doc = parser.parseFromString(xmlDecode(xmlText), "text/xml");
 		var entries = doc.getElementsByTagName("entry");
 
 		for (var i = 0; i < entries.length; ++i) {
 			var node = entries[i];
-			var titles = node.getElementsByTagName("title");
+
+			// Get english title or original title.
+			var titles = node.getElementsByTagName("english");
+
+			// If there is no english title, use the original title.
+			if (titles.length === 0 ||
+				getInnerText(titles[0]).replace(/ /g, "") === "") {
+				titles = node.getElementsByTagName("title");
+			}
+
 			var scores = node.getElementsByTagName("score");
 			var ids = node.getElementsByTagName("id");
 			var start_dates = node.getElementsByTagName("start_date");
 
 			if (titles.length === 1 && scores.length === 1 && ids.length === 1) {
-
-				// Local utility function
-				function getInnerText(node) {
-					if (node.childNodes.length === 0) {
-						return "";
-					}
-					return node.childNodes[0].nodeValue;
-				}
 
 				var entry = {
 					title: getInnerText(titles[0]),

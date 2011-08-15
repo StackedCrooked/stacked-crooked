@@ -20,9 +20,14 @@ function performHTTPGETRequest(url, auth, callback) {
 	http.send();
 }
 
-function searchMAL(title, callback) {
+function getURL(pageType, title) {
+	return "http://myanimelist.net/api/" + pageType +
+		   "/search.xml?q=" + encodeURIComponent(title);
+}
+
+function searchMAL(pageType, title, callback) {
 	var auth = "Basic QW5pbWVSYXRpbmdzOkNocm9tZQ==";
-	var url = "http://myanimelist.net/api/anime/search.xml?q=" + encodeURIComponent(title);
+	var url = getURL(pageType, title);
 	performHTTPGETRequest(url, auth, function(response) {
 		callback(response);
 	});
@@ -52,20 +57,21 @@ function getInnerText(node) {
 	return node.childNodes[0].nodeValue;
 }
 
+function getCacheKey(pageType, title) {
+	return pageType + "_" + title;
+}
 
 function getMalInfo(arg, callback) {
 
-	var cache = localStorage.getItem(arg.title);
-	if (cache !== null) {
-		//console.log("HIT: " + arg.title);
-		var result = JSON.parse(cache);
+	var cacheKey = getCacheKey(arg.pageType, arg.title);
+	var cacheValue = localStorage.getItem(cacheKey);
+	if (cacheValue !== null) {
+		var result = JSON.parse(cacheValue);
 		callback(result);
 		return;
 	}
 
-	console.log("MISS: " + arg.title);
-
-	searchMAL(arg.title, function(response) {
+	searchMAL(arg.pageType, arg.title, function(response) {
 
 		var result = {
 			success: false,
@@ -73,7 +79,7 @@ function getMalInfo(arg, callback) {
 		};
 
 		if (response.success === false) {
-			localStorage.setItem(arg.title, JSON.stringify(result));
+			localStorage.setItem(cacheKey, JSON.stringify(result));
 			callback(result);
 			return;
 		}
@@ -118,7 +124,7 @@ function getMalInfo(arg, callback) {
 		else {
 			result.success = false;
 		}
-		localStorage.setItem(arg.title, JSON.stringify(result));
+		localStorage.setItem(cacheKey, JSON.stringify(result));
 		callback(result);
 	});
 }

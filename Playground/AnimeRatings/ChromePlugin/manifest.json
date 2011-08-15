@@ -1,7 +1,7 @@
 {
 		"name": "Anime Ratings",
-		"version": "2",
-		"description": "Inserts Anime Ratings into Wikipedia summary pages.",
+		"version": "3",
+		"description": "Inserts anime and manga ratings into Wikipedia summary pages.",
 		"permissions": [
 			"http://myanimelist.net/api/anime/search.xml"
 		],
@@ -12,7 +12,8 @@
 		},
 		"background_page": "background.html",
 		"content_scripts": [ {
-				"matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_*"],
+				"matches": ["http://en.wikipedia.org/wiki/Category:Anime_of_*",
+							"http://en.wikipedia.org/wiki/Category:Manga_of_*"],
 				"run_at": "document_end",
 				"js": ["content.js"]
 		} ]

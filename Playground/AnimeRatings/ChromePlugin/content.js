@@ -23,9 +23,23 @@ animeRatings.log = function(message) {
 };
 
 
+animeRatings.getPageType = function() {
+	if (document.URL.search("Anime") !== -1) {
+		return "anime";
+	}
+	else if (document.URL.search("Manga") !== -1) {
+		return "manga";
+	}
+	else {
+		throw "Invalid URL: " + document.URL;
+	}
+};
+
+
 animeRatings.getMALInfo = function(title, callback) {
 	var linkInfo = {};
 	linkInfo.title = title;
+	linkInfo.pageType = this.getPageType();
 	this.sendRequest(
 		{action: "getMalInfo", arg: linkInfo},
 		function(linkInfo) {
@@ -83,7 +97,7 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 	parent = animeRatings.decorate(parent, "li");
 
 	parent = animeRatings.decorate(parent, "a");
-	parent.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
+	parent.setAttribute("href", "http://myanimelist.net/" + this.getPageType() + "/" + entry.id);
 
 	if (parseFloat(entry.score, 10) >= 8) {
 		parent.setAttribute("style", "background-color:yellow;");

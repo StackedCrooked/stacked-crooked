@@ -193,6 +193,7 @@ animeRatings.improveTitle = function(title) {
 		"(film)": "",
 		"(manga)": "",
 		"(movie)": "",
+		"(novel)": "",
 		"(video game)": "",
 		"(novel series)" : ""
 	};

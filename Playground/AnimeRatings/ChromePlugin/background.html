@@ -47,6 +47,23 @@ function xmlDecode(input){
 	return result;
 }
 
+function findAndReplace(input, mapping) {
+	var result = input;
+	for (var key in mapping) {
+		var value = mapping[key];
+		var count = 0;
+		while (result.search(key) !== -1) {
+			console.log("Replacing " + key + " with " + value);
+			result = result.replace(key, value);
+			if (count++ > 20) {
+				console.log("Problematic replacement key: " + key);
+				break;
+			}
+		}
+	}
+	return result;
+}
+
 /**
  * For some reason the unicode in the xml response
  * is wrong. Either I am doing something wrong, or
@@ -57,23 +74,18 @@ function xmlDecode(input){
  */
 function fixUnicode(input) {
 	var result = input;
-	// Hacks
-	var mapping = {
-		"&Atilde;&copy;" : "é",
-		"&acirc;��"     : "-"
-	};
 
-	for (var key in mapping) {
-		var value = mapping[key];
-		var count = 0;
-		while (result.search(key) !== -1) {
-			result = result.replace(key, value);
-			if (count++ > 20) {
-				console.log("Problematic replacement key: " + key);
-				break;
-			}
-		}
-	}
+	// First apply a mapping of composed keys
+	result = findAndReplace(result, {
+		"&acirc;��&acirc;��&acirc;��" : "☆☆☆"
+	});
+
+	// Then map remaining individual keys
+	result = findAndReplace(result, {
+		"&Atilde;&copy;" : "é",
+		"&acirc;??"      : "-"
+	});
+
 	return result;
 }
 

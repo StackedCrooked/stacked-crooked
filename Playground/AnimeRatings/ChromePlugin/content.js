@@ -60,6 +60,9 @@ animeRatings.getMWPages = function() {
 };
 
 
+animeRatings.debugLink = "";
+
+
 animeRatings.getLinks = function() {
 	var result = [];
 	try {
@@ -68,7 +71,11 @@ animeRatings.getLinks = function() {
 			var links = lis[i].getElementsByTagName("a");
 			if (links.length > 0) {
 				var linkNode = links[0];
-                result.push(linkNode);
+
+				if (linkNode.title.search(animeRatings.debugLink) !== -1) {
+					this.log(linkNode.title);
+					result.push(linkNode);
+				}
 			}
 		}
 	}

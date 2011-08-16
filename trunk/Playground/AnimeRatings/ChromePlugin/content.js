@@ -92,6 +92,90 @@ animeRatings.decorate = function(parent, name) {
 };
 
 
+animeRatings.encodeResult = function(title) {
+
+	var result = title;
+	var keys = [];
+	var values = [];
+	keys.push(/&Atilde;&copy;/g); values.push("&eacute;");
+	keys.push(/&Atilde;&uml;/g); values.push("&egrave;");
+	keys.push(/&Atilde;&ordf;/g); values.push("&ecirc;");
+	keys.push(/&Atilde;&laquo;/g); values.push("&euml;");
+	keys.push(/&Atilde;&nbsp;/g); values.push("&agrave;");
+	keys.push(/&Atilde;&curren;/g); values.push("&auml;");
+	keys.push(/&Atilde;&cent;/g); values.push("&acirc;");
+	keys.push(/&Atilde;&sup1;/g); values.push("&ugrave;");
+	keys.push(/&Atilde;&raquo;/g); values.push("&ucirc;");
+	keys.push(/&Atilde;&frac14;/g); values.push("&uuml;");
+	keys.push(/&Atilde;&acute;/g); values.push("&ocirc;");
+	keys.push(/&Atilde;&para;/g); values.push("&ouml;");
+	keys.push(/&Atilde;&reg;/g); values.push("&icirc;");
+	keys.push(/&Atilde;&macr;/g); values.push("&iuml;");
+	keys.push(/&Atilde;&sect;/g); values.push("&ccedil;");
+	keys.push(/&amp;/g); values.push("&amp;");
+
+	keys.push(/&nbsp;/g); values.push(" ");
+	keys.push(/&auml;/g); values.push("ä");
+	keys.push(/&uuml;/g); values.push("ü");
+
+	for (var i = 0; i < keys.length; ++i) {
+		result = result.replace(keys[i], values[i]);
+	}
+	return result;
+};
+
+
+animeRatings.htmlDecode = function(input) {
+	var e = document.createElement('div');
+	e.innerHTML = input;
+	return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+};
+
+
+animeRatings.findAndReplace = function(input, mapping) {
+	var result = input;
+	for (var key in mapping) {
+		var value = mapping[key];
+		var count = 0;
+		while (result.search(key) !== -1) {
+			result = result.replace(key, value);
+			if (count++ > 20) {
+				this.log("Problematic replacement key: " + key);
+				break;
+			}
+		}
+	}
+	return result;
+};
+
+/**
+ * For some reason the unicode in the xml response
+ * is wrong. Either I am doing something wrong, or
+ * MAL wrongly encodes the response.
+ *
+ * This code is a workaround that provides fixes
+ * for common cases.
+ */
+animeRatings.fixUnicode = function(input) {
+	var result = input;
+
+	// First apply a mapping of composed keys
+	result = this.findAndReplace(result, {
+		"&acirc;��&acirc;��&acirc;��"	: "☆☆☆",
+		"&Atilde;�&Atilde;�&Atilde;�"		:"xxx",
+		"&acirc;��"						: "-"
+	});
+
+	// Then map remaining individual keys
+	result = this.findAndReplace(result, {
+		"&Atilde;&copy;"	: "é",
+		"&acirc;�&ordf;"	: "♪",
+		"&acirc;�"			: "†",
+		"&Aring;�"			: "ō"
+	});
+	return result;
+};
+
 animeRatings.addEntryToDOM = function(parent, entry) {
 
 	// Score 0.00 means that there are not enough votes
@@ -111,7 +195,11 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 	}
 
 	var entryText = entry.start_date.split("-")[0] + " " + entry.title + " (" + entry.score + ")";
-	parent.appendChild(document.createTextNode(entryText));
+	var cleanText = this.htmlDecode(this.fixUnicode(this.encodeResult(entryText)));
+	if (cleanText.search(/&/) !== -1 || cleanText.search(/�/) !== -1) {
+		this.log("Potential encoding problem: " + cleanText);
+	}
+	parent.appendChild(document.createTextNode(cleanText));
 };
 
 

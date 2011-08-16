@@ -155,7 +155,7 @@ animeRatings.addToDOM = function(linkItem) {
 			this.addEntryToDOM(parent, entry);
 		}
 		catch (exc) {
-			console.log(exc);
+			animeRatings.log(exc);
 		}
 		parent = oldParent;
 	}
@@ -192,8 +192,10 @@ animeRatings.improveTitle = function(title) {
 	var fmapping = {
 		"×" : "x",
 		"ō" : "ou",
+		"Ō" : "Ou",
 		"ū" : "uu",
 		"ä" : "a",
+		"Ä" : "A",
 		"½" : "1/2",
 		"(anime)": "",
 		"(film)": "",

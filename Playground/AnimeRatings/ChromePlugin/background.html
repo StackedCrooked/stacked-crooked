@@ -41,7 +41,6 @@ function htmlDecode(input){
 
 function xmlDecode(input){
 	var result = input;
-	result = result.replace(/&/,    "&amp;");
 	result = result.replace(/</g,  "&lt;");
 	result = result.replace(/>/g,  "&gt;");
 	result = result.replace(/\n/g, "&#10;");
@@ -146,7 +145,7 @@ function getMalInfo(arg, callback) {
 			var ids = node.getElementsByTagName("id");
 			var start_dates = node.getElementsByTagName("start_date");
 
-			if (titles.length === 1 && scores.length === 1 && ids.length === 1) {
+			if (titles.length === 1 && scores.length === 1 && ids.length === 1 && start_dates.length === 1) {
 
 				var entry = {
 					title: getInnerText(titles[0]),
@@ -159,6 +158,9 @@ function getMalInfo(arg, callback) {
 					console.log("Potential unicode error: " + entry.title);
 				}
 				result.entries.push(entry);
+			}
+			else {
+				console.log(arg.title + ": failed to parse xml!");
 			}
 		}
 

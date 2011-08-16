@@ -1,7 +1,6 @@
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <script>
 try {
-
 
 function performHTTPGETRequest(url, auth, callback) {
 	var http = new window.XMLHttpRequest();
@@ -23,7 +22,7 @@ function performHTTPGETRequest(url, auth, callback) {
 
 function getURL(pageType, title) {
 	return "http://myanimelist.net/api/" + pageType +
-		   "/search.xml?q=" + encodeURIComponent(title);
+			 "/search.xml?q=" + encodeURIComponent(title);
 }
 
 function searchMAL(pageType, title, callback) {
@@ -34,27 +33,49 @@ function searchMAL(pageType, title, callback) {
 	});
 }
 
-
 function htmlDecode(input){
-  var e = document.createElement('div');
-  e.innerHTML = input;
-  return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+	var e = document.createElement('div');
+	e.innerHTML = input;
+	return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 }
-
 
 function xmlDecode(input){
-  var result = input;
-  result = result.replace(/</g,  "&lt;");
-  result = result.replace(/>/g,  "&gt;");
-  result = result.replace(/\n/g, "&#10;");
-
-  // Hacks
-  result = result.replace("&acirc;��", "-");
-
-
-  return htmlDecode(result);
+	var result = input;
+	result = result.replace(/</g,  "&lt;");
+	result = result.replace(/>/g,  "&gt;");
+	result = result.replace(/\n/g, "&#10;");
+	return result;
 }
 
+/**
+ * For some reason the unicode in the xml response
+ * is wrong. Either I am doing something wrong, or
+ * MAL wrongly encodes the response.
+ *
+ * This code is a workaround that provides fixes
+ * for common cases.
+ */
+function fixUnicode(input) {
+	var result = input;
+	// Hacks
+	var mapping = {
+		"&Atilde;&copy;" : "é",
+		"&acirc;��"     : "-"
+	};
+
+	for (var key in mapping) {
+		var value = mapping[key];
+		var count = 0;
+		while (result.search(key) !== -1) {
+			result = result.replace(key, value);
+			if (count++ > 20) {
+				console.log("Problematic replacement key: " + key);
+				break;
+			}
+		}
+	}
+	return result;
+}
 
 function getInnerText(node) {
 	if (node.childNodes.length === 0) {
@@ -68,13 +89,15 @@ function getCacheKey(pageType, title) {
 }
 
 function getMalInfo(arg, callback) {
+	var enableLocalStorage = true;
 
-	var cacheKey = getCacheKey(arg.pageType, arg.title);
-	var cacheValue = localStorage.getItem(cacheKey);
-	if (cacheValue !== null) {
-		var result = JSON.parse(cacheValue);
-		callback(result);
-		return;
+	if (enableLocalStorage === true) {
+		var cacheValue = localStorage.getItem(getCacheKey(arg.pageType, arg.title));
+		if (cacheValue !== null) {
+			var result = JSON.parse(cacheValue);
+			callback(result);
+			return;
+		}
 	}
 
 	searchMAL(arg.pageType, arg.title, function(response) {
@@ -91,7 +114,7 @@ function getMalInfo(arg, callback) {
 
 		var parser = new DOMParser();
 		var xmlText = response.value;
-		var doc = parser.parseFromString(xmlDecode(xmlText), "text/xml");
+		var doc = parser.parseFromString(htmlDecode(fixUnicode(xmlDecode(xmlText))), "text/xml");
 		var entries = doc.getElementsByTagName("entry");
 
 		for (var i = 0; i < entries.length; ++i) {
@@ -129,11 +152,13 @@ function getMalInfo(arg, callback) {
 		else {
 			result.success = false;
 		}
-		localStorage.setItem(cacheKey, JSON.stringify(result));
+
+		if (enableLocalStorage === true) {
+			localStorage.setItem(getCacheKey(arg.pageType, arg.title), JSON.stringify(result));
+		}
 		callback(result);
 	});
 }
-
 
 chrome.extension.onRequest.addListener( function(request, sender, callback) {
 	if (request.action === "log") {
@@ -146,7 +171,6 @@ chrome.extension.onRequest.addListener( function(request, sender, callback) {
 		throw "Invalid request: " + JSON.stringify(request);
 	}
 });
-
 
 }catch(exc) {
 	console.log(exc);

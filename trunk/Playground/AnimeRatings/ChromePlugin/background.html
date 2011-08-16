@@ -41,6 +41,7 @@ function htmlDecode(input){
 
 function xmlDecode(input){
 	var result = input;
+	result = result.replace(/&/,    "&amp;");
 	result = result.replace(/</g,  "&lt;");
 	result = result.replace(/>/g,  "&gt;");
 	result = result.replace(/\n/g, "&#10;");
@@ -53,7 +54,6 @@ function findAndReplace(input, mapping) {
 		var value = mapping[key];
 		var count = 0;
 		while (result.search(key) !== -1) {
-			console.log("Replacing " + key + " with " + value);
 			result = result.replace(key, value);
 			if (count++ > 20) {
 				console.log("Problematic replacement key: " + key);
@@ -87,7 +87,6 @@ function fixUnicode(input) {
 		"&acirc;�&ordf" : "♪",
 		"&acirc;�" : "†"
 	});
-
 	return result;
 }
 

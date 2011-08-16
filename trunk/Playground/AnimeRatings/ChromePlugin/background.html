@@ -164,10 +164,11 @@ function getMalInfo(arg, callback) {
 			}
 		}
 
-		if (entries.length !== 0) {
+		if (result.entries.length !== 0) {
 			result.success = true;
 		}
 		else {
+			result.reason = "Failed to parse XML response.";
 			result.success = false;
 		}
 

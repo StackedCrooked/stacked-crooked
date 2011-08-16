@@ -124,7 +124,8 @@ animeRatings.informFailure = function(linkItem) {
 		parent = this.decorate(parent, "ul");
 	}
 	parent = animeRatings.decorate(parent, "li");
-	parent.appendChild(document.createTextNode("Not found"));
+	var reason = (linkItem.reason === undefined ? "No results returned." : linkItem.reason);
+	parent.appendChild(document.createTextNode(reason));
 };
 
 

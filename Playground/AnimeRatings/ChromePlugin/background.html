@@ -156,6 +156,9 @@ function getMalInfo(arg, callback) {
 					start_date : getInnerText(start_dates[0])
 				};
 
+				if (entry.title.search("�") !== -1) {
+					console.log("Potential unicode error: " + entry.title);
+				}
 				result.entries.push(entry);
 			}
 		}

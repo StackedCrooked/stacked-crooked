@@ -71,9 +71,7 @@ animeRatings.getLinks = function() {
 			var links = lis[i].getElementsByTagName("a");
 			if (links.length > 0) {
 				var linkNode = links[0];
-
 				if (linkNode.title.search(animeRatings.debugLink) !== -1) {
-					this.log(linkNode.title);
 					result.push(linkNode);
 				}
 			}

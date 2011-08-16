@@ -295,7 +295,8 @@ animeRatings.improveTitle = function(title) {
 		"(visual novel)" : "",
 		"(novel)": "",
 		"(video game)": "",
-		"(novel series)" : ""
+		"(novel series)" : "",
+		"(Japanese series)" : ""
 	};
 
 	for (var fkey in fmapping) {
@@ -317,22 +318,28 @@ animeRatings.improveTitle = function(title) {
 };
 
 
-animeRatings.getNext = function(links) {
-	if (links.length === 0) {
+animeRatings.linkNodes = {};
+animeRatings.links = animeRatings.getLinks().reverse();
+
+
+animeRatings.getNext = function() {
+	if (animeRatings.links.length === 0) {
 		return;
 	}
 
-	var linkNode = links.pop();
+	var linkNode = animeRatings.links.pop();
+
 	var title = animeRatings.improveTitle(linkNode.title);
+	animeRatings.linkNodes[title] = linkNode;
 	this.getMALInfo(title, function(linkInfo) {
-		linkInfo.node = linkNode;
+		linkInfo.node = animeRatings.linkNodes[title];
 		if (linkInfo.success === true) {
 			animeRatings.addToDOM(linkInfo);
 		}
 		else {
 			animeRatings.informFailure(linkInfo);
 		}
-		animeRatings.getNext(links);
+		animeRatings.getNext(animeRatings.links);
 	});
 };
 
@@ -340,8 +347,10 @@ animeRatings.getNext = function(links) {
 //
 // Application Entry Point
 //
-var links = animeRatings.getLinks().reverse();
-animeRatings.getNext(links);
+var numSimulReq = 5;
+for (var i = 0; i < numSimulReq; ++i) {
+	animeRatings.getNext(animeRatings.links);
+}
 
 
 } catch (exc) {

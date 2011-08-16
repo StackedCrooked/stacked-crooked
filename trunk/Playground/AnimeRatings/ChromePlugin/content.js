@@ -296,7 +296,8 @@ animeRatings.improveTitle = function(title) {
 		"(novel)": "",
 		"(video game)": "",
 		"(novel series)" : "",
-		"(Japanese series)" : ""
+		"(Japanese series)" : "",
+		"(TV series)" : ""
 	};
 
 	for (var fkey in fmapping) {

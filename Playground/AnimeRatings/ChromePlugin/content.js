@@ -171,7 +171,9 @@ animeRatings.improveTitle = function(title) {
 
 	// If the title contains a fragment, then only search for the mapped fragment.
 	var tmapping = {
+		"11eyes: Tsumi to Batsu to Aganai no Shōjo" : "11eyes",
 		"A Channel": "A-Channel",
+		"Aki Sora" : "Aki-Sora",
 		"Ano Hi Mita Hana": "Ano Hi Mita Hana",
 		"Doraemon" : "Doraemon",
 		"Infinite Stratos" : "Infinite Stratos",
@@ -201,6 +203,7 @@ animeRatings.improveTitle = function(title) {
 		"(film)": "",
 		"(manga)": "",
 		"(movie)": "",
+		"(visual novel)" : "",
 		"(novel)": "",
 		"(video game)": "",
 		"(novel series)" : ""

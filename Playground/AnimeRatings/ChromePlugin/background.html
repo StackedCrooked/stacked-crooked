@@ -102,7 +102,7 @@ function getCacheKey(pageType, title) {
 }
 
 function getMalInfo(arg, callback) {
-	var enableLocalStorage = false;
+	var enableLocalStorage = true;
 
 	if (enableLocalStorage === true) {
 		var cacheValue = localStorage.getItem(getCacheKey(arg.pageType, arg.title));

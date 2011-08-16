@@ -84,7 +84,8 @@ function fixUnicode(input) {
 	result = findAndReplace(result, {
 		"&Atilde;&copy;" : "é",
 		"&acirc;��"      : "-",
-		"&acirc;�&ordf" : "♪"
+		"&acirc;�&ordf" : "♪",
+		"&acirc;�" : "†"
 	});
 
 	return result;
@@ -102,7 +103,7 @@ function getCacheKey(pageType, title) {
 }
 
 function getMalInfo(arg, callback) {
-	var enableLocalStorage = true;
+	var enableLocalStorage = false;
 
 	if (enableLocalStorage === true) {
 		var cacheValue = localStorage.getItem(getCacheKey(arg.pageType, arg.title));

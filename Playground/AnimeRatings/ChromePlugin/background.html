@@ -83,7 +83,8 @@ function fixUnicode(input) {
 	// Then map remaining individual keys
 	result = findAndReplace(result, {
 		"&Atilde;&copy;" : "é",
-		"&acirc;??"      : "-"
+		"&acirc;??"      : "-",
+		"&acirc;�&ordf" : "♪"
 	});
 
 	return result;

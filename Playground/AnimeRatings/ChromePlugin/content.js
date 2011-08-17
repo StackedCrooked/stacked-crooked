@@ -331,17 +331,19 @@ animeRatings.getNext = function() {
 	var linkNode = animeRatings.links.pop();
 
 	var title = animeRatings.improveTitle(linkNode.title);
-	animeRatings.linkNodes[title] = linkNode;
-	this.getMALInfo(title, function(linkInfo) {
-		linkInfo.node = animeRatings.linkNodes[title];
-		if (linkInfo.success === true) {
-			animeRatings.addToDOM(linkInfo);
-		}
-		else {
-			animeRatings.informFailure(linkInfo);
-		}
-		animeRatings.getNext(animeRatings.links);
-	});
+	if (animeRatings.linkNodes[title] === undefined) {
+		animeRatings.linkNodes[title] = linkNode;
+		this.getMALInfo(title, function(linkInfo) {
+			linkInfo.node = animeRatings.linkNodes[title];
+			if (linkInfo.success === true) {
+				animeRatings.addToDOM(linkInfo);
+			}
+			else {
+				animeRatings.informFailure(linkInfo);
+			}
+			animeRatings.getNext(animeRatings.links);
+		});
+	}
 };
 
 

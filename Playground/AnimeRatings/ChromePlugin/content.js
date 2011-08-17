@@ -176,6 +176,13 @@ animeRatings.fixUnicode = function(input) {
 	return result;
 };
 
+
+animeRatings.getYear = function() {
+	var components = document.URL.split("_");
+	return components[components.length - 1];
+};
+
+
 animeRatings.addEntryToDOM = function(parent, entry) {
 
 	// Score 0.00 means that there are not enough votes
@@ -188,13 +195,14 @@ animeRatings.addEntryToDOM = function(parent, entry) {
 
 	parent = animeRatings.decorate(parent, "a");
 	parent.setAttribute("href", "http://myanimelist.net/" + this.getPageType() + "/" + entry.id);
-
-	if (parseFloat(entry.score, 10) >= 8) {
-		parent.setAttribute("style", "background-color:yellow;");
+	var year = entry.start_date.split("-")[0];
+	if (year === this.getYear() && parseFloat(entry.score, 10) >= 8) {
 		parent = animeRatings.decorate(parent, "strong");
+		parent.setAttribute("style", "background-color:yellow;");
 	}
 
-	var entryText = entry.start_date.split("-")[0] + " " + entry.title + " (" + entry.score + ")";
+
+	var entryText = year + " " + entry.title + " (" + entry.score + ")";
 	var cleanText = this.htmlDecode(this.fixUnicode(this.encodeResult(entryText)));
 	if (cleanText.search(/&/) !== -1 || cleanText.search(/�/) !== -1) {
 		this.log("Potential encoding problem: " + cleanText);

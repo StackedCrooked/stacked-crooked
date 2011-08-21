@@ -349,7 +349,7 @@ animeRatings.getNext = function() {
 			else {
 				animeRatings.informFailure(linkInfo);
 			}
-			animeRatings.getNext(animeRatings.links);
+			animeRatings.getNext();
 		});
 	}
 };

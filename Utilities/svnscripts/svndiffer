@@ -3,8 +3,7 @@
 if [[ "`uname`" == 'Darwin' ]]; then
     COMMAND="vimdiff"
 else
-    COMMAND="vimdiff"
+    COMMAND="meld"
 fi
 
 $COMMAND $6 $7 2>/dev/null
-

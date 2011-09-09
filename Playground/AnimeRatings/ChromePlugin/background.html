@@ -88,6 +88,9 @@ function getMalInfo(arg, callback) {
                 titles = node.getElementsByTagName("title");
             }
 
+            if (getInnerText(node.getElementsByTagName("type")[0]) === "Special") {
+                continue;
+            }
             var scores = node.getElementsByTagName("score");
             var ids = node.getElementsByTagName("id");
             var start_dates = node.getElementsByTagName("start_date");

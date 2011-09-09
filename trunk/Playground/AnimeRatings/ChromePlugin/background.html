@@ -5,142 +5,147 @@ try {
 var enableLocalStorage = true;
 
 function performHTTPGETRequest(url, auth, callback) {
-	var http = new window.XMLHttpRequest();
-	http.onreadystatechange = function() {
-		if (http.readyState == 4) {
-			if (http.status == 200) {
-				callback({success: true, value: http.responseText});
-			}
-			else {
-				console.log("Failure (" + http.status + "): " + url);
-				callback({success: false, value: http.status});
-			}
-		}
-	};
-	http.open('GET', url, true);
-	http.setRequestHeader('Authorization', auth);
-	http.send();
+    var http = new window.XMLHttpRequest();
+    http.onreadystatechange = function() {
+        if (http.readyState == 4) {
+            if (http.status == 200) {
+                console.log(http.responseText);
+                callback({success: true, value: http.responseText});
+            }
+            else {
+                console.log("Failure (" + http.status + "): " + url);
+                callback({success: false, value: http.status});
+            }
+        }
+    };
+    http.open('GET', url, true);
+    http.setRequestHeader('Authorization', auth);
+    http.send();
 }
 
 function getURL(pageType, title) {
-	return "http://myanimelist.net/api/" + pageType +
-			 "/search.xml?q=" + encodeURIComponent(title);
+    return "http://myanimelist.net/api/" + pageType +
+             "/search.xml?q=" + encodeURIComponent(title);
 }
 
 function searchMAL(pageType, title, callback) {
-	var auth = "Basic QW5pbWVSYXRpbmdzOkNocm9tZQ==";
-	var url = getURL(pageType, title);
-	performHTTPGETRequest(url, auth, function(response) {
-		callback(response);
-	});
+    var auth = "Basic QW5pbWVSYXRpbmdzOkNocm9tZQ==";
+    var url = getURL(pageType, title);
+    performHTTPGETRequest(url, auth, function(response) {
+        callback(response);
+    });
 }
 
 function getInnerText(node) {
-	if (node.childNodes.length === 0) {
-		return "";
-	}
-	return node.childNodes[0].nodeValue;
+    if (node.childNodes.length === 0) {
+        return "";
+    }
+    return node.childNodes[0].nodeValue;
 }
 
 function getCacheKey(pageType, title) {
-	return pageType + "_" + title;
+    return pageType + "_" + title;
 }
 
 function getMalInfo(arg, callback) {
 
-	if (enableLocalStorage === true) {
-		var cacheValue = localStorage.getItem(getCacheKey(arg.pageType, arg.title));
-		if (cacheValue !== null) {
-			var result = JSON.parse(cacheValue);
-			callback(result);
-			return;
-		}
-	}
+    if (enableLocalStorage === true) {
+        var cacheValue = localStorage.getItem(getCacheKey(arg.pageType, arg.title));
+        if (cacheValue !== null) {
+            var result = JSON.parse(cacheValue);
+            callback(result);
+            return;
+        }
+    }
 
-	searchMAL(arg.pageType, arg.title, function(response) {
+    searchMAL(arg.pageType, arg.title, function(response) {
 
-		var result = {
-			success: false,
-			entries : []
-		};
+        var result = {
+            success: false,
+            entries : []
+        };
 
-		if (response.success === false) {
-			callback(result);
-			return;
-		}
+        if (response.success === false) {
+            callback(result);
+            return;
+        }
 
-		var parser = new DOMParser();
-		var xmlText = response.value;
-		xmlText = xmlText.replace(/&/g, "%26");
-		var doc = parser.parseFromString(xmlText, "text/xml");
-		var entries = doc.getElementsByTagName("entry");
+        var parser = new DOMParser();
+        var xmlText = response.value;
+        xmlText = xmlText.replace(/&/g, "%26");
+        var doc = parser.parseFromString(xmlText, "text/xml");
+        var entries = doc.getElementsByTagName("entry");
 
-		for (var i = 0; i < entries.length; ++i) {
-			var node = entries[i];
+        for (var i = 0; i < entries.length; ++i) {
+            var node = entries[i];
 
-			// Get english title or original title.
-			var titles = node.getElementsByTagName("english");
+            // Get english title or original title.
+            var titles = node.getElementsByTagName("english");
 
-			// If there is no english title, use the original title.
-			if (titles.length === 0 ||
-				getInnerText(titles[0]).replace(/ /g, "") === "") {
-				titles = node.getElementsByTagName("title");
-			}
+            // If there is no english title, use the original title.
+            if (titles.length === 0 ||
+                getInnerText(titles[0]).replace(/ /g, "") === "") {
+                titles = node.getElementsByTagName("title");
+            }
 
-			var scores = node.getElementsByTagName("score");
-			var ids = node.getElementsByTagName("id");
-			var start_dates = node.getElementsByTagName("start_date");
+            var scores = node.getElementsByTagName("score");
+            var ids = node.getElementsByTagName("id");
+            var start_dates = node.getElementsByTagName("start_date");
+            var end_dates = node.getElementsByTagName("end_date");
 
-			if (titles.length === 1 && scores.length === 1 && ids.length === 1 && start_dates.length === 1) {
+            if (titles.length === 1 && scores.length === 1 && ids.length === 1 &&
+                start_dates.length === 1 && end_dates.length === 1) {
 
-				var entry = {
-					title: getInnerText(titles[0]).replace(/%26/g, "&"),
-					score: getInnerText(scores[0]),
-					id: getInnerText(ids[0]),
-					start_date : getInnerText(start_dates[0])
-				};
+                var entry = {
+                    title: getInnerText(titles[0]).replace(/%26/g, "&"),
+                    score: getInnerText(scores[0]),
+                    id: getInnerText(ids[0]),
+                    start_date : getInnerText(start_dates[0]),
+                    end_date : getInnerText(end_dates[0])
+                };
 
-				result.entries.push(entry);
-			}
-			else {
-				console.log(arg.title + ": failed to parse xml!");
-				console.log("ids.length: " + ids.length);
-				console.log("titles.length: " + titles.length);
-				console.log("title: " + getInnerText(titles[0]));
-				console.log("scores.length: " + scores.length);
-				console.log("start_dates.length: " + start_dates.length);
-				console.log(xmlText);
-			}
-		}
+                result.entries.push(entry);
+            }
+            else {
+                console.log(arg.title + ": failed to parse xml!");
+                console.log("ids.length: " + ids.length);
+                console.log("titles.length: " + titles.length);
+                console.log("title: " + getInnerText(titles[0]));
+                console.log("scores.length: " + scores.length);
+                console.log("start_dates.length: " + start_dates.length);
+                console.log("end_dates.length: " + end_dates.length);
+                console.log(xmlText);
+            }
+        }
 
-		if (result.entries.length !== 0) {
-			result.success = true;
-		}
-		else {
-			result.reason = "Failed to parse XML response.";
-			result.success = false;
-		}
+        if (result.entries.length !== 0) {
+            result.success = true;
+        }
+        else {
+            result.reason = "Failed to parse XML response.";
+            result.success = false;
+        }
 
-		if (enableLocalStorage === true) {
-			localStorage.setItem(getCacheKey(arg.pageType, arg.title), JSON.stringify(result));
-		}
-		callback(result);
-	});
+        if (enableLocalStorage === true) {
+            localStorage.setItem(getCacheKey(arg.pageType, arg.title), JSON.stringify(result));
+        }
+        callback(result);
+    });
 }
 
 chrome.extension.onRequest.addListener( function(request, sender, callback) {
-	if (request.action === "log") {
-		console.log(request.arg);
-	}
-	else if (request.action === "getMalInfo") {
-		getMalInfo(request.arg, callback);
-	}
-	else {
-		throw "Invalid request: " + JSON.stringify(request);
-	}
+    if (request.action === "log") {
+        console.log(request.arg);
+    }
+    else if (request.action === "getMalInfo") {
+        getMalInfo(request.arg, callback);
+    }
+    else {
+        throw "Invalid request: " + JSON.stringify(request);
+    }
 });
 
 }catch(exc) {
-	console.log(exc);
+    console.log(exc);
 }
 </script>

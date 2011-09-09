@@ -1,3 +1,4 @@
+- Don't show side-shows
 - User request: Show MAL rating in Wikipedia anime main pages
 - Configurability
     - Highlight treshold (only if score >= x)

@@ -1,1 +1,22 @@
-- Also show MAL rating in Wikipedia anime title page
+- User request: Show MAL rating in Wikipedia anime main pages
+- Configurability
+    - Highlight treshold (only if score >= x)
+    - Display treshold (hide title if score < x)
+    - Only show if year matches identically
+    - Show this as a box on the actual Wikipedia page.
+    - Remember settings in localStorage.
+- Add a "Add to anime list" checkbox next to each entry (Unofficial API)
+    - Requires user authentication
+    - Checkbox is checked if the anime was already added
+    - If the user checks the checkbox, then the
+    - Use URL http://myanimelist.net/malappinfo.php?u=StackedCrooked&status=all&type=anime
+- Only show relevant resuslts.
+    - Only show the title(s) that matches the year and its prequels.
+    - Maybe add option to "Show all results"
+- Idea: Allow user to fix wrong Wikipedia-MAL mappings:
+    - This requires online storage of some form... (VPS)
+    - Add a "(edit)" link next to the title.
+    - If the user clicks it then
+        - show a combobox containing alternatives
+        - show a textbox to search MAL
+        - allow the user to paste the correct MAL url in the the textbox

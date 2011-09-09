@@ -2,9 +2,6 @@ function AnimeRatings() {
 }
 
 
-try {
-
-
 var animeRatings = new AnimeRatings();
 
 
@@ -82,13 +79,6 @@ animeRatings.getLinks = function() {
         // This can happen for summary pages like "Category:Anime_of_the_2000s"
     }
     return result;
-};
-
-
-animeRatings.decorate = function(parent, name) {
-    var el = document.createElement(name);
-    parent.appendChild(el);
-    return el;
 };
 
 
@@ -185,26 +175,16 @@ animeRatings.getYear = function() {
 
 animeRatings.addEntryToDOM = function(parent, entry) {
 
-    // Score 0.00 means that there are not enough votes
-    // to determine a weighted score.
-    if (entry.score === "0.00") {
-        entry.score = "?";
-    }
-
-    parent = animeRatings.decorate(parent, "a");
+    parent = parent.create("a");
     parent.setAttribute("href", "http://myanimelist.net/" + this.getPageType() + "/" + entry.id);
 
     if (parseFloat(entry.score, 10) >= 8) {
-        parent = animeRatings.decorate(parent, "strong");
+        parent = parent.create("strong");
         parent.setAttribute("style", "background-color:yellow;");
     }
 
     var entryText = entry.title + " (" + entry.score + ")";
-    var cleanText = this.htmlDecode(this.fixUnicode(this.encodeResult(entryText)));
-    if (cleanText.search(/&/) !== -1 || cleanText.search(/�/) !== -1) {
-        this.log("Potential encoding problem: " + cleanText);
-    }
-    parent.appendChild(document.createTextNode(cleanText));
+    parent.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(entryText))));
 };
 
 
@@ -212,13 +192,9 @@ animeRatings.informFailure = function(linkItem) {
     var node = linkItem.node;
     var parent = node.parentNode;
 
-    if (parent.getElementsByTagName("ul").length === 0) {
-        parent = this.decorate(parent, "small");
-        parent = this.decorate(parent, "ul");
-    }
-    parent = animeRatings.decorate(parent, "li");
+    parent = parent.create("small/ul/li");
     var reason = (linkItem.reason === undefined ? "No results returned." : linkItem.reason);
-    parent.appendChild(document.createTextNode(reason));
+    parent.setInnerText(reason);
 };
 
 
@@ -237,24 +213,31 @@ animeRatings.addToDOM = function(linkItem) {
         return 1;
     });
 
-    if (parent.getElementsByTagName("ul").length === 0) {
-        parent = this.decorate(parent, "small");
-        parent = this.decorate(parent, "ul");
+    if (parent.getElementsByTagName("small").length === 0) {
+        parent = parent.create("small/ul");
     }
 
     for (var i = 0; i < entries.length; ++i) {
         try {
             var entry = entries[i];
-            // Don't add entries that don't match the requested year.
+
+
+            // Skip if score = 0 (indicates not enough user votes)
+            if (entry.score === "0.00") {
+                continue;
+            }
+
+            // Skip if year doesn't match
             var begin_year = parseInt(entry.start_date.split("-")[0], 10);
             var end_year = parseInt(entry.end_date.split("-")[0], 10) + 1; // add a year
-            if (begin_year <= this.getYear() && this.getYear() <= end_year) {
-                parent = animeRatings.decorate(parent, "li");
-                this.addEntryToDOM(parent, entry);
-            }
-            else {
+            if (this.getYear() < begin_year || this.getYear() > end_year) {
                 parent.setAttribute("AnimeRatings_WrongYear", true);
+                continue;
             }
+
+            // Create entry
+            parent = parent.create("li");
+            this.addEntryToDOM(parent, entry);
         }
         catch (exc) {
             animeRatings.log(exc);
@@ -262,8 +245,8 @@ animeRatings.addToDOM = function(linkItem) {
     }
 
     if (parent.hasAttribute("AnimeRatings_WrongYear") && parent.childNodes.length === 0) {
-        parent = animeRatings.decorate(parent, "li");
-        parent.appendChild(document.createTextNode("No results returned for " + this.getYear() + "."));
+        parent = parent.create("li");
+        parent.setInnerText("No results returned for " + this.getYear() + ".");
     }
 };
 
@@ -339,6 +322,20 @@ animeRatings.improveTitle = function(title) {
 animeRatings.linkNodes = {};
 animeRatings.links = animeRatings.getLinks().reverse();
 
+Element.prototype.setInnerText = function(text) {
+    this.appendChild(document.createTextNode(text));
+};
+
+Element.prototype.create = function(tagNamePath) {
+    var result = this;
+    var tagNames = tagNamePath.split("/");
+    for (var i = 0; i < tagNames.length; ++i) {
+        var child = document.createElement(tagNames[i]);
+        result.appendChild(child);
+        result = child;
+    }
+    return result;
+};
 
 animeRatings.getNext = function() {
     if (animeRatings.links.length === 0) {
@@ -363,6 +360,8 @@ animeRatings.getNext = function() {
     }
 };
 
+
+try {
 
 //
 // Application Entry Point

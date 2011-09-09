@@ -20,3 +20,6 @@
         - show a combobox containing alternatives
         - show a textbox to search MAL
         - allow the user to paste the correct MAL url in the the textbox
+- Scrape Anime News Network rating
+    . URL is usually found in the Wikipedia title page external links section
+    . Highlight if median rating is "Very good" or better

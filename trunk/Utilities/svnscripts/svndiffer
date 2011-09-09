@@ -1,9 +1,8 @@
 #!/bin/bash
 # Subversion passes $6 as HEAD file and $7 as modified file.
 if [[ "`uname`" == 'Darwin' ]]; then
-    COMMAND="vimdiff"
+    /Developer/Applications/Utilities/FileMerge.app/Contents/MacOS/FileMerge -left `pwd`/$6 -right `pwd`/$7
 else
-    COMMAND="meld"
+    meld $6 $7
 fi
 
-$COMMAND $6 $7 2>/dev/null

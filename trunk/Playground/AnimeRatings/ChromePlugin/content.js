@@ -246,8 +246,8 @@ animeRatings.addToDOM = function(linkItem) {
         try {
             var entry = entries[i];
             // Don't add entries that don't match the requested year.
-            var begin_year = entry.start_date.split("-")[0];
-            var end_year = entry.end_date.split("-")[0];
+            var begin_year = parseInt(entry.start_date.split("-")[0], 10);
+            var end_year = parseInt(entry.end_date.split("-")[0], 10) + 1; // add a year
             if (begin_year <= this.getYear() && this.getYear() <= end_year) {
                 parent = animeRatings.decorate(parent, "li");
                 this.addEntryToDOM(parent, entry);

@@ -1,6 +1,7 @@
 function AnimeRatings() {
 }
 
+try {
 
 var animeRatings = new AnimeRatings();
 
@@ -58,6 +59,7 @@ animeRatings.getMWPages = function() {
 
 
 animeRatings.debugLink = "";
+animeRatings.excludeLink = "";
 
 
 animeRatings.getLinks = function() {
@@ -68,7 +70,8 @@ animeRatings.getLinks = function() {
             var links = lis[i].getElementsByTagName("a");
             if (links.length > 0) {
                 var linkNode = links[0];
-                if (linkNode.title.search(animeRatings.debugLink) !== -1) {
+                if (linkNode.title.search(animeRatings.debugLink) !== -1 &&
+                    linkNode.title.search(animeRatings.excludeLink === -1)) {
                     result.push(linkNode);
                 }
             }
@@ -173,9 +176,12 @@ animeRatings.getYear = function() {
 };
 
 
-animeRatings.addEntryToDOM = function(parent, entry) {
+/**
+ * @pattern  String  "{Year} {Title} {Score}"
+ */
+animeRatings.addEntryToDOM = function(listItem, entry, pattern) {
 
-    parent = parent.create("a");
+    var parent = listItem.create("a");
     parent.setAttribute("href", "http://myanimelist.net/" + this.getPageType() + "/" + entry.id);
 
     if (parseFloat(entry.score, 10) >= 8) {
@@ -183,22 +189,25 @@ animeRatings.addEntryToDOM = function(parent, entry) {
         parent.setAttribute("style", "background-color:yellow;");
     }
 
-    var entryText = entry.title + " (" + entry.score + ")";
-    parent.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(entryText))));
+    var result = pattern;
+    result = result.replace("{BeginYear}",  parseInt(entry.start_date.split("-")[0], 10));
+    result = result.replace("{EndYear}",  parseInt(entry.end_date.split("-")[0], 10));
+    result = result.replace("{Title}", entry.title);
+    result = result.replace("{Score}", entry.score);
+    parent.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
 };
 
 
 animeRatings.informFailure = function(linkItem) {
+    var reason = (linkItem.reason === undefined ? "No results returned." : linkItem.reason);
     var node = linkItem.node;
     var parent = node.parentNode;
-
-    parent = parent.create("small/ul/li");
-    var reason = (linkItem.reason === undefined ? "No results returned." : linkItem.reason);
+    parent = parent.createEntryList().create("li");
     parent.setInnerText(reason);
 };
 
 
-animeRatings.addToDOM = function(linkItem) {
+animeRatings.addEntriesToDOM = function(linkItem) {
     var node = linkItem.node;
     var parent = node.parentNode;
 
@@ -213,41 +222,77 @@ animeRatings.addToDOM = function(linkItem) {
         return 1;
     });
 
-    if (parent.getElementsByTagName("small").length === 0) {
-        parent = parent.create("small/ul");
+    if (parent.getElementsByTagName("ul").length === 0) {
+        parent = parent.createEntryList();
+        parent.style.listStyle = "square outside none";
     }
 
     for (var i = 0; i < entries.length; ++i) {
         try {
             var entry = entries[i];
 
-
-            // Skip if score = 0 (indicates not enough user votes)
-            if (entry.score === "0.00") {
-                continue;
-            }
-
             // Skip if year doesn't match
             var begin_year = parseInt(entry.start_date.split("-")[0], 10);
-            var end_year = parseInt(entry.end_date.split("-")[0], 10) + 1; // add a year
-            if (this.getYear() < begin_year || this.getYear() > end_year) {
-                parent.setAttribute("AnimeRatings_WrongYear", true);
+            var end_year = parseInt(entry.end_date.split("-")[0], 10);
+            var year = this.getYear();
+            if (begin_year > year || (end_year !== 0 && end_year < year)) {
+                if (entry.title.search("Hunter") !== -1) {
+                    this.log(year + " is outside of [" + begin_year + ", " + end_year + "]");
+                    this.log("entry.end_date: " + entry.end_date);
+                }
+                parent.setAttribute("private_year_is_wrong", true);
                 continue;
             }
 
-            // Create entry
-            parent = parent.create("li");
-            this.addEntryToDOM(parent, entry);
+            // Insert title entry
+            this.addEntryToDOM(parent.create("li"),
+                               entry,
+                               "{Title} ({Score})");
         }
         catch (exc) {
             animeRatings.log(exc);
         }
     }
 
-    if (parent.hasAttribute("AnimeRatings_WrongYear") && parent.childNodes.length === 0) {
-        parent = parent.create("li");
-        parent.setInnerText("No results returned for " + this.getYear() + ".");
+    if (parent.hasAttribute("private_year_is_wrong") &&
+        parent.getElementsByTagName("li").length === 0) {
+        animeRatings.addMissingStuff(parent, entries);
     }
+};
+
+
+animeRatings.addMissingStuff = function(listElement, entries) {
+
+    if (entries.length === 0) {
+        return;
+    }
+
+    listElement.style.listStyle = "none";
+
+    var parent = listElement.create("li");
+    parent.setInnerText("No MAL title found from " + this.getYear() + ". Closest match:");
+
+    parent = parent.create("ul");
+    parent.style.listStyle = "square outside none";
+
+    var closest_entry = entries[0];
+    closest_entry.difference = Math.abs(this.getYear() - parseInt(closest_entry.start_date.split("-")[0], 10));
+
+    for (var i = 1; i < entries.length; ++i) {
+        try {
+            var entry = entries[i];
+            entry.difference = Math.abs(this.getYear() - parseInt(entry.start_date.split("-")[0], 10));
+            if (entry.difference < closest_entry.difference) {
+                closest_entry = entry;
+            }
+        }
+        catch (exc) {
+            animeRatings.log(exc);
+        }
+    }
+
+    // Insert title entry
+    this.addEntryToDOM(parent.create("li"), closest_entry, "{Title} ({BeginYear}, {Score})");
 };
 
 
@@ -266,9 +311,9 @@ animeRatings.improveTitle = function(title) {
         "Ano Hi Mita Hana": "Ano Hi Mita Hana",
         "Doraemon" : "Doraemon",
         "Infinite Stratos" : "Infinite Stratos",
-        "Maji de Watashi ni Koishinasai!" : "Maji de Watashi ni Koi Shinasai!",
         "Mawaru-Penguindrum" : "Mawaru Penguindrum",
         "Poppy Hill" : "Kokurikozaka Kara",
+        "Koishinasai" : "Koi Shinasai",
         "Heaven's Lost Property" : "Heaven's Lost Property"
     };
 
@@ -337,6 +382,13 @@ Element.prototype.create = function(tagNamePath) {
     return result;
 };
 
+
+Element.prototype.createEntryList = function() {
+    var result = this.create("small/ul");
+    result.style.listStyle = "square outside none";
+    return result;
+};
+
 animeRatings.getNext = function() {
     if (animeRatings.links.length === 0) {
         return;
@@ -350,7 +402,7 @@ animeRatings.getNext = function() {
         this.getMALInfo(title, function(linkInfo) {
             linkInfo.node = animeRatings.linkNodes[title];
             if (linkInfo.success === true) {
-                animeRatings.addToDOM(linkInfo);
+                animeRatings.addEntriesToDOM(linkInfo);
             }
             else {
                 animeRatings.informFailure(linkInfo);
@@ -360,8 +412,6 @@ animeRatings.getNext = function() {
     }
 };
 
-
-try {
 
 //
 // Application Entry Point
@@ -373,5 +423,5 @@ for (var i = 0; i < numSimulReq; ++i) {
 
 
 } catch (exc) {
-    animeRatings.log(exc);
+    alert(exc);
 }

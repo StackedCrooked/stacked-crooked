@@ -83,14 +83,10 @@ function getMalInfo(arg, callback) {
             var titles = node.getElementsByTagName("english");
 
             // If there is no english title, use the original title.
-            if (titles.length === 0 ||
-                getInnerText(titles[0]).replace(/ /g, "") === "") {
+            if (titles.length === 0 || getInnerText(titles[0]).replace(/ /g, "") === "") {
                 titles = node.getElementsByTagName("title");
             }
 
-            if (getInnerText(node.getElementsByTagName("type")[0]) === "Special") {
-                continue;
-            }
             var scores = node.getElementsByTagName("score");
             var ids = node.getElementsByTagName("id");
             var start_dates = node.getElementsByTagName("start_date");

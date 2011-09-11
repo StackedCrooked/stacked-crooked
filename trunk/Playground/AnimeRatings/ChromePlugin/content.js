@@ -473,7 +473,6 @@ animeRatings.getFirstChildByTagName = function(node, tagName) {
         var childNode = node.childNodes[i];
         this.log("childNode.tagName: " + childNode.tagName);
         if (childNode.tagName === tagName) {
-            alert(childNode);
             return childNode;
         }
     }

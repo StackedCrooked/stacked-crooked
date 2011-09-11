@@ -27,19 +27,14 @@ animeRatings.getPageType = function() {
     else if (document.URL.search("Category:Manga_of_") !== -1) {
         return "manga";
     }
-    else {
-        return "default";
-    }
+    return "default";
 };
 
 
-animeRatings.pageType = animeRatings.getPageType();
-
-
-animeRatings.getMALInfo = function(title, callback) {
+animeRatings.getMALInfo = function(pageType, title, callback) {
     var linkInfo = {};
     linkInfo.title = title;
-    linkInfo.pageType = this.getPageType();
+    linkInfo.pageType = pageType;
     this.sendRequest(
         {action: "getMalInfo", arg: linkInfo},
         function(linkInfo) {
@@ -181,9 +176,9 @@ animeRatings.getYear = function() {
 /**
  * @pattern  String  "{Year} {Title} {Score}"
  */
-animeRatings.addEntryToDOM = function(listItem, entry, pattern) {
+animeRatings.addEntryToDOM = function(node, entry, pattern) {
 
-    var parent = listItem.create("a");
+    var parent = node.create("a");
     parent.setAttribute("href", "http://myanimelist.net/" + this.getPageType() + "/" + entry.id);
 
     if (parseFloat(entry.score, 10) >= 8) {
@@ -200,17 +195,15 @@ animeRatings.addEntryToDOM = function(listItem, entry, pattern) {
 };
 
 
-animeRatings.informFailure = function(linkItem) {
+animeRatings.informFailure = function(node, linkItem) {
     var reason = (linkItem.reason === undefined ? "No results returned." : linkItem.reason);
-    var node = linkItem.node;
     var parent = node.parentNode;
     parent = parent.createEntryList().create("li");
     parent.setInnerText(reason);
 };
 
 
-animeRatings.addEntriesToDOM = function(linkItem) {
-    var node = linkItem.node;
+animeRatings.addEntriesToDOM = function(node, linkItem) {
     var parent = node.parentNode;
 
     var entries = linkItem.entries;
@@ -401,13 +394,13 @@ animeRatings.getNext = function() {
     var title = animeRatings.improveTitle(linkNode.title);
     if (animeRatings.linkNodes[title] === undefined) {
         animeRatings.linkNodes[title] = linkNode;
-        this.getMALInfo(title, function(linkInfo) {
-            linkInfo.node = animeRatings.linkNodes[title];
+        this.getMALInfo(this.getPageType(), title, function(linkInfo) {
+            var node = animeRatings.linkNodes[title];
             if (linkInfo.success === true) {
-                animeRatings.addEntriesToDOM(linkInfo);
+                animeRatings.addEntriesToDOM(node, linkInfo);
             }
             else {
-                animeRatings.informFailure(linkInfo);
+                animeRatings.informFailure(node, linkInfo);
             }
             animeRatings.getNext();
         });
@@ -416,8 +409,8 @@ animeRatings.getNext = function() {
 
 
 animeRatings.isAnimeListing = function() {
-    return animeRatings.pageType === "anime" ||
-           animeRatings.pageType === "manga";
+    return animeRatings.getPageType() === "anime" ||
+           animeRatings.getPageType() === "manga";
 };
 
 
@@ -442,6 +435,11 @@ animeRatings.getANNLink = function() {
 };
 
 
+animeRatings.getANNLinkTitle = function() {
+    return animeRatings.getANNLink().childNodes[0].childNodes[0].nodeValue;
+};
+
+
 animeRatings.pageContainsLinkToAnimeNewsNetwork = function() {
     return this.getANNLink() !== null;
 };
@@ -461,9 +459,52 @@ animeRatings.insertRatingsIntoYearList = function() {
 
 
 animeRatings.insertRatingsIntoAnimePage = function() {
-    var linkToANN = this.getANNLink();
-    var title = linkToANN.childNodes[0].childNodes[0].nodeValue;
-    alert(title);
+    var title = animeRatings.improveTitle(animeRatings.getANNLinkTitle());
+    this.log("title: " + title);
+    this.getMALInfo("anime", title, function(linkInfo) {
+        animeRatings.log(linkInfo);
+        animeRatings.addRatingIntoAnimePageDOM(linkInfo);
+    });
+};
+
+
+animeRatings.getFirstChildByTagName = function(node, tagName) {
+    for (var i = 0; i < node.childNodes.length; ++i) {
+        var childNode = node.childNodes[i];
+        this.log("childNode.tagName: " + childNode.tagName);
+        if (childNode.tagName === tagName) {
+            alert(childNode);
+            return childNode;
+        }
+    }
+    return null;
+};
+
+
+animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
+
+    var firstParagraph = animeRatings.getFirstChildByTagName(document.getElementById("bodyContent"), "P");
+
+    var node = firstParagraph.parentNode.insertBefore(document.createElement("div"), firstParagraph);
+
+    node = node.create("table");
+    node.setAttribute("class", "toc");
+    node = node.create("tr/td");
+    node.create("h2").setInnerText("MyAnimeList matches");
+    node = node.create("ul");
+
+    for (var i = 0; i < linkInfo.entries.length; ++i) {
+
+        var entry = linkInfo.entries[i];
+        var a = node.create("li/a");
+        a.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
+        var result = "{Year}: {Title} ({Score})";
+        var year = parseInt(entry.start_date.split("-")[0], 10);
+        result = result.replace("{Year}", year !== 0 ? year : "????");
+        result = result.replace("{Title}", entry.title);
+        result = result.replace("{Score}", entry.score !== "0.00" ? entry.score : "?");
+        a.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
+    }
 };
 
 

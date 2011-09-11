@@ -8,11 +8,7 @@ function performHTTPGETRequest(url, auth, callback) {
     var http = new window.XMLHttpRequest();
     http.onreadystatechange = function() {
         if (http.readyState == 4) {
-            console.log("readyState: 4");
-            console.log("http.status: " + http.status);
-            console.log(http);
             if (http.status == 200) {
-                console.log(http.responseText);
                 callback({success: true, value: http.responseText});
             }
             else {
@@ -110,12 +106,6 @@ function getMalInfo(arg, callback) {
             }
             else {
                 console.log(arg.title + ": failed to parse xml!");
-                console.log("ids.length: " + ids.length);
-                console.log("titles.length: " + titles.length);
-                console.log("title: " + getInnerText(titles[0]));
-                console.log("scores.length: " + scores.length);
-                console.log("start_dates.length: " + start_dates.length);
-                console.log("end_dates.length: " + end_dates.length);
                 console.log(xmlText);
             }
         }
@@ -140,7 +130,6 @@ chrome.extension.onRequest.addListener( function(request, sender, callback) {
         console.log(request.arg);
     }
     else if (request.action === "getMalInfo") {
-        console.log("request: " + JSON.stringify(request));
         getMalInfo(request.arg, callback);
     }
     else {

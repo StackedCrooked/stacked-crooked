@@ -460,9 +460,7 @@ animeRatings.insertRatingsIntoYearList = function() {
 
 animeRatings.insertRatingsIntoAnimePage = function() {
     var title = animeRatings.improveTitle(animeRatings.getANNLinkTitle());
-    this.log("title: " + title);
     this.getMALInfo("anime", title, function(linkInfo) {
-        animeRatings.log(linkInfo);
         animeRatings.addRatingIntoAnimePageDOM(linkInfo);
     });
 };
@@ -471,7 +469,6 @@ animeRatings.insertRatingsIntoAnimePage = function() {
 animeRatings.getFirstChildByTagName = function(node, tagName) {
     for (var i = 0; i < node.childNodes.length; ++i) {
         var childNode = node.childNodes[i];
-        this.log("childNode.tagName: " + childNode.tagName);
         if (childNode.tagName === tagName) {
             return childNode;
         }
@@ -520,5 +517,5 @@ else if (animeRatings.isAnimePage()) {
 }
 
 } catch (exc) {
-    animeRatings.log(exc.toString());
+    animeRatings.log("Exception caught: " + exc.toString());
 }

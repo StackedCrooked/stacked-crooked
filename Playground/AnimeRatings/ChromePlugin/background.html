@@ -8,6 +8,9 @@ function performHTTPGETRequest(url, auth, callback) {
     var http = new window.XMLHttpRequest();
     http.onreadystatechange = function() {
         if (http.readyState == 4) {
+            console.log("readyState: 4");
+            console.log("http.status: " + http.status);
+            console.log(http);
             if (http.status == 200) {
                 console.log(http.responseText);
                 callback({success: true, value: http.responseText});
@@ -137,6 +140,7 @@ chrome.extension.onRequest.addListener( function(request, sender, callback) {
         console.log(request.arg);
     }
     else if (request.action === "getMalInfo") {
+        console.log("request: " + JSON.stringify(request));
         getMalInfo(request.arg, callback);
     }
     else {

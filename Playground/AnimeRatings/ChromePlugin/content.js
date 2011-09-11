@@ -1,9 +1,8 @@
 function AnimeRatings() {
 }
 
-try {
-
 var animeRatings = new AnimeRatings();
+animeRatings.cache = {};
 
 
 animeRatings.sendRequest = function(arg, callback) {
@@ -22,16 +21,19 @@ animeRatings.log = function(message) {
 
 
 animeRatings.getPageType = function() {
-    if (document.URL.search("Anime") !== -1) {
+    if (document.URL.search("Category:Anime_of_") !== -1) {
         return "anime";
     }
-    else if (document.URL.search("Manga") !== -1) {
+    else if (document.URL.search("Category:Manga_of_") !== -1) {
         return "manga";
     }
     else {
-        throw "Invalid URL: " + document.URL;
+        return "default";
     }
 };
+
+
+animeRatings.pageType = animeRatings.getPageType();
 
 
 animeRatings.getMALInfo = function(title, callback) {
@@ -413,15 +415,70 @@ animeRatings.getNext = function() {
 };
 
 
+animeRatings.isAnimeListing = function() {
+    return animeRatings.pageType === "anime" ||
+           animeRatings.pageType === "manga";
+};
+
+
+animeRatings.getANNLinkImpl = function() {
+    var links = document.getElementsByTagName("a");
+    for (var i = 0; i < links.length; ++i) {
+        var link = links[i];
+        var href = link.href;
+        if (href.search("http://www.animenewsnetwork.com/encyclopedia") !== -1) {
+            return link;
+        }
+    }
+    return null;
+};
+
+
+animeRatings.getANNLink = function() {
+    if (animeRatings.cache.getANNLink === undefined) {
+        animeRatings.cache.getANNLink = animeRatings.getANNLinkImpl();
+    }
+    return animeRatings.cache.getANNLink;
+};
+
+
+animeRatings.pageContainsLinkToAnimeNewsNetwork = function() {
+    return this.getANNLink() !== null;
+};
+
+
+animeRatings.isAnimePage = function() {
+    return !animeRatings.isAnimeListing() && animeRatings.pageContainsLinkToAnimeNewsNetwork();
+};
+
+
+animeRatings.insertRatingsIntoYearList = function() {
+    var numSimulReq = 5;
+    for (var i = 0; i < numSimulReq; ++i) {
+        animeRatings.getNext(animeRatings.links);
+    }
+};
+
+
+animeRatings.insertRatingsIntoAnimePage = function() {
+    var linkToANN = this.getANNLink();
+    var title = linkToANN.childNodes[0].childNodes[0].nodeValue;
+    alert(title);
+};
+
+
 //
 // Application Entry Point
 //
-var numSimulReq = 5;
-for (var i = 0; i < numSimulReq; ++i) {
-    animeRatings.getNext(animeRatings.links);
+try {
+
+if (animeRatings.isAnimeListing()) {
+    animeRatings.insertRatingsIntoYearList();
+}
+else if (animeRatings.isAnimePage()) {
+    animeRatings.insertRatingsIntoAnimePage();
 }
 
-
 } catch (exc) {
-    alert(exc);
+    animeRatings.log(exc.toString());
 }

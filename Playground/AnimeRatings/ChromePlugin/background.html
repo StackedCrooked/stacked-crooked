@@ -26,8 +26,6 @@ chrome.manifest = (function() {
 
 })();
 
-console.log(chrome.manifest.version);
-
 var enableLocalStorage = true;
 
 function performHTTPGETRequest(url, auth, callback) {
@@ -49,8 +47,7 @@ function performHTTPGETRequest(url, auth, callback) {
 }
 
 function getURL(pageType, title) {
-    return "http://myanimelist.net/api/" + pageType +
-             "/search.xml?q=" + encodeURIComponent(title);
+    return "http://myanimelist.net/api/" + pageType + "/search.xml?q=" + encodeURIComponent(title);
 }
 
 function searchMAL(pageType, title, callback) {
@@ -117,7 +114,6 @@ function getMalInfo(arg, callback) {
             var start_dates = node.getElementsByTagName("start_date");
             var end_dates = node.getElementsByTagName("end_date");
             var types = node.getElementsByTagName("type");
-            console.log(types);
 
             if (titles.length === 1 && scores.length === 1 && ids.length === 1 &&
                 start_dates.length === 1 && end_dates.length === 1 && types.length === 1) {

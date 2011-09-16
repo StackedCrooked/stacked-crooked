@@ -20,17 +20,6 @@ animeRatings.log = function(message) {
 };
 
 
-animeRatings.getPageType = function() {
-    if (document.URL.search("Category:Anime_of_") !== -1) {
-        return "anime";
-    }
-    else if (document.URL.search("Category:Manga_of_") !== -1) {
-        return "manga";
-    }
-    return "default";
-};
-
-
 animeRatings.getMALInfo = function(pageType, title, callback) {
     var linkInfo = {};
     linkInfo.title = title;
@@ -414,26 +403,12 @@ animeRatings.getNext = function() {
 };
 
 
-animeRatings.isAnimeListing = function() {
+animeRatings.isYearList = function() {
     return animeRatings.getPageType() === "anime" ||
            animeRatings.getPageType() === "manga";
 };
 
-
-animeRatings.getANNLink = function() {
-    var links = document.getElementsByTagName("a");
-    for (var i = 0; i < links.length; ++i) {
-        var link = links[i];
-        var href = link.href;
-        if (href.search("http://www.animenewsnetwork.com/encyclopedia") !== -1) {
-            return link;
-        }
-    }
-    return null;
-};
-
-
-animeRatings.getAnimeTitle = function() {
+animeRatings.getAnimeTitleFromPage = function() {
     var headings = document.getElementsByTagName("h1");
     if (headings.length === 0) {
         throw "H1 not found in page";
@@ -442,7 +417,17 @@ animeRatings.getAnimeTitle = function() {
 };
 
 
-animeRatings.hasPageContainsAnimeInfoBox = function() {
+/**
+ * getPageTypeFromInfoBox returns the page type
+ *
+ * @return "anime"          if anime page
+           "manga"          if manga page
+           "anime|manga"    if both anime and manga page
+           ""               if neither anime nor manga page
+ */
+animeRatings.getPageTypeFromInfoBox = function() {
+    var foundAnime = false;
+    var foundManga = false;
     var tables = document.getElementsByTagName("table");
     for (var i = 0; i < tables.length; ++i) {
         var table = tables[i];
@@ -458,31 +443,48 @@ animeRatings.hasPageContainsAnimeInfoBox = function() {
                     continue;
                 }
 
-                this.log("3 " + td.childNodes[0].nodeValue);
-                if (td.childNodes[0].nodeValue.search(/anime/i) !== -1) {
-                    return true;
+                var value = td.childNodes[0].nodeValue;
+
+                if (value.search(/TV anime/) !== -1 ||
+                    value.search(/Original video animation/ !== -1)) {
+                    foundAnime = true;
+                }
+
+                if (value.search(/Manga/) !== -1) {
+                    foundManga = true;
                 }
             }
         }
     }
-    return false;
+
+    if (foundAnime && foundManga) {
+        return "anime|manga";
+    }
+
+    if (foundAnime) {
+        return "anime";
+    }
+
+    if (foundManga) {
+        return "manga";
+    }
+
+    return "";
 };
 
 
-animeRatings.pageContainsLinkToAnimeNewsNetwork = function() {
-    return this.getANNLink() !== null;
+animeRatings.getPageType = function() {
+    if (document.URL.search("Category:Anime_of_") !== -1) {
+        return "anime";
+    }
+    else if (document.URL.search("Category:Manga_of_") !== -1) {
+        return "manga";
+    }
+    return "default";
 };
 
 
-animeRatings.isAnimePage = function() {
-    return !animeRatings.isAnimeListing() &&
-        (animeRatings.pageContainsLinkToAnimeNewsNetwork() ||
-         animeRatings.hasPageContainsAnimeInfoBox());
-
-};
-
-
-animeRatings.insertRatingsIntoYearList = function() {
+animeRatings.insertRatingsIntoList = function() {
     var numSimulReq = 5;
     for (var i = 0; i < numSimulReq; ++i) {
         animeRatings.getNext(animeRatings.links);
@@ -490,11 +492,31 @@ animeRatings.insertRatingsIntoYearList = function() {
 };
 
 
-animeRatings.insertRatingsIntoAnimePage = function() {
-    var title = animeRatings.improveTitle(animeRatings.getAnimeTitle());
-    this.getMALInfo("anime", title, function(linkInfo) {
-        animeRatings.addRatingIntoAnimePageDOM(linkInfo);
-    });
+animeRatings.insertRatingsIntoPage = function() {
+    var title = animeRatings.improveTitle(animeRatings.getAnimeTitleFromPage());
+    var anime = (animeRatings.pageType.search("anime") !== -1);
+    var manga = (animeRatings.pageType.search("manga") !== -1);
+    if (anime) {
+        this.getMALInfo("anime", title, function(linkInfo) {
+            if (manga) {
+                animeRatings.linkInfo = linkInfo;
+                animeRatings.getMALInfo("manga", title, function(linkInfo) {
+                    for (var i = 0; i < linkInfo.entries.length; ++i) {
+                        animeRatings.linkInfo.entries.push(linkInfo.entries[i]);
+                    }
+                    animeRatings.addRatingIntoAnimePageDOM(animeRatings.linkInfo);
+                });
+            }
+            else {
+                animeRatings.addRatingIntoAnimePageDOM(linkInfo);
+            }
+        });
+    }
+    else if (manga) {
+        this.getMALInfo("manga", title, function(linkInfo) {
+            animeRatings.addRatingIntoAnimePageDOM(linkInfo);
+        });
+    }
 };
 
 
@@ -552,10 +574,15 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
     for (var i = 0; i < linkInfo.entries.length; ++i) {
 
         var entry = linkInfo.entries[i];
-        tr = node.create("tr");
+
 
         // Year
         var year = parseInt(entry.start_date.split("-")[0], 10);
+        if (year === 0) {
+            continue;
+        }
+
+        tr = node.create("tr");
         var td_year = tr.create("td");
         td_year.setAttribute("style", "text-align: center;");
         td_year.setInnerText(year);
@@ -588,11 +615,14 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
 //
 try {
 
-if (animeRatings.isAnimeListing()) {
-    animeRatings.insertRatingsIntoYearList();
+if (animeRatings.isYearList()) {
+    animeRatings.insertRatingsIntoList();
 }
-else if (animeRatings.isAnimePage()) {
-    animeRatings.insertRatingsIntoAnimePage();
+else {
+    animeRatings.pageType = animeRatings.getPageTypeFromInfoBox();
+    if (animeRatings.pageType.search("anime") !== 1 || animeRatings.pageType.search("manga") !== 1) {
+        animeRatings.insertRatingsIntoPage();
+    }
 }
 
 } catch (exc) {

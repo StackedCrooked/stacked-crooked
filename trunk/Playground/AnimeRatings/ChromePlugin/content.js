@@ -524,7 +524,7 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
         var year = parseInt(entry.start_date.split("-")[0], 10);
         result = result.replace("{Year}", year !== 0 ? year : "????");
         result = result.replace("{Title}", entry.title);
-        result = result.replace("{Score}", entry.score !== "0.00" ? entry.score : "?");
+        result = result.replace("{Score}", entry.score !== "0.00" ? entry.score : "no rating");
         a.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
     }
 };

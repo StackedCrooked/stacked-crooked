@@ -535,10 +535,19 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
 
     node = node.create("table");
     tr = node.create("tr");
-    tr.create("td").create("b").setInnerText("Year");
-    tr.create("td").create("b").setInnerText("Type");
-    tr.create("td").create("b").setInnerText("Title");
-    tr.create("td").create("b").setInnerText("Rating");
+
+    tr.setAttribute("style", "text-align: center;");
+    td = tr.create("td").create("b");
+    td.setInnerText("Year");
+
+    td = tr.create("td").create("b");
+    td.setInnerText("Title");
+
+    td = tr.create("td").create("b");
+    td.setInnerText("Type");
+
+    td = tr.create("td");
+    td.create("b").setInnerText("Rating");
 
     for (var i = 0; i < linkInfo.entries.length; ++i) {
 
@@ -551,15 +560,16 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
         td_year.setAttribute("style", "text-align: center;");
         td_year.setInnerText(year);
 
+        // Title
+        var td_title = tr.create("td/i/a");
+        td_title.setAttribute("style", "text-align: left;");
+        td_title.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
+        td_title.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(entry.title))));
+
         // Type
         var td_type = tr.create("td");
         td_type.setAttribute("style", "text-align: center;");
         td_type.setInnerText(entry.type);
-
-        // Title
-        var a = tr.create("td/i/a");
-        a.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
-        a.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(entry.title))));
 
         // Score
         var td_score = tr.create("td");
@@ -567,7 +577,7 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
         if (parseFloat(entry.score, 10) >= 8) {
             td_score = td_score.create("strong");
         }
-        td_score.setInnerText(entry.score !== "0.00" ? entry.score : "(no rating)");
+        td_score.setInnerText(entry.score !== "0.00" ? entry.score : "(none)");
 
     }
 };

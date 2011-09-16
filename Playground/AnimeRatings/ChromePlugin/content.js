@@ -590,7 +590,7 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
         var year = startYear;
 
         if (startYear === 0) {
-            year = "-";
+            year = "Unknown";
         }
         else if (startYear !== endYear) {
             year += " - " + endYear;
@@ -600,7 +600,7 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
         // Title
         var td_title = tr.create("td/i/a");
         td_title.setAttribute("style", "text-align: left;");
-        td_title.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
+        td_title.setAttribute("href", "http://myanimelist.net/" + entry.pageType + "/" + entry.id);
         td_title.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(entry.title))));
 
         // Type

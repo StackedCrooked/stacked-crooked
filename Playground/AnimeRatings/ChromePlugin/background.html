@@ -119,6 +119,7 @@ function getMalInfo(arg, callback) {
                 start_dates.length === 1 && end_dates.length === 1 && types.length === 1) {
 
                 var entry = {
+                    pageType: arg.pageType,
                     title: getInnerText(titles[0]).replace(/%26/g, "&"),
                     score: getInnerText(scores[0]),
                     id: getInnerText(ids[0]),

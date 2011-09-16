@@ -305,11 +305,17 @@ animeRatings.improveTitle = function(title) {
         "Aki Sora" : "Aki-Sora",
         "Ano Hi Mita Hana": "Ano Hi Mita Hana",
         "Doraemon" : "Doraemon",
+        "Hayate the Combat Butler!" : "Hayate",
+        "Heaven's Lost Property" : "Heaven's Lost Property",
         "Infinite Stratos" : "Infinite Stratos",
         "Mawaru-Penguindrum" : "Mawaru Penguindrum",
+        "Mazinkaizer" : "Mazinkaiser",
+        "Negima! Magister Negi Magi" : "Negima",
         "Poppy Hill" : "Kokurikozaka Kara",
         "Koishinasai" : "Koi Shinasai",
-        "Heaven's Lost Property" : "Heaven's Lost Property"
+        "Sengoku Paradise" : "Kiwami",
+        "Shin Megami Tensei: Persona 4" : "Shin Megami",
+        "Yondemasuyo" : "Yondemasu yo"
     };
 
     for (var tkey in tmapping) {

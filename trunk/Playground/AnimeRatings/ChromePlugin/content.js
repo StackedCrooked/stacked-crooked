@@ -414,7 +414,7 @@ animeRatings.isAnimeListing = function() {
 };
 
 
-animeRatings.getANNLinkImpl = function() {
+animeRatings.getANNLink = function() {
     var links = document.getElementsByTagName("a");
     for (var i = 0; i < links.length; ++i) {
         var link = links[i];
@@ -427,16 +427,39 @@ animeRatings.getANNLinkImpl = function() {
 };
 
 
-animeRatings.getANNLink = function() {
-    if (animeRatings.cache.getANNLink === undefined) {
-        animeRatings.cache.getANNLink = animeRatings.getANNLinkImpl();
+animeRatings.getAnimeTitle = function() {
+    var headings = document.getElementsByTagName("h1");
+    if (headings.length === 0) {
+        throw "H1 not found in page";
     }
-    return animeRatings.cache.getANNLink;
+    return headings[0].childNodes[0].innerHTML;
 };
 
 
-animeRatings.getANNLinkTitle = function() {
-    return animeRatings.getANNLink().childNodes[0].childNodes[0].nodeValue;
+animeRatings.hasPageContainsAnimeInfoBox = function() {
+    var tables = document.getElementsByTagName("table");
+    for (var i = 0; i < tables.length; ++i) {
+        var table = tables[i];
+        if (table.getAttribute("class") === "infobox") {
+            var tds = table.getElementsByTagName("td");
+            for (var j = 0; j < tds.length; ++j) {
+                var td = tds[j];
+                if (td.childNodes.length === 0) {
+                    continue;
+                }
+
+                if (td.childNodes[0].nodeValue === null) {
+                    continue;
+                }
+
+                this.log("3 " + td.childNodes[0].nodeValue);
+                if (td.childNodes[0].nodeValue.search(/anime/i) !== -1) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 };
 
 
@@ -446,7 +469,10 @@ animeRatings.pageContainsLinkToAnimeNewsNetwork = function() {
 
 
 animeRatings.isAnimePage = function() {
-    return !animeRatings.isAnimeListing() && animeRatings.pageContainsLinkToAnimeNewsNetwork();
+    return !animeRatings.isAnimeListing() &&
+        (animeRatings.pageContainsLinkToAnimeNewsNetwork() ||
+         animeRatings.hasPageContainsAnimeInfoBox());
+
 };
 
 
@@ -459,7 +485,7 @@ animeRatings.insertRatingsIntoYearList = function() {
 
 
 animeRatings.insertRatingsIntoAnimePage = function() {
-    var title = animeRatings.improveTitle(animeRatings.getANNLinkTitle());
+    var title = animeRatings.improveTitle(animeRatings.getAnimeTitle());
     this.getMALInfo("anime", title, function(linkInfo) {
         animeRatings.addRatingIntoAnimePageDOM(linkInfo);
     });

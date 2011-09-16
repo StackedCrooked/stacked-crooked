@@ -511,27 +511,64 @@ animeRatings.getFirstChildByTagName = function(node, tagName) {
 
 animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
 
+    linkInfo.entries.sort(function(lhs, rhs) {
+        if (lhs.start_date < rhs.start_date) {
+            return -1;
+        }
+        else if (lhs.start_date == rhs.start_date) {
+            return 0;
+        }
+        return 1;
+    });
+
+
     var firstParagraph = animeRatings.getFirstChildByTagName(document.getElementById("bodyContent"), "P");
 
     var node = firstParagraph.parentNode.insertBefore(document.createElement("div"), firstParagraph);
+    node = node.create("table");
+    node.setAttribute("style", "margin: 0.5em 0 0.5em 1em; padding: 0.2em;");
+    node.setAttribute("class", "toc");
+
+    var td = node.create("tr/td");
+    td.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
+    td.setInnerText("MyAnimeList Ratings");
 
     node = node.create("table");
-    node.setAttribute("class", "toc");
-    node = node.create("tr/td");
-    node.create("h2").setInnerText("MyAnimeList matches");
-    node = node.create("ul");
+    tr = node.create("tr");
+    tr.create("td").create("b").setInnerText("Year");
+    tr.create("td").create("b").setInnerText("Type");
+    tr.create("td").create("b").setInnerText("Title");
+    tr.create("td").create("b").setInnerText("Rating");
 
     for (var i = 0; i < linkInfo.entries.length; ++i) {
 
         var entry = linkInfo.entries[i];
-        var a = node.create("li/a");
-        a.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
-        var result = "{Year}: {Title} ({Score})";
+        tr = node.create("tr");
+
+        // Year
         var year = parseInt(entry.start_date.split("-")[0], 10);
-        result = result.replace("{Year}", year !== 0 ? year : "????");
-        result = result.replace("{Title}", entry.title);
-        result = result.replace("{Score}", entry.score !== "0.00" ? entry.score : "no rating");
-        a.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
+        var td_year = tr.create("td");
+        td_year.setAttribute("style", "text-align: center;");
+        td_year.setInnerText(year);
+
+        // Type
+        var td_type = tr.create("td");
+        td_type.setAttribute("style", "text-align: center;");
+        td_type.setInnerText(entry.type);
+
+        // Title
+        var a = tr.create("td/i/a");
+        a.setAttribute("href", "http://myanimelist.net/anime/" + entry.id);
+        a.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(entry.title))));
+
+        // Score
+        var td_score = tr.create("td");
+        td_score.setAttribute("style", "text-align: center;");
+        if (parseFloat(entry.score, 10) >= 8) {
+            td_score = td_score.create("strong");
+        }
+        td_score.setInnerText(entry.score !== "0.00" ? entry.score : "(no rating)");
+
     }
 };
 

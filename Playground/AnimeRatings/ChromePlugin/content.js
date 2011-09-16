@@ -216,12 +216,12 @@ animeRatings.addEntriesToDOM = function(node, linkItem) {
             var entry = entries[i];
 
             // Skip if year doesn't match
-            var begin_year = parseInt(entry.start_date.split("-")[0], 10);
+            var startYear = parseInt(entry.start_date.split("-")[0], 10);
             var end_year = parseInt(entry.end_date.split("-")[0], 10);
             var year = this.getYear();
-            if (begin_year > year || (end_year !== 0 && end_year < year)) {
+            if (startYear > year || (end_year !== 0 && end_year < year)) {
                 if (entry.title.search("Hunter") !== -1) {
-                    this.log(year + " is outside of [" + begin_year + ", " + end_year + "]");
+                    this.log(year + " is outside of [" + startYear + ", " + end_year + "]");
                     this.log("entry.end_date: " + entry.end_date);
                 }
                 parent.setAttribute("private_year_is_wrong", true);
@@ -577,14 +577,24 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
 
 
         // Year
-        var year = parseInt(entry.start_date.split("-")[0], 10);
-        if (year === 0) {
-            continue;
+        var startYear = parseInt(entry.start_date.split("-")[0], 10);
+
+        var endYear = parseInt(entry.end_date.split("-")[0], 10);
+        if (endYear === 0) {
+            endYear = "ongoing";
         }
 
         tr = node.create("tr");
         var td_year = tr.create("td");
         td_year.setAttribute("style", "text-align: center;");
+        var year = startYear;
+
+        if (startYear === 0) {
+            year = "-";
+        }
+        else if (startYear !== endYear) {
+            year += " - " + endYear;
+        }
         td_year.setInnerText(year);
 
         // Title

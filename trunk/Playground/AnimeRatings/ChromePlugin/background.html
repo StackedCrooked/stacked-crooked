@@ -2,6 +2,32 @@
 <script>
 try {
 
+
+// Manifest info object
+chrome.manifest = (function() {
+
+    var manifestObject = false;
+    var xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            manifestObject = JSON.parse(xhr.responseText);
+        }
+    };
+    xhr.open("GET", chrome.extension.getURL('/manifest.json'), false);
+
+    try {
+        xhr.send();
+    } catch(e) {
+        console.log('Couldn\'t load manifest.json');
+    }
+
+    return manifestObject;
+
+})();
+
+console.log(chrome.manifest.version);
+
 var enableLocalStorage = true;
 
 function performHTTPGETRequest(url, auth, callback) {
@@ -43,7 +69,7 @@ function getInnerText(node) {
 }
 
 function getCacheKey(pageType, title) {
-    return pageType + "_" + title;
+    return chrome.manifest.version + "_" + pageType + "_" + title;
 }
 
 function getMalInfo(arg, callback) {
@@ -90,16 +116,19 @@ function getMalInfo(arg, callback) {
             var ids = node.getElementsByTagName("id");
             var start_dates = node.getElementsByTagName("start_date");
             var end_dates = node.getElementsByTagName("end_date");
+            var types = node.getElementsByTagName("type");
+            console.log(types);
 
             if (titles.length === 1 && scores.length === 1 && ids.length === 1 &&
-                start_dates.length === 1 && end_dates.length === 1) {
+                start_dates.length === 1 && end_dates.length === 1 && types.length === 1) {
 
                 var entry = {
                     title: getInnerText(titles[0]).replace(/%26/g, "&"),
                     score: getInnerText(scores[0]),
                     id: getInnerText(ids[0]),
                     start_date : getInnerText(start_dates[0]),
-                    end_date : getInnerText(end_dates[0])
+                    end_date : getInnerText(end_dates[0]),
+                    type : getInnerText(types[0])
                 };
 
                 result.entries.push(entry);

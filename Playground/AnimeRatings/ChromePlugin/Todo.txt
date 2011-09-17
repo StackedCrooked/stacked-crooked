@@ -1,3 +1,8 @@
+- Support other lists:
+    - http://en.wikipedia.org/wiki/Category:Action_anime_and_manga
+    - http://en.wikipedia.org/wiki/Category:Magical_girl_anime_and_manga
+    - http://en.wikipedia.org/wiki/Category:Fantasy_anime_and_manga
+    - http://en.wikipedia.org/wiki/Category:Supernatural_anime_and_manga
 - User request: Show MAL rating in Wikipedia anime main pages
 - Configurability
     - Highlight treshold (only if score >= x)

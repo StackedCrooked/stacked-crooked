@@ -179,7 +179,7 @@ animeRatings.addEntryToDOM = function(node, entry, pattern) {
     result = result.replace("{BeginYear}",  parseInt(entry.start_date.split("-")[0], 10));
     result = result.replace("{EndYear}",  parseInt(entry.end_date.split("-")[0], 10));
     result = result.replace("{Title}", entry.title);
-    result = result.replace("{Score}", entry.score);
+    result = result.replace("{Score}", entry.score !== "0.00" ? entry.score : "no rating");
     parent.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
 };
 
@@ -207,6 +207,11 @@ animeRatings.addEntriesToDOM = function(node, linkItem) {
     for (var i = 0; i < entries.length; ++i) {
         try {
             var entry = entries[i];
+
+            // Skip specials
+            if (entry.type === "Special") {
+                continue;
+            }
 
             // Skip if year doesn't match
             var startYear = parseInt(entry.start_date.split("-")[0], 10);
@@ -244,14 +249,6 @@ animeRatings.addMissingStuff = function(listElement, entries) {
         return;
     }
 
-    listElement.style.listStyle = "none";
-
-    var parent = listElement.create("li");
-    parent.setInnerText("No MAL title found from " + this.getYear() + ". Closest match:");
-
-    parent = parent.create("ul");
-    parent.style.listStyle = "square outside none";
-
     var closest_entry = entries[0];
     closest_entry.difference = Math.abs(this.getYear() - parseInt(closest_entry.start_date.split("-")[0], 10));
 
@@ -268,8 +265,22 @@ animeRatings.addMissingStuff = function(listElement, entries) {
         }
     }
 
+    // If the closest match is more than one year difference the we don't consider it.
+    if (closest_entry.difference != 1) {
+        return;
+    }
+
+
+    listElement.style.listStyle = "none";
+
+    var parent = listElement.create("li");
+    parent.setInnerText("No MAL title found from " + this.getYear() + ". Closest match:");
+
+    parent = parent.create("ul");
+    parent.style.listStyle = "square outside none";
+
     // Insert title entry
-    this.addEntryToDOM(parent.create("li"), closest_entry, "{Title} ({BeginYear}, {Score})");
+    this.addEntryToDOM(parent.create("li"), closest_entry, "{BeginYear}: {Title} ({Score})");
 };
 
 
@@ -293,6 +304,7 @@ animeRatings.improveTitle = function(title) {
         "Mawaru-Penguindrum" : "Mawaru Penguindrum",
         "Mazinkaizer" : "Mazinkaiser",
         "Negima! Magister Negi Magi" : "Negima",
+        "Oh My Goddess" : "My Goddess",
         "Poppy Hill" : "Kokurikozaka Kara",
         "Koishinasai" : "Koi Shinasai",
         "Sengoku Paradise" : "Kiwami",
@@ -544,10 +556,11 @@ animeRatings.getFirstChildByTagName = function(node, tagName) {
 animeRatings.sortEntries = function(entries) {
 
     function getMedium(type) {
-        if (type === "Manga" || type === "Novel") {
-            return "paper";
-        }
-        return "video";
+        return "any";
+//        if (type === "Manga" || type === "Novel") {
+//            return "paper";
+//        }
+//        return "video";
     }
 
     entries.sort(function(lhs, rhs) {
@@ -606,6 +619,11 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
     for (var i = 0; i < linkInfo.entries.length; ++i) {
 
         var entry = linkInfo.entries[i];
+
+        // Skip specials
+        if (entry.type === "Special") {
+            continue;
+        }
 
 
         // Year

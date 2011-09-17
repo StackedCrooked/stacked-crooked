@@ -209,7 +209,7 @@ animeRatings.addEntriesToDOM = function(node, linkItem) {
             var entry = entries[i];
 
             // Skip specials
-            if (entry.type === "Special") {
+            if (entry.type === "Special" || entry.type == "One Shot") {
                 continue;
             }
 
@@ -621,7 +621,7 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
         var entry = linkInfo.entries[i];
 
         // Skip specials
-        if (entry.type === "Special") {
+        if (entry.type === "Special" || entry.type == "One Shot") {
             continue;
         }
 

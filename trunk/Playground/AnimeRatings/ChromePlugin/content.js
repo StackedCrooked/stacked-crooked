@@ -195,16 +195,9 @@ animeRatings.informFailure = function(node, linkItem) {
 animeRatings.addEntriesToDOM = function(node, linkItem) {
     var parent = node.parentNode;
 
+
     var entries = linkItem.entries;
-    entries.sort(function(lhs, rhs) {
-        if (lhs.start_date < rhs.start_date) {
-            return -1;
-        }
-        else if (lhs.start_date == rhs.start_date) {
-            return 0;
-        }
-        return 1;
-    });
+    animeRatings.sortEntries(entries);
 
     if (parent.getElementsByTagName("ul").length === 0) {
         parent = parent.createEntryList();
@@ -548,9 +541,26 @@ animeRatings.getFirstChildByTagName = function(node, tagName) {
 };
 
 
-animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
+animeRatings.sortEntries = function(entries) {
 
-    linkInfo.entries.sort(function(lhs, rhs) {
+    function getMedium(type) {
+        if (type === "Manga" || type === "Novel") {
+            return "paper";
+        }
+        return "video";
+    }
+
+    entries.sort(function(lhs, rhs) {
+        var lhsMedium = getMedium(lhs.type);
+        var rhsMedium = getMedium(rhs.type);
+        if (lhsMedium !== rhsMedium) {
+            if (lhsMedium < rhsMedium) {
+                return -1;
+            }
+            else {
+                return 1;
+            }
+        }
         if (lhs.start_date < rhs.start_date) {
             return -1;
         }
@@ -559,7 +569,12 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
         }
         return 1;
     });
+};
 
+
+animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
+
+    animeRatings.sortEntries(linkInfo.entries);
 
     var firstParagraph = animeRatings.getFirstChildByTagName(document.getElementById("bodyContent"), "P");
 

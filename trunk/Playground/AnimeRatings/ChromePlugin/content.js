@@ -165,9 +165,10 @@ animeRatings.getYear = function() {
 /**
  * @pattern  String  "{Year} {Title} {Score}"
  */
-animeRatings.addEntryToDOM = function(node, entry, pattern) {
+animeRatings.addEntryToDOM = function(parent, entry, pattern) {
 
-    var parent = node.create("a");
+    parent = parent.create("li");
+    parent = parent.create("a");
     parent.setAttribute("href", "http://myanimelist.net/" + this.getPageType() + "/" + entry.id);
 
     if (parseFloat(entry.score, 10) >= 8) {
@@ -227,7 +228,7 @@ animeRatings.addEntriesToDOM = function(node, linkItem) {
             }
 
             // Insert title entry
-            this.addEntryToDOM(parent.create("li"),
+            this.addEntryToDOM(parent,
                                entry,
                                "{Title} ({Score})");
         }
@@ -280,7 +281,7 @@ animeRatings.addMissingStuff = function(listElement, entries) {
     parent.style.listStyle = "square outside none";
 
     // Insert title entry
-    this.addEntryToDOM(parent.create("li"), closest_entry, "{BeginYear}: {Title} ({Score})");
+    this.addEntryToDOM(parent, closest_entry, "{BeginYear}: {Title} ({Score})");
 };
 
 

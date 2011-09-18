@@ -501,7 +501,7 @@ animeRatings.getPageTypeFromInfoBox = function() {
         return "manga";
     }
 
-    return "";
+    return "default";
 };
 
 
@@ -681,10 +681,10 @@ if (animeRatings.isYearList()) {
 }
 else {
     animeRatings.pageType = animeRatings.getPageTypeFromInfoBox();
-    if (animeRatings.pageType === "" && animeRatings.getANNLink() !== null) {
+    if (animeRatings.pageType === "default" && animeRatings.getANNLink() !== null) {
         animeRatings.pageType = "anime";
     }
-    if (animeRatings.pageType.search("anime") !== 1 || animeRatings.pageType.search("manga") !== 1) {
+    if (animeRatings.pageType.search("anime") !== -1 || animeRatings.pageType.search("manga") !== -1) {
         animeRatings.insertRatingsIntoPage();
     }
 }

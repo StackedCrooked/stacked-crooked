@@ -1,18 +1,18 @@
 function AnimeRatings() {
 }
 
-var animeRatings = new AnimeRatings();
-animeRatings.cache = {};
+var app = new AnimeRatings();
+app.cache = {};
 
 
-animeRatings.sendRequest = function(arg, callback) {
+app.sendRequest = function(arg, callback) {
     chrome.extension.sendRequest(arg, function(response) {
         callback(response);
     });
 };
 
 
-animeRatings.log = function(message) {
+app.log = function(message) {
     this.sendRequest(
         {action: "log", arg: message},
         function() {}
@@ -20,7 +20,7 @@ animeRatings.log = function(message) {
 };
 
 
-animeRatings.getMALInfo = function(pageType, title, callback) {
+app.getMALInfo = function(pageType, title, callback) {
     var linkInfo = {};
     linkInfo.title = title;
     linkInfo.pageType = pageType;
@@ -33,7 +33,7 @@ animeRatings.getMALInfo = function(pageType, title, callback) {
 };
 
 
-animeRatings.getMWPages = function() {
+app.getMWPages = function() {
     var divs = document.getElementsByTagName("div");
     for (var i = 0; i < divs.length; ++i) {
         if (divs[i].id == "mw-pages") {
@@ -44,11 +44,11 @@ animeRatings.getMWPages = function() {
 };
 
 
-animeRatings.debugLink = "";
-animeRatings.excludeLink = "";
+app.debugLink = "";
+app.excludeLink = "";
 
 
-animeRatings.getLinks = function() {
+app.getLinks = function() {
     var result = [];
     try {
         var lis = this.getMWPages().getElementsByTagName("li");
@@ -56,8 +56,8 @@ animeRatings.getLinks = function() {
             var links = lis[i].getElementsByTagName("a");
             if (links.length > 0) {
                 var linkNode = links[0];
-                if (linkNode.title.search(animeRatings.debugLink) !== -1 &&
-                    linkNode.title.search(animeRatings.excludeLink === -1)) {
+                if (linkNode.title.search(app.debugLink) !== -1 &&
+                    linkNode.title.search(app.excludeLink === -1)) {
                     result.push(linkNode);
                 }
             }
@@ -71,7 +71,7 @@ animeRatings.getLinks = function() {
 };
 
 
-animeRatings.encodeResult = function(title) {
+app.encodeResult = function(title) {
 
     var result = title;
     var keys = [];
@@ -104,14 +104,14 @@ animeRatings.encodeResult = function(title) {
 };
 
 
-animeRatings.htmlDecode = function(input) {
+app.htmlDecode = function(input) {
     var e = document.createElement('div');
     e.innerHTML = input;
     return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 };
 
 
-animeRatings.findAndReplace = function(input, mapping) {
+app.findAndReplace = function(input, mapping) {
     var result = input;
     for (var key in mapping) {
         var value = mapping[key];
@@ -135,7 +135,7 @@ animeRatings.findAndReplace = function(input, mapping) {
  * This code is a workaround that provides fixes
  * for common cases.
  */
-animeRatings.fixUnicode = function(input) {
+app.fixUnicode = function(input) {
     var result = input;
 
     // First apply a mapping of composed keys
@@ -156,7 +156,7 @@ animeRatings.fixUnicode = function(input) {
 };
 
 
-animeRatings.getYear = function() {
+app.getYear = function() {
     var components = document.URL.split("_");
     return components[components.length - 1];
 };
@@ -165,7 +165,7 @@ animeRatings.getYear = function() {
 /**
  * @pattern  String  "{Year} {Title} {Score}"
  */
-animeRatings.addEntryToDOM = function(parent, entry, pattern) {
+app.addEntryToDOM = function(parent, entry, pattern) {
 
     parent = parent.create("li");
     parent = parent.create("a");
@@ -185,7 +185,7 @@ animeRatings.addEntryToDOM = function(parent, entry, pattern) {
 };
 
 
-animeRatings.informFailure = function(node, linkItem) {
+app.informFailure = function(node, linkItem) {
     var reason = (linkItem.reason === undefined ? "No results returned." : linkItem.reason);
     var parent = node.parentNode;
     parent = parent.createEntryList().create("li");
@@ -193,12 +193,12 @@ animeRatings.informFailure = function(node, linkItem) {
 };
 
 
-animeRatings.addEntriesToDOM = function(node, linkItem) {
+app.addEntriesToDOM = function(node, linkItem) {
     var parent = node.parentNode;
 
 
     var entries = linkItem.entries;
-    animeRatings.sortEntries(entries);
+    app.sortEntries(entries);
 
     if (parent.getElementsByTagName("ul").length === 0) {
         parent = parent.createEntryList();
@@ -233,18 +233,18 @@ animeRatings.addEntriesToDOM = function(node, linkItem) {
                                "{Title} ({Score})");
         }
         catch (exc) {
-            animeRatings.log(exc);
+            app.log(exc);
         }
     }
 
     if (parent.hasAttribute("private_year_is_wrong") &&
         parent.getElementsByTagName("li").length === 0) {
-        animeRatings.addMissingStuff(parent, entries);
+        app.addMissingStuff(parent, entries);
     }
 };
 
 
-animeRatings.addMissingStuff = function(listElement, entries) {
+app.addMissingStuff = function(listElement, entries) {
 
     if (entries.length === 0) {
         return;
@@ -262,7 +262,7 @@ animeRatings.addMissingStuff = function(listElement, entries) {
             }
         }
         catch (exc) {
-            animeRatings.log(exc);
+            app.log(exc);
         }
     }
 
@@ -288,7 +288,7 @@ animeRatings.addMissingStuff = function(listElement, entries) {
 /**
  * Workaround: improves search results
  */
-animeRatings.improveTitle = function(title) {
+app.improveTitle = function(title) {
 
     var result = title;
 
@@ -360,8 +360,8 @@ animeRatings.improveTitle = function(title) {
 };
 
 
-animeRatings.linkNodes = {};
-animeRatings.links = animeRatings.getLinks().reverse();
+app.linkNodes = {};
+app.links = app.getLinks().reverse();
 
 Element.prototype.setInnerText = function(text) {
     this.appendChild(document.createTextNode(text));
@@ -385,36 +385,36 @@ Element.prototype.createEntryList = function() {
     return result;
 };
 
-animeRatings.getNext = function() {
-    if (animeRatings.links.length === 0) {
+app.getNext = function() {
+    if (app.links.length === 0) {
         return;
     }
 
-    var linkNode = animeRatings.links.pop();
+    var linkNode = app.links.pop();
 
-    var title = animeRatings.improveTitle(linkNode.title);
-    if (animeRatings.linkNodes[title] === undefined) {
-        animeRatings.linkNodes[title] = linkNode;
+    var title = app.improveTitle(linkNode.title);
+    if (app.linkNodes[title] === undefined) {
+        app.linkNodes[title] = linkNode;
         this.getMALInfo(this.getPageType(), title, function(linkInfo) {
-            var node = animeRatings.linkNodes[title];
+            var node = app.linkNodes[title];
             if (linkInfo.success === true) {
-                animeRatings.addEntriesToDOM(node, linkInfo);
+                app.addEntriesToDOM(node, linkInfo);
             }
             else {
-                animeRatings.informFailure(node, linkInfo);
+                app.informFailure(node, linkInfo);
             }
-            animeRatings.getNext();
+            app.getNext();
         });
     }
 };
 
 
-animeRatings.isYearList = function() {
-    return animeRatings.getPageType() === "anime" ||
-           animeRatings.getPageType() === "manga";
+app.isYearList = function() {
+    return app.getPageType() === "anime" ||
+           app.getPageType() === "manga";
 };
 
-animeRatings.getAnimeTitleFromPage = function() {
+app.getAnimeTitleFromPage = function() {
     var headings = document.getElementsByTagName("h1");
     if (headings.length === 0) {
         throw "H1 not found in page";
@@ -436,7 +436,7 @@ animeRatings.getAnimeTitleFromPage = function() {
  * Get the link to www.animenewsnetwork.com.
  * Returns null if not found.
  */
-animeRatings.getANNLink = function() {
+app.getANNLink = function() {
     var links = document.getElementsByTagName("a");
     for (var i = 0; i < links.length; ++i) {
         var link = links[i];
@@ -457,7 +457,7 @@ animeRatings.getANNLink = function() {
            "anime|manga"    if both anime and manga page
            ""               if neither anime nor manga page
  */
-animeRatings.getPageTypeFromInfoBox = function() {
+app.getPageTypeFromInfoBox = function() {
     var foundAnime = false;
     var foundManga = false;
     var tables = document.getElementsByTagName("table");
@@ -505,7 +505,7 @@ animeRatings.getPageTypeFromInfoBox = function() {
 };
 
 
-animeRatings.getPageType = function() {
+app.getPageType = function() {
     if (document.URL.search("Category:Anime_of_") !== -1) {
         return "anime";
     }
@@ -516,34 +516,34 @@ animeRatings.getPageType = function() {
 };
 
 
-animeRatings.insertRatingsIntoList = function() {
+app.insertRatingsIntoList = function() {
     var numSimulReq = 5;
     for (var i = 0; i < numSimulReq; ++i) {
-        animeRatings.getNext(animeRatings.links);
+        app.getNext(app.links);
     }
 };
 
 
-animeRatings.insertRatingsIntoPage = function() {
-    var title = animeRatings.improveTitle(animeRatings.getAnimeTitleFromPage());
+app.insertRatingsIntoPage = function() {
+    var title = app.improveTitle(app.getAnimeTitleFromPage());
     this.getMALInfo("anime", title, function(linkInfo) {
-        animeRatings.linkInfo = linkInfo;
-        animeRatings.getMALInfo("manga", title, function(linkInfo) {
-            animeRatings.linkInfo.success = animeRatings.linkInfo || linkInfo.success;
-            if (!animeRatings.linkInfo.success) {
-                animeRatings.log("Failed to get neither anime nor manga info for: " + title);
+        app.linkInfo = linkInfo;
+        app.getMALInfo("manga", title, function(linkInfo) {
+            app.linkInfo.success = app.linkInfo || linkInfo.success;
+            if (!app.linkInfo.success) {
+                app.log("Failed to get neither anime nor manga info for: " + title);
                 return;
             }
             for (var i = 0; i < linkInfo.entries.length; ++i) {
-                animeRatings.linkInfo.entries.push(linkInfo.entries[i]);
+                app.linkInfo.entries.push(linkInfo.entries[i]);
             }
-            animeRatings.addRatingIntoAnimePageDOM(animeRatings.linkInfo);
+            app.addRatingIntoAnimePageDOM(app.linkInfo);
         });
     });
 };
 
 
-animeRatings.getFirstChildByTagName = function(node, tagName) {
+app.getFirstChildByTagName = function(node, tagName) {
     for (var i = 0; i < node.childNodes.length; ++i) {
         var childNode = node.childNodes[i];
         if (childNode.tagName === tagName) {
@@ -554,7 +554,7 @@ animeRatings.getFirstChildByTagName = function(node, tagName) {
 };
 
 
-animeRatings.sortEntries = function(entries) {
+app.sortEntries = function(entries) {
 
     function getMedium(type) {
         return "any";
@@ -586,11 +586,11 @@ animeRatings.sortEntries = function(entries) {
 };
 
 
-animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
+app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
-    animeRatings.sortEntries(linkInfo.entries);
+    app.sortEntries(linkInfo.entries);
 
-    var firstParagraph = animeRatings.getFirstChildByTagName(document.getElementById("bodyContent"), "P");
+    var firstParagraph = app.getFirstChildByTagName(document.getElementById("bodyContent"), "P");
 
     var node = firstParagraph.parentNode.insertBefore(document.createElement("div"), firstParagraph);
     node = node.create("table");
@@ -676,19 +676,19 @@ animeRatings.addRatingIntoAnimePageDOM = function(linkInfo) {
 //
 try {
 
-if (animeRatings.isYearList()) {
-    animeRatings.insertRatingsIntoList();
+if (app.isYearList()) {
+    app.insertRatingsIntoList();
 }
 else {
-    animeRatings.pageType = animeRatings.getPageTypeFromInfoBox();
-    if (animeRatings.pageType === "default" && animeRatings.getANNLink() !== null) {
-        animeRatings.pageType = "anime";
+    app.pageType = app.getPageTypeFromInfoBox();
+    if (app.pageType === "default" && app.getANNLink() !== null) {
+        app.pageType = "anime";
     }
-    if (animeRatings.pageType.search("anime") !== -1 || animeRatings.pageType.search("manga") !== -1) {
-        animeRatings.insertRatingsIntoPage();
+    if (app.pageType.search("anime") !== -1 || app.pageType.search("manga") !== -1) {
+        app.insertRatingsIntoPage();
     }
 }
 
 } catch (exc) {
-    animeRatings.log("Exception caught: " + exc.toString());
+    app.log("Exception caught: " + exc.toString());
 }

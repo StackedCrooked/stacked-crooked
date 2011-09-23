@@ -478,7 +478,7 @@ animeRatings.getPageTypeFromInfoBox = function() {
                 var value = td.childNodes[0].nodeValue;
 
                 if (value.search(/TV anime/) !== -1 ||
-                    value.search(/Original video animation/ !== -1)) {
+                    value.search(/Original video animation/) !== -1) {
                     foundAnime = true;
                 }
 

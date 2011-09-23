@@ -140,17 +140,17 @@ animeRatings.fixUnicode = function(input) {
 
     // First apply a mapping of composed keys
     result = this.findAndReplace(result, {
-        "&acirc;��&acirc;��&acirc;��"	: "☆☆☆",
-        "&Atilde;�&Atilde;�&Atilde;�"		:"xxx",
-        "&acirc;��"						: "-"
+        "&acirc;��&acirc;��&acirc;��"   : "☆☆☆",
+        "&Atilde;�&Atilde;�&Atilde;�"   :"xxx",
+        "&acirc;��"                     : "-"
     });
 
     // Then map remaining individual keys
     result = this.findAndReplace(result, {
-        "&Atilde;&copy;"	: "é",
-        "&acirc;�&ordf;"	: "♪",
-        "&acirc;�"			: "†",
-        "&Aring;�"			: "ō"
+        "&Atilde;&copy;"    : "é",
+        "&acirc;�&ordf;"    : "♪",
+        "&acirc;�"          : "†",
+        "&Aring;�"          : "ō"
     });
     return result;
 };

@@ -768,7 +768,7 @@ app.updateScore = function() {
             }
         }
     }
-    window.setTimeout(app.updateScore, 100);
+    window.setTimeout(app.updateScore, 1000);
 };
 
 

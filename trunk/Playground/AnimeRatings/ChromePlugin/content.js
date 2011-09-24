@@ -168,13 +168,12 @@ app.getYear = function() {
 app.addEntryToDOM = function(parent, entry, pattern) {
 
     parent = parent.create("li");
+
+    parent.setAttribute("score", entry.score);
+    app.malLinks.push(parent);
+
     parent = parent.create("a");
     parent.setAttribute("href", "http://myanimelist.net/" + this.getPageType() + "/" + entry.id);
-
-    if (parseFloat(entry.score, 10) >= 8) {
-        parent = parent.create("strong");
-        parent.setAttribute("style", "background-color:yellow;");
-    }
 
     var result = pattern;
     result = result.replace("{BeginYear}",  parseInt(entry.start_date.split("-")[0], 10));
@@ -360,9 +359,6 @@ app.improveTitle = function(title) {
 };
 
 
-app.linkNodes = {};
-app.links = app.getLinks().reverse();
-
 Element.prototype.setInnerText = function(text) {
     this.appendChild(document.createTextNode(text));
 };
@@ -387,6 +383,7 @@ Element.prototype.createEntryList = function() {
 
 app.getNext = function() {
     if (app.links.length === 0) {
+        app.updateScore();
         return;
     }
 
@@ -652,12 +649,102 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 };
 
 
+app.insertSettingsBox = function() {
+
+    var form = document.createElement("form");
+
+    var contentSub = document.getElementById("contentSub");
+    contentSub.parentNode.insertBefore(form, contentSub.nextSibling);
+    
+    var highlightSpinButton = form.create("input");
+    highlightSpinButton.name = "HighlightTreshold";
+    highlightSpinButton.type = "number";
+    highlightSpinButton.min = "0";
+    highlightSpinButton.max = "10";
+    highlightSpinButton.step = "0.1";
+    highlightSpinButton.value = "8";
+    app.highlightSpinButton = highlightSpinButton;
+
+    var visibilitySpinButton = form.create("input");
+    visibilitySpinButton.name = "VisibilityTreshold";
+    visibilitySpinButton.type = "number";
+    visibilitySpinButton.min = "0";
+    visibilitySpinButton.max = "10";
+    visibilitySpinButton.step = "0.1";
+    visibilitySpinButton.value = "6";
+    app.visibilitySpinButton = visibilitySpinButton;
+};
+
+
+app.getHighlightTreshold = function() {
+    return parseFloat(app.highlightSpinButton.value, 10);
+};
+
+
+app.isHighlightTresholdChanged = function() {
+    if (app.highlightTreshold === undefined) {
+        app.highlightTreshold = app.getHighlightTreshold();
+        return true;
+    }
+    return app.highlightTreshold !== app.getHighlightTreshold();
+};
+
+
+app.getVisibilityTreshold = function() {
+    return parseFloat(app.visibilitySpinButton.value, 10);
+};
+
+
+app.isVisibilityTresholdChanged = function() {
+    if (app.visibilityTreshold === undefined) {
+        app.visibilityTreshold = app.getVisibilityTreshold();
+        return true;
+    }
+    return app.visibilityTreshold !== app.getVisibilityTreshold();
+};
+
+
+app.getMALLinkScore = function(malLink) {
+  return parseFloat(malLink.getAttribute("score"), 10);
+};
+
+
+app.updateScore = function() {
+    if (app.isHighlightTresholdChanged() || app.isVisibilityTresholdChanged()) {
+        for (var i = 0; i < app.malLinks.length; ++i) {
+            var malLink = app.malLinks[i];
+            var linkScore = app.getMALLinkScore(malLink);
+
+            if (linkScore >= app.getHighlightTreshold()) {
+                malLink.firstChild.setAttribute("style", "font-weight:bold; background-color:yellow;");
+            }
+            else {
+                malLink.firstChild.setAttribute("style", "font-weight:normal; background-color:inherit;");
+            }
+            
+            if (linkScore >= app.getVisibilityTreshold()) {
+                malLink.setAttribute("style", "display:inline;");
+            }
+            else {
+                malLink.setAttribute("style", "display:none;");
+            }
+        }
+    }
+    window.setTimeout(app.updateScore, 100);
+};
+
+
 //
 // Application Entry Point
 //
 try {
 
+app.malLinks = [];
+app.linkNodes = {};
+app.links = app.getLinks().reverse();
+
 if (app.isYearList()) {
+    app.insertSettingsBox();
     app.insertRatingsIntoList();
 }
 else {

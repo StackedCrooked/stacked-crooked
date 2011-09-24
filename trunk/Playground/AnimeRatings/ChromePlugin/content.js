@@ -652,7 +652,8 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
 app.insertSettingsBox = function() {
     var table = document.createElement("table");
-    table.align = "center";
+    table.className = "infobox";
+    table.setAttribute("style", "float:none;");
     
     var mwPages = app.getMWPages();
     mwPages.insertBefore(table, mwPages.firstChild.nextSibling.nextSibling.nextSibling.nextSibling);
@@ -666,8 +667,11 @@ app.insertSettingsBox = function() {
     th.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
     th.createText("Anime Ratings");
 
+    table = table.create("table");
+
     tr = table.create("tr");
     var td = tr.create("td");
+    td.setAttribute("style", "vertical-align:middle;")
     td.createText("Visibility treshold: ");
 
     var spinButtonWidth = "40px";
@@ -683,6 +687,7 @@ app.insertSettingsBox = function() {
 
     tr = table.create("tr");
     td = tr.create("td");
+    td.setAttribute("style", "vertical-align:middle;")
     td.createText("Highlight treshold: ");
     
     app.highlightSpinButton = td.create("input");

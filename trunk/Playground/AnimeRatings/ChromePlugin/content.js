@@ -651,37 +651,47 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
 
 app.insertSettingsBox = function() {
+    var table = document.createElement("table");
+    table.align = "center";
+    
+    var mwPages = app.getMWPages();
+    mwPages.insertBefore(table, mwPages.firstChild.nextSibling.nextSibling.nextSibling.nextSibling);
 
+    table = table.create("tbody");
 
-    var div = document.createElement("div");
-    var contentSub = document.getElementById("contentSub");
-    contentSub.parentNode.insertBefore(div, contentSub.nextSibling);
-
-    var table = div.create("table");
     var tr = table.create("tr");
-    tr.create("td").createText("Visibility treshold");
+    tr.setAttribute("style", "font-weight:bold;");
+    
+    var th = tr.create("th");
+    th.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
+    th.createText("Anime Ratings");
+
+    tr = table.create("tr");
+    var td = tr.create("td");
+    td.createText("Visibility treshold: ");
 
     var spinButtonWidth = "40px";
 
-    app.visibilitySpinButton = tr.create("td").create("input");
+    app.visibilitySpinButton = td.create("input");
     app.visibilitySpinButton.name = "VisibilityTreshold";
     app.visibilitySpinButton.type = "number";
     app.visibilitySpinButton.min = "0";
     app.visibilitySpinButton.max = "10";
     app.visibilitySpinButton.step = "0.1";
-    app.visibilitySpinButton.value = "6";
+    app.visibilitySpinButton.value = "6.0";
     app.visibilitySpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
 
     tr = table.create("tr");
-
-    tr.create("td").createText("Highlight treshold");
-    app.highlightSpinButton = tr.create("td").create("input");
+    td = tr.create("td");
+    td.createText("Highlight treshold: ");
+    
+    app.highlightSpinButton = td.create("input");
     app.highlightSpinButton.name = "HighlightTreshold";
     app.highlightSpinButton.type = "number";
     app.highlightSpinButton.min = "0";
     app.highlightSpinButton.max = "10";
     app.highlightSpinButton.step = "0.1";
-    app.highlightSpinButton.value = "8";
+    app.highlightSpinButton.value = "8.0";
     app.highlightSpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
 };
 

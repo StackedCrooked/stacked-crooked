@@ -180,7 +180,7 @@ app.addEntryToDOM = function(parent, entry, pattern) {
     result = result.replace("{EndYear}",  parseInt(entry.end_date.split("-")[0], 10));
     result = result.replace("{Title}", entry.title);
     result = result.replace("{Score}", entry.score !== "0.00" ? entry.score : "no rating");
-    parent.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
+    parent.createText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
 };
 
 
@@ -188,7 +188,7 @@ app.informFailure = function(node, linkItem) {
     var reason = (linkItem.reason === undefined ? "No results returned." : linkItem.reason);
     var parent = node.parentNode;
     parent = parent.createEntryList().create("li");
-    parent.setInnerText(reason);
+    parent.createText(reason);
 };
 
 
@@ -274,7 +274,7 @@ app.addMissingStuff = function(listElement, entries) {
     listElement.style.listStyle = "none";
 
     var parent = listElement.create("li");
-    parent.setInnerText("No MAL title found from " + this.getYear() + ". Closest match:");
+    parent.createText("No MAL title found from " + this.getYear() + ". Closest match:");
 
     parent = parent.create("ul");
     parent.style.listStyle = "square outside none";
@@ -359,9 +359,10 @@ app.improveTitle = function(title) {
 };
 
 
-Element.prototype.setInnerText = function(text) {
+Element.prototype.createText = function(text) {
     this.appendChild(document.createTextNode(text));
 };
+
 
 Element.prototype.create = function(tagNamePath) {
     var result = this;
@@ -577,23 +578,23 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
     var td = node.create("tr/td");
     td.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
-    td.setInnerText("MyAnimeList Ratings");
+    td.createText("MyAnimeList Ratings");
 
     node = node.create("table");
     tr = node.create("tr");
 
     tr.setAttribute("style", "text-align: center;");
     td = tr.create("td").create("b");
-    td.setInnerText("Year");
+    td.createText("Year");
 
     td = tr.create("td").create("b");
-    td.setInnerText("Title");
+    td.createText("Title");
 
     td = tr.create("td").create("b");
-    td.setInnerText("Type");
+    td.createText("Type");
 
     td = tr.create("td");
-    td.create("b").setInnerText("Rating");
+    td.create("b").createText("Rating");
 
     for (var i = 0; i < linkInfo.entries.length; ++i) {
 
@@ -624,18 +625,18 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
         else if (startYear !== endYear) {
             year += " - " + endYear;
         }
-        td_year.setInnerText(year);
+        td_year.createText(year);
 
         // Title
         var td_title = tr.create("td/i/a");
         td_title.setAttribute("style", "text-align: left;");
         td_title.setAttribute("href", "http://myanimelist.net/" + entry.pageType + "/" + entry.id);
-        td_title.setInnerText(this.htmlDecode(this.fixUnicode(this.encodeResult(entry.title))));
+        td_title.createText(this.htmlDecode(this.fixUnicode(this.encodeResult(entry.title))));
 
         // Type
         var td_type = tr.create("td");
         td_type.setAttribute("style", "text-align: center;");
-        td_type.setInnerText(entry.type);
+        td_type.createText(entry.type);
 
         // Score
         var td_score = tr.create("td");
@@ -643,7 +644,7 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
         if (parseFloat(entry.score, 10) >= 8) {
             td_score = td_score.create("strong");
         }
-        td_score.setInnerText(entry.score !== "0.00" ? entry.score : "(none)");
+        td_score.createText(entry.score !== "0.00" ? entry.score : "(none)");
 
     }
 };
@@ -651,33 +652,47 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
 app.insertSettingsBox = function() {
 
-    var form = document.createElement("form");
 
+    var div = document.createElement("div");
     var contentSub = document.getElementById("contentSub");
-    contentSub.parentNode.insertBefore(form, contentSub.nextSibling);
-    
-    var highlightSpinButton = form.create("input");
-    highlightSpinButton.name = "HighlightTreshold";
-    highlightSpinButton.type = "number";
-    highlightSpinButton.min = "0";
-    highlightSpinButton.max = "10";
-    highlightSpinButton.step = "0.1";
-    highlightSpinButton.value = "8";
-    app.highlightSpinButton = highlightSpinButton;
+    contentSub.parentNode.insertBefore(div, contentSub.nextSibling);
 
-    var visibilitySpinButton = form.create("input");
-    visibilitySpinButton.name = "VisibilityTreshold";
-    visibilitySpinButton.type = "number";
-    visibilitySpinButton.min = "0";
-    visibilitySpinButton.max = "10";
-    visibilitySpinButton.step = "0.1";
-    visibilitySpinButton.value = "6";
-    app.visibilitySpinButton = visibilitySpinButton;
+    var table = div.create("table");
+    var tr = table.create("tr");
+    tr.create("td").createText("Visibility treshold");
+
+    var spinButtonWidth = "40px";
+
+    app.visibilitySpinButton = tr.create("td").create("input");
+    app.visibilitySpinButton.name = "VisibilityTreshold";
+    app.visibilitySpinButton.type = "number";
+    app.visibilitySpinButton.min = "0";
+    app.visibilitySpinButton.max = "10";
+    app.visibilitySpinButton.step = "0.1";
+    app.visibilitySpinButton.value = "6";
+    app.visibilitySpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
+
+    tr = table.create("tr");
+
+    tr.create("td").createText("Highlight treshold");
+    app.highlightSpinButton = tr.create("td").create("input");
+    app.highlightSpinButton.name = "HighlightTreshold";
+    app.highlightSpinButton.type = "number";
+    app.highlightSpinButton.min = "0";
+    app.highlightSpinButton.max = "10";
+    app.highlightSpinButton.step = "0.1";
+    app.highlightSpinButton.value = "8";
+    app.highlightSpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
 };
 
 
 app.getHighlightTreshold = function() {
     return parseFloat(app.highlightSpinButton.value, 10);
+};
+
+
+app.setHighlightTreshold = function(highlightTreshold) {
+    app.highlightSpinButton.value = highlightTreshold;
 };
 
 
@@ -692,6 +707,11 @@ app.isHighlightTresholdChanged = function() {
 
 app.getVisibilityTreshold = function() {
     return parseFloat(app.visibilitySpinButton.value, 10);
+};
+
+
+app.setVisibilityTreshold = function(visibilityTreshold) {
+    app.visibilitySpinButton.value = visibilityTreshold;
 };
 
 
@@ -711,22 +731,25 @@ app.getMALLinkScore = function(malLink) {
 
 app.updateScore = function() {
     if (app.isHighlightTresholdChanged() || app.isVisibilityTresholdChanged()) {
+
         for (var i = 0; i < app.malLinks.length; ++i) {
             var malLink = app.malLinks[i];
             var linkScore = app.getMALLinkScore(malLink);
 
             if (linkScore >= app.getHighlightTreshold()) {
-                malLink.firstChild.setAttribute("style", "font-weight:bold; background-color:yellow;");
+                malLink.firstChild.style.fontWeight = "bold";
+                malLink.firstChild.style.backgroundColor = "yellow";
             }
             else {
-                malLink.firstChild.setAttribute("style", "font-weight:normal; background-color:inherit;");
+                malLink.firstChild.style.fontWeight = "normal";
+                malLink.firstChild.style.backgroundColor = "inherit";
             }
-            
+
             if (linkScore >= app.getVisibilityTreshold()) {
-                malLink.setAttribute("style", "display:inline;");
+                malLink.style.display = "list-item";
             }
             else {
-                malLink.setAttribute("style", "display:none;");
+                malLink.style.display = "none";
             }
         }
     }

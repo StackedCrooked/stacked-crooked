@@ -555,26 +555,7 @@ app.getFirstChildByTagName = function(node, tagName) {
 
 
 app.sortEntries = function(entries) {
-
-    function getMedium(type) {
-        return "any";
-//        if (type === "Manga" || type === "Novel") {
-//            return "paper";
-//        }
-//        return "video";
-    }
-
     entries.sort(function(lhs, rhs) {
-        var lhsMedium = getMedium(lhs.type);
-        var rhsMedium = getMedium(rhs.type);
-        if (lhsMedium !== rhsMedium) {
-            if (lhsMedium < rhsMedium) {
-                return -1;
-            }
-            else {
-                return 1;
-            }
-        }
         if (lhs.start_date < rhs.start_date) {
             return -1;
         }

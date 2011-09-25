@@ -659,7 +659,7 @@ app.insertSettingsBox = function() {
     
     var th = tr.create("th");
     th.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
-    th.createText("Anime Ratings");
+    th.createText("MyAnimeList Ratings");
 
     table = table.create("table");
 

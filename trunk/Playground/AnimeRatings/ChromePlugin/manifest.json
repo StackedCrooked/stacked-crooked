@@ -1,15 +1,15 @@
 {
-        "name": "Anime Ratings",
-        "version": "10",
-        "description": "Inserts anime and manga ratings into Wikipedia summary pages.",
-        "permissions": [ "http://myanimelist.net/api/anime/search.xml" ],
-        "icons": { "16": "icon16.png",
-                   "48": "icon48.png",
-                   "128": "icon128.png" },
-        "background_page": "background.html",
-        "content_scripts": [ { "matches": [ "http://en.wikipedia.org/wiki/Category:Anime_of_*",
-                                            "http://en.wikipedia.org/wiki/Category:Manga_of_*",
-                                            "http://en.wikipedia.org/wiki/*" ],
-                               "run_at": "document_end",
-                               "js": ["content.js"] } ]
+    "name": "Anime Ratings",
+    "version": "10",
+    "description": "Inserts anime and manga ratings into Wikipedia summary pages.",
+    "permissions": [ "http://myanimelist.net/api/anime/search.xml" ],
+    "icons": { "16": "icon16.png",
+               "48": "icon48.png",
+               "128": "icon128.png" },
+    "background_page": "background.html",
+    "content_scripts": [ { "matches": [ "http://en.wikipedia.org/wiki/Category:Anime_of_*",
+                                        "http://en.wikipedia.org/wiki/Category:Manga_of_*",
+                                        "http://en.wikipedia.org/wiki/*" ],
+                           "run_at": "document_end",
+                           "js": ["content.js"] } ]
 }

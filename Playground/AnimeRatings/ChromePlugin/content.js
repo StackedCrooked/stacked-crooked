@@ -2,7 +2,6 @@ function AnimeRatings() {
 }
 
 var app = new AnimeRatings();
-app.cache = {};
 
 
 app.sendRequest = function(arg, callback) {
@@ -447,14 +446,6 @@ app.getANNLink = function() {
 };
 
 
-/**
- * getPageTypeFromInfoBox returns the page type
- *
- * @return "anime"          if anime page
-           "manga"          if manga page
-           "anime|manga"    if both anime and manga page
-           ""               if neither anime nor manga page
- */
 app.getPageTypeFromInfoBox = function() {
     var foundAnime = false;
     var foundManga = false;
@@ -605,7 +596,6 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
             continue;
         }
 
-
         // Year
         var startYear = parseInt(entry.start_date.split("-")[0], 10);
 
@@ -671,7 +661,7 @@ app.insertSettingsBox = function() {
 
     tr = table.create("tr");
     var td = tr.create("td");
-    td.setAttribute("style", "vertical-align:middle;")
+    td.setAttribute("style", "vertical-align:middle;");
     td.createText("Visibility treshold: ");
 
     var spinButtonWidth = "40px";
@@ -687,7 +677,7 @@ app.insertSettingsBox = function() {
 
     tr = table.create("tr");
     td = tr.create("td");
-    td.setAttribute("style", "vertical-align:middle;")
+    td.setAttribute("style", "vertical-align:middle;");
     td.createText("Highlight treshold: ");
     
     app.highlightSpinButton = td.create("input");
@@ -706,17 +696,23 @@ app.getHighlightTreshold = function() {
 };
 
 
-app.setHighlightTreshold = function(highlightTreshold) {
-    app.highlightSpinButton.value = highlightTreshold;
-};
-
-
 app.isHighlightTresholdChanged = function() {
     if (app.highlightTreshold === undefined) {
         app.highlightTreshold = app.getHighlightTreshold();
         return true;
     }
-    return app.highlightTreshold !== app.getHighlightTreshold();
+
+    if (app.highlightTreshold !== app.getHighlightTreshold()) {
+        app.highlightTreshold = app.getHighlightTreshold();
+        return true;
+    }
+    
+    return false;
+};
+
+
+app.setHighlightTreshold = function(highlightTreshold) {
+    app.highlightSpinButton.value = highlightTreshold;
 };
 
 
@@ -725,17 +721,23 @@ app.getVisibilityTreshold = function() {
 };
 
 
-app.setVisibilityTreshold = function(visibilityTreshold) {
-    app.visibilitySpinButton.value = visibilityTreshold;
-};
-
-
 app.isVisibilityTresholdChanged = function() {
     if (app.visibilityTreshold === undefined) {
         app.visibilityTreshold = app.getVisibilityTreshold();
         return true;
     }
-    return app.visibilityTreshold !== app.getVisibilityTreshold();
+
+    if (app.visibilityTreshold !== app.getVisibilityTreshold()) {
+        app.visibilityTreshold = app.getVisibilityTreshold();
+        return true;
+    }
+    
+    return false;
+};
+
+
+app.setVisibilityTreshold = function(visibilityTreshold) {
+    app.visibilitySpinButton.value = visibilityTreshold;
 };
 
 
@@ -744,9 +746,19 @@ app.getMALLinkScore = function(malLink) {
 };
 
 
-app.updateScore = function() {
-    if (app.isHighlightTresholdChanged() || app.isVisibilityTresholdChanged()) {
+app.updateScoreLoopIsRunning = false;
 
+
+app.updateScore = function() {
+    if (app.updateScoreLoopIsRunning === false) {
+        app.updateScoreLoopIsRunning = true;
+        app.updateScoreImpl();
+    }
+};
+
+
+app.updateScoreImpl = function() {
+    if (app.isHighlightTresholdChanged() || app.isVisibilityTresholdChanged()) {
         for (var i = 0; i < app.malLinks.length; ++i) {
             var malLink = app.malLinks[i];
             var linkScore = app.getMALLinkScore(malLink);
@@ -768,7 +780,7 @@ app.updateScore = function() {
             }
         }
     }
-    window.setTimeout(app.updateScore, 1000);
+    window.setTimeout(app.updateScoreImpl, 500);
 };
 
 

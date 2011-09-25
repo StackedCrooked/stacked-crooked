@@ -2,6 +2,8 @@ function AnimeRatings() {
 }
 
 var app = new AnimeRatings();
+app.highlightTreshold  = 8;
+app.visibilityTreshold = 6;
 
 
 app.sendRequest = function(arg, callback) {
@@ -677,7 +679,7 @@ app.insertSettingsBox = function() {
     app.visibilitySpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
 
     var visibilityTreshold = localStorage["visibilityTreshold"];
-    app.visibilitySpinButton.value = (visibilityTreshold !== undefined) ? visibilityTreshold : "6.0";
+    app.setVisibilityTreshold((visibilityTreshold !== undefined) ? visibilityTreshold : app.visibilityTreshold);
 
     tr = table.create("tr");
     td = tr.create("td");
@@ -693,61 +695,69 @@ app.insertSettingsBox = function() {
     app.highlightSpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
 
     var highlightTreshold = localStorage["highlightTreshold"];
-    app.highlightSpinButton.value = (highlightTreshold !== undefined) ? highlightTreshold : "8.0";
+    app.setHighlightTreshold((highlightTreshold !== undefined) ? highlightTreshold : app.highlightTreshold);
 
 };
 
 
-app.getHighlightTreshold = function() {
-    return parseFloat(app.highlightSpinButton.value, 10);
-};
-
-
-app.isHighlightTresholdChanged = function() {
-    if (app.highlightTreshold === undefined) {
-        app.highlightTreshold = app.getHighlightTreshold();
-        return true;
+app.string2float = function(value, defaultValue) {
+    var result = parseFloat(value, 10);
+    if (isNaN(result)) {
+        result = defaultValue;
     }
-
-    if (app.highlightTreshold !== app.getHighlightTreshold()) {
-        app.highlightTreshold = app.getHighlightTreshold();
-        localStorage["highlightTreshold"] = app.highlightTreshold;
-        return true;
-    }
-    
-    return false;
-};
-
-
-app.setHighlightTreshold = function(highlightTreshold) {
-    localStorage["highlightTreshold"] = highlightTreshold;
-    app.highlightSpinButton.value = highlightTreshold;
+    return result;
 };
 
 
 app.getVisibilityTreshold = function() {
-    return parseFloat(app.visibilitySpinButton.value, 10);
+    var result = app.string2float(app.visibilitySpinButton.value, app.visibilityTreshold);
+    if (result < 0 || result > 10) {
+        result = app.visibilityTreshold;
+        app.visibilitySpinButton.value = result;
+    }
+    return result;
 };
 
 
-app.isVisibilityTresholdChanged = function() {
-    if (app.visibilityTreshold === undefined) {
-        app.visibilityTreshold = app.getVisibilityTreshold();
-        return true;
+app.getHighlightTreshold = function() {
+    var result = app.string2float(app.highlightSpinButton.value, app.highlightTreshold);
+    if (result < 0 || result > 10) {
+        result = app.highlightTreshold;
+        app.highlightSpinButton.value = result;
     }
-
-    if (app.visibilityTreshold !== app.getVisibilityTreshold()) {
-        app.visibilityTreshold = app.getVisibilityTreshold();
-        localStorage["visibilityTreshold"] = app.visibilityTreshold;
-        return true;
-    }
-    
-    return false;
+    return result;
 };
 
 
 app.setVisibilityTreshold = function(visibilityTreshold) {
     app.visibilitySpinButton.value = visibilityTreshold;
+};
+
+
+app.setHighlightTreshold = function(highlightTreshold) {
+    app.highlightSpinButton.value = highlightTreshold;
+};
+
+
+app.isVisibilityTresholdChanged = function() {
+    if (app.visibilityTreshold !== app.getVisibilityTreshold()) {
+        app.visibilityTreshold = app.getVisibilityTreshold();
+        localStorage["visibilityTreshold"] = app.visibilityTreshold;
+        return true;
+    }
+
+    return false;
+};
+
+
+app.isHighlightTresholdChanged = function() {
+    if (app.highlightTreshold !== app.getHighlightTreshold()) {
+        app.highlightTreshold = app.getHighlightTreshold();
+        localStorage["highlightTreshold"] = app.highlightTreshold;
+        return true;
+    }
+
+    return false;
 };
 
 

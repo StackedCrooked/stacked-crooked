@@ -1,3 +1,4 @@
+- Checkbox: "Only show title if year matches"
 - Support other lists:
     - http://en.wikipedia.org/wiki/Category:Action_anime_and_manga
     - http://en.wikipedia.org/wiki/Category:Magical_girl_anime_and_manga

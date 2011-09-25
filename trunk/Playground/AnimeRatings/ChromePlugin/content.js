@@ -180,6 +180,8 @@ app.addEntryToDOM = function(parent, entry, pattern) {
     result = result.replace("{Title}", entry.title);
     result = result.replace("{Score}", entry.score !== "0.00" ? entry.score : "no rating");
     parent.createText(this.htmlDecode(this.fixUnicode(this.encodeResult(result))));
+
+    app.updateScore();
 };
 
 
@@ -672,8 +674,10 @@ app.insertSettingsBox = function() {
     app.visibilitySpinButton.min = "0";
     app.visibilitySpinButton.max = "10";
     app.visibilitySpinButton.step = "0.1";
-    app.visibilitySpinButton.value = "6.0";
     app.visibilitySpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
+
+    var visibilityTreshold = localStorage["visibilityTreshold"];
+    app.visibilitySpinButton.value = (visibilityTreshold !== undefined) ? visibilityTreshold : "6.0";
 
     tr = table.create("tr");
     td = tr.create("td");
@@ -686,8 +690,11 @@ app.insertSettingsBox = function() {
     app.highlightSpinButton.min = "0";
     app.highlightSpinButton.max = "10";
     app.highlightSpinButton.step = "0.1";
-    app.highlightSpinButton.value = "8.0";
     app.highlightSpinButton.setAttribute("style", "width:" + spinButtonWidth + ";");
+
+    var highlightTreshold = localStorage["highlightTreshold"];
+    app.highlightSpinButton.value = (highlightTreshold !== undefined) ? highlightTreshold : "8.0";
+
 };
 
 
@@ -704,6 +711,7 @@ app.isHighlightTresholdChanged = function() {
 
     if (app.highlightTreshold !== app.getHighlightTreshold()) {
         app.highlightTreshold = app.getHighlightTreshold();
+        localStorage["highlightTreshold"] = app.highlightTreshold;
         return true;
     }
     
@@ -712,6 +720,7 @@ app.isHighlightTresholdChanged = function() {
 
 
 app.setHighlightTreshold = function(highlightTreshold) {
+    localStorage["highlightTreshold"] = highlightTreshold;
     app.highlightSpinButton.value = highlightTreshold;
 };
 
@@ -729,6 +738,7 @@ app.isVisibilityTresholdChanged = function() {
 
     if (app.visibilityTreshold !== app.getVisibilityTreshold()) {
         app.visibilityTreshold = app.getVisibilityTreshold();
+        localStorage["visibilityTreshold"] = app.visibilityTreshold;
         return true;
     }
     
@@ -747,9 +757,12 @@ app.getMALLinkScore = function(malLink) {
 
 
 app.updateScoreLoopIsRunning = false;
+app.forceUpdateScore = false;
 
 
 app.updateScore = function() {
+    app.forceUpdateScore = true;
+    
     if (app.updateScoreLoopIsRunning === false) {
         app.updateScoreLoopIsRunning = true;
         app.updateScoreImpl();
@@ -758,7 +771,12 @@ app.updateScore = function() {
 
 
 app.updateScoreImpl = function() {
-    if (app.isHighlightTresholdChanged() || app.isVisibilityTresholdChanged()) {
+    if (app.forceUpdateScore === true ||
+        app.isHighlightTresholdChanged() ||
+        app.isVisibilityTresholdChanged())
+    {
+        app.forceUpdateScore = false;
+        
         for (var i = 0; i < app.malLinks.length; ++i) {
             var malLink = app.malLinks[i];
             var linkScore = app.getMALLinkScore(malLink);
@@ -796,6 +814,7 @@ app.links = app.getLinks().reverse();
 if (app.isYearList()) {
     app.insertSettingsBox();
     app.insertRatingsIntoList();
+    app.updateScore();
 }
 else {
     app.pageType = app.getPageTypeFromInfoBox();

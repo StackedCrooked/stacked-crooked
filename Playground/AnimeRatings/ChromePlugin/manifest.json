@@ -1,6 +1,6 @@
 {
         "name": "Anime Ratings",
-        "version": "9",
+        "version": "10",
         "description": "Inserts anime and manga ratings into Wikipedia summary pages.",
         "permissions": [
             "http://myanimelist.net/api/anime/search.xml"

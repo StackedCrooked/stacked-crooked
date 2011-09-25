@@ -1,24 +1,19 @@
 - Checkbox: "Only show title if year matches"
+- Configurability
+    - Only show if year matches identically
+    v Highlight treshold (only if score >= x)
+    v Display treshold (hide title if score < x)
+    v Remember settings in localStorage.
 - Support other lists:
     - http://en.wikipedia.org/wiki/Category:Action_anime_and_manga
     - http://en.wikipedia.org/wiki/Category:Magical_girl_anime_and_manga
     - http://en.wikipedia.org/wiki/Category:Fantasy_anime_and_manga
     - http://en.wikipedia.org/wiki/Category:Supernatural_anime_and_manga
-- User request: Show MAL rating in Wikipedia anime main pages
-- Configurability
-    - Highlight treshold (only if score >= x)
-    - Display treshold (hide title if score < x)
-    - Only show if year matches identically
-    - Show this as a box on the actual Wikipedia page.
-    - Remember settings in localStorage.
 - Add a "Add to anime list" checkbox next to each entry (Unofficial API)
     - Requires user authentication
     - Checkbox is checked if the anime was already added
     - If the user checks the checkbox, then the
     - Use URL http://myanimelist.net/malappinfo.php?u=StackedCrooked&status=all&type=anime
-- Only show relevant results.
-    - Only show the title(s) that matches the year and its prequels.
-    - Maybe add option to "Show all results"
 - Idea: Allow user to fix wrong Wikipedia-MAL mappings:
     - This requires online storage of some form... (VPS)
     - Add a "(edit)" link next to the title.
@@ -29,3 +24,4 @@
 - Scrape Anime News Network rating
     . URL is usually found in the Wikipedia title page external links section
     . Highlight if median rating is "Very good" or better
+v Show MAL rating in Wikipedia anime main pages

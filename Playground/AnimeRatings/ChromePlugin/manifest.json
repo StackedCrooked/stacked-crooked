@@ -11,8 +11,8 @@
     "background_page": "background.html",
     "content_scripts": [ {
         "matches": [ "http://en.wikipedia.org/wiki/Category:Anime_of_*",
-                       "http://en.wikipedia.org/wiki/Category:Manga_of_*",
-                       "http://en.wikipedia.org/wiki/*" ],
+                     "http://en.wikipedia.org/wiki/Category:Manga_of_*",
+                     "http://en.wikipedia.org/wiki/*" ],
           "run_at": "document_end",
           "js": ["content.js"]
         }

@@ -588,15 +588,19 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
     node.setAttribute("class", "toc");
 
     var td = node.create("tr/td");
-    td.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
-    td.createText("Anime Ratings");
+    td.setAttribute("style", "text-align: center; background:#CCF;");
+    td.create("strong").createText("Anime Ratings");
 
     td.createNBSP();
     td.createNBSP();
+    td = td.create("span");
+    td.setAttribute("class", "toctoggle");
+    td.createText("[");
     app.hideButton = td.create("a");
+    app.hideButton.href = '#';
+    td.createText("]");
 
-    app.hideButton.innerText = "[hide]";
-    app.hideButton.style.cssFloat = "right";
+    app.hideButton.innerText = "hide";
 
     var table = node.create("table");
 
@@ -604,7 +608,7 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
     app.hideButton.onclick = function() {
         app.malInfoBox.toggle();
-        app.hideButton.innerText = app.malInfoBox.style.display === "none" ? "[show]" : "[hide]";
+        app.hideButton.innerText = app.malInfoBox.style.display === "none" ? "show" : "hide";
     };
     
     tr = table.create("tr");

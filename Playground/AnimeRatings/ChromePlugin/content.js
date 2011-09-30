@@ -578,6 +578,11 @@ app.sortEntries = function(entries) {
 
 app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
+    // Don't show the the info box if on entries were found.
+    if (linkInfo.entries.length === 0) {
+        return;
+    }
+    
     app.sortEntries(linkInfo.entries);
 
     var firstParagraph = app.getFirstChildByTagName(document.getElementById("bodyContent"), "P");

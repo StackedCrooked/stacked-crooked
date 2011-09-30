@@ -606,17 +606,14 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
     app.hideButton = td.create("a");
     app.hideButton.href = '#';
     td.createText("]");
-
     app.hideButton.innerText = "hide";
-
-    var table = node.create("table");
-
-    app.malInfoBox = table;
-
     app.hideButton.onclick = function() {
         app.malInfoBox.toggle();
         app.hideButton.innerText = app.malInfoBox.style.display === "none" ? "show" : "hide";
     };
+
+    var table = node.create("table");
+    app.malInfoBox = table;
     
     tr = table.create("tr");
 
@@ -697,16 +694,30 @@ app.insertSettingsBox = function() {
     table = table.create("tbody");
 
     var tr = table.create("tr");
-    tr.setAttribute("style", "font-weight:bold;");
     
-    var th = tr.create("th");
-    th.setAttribute("style", "text-align: center;");
+    var td_head = tr.create("td");
+    td_head.setAttribute("style", "text-align: center;");
 
-    var title_link = th.create("a");
+    var title_link = td_head.create("a");
     title_link.create("strong").createText("Anime Ratings");
     title_link.href = "http://chrome.google.com/webstore/detail/aneeljmnclggefejjbbbbploekjpfejc";
 
+    td_head.createNBSP();
+    td_head.createNBSP();
+    td_head = td_head.create("span");
+    td_head.setAttribute("class", "toctoggle");
+    td_head.createText("[");
+    app.hideButton = td_head.create("a");
+    app.hideButton.href = '#';
+    td_head.createText("]");
+    app.hideButton.innerText = "hide";
+    app.hideButton.onclick = function() {
+        app.malInfoBox.toggle();
+        app.hideButton.innerText = app.malInfoBox.style.display === "none" ? "show" : "hide";
+    };
+
     table = table.create("table");
+    app.malInfoBox = table;
 
     tr = table.create("tr");
     var td = tr.create("td");

@@ -368,6 +368,11 @@ Element.prototype.createText = function(text) {
 };
 
 
+Element.prototype.createNBSP = function(text) {
+    this.appendChild(document.createTextNode("\u00a0"));
+};
+
+
 Element.prototype.create = function(tagNamePath) {
     var result = this;
     var tagNames = tagNamePath.split("/");
@@ -574,10 +579,40 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
     var td = node.create("tr/td");
     td.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
-    td.createText("MyAnimeList Ratings");
+    td.createText("Anime Ratings");
 
-    node = node.create("table");
-    tr = node.create("tr");
+    td.createNBSP();
+    td.createNBSP();
+    app.hideButton = td.create("a");
+
+    app.hideButton.innerText = "[hide]";
+    app.hideButton.style.float = "right";
+
+    var table = node.create("table");
+
+    app.malInfoBox = table;
+    app.malInfoBox.oldDisplay = app.malInfoBox.style;
+    app.malInfoBox.isHidden = false;
+
+    app.hideButton.onclick = function() {
+        app.log("app.hideButton.onclick");
+        if (app.malInfoBox.isHidden === true) {
+            app.log("Restoring: " + app.malInfoBox.oldDisplay);
+            app.malInfoBox.style.display = app.malInfoBox.oldDisplay;
+            app.log("app.malInfoBox.style.display is now: " + app.malInfoBox.style.display);
+            app.hideButton.innerText = "[hide]";
+        }
+        else {
+            app.malInfoBox.oldDisplay = app.malInfoBox.style.display;
+            app.log("Before hiding app.malInfoBox.style.display is: " + app.malInfoBox.style.display);
+            app.malInfoBox.style.display = "none";
+            app.log("After hiding app.malInfoBox.style.display is: " + app.malInfoBox.style.display);
+            app.hideButton.innerText = "[show]";
+        }
+        app.malInfoBox.isHidden = !app.malInfoBox.isHidden;
+    };
+    
+    tr = table.create("tr");
 
     tr.setAttribute("style", "text-align: center;");
     td = tr.create("td").create("b");
@@ -609,7 +644,7 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
             endYear = "ongoing";
         }
 
-        tr = node.create("tr");
+        tr = table.create("tr");
         var td_year = tr.create("td");
         td_year.setAttribute("style", "text-align: center;");
         var year = startYear;
@@ -660,7 +695,7 @@ app.insertSettingsBox = function() {
     
     var th = tr.create("th");
     th.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
-    th.createText("MyAnimeList Ratings");
+    th.createText("Anime Ratings");
 
     table = table.create("table");
 

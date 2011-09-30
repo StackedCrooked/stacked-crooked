@@ -1,3 +1,6 @@
+- Hide button for MyAnimeList Ratings info box in anime/manga page
+
+
 - Checkbox: "Only show title if year matches"
 - Configurability
     - Only show if year matches identically

@@ -588,8 +588,10 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
     node.setAttribute("class", "toc");
 
     var td = node.create("tr/td");
-    td.setAttribute("style", "text-align: center; background:#CCF;");
-    td.create("strong").createText("Anime Ratings");
+    td.setAttribute("style", "text-align: center;");
+    var table_title = td.create("a");
+    table_title.href = "http://chrome.google.com/webstore/detail/aneeljmnclggefejjbbbbploekjpfejc";
+    table_title.create("strong").createText("Anime Ratings");
 
     td.createNBSP();
     td.createNBSP();
@@ -681,7 +683,7 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
 app.insertSettingsBox = function() {
     var table = document.createElement("table");
-    table.className = "infobox";
+    table.className = "toc";
     table.setAttribute("style", "float:none;");
     
     var mwPages = app.getMWPages();
@@ -693,8 +695,11 @@ app.insertSettingsBox = function() {
     tr.setAttribute("style", "font-weight:bold;");
     
     var th = tr.create("th");
-    th.setAttribute("style", "text-align: center; background:#CCF; font-weight:bold;");
-    th.createText("Anime Ratings");
+    th.setAttribute("style", "text-align: center;");
+
+    var title_link = th.create("a");
+    title_link.create("strong").createText("Anime Ratings");
+    title_link.href = "http://chrome.google.com/webstore/detail/aneeljmnclggefejjbbbbploekjpfejc";
 
     table = table.create("table");
 
@@ -705,6 +710,7 @@ app.insertSettingsBox = function() {
 
     var spinButtonWidth = "40px";
 
+    td = tr.create("td");
     app.visibilitySpinButton = td.create("input");
     app.visibilitySpinButton.name = "VisibilityTreshold";
     app.visibilitySpinButton.type = "number";
@@ -720,7 +726,8 @@ app.insertSettingsBox = function() {
     td = tr.create("td");
     td.setAttribute("style", "vertical-align:middle;");
     td.createText("Highlight treshold: ");
-    
+
+    td = tr.create("td");
     app.highlightSpinButton = td.create("input");
     app.highlightSpinButton.name = "HighlightTreshold";
     app.highlightSpinButton.type = "number";

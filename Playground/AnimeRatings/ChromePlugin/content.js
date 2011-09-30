@@ -220,7 +220,9 @@ app.addEntriesToDOM = function(node, linkItem) {
             var startYear = parseInt(entry.start_date.split("-")[0], 10);
             var end_year = parseInt(entry.end_date.split("-")[0], 10);
             var year = this.getYear();
-            if (startYear > year || (end_year !== 0 && end_year < year)) {
+
+            // Allow 1 year off
+            if (startYear > (year + 1) || (end_year !== 0 && end_year < (year - 1))) {
                 if (entry.title.search("Hunter") !== -1) {
                     this.log(year + " is outside of [" + startYear + ", " + end_year + "]");
                     this.log("entry.end_date: " + entry.end_date);
@@ -241,49 +243,8 @@ app.addEntriesToDOM = function(node, linkItem) {
 
     if (parent.hasAttribute("private_year_is_wrong") &&
         parent.getElementsByTagName("li").length === 0) {
-        app.addMissingStuff(parent, entries);
+        parent.create("li").createText("No titles found from " + year);
     }
-};
-
-
-app.addMissingStuff = function(listElement, entries) {
-
-    if (entries.length === 0) {
-        return;
-    }
-
-    var closest_entry = entries[0];
-    closest_entry.difference = Math.abs(this.getYear() - parseInt(closest_entry.start_date.split("-")[0], 10));
-
-    for (var i = 1; i < entries.length; ++i) {
-        try {
-            var entry = entries[i];
-            entry.difference = Math.abs(this.getYear() - parseInt(entry.start_date.split("-")[0], 10));
-            if (entry.difference < closest_entry.difference) {
-                closest_entry = entry;
-            }
-        }
-        catch (exc) {
-            app.log(exc);
-        }
-    }
-
-    // If the closest match is more than one year difference the we don't consider it.
-    if (closest_entry.difference != 1) {
-        return;
-    }
-
-
-    listElement.style.listStyle = "none";
-
-    var parent = listElement.create("li");
-    parent.createText("No MAL title found from " + this.getYear() + ". Closest match:");
-
-    parent = parent.create("ul");
-    parent.style.listStyle = "square outside none";
-
-    // Insert title entry
-    this.addEntryToDOM(parent, closest_entry, "{BeginYear}: {Title} ({Score})");
 };
 
 

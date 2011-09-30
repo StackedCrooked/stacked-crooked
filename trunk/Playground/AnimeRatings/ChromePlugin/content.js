@@ -363,12 +363,22 @@ app.improveTitle = function(title) {
 };
 
 
+Element.prototype.toggle = function() {
+	if (this.style.display != 'none' ) {
+		this.style.display = 'none';
+	}
+	else {
+		this.style.display = '';
+	}
+};
+
+
 Element.prototype.createText = function(text) {
     this.appendChild(document.createTextNode(text));
 };
 
 
-Element.prototype.createNBSP = function(text) {
+Element.prototype.createNBSP = function() {
     this.appendChild(document.createTextNode("\u00a0"));
 };
 
@@ -586,30 +596,15 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
     app.hideButton = td.create("a");
 
     app.hideButton.innerText = "[hide]";
-    app.hideButton.style.float = "right";
+    app.hideButton.style.cssFloat = "right";
 
     var table = node.create("table");
 
     app.malInfoBox = table;
-    app.malInfoBox.oldDisplay = app.malInfoBox.style;
-    app.malInfoBox.isHidden = false;
 
     app.hideButton.onclick = function() {
-        app.log("app.hideButton.onclick");
-        if (app.malInfoBox.isHidden === true) {
-            app.log("Restoring: " + app.malInfoBox.oldDisplay);
-            app.malInfoBox.style.display = app.malInfoBox.oldDisplay;
-            app.log("app.malInfoBox.style.display is now: " + app.malInfoBox.style.display);
-            app.hideButton.innerText = "[hide]";
-        }
-        else {
-            app.malInfoBox.oldDisplay = app.malInfoBox.style.display;
-            app.log("Before hiding app.malInfoBox.style.display is: " + app.malInfoBox.style.display);
-            app.malInfoBox.style.display = "none";
-            app.log("After hiding app.malInfoBox.style.display is: " + app.malInfoBox.style.display);
-            app.hideButton.innerText = "[show]";
-        }
-        app.malInfoBox.isHidden = !app.malInfoBox.isHidden;
+        app.malInfoBox.toggle();
+        app.hideButton.innerText = app.malInfoBox.style.display === "none" ? "[show]" : "[hide]";
     };
     
     tr = table.create("tr");

@@ -1,9 +1,11 @@
 #!/bin/bash
 # Subversion passes $6 as HEAD file and $7 as modified file.
+echo $*
+
 LEFT=$6
 echo "Left: $LEFT"
 
-RIGHT=`echo $LEFT | sed "s/\.svn\/text-base\/\(.\+\)\.svn-base/\1/g"`
+RIGHT=$7
 echo "Right: $RIGHT"
 if [[ "`uname`" == 'Darwin' ]]; then
     /Developer/Applications/Utilities/FileMerge.app/Contents/MacOS/FileMerge -left `pwd`/$LEFT -right `pwd`/$RIGHT

@@ -1,9 +1,11 @@
 #include "Poco/Stopwatch.h"
+#include "allocator.h"
+#include "Pool.h"
+#include <boost/static_assert.hpp>
 #include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <numeric>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -11,198 +13,84 @@
 #include <vector>
 
 
-namespace nonstd {
-
-struct Pool
+struct Character
 {
-    static Pool & Get()
-    {
-        if (sInstances.empty())
-        {
-            throw std::logic_error("There is no pool.");
-        }
-        return *sInstances.back();
-    }
-
-    Pool(std::size_t inTotalSize) :
-        mData(inTotalSize),
-        mUsed(0),
-        mFreed(0)
-    {
-        sInstances.push_back(this);
-    }
-
-    ~Pool()
-    {
-        sInstances.pop_back();
-    }
-
-    template<typename T>
-    struct TypeInfo
-    {
-        enum {
-            SegmentSize = sizeof(void*),
-            UnpaddedSize = sizeof(T),
-            Padding = SegmentSize - (UnpaddedSize % SegmentSize),
-            PaddedSize = UnpaddedSize + Padding
-        };
-    };
-
-    template<class T>
-    inline T * allocate(std::size_t n = 1)
-    {
-        std::size_t size = n * TypeInfo<T>::PaddedSize;
-        if (mUsed + size > capacity())
-        {
-            throw std::bad_alloc();
-        }
-
-        T * result = reinterpret_cast<T*>(&mData[mUsed]);
-        mUsed += size;
-        return result;
-    }
-
-    template<class T>
-    inline void deallocate(T *, size_t n = 1)
-    {
-        mFreed += n * TypeInfo<T>::PaddedSize;
-        if (mFreed == mUsed)
-        {
-            mFreed = mUsed = 0;
-        }
-    }
-
-    std::size_t used() const
-    {
-        return mUsed;
-    }
-
-    std::size_t capacity()
-    {
-        return mData.size();
-    }
-
-private:
-    std::vector<char> mData;
-    std::size_t mUsed;
-    std::size_t mFreed;
-    static std::vector< Pool* > sInstances;
+    Character(char c) : value(c) {}
+    
+    char value;
 };
 
 
-std::vector<Pool*> Pool::sInstances;
-
-
-template<class T>
-inline void * Allocate(std::size_t n = 1) { return Pool::Get().allocate<T>(n); }
-
-template<class T>
-inline void Deallocate(T * t, std::size_t n = 1) { Pool::Get().deallocate<T>(t, n); }
-
-template<typename T>
-inline T * New() { return new (Allocate<T>()) T; }
-
-template<typename T, typename A0>
-inline T * New(const A0 & a0) { return new (Allocate<T>()) T(a0); }
-
-template<typename T, typename A0, typename A1>
-inline T * New(const A0 & a0, const A1 & a1) { return new (Allocate<T>()) T(a0, a1); }
-
-template<typename T, typename A0, typename A1, typename A2>
-inline T * New(const A0 & a0, const A1 & a1, const A2 & a2) { return new (Allocate<T>()) T(a0, a1, a2); }
-
-template<typename T, typename A0, typename A1, typename A2, typename A3>
-inline T * New(const A0 & a0, const A1 & a1, const A2 & a2, const A3 & a3) { return new (Allocate<T>()) T(a0, a1, a2, a3); }
-
-template<typename T>
-inline void Delete(T* t) { Deallocate<T>(t); }
-
-template<typename T>
-struct allocator
+struct AB
 {
-    typedef std::allocator<T> std_allocator;
-    typedef typename std_allocator::value_type      value_type;
-    typedef typename std_allocator::size_type       size_type;
-    typedef typename std_allocator::difference_type difference_type;
-    typedef typename std_allocator::reference       reference;
-    typedef typename std_allocator::const_reference const_reference;
-    typedef typename std_allocator::pointer         pointer;
-    typedef typename std_allocator::const_pointer   const_pointer;
-
-    allocator() throw() {}
-
-    allocator(const allocator &) throw() {}
-
-    template<class U>
-    allocator(const allocator<U> & ) throw() {}
-
-    ~allocator() throw() {}
-
-    template<typename U>
-    struct rebind
-    {
-        typedef allocator<U> other;
-    };
-
-    pointer       address(reference value)       const { return &value; }
-    const_pointer address(const_reference value) const { return &value; }
-
-    inline pointer allocate(size_type n, typename std::allocator<void>::const_pointer = 0)
-    {
-        return Pool::Get().allocate<T>(n);
-    }
-
-    inline void deallocate(pointer p, size_type n)
-    {
-        Pool::Get().deallocate(p, n);
-    }
-
-    inline size_type max_size() const
-    {
-        return std::numeric_limits<size_type>::max() / sizeof(T);
-    }
-
-    inline void construct(pointer p, const T & t)
-    {
-        new(p) T (t);
-    }
-
-    inline void destroy(pointer p)
-    {
-        p->~T();
-    }
+    AB() : a('a'), b('b') {}
+    
+    char a, b;
 };
 
 
-template<typename T>
-inline bool operator==(const allocator<T> &, const allocator<T> & )
+struct XYZ
 {
-    return true; // types are equal
+    XYZ() : x('x'), y('y'), z('z') {}
+    
+    char x, y, z;
+};
+
+
+void TestAlignment()
+{
+    std::cout << "sizeof(Char): " << sizeof(Character) << std::endl;
+    std::cout << "sizeof(AB): " << sizeof(AB) << std::endl;
+    
+    Pool pool(6);
+    
+    // Allocate Character
+    Character * character = new (pool.allocate<Character>()) Character('c');
+    std::cout << "Usage: " << pool.used() << std::endl;
+    assert(character->value == 'c');
+    
+    // Allocate AB
+    AB * ab = new (pool.allocate<AB>()) AB();
+    std::cout << "Usage: " << pool.used() << std::endl;    
+    assert(ab->a == 'a');
+    assert(ab->b == 'b');
+    assert(character->value == 'c');
+    
+    // Allocate XYZ
+    XYZ * xyz = new (pool.allocate<XYZ>()) XYZ();
+    std::cout << "Usage: " << pool.used() << std::endl;
+    assert(xyz->x == 'x');
+    assert(xyz->y == 'y');
+    assert(xyz->z == 'z');
+    assert(ab->a == 'a');
+    assert(ab->b == 'b');
+    assert(character->value == 'c');
+    
 }
 
-template<typename T>
-inline bool operator!=(const allocator<T> & lhs, const allocator<T> & rhs)
+
+void SelfTest()
 {
-    return !operator==(lhs, rhs);
+    Pool pool(1024 * 1024); // 1 MB
+    
+    nonstd::string test = "Hello";
+    assert(test == "Hello");
+    assert(test.size() == std::string("Hello").size());
+
+    nonstd::string underline(test.size(), '-');
+    assert(underline == "-----");
+
+    std::vector<char, std::allocator<char> > v1(17);
+    std::vector<char, nonstd::allocator<char> > v2(17);
+    assert(v1.size() == v2.size());
+    assert(v2.capacity() == v2.capacity());
+    for (char c = 'a'; c != 'z'; ++c)
+    {
+        v1[c] = v2[c] = c;
+        assert(v1[c] == v2[c]);
+    }
+    assert(!memcmp(v1.data(), v2.data(), v1.size()));
 }
-
-template<typename T, typename U>
-inline bool operator==(const allocator<T> &, const allocator<U> & )
-{
-    return false; // types are not equal
-}
-
-template<typename T, typename U>
-inline bool operator!=(const allocator<T> & lhs, const allocator<U> & rhs)
-{
-    return !operator ==(lhs, rhs);
-}
-
-
-typedef std::basic_string< char, std::char_traits<char>, nonstd::allocator<char> > string;
-
-
-} // namespace nonstd
 
 
 template<unsigned n>
@@ -278,31 +166,6 @@ void PrintResults(const std::string & inTitle,
 }
 
 
-void SelfTest()
-{
-    nonstd::Pool theScopedPool(1024 * 1024); // 1 MB
-    using nonstd::New;
-
-    nonstd::string test = "Hello";
-    assert(test == "Hello");
-    assert(test.size() == std::string("Hello").size());
-
-    nonstd::string underline(test.size(), '-');
-    assert(underline == "-----");
-
-    std::vector<char, std::allocator<char> > v1(17);
-    std::vector<char, nonstd::allocator<char> > v2(17);
-    assert(v1.size() == v2.size());
-    assert(v2.capacity() == v2.capacity());
-    for (char c = 'a'; c != 'z'; ++c)
-    {
-        v1[c] = v2[c] = c;
-        assert(v1[c] == v2[c]);
-    }
-    assert(!memcmp(v1.data(), v2.data(), v1.size()));
-}
-
-
 void Benchmark()
 {
     static const std::size_t numOuterLoopIterations = 2000;
@@ -322,7 +185,7 @@ void Benchmark()
     std::size_t normalCounter = 0;
     std::size_t poolCounter = 0;
 
-    nonstd::Pool theScopedPool(10 * 1024 * 1024); // 10 MB
+    Pool theScopedPool(10 * 1024 * 1024); // 10 MB
 
     std::cout << "Pool creation took " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl;
     timer.restart();
@@ -349,7 +212,8 @@ void Benchmark()
 
 int main()
 {
+    TestAlignment();
     SelfTest();
-    Benchmark();
+    //Benchmark();
     return 0;
 }

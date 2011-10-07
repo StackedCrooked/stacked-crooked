@@ -1,9 +1,9 @@
-- Hide button for MyAnimeList Ratings info box in anime/manga page
-
-
-- Checkbox: "Only show title if year matches"
-- Configurability
-    - Only show if year matches identically
+- Fix "One Piece" page
+- Scrape Anime News Network rating
+    . URL is usually found in the Wikipedia title page external links section
+    . Highlight if median rating is "Very good" or better
+v Configurability
+    v Only show if year matches identically
     v Highlight treshold (only if score >= x)
     v Display treshold (hide title if score < x)
     v Remember settings in localStorage.
@@ -24,7 +24,5 @@
         - show a combobox containing alternatives
         - show a textbox to search MAL
         - allow the user to paste the correct MAL url in the the textbox
-- Scrape Anime News Network rating
-    . URL is usually found in the Wikipedia title page external links section
-    . Highlight if median rating is "Very good" or better
 v Show MAL rating in Wikipedia anime main pages
+v Hide button for MyAnimeList Ratings info box in anime/manga page

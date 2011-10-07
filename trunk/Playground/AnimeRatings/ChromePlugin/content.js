@@ -200,7 +200,7 @@ app.addEntriesToDOM = function(node, linkItem) {
 
 
     var entries = linkItem.entries;
-    app.sortEntries(entries);
+    app.sortEntriesByDate(entries);
 
     if (parent.getElementsByTagName("ul").length === 0) {
         parent = parent.createEntryList();
@@ -524,7 +524,7 @@ app.getFirstChildByTagName = function(node, tagName) {
 };
 
 
-app.sortEntries = function(entries) {
+app.sortEntriesByDate = function(entries) {
     entries.sort(function(lhs, rhs) {
         if (lhs.start_date < rhs.start_date) {
             return -1;
@@ -537,16 +537,61 @@ app.sortEntries = function(entries) {
 };
 
 
+app.getNextSibling = function(node) {
+    var result = node.nextSibling;
+    while (result.nodeType !== 1) {
+        result = result.nextSibling;
+    }
+    return result;
+};
+
+
+app.getInfoBox = function(bodyContent) {
+    if (bodyContent === null) {
+        throw "bodyContent not found";
+    }
+
+    var tables = bodyContent.getElementsByTagName("table");
+    for (var i = 0; i < tables.length; ++i) {
+        var table = tables[i];
+
+        if (table.getAttribute("class") === "infobox") {
+            return table;
+        }
+    }
+    return null;
+};
+
+
+app.getFirstParagraph = function() {
+    var bodyContent = document.getElementById("bodyContent");
+
+    // Get first paragraph *after* the infobox.
+    var infoBox = app.getInfoBox(bodyContent);
+    if (infoBox !== null) {
+        return app.getNextSibling(infoBox);
+    }
+
+    // If there is no infobox, the simply return the first paragraph.
+    var paragraphs = bodyContent.getElementsByTagName("p");
+    if (paragraphs.length === 0) {
+        throw "No paragraphs found in bodyContent";
+    }
+    return paragraphs[0];
+};
+
+
 app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
     // Don't show the the info box if on entries were found.
     if (linkInfo.entries.length === 0) {
+        app.log("No entries for " + JSON.stringify(linkInfo));
         return;
     }
-    
-    app.sortEntries(linkInfo.entries);
 
-    var firstParagraph = app.getFirstChildByTagName(document.getElementById("bodyContent"), "P");
+    app.sortEntriesByDate(linkInfo.entries);
+
+    var firstParagraph = app.getFirstParagraph();
 
     var node = firstParagraph.parentNode.insertBefore(document.createElement("div"), firstParagraph);
     node = node.create("table");
@@ -575,7 +620,7 @@ app.addRatingIntoAnimePageDOM = function(linkInfo) {
 
     var table = node.create("table");
     app.malInfoBox = table;
-    
+
     tr = table.create("tr");
 
     tr.setAttribute("style", "text-align: center;");
@@ -648,14 +693,14 @@ app.insertSettingsBox = function() {
     var table = document.createElement("table");
     table.className = "toc";
     table.setAttribute("style", "float:none;");
-    
+
     var mwPages = app.getMWPages();
     mwPages.insertBefore(table, mwPages.firstChild.nextSibling.nextSibling.nextSibling.nextSibling);
 
     table = table.create("tbody");
 
     var tr = table.create("tr");
-    
+
     var td_head = tr.create("td");
     td_head.setAttribute("style", "text-align: center;");
 
@@ -791,7 +836,7 @@ app.forceUpdateScore = false;
 
 app.updateScore = function() {
     app.forceUpdateScore = true;
-    
+
     if (app.updateScoreLoopIsRunning === false) {
         app.updateScoreLoopIsRunning = true;
         app.updateScoreImpl();
@@ -805,7 +850,7 @@ app.updateScoreImpl = function() {
         app.isVisibilityTresholdChanged())
     {
         app.forceUpdateScore = false;
-        
+
         for (var i = 0; i < app.malLinks.length; ++i) {
             var malLink = app.malLinks[i];
             var linkScore = app.getMALLinkScore(malLink);

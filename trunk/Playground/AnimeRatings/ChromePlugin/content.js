@@ -4,6 +4,7 @@ function AnimeRatings() {
 var app = new AnimeRatings();
 app.highlightTreshold  = 8;
 app.visibilityTreshold = 6;
+app.annLinks = [];
 
 
 app.sendRequest = function(arg, callback) {
@@ -414,16 +415,18 @@ app.getAnimeTitleFromPage = function() {
  * Get the link to www.animenewsnetwork.com.
  * Returns null if not found.
  */
-app.getANNLink = function() {
+app.getANNLinks = function() {
+    var result = [];
     var links = document.getElementsByTagName("a");
     for (var i = 0; i < links.length; ++i) {
         var link = links[i];
         var href = link.href;
-        if (href.search("http://www.animenewsnetwork.com/encyclopedia") !== -1) {
-            return link;
+        if (href.search("http://www.animenewsnetwork.com/encyclopedia/manga") !== -1 ||
+            href.search("http://www.animenewsnetwork.com/encyclopedia/anime") !== -1) {
+            result.push(href);
         }
     }
-    return null;
+    return result;
 };
 
 
@@ -471,7 +474,44 @@ app.getPageTypeFromInfoBox = function() {
         return "manga";
     }
 
-    return "default";
+    return "";
+};
+
+
+app.getPageTypeFromANNLinks = function() {
+    app.annLinks = app.getANNLinks();
+    
+    var foundAnime = false;
+    var foundManga = false;
+    
+    for (var i = 0; i < annLinks.length; ++i) {
+        var annLink = annLinks[i];
+        if (annLink.search(/anime\.php/) !== -1) {
+            foundAnime = true;
+        }
+
+        if (annLink.search(/manga\.php/) !== -1) {
+            foundManga = true;
+        }
+
+        if (foundAnime === true && foundManga === true) {
+            break;
+        }
+    }
+
+    if (foundAnime && foundManga) {
+        return "anime|manga";
+    }
+
+    if (foundAnime) {
+        return "anime";
+    }
+
+    if (foundManga) {
+        return "manga";
+    }
+
+    return "";
 };
 
 
@@ -482,7 +522,7 @@ app.getPageType = function() {
     else if (document.URL.search("Category:Manga_of_") !== -1) {
         return "manga";
     }
-    return "default";
+    return "";
 };
 
 
@@ -494,7 +534,7 @@ app.insertRatingsIntoList = function() {
 };
 
 
-app.insertRatingsIntoPage = function() {
+app.addMALRatingsIntoAnimePageDOM = function() {
     var title = app.improveTitle(app.getAnimeTitleFromPage());
     this.getMALInfo("anime", title, function(linkInfo) {
         app.linkInfo = linkInfo;
@@ -510,6 +550,23 @@ app.insertRatingsIntoPage = function() {
             app.addRatingIntoAnimePageDOM(app.linkInfo);
         });
     });
+};
+
+
+app.addANNRatingsIntoAnimePageDOM = function() {
+    // TODO: Implement
+    app.log("app.addANNRatingsIntoAnimePageDOM 0");
+    for (var i = 0; i < app.annLinks.length; ++i) {
+        app.log("app.addANNRatingsIntoAnimePageDOM i: " + i);
+        app.log("ANN link " + i + ": " + app.annLinks[i]);
+    }
+    app.log("END app.addANNRatingsIntoAnimePageDOM");
+};
+
+
+app.insertRatingsIntoPage = function() {
+    app.addMALRatingsIntoAnimePageDOM();
+    app.addANNRatingsIntoAnimePageDOM();
 };
 
 
@@ -892,10 +949,12 @@ if (app.isYearList()) {
 }
 else {
     app.pageType = app.getPageTypeFromInfoBox();
-    if (app.pageType === "default" && app.getANNLink() !== null) {
-        app.pageType = "anime";
+
+    if (app.pageType === "") {
+        app.pageType = app.getPageTypeFromANNLinks();
     }
-    if (app.pageType.search("anime") !== -1 || app.pageType.search("manga") !== -1) {
+    
+    if (app.pageType.search(/anime/) !== -1 || app.pageType.search(/manga/) !== -1) {
         app.insertRatingsIntoPage();
     }
 }

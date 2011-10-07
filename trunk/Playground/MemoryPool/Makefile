@@ -1,6 +1,6 @@
 INCLUDE=-I/opt/local/include
-CXXFLAGS=-Wall -Werror -O3  -Wpadded
+CXXFLAGS=-Wall -Werror -O3
 LFLAGS=-L/opt/local/lib -lPocoFoundation
 
 all:
-	g++ -o test $(INCLUDE) $(CXXFLAGS) $(LFLAGS) main.cpp
+	g++ -o test $(INCLUDE) $(CXXFLAGS) $(LFLAGS) allocator.cpp pool.cpp main.cpp

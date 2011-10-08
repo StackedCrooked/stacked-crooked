@@ -101,7 +101,7 @@ fun! ActivateAddons()
       call vam#ActivateAddons([])
       let g:vim_addon_manager['auto_install'] = 1
       " The 'silent' command surpresses the "Press ENTER to continue" messages.
-      silent call vam#ActivateAddons(['swig', 'vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
+      silent call vam#ActivateAddons(['Align294', 'swig', 'vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
     catch /.*/
       echoe v:exception
     endtry

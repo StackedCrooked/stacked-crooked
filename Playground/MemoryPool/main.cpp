@@ -65,7 +65,6 @@ void TestAlignment()
     assert(ab->a == 'a');
     assert(ab->b == 'b');
     assert(character->value == 'c');
-    
 }
 
 
@@ -214,6 +213,6 @@ int main()
 {
     TestAlignment();
     SelfTest();
-    //Benchmark();
+    Benchmark();
     return 0;
 }

@@ -15,11 +15,19 @@ Pool & Pool::Get()
 }
 
 
-Pool::Pool(std::size_t inTotalSize) :
-    mData(inTotalSize),
+static void Free(char * buffer)
+{
+    free(reinterpret_cast<void*>(buffer));
+}
+
+
+Pool::Pool(std::size_t inSize) :
+    mData(Free),
+    mSize(inSize),
     mUsed(0),
     mFreed(0)
 {
+    mData.reset(reinterpret_cast<char*>(malloc(inSize)));
     sInstances.push_back(this);
 }
 

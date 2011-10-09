@@ -4,13 +4,14 @@
 
 #include <cstddef>
 #include <vector>
+#include <boost/thread.hpp>
 
 
 struct Pool
 {
     static Pool & Get();
 
-    Pool(std::size_t inTotalSize);
+    Pool(std::size_t inSize);
 
     ~Pool();
 
@@ -23,7 +24,7 @@ struct Pool
             throw std::bad_alloc();
         }
 
-        T * result = reinterpret_cast<T*>(&mData[mUsed]);
+        T * result = reinterpret_cast<T*>(&mData.get()[mUsed]);
         mUsed += size;
         return result;
     }
@@ -40,13 +41,14 @@ struct Pool
 
     inline std::size_t used() const { return mUsed; }
 
-    inline std::size_t capacity() const { return mData.size(); }
+    inline std::size_t capacity() const { return mSize; }
 
 private:
     Pool(const Pool&);
     Pool& operator=(const Pool&);
     
-    std::vector<char> mData;
+    boost::thread_specific_ptr<char> mData;
+    std::size_t mSize;
     std::size_t mUsed;
     std::size_t mFreed;
     static std::vector< Pool* > sInstances;

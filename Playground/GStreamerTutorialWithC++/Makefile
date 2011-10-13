@@ -1,5 +1,6 @@
 GSTREAMER=/System/Library/Frameworks/GStreamer.framework/Versions/0.10.29-x64
 INCLUDE=\
+    -I./GstSupport \
     -I${GSTREAMER}/include/gstreamer-0.10 \
     -I${GSTREAMER}/include/glib-2.0 \
     -I${GSTREAMER}/lib/glib-2.0/include \

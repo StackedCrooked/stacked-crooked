@@ -4,12 +4,16 @@ INCLUDE=\
     -I${GSTREAMER}/include/glib-2.0 \
     -I${GSTREAMER}/lib/glib-2.0/include \
     -I${GSTREAMER}/include/libxml2 \
-    -I/usr/include
+    -I/opt/local/include \
+    -I/usr/include \
+    -I.
 
 LIB= \
-    -L${GSTREAMER}/lib -lgstreamer-0.10 -lgstvideo-0.10 -lgobject-2.0 -lglib-2.0
+    -L${GSTREAMER}/lib -lgstreamer-0.10 -lgstvideo-0.10 -lgstinterfaces-0.10 -lgobject-2.0 -lglib-2.0
+
+SRC=main.cpp Support.cpp
 
 
 
 all:
-	gcc -o test ${INCLUDE} ${LIB}  main.c
+	g++ -o test ${INCLUDE} ${LIB} ${SRC}

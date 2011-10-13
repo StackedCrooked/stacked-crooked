@@ -1,11 +1,10 @@
 #include <gst/gst.h>
 #include <glib.h>
+#include "Gst/Support.h"
 
 
 static gboolean
-bus_call(GstBus   *  bus,
-         GstMessage * msg,
-         gpointer    data)
+bus_call(GstBus * bus, GstMessage * msg, gpointer data)
 {
     GMainLoop * loop = (GMainLoop *) data;
 
@@ -34,7 +33,6 @@ bus_call(GstBus   *  bus,
         default:
             break;
     }
-
     return TRUE;
 }
 
@@ -59,19 +57,8 @@ on_pad_added(GstElement * element,
 
 
 
-int
-main(int   argc,
-     char * argv[])
+int main(int argc, char * argv[])
 {
-    GMainLoop * loop;
-
-    GstElement * pipeline, *source, *demuxer, *decoder, *conv, *sink;
-    GstBus * bus;
-
-    /* Initialisation */
-    gst_init(&argc, &argv);
-
-    loop = g_main_loop_new(NULL, FALSE);
 
 
     /* Check input arguments */
@@ -80,41 +67,38 @@ main(int   argc,
         g_printerr("Usage: %s <Ogg/Vorbis filename>\n", argv[0]);
         return -1;
     }
+    
+    // Initialisation
+    gst_init(&argc, &argv);
+       
+    
+    GMainLoop * loop;
+    loop = g_main_loop_new(NULL, FALSE);
 
+    // Create gstreamer elements
+    Gst::ScopedObject<GstElement> pipeline(Gst::Pipeline::Create("audio-player"));
+    Gst::ScopedObject<GstElement> source(Gst::Element::Create(pipeline, "filesrc", "file-source"));
+    Gst::ScopedObject<GstElement> demuxer(Gst::Element::Create(pipeline, "oggdemux",      "ogg-demuxer"));
+    Gst::ScopedObject<GstElement> decoder(Gst::Element::Create(pipeline, "vorbisdec",     "vorbis-decoder"));
+    Gst::ScopedObject<GstElement> conv(Gst::Element::Create(pipeline, "audioconvert",  "converter"));
+    Gst::ScopedObject<GstElement> sink(Gst::Element::Create(pipeline, "autoaudiosink", "audio-output"));
+    
+    // Set up the pipeline
 
-    /* Create gstreamer elements */
-    pipeline = gst_pipeline_new("audio-player");
-    source   = gst_element_factory_make("filesrc",       "file-source");
-    demuxer  = gst_element_factory_make("oggdemux",      "ogg-demuxer");
-    decoder  = gst_element_factory_make("vorbisdec",     "vorbis-decoder");
-    conv     = gst_element_factory_make("audioconvert",  "converter");
-    sink     = gst_element_factory_make("autoaudiosink", "audio-output");
+    // we set the input filename to the source element    
+    g_object_set(G_OBJECT(source.get()), "location", argv[1], NULL);
 
-    if (!pipeline || !source || !demuxer || !decoder || !conv || !sink)
-    {
-        g_printerr("One element could not be created. Exiting.\n");
-        return -1;
-    }
-
-    /* Set up the pipeline */
-
-    /* we set the input filename to the source element */
-    g_object_set(G_OBJECT(source), "location", argv[1], NULL);
-
-    /* we add a message handler */
-    bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
+    // we add a message handler
+    GstBus * bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline.get()));
     gst_bus_add_watch(bus, bus_call, loop);
     gst_object_unref(bus);
 
-    /* we add all elements into the pipeline */
-    /* file-source | ogg-demuxer | vorbis-decoder | converter | alsa-output */
-    gst_bin_add_many(GST_BIN(pipeline),
-                     source, demuxer, decoder, conv, sink, NULL);
 
-    /* we link the elements together */
-    /* file-source -> ogg-demuxer ~> vorbis-decoder -> converter -> alsa-output */
-    gst_element_link(source, demuxer);
-    gst_element_link_many(decoder, conv, sink, NULL);
+    // we link the elements together
+    // file-source -> ogg-demuxer ~> vorbis-decoder -> converter -> alsa-output */
+    Gst::Element::Link(source, demuxer);
+    Gst::Element::Link(decoder, conv, sink);
+
     g_signal_connect(demuxer, "pad-added", G_CALLBACK(on_pad_added), decoder);
 
     /* note that the demuxer will be linked to the decoder dynamically.
@@ -127,11 +111,14 @@ main(int   argc,
 
     /* Set the pipeline to "playing" state*/
     g_print("Now playing: %s\n", argv[1]);
-    gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    
+    Gst::Pipeline::SetState(pipeline, GST_STATE_PLAYING);
 
 
     /* Iterate */
     g_print("Running...\n");
+    
+    
     g_main_loop_run(loop);
 
 
@@ -140,7 +127,6 @@ main(int   argc,
     gst_element_set_state(pipeline, GST_STATE_NULL);
 
     g_print("Deleting pipeline\n");
-    gst_object_unref(GST_OBJECT(pipeline));
 
     return 0;
 }

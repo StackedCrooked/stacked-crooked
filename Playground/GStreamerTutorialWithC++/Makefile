@@ -12,4 +12,4 @@ LIB= \
 
 
 all:
-	g++ -o test ${INCLUDE} ${LIB}  main.cpp
+	gcc -o test ${INCLUDE} ${LIB}  main.c

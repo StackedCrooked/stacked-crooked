@@ -1,77 +1,51 @@
-#include <gst/gst.h>
-#include <glib.h>
 #include "Gst/Support.h"
+#include "Gst/BusListener.h"
+#include "Gst/MainLoop.h"
+#include <boost/bind.hpp>
+#include <iostream>
+#include <stdexcept>
 
 
-static gboolean
-bus_call(GstBus * bus, GstMessage * msg, gpointer data)
+static gboolean OnBusMessage(GstBus * bus, GstMessage * msg, Gst::MainLoop * loop)
 {
-    GMainLoop * loop = (GMainLoop *) data;
-
     switch (GST_MESSAGE_TYPE(msg))
     {
-
         case GST_MESSAGE_EOS:
+        {
             g_print("End of stream\n");
-            g_main_loop_quit(loop);
+            loop->quit();
             break;
-
+        }
         case GST_MESSAGE_ERROR:
         {
-            gchar * debug;
-            GError * error;
-
-            gst_message_parse_error(msg, &error, &debug);
-            g_free(debug);
-
-            g_printerr("Error: %s\n", error->message);
-            g_error_free(error);
-
-            g_main_loop_quit(loop);
+            std::cout << Gst::Logging::GetLogMessage(msg) << std::endl;
+            loop->quit();
             break;
         }
         default:
+        {
             break;
+        }
     }
     return TRUE;
 }
 
 
-static void
-on_pad_added(GstElement * element,
-             GstPad   *  pad,
-             gpointer    data)
+static void on_pad_added(GstElement * element, GstPad * pad, gpointer data)
 {
-    GstPad * sinkpad;
-    GstElement * decoder = (GstElement *) data;
+    GstElement * decoder = (GstElement *) data;    
+    Gst::ScopedObject<GstPad> sinkpad(Gst::Element::GetStaticPad(decoder, "sink"));       
 
-    // We can now link this pad with the vorbis-decoder sink pad */
-    g_print("Dynamic pad created, linking demuxer/decoder\n");
+    // We can now link this pad with the vorbis-decoder sink pad.
+    std::cout << "Dynamic pad created, linking demuxer/decoder" << std::endl;    
 
-    sinkpad = gst_element_get_static_pad(decoder, "sink");
-
-    gst_pad_link(pad, sinkpad);
-
-    gst_object_unref(sinkpad);
+    Gst::Pad::Link(pad, sinkpad);    
 }
 
 
-
-int main(int argc, char * argv[])
+void run(const std::string & inFileName)
 {
-    // Check input arguments */
-    if (argc != 2)
-    {
-        g_printerr("Usage: %s <Ogg/Vorbis filename>\n", argv[0]);
-        return -1;
-    }
-
-    // Initialisation
-    gst_init(&argc, &argv);
-
-
-    GMainLoop * loop;
-    loop = g_main_loop_new(NULL, FALSE);
+    Gst::MainLoop loop;
 
     // Create gstreamer elements
     Gst::ScopedObject<GstElement> pipeline(Gst::Pipeline::Create("audio-player"));
@@ -81,21 +55,19 @@ int main(int argc, char * argv[])
     Gst::ScopedObject<GstElement> conv(Gst::Element::Create(pipeline, "audioconvert",  "converter"));
     Gst::ScopedObject<GstElement> sink(Gst::Element::Create(pipeline, "autoaudiosink", "audio-output"));
 
-    // Set up the pipeline
+    // Set up the pipeline    
 
-    // we set the input filename to the source element
-    g_object_set(G_OBJECT(source.get()), "location", argv[1], NULL);
-
-    // we add a message handler
-    GstBus * bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline.get()));
-    gst_bus_add_watch(bus, bus_call, loop);
-    gst_object_unref(bus);
-
+    // We set the input filename to the source element
+    g_object_set(G_OBJECT(source.get()), "location", inFileName.c_str(), NULL);
 
     // we link the elements together
-    // file-source -> ogg-demuxer ~> vorbis-decoder -> converter -> alsa-output */
+    // file-source -> ogg-demuxer ~> vorbis-decoder -> converter -> alsa-output
     Gst::Element::Link(source, demuxer);
     Gst::Element::Link(decoder, conv, sink);
+    
+    
+    // we add a message handler    
+    Gst::ScopedBusListener busListener(pipeline.get(), boost::bind(&OnBusMessage, _1, _2, &loop));
 
 
     // Note that the demuxer will be linked to the decoder dynamically.
@@ -104,25 +76,47 @@ int main(int argc, char * argv[])
     // by the demuxer when it detects the amount and nature of streams.
     // Therefore we connect a callback function which will be executed
     // when the "pad-added" is emitted.
+    
     g_signal_connect(demuxer, "pad-added", G_CALLBACK(on_pad_added), decoder);
 
-    // Set the pipeline to "playing" state*/
-    g_print("Now playing: %s\n", argv[1]);
-
+    // Set the pipeline to "playing" state
+    std::cout << "Now playing: " << inFileName << std::endl;    
     Gst::Pipeline::SetState(pipeline, GST_STATE_PLAYING);
-
-    // Iterate
+    
+    // Start the event loop
     std::cout << "Running..." << std::endl;
+    loop.run();
 
-    g_main_loop_run(loop);
-
-
-    // Out of the main loop, clean up nicely */
+    // Out of the main loop, clean up nicely
     std::cout << "Returned, stopping playback" << std::endl;
 
     Gst::Element::SetState(pipeline, GST_STATE_NULL);
 
     std::cout << "Deleting pipeline" << std::endl;
+    // Auto cleanup
+}
 
+
+
+int main(int argc, char * argv[])
+{
+    // Check input arguments
+    if (argc != 2)
+    {
+        g_printerr("Usage: %s <Ogg/Vorbis filename>\n", argv[0]);
+        return -1;
+    }
+    
+    // Initialisation
+    gst_init(&argc, &argv);    
+    
+    try
+    {
+        run(argv[1]);
+    }
+    catch (const std::exception & exc)
+    {
+        std::cerr << exc.what() << std::endl;
+    }
     return 0;
 }

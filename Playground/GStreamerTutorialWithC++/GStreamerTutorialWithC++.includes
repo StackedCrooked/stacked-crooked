@@ -1,0 +1,7 @@
+./GstSupport/include
+/System/Library/Frameworks/GStreamer.framework/Versions/0.10.29-x64/include/gstreamer-0.10
+/System/Library/Frameworks/GStreamer.framework/Versions/0.10.29-x64/include/glib-2.0
+/System/Library/Frameworks/GStreamer.framework/Versions/0.10.29-x64/lib/glib-2.0/include
+/System/Library/Frameworks/GStreamer.framework/Versions/0.10.29-x64/include/libxml2
+/opt/local/include
+/usr/include

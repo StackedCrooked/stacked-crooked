@@ -31,3 +31,4 @@ GstSupport/src/Widget.cpp
 GstSupport/src/Win32Window.cpp
 GstSupport/src/XWidget.cpp
 main.cpp
+GstSupport/src/MacOSXWindow.mm

@@ -49,10 +49,10 @@ void MacWidget::onSyncMessage(GstBus * inBus, GstMessage * inMessage)
     switch (GST_MESSAGE_TYPE(inMessage))
     {
         case GST_MESSAGE_ELEMENT:
-        {   
+        {
             if (gst_structure_has_name(inMessage->structure, "have-ns-view"))
             {
-                const GValue * value = gst_structure_get_value(inMessage->structure, "nsview");                    
+                const GValue * value = gst_structure_get_value(inMessage->structure, "nsview");
                 if (value && G_VALUE_HOLDS_POINTER(value) && mCallback)
                 {
                     mCallback(g_value_get_pointer(value));

@@ -172,7 +172,7 @@ void PrintResults(const std::string & inTitle,
 void Benchmark()
 {
     static const std::size_t numOuterLoopIterations = 10;
-    static const std::size_t numInnerLoopIterations = 10000;
+    static const std::size_t numInnerLoopIterations = 1000000;
 
     Poco::Stopwatch timer;
     timer.start();
@@ -188,7 +188,7 @@ void Benchmark()
     std::size_t normalCounter = 0;
     std::size_t poolCounter = 0;
 
-    Pool theScopedPool(10 * 1024 * 1024); // 10 MB
+    Pool theScopedPool(1000 * 1024 * 1024); // 1000 MB
 
     std::cout << "Pool creation took " << ConvertToMs(timer.elapsed()) << " ms. " << std::endl;
     timer.restart();

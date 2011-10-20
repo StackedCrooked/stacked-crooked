@@ -8,6 +8,7 @@
 
 struct Pool
 {
+    // Returns a refernce to the most recently created pool (top of the stack).
     static Pool & Get();
 
     Pool(std::size_t inSize);

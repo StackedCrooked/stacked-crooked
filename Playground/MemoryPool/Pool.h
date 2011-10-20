@@ -4,7 +4,6 @@
 
 #include <cstddef>
 #include <vector>
-#include <boost/thread.hpp>
 
 
 struct Pool
@@ -24,7 +23,7 @@ struct Pool
             throw std::bad_alloc();
         }
 
-        T * result = reinterpret_cast<T*>(&mData.get()[mUsed]);
+        T * result = reinterpret_cast<T*>(mData.data() + mUsed);
         mUsed += size;
         return result;
     }
@@ -46,8 +45,9 @@ struct Pool
 private:
     Pool(const Pool&);
     Pool& operator=(const Pool&);
-    
-    boost::thread_specific_ptr<char> mData;
+
+    typedef std::vector<unsigned char> Data;
+    Data mData;
     std::size_t mSize;
     std::size_t mUsed;
     std::size_t mFreed;

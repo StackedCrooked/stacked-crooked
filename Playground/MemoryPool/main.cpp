@@ -171,8 +171,8 @@ void PrintResults(const std::string & inTitle,
 
 void Benchmark()
 {
-    static const std::size_t numOuterLoopIterations = 100;
-    static const std::size_t numInnerLoopIterations = 200;
+    static const std::size_t numOuterLoopIterations = 10;
+    static const std::size_t numInnerLoopIterations = 10000;
 
     Poco::Stopwatch timer;
     timer.start();

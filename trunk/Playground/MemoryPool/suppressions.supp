@@ -1,0 +1,18 @@
+{
+   Image Loader
+   Memcheck:Leak
+   ...
+   fun:*ImageLoader*runInitializers*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:*ostreambuf_iterator*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:*ostream_insert*
+}

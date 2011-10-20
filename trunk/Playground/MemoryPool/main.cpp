@@ -16,7 +16,7 @@
 struct Character
 {
     Character(char c) : value(c) {}
-    
+
     char value;
 };
 
@@ -24,7 +24,7 @@ struct Character
 struct AB
 {
     AB() : a('a'), b('b') {}
-    
+
     char a, b;
 };
 
@@ -32,7 +32,7 @@ struct AB
 struct XYZ
 {
     XYZ() : x('x'), y('y'), z('z') {}
-    
+
     char x, y, z;
 };
 
@@ -41,21 +41,21 @@ void TestAlignment()
 {
     std::cout << "sizeof(Char): " << sizeof(Character) << std::endl;
     std::cout << "sizeof(AB): " << sizeof(AB) << std::endl;
-    
+
     Pool pool(6);
-    
+
     // Allocate Character
     Character * character = new (pool.allocate<Character>()) Character('c');
     std::cout << "Usage: " << pool.used() << std::endl;
     assert(character->value == 'c');
-    
+
     // Allocate AB
     AB * ab = new (pool.allocate<AB>()) AB();
-    std::cout << "Usage: " << pool.used() << std::endl;    
+    std::cout << "Usage: " << pool.used() << std::endl;
     assert(ab->a == 'a');
     assert(ab->b == 'b');
     assert(character->value == 'c');
-    
+
     // Allocate XYZ
     XYZ * xyz = new (pool.allocate<XYZ>()) XYZ();
     std::cout << "Usage: " << pool.used() << std::endl;
@@ -71,7 +71,7 @@ void TestAlignment()
 void SelfTest()
 {
     Pool pool(1024 * 1024); // 1 MB
-    
+
     nonstd::string test = "Hello";
     assert(test == "Hello");
     assert(test.size() == std::string("Hello").size());
@@ -79,14 +79,15 @@ void SelfTest()
     nonstd::string underline(test.size(), '-');
     assert(underline == "-----");
 
-    std::vector<char, std::allocator<char> > v1(17);
-    std::vector<char, nonstd::allocator<char> > v2(17);
+    std::vector<char, std::allocator<char> > v1(26);
+    std::vector<char, nonstd::allocator<char> > v2(26);
     assert(v1.size() == v2.size());
     assert(v2.capacity() == v2.capacity());
-    for (char c = 'a'; c != 'z'; ++c)
+    for (std::size_t idx = 0; idx < 26; ++idx)
     {
-        v1[c] = v2[c] = c;
-        assert(v1[c] == v2[c]);
+        char c = 'a' + idx;
+        v1.at(idx) = v2.at(idx) = c;
+        assert(v1.at(idx) == v2.at(idx));
     }
     assert(!memcmp(v1.data(), v2.data(), v1.size()));
 }
@@ -106,7 +107,7 @@ bool operator< (const Buffer<n> & lhs, const Buffer<n> & rhs)
 }
 
 
-typedef Buffer<1024> Data;
+typedef Buffer<100> Data;
 
 
 typedef std::vector<Data, std::allocator<Data>    > NormalVector;
@@ -132,17 +133,20 @@ Poco::Timestamp::TimeDiff TestPerformance(std::size_t n, std::size_t & size)
 {
     typedef typename ContainerType::value_type Data;
 
-    Poco::Stopwatch s;
-    s.start();
+    Poco::Timestamp::TimeDiff result = 0;
 
     ContainerType container;
     for (std::size_t idx = 0; idx < n; ++idx)
     {
+        Poco::Stopwatch s;
+        s.start();
         Insert(container, Data());
+        result += s.elapsed();
+
     }
     size += container.size();
 
-    return s.elapsed();
+    return result;
 }
 
 
@@ -167,8 +171,8 @@ void PrintResults(const std::string & inTitle,
 
 void Benchmark()
 {
-    static const std::size_t numOuterLoopIterations = 2000;
-    static const std::size_t numInnerLoopIterations = 2000;
+    static const std::size_t numOuterLoopIterations = 100;
+    static const std::size_t numInnerLoopIterations = 200;
 
     Poco::Stopwatch timer;
     timer.start();

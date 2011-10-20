@@ -2,37 +2,58 @@
 #include <stdexcept>
 
 
-std::vector<Pool*> Pool::sInstances;
+namespace { // anonymous
 
 
-Pool & Pool::Get()
+typedef std::vector<Pool*> Instances;
+
+
+Instances & GetPoolInstances()
 {
-    if (sInstances.empty())
-    {
-        throw std::logic_error("There is no pool.");
-    }
-    return *sInstances.back();
+    static Instances fInstances;
+    return fInstances;
 }
 
 
-static void Free(char * buffer)
+unsigned char * Alloc(std::size_t inSize)
+{
+    return reinterpret_cast<unsigned char*>(malloc(inSize));
+}
+
+
+void Free(unsigned char * buffer)
 {
     free(reinterpret_cast<void*>(buffer));
 }
 
 
+} // anonymous namespace
+
+
+Pool & Pool::Get()
+{
+    if (GetPoolInstances().empty())
+    {
+        throw std::logic_error("There is no pool.");
+    }
+    return *GetPoolInstances().back();
+}
+
+
 Pool::Pool(std::size_t inSize) :
-    mData(Free),
+    mData(inSize),
     mSize(inSize),
     mUsed(0),
     mFreed(0)
 {
-    mData.reset(reinterpret_cast<char*>(malloc(inSize)));
-    sInstances.push_back(this);
+    GetPoolInstances().push_back(this);
 }
 
 
 Pool::~Pool()
 {
-    sInstances.pop_back();
+    // Release the memory occupied by the data object.
+    Data().swap(mData);
+
+    GetPoolInstances().pop_back();
 }

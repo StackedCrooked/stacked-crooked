@@ -294,6 +294,7 @@ app.improveTitle = function(title) {
         "Ä" : "A",
         "½" : "1/2",
         "&amp;" : "&",
+        "!" : "",
         "(anime)": "",
         "(film)": "",
         "(manga)": "",

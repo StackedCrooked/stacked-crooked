@@ -72,6 +72,9 @@ typedef Signed<8>::Type Int64;
 
 int main()
 {
+    std::cout << "sizeof(int) = " << sizeof(int) << std::endl;
+    std::cout << "sizeof(long) = " << sizeof(long) << std::endl;
+
     std::cout << "sizeof(UInt8) = " << sizeof(UInt8) << std::endl;
     std::cout << "sizeof(UInt16) = " << sizeof(UInt16) << std::endl;
     std::cout << "sizeof(UInt32) = " << sizeof(UInt32) << std::endl;

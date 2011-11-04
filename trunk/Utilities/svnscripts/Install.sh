@@ -1,11 +1,13 @@
 #!/bin/bash
 
 # Make sure all scripts are executable
-chmod 755 svndiffer
-chmod 755 svnadds
-chmod 755 svnchanges
-chmod 755 svndiff
-chmod 755 svnunknowns
+chmod +x svnadds
+chmod +x svnchanges
+chmod +x svndiff
+chmod +x svndiffer
+chmod +x svnfind
+chmod +x svnmissing
+chmod +x svnunknowns
 
 # Make symbolic links
 ln -fs `pwd`/svnchanges $HOME/bin/svnchanges 

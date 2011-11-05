@@ -1,0 +1,4 @@
+sudo apt-get install dconf-tools
+dconf write /com/canonical/unity-2d/launcher/hide-mode 0
+dconf write /com/canonical/unity-2d/launcher/use-strut true
+

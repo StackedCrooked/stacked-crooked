@@ -1,3 +1,4 @@
+# See: http://askubuntu.com/questions/62941/how-do-i-set-the-launcher-to-always-show-in-unity-2d
 sudo apt-get install dconf-tools
 dconf write /com/canonical/unity-2d/launcher/hide-mode 0
 dconf write /com/canonical/unity-2d/launcher/use-strut true

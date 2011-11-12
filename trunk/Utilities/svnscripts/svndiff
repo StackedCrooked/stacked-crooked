@@ -1,2 +1,2 @@
 #!/bin/sh
-svn diff --diff-cmd svndiffer
+svn diff --diff-cmd svndiffer $*

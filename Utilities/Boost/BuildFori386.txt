@@ -1,0 +1,4 @@
+Building boost on Mac OS X for i386
+-----------------------------------
+./bootstrap.sh --with-libraries=thread,signals
+./bjam --with-thread --with-signals toolset=darwin architecture=x86 address-model=32 variant=release link=static threading=multi

@@ -219,15 +219,14 @@ app.addEntriesToDOM = function(node, linkItem) {
 
             // Skip if year doesn't match
             var startYear = parseInt(entry.start_date.split("-")[0], 10);
-            var end_year = parseInt(entry.end_date.split("-")[0], 10);
+            var endYear = parseInt(entry.end_date.split("-")[0], 10);
+            if (endYear === 0) {
+                endYear = this.getYear();
+            }
             var year = this.getYear();
 
-            // Allow 1 year off
-            if (startYear > (year + 1) || (end_year !== 0 && end_year < (year - 1))) {
-                if (entry.title.search("Hunter") !== -1) {
-                    this.log(year + " is outside of [" + startYear + ", " + end_year + "]");
-                    this.log("entry.end_date: " + entry.end_date);
-                }
+            // If the year is not in the required interval
+            if (year < startYear || year > endYear) {
                 parent.setAttribute("private_year_is_wrong", true);
                 continue;
             }

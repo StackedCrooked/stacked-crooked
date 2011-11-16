@@ -337,12 +337,12 @@ Element.prototype.toggle = function() {
 
 
 Element.prototype.createText = function(text) {
-    this.appendChild(document.createTextNode(text));
+	this.appendChild(document.createTextNode(text));
 };
 
 
 Element.prototype.createNBSP = function() {
-    this.appendChild(document.createTextNode("\u00a0"));
+	this.appendChild(document.createTextNode("\u00a0"));
 };
 
 
@@ -363,6 +363,7 @@ Element.prototype.createEntryList = function() {
     result.style.listStyle = "square outside none";
     return result;
 };
+
 
 app.getNext = function() {
     if (app.links.length === 0) {
@@ -393,6 +394,7 @@ app.isYearList = function() {
     return app.getPageType() === "anime" ||
            app.getPageType() === "manga";
 };
+
 
 app.getAnimeTitleFromPage = function() {
     var headings = document.getElementsByTagName("h1");
@@ -481,10 +483,10 @@ app.getPageTypeFromInfoBox = function() {
 
 app.getPageTypeFromANNLinks = function() {
     app.annLinks = app.getANNLinks();
-    
+
     var foundAnime = false;
     var foundManga = false;
-    
+
     for (var i = 0; i < annLinks.length; ++i) {
         var annLink = annLinks[i];
         if (annLink.search(/anime\.php/) !== -1) {
@@ -954,7 +956,7 @@ else {
     if (app.pageType === "") {
         app.pageType = app.getPageTypeFromANNLinks();
     }
-    
+
     if (app.pageType.search(/anime/) !== -1 || app.pageType.search(/manga/) !== -1) {
         app.insertRatingsIntoPage();
     }

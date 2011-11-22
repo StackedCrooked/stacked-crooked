@@ -1,1 +1,1 @@
-svn st --no-ignore | grep -e ^? | sed 's_^?[ ]*__'
+svn st --no-ignore | grep -e ^[I?] | sed 's_^[?I][ ]*__'

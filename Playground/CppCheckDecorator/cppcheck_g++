@@ -1,0 +1,28 @@
+#!/bin/bash
+i=0
+args=()
+
+# Add default defines
+GCC_DEFINES=`gcc -dM -E - < /dev/null | sed 's/#define /-D/' | sed 's/ \(.\+\)/=\"\1\"/' | tr "\\n" " "`
+for arg in "$GCC_DEFINES"; do
+    args[$i]=$arg
+    ((++i))
+done
+
+# Get -I and -D args from the arg list.
+for arg in "$@"; do
+    if `echo $arg | egrep "^-I|^-D" 1>/dev/null 2>&1`; then
+        args[$i]=$arg
+        ((++i))
+    fi
+done
+
+# Add cpp file to args. Assume it is the last argument.
+for cpp_file; do true; done
+args[$i]=$cpp_file
+
+# Call cppcheck with -I and -D args.
+echo "cppcheck ${args[@]}"
+
+# Call gcc
+/usr/bin/g++ $*

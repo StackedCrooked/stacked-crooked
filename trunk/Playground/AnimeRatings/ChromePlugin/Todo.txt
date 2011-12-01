@@ -1,3 +1,6 @@
+- Cached links should be updated every 7 days.
+- Broken links:
+    . http://en.wikipedia.org/wiki/Ore_no_Im%C5%8Dto_ga_Konna_ni_Kawaii_Wake_ga_Nai
 - Scrape Anime News Network rating
     . URL is usually found in the Wikipedia title page external links section
     . Highlight if median rating is "Very good" or better

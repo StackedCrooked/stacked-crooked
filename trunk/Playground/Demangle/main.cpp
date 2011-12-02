@@ -54,7 +54,6 @@ private:
 
 
 struct A : public WithClassName<A> { };
-
 struct B : public A, public WithClassName<B> { };
 
 
@@ -62,3 +61,4 @@ int main()
 {
 	B b;
 }
+

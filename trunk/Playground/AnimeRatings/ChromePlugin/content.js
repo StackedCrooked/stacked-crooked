@@ -35,6 +35,16 @@ app.getMALInfo = function(pageType, title, callback) {
 };
 
 
+app.getMalQueryInfo = function(callback) {
+    this.sendRequest(
+        {action: "getMalQueryInfo", arg: {}},
+        function(linkInfo) {
+            callback(linkInfo);
+        }
+    );
+};
+
+
 app.getMWPages = function() {
     var divs = document.getElementsByTagName("div");
     for (var i = 0; i < divs.length; ++i) {
@@ -255,59 +265,15 @@ app.improveTitle = function(title) {
 
     var result = title;
 
-    // If the title contains a fragment, then only search for the mapped fragment.
-    var tmapping = {
-        "11eyes: Tsumi to Batsu to Aganai no Shōjo" : "11eyes",
-        "A Channel": "A-Channel",
-        "Aki Sora" : "Aki-Sora",
-        "Ano Hi Mita Hana": "Ano Hi Mita Hana",
-        "Doraemon" : "Doraemon",
-        "Hayate the Combat Butler!" : "Hayate",
-        "Heaven's Lost Property" : "Heaven's Lost Property",
-        "Infinite Stratos" : "Infinite Stratos",
-        "Mawaru-Penguindrum" : "Mawaru Penguindrum",
-        "Mazinkaizer" : "Mazinkaiser",
-        "Negima! Magister Negi Magi" : "Negima",
-        "Oh My Goddess" : "My Goddess",
-        "Poppy Hill" : "Kokurikozaka Kara",
-        "Koishinasai" : "Koi Shinasai",
-        "Sengoku Paradise" : "Kiwami",
-        "Shin Megami Tensei: Persona 4" : "Shin Megami",
-        "Yondemasuyo" : "Yondemasu yo"
-    };
-
-    for (var tkey in tmapping) {
+    for (var tkey in app.malQueryInfo.replace) {
         if (result.search(tkey) !== -1) {
-            result = tmapping[tkey];
+            result = app.malQueryInfo.replace[tkey];
             break;
         }
     }
 
-    // Improve fragments
-    var fmapping = {
-        "×" : "x",
-        "ō" : "ou",
-        "Ō" : "Ou",
-        "ū" : "uu",
-        "ä" : "a",
-        "Ä" : "A",
-        "½" : "1/2",
-        "&amp;" : "&",
-        "!" : "",
-        "(anime)": "",
-        "(film)": "",
-        "(manga)": "",
-        "(movie)": "",
-        "(visual novel)" : "",
-        "(novel)": "",
-        "(video game)": "",
-        "(novel series)" : "",
-        "(Japanese series)" : "",
-        "(TV series)" : ""
-    };
-
-    for (var fkey in fmapping) {
-        var fragment = fmapping[fkey];
+    for (var fkey in app.malQueryInfo.improve) {
+        var fragment = app.malQueryInfo.improve[fkey];
         var count = 0;
         while (result.search(fkey) !== -1 && count < 10) {
             result = result.replace(fkey, fragment);
@@ -940,26 +906,63 @@ app.updateScoreImpl = function() {
 //
 try {
 
+
 app.malLinks = [];
 app.linkNodes = {};
 app.links = app.getLinks().reverse();
+app.log("1");
+if (app.malQueryInfo === undefined) {
+    app.log("2");
+    app.getMalQueryInfo(function(response) {
+        app.log("3");
+        app.log(response.value);
+        app.malQueryInfo = eval(response.value);
+        app.log("4");
 
-if (app.isYearList()) {
-    app.insertSettingsBox();
-    app.insertRatingsIntoList();
-    app.updateScore();
+        if (app.malQueryInfo === undefined) {
+            app.log("app.malQueryInfo === undefined!!");
+        }
+
+        app.log(app);
+
+        if (app.malQueryInfo === undefined) {
+           throw "MAL query info does not define 'app.malQueryInfo'.";
+        }
+
+        if (app.malQueryInfo.replace === undefined) {
+            app.log("replace is undefined");
+            throw "MAL query info does not have a 'replace' field.";
+        }app.log("6");
+        if (app.malQueryInfo.improve === undefined) {
+            app.log("improve is undefined");
+            throw "MAL query info does not have a 'replace' field.";
+        }
+
+app.log("8");
+        app.run();
+        app.log("9");
+    });
 }
-else {
-    app.pageType = app.getPageTypeFromInfoBox();
 
-    if (app.pageType === "") {
-        app.pageType = app.getPageTypeFromANNLinks();
+app.run = function() {
+    if (app.isYearList()) {
+        app.insertSettingsBox();
+        app.insertRatingsIntoList();
+        app.updateScore();
     }
+    else {
+        app.pageType = app.getPageTypeFromInfoBox();
 
-    if (app.pageType.search(/anime/) !== -1 || app.pageType.search(/manga/) !== -1) {
-        app.insertRatingsIntoPage();
+        if (app.pageType === "") {
+            app.pageType = app.getPageTypeFromANNLinks();
+        }
+
+        if (app.pageType.search(/anime/) !== -1 || app.pageType.search(/manga/) !== -1) {
+            app.insertRatingsIntoPage();
+        }
     }
-}
+};
+
 
 } catch (exc) {
     app.log("Exception caught: " + exc.toString());

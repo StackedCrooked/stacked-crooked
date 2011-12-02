@@ -62,6 +62,13 @@ function searchMAL(pageType, title, callback) {
     });
 }
 
+function getMalQueryInfo(callback) {
+    var url = "http://stacked-crooked.googlecode.com/svn/trunk/Playground/AnimeRatings/ChromePlugin/config/malQuery.json";
+    performHTTPGETRequest(url, "", function(response) {
+        callback(response);
+    });
+}
+
 function getInnerText(node) {
     if (node.childNodes.length === 0) {
         return "";
@@ -158,6 +165,9 @@ function getMalInfo(arg, callback) {
 chrome.extension.onRequest.addListener( function(request, sender, callback) {
     if (request.action === "log") {
         console.log(request.arg);
+    }
+    else if (request.action === "getMalQueryInfo") {
+        getMalQueryInfo(callback);
     }
     else if (request.action === "getMalInfo") {
         getMalInfo(request.arg, callback);

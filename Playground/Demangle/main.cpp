@@ -19,7 +19,7 @@ std::string demangle(const char * name)
             case -1: throw std::runtime_error("A memory allocation failure occurred.");
             case -2: throw std::runtime_error("Not a valid name under the GCC C++ ABI mangling rules.");
             case -3: throw std::runtime_error("One of the arguments is invalid.");
-            default: throw std::runtime_error("unexpected demangle status");
+            default: throw std::runtime_error("Unexpected demangle status");
         }
     }
 

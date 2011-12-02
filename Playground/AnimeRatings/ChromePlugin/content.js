@@ -906,41 +906,16 @@ app.updateScoreImpl = function() {
 //
 try {
 
-
 app.malLinks = [];
 app.linkNodes = {};
 app.links = app.getLinks().reverse();
-app.log("1");
 if (app.malQueryInfo === undefined) {
-    app.log("2");
     app.getMalQueryInfo(function(response) {
-        app.log("3");
-        app.log(response.value);
-        app.malQueryInfo = eval(response.value);
-        app.log("4");
-
-        if (app.malQueryInfo === undefined) {
-            app.log("app.malQueryInfo === undefined!!");
+        app.malQueryInfo = JSON.parse(response.value);
+        if (app.malQueryInfo.replace === undefined || app.malQueryInfo.improve === undefined) {
+            throw "MAL query info is missing the 'replace' or 'improve' fields.";
         }
-
-        app.log(app);
-
-        if (app.malQueryInfo === undefined) {
-           throw "MAL query info does not define 'app.malQueryInfo'.";
-        }
-
-        if (app.malQueryInfo.replace === undefined) {
-            app.log("replace is undefined");
-            throw "MAL query info does not have a 'replace' field.";
-        }app.log("6");
-        if (app.malQueryInfo.improve === undefined) {
-            app.log("improve is undefined");
-            throw "MAL query info does not have a 'replace' field.";
-        }
-
-app.log("8");
         app.run();
-        app.log("9");
     });
 }
 

@@ -1,12 +1,10 @@
-#include <iostream>
-#include <stdexcept>
-#include <typeinfo>
-#include <cxxabi.h>
-#include <cstring>
-#include <string>
-#include <sstream>
 #include <cassert>
 #include <cstdlib>
+#include <cxxabi.h>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <typeinfo>
 
 
 std::string demangle(const char * name)
@@ -32,41 +30,35 @@ std::string demangle(const char * name)
 
 
 template<class T>
-std::string demangle()
-{
-    return demangle(typeid(T).name());
-}
-
-
-template<class T>
 struct WithClassName
 {
     WithClassName() :
-        className_(demangle<T>())
+        className_(demangle(typeid(T).name()))
     {
+		std::cout << className() << "()\n";
     }
 
-    inline const std::string & className() const { return className_; }
+    ~WithClassName()
+	{
+		std::cout << "~" << className() << "()\n";
+	}
+
+    const std::string & className() const
+	{
+		return className_;
+	}
 
 private:
     std::string className_;
 };
 
 
-template<class T>
-struct Policy : public WithClassName<T>
-{
-    Policy() { std::cout << this->className() << "()" << std::endl; }
+struct A : public WithClassName<A> { };
 
-    ~Policy() { std::cout << "~" << this->className() << "()" << std::endl; }
-};
+struct B : public A, public WithClassName<B> { };
 
-
-struct A : public Policy<A> { };
-struct B : public A,
-           public Policy<B> { };
 
 int main()
 {
-    B b;
+	B b;
 }

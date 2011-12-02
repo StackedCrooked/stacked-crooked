@@ -42,7 +42,11 @@ function performHTTPGETRequest(url, auth, callback) {
         }
     };
     http.open('GET', url, true);
-    http.setRequestHeader('Authorization', auth);
+
+    if (auth !== null && auth !== "") {
+        http.setRequestHeader('Authorization', auth);
+    }
+
     http.send();
 }
 

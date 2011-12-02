@@ -1,0 +1,43 @@
+app.malQuery = {};
+
+app.malQuery.replace = {
+    "11eyes: Tsumi to Batsu to Aganai no Shōjo" : "11eyes",
+    "A Channel": "A-Channel",
+    "Aki Sora" : "Aki-Sora",
+    "Ano Hi Mita Hana": "Ano Hi Mita Hana",
+    "Doraemon" : "Doraemon",
+    "Hayate the Combat Butler!" : "Hayate",
+    "Heaven's Lost Property" : "Heaven's Lost Property",
+    "Infinite Stratos" : "Infinite Stratos",
+    "Mawaru-Penguindrum" : "Mawaru Penguindrum",
+    "Mazinkaizer" : "Mazinkaiser",
+    "Negima! Magister Negi Magi" : "Negima",
+    "Oh My Goddess" : "My Goddess",
+    "Poppy Hill" : "Kokurikozaka Kara",
+    "Koishinasai" : "Koi Shinasai",
+    "Sengoku Paradise" : "Kiwami",
+    "Shin Megami Tensei: Persona 4" : "Shin Megami",
+    "Yondemasuyo" : "Yondemasu yo"
+};
+
+app.malQuery.improve = {
+    "×" : "x",
+    "ō" : "ou",
+    "Ō" : "Ou",
+    "ū" : "uu",
+    "ä" : "a",
+    "Ä" : "A",
+    "½" : "1/2",
+    "&amp;" : "&",
+    "!" : "",
+    "(anime)": "",
+    "(film)": "",
+    "(manga)": "",
+    "(movie)": "",
+    "(visual novel)" : "",
+    "(novel)": "",
+    "(video game)": "",
+    "(novel series)" : "",
+    "(Japanese series)" : "",
+    "(TV series)" : ""
+};

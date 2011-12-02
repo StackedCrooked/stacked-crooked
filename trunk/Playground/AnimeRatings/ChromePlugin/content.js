@@ -253,7 +253,7 @@ app.addEntriesToDOM = function(node, linkItem) {
 
     if (parent.hasAttribute("private_year_is_wrong") &&
         parent.getElementsByTagName("li").length === 0) {
-        parent.create("li").createText("No titles found from " + year);
+        parent.create("li").createText("No " + app.getPageType() + " titles returned from " + year + ".");
     }
 };
 
@@ -889,7 +889,9 @@ app.updateScoreImpl = function() {
                 malLink.firstChild.style.backgroundColor = "inherit";
             }
 
-            if (linkScore >= app.getVisibilityTreshold()) {
+            // Score of zero means that the show has not yet received
+            // enough ratings to calculate a weighted average.
+            if (linkScore === 0 || linkScore >= app.getVisibilityTreshold()) {
                 malLink.style.display = "list-item";
             }
             else {

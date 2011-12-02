@@ -1,3 +1,4 @@
+- Use [+] and [-] to expand and collapse the ratings that go with a title.
 - Store mappings online
 - Cached links should be updated every 7 days.
 - Broken links:

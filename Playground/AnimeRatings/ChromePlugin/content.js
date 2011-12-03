@@ -330,9 +330,25 @@ Element.prototype.createEntryList = function() {
 };
 
 
+app.printFailedTitles = function() {
+    // Show all failed titles.
+    var allFailedTitles = "";
+    for (var i = 0; i < app.failedTitles.length; i++)
+    {
+        if (i > 0)
+        {
+            allFailedTitles += "\n";
+        }
+        allFailedTitles += i + ": " + app.failedTitles[i];
+    }
+    app.log(allFailedTitles);
+};
+
+
 app.getNext = function() {
     if (app.links.length === 0) {
         app.updateScore();
+        app.printFailedTitles();
         return;
     }
 
@@ -347,10 +363,14 @@ app.getNext = function() {
                 app.addEntriesToDOM(node, linkInfo);
             }
             else {
+                app.failedTitles.push(title);
                 app.informFailure(node, linkInfo);
             }
             app.getNext();
         });
+    }
+    else {
+        console.log("Strange situtation: title is already being processed: " + title);
     }
 };
 
@@ -493,10 +513,11 @@ app.getPageType = function() {
     return "";
 };
 
+app.workerCount = 5;
+app.idleWorkers = 0;
 
 app.insertRatingsIntoList = function() {
-    var numSimulReq = 5;
-    for (var i = 0; i < numSimulReq; ++i) {
+    for (var i = 0; i < app.workerCount; ++i) {
         app.getNext(app.links);
     }
 };
@@ -909,6 +930,7 @@ app.updateScoreImpl = function() {
 try {
 
 app.malLinks = [];
+app.failedTitles = [];
 app.linkNodes = {};
 app.links = app.getLinks().reverse();
 if (app.malQueryInfo === undefined) {

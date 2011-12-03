@@ -76,8 +76,26 @@ function getInnerText(node) {
     return node.childNodes[0].nodeValue;
 }
 
+function getEpochSeconds() {
+    return Math.floor(new Date().getTime() / 1000);
+}
+
+function getFirstUseEpoch() {
+    var result = localStorage.getItem("epoch_first_use");
+    if (result === null) {
+        result = getEpochSeconds();
+        localStorage.setItem("epoch_first_use", result);
+    }
+    return result;
+}
+
+function getWeekCounter(epochSeconds) {
+    return Math.floor(epochSeconds / (7 * 24 * 3600));
+}
+
 function getCacheKey(pageType, title) {
-    return chrome.manifest.version + "_" + pageType + "_" + title;
+    var result = "version: " + chrome.manifest.version + ", age: " + getWeekCounter(getEpochSeconds() - getFirstUseEpoch()) + ", page_type: " + pageType + ", title: " + title;
+    return result;
 }
 
 function getMalInfo(arg, callback) {

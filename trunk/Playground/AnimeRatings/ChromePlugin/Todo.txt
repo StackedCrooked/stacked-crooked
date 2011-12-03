@@ -1,5 +1,6 @@
-- Use [+] and [-] to expand and collapse the ratings that go with a title.
 - Store mappings online
+- Cache the mapping!
+- Use [+] and [-] to expand and collapse the ratings that go with a title.
 - Cached links should be updated every 7 days.
 - Broken links:
     . http://en.wikipedia.org/wiki/Ore_no_Im%C5%8Dto_ga_Konna_ni_Kawaii_Wake_ga_Nai

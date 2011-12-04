@@ -1,4 +1,4 @@
-- Store mappings online
+v Store mappings online
 - Cache the mapping!
 - Use [+] and [-] to expand and collapse the ratings that go with a title.
 - Cached links should be updated every 7 days.

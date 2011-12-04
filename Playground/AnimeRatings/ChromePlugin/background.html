@@ -89,12 +89,12 @@ function getFirstUseEpoch() {
     return result;
 }
 
-function getWeekCounter(epochSeconds) {
-    return Math.floor(epochSeconds / (7 * 24 * 3600));
+function getWeekCounter() {
+    return Math.floor(getEpochSeconds() / (7 * 24 * 3600));
 }
 
 function getCacheKey(pageType, title) {
-    var result = "version: " + chrome.manifest.version + ", age: " + getWeekCounter(getEpochSeconds() - getFirstUseEpoch()) + ", page_type: " + pageType + ", title: " + title;
+    var result = "version: " + chrome.manifest.version + ", age: " + getWeekCounter() + ", page_type: " + pageType + ", title: " + title;
     return result;
 }
 

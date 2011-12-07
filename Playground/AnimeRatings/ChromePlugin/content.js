@@ -365,7 +365,7 @@ app.getNext = function() {
         });
     }
     else {
-        app.log("Strange situtation: title is already being processed: " + title);
+        app.log("Title already being processed: " + title);
     }
 };
 

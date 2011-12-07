@@ -343,7 +343,7 @@ app.printFailedTitles = function() {
 app.getNext = function() {
     if (app.links.length === 0) {
         app.updateScore();
-        app.printFailedTitles();
+        //app.printFailedTitles();
         return;
     }
 

@@ -41,8 +41,6 @@ chrome.manifest = (function() {
 
 })();
 
-var enableLocalStorage = true;
-
 function performHTTPGETRequest(url, auth, callback) {
     var http = new window.XMLHttpRequest();
     http.onreadystatechange = function() {
@@ -115,13 +113,11 @@ function getCacheKey(pageType, title) {
 
 function getMalInfo(arg, callback) {
 
-    if (enableLocalStorage === true) {
-        var cacheValue = localStorage.getItem(getCacheKey(arg.pageType, arg.title));
-        if (cacheValue !== null) {
-            var result = JSON.parse(cacheValue);
-            callback(result);
-            return;
-        }
+    var cacheValue = localStorage.getItem(getCacheKey(arg.pageType, arg.title));
+    if (cacheValue !== null) {
+        var result = JSON.parse(cacheValue);
+        callback(result);
+        return;
     }
 
     searchMAL(arg.pageType, arg.title, function(response) {
@@ -188,9 +184,7 @@ function getMalInfo(arg, callback) {
             result.success = false;
         }
 
-        if (enableLocalStorage === true) {
-            localStorage.setItem(getCacheKey(arg.pageType, arg.title), JSON.stringify(result));
-        }
+        localStorage.setItem(getCacheKey(arg.pageType, arg.title), JSON.stringify(result));
         callback(result);
     });
 }

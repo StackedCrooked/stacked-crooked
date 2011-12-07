@@ -537,20 +537,8 @@ app.addMALRatingsIntoAnimePageDOM = function() {
 };
 
 
-app.addANNRatingsIntoAnimePageDOM = function() {
-    // TODO: Implement
-    app.log("app.addANNRatingsIntoAnimePageDOM 0");
-    for (var i = 0; i < app.annLinks.length; ++i) {
-        app.log("app.addANNRatingsIntoAnimePageDOM i: " + i);
-        app.log("ANN link " + i + ": " + app.annLinks[i]);
-    }
-    app.log("END app.addANNRatingsIntoAnimePageDOM");
-};
-
-
 app.insertRatingsIntoPage = function() {
     app.addMALRatingsIntoAnimePageDOM();
-    app.addANNRatingsIntoAnimePageDOM();
 };
 
 

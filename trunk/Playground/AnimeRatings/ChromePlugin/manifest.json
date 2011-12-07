@@ -1,7 +1,7 @@
 {
     "name": "Anime Ratings",
-    "version": "13",
-    "description": "Enhances anime pages on Wikipedia with myanimelist.net ratings and extra info.",
+    "version": "14",
+    "description": "Updates anime pages on Wikipedia with ratings from myanimelist.net.",
     "permissions": [ "http://myanimelist.net/api/anime/search.xml",
                      "http://stacked-crooked.googlecode.com/*" ],
     "icons": {

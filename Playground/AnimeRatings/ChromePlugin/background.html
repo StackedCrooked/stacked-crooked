@@ -77,9 +77,22 @@ function searchMAL(pageType, title, callback) {
 
 function getMalQueryInfo(callback) {
     var url = "http://stacked-crooked.googlecode.com/svn/trunk/Playground/AnimeRatings/ChromePlugin/config/malQuery.json";
-    performHTTPGETRequest(url, "", function(response) {
-        callback(response);
+    var key = JSON.stringify({
+        name: "MalQueryInfo",
+        week: getWeekCounter(),
+        version: chrome.manifest.version
     });
+    var value = localStorage.getItem(key);
+    if (value === null) {
+        console.log("getMalQueryInfo: Key '" + key + "' not found.");
+        performHTTPGETRequest(url, "", function(response) {
+            localStorage.setItem(key, JSON.stringify(response));
+            callback(response);
+        });
+    }
+    else {
+        callback(JSON.parse(value));
+    }
 }
 
 function getInnerText(node) {

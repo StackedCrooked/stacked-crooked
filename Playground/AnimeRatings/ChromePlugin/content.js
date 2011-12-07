@@ -36,12 +36,7 @@ app.getMALInfo = function(pageType, title, callback) {
 
 
 app.getMalQueryInfo = function(callback) {
-    this.sendRequest(
-        {action: "getMalQueryInfo", arg: {}},
-        function(linkInfo) {
-            callback(linkInfo);
-        }
-    );
+    this.sendRequest({action: "getMalQueryInfo", arg: {}}, callback);
 };
 
 
@@ -370,7 +365,7 @@ app.getNext = function() {
         });
     }
     else {
-        console.log("Strange situtation: title is already being processed: " + title);
+        app.log("Strange situtation: title is already being processed: " + title);
     }
 };
 
@@ -933,11 +928,103 @@ app.malLinks = [];
 app.failedTitles = [];
 app.linkNodes = {};
 app.links = app.getLinks().reverse();
+
+
 if (app.malQueryInfo === undefined) {
+
+    app.defaultMalQueryInfo = {
+        "replace" : {
+            "11eyes: Tsumi to Batsu to Aganai no Shōjo" : "11eyes",
+            "A Channel" : "A-Channel",
+            "Aki Sora" : "Aki-Sora",
+            "Ano Hi Mita Hana" : "Ano Hi Mita Hana",
+            "Cardfight Vanguard" : "Cardfight!! Vanguard",
+            "Chibi Devi!" : "Chibi Devi",
+            "Doraemon" : "Doraemon",
+            "Dungeon Fighter Online" : "Arad Senki: Slap Up Party",
+            "Everyday Mum" : "Mainichi Kaasan",
+            "Fresh Pretty Cure" : "Fresh Precure!",
+            "GA Geijutsuka Art Design Class" : "GA: Geijutsuka Art Design Class",
+            "Hayate the Combat Butler!" : "Hayate",
+            "Heaven's Lost Property" : "Heaven's Lost Property",
+            "Hetalia: Axis Powers" : "Hetalia Axis Powers",
+            "Higurashi When They Cry" : "Higurashi no Naku Koro ni",
+            "Horizon in the Middle of Nowhere" :  "Kyoukai Senjou no Horizon",
+            "Hyakka Ryōran Samurai Girls" : "Hyakka Ryouran: Samurai Girls",
+            "Infinite Stratos" : "Infinite Stratos",
+            "Koishinasai" : "Koi Shinasai",
+            "Kon'nichiwa Anne" : "Konnichiwa Anne",
+            "Kyō, Koi o Hajimemasu" : "Kyou, Koi wo Hajimemasu",
+            "List of Kemono no Souja Erin episodes" : "Kemono no Souja Eri",
+            "Lupin the 3rd vs Detective Conan" : "Lupin III vs. Detective Conan",
+            "Mai Mai Miracle": "Mai Mai Shinko to Sennen no Mahou",
+            "Maid Sama!" : "Kaichou wa Maid-sama!",
+            "Mawaru-Penguindrum" : "Mawaru Penguindrum",
+            "Mazinkaizer" : "Mazinkaiser",
+            "Naruto Shippuden The Movie: The Lost Tower" : "Naruto: Shippuuden Movie 4 - The Lost Tower",
+            "Naruto Shippuuden The Movie: Inheritors of the Will of Fire" : "Naruto: Shippuuden Movie 3",
+            "Negima! Magister Negi Magi" : "Negima",
+            "Oh My Goddess" : "My Goddess",
+            "One Piece Film: Strong World" : "One Piece: Strong World",
+            "Ore no Imōto ga Konna ni Kawaii Wake ga Nai" : "Ore no Imouto ga Konnani Kawaii Wake ga Nai",
+            "Pandane to tamago hime" : "Pandane to Tamago-hime",
+            "Phantom of Inferno" : "Phantom: Requiem for the Phantom",
+            "Phi Brain: Puzzle of God" : "Phi Brain: Kami no Puzzle",
+            "Poppy Hill" : "Kokurikozaka Kara",
+            "Pretty Cure All Stars DX2: Light of Hope – Protect the Rainbow Jewel!" : "Eiga Precure All Stars DX2: Kibou no Hikari - Rainbow Jewel wo Mamore!",
+            "Psychiatrist Irabu series" : "Kuuchuu Buranko",
+            "Queen's Blade Rebellion" : "Queen's Blade: Rebellion",
+            "Samurai Harem: Asu no Yoichi" : "Asu no Yoichi!",
+            "Sayonara, Zetsubou-Sensei": "Sayonara Zetsubou Sensei",
+            "Sengoku Basara: Samurai Kings" : "Sengoku Basara",
+            "Sengoku Paradise" : "Kiwami",
+            "Shin Mazinger Shougeki! Z Hen" : "Shin Mazinger Shougeki! Z-Hen",
+            "Shin Megami Tensei: Persona 4" : "Shin Megami",
+            "Sono Hanabira ni Kuchizuke o" : "Sono Hanabira ni Kuchizuke wo",
+            "Space Battleship Yamato: Resurrection" : "Miyamoto Musashi: Souken ni Haseru Yume",
+            "Super Robot Wars Original Generation: The Inspector" : "Super Robot Taisen OG: The Inspector",
+            "Super Robot Wars Original Generation: The Inspector" : "Super Robot Taisen OG: The Inspector",
+            "The Guin Saga" : "Guin Saga",
+            "The Tower of Druaga" : "Druaga no Tou",
+            "To Aru Kagaku no Railgun" : "Toaru Kagaku no Railgun",
+            "Victini and Reshiram and White" : "Pokemon Best Wishes! the Movie: Victini to Shiroki Eiyuu Reshiram",
+            "Yondemasuyo" : "Yondemasu yo",
+            "Ōkami Kakushi" : "Ookami Kakushi",
+            "Ōkami-san" : "Ookami-san"
+        },
+        "improve" : {
+            "×" : "x",
+            "ō" : "ou",
+            "Ō" : "Ou",
+            "ū" : "uu",
+            "ä" : "a",
+            "Ä" : "A",
+            "½" : "1/2",
+            "&amp;" : "&",
+            "(2009 film)" : "",
+            "(anime)" : "",
+            "(film)" : "",
+            "(manga)" : "",
+            "(movie)" : "",
+            "(visual novel)" : "",
+            "(novel)" : "",
+            "(video game)" : "",
+            "(novel series)" : "",
+            "(Japanese series)" : "",
+            "(TV series)" : ""
+        }
+    };
+
     app.getMalQueryInfo(function(response) {
-        app.malQueryInfo = JSON.parse(response.value);
-        if (app.malQueryInfo.replace === undefined || app.malQueryInfo.improve === undefined) {
-            throw "MAL query info is missing the 'replace' or 'improve' fields.";
+        if (response.success === true) {
+            app.malQueryInfo = JSON.parse(response.value);
+            if (app.malQueryInfo.replace === undefined || app.malQueryInfo.improve === undefined) {
+                throw "MAL query info is missing the 'replace' or 'improve' fields.";
+            }
+        }
+        else {
+            app.log("Failed to get malQueryInfo. Resorting to default.");
+            app.malQueryInfo = app.defaultMalQueryInfo;
         }
         app.run();
     });

@@ -1,1 +1,1 @@
-ln -s `pwd`/formatcode $HOME/bin/
+ln -s `pwd`/formatcode $HOME/bin/formatcode

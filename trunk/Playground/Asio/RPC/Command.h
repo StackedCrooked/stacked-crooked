@@ -45,14 +45,6 @@ struct Decompose<Ret_(Arg_)>
 };
 
 
-std::string receive(const std::string & name, const std::string & buffer)
-{
-    (void)name;
-    (void)buffer;
-    throw;
-}
-
-
 template<typename T>
 std::string serialize(const T & value)
 {
@@ -128,11 +120,6 @@ struct ConcreteCommand : public Command
     }
 
     typedef std::string Buffer;
-
-    Buffer send(const std::string & name, const Buffer & buffer)
-    {
-        return receive(name, buffer);
-    }
 
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)

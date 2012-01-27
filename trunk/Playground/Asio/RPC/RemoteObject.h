@@ -9,10 +9,14 @@
 namespace RPC {
 
 
-class RemoteObject
+struct RemoteObject
 {
-public:
-    RemoteObject(const std::string & inClassName, RemotePtr inRemotePtr = RemotePtr()) :
+    RemoteObject() :
+        mClassName(100, 'a')
+    {
+    }
+
+    RemoteObject(const std::string & inClassName, RemotePtr inRemotePtr) :
         mClassName(inClassName),
         mRemotePtr(inRemotePtr)
     {
@@ -26,14 +30,6 @@ public:
 
     void setRemotePtr(const RemotePtr & inRemotePtr) { mRemotePtr = inRemotePtr; }
 
-    template<typename Archive>
-    void serialize(Archive & ar, const unsigned int )
-    {
-        ar & mClassName;
-        ar & mRemotePtr;
-    }
-
-private:
     std::string mClassName;
     RemotePtr mRemotePtr;
 };

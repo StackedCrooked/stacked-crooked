@@ -10,13 +10,11 @@
 namespace RPC {
 
 
-class RemoteServer : public RemoteObject
+struct RemoteServer : public RemoteObject
 {
-public:
-    static const char * ClassName() { return "Server"; }
+    static const char * ClassName() { return "RemoteServer"; }
 
-    RemoteServer() :
-        RemoteObject(ClassName())
+    RemoteServer()
     {
     }
 
@@ -26,17 +24,10 @@ public:
     {
     }
 
+    virtual ~RemoteServer() {}
+
     const std::string & url() const { return mURL; }
 
-    template<typename Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        boost::serialization::base_object<RemoteObject>(*this);
-        ar & mURL;
-        (void)version;
-    }
-
-private:
     std::string mURL;
 };
 
@@ -46,10 +37,8 @@ class RemoteStopwatch : public RemoteObject
 public:
     static const char * ClassName() { return "Stopwatch"; }
 
-    RemoteStopwatch() :
-        RemoteObject(ClassName())
+    RemoteStopwatch()
     {
-
     }
 
     RemoteStopwatch(RemotePtr inRemotePtr, const std::string & inName) :
@@ -61,7 +50,7 @@ public:
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        boost::serialization::base_object<RemoteObject>(*this);
+        ar & boost::serialization::base_object<RemoteObject>(*this);
         ar & mName;
         (void)version;
     }
@@ -78,32 +67,34 @@ namespace boost {
 namespace serialization {
 
 
-using boost::tuples::tuple;
+using namespace RPC;
 
 
-template<class Archive, class T0>
-void serialize(Archive & ar, tuple<T0> & value, const unsigned int)
+template<typename Archive>
+void serialize(Archive & ar, RemotePtr & rp, const unsigned int)
 {
-    RPC::serialize_tuple(ar, value);
+    ar & rp.mValue;
 }
 
 
-template<class Archive, typename T0, typename T1>
-void serialize(Archive & ar, tuple<T0, T1> & value, const unsigned int)
+template<typename Archive>
+void serialize(Archive & ar, RemoteObject & ro, const unsigned int)
 {
-    RPC::serialize_tuple(ar, value);
+    ar & ro.mClassName;
+    ar & ro.mRemotePtr;
 }
 
 
-template<class Archive, typename T0, typename T1, typename T2>
-void serialize(Archive & ar, tuple<T0, T1, T2> & value, const unsigned int)
+template<typename Archive>
+void serialize(Archive & ar, RemoteServer & rs, const unsigned int version)
 {
-    RPC::serialize_tuple(ar, value);
+    ar & boost::serialization::base_object<RemoteObject>(rs);
+    ar & rs.mURL;
+    (void)version;
 }
 
 
-} // namespace serialization
-} // namespace boost
+} } // namespace boost::serialization
 
 
 #endif // RPC_REMOTEOBJECTS_H

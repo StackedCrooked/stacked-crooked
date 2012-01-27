@@ -4,12 +4,36 @@
 
 #include "RPC/Command.h"
 #include "RPC/RemoteObjects.h"
+#include <boost/tuple/tuple_io.hpp>
 
 
 namespace RPC {
 
 
+using boost::tuples::get;
 typedef std::string URL;
+
+template<typename T>
+struct Identity { typedef T Type; };
+
+template<typename Archive, typename Tuple>
+void serialize_tuple(Archive & ar, Tuple & tuple)
+{
+    serialize_tuple_impl(ar, tuple, Identity<Tuple>());
+}
+
+
+template<typename Archive, typename Tuple>
+void serialize_tuple_impl(Archive & ar, Tuple & tuple, const Identity<Tuple> &)
+{
+    ar & tuple.get_head();
+    serialize_tuple_impl(ar, tuple.get_tail(), Identity<typename Tuple::tail_type>());
+}
+
+template<typename Archive, typename Tuple>
+void serialize_tuple_impl(Archive &, const Tuple &, const Identity<boost::tuples::null_type> &)
+{
+}
 
 
 struct CreateStopwatchArgs
@@ -18,24 +42,21 @@ public:
     CreateStopwatchArgs() {}
 
     CreateStopwatchArgs(const RemoteServer & inServer, const std::string & inName) :
-        mServer(inServer),
-        mName(inName)
+        mTuple(inServer, inName)
     {
     }
 
-    const RemoteServer & server() const { return mServer; }
+    const RemoteServer & server() const { return mTuple.get<0>(); }
 
-    const std::string & name() const { return mName; }
+    const std::string & name() const { return mTuple.get<1>(); }
 
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
     {
-        ar & mServer & mName;
+        serialize_tuple(ar, mTuple);
     }
 
-private:
-    RemoteServer mServer;
-    std::string mName;
+    boost::tuples::tuple<RemoteServer, std::string> mTuple;
 };
 
 

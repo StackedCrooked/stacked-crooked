@@ -44,7 +44,12 @@ struct Decompose<Ret_(Arg_)>
 };
 
 
-std::string receive(const std::string & name, const std::string & buffer);
+std::string receive(const std::string & name, const std::string & buffer)
+{
+    (void)name;
+    (void)buffer;
+    throw;
+}
 
 
 template<typename T>

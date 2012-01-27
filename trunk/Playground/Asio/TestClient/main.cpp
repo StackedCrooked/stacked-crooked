@@ -2,9 +2,11 @@
 
 
 using namespace RPC;
+using boost::tuples::make_tuple;
 
 
 void test()
 {
-    CreateStopwatch(RemoteServer(), "").run();
+    RemoteStopwatch res = CreateStopwatch(make_tuple(RemoteServer(), "")).run();
+    std::cout << "Created stopwatch: " << res.remotePtr().value() << std::endl;
 }

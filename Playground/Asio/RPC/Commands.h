@@ -6,38 +6,6 @@
 #include "RPC/RemoteObjects.h"
 
 
-namespace boost {
-namespace serialization {
-
-
-using boost::tuples::tuple;
-
-
-template<class Archive, class T0>
-void serialize(Archive & ar, tuple<T0> & value, const unsigned int)
-{
-    RPC::serialize_tuple(ar, value);
-}
-
-
-template<class Archive, typename T0, typename T1>
-void serialize(Archive & ar, tuple<T0, T1> & value, const unsigned int)
-{
-    RPC::serialize_tuple(ar, value);
-}
-
-
-template<class Archive, typename T0, typename T1, typename T2>
-void serialize(Archive & ar, tuple<T0, T1, T2> & value, const unsigned int)
-{
-    RPC::serialize_tuple(ar, value);
-}
-
-
-} // namespace serialization
-} // namespace boost
-
-
 namespace RPC {
 
 

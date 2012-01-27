@@ -24,11 +24,11 @@
 #define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
-template<class ValueType>
+template<class T>
 struct ContainerPolicy_Set
 {
-    typedef std::set<ValueType> Container;
-    static void insert(Container & ioContainer, const ValueType & inValue)
+    typedef std::set<T> Container;
+    static void insert(Container & ioContainer, const T & inValue)
     {
         ioContainer.insert(inValue);
     }
@@ -45,11 +45,11 @@ struct ContainerPolicy_Set
 };
 
 
-template<class ValueType>
+template<class T>
 struct ContainerPolicy_Vector
 {
-    typedef std::vector<ValueType> Container;
-    static void insert(Container & ioContainer, const ValueType & inValue)
+    typedef std::vector<T> Container;
+    static void insert(Container & ioContainer, const T & inValue)
     {
         ioContainer.push_back(inValue);
     }
@@ -114,23 +114,23 @@ struct PointerPolicy_Shared
 template <class TDataType,
           template <class> class ContainerPolicy,
           template <class> class PointerPolicy>
-class GenericNode
+class node_t
 {
 public:
     typedef TDataType DataType;
 
-    GenericNode() { }
+    node_t() { }
 
-    GenericNode(const DataType & inData) : mData(inData) { }
+    node_t(const DataType & inData) : mData(inData) { }
 
-    typedef GenericNode<DataType, ContainerPolicy, PointerPolicy> This;
+    typedef node_t<DataType, ContainerPolicy, PointerPolicy> This;
     typedef typename PointerPolicy<This>::PointerType ChildPtr;
     typedef typename ContainerPolicy<ChildPtr>::Container Container;
 
     typedef typename Container::iterator iterator;
     typedef typename Container::const_iterator const_iterator;
 
-    ~GenericNode()
+    ~node_t()
     {
         const_iterator it = this->begin(), endIt = this->end();
         for (; it != endIt; ++it)
@@ -196,34 +196,31 @@ private:
 };
 
 
-template<class ValueType,
+template<class T,
          template<class> class ContainerType,
          template<class> class PointerType>
-bool HasCycles(const GenericNode<ValueType, ContainerType, PointerType> & inNode,
-               std::vector<const ValueType*> inPreviousNodes = std::vector<const ValueType*>())
+bool HasCycles(const node_t<T, ContainerType, PointerType> & node,
+               std::vector<const T*> node_path = std::vector<const T*>())
 {
-    typedef GenericNode<ValueType, ContainerType, PointerType> Node;
+    typedef node_t<T, ContainerType, PointerType> Node;
     typedef typename Node::Container Container;
 
-    if (!inNode.empty())
+    if (!node.empty())
     {
-        for (typename Container::const_iterator it = inNode.begin(),
-                                                end = inNode.end();
-             it != end;
-             ++it)
+        for (typename Container::const_iterator it = node.begin(), end = node.end(); it != end; ++it)
         {
-            GenericNode<ValueType, ContainerType, PointerType> & child = **it;
-            if (std::find(inPreviousNodes.begin(), inPreviousNodes.end(), &child.data()) != inPreviousNodes.end())
+            node_t<T, ContainerType, PointerType> & child = **it;
+            if (std::find(node_path.begin(), node_path.end(), &child.data()) != node_path.end())
             {
                 return true;
             }
             else
             {
-                inPreviousNodes.push_back(&inNode.data());
+                node_path.push_back(&node.data());
 
                 // Previous nodes object is passed by value!
                 // This is an important aspect of the algorithm!
-                if (HasCycles(child, inPreviousNodes))
+                if (HasCycles(child, node_path))
                 {
                     return true;
                 }
@@ -272,7 +269,7 @@ void Lock(T & a, T & b, T& c, T & d)
 void testNode()
 {
     // Defined the tree with PointerPolicy_Normal_NoOwnership to void deleting stack-allocated objects.
-    typedef GenericNode<Mutex, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
+    typedef node_t<Mutex, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
     MutexNode a('a');
     MutexNode b('b');
     MutexNode c('c');
@@ -326,7 +323,7 @@ template<class T>
 struct LockMany : boost::noncopyable
 {
     // No ownership here to prevent cycles causing infinite recursion on destruction.
-    typedef GenericNode<Mutex*, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
+    typedef node_t<Mutex*, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
 
     LockMany() :
         mRootNode(),

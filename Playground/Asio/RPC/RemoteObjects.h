@@ -58,6 +58,14 @@ public:
     {
     }
 
+    template<typename Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        boost::serialization::base_object<RemoteObject>(*this);
+        ar & mName;
+        (void)version;
+    }
+
 private:
     std::string mName;
 };

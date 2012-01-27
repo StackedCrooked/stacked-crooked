@@ -11,28 +11,35 @@ namespace RPC {
 
 
 using boost::tuples::get;
+using boost::tuples::tuple;
 typedef std::string URL;
 
-template<typename T>
-struct Identity { typedef T Type; };
+
+template<class Tuple>
+struct Helper
+{
+    template<typename Archive>
+    static void serialize(Archive & ar, Tuple & tuple)
+    {
+        ar & tuple.get_head();
+        Helper<typename Tuple::tail_type>::serialize(ar, tuple.get_tail());
+    }
+};
+
+
+template<>
+struct Helper<boost::tuples::null_type>
+{
+    template<typename Archive>
+    static void serialize(Archive &, const boost::tuples::null_type &) { }
+};
+
 
 template<typename Archive, typename Tuple>
 void serialize_tuple(Archive & ar, Tuple & tuple)
 {
-    serialize_tuple_impl(ar, tuple, Identity<Tuple>());
-}
 
-
-template<typename Archive, typename Tuple>
-void serialize_tuple_impl(Archive & ar, Tuple & tuple, const Identity<Tuple> &)
-{
-    ar & tuple.get_head();
-    serialize_tuple_impl(ar, tuple.get_tail(), Identity<typename Tuple::tail_type>());
-}
-
-template<typename Archive, typename Tuple>
-void serialize_tuple_impl(Archive &, const Tuple &, const Identity<boost::tuples::null_type> &)
-{
+    Helper<Tuple>::serialize(ar, tuple);
 }
 
 
@@ -56,7 +63,7 @@ public:
         serialize_tuple(ar, mTuple);
     }
 
-    boost::tuples::tuple<RemoteServer, std::string> mTuple;
+    tuple<RemoteServer, std::string> mTuple;
 };
 
 

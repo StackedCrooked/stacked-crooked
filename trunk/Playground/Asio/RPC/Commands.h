@@ -16,22 +16,21 @@ typedef std::string Name;
 struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(tuple<RemoteServer, Name>)>
 {
     static const char * CommandName() { return "CreateStopwatch"; }
-
-    CreateStopwatch(const Arg & inArgs) :
-        Super(CommandName(), inArgs)
-    {
-    }
+    CreateStopwatch(const Arg & inArgs) : Super(CommandName(), inArgs) { }
 };
 
 
 struct StartStopwatch : public ConcreteCommand<bool(RemoteStopwatch)>
 {
     static const char * CommandName() { return "StartStopwatch"; }
+    StartStopwatch(const Arg & inArg) : Super(CommandName(), inArg) { }
+};
 
-    StartStopwatch(const RemoteStopwatch & inStopwatch) :
-        Super(CommandName(), inStopwatch)
-    {
-    }
+
+struct StopStopwatch : public ConcreteCommand<bool(RemoteStopwatch)>
+{
+    static const char * CommandName() { return "StopStopwatch"; }
+    StopStopwatch(const Arg & inArg) : Super(CommandName(), inArg) { }
 };
 
 

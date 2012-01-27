@@ -12,4 +12,7 @@ void test()
 
     bool ok = StartStopwatch(remoteStopwatch).run();
     std::cout << "Started stopwatch: " << ok << std::endl;
+
+    unsigned time = StopStopwatch(remoteStopwatch).run();
+    std::cout << "Stopped stopwatch. Time: " << time << std::endl;
 }

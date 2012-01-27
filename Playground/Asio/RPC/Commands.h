@@ -42,9 +42,10 @@ namespace RPC {
 
 
 using boost::tuples::tuple;
+typedef std::string Name;
 
 
-struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(tuple<RemoteServer, std::string>)>
+struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(tuple<RemoteServer, Name>)>
 {
     static const char * CommandName() { return "CreateStopwatch"; }
 
@@ -57,8 +58,6 @@ struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(tuple<RemoteServ
 
 struct StartStopwatch : public ConcreteCommand<bool(RemoteStopwatch)>
 {
-    typedef ConcreteCommand<bool(RemoteStopwatch)> Super;
-
     static const char * CommandName() { return "StartStopwatch"; }
 
     StartStopwatch(const RemoteStopwatch & inStopwatch) :

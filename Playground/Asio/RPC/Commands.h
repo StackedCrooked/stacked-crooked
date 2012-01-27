@@ -27,7 +27,7 @@ struct StartStopwatch : public ConcreteCommand<bool(RemoteStopwatch)>
 };
 
 
-struct StopStopwatch : public ConcreteCommand<bool(RemoteStopwatch)>
+struct StopStopwatch : public ConcreteCommand<unsigned(RemoteStopwatch)>
 {
     static const char * CommandName() { return "StopStopwatch"; }
     StopStopwatch(const Arg & inArg) : Super(CommandName(), inArg) { }

@@ -10,8 +10,9 @@ namespace RPC {
 
 struct RemotePtr
 {
-public:
-    RemotePtr(long inValue = 0) : mValue(inValue) {}
+    RemotePtr() : mValue(0) {}
+
+    RemotePtr(long inValue) : mValue(inValue) {}
 
     long value() const { return mValue; }
 
@@ -21,13 +22,6 @@ public:
     template<typename T>
     T & cast() { return *reinterpret_cast<T*>(mValue); }
 
-    template<typename Archive>
-    void serialize(Archive & ar, const unsigned int)
-    {
-        ar & mValue;
-    }
-
-private:
     long mValue;
 };
 

@@ -45,6 +45,14 @@ struct Decompose<Ret_(Arg_)>
 };
 
 
+template<typename Ret_, typename Arg0_, typename Arg1_>
+struct Decompose<Ret_(Arg0_, Arg1_)>
+{
+    typedef boost::tuples::tuple<Arg0_, Arg1_> Arg;
+    typedef Ret_ Ret;
+};
+
+
 std::string receive(const std::string & name, const std::string & buffer)
 {
     (void)name;

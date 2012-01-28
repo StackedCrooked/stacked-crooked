@@ -34,25 +34,4 @@ private:
 };
 
 
-namespace boost {
-namespace serialization {
-
-
-template<typename Archive>
-void serialize(Archive & ar, RemotePtr & rp, const unsigned int)
-{
-    ar & rp.mValue;
-}
-
-
-template<typename Archive>
-void serialize(Archive & ar, RemoteObject & ro, const unsigned int)
-{
-    ar & ro.mClassName & ro.mRemotePtr;
-}
-
-
-} } // namespace boost::serialization
-
-
 #endif // RPC_REMOTEOBJECTS_H

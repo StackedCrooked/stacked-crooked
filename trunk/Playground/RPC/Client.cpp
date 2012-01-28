@@ -3,8 +3,13 @@
 #include <iostream>
 
 
+using namespace boost::tuples;
+
+
 int main()
 {
     UDPClient client("127.0.0.1", 9001);
-    std::cout << client.send(serialize(CreateStopwatch("stoppy"))) << std::endl;
+    tuple<std::string, std::string> arg =
+        make_tuple(CreateStopwatch::CommandName(), "Stoppy001");
+    std::cout << client.send(serialize(arg)) << std::endl;
 }

@@ -12,48 +12,34 @@
 #include <cstring>
 #include <iostream>
 #include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
 
 using boost::asio::ip::udp;
 
-enum { max_length = 1024 };
 
-int main(int argc, char * argv[])
+std::string SendUDPMessage(const std::string & inURL,
+                           short inPort,
+                           const std::string & inMessage)
 {
-    try
-    {
-        if (argc != 3)
-        {
-            std::cerr << "Usage: blocking_udp_echo_client <host> <port>\n";
-            return 1;
-        }
+    boost::asio::io_service io_service;
 
-        boost::asio::io_service io_service;
+    udp::socket socket(io_service, udp::endpoint(udp::v4(), 0));
 
-        udp::socket s(io_service, udp::endpoint(udp::v4(), 0));
+    udp::resolver resolver(io_service);
+    udp::resolver::query query(udp::v4(), inURL.c_str(), boost::lexical_cast<std::string>(inPort).c_str());
+    udp::resolver::iterator iterator = resolver.resolve(query);
 
-        udp::resolver resolver(io_service);
-        udp::resolver::query query(udp::v4(), argv[1], argv[2]);
-        udp::resolver::iterator iterator = resolver.resolve(query);
+    socket.send_to(boost::asio::buffer(inMessage.c_str(), inMessage.size()), *iterator);
 
-        using namespace std; // For strlen.
-        std::cout << "Enter message: ";
-        char request[max_length];
-        std::cin.getline(request, max_length);
-        size_t request_length = strlen(request);
-        s.send_to(boost::asio::buffer(request, request_length), *iterator);
+    static const unsigned cMaxLength = 1024;
+    char reply[cMaxLength];
+    udp::endpoint sender_endpoint;
+    size_t reply_length = socket.receive_from(boost::asio::buffer(reply, cMaxLength), sender_endpoint);
+    return std::string(reply, reply_length);
+}
 
-        char reply[max_length];
-        udp::endpoint sender_endpoint;
-        size_t reply_length = s.receive_from(
-                                  boost::asio::buffer(reply, max_length), sender_endpoint);
-        std::cout << "Reply is: ";
-        std::cout.write(reply, reply_length);
-        std::cout << "\n";
-    }
-    catch (std::exception & e)
-    {
-        std::cerr << "Exception: " << e.what() << "\n";
-    }
 
-    return 0;
+int main()
+{
+    std::cout << SendUDPMessage("127.0.0.1", 9001, "Hello") << std::endl;
 }

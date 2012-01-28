@@ -19,7 +19,7 @@ struct Command
     {
     }
 
-    const std::string & className() const { return mClassName; }
+    const std::string & name() const { return mClassName; }
 
 private:
     std::string mClassName;

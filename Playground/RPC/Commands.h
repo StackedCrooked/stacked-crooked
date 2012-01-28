@@ -27,8 +27,8 @@ struct Void
 
 #define RPC_DECLARE_CALL(NAME, SIGNATURE) \
     struct NAME : public ConcreteCommand<SIGNATURE> { \
-        static const char * CommandName() { return #NAME; } \
-        NAME(const Arg & inArgs = Arg()) : Super(CommandName(), inArgs) { } \
+        static const char * Name() { return #NAME; } \
+        NAME(const Arg & inArgs = Arg()) : Super(Name(), inArgs) { } \
     }
 
 
@@ -51,8 +51,8 @@ struct ChainedCommand : public ConcreteCommand<C2Ret(C1Arg)>
     typedef typename Super::Arg Arg;
     typedef typename Super::Ret Ret;
 
-    static const char * CommandName() { return "ChainedCommand"; }
-    ChainedCommand(const Arg & inArg) : Super(CommandName(), inArg) { }
+    static const char * Name() { return "ChainedCommand"; }
+    ChainedCommand(const Arg & inArg) : Super(Name(), inArg) { }
 };
 
 
@@ -65,8 +65,8 @@ struct ParallelCommand : public ConcreteCommand<Results(Args)>
     typedef typename Super::Arg Arg;
     typedef typename Super::Ret Ret;
 
-    static const char * CommandName() { return "ParallelCommand"; }
-    ParallelCommand(const Arg & inArg) : Super(CommandName(), inArg) { }
+    static const char * Name() { return "ParallelCommand"; }
+    ParallelCommand(const Arg & inArg) : Super(Name(), inArg) { }
 };
 
 
@@ -81,7 +81,7 @@ struct ParallelCommand : public ConcreteCommand<Results(Args)>
 //    template<typename Command>
 //    void registerCommand()
 //    {
-//        mCommands.insert(Command::CommandName());
+//        mCommands.insert(Command::Name());
 //    }
 
 //    template<typename Command,
@@ -90,12 +90,12 @@ struct ParallelCommand : public ConcreteCommand<Results(Args)>
 //             typename Handler = boost::function<Ret(Arg)> >
 //    void registerHandler(const Handler & inHandler)
 //    {
-//        std::string name = Command::CommandName();
+//        std::string name = Command::Name();
 //        if (mCommands.find(name) == mCommands.end())
 //        {
 //            throw std::runtime_error("Command is not yet registered.");
 //        }
-//        mHandler.insert(std::make_pair(Command::CommandName(), inHandler));
+//        mHandler.insert(std::make_pair(Command::Name(), inHandler));
 //    }
 
 //    std::set<std::string> mCommands;

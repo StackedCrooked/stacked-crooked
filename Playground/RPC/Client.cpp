@@ -10,8 +10,8 @@ using namespace boost::tuples;
 template<typename Command>
 typename Command::Ret send(UDPClient & client, const Command & command)
 {
-    std::cout << Command::CommandName() << std::endl;
-    std::string result = client.send(serialize(NameAndArg(Command::CommandName(), serialize(command.arg()))));
+    std::cout << Command::Name() << std::endl;
+    std::string result = client.send(serialize(NameAndArg(Command::Name(), serialize(command.arg()))));
     return deserialize<typename Command::Ret>(result);
 }
 

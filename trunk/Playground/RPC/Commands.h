@@ -25,25 +25,16 @@ struct Void
 };
 
 
-struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(Name)>
-{
-    static const char * CommandName() { return "CreateStopwatch"; }
-    CreateStopwatch(const Arg & inArgs = Arg()) : Super(CommandName(), inArgs) { }
-};
+#define RPC_DECLARE_CALL(NAME, SIGNATURE) \
+    struct NAME : public ConcreteCommand<SIGNATURE> { \
+        static const char * CommandName() { return #NAME; } \
+        NAME(const Arg & inArgs = Arg()) : Super(CommandName(), inArgs) { } \
+    }
 
 
-struct StartStopwatch : public ConcreteCommand<Void(RemoteStopwatch)>
-{
-    static const char * CommandName() { return "StartStopwatch"; }
-    StartStopwatch(const Arg & inArg) : Super(CommandName(), inArg) { }
-};
-
-
-struct StopStopwatch : public ConcreteCommand<unsigned(RemoteStopwatch)>
-{
-    static const char * CommandName() { return "StopStopwatch"; }
-    StopStopwatch(const Arg & inArg) : Super(CommandName(), inArg) { }
-};
+RPC_DECLARE_CALL(CreateStopwatch , RemoteStopwatch(std::string) );
+RPC_DECLARE_CALL(StartStopwatch  , Void(RemoteStopwatch)        );
+RPC_DECLARE_CALL(StopStopwatch   , unsigned(RemoteStopwatch)    );
 
 
 template<class C1, class C2,

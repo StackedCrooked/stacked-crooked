@@ -1,4 +1,5 @@
 FILES=Client.cpp Server.cpp Stopwatch.cpp Networking.cpp
+HEADERS=Command.h Commands.h Networking.h RemoteObject.h RemoteObjects.h RemotePtr.h Stopwatch.h TupleSupport.h
 COMPILE=g++ -c -Wall -Wextra -Werror -O0 -ggdb -isystem /opt/local/include
 LIBS=/opt/local/lib/libboost_system.a /opt/local/lib/libboost_serialization.a
 
@@ -10,14 +11,14 @@ server: Server.o Stopwatch.o Networking.o
 client: Client.o Stopwatch.o Networking.o
 	g++ -o client Client.o Stopwatch.o Networking.o ${LIBS}
 
-Client.o: Client.cpp
+Client.o: Client.cpp ${HEADERS}
 	${COMPILE} Client.cpp
  
-Server.o: Server.cpp
+Server.o: Server.cpp ${HEADERS}
 	${COMPILE} Server.cpp
 
-Stopwatch.o: Stopwatch.cpp
+Stopwatch.o: Stopwatch.cpp ${HEADERS}
 	${COMPILE} Stopwatch.cpp
 
-Networking.o: Networking.cpp
+Networking.o: Networking.cpp ${HEADERS}
 	${COMPILE} Networking.cpp

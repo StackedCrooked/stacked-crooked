@@ -2,31 +2,39 @@
 #define RPC_COMMANDS_H
 
 
-#include "RPC/Command.h"
-#include "RPC/RemoteObjects.h"
+#include "Command.h"
+#include "RemoteObjects.h"
+#include <boost/function.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
+#include <map>
+#include <set>
 #include <vector>
-
-
-namespace RPC {
 
 
 using boost::tuples::tuple;
 typedef std::string Name;
 
 
+
 struct Void {};
 
 
-struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(tuple<RemoteServer, Name>)>
+struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(Name)>
 {
     static const char * CommandName() { return "CreateStopwatch"; }
-    CreateStopwatch(const Arg & inArgs) : Super(CommandName(), inArgs) { }
+    CreateStopwatch(const Arg & inArgs = Arg()) : Super(CommandName(), inArgs) { }
+
+
+    template<class Archive>
+    void serialize(Archive &, const unsigned int)
+    {
+        boost::serialization::base_object<Super>(*this);
+    }
 };
 
 
-struct StartStopwatch : public ConcreteCommand<bool(RemoteStopwatch)>
+struct StartStopwatch : public ConcreteCommand<Void(RemoteStopwatch)>
 {
     static const char * CommandName() { return "StartStopwatch"; }
     StartStopwatch(const Arg & inArg) : Super(CommandName(), inArg) { }
@@ -72,8 +80,37 @@ struct ParallelCommand : public ConcreteCommand<Results(Args)>
 };
 
 
+//struct Registrator
+//{
+//    Registrator & Get()
+//    {
+//        static Registrator fInstance;
+//        return fInstance;
+//    }
 
-} // namespace RPC
+//    template<typename Command>
+//    void registerCommand()
+//    {
+//        mCommands.insert(Command::CommandName());
+//    }
+
+//    template<typename Command,
+//             typename Ret     = typename Command::Ret
+//             typename Arg     = typename Command::Arg,
+//             typename Handler = boost::function<Ret(Arg)> >
+//    void registerHandler(const Handler & inHandler)
+//    {
+//        std::string name = Command::CommandName();
+//        if (mCommands.find(name) == mCommands.end())
+//        {
+//            throw std::runtime_error("Command is not yet registered.");
+//        }
+//        mHandler.insert(std::make_pair(Command::CommandName(), inHandler));
+//    }
+
+//    std::set<std::string> mCommands;
+//    std::map<std::string, Handler> mHandler;
+//};
 
 
 #endif // RPC_COMMANDS_H

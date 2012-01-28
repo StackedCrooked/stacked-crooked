@@ -1,1 +1,1 @@
-find . -name "*.h" -o -name "*.cpp" > RPC.files
+find . -name "*.h" -o -name "*.cpp" -o -name "*.txt" > RPC.files

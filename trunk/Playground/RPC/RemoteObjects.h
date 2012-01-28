@@ -7,15 +7,15 @@
 #include <boost/serialization/base_object.hpp>
 
 
-class RemoteStopwatch : public RemoteObject
-{
-public:
-    static const char * ClassName() { return "Stopwatch"; }
+class Stopwatch;
 
+
+struct RemoteStopwatch : public RemoteObject<Stopwatch>
+{
     RemoteStopwatch() {}
 
     RemoteStopwatch(const RemotePtr & inRemotePtr, const std::string & inName) :
-        RemoteObject(ClassName(), inRemotePtr),
+        Super(inRemotePtr),
         mName(inName)
     {
     }
@@ -25,11 +25,10 @@ public:
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
     {
-        ar & boost::serialization::base_object<RemoteObject>(*this);
+        ar & boost::serialization::base_object<Super>(*this);
         ar & mName;
     }
 
-private:
     std::string mName;
 };
 

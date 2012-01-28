@@ -47,17 +47,19 @@ struct RPCServer
         else if (name == StartStopwatch::CommandName())
         {
             RemoteStopwatch arg = deserialize<StartStopwatch::Arg>(nameAndArg.get<1>());
-            arg.remotePtr().cast<Stopwatch>().start();
+            arg.getLocalObject().start();
             return serialize(Void());
         }
         else if (name == StopStopwatch::CommandName())
         {
             RemoteStopwatch arg = deserialize<StopStopwatch::Arg>(nameAndArg.get<1>());
-            return serialize(Stopwatch::Ret(arg.remotePtr().cast<Stopwatch>()));
+            Stopwatch & sw = arg.getLocalObject();
+            return serialize(StopStopwatch::Ret(sw.elapsedMs()));
         }
         return "Unknown command: " + inRequest;
     }
 
+private:
     UDPServer mUDPServer;
 };
 

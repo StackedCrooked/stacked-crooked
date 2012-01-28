@@ -1,0 +1,14 @@
+./Client/main.cpp
+./Client/Stopwatch.cpp
+./Client/Stopwatch.h
+./RPC/Command.h
+./RPC/Commands.h
+./RPC/RemoteObject.h
+./RPC/RemoteObjects.h
+./RPC/RemotePtr.h
+./RPC/TupleSupport.h
+./Server/main.cpp
+./Server/RequestHandler.cpp
+./Server/RequestHandler.h
+./Server/Stopwatch.cpp
+./Server/Stopwatch.h

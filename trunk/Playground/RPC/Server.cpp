@@ -37,24 +37,24 @@ struct RPCServer
         NameAndArg nameAndArg = deserialize<NameAndArg>(inRequest);
         const std::string & name = nameAndArg.get<0>();
         std::cout << "HandleRequest: name: " << name << std::endl;
-        if (name == CreateStopwatch::Name())
+        if (name == Stopwatch_Create::Name())
         {
-            std::string arg = deserialize<CreateStopwatch::Arg>(nameAndArg.get<1>());
+            std::string arg = deserialize<Stopwatch_Create::Arg>(nameAndArg.get<1>());
             mStopwatches.push_back(boost::make_shared<Stopwatch>(arg));
-            CreateStopwatch::Ret ret(RemotePtr(mStopwatches.back().get()), arg);
+            Stopwatch_Create::Ret ret(RemotePtr(mStopwatches.back().get()), arg);
             return serialize(ret);
         }
-        else if (name == StartStopwatch::Name())
+        else if (name == Stopwatch_Start::Name())
         {
-            RemoteStopwatch arg = deserialize<StartStopwatch::Arg>(nameAndArg.get<1>());
+            RemoteStopwatch arg = deserialize<Stopwatch_Start::Arg>(nameAndArg.get<1>());
             arg.getLocalObject().start();
             return serialize(Void());
         }
-        else if (name == StopStopwatch::Name())
+        else if (name == Stopwatch_Stop::Name())
         {
-            RemoteStopwatch arg = deserialize<StopStopwatch::Arg>(nameAndArg.get<1>());
+            RemoteStopwatch arg = deserialize<Stopwatch_Stop::Arg>(nameAndArg.get<1>());
             Stopwatch & sw = arg.getLocalObject();
-            return serialize(StopStopwatch::Ret(sw.elapsedMs()));
+            return serialize(Stopwatch_Stop::Ret(sw.elapsedMs()));
         }
         return "Unknown command: " + inRequest;
     }

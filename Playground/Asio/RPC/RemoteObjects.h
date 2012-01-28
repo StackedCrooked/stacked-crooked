@@ -14,11 +14,9 @@ struct RemoteServer : public RemoteObject
 {
     static const char * ClassName() { return "RemoteServer"; }
 
-    RemoteServer()
-    {
-    }
+    RemoteServer() {}
 
-    RemoteServer(RemotePtr inRemotePtr, const std::string & inURL) :
+    RemoteServer(const RemotePtr & inRemotePtr, const std::string & inURL) :
         RemoteObject(ClassName(), inRemotePtr),
         mURL(inURL)
     {
@@ -37,13 +35,15 @@ class RemoteStopwatch : public RemoteObject
 public:
     static const char * ClassName() { return "Stopwatch"; }
 
-    RemoteStopwatch() { }
+    RemoteStopwatch() {}
 
-    RemoteStopwatch(RemotePtr inRemotePtr, const std::string & inName) :
+    RemoteStopwatch(const RemotePtr & inRemotePtr, const std::string & inName) :
         RemoteObject(ClassName(), inRemotePtr),
         mName(inName)
     {
     }
+
+    const std::string & name() const { return mName; }
 
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)

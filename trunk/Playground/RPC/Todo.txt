@@ -1,5 +1,6 @@
-- Composition (High Priority)
-- Results of time (High Priority)
+- Composition (Very High Priority)
+- Results of time (Very High Priority)
+- Return error (High Priority)
 - Async (Med Priority)
 - Automatic registration (Med Priority)
 - Introspection (Med Priority)

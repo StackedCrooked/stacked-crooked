@@ -34,9 +34,15 @@ struct RPCServer
 
     std::string processRequest(const std::string & inRequest)
     {
+
         NameAndArg nameAndArg = deserialize<NameAndArg>(inRequest);
         const std::string & name = nameAndArg.get<0>();
-        std::cout << "HandleRequest: name: " << name << std::endl;
+        const std::string & arg  = nameAndArg.get<1>();
+        return processRequest(name, arg);
+    }
+
+    std::string process(const std::string & inName, const std::string & inArg)
+    {
         if (name == Stopwatch_Create::Name())
         {
             std::string arg = deserialize<Stopwatch_Create::Arg>(nameAndArg.get<1>());

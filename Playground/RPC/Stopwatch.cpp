@@ -18,7 +18,8 @@ unsigned GetCurrentTimeMs()
 }
 
 
-Stopwatch::Stopwatch() :
+Stopwatch::Stopwatch(const std::string & inName) :
+    mName(inName),
     mStart(0),
     mStop(0)
 {

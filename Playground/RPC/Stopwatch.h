@@ -4,13 +4,16 @@
 
 #include <boost/noncopyable.hpp>
 #include <ctime>
+#include <string>
 
 
 class Stopwatch : boost::noncopyable
 {
 public:
     /// Creates and starts the stopwatch.
-    Stopwatch();
+    Stopwatch(const std::string & inName);
+
+    const std::string & name() const { return mName; }
 
     void start();
 
@@ -23,6 +26,7 @@ public:
     unsigned elapsedMs() const;
 
 private:
+    std::string mName;
     unsigned mStart;
     unsigned mStop;
 };

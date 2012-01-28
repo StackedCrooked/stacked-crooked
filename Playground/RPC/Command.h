@@ -32,6 +32,9 @@ private:
 };
 
 
+typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
+
+
 template<typename Signature>
 struct Decompose;
 

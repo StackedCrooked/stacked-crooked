@@ -2,25 +2,31 @@
 #include "Commands.h"
 #include "Stopwatch.h"
 #include <boost/bind.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
+
+
+using namespace boost::tuples;
 
 
 typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
 std::vector<StopwatchPtr> mStopwatches;
 
 
+typedef tuple<std::string, std::string> NameArg;
+
+
 std::string HandleRequest(const std::string & inRequest)
 {
-    const std::string name = deserialize<Command>(inRequest).className();
+    NameArg nameAndArg = deserialize<NameArg>(inRequest);
+    const std::string & name = nameAndArg.get<0>();
+    const std::string & arg = nameAndArg.get<1>();
     std::cout << "HandleRequest: name: " << name << std::endl;
     if (name == CreateStopwatch::CommandName())
     {
-        CreateStopwatch c = deserialize<CreateStopwatch>(inRequest);
-        std::string name = c.arg();
-        StopwatchPtr stopwatch(new Stopwatch);
-        mStopwatches.push_back(stopwatch);
-        CreateStopwatch::Ret ret(RemotePtr(stopwatch.get()), name);
+        mStopwatches.push_back(boost::make_shared<Stopwatch>());
+        CreateStopwatch::Ret ret(RemotePtr(mStopwatches.back().get()), arg);
         return serialize(ret);
     }
     return "Unknown command: " + inRequest;

@@ -21,12 +21,6 @@ struct Command
 
     const std::string & className() const { return mClassName; }
 
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int)
-    {
-        ar & mClassName;
-    }
-
 private:
     std::string mClassName;
 };
@@ -67,16 +61,6 @@ struct ConcreteCommand : public Command
     Ret run()
     {
         return Ret();
-    }
-
-    typedef std::string Buffer;
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        boost::serialization::base_object<Command>(*this);
-        ar & mArg;
-        (void)version;
     }
 
 protected:

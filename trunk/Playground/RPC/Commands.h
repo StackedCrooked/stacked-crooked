@@ -29,13 +29,6 @@ struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(Name)>
 {
     static const char * CommandName() { return "CreateStopwatch"; }
     CreateStopwatch(const Arg & inArgs = Arg()) : Super(CommandName(), inArgs) { }
-
-
-    template<class Archive>
-    void serialize(Archive &, const unsigned int)
-    {
-        boost::serialization::base_object<Super>(*this);
-    }
 };
 
 

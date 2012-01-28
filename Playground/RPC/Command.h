@@ -5,16 +5,15 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/serialization.hpp>
-#include "RPC/TupleSupport.h"
+#include "TupleSupport.h"
 #include <sstream>
 #include <string>
 
 
-namespace RPC {
-
-
 struct Command
 {
+    Command() {}
+
     Command(const std::string & inClassName) :
         mClassName(inClassName)
     {
@@ -83,9 +82,6 @@ protected:
 private:
     Arg mArg;
 };
-
-
-} // namespace RPC
 
 
 #endif // RPC_COMMAND_H

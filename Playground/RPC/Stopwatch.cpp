@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 
-namespace Server {
+namespace {
 
 
 unsigned GetCurrentTimeMs()
@@ -15,10 +15,7 @@ unsigned GetCurrentTimeMs()
 }
 
 
-//void Sleep(unsigned inMilliseconds)
-//{
-//    boost::this_thread::sleep(boost::posix_time::milliseconds(inMilliseconds));
-//}
+}
 
 
 Stopwatch::Stopwatch() :
@@ -72,6 +69,3 @@ unsigned Stopwatch::elapsedMs() const
     }
 
 }
-
-
-} // namespace Server

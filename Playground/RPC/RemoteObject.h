@@ -2,11 +2,8 @@
 #define RPC_REMOTEOBJECT_H
 
 
-#include "RPC/RemotePtr.h"
+#include "RemotePtr.h"
 #include <string>
-
-
-namespace RPC {
 
 
 struct RemoteObject
@@ -39,9 +36,6 @@ inline bool operator<(const RemoteObject & lhs, const RemoteObject & rhs)
 {
     return lhs.remotePtr() < rhs.remotePtr();
 }
-
-
-} // namespace RPC
 
 
 #endif // RPC_REMOTEOBJECT_H

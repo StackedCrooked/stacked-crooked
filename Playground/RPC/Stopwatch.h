@@ -6,13 +6,6 @@
 #include <ctime>
 
 
-namespace Server {
-
-
-unsigned GetCurrentTimeMs();
-//void Sleep(unsigned inMilliseconds);
-
-
 class Stopwatch : boost::noncopyable
 {
 public:
@@ -33,9 +26,6 @@ private:
     unsigned mStart;
     unsigned mStop;
 };
-
-
-} // namespace Server
 
 
 #endif // SERVER_STOPWATCH_H

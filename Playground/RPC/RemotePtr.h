@@ -5,7 +5,25 @@
 #include <string>
 
 
-namespace RPC {
+template<typename T>
+std::string serialize(const T & value)
+{
+    std::ostringstream ss;
+    boost::archive::text_oarchive oa(ss);
+    oa << value;
+    return ss.str();
+}
+
+
+template<typename T>
+T deserialize(const std::string & buffer)
+{
+    std::istringstream ss(buffer);
+    boost::archive::text_iarchive ia(ss);
+    T ret;
+    ia >> ret;
+    return ret;
+}
 
 
 struct RemotePtr
@@ -13,6 +31,9 @@ struct RemotePtr
     RemotePtr() : mValue(0) {}
 
     RemotePtr(long inValue) : mValue(inValue) {}
+
+    template<typename T>
+    RemotePtr(T * ptr) : mValue(reinterpret_cast<long>(ptr)) {}
 
     long value() const { return mValue; }
 
@@ -30,9 +51,6 @@ inline bool operator<(const RemotePtr & lhs, const RemotePtr & rhs)
 {
     return lhs.value() < rhs.value();
 }
-
-
-} // namespace RPC
 
 
 #endif // RPC_REMOTEPTR_H

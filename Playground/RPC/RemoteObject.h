@@ -6,26 +6,25 @@
 #include <string>
 
 
+template<class LocalType>
 struct RemoteObject
 {
-    RemoteObject() :
-        mClassName(100, 'a')
-    {
-    }
-
-    RemoteObject(const std::string & inClassName, RemotePtr inRemotePtr) :
-        mClassName(inClassName),
+    RemoteObject(RemotePtr inRemotePtr = RemotePtr()) :
         mRemotePtr(inRemotePtr)
     {
     }
 
     virtual ~RemoteObject() {}
 
-    const std::string & className() const { return mClassName; }
+    const LocalType & getLocalObject() const
+    {
+        return mRemotePtr.cast<LocalType>();
+    }
 
-    const RemotePtr & remotePtr() const { return mRemotePtr; }
-
-    void setRemotePtr(const RemotePtr & inRemotePtr) { mRemotePtr = inRemotePtr; }
+    LocalType & getLocalObject()
+    {
+        return mRemotePtr.cast<LocalType>();
+    }
 
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
@@ -35,10 +34,14 @@ struct RemoteObject
 
     std::string mClassName;
     RemotePtr mRemotePtr;
+
+protected:
+    typedef RemoteObject<LocalType> Super;
 };
 
 
-inline bool operator<(const RemoteObject & lhs, const RemoteObject & rhs)
+template<class T>
+inline bool operator<(const RemoteObject<T> & lhs, const RemoteObject<T> & rhs)
 {
     return lhs.remotePtr() < rhs.remotePtr();
 }

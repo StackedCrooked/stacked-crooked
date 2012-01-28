@@ -1,9 +1,11 @@
 #include "RPC/Commands.h"
+#include <boost/asio.hpp>
 #include <boost/serialization/string.hpp>
 
 
 using namespace RPC;
 using boost::tuples::make_tuple;
+namespace ip = boost::asio::ip;
 
 
 void print(const RemoteServer & server)
@@ -42,24 +44,15 @@ void test()
     std::vector<RemoteStopwatch> stopwatches;
     std::vector<bool> result = ParallelCommand<StartStopwatch>(stopwatches).run();
     std::cout << "result size: " << result.size() << std::endl;
-
-
-
-//    std::cout << serialize(make_tuple(RemoteServer(), "stopwatch1")) << std::endl;
-
-//    RemoteStopwatch remoteStopwatch = CreateStopwatch(make_tuple(RemoteServer(), "")).run();
-//    std::cout << "Created stopwatch: " << remoteStopwatch.remotePtr().value() << std::endl;
-
-//    bool ok = StartStopwatch(remoteStopwatch).run();
-//    std::cout << "Started stopwatch: " << ok << std::endl;
-
-//    unsigned time = StopStopwatch(remoteStopwatch).run();
-//    std::cout << "Stopped stopwatch. Time: " << time << std::endl;
-
 }
 
 
 int main()
 {
-    test();
+    ip::tcp::iostream stream;
+    stream.expires_from_now(boost::posix_time::seconds(60));
+    stream.connect("9001");
+    stream << "Hello from client";
+    stream.flush();
+    std::cout << stream.rdbuf();
 }

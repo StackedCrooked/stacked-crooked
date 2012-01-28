@@ -13,3 +13,5 @@
 ./Server/ServerTest.cpp
 ./Server/Stopwatch.cpp
 ./Server/Stopwatch.h
+Client/UDPClient.h
+Client/UDPClient.cpp

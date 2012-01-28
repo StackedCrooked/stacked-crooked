@@ -4,6 +4,8 @@
 
 #include "RPC/Command.h"
 #include "RPC/RemoteObjects.h"
+#include <boost/static_assert.hpp>
+#include <boost/type_traits.hpp>
 #include <vector>
 
 
@@ -12,6 +14,9 @@ namespace RPC {
 
 using boost::tuples::tuple;
 typedef std::string Name;
+
+
+struct Void {};
 
 
 struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(tuple<RemoteServer, Name>)>
@@ -35,10 +40,16 @@ struct StopStopwatch : public ConcreteCommand<unsigned(RemoteStopwatch)>
 };
 
 
-template<class C0, class C1>
-struct ChainedCommand : public ConcreteCommand<typename C1::Ret(typename C0::Arg)>
+template<class C1, class C2,
+         typename C1Arg = typename C1::Arg,
+         typename C1Ret = typename C1::Ret,
+         typename C2Arg = typename C2::Arg,
+         typename C2Ret = typename C2::Ret>
+struct ChainedCommand : public ConcreteCommand<C2Ret(C1Arg)>
 {
-    typedef ConcreteCommand<typename C1::Ret(typename C0::Arg)> Super;
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<C1Ret, C2Arg>::value), "Types don't line up correctly.");
+
+    typedef ConcreteCommand<C2Ret(C1Arg)> Super;
     typedef typename Super::Arg Arg;
     typedef typename Super::Ret Ret;
 

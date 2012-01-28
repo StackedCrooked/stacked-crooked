@@ -43,6 +43,12 @@ struct RemotePtr
     template<typename T>
     T & cast() { return *reinterpret_cast<T*>(mValue); }
 
+    template<typename Archive>
+    void serialize(Archive & ar, const unsigned int)
+    {
+        ar & mValue;
+    }
+
     long mValue;
 };
 

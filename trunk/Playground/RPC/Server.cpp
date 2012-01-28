@@ -47,13 +47,13 @@ struct RPCServer
         else if (name == StartStopwatch::CommandName())
         {
             RemoteStopwatch arg = deserialize<StartStopwatch::Arg>(nameAndArg.get<1>());
-            Stopwatches::iterator it = std::find_if(mStopwatches.begin(), mStopwatches.end(), boost::bind(&GetName, _1) == arg.name());
-            if (it != mStopwatches.end())
-            {
-                Stopwatch & sw = **it;
-                sw.start();
-            }
+            arg.remotePtr().cast<Stopwatch>().start();
             return serialize(Void());
+        }
+        else if (name == StopStopwatch::CommandName())
+        {
+            RemoteStopwatch arg = deserialize<StopStopwatch::Arg>(nameAndArg.get<1>());
+            return serialize(Stopwatch::Ret(arg.remotePtr().cast<Stopwatch>()));
         }
         return "Unknown command: " + inRequest;
     }

@@ -27,6 +27,12 @@ struct RemoteObject
 
     void setRemotePtr(const RemotePtr & inRemotePtr) { mRemotePtr = inRemotePtr; }
 
+    template<typename Archive>
+    void serialize(Archive & ar, const unsigned int)
+    {
+        ar & mClassName & mRemotePtr;
+    }
+
     std::string mClassName;
     RemotePtr mRemotePtr;
 };

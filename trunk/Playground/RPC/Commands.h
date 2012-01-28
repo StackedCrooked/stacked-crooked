@@ -32,9 +32,10 @@ struct Void
     }
 
 
-RPC_DECLARE_CALL(CreateStopwatch , RemoteStopwatch(std::string) );
-RPC_DECLARE_CALL(StartStopwatch  , Void(RemoteStopwatch)        );
-RPC_DECLARE_CALL(StopStopwatch   , unsigned(RemoteStopwatch)    );
+RPC_DECLARE_CALL(CreateStopwatch  , RemoteStopwatch(std::string) );
+RPC_DECLARE_CALL(StartStopwatch   , Void(RemoteStopwatch)        );
+RPC_DECLARE_CALL(StopStopwatch    , unsigned(RemoteStopwatch)    );
+RPC_DECLARE_CALL(DestroyStopwatch , Void(RemoteStopwatch)        );
 
 
 template<class C1, class C2,

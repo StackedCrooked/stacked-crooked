@@ -4,6 +4,7 @@
 
 #include "RPC/Command.h"
 #include "RPC/RemoteObjects.h"
+#include <vector>
 
 
 namespace RPC {
@@ -43,6 +44,21 @@ struct ChainedCommand : public ConcreteCommand<typename C1::Ret(typename C0::Arg
 
     static const char * CommandName() { return "ChainedCommand"; }
     ChainedCommand(const Arg & inArg) : Super(CommandName(), inArg) { }
+};
+
+
+template<class C>
+struct ParallelCommand : public ConcreteCommand
+<
+    std::vector<typename C::Ret>(std::vector<typename C::Arg>)
+>
+{
+    typedef ConcreteCommand<std::vector<typename C::Ret>(std::vector<typename C::Arg>)> Super;
+    typedef typename Super::Arg Arg;
+    typedef typename Super::Ret Ret;
+
+    static const char * CommandName() { return "ParallelCommand"; }
+    ParallelCommand(const Arg & inArg) : Super(CommandName(), inArg) { }
 };
 
 

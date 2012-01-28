@@ -28,7 +28,7 @@ struct Void
 #define RPC_DECLARE_CALL(NAME, SIGNATURE) \
     struct NAME : public ConcreteCommand<SIGNATURE> { \
         static const char * Name() { return #NAME; } \
-        NAME(const Arg & inArgs = Arg()) : Super(Name(), inArgs) { } \
+        NAME(const Arg & inArgs) : Super(Name(), inArgs) { } \
     }
 
 

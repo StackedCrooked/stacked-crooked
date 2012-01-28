@@ -37,20 +37,20 @@ struct RPCServer
         NameAndArg nameAndArg = deserialize<NameAndArg>(inRequest);
         const std::string & name = nameAndArg.get<0>();
         std::cout << "HandleRequest: name: " << name << std::endl;
-        if (name == CreateStopwatch::CommandName())
+        if (name == CreateStopwatch::Name())
         {
             std::string arg = deserialize<CreateStopwatch::Arg>(nameAndArg.get<1>());
             mStopwatches.push_back(boost::make_shared<Stopwatch>(arg));
             CreateStopwatch::Ret ret(RemotePtr(mStopwatches.back().get()), arg);
             return serialize(ret);
         }
-        else if (name == StartStopwatch::CommandName())
+        else if (name == StartStopwatch::Name())
         {
             RemoteStopwatch arg = deserialize<StartStopwatch::Arg>(nameAndArg.get<1>());
             arg.getLocalObject().start();
             return serialize(Void());
         }
-        else if (name == StopStopwatch::CommandName())
+        else if (name == StopStopwatch::Name())
         {
             RemoteStopwatch arg = deserialize<StopStopwatch::Arg>(nameAndArg.get<1>());
             Stopwatch & sw = arg.getLocalObject();

@@ -1,0 +1,12 @@
+./Client.cpp
+./Command.h
+./Commands.h
+./Networking.cpp
+./Networking.h
+./RemoteObject.h
+./RemoteObjects.h
+./RemotePtr.h
+./Server.cpp
+./Stopwatch.cpp
+./Stopwatch.h
+./TupleSupport.h

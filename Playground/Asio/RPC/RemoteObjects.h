@@ -37,9 +37,7 @@ class RemoteStopwatch : public RemoteObject
 public:
     static const char * ClassName() { return "Stopwatch"; }
 
-    RemoteStopwatch()
-    {
-    }
+    RemoteStopwatch() { }
 
     RemoteStopwatch(RemotePtr inRemotePtr, const std::string & inName) :
         RemoteObject(ClassName(), inRemotePtr),
@@ -48,11 +46,10 @@ public:
     }
 
     template<typename Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void serialize(Archive & ar, const unsigned int)
     {
         ar & boost::serialization::base_object<RemoteObject>(*this);
         ar & mName;
-        (void)version;
     }
 
 private:
@@ -80,17 +77,15 @@ void serialize(Archive & ar, RemotePtr & rp, const unsigned int)
 template<typename Archive>
 void serialize(Archive & ar, RemoteObject & ro, const unsigned int)
 {
-    ar & ro.mClassName;
-    ar & ro.mRemotePtr;
+    ar & ro.mClassName & ro.mRemotePtr;
 }
 
 
 template<typename Archive>
-void serialize(Archive & ar, RemoteServer & rs, const unsigned int version)
+void serialize(Archive & ar, RemoteServer & rs, const unsigned int)
 {
     ar & boost::serialization::base_object<RemoteObject>(rs);
     ar & rs.mURL;
-    (void)version;
 }
 
 

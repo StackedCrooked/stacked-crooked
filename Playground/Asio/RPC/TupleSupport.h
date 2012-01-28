@@ -43,8 +43,6 @@ template<typename Archive, typename T0>
 void serialize(Archive & ar, tuple<T0> & t, const unsigned int)
 {
     ar & get<0>(t);
-    (void)ar;
-    (void)t;
 }
 
 
@@ -53,8 +51,6 @@ void serialize(Archive & ar, tuple<T0, T1> & t, const unsigned int)
 {
     ar & get<0>(t);
     ar & get<1>(t);
-    (void)ar;
-    (void)t;
 }
 
 
@@ -64,8 +60,6 @@ void serialize(Archive & ar, tuple<T0, T1, T2> & t, const unsigned int)
     ar & get<0>(t);
     ar & get<1>(t);
     ar & get<2>(t);
-    (void)ar;
-    (void)t;
 }
 
 
@@ -76,8 +70,6 @@ void serialize(Archive & ar, tuple<T0, T1, T2, T3> & t, const unsigned int)
     ar & get<1>(t);
     ar & get<2>(t);
     ar & get<3>(t);
-    (void)ar;
-    (void)t;
 }
 
 

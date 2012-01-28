@@ -16,8 +16,13 @@ using boost::tuples::tuple;
 typedef std::string Name;
 
 
-
-struct Void {};
+struct Void
+{
+    template<class Archive>
+    void serialize(Archive & , const unsigned int)
+    {
+    }
+};
 
 
 struct CreateStopwatch : public ConcreteCommand<RemoteStopwatch(Name)>

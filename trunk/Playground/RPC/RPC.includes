@@ -1,3 +1,9 @@
 RPC
 /opt/local/include
-
+/usr/include/c++/4.2.1
+/usr/include/c++/4.2.1/backward
+/usr/local/include
+/Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include
+/usr/include
+/System/Library/Frameworks (framework directory)
+/Library/Frameworks (framework directory)

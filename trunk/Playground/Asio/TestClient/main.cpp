@@ -28,6 +28,11 @@ void test()
     std::string tupleSerialized = serialize(testTuple);
     std::cout << "tupleSerialized: " << tupleSerialized << std::endl;
 
+    {
+    std::string tupleSerialized = serialize(make_tuple(1, 2, 3, std::string("four")));
+    std::cout << "tupleSerialized: " << tupleSerialized << std::endl;
+    }
+
 //    std::cout << serialize(make_tuple(RemoteServer(), "stopwatch1")) << std::endl;
 
 //    RemoteStopwatch remoteStopwatch = CreateStopwatch(make_tuple(RemoteServer(), "")).run();

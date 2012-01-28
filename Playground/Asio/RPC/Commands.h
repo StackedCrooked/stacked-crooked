@@ -47,11 +47,10 @@ struct ChainedCommand : public ConcreteCommand<typename C1::Ret(typename C0::Arg
 };
 
 
-template<class C>
-struct ParallelCommand : public ConcreteCommand
-<
-    std::vector<typename C::Ret>(std::vector<typename C::Arg>)
->
+template< class C,
+          typename Results = std::vector<typename C::Ret> ,
+          typename Args    = std::vector<typename C::Arg> >
+struct ParallelCommand : public ConcreteCommand<Results(Args)>
 {
     typedef ConcreteCommand<std::vector<typename C::Ret>(std::vector<typename C::Arg>)> Super;
     typedef typename Super::Arg Arg;

@@ -1,0 +1,6 @@
+- Composition (High Priority)
+- Results of time (High Priority)
+- Async (Med Priority)
+- Automatic registration (Med Priority)
+- Introspection (Med Priority)
+- RAII for remote objects (Low Priority)

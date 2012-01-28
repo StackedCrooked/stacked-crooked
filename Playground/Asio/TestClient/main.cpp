@@ -38,6 +38,13 @@ void test()
     bool ok = CreateAndStartStopwatch(remoteServer).run();
     std::cout << "ok: " << ok << std::endl;
 
+
+    std::vector<RemoteStopwatch> stopwatches;
+    std::vector<bool> result = ParallelCommand<StartStopwatch>(stopwatches).run();
+    std::cout << "result size: " << result.size() << std::endl;
+
+
+
 //    std::cout << serialize(make_tuple(RemoteServer(), "stopwatch1")) << std::endl;
 
 //    RemoteStopwatch remoteStopwatch = CreateStopwatch(make_tuple(RemoteServer(), "")).run();

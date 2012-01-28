@@ -24,6 +24,10 @@ void test()
     RemoteServer deserialized = deserialize<RemoteServer>(serialized);
     print(deserialized);
 
+    boost::tuples::tuple<int, int> testTuple(1, 2);
+    std::string tupleSerialized = serialize(testTuple);
+    std::cout << "tupleSerialized: " << tupleSerialized << std::endl;
+
 //    std::cout << serialize(make_tuple(RemoteServer(), "stopwatch1")) << std::endl;
 
 //    RemoteStopwatch remoteStopwatch = CreateStopwatch(make_tuple(RemoteServer(), "")).run();

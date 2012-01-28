@@ -21,6 +21,9 @@ std::string GetName(StopwatchPtr ptr)
 }
 
 
+//RPC_IMPLEMENT_CALL(CreateP)
+
+
 struct RPCServer
 {
     RPCServer(unsigned port = 9001) :

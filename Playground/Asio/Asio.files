@@ -1,4 +1,5 @@
-./Client/main.cpp
+./Asio.config
+./Client/ClientTest.cpp
 ./Client/Stopwatch.cpp
 ./Client/Stopwatch.h
 ./RPC/Command.h
@@ -7,8 +8,8 @@
 ./RPC/RemoteObjects.h
 ./RPC/RemotePtr.h
 ./RPC/TupleSupport.h
-./Server/main.cpp
 ./Server/RequestHandler.cpp
 ./Server/RequestHandler.h
+./Server/ServerTest.cpp
 ./Server/Stopwatch.cpp
 ./Server/Stopwatch.h

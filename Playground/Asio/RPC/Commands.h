@@ -34,6 +34,19 @@ struct StopStopwatch : public ConcreteCommand<unsigned(RemoteStopwatch)>
 };
 
 
+template<class C0, class C1>
+struct ChainedCommand : public ConcreteCommand<typename C1::Ret(typename C0::Arg)>
+{
+    typedef ConcreteCommand<typename C1::Ret(typename C0::Arg)> Super;
+    typedef typename Super::Arg Arg;
+    typedef typename Super::Ret Ret;
+
+    static const char * CommandName() { return "ChainedCommand"; }
+    ChainedCommand(const Arg & inArg) : Super(CommandName(), inArg) { }
+};
+
+
+
 } // namespace RPC
 
 

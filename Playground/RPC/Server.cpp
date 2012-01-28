@@ -50,10 +50,17 @@ struct RPCServer
             arg.getLocalObject().start();
             return serialize(Void());
         }
+        else if (name == Stopwatch_Elapsed::Name())
+        {
+            RemoteStopwatch arg = deserialize<Stopwatch_Elapsed::Arg>(nameAndArg.get<1>());
+            Stopwatch & sw = arg.getLocalObject();
+            return serialize(Stopwatch_Elapsed::Ret(sw.elapsedMs()));
+        }
         else if (name == Stopwatch_Stop::Name())
         {
             RemoteStopwatch arg = deserialize<Stopwatch_Stop::Arg>(nameAndArg.get<1>());
             Stopwatch & sw = arg.getLocalObject();
+            sw.stop();
             return serialize(Stopwatch_Stop::Ret(sw.elapsedMs()));
         }
         return "Unknown command: " + inRequest;

@@ -64,7 +64,7 @@ struct ConcreteCommand : public Command
 
     Ret run()
     {
-        return deserialize<Ret>(send(className(), RPC::serialize(arg())));
+        return Ret();
     }
 
     typedef std::string Buffer;

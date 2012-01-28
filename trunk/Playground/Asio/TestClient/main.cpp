@@ -33,6 +33,11 @@ void test()
     std::cout << "tupleSerialized: " << tupleSerialized << std::endl;
     }
 
+
+    typedef ChainedCommand<CreateStopwatch, StartStopwatch> CreateAndStartStopwatch;
+    bool ok = CreateAndStartStopwatch(remoteServer).run();
+    std::cout << "ok: " << ok << std::endl;
+
 //    std::cout << serialize(make_tuple(RemoteServer(), "stopwatch1")) << std::endl;
 
 //    RemoteStopwatch remoteStopwatch = CreateStopwatch(make_tuple(RemoteServer(), "")).run();

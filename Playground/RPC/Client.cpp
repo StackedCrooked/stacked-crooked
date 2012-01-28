@@ -11,11 +11,19 @@ template<typename Command>
 typename Command::Ret send(UDPClient & client, const Command & command)
 {
     std::string result = client.send(serialize(NameAndArg(Command::Name(), serialize(command.arg()))));
-    return deserialize<typename Command::Ret>(result);
+    RetOrError retOrError = deserialize<RetOrError>(result);
+    if (retOrError.get_head())
+    {
+        return deserialize<typename Command::Ret>(retOrError.get<1>());
+    }
+    else
+    {
+        throw std::runtime_error("Server error: " + retOrError.get<1>());
+    }
 }
 
 
-int main()
+void run()
 {
     UDPClient client("127.0.0.1", 9001);
 
@@ -43,4 +51,19 @@ int main()
 
     send(client, Stopwatch_Stop(s2));
     std::cout << "Stopped " << s2.name() << std::endl;
+}
+
+
+int main()
+{
+    try
+    {
+        run();
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << exc.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }

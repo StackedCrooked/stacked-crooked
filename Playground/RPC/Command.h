@@ -27,6 +27,7 @@ private:
 
 
 typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
+typedef boost::tuples::tuple<bool, std::string> RetOrError;
 
 
 template<typename Signature>

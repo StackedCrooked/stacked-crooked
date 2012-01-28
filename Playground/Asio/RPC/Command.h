@@ -5,7 +5,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/serialization.hpp>
-#include <boost/tuple/tuple.hpp>
+#include "RPC/TupleSupport.h"
 #include <sstream>
 #include <string>
 
@@ -43,58 +43,6 @@ struct Decompose<Ret_(Arg_)>
     typedef Arg_ Arg;
     typedef Ret_ Ret;
 };
-
-
-template<typename T>
-std::string serialize(const T & value)
-{
-    std::ostringstream ss;
-    boost::archive::text_oarchive oa(ss);
-    oa << value;
-    return ss.str();
-}
-
-
-template<typename T>
-T deserialize(const std::string & buffer)
-{
-    std::istringstream ss(buffer);
-    boost::archive::text_iarchive ia(ss);
-    T ret;
-    ia >> ret;
-    return ret;
-}
-
-
-using boost::tuples::get;
-using boost::tuples::tuple;
-
-
-template<class Tuple>
-struct Helper
-{
-    template<typename Archive>
-    static void serialize(Archive & ar, Tuple & tuple)
-    {
-        ar & tuple.get_head();
-        Helper<typename Tuple::tail_type>::serialize(ar, tuple.get_tail());
-    }
-};
-
-
-template<>
-struct Helper<boost::tuples::null_type>
-{
-    template<typename Archive>
-    static void serialize(Archive &, const boost::tuples::null_type &) { }
-};
-
-
-template<typename Archive, typename Tuple>
-void serialize_tuple(Archive & ar, Tuple & tuple)
-{
-    Helper<Tuple>::serialize(ar, tuple);
-}
 
 
 template<typename Signature_>

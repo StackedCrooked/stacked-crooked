@@ -16,12 +16,7 @@ struct RemoteObject
 
     virtual ~RemoteObject() {}
 
-    const LocalType & getLocalObject() const
-    {
-        return mRemotePtr.cast<LocalType>();
-    }
-
-    LocalType & getLocalObject()
+    LocalType * get() const
     {
         return mRemotePtr.cast<LocalType>();
     }

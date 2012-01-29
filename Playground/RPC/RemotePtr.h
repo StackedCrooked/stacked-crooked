@@ -38,10 +38,7 @@ struct RemotePtr
     long value() const { return mValue; }
 
     template<typename T>
-    const T & cast() const { return *reinterpret_cast<T*>(mValue); }
-
-    template<typename T>
-    T & cast() { return *reinterpret_cast<T*>(mValue); }
+    T * cast() const { return reinterpret_cast<T*>(mValue); }
 
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)

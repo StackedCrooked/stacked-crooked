@@ -3,20 +3,18 @@
 
 
 #include "RemoteObject.h"
+#include "Stopwatch.h"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
-
-
-class Stopwatch;
 
 
 struct RemoteStopwatch : public RemoteObject<Stopwatch>
 {
     RemoteStopwatch() {}
 
-    RemoteStopwatch(const RemotePtr & inRemotePtr, const std::string & inName) :
-        Super(inRemotePtr),
-        mName(inName)
+    RemoteStopwatch(const Stopwatch & inStopwatch) :
+        Super(&inStopwatch),
+        mName(inStopwatch.name())
     {
     }
 

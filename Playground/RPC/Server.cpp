@@ -5,6 +5,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
+#include <utility>
 
 
 using namespace boost::tuples;
@@ -15,14 +16,42 @@ typedef std::vector<StopwatchPtr> Stopwatches;
 Stopwatches mStopwatches;
 
 
-std::string GetName(StopwatchPtr ptr)
+RPC_IMPLEMENT_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
+RPC_IMPLEMENT_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
+RPC_IMPLEMENT_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )
+RPC_IMPLEMENT_CALL(unsigned,        Stopwatch_Stop    , RemoteStopwatch )
+RPC_IMPLEMENT_CALL(Void,            Stopwatch_Destroy , RemoteStopwatch )
+
+RemoteStopwatch Stopwatch_Create::Implement(const std::string &arg)
 {
-    return ptr->name();
+    mStopwatches.push_back(StopwatchPtr(new Stopwatch(arg)));
+    return RemoteStopwatch(*mStopwatches.back());
 }
 
 
-//RPC_IMPLEMENT_CALL(CreateP)
+Void Stopwatch_Start::Implement(const RemoteStopwatch & arg)
+{
+    arg.get()->start();
+    return Void();
+}
 
+
+unsigned Stopwatch_Stop::Implement(const RemoteStopwatch & arg)
+{
+    return arg.get()->stop();
+}
+
+
+unsigned Stopwatch_Elapsed::Implement(const RemoteStopwatch &arg)
+{
+    return arg.get()->elapsedMs();
+}
+
+
+Void Stopwatch_Destroy::Implement(const RemoteStopwatch &)
+{
+    return Void(); // TODO: implement
+}
 
 struct RPCServer
 {
@@ -50,36 +79,13 @@ struct RPCServer
 
     std::string processRequest(const std::string & inName, const std::string & inArg)
     {
-        if (inName == Stopwatch_Create::Name())
+        Runners::iterator it = GetRunners().find(inName);
+        if (it == GetRunners().end())
         {
-            std::string arg = deserialize<Stopwatch_Create::Arg>(inArg);
-            mStopwatches.push_back(boost::make_shared<Stopwatch>(arg));
-            Stopwatch_Create::Ret ret(RemotePtr(mStopwatches.back().get()), arg);
-            return serialize(ret);
+            throw std::runtime_error("Command not registered: " + inName);
         }
-//        else if (inName == Stopwatch_Start::Name())
-//        {
-//            RemoteStopwatch arg = deserialize<Stopwatch_Start::Arg>(inArg);
-//            arg.getLocalObject().start();
-//            return serialize(Void());
-//        }
-        else if (inName == Stopwatch_Elapsed::Name())
-        {
-            RemoteStopwatch arg = deserialize<Stopwatch_Elapsed::Arg>(inArg);
-            Stopwatch & sw = arg.getLocalObject();
-            return serialize(Stopwatch_Elapsed::Ret(sw.elapsedMs()));
-        }
-        else if (inName == Stopwatch_Stop::Name())
-        {
-            RemoteStopwatch arg = deserialize<Stopwatch_Stop::Arg>(inArg);
-            Stopwatch & sw = arg.getLocalObject();
-            sw.stop();
-            return serialize(Stopwatch_Stop::Ret(sw.elapsedMs()));
-        }
-        else
-        {
-            throw std::runtime_error("Unknown RPC call: " + inName);
-        }
+        Runner & runner = it->second;
+        return runner(inArg);
     }
 
 private:

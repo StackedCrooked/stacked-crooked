@@ -1,11 +1,14 @@
 ./Client.cpp
-./Command.h
+./Client.h
 ./Commands.h
 ./Networking.cpp
 ./Networking.h
+./RemoteCall.h
 ./RemoteObject.h
 ./RemoteObjects.h
 ./RemotePtr.h
+./RPCServer.cpp
+./RPCServer.h
 ./Serialization.cpp
 ./Serialization.h
 ./Server.cpp
@@ -13,7 +16,3 @@
 ./Stopwatch.h
 ./Todo.txt
 ./TupleSupport.h
-RPCServer.h
-RPCServer.cpp
-Command.cpp
-Client.h

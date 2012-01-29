@@ -22,11 +22,20 @@ typename Command::Ret send(UDPClient & client, const Command & command)
     }
 }
 
+
+void testChain(UDPClient & client)
+{
+    Void v = send(client, ChainedCommand<CreateStopwatch, StartStopwatch>("ChainedStopwatch"));
+    (void)v;
+}
+
 void run()
 {
     UDPClient client("127.0.0.1", 9001);
 
-    RemoteStopwatch remoteStopwatch = send(client, CreateServer("Stopwatch_01"));
+    testChain(client);
+
+    RemoteStopwatch remoteStopwatch = send(client, CreateStopwatch("Stopwatch_01"));
     send(client, StartStopwatch(remoteStopwatch));
     sleep(1);
     std::cout << "Elapsed: " << send(client, StopStopwatch(remoteStopwatch)) << std::endl;
@@ -39,7 +48,7 @@ void run()
     names.push_back("b");
     names.push_back("c");
 
-    std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<CreateServer>(names));
+    std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<CreateStopwatch>(names));
     std::cout << "Created " << sw.size() << " stopwatches." << std::endl;
 
     std::vector<Void> started = send(client, ParallelCommand<StartStopwatch>(sw));

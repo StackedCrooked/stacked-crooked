@@ -1,3 +1,4 @@
+- Add 'GetStopwatches'
 - Composition (Very High Priority)
 - Results of time (Very High Priority)
 - Return error (High Priority)

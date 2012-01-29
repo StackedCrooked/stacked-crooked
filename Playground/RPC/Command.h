@@ -85,19 +85,26 @@ private:
 };
 
 
-//template<typename C1,
-//         typename C2,
-//         typename Arg = typename C1::Arg,
-//         typename Ret = typename C2::Ret,
-//         typename Base = ConcreteCommand<Ret(Arg)> >
-//struct ChainedCommand : public Base
-//{
-//    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
+template<typename C1,
+         typename C2,
+         typename Arg = typename C1::Arg,
+         typename Ret = typename C2::Ret,
+         typename Base = ConcreteCommand<Ret(Arg)> >
+struct ChainedCommand : public Base
+{
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
 
-//    static std::string Name() { return "ChainedCommand"; }
+    static std::string Name() { return "ChainedCommand"; }
 
-//    ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
-//};
+    ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
+
+#if TARGET_IS_RPC_SERVER
+    static Ret Implement(const Arg & arg)
+    {
+        return C2::Implement(C1::Implement(arg));
+    }
+#endif
+};
 
 
 template<typename C,

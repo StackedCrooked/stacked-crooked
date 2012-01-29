@@ -19,7 +19,7 @@ typedef std::vector<StopwatchPtr> Stopwatches;
 Stopwatches mStopwatches;
 
 
-RemoteStopwatch CreateServer::Implement(const std::string &arg)
+RemoteStopwatch CreateStopwatch::Implement(const std::string &arg)
 {
     TRACE
     mStopwatches.push_back(StopwatchPtr(new Stopwatch(arg)));

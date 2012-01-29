@@ -56,10 +56,6 @@ inline Runners & GetRunners()
 }
 
 
-template<typename Command>
-void Register();
-
-
 typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
 typedef boost::tuples::tuple<bool, std::string> RetOrError;
 
@@ -125,46 +121,16 @@ struct ChainedCommand : public ConcreteCommand<C2Ret(C1Arg)>
 
 
 template<typename C,
-         typename Arg_ = std::vector<typename C::Arg>,
-         typename Ret_ = std::vector<typename C::Ret> >
-struct ParallelCommand : public ConcreteCommand<Ret_(Arg_)>
+         typename Arg = std::vector<typename C::Arg>,
+         typename Ret = std::vector<typename C::Ret>,
+         typename Super = ConcreteCommand<Ret(Arg)> >
+struct ParallelCommand : public Super
 {
-    typedef Arg_ Arg;
-    typedef Ret_ Ret;
-    typedef ConcreteCommand<Ret(Arg)> Super;
     typedef ParallelCommand<C, Arg, Ret> This;
 
-    static const char * Name()
-    {
-        return "ParallelCommand";
-    }
+    static const char * Name() { return "ParallelCommand"; }
 
-#if TARGET_IS_RPC_SERVER
-    struct Registrator
-    {
-        Registrator()
-        {
-            std::cout << "Registrator for " << typeid(This).name() << std::endl;
-            Register<This>();
-        }
-
-        void ping()
-        {
-            std::cout << "Registrator ping: " << typeid(This).name() << std::endl;
-        }
-    };
-
-    static Registrator sRegistrator;
-#endif
-
-    ParallelCommand(const Arg & inArg) :
-        Super(Name(), inArg)
-    {
-        std::cout << "ParallelCommand constructor: " << typeid(This).name() << std::endl;
-#if TARGET_IS_RPC_SERVER
-        sRegistrator.ping();
-#endif
-    }
+    ParallelCommand(const Arg & inArg) : Super(Name(), inArg) { }
 
 
 #if TARGET_IS_RPC_SERVER
@@ -192,27 +158,18 @@ struct ParallelCommand : public ConcreteCommand<Ret_(Arg_)>
 };
 
 
-#if TARGET_IS_RPC_SERVER
-template<typename C, typename Arg, typename Ret>
-typename ParallelCommand<C, Arg, Ret>::Registrator ParallelCommand<C, Arg, Ret>::sRegistrator;
-#endif
-
-
 template<typename Command>
-void RegisterImpl();
+inline void RegisterImpl()
+{
+    GetRunners().insert(std::make_pair(Command::Name(), boost::bind(&Command::Run, _1)));
+}
+
 
 template<typename Command>
 void Register()
 {
     RegisterImpl<Command>();
-    RegisterImpl< ParallelCommand<Command> >();
-}
-
-template<typename Command>
-inline void RegisterImpl()
-{
-    std::cout << "Register " << Command::Name() << std::endl;
-    GetRunners().insert(std::make_pair(Command::Name(), boost::bind(&Command::Run, _1)));
+    RegisterImpl<ParallelCommand<Command> >();
 }
 
 

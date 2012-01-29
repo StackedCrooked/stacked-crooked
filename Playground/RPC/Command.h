@@ -16,44 +16,11 @@
 #include <string>
 
 
-struct Command
-{
-    Command() {}
-
-    Command(const std::string & inClassName) :
-        mClassName(inClassName)
-    {
-    }
-
-    const std::string & name() const { return mClassName; }
-
-private:
-    std::string mClassName;
-};
-
-
-using boost::tuples::tuple;
-typedef std::string Name;
-
-
 struct Void
 {
     template<class Archive>
-    void serialize(Archive & , const unsigned int)
-    {
-    }
+    void serialize(Archive & , const unsigned int) { }
 };
-
-
-typedef boost::function<std::string(const std::string)> Runner;
-typedef std::map<std::string, Runner> Runners;
-
-
-inline Runners & GetRunners()
-{
-    static Runners fRunners;
-    return fRunners;
-}
 
 
 typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
@@ -72,8 +39,32 @@ struct Decompose<Ret_(Arg_)>
 };
 
 
+struct CommandBase
+{
+    CommandBase(const std::string & inName) :
+        mName(inName)
+    {
+    }
+
+    const std::string & name() const { return mName; }
+
+    template<typename C>
+    static std::string Run(const std::string & serialized)
+    {
+        typedef typename C::Arg Arg;
+        typedef typename C::Ret Ret;
+        Arg arg = deserialize<Arg>(serialized);
+        Ret ret = C::Implement(arg);
+        return serialize(ret);
+    }
+
+private:
+    std::string mName;
+};
+
+
 template<typename Signature_>
-struct ConcreteCommand : public Command
+struct ConcreteCommand : public CommandBase
 {
     typedef Signature_ Signature;
     typedef ConcreteCommand<Signature> This;
@@ -82,17 +73,12 @@ struct ConcreteCommand : public Command
 
     ConcreteCommand(const std::string & inName,
                     const Arg & inArg) :
-        Command(inName),
+        CommandBase(inName),
         mArg(inArg)
     {
     }
 
     const Arg & arg() const { return mArg; }
-
-    Ret run()
-    {
-        return Ret();
-    }
 
 protected:
     typedef ConcreteCommand<Signature> Super;
@@ -102,20 +88,17 @@ private:
 };
 
 
-template<class C1, class C2,
-         typename C1Arg = typename C1::Arg,
-         typename C1Ret = typename C1::Ret,
-         typename C2Arg = typename C2::Arg,
-         typename C2Ret = typename C2::Ret>
-struct ChainedCommand : public ConcreteCommand<C2Ret(C1Arg)>
+template<typename C1,
+         typename C2,
+         typename Arg = typename C1::Arg,
+         typename Ret = typename C2::Ret,
+         typename Super = ConcreteCommand<Ret(Arg)> >
+struct ChainedCommand : public Super
 {
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<C1Ret, C2Arg>::value), "Types don't line up correctly.");
-
-    typedef ConcreteCommand<C2Ret(C1Arg)> Super;
-    typedef typename Super::Arg Arg;
-    typedef typename Super::Ret Ret;
+    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
 
     static const char * Name() { return "ChainedCommand"; }
+
     ChainedCommand(const Arg & inArg) : Super(Name(), inArg) { }
 };
 
@@ -145,29 +128,32 @@ struct ParallelCommand : public Super
         }
         return result;
     }
-
-    static std::string Run(const std::string & argString)
-    {
-        Arg arg = deserialize<Arg>(argString);
-        Ret ret = This::Implement(arg);
-        return serialize(ret);
-    }
 #endif
 };
 
 
-template<typename Command>
+typedef boost::function<std::string(const std::string)> Runner;
+typedef std::map<std::string, Runner> Runners;
+
+
+inline Runners & GetRunners()
+{
+    static Runners fRunners;
+    return fRunners;
+}
+
+template<typename C>
 inline void RegisterImpl()
 {
-    GetRunners().insert(std::make_pair(Command::Name(), boost::bind(&Command::Run, _1)));
+    GetRunners().insert(std::make_pair(C::Name(), boost::bind(&CommandBase::Run<C>, _1)));
 }
 
 
-template<typename Command>
+template<typename C>
 void Register()
 {
-    RegisterImpl<Command>();
-    RegisterImpl<ParallelCommand<Command> >();
+    RegisterImpl<C>();
+    RegisterImpl<ParallelCommand<C> >();
 }
 
 

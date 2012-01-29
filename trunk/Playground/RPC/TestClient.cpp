@@ -71,8 +71,11 @@ struct TestClient
     {
         TCPClient client("127.0.0.1", 9001);
         Redirector dest(boost::bind(&TCPClient::send, &client, _1));
-        testSingle();
-        testBatch();
+
+        int seven = Add(std::make_pair(3, 4)).send();
+        std::cout << "seven: " << seven << std::endl;
+//        testSingle();
+//        testBatch();
     }
 
 };

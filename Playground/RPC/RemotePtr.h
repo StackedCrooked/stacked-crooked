@@ -2,30 +2,6 @@
 #define RPC_REMOTEPTR_H
 
 
-#include <string>
-
-
-template<typename T>
-std::string serialize(const T & value)
-{
-    std::ostringstream ss;
-    boost::archive::text_oarchive oa(ss);
-    oa << value;
-    return ss.str();
-}
-
-
-template<typename T>
-T deserialize(const std::string & buffer)
-{
-    std::istringstream ss(buffer);
-    boost::archive::text_iarchive ia(ss);
-    T ret;
-    ia >> ret;
-    return ret;
-}
-
-
 struct RemotePtr
 {
     RemotePtr() : mValue(0) {}

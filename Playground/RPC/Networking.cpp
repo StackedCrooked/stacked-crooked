@@ -36,7 +36,7 @@ struct UDPServer::Impl
     {
         while (true)
         {
-            const unsigned int cMaxLength = 1024;
+            const unsigned int cMaxLength = 1024 * 1024;
             char data[cMaxLength];
             udp::endpoint sender_endpoint;
             size_t length = mSocket.receive_from(boost::asio::buffer(data, cMaxLength), sender_endpoint);
@@ -107,7 +107,7 @@ std::string UDPClient::send(const std::string & inMessage)
 {
     mImpl->socket.send_to(boost::asio::buffer(inMessage.c_str(), inMessage.size()), *mImpl->iterator);
 
-    static const unsigned cMaxLength = 1024;
+    static const unsigned cMaxLength = 1024 * 1024;
     char reply[cMaxLength];
     udp::endpoint sender_endpoint;
     size_t reply_length = mImpl->socket.receive_from(boost::asio::buffer(reply, cMaxLength), sender_endpoint);

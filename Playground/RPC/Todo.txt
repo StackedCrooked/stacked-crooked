@@ -1,11 +1,17 @@
+Requirements
+------------
+
+
+Todo
+----
 - Add 'GetStopwatches'
-- Results of time (Very High Priority)
-- Async (Med Priority)
-- Introspection (Med Priority)
-- RAII for remote objects (Low Priority)
-v Automatic registration (Med Priority)
-v Return error (High Priority)
-v Composition (Very High Priority)
+- Results of time
+- Async
+- Introspection
+- RAII for remote objects
+v Automatic registration
+v Return error
+v Composition
 
 
 Composition

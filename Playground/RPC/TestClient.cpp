@@ -2,6 +2,7 @@
 #include "Networking.h"
 #include "RemoteObjects.h"
 #include <iostream>
+#include <sstream>
 #include <utility>
 
 
@@ -17,50 +18,53 @@ struct TestClient
         StartStopwatch(remoteStopwatch).send();
         std::cout << "Check: " << CheckStopwatch(remoteStopwatch).send() << std::endl;
         std::cout << "Stop: " << StopStopwatch(remoteStopwatch).send() << std::endl;
+        std::cout << std::endl;
     }
 
     void testBatch()
     {
-        RemoteStopwatch rs = CreateStopwatch("Hello").send();
-        (void)rs;
-
-        std::vector<RemoteStopwatch> rs2 = Batch<CreateStopwatch>(std::vector<std::string>(2, "ABC")).send();
-        std::cout << rs2.size() << std::endl;
-
-        std::cout << std::endl << "Testing Batch Commands (sync)" << std::endl;
         std::vector<std::string> names;
-        names.push_back("Stopwatch_01");
-        names.push_back("Stopwatch_02");
-        names.push_back("Stopwatch_03");
+        for (std::size_t idx = 0; idx < 100; ++idx)
+        {
+            std::stringstream ss;
+            ss << "Stopwatch_" << std::setw(3) << idx;
+            names.push_back(ss.str());
+        }
 
-        // Create all stopwatches
-        std::vector<RemoteStopwatch> stopwatches = Batch<CreateStopwatch>(names).send();
+        RemoteStopwatches rs = Batch<CreateStopwatch>(names).send();
+        std::cout << "Created " << rs.size() << " remote Stopwatches." << std::endl;
 
-        // Start them
-        Batch<StartStopwatch>(stopwatches).send();
+        Batch<StartStopwatch>(rs).send();
+        std::cout << "Started " << rs.size() << " stopwatches." << std::endl;
 
-        // Wait a second
-        sleep(1);
+        for (int i = 0; i < 10; ++i)
+        {
+            std::cout << "Updated times:" << std::endl;
+            std::vector<unsigned> times = Batch<CheckStopwatch>(rs).send();
+            for (std::size_t idx = 0; idx < times.size(); ++idx)
+            {
+                if (idx != 0)
+                {
+                    std::cout << ", ";
+                }
+                std::cout << idx << ": " << times[idx];
+            }
+            std::cout << std::endl << std::endl;
+            sleep(1);
+        }
 
-        // Check their time
-        std::vector<unsigned> el = Batch<CheckStopwatch>(stopwatches).send();
-        std::cout << "Elapsed: ";
-        for (std::size_t idx = 0; idx < el.size(); ++idx)
+        std::vector<unsigned> stopTimes = Batch<StopStopwatch>(rs).send();
+        std::cout << "Stopped " << stopTimes.size() << " stopwatches. Times: " << std::endl;
+
+        for (std::size_t idx = 0; idx < stopTimes.size(); ++idx)
         {
             if (idx != 0)
             {
                 std::cout << ", ";
             }
-            std::cout << el[idx];
+            std::cout << idx << ": " << stopTimes[idx];
         }
         std::cout << std::endl;
-
-        std::vector<unsigned> stopped = Batch<StopStopwatch>(stopwatches).send();
-        std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
-
-        std::cout << "Getting all stopwatches." << std::endl;
-        RemoteStopwatches remoteStopwatches = GetStopwatches(Void()).send();
-        std::cout << "There are " << remoteStopwatches.size() << " remote stopwatches." << std::endl;
     }
 
     void run()

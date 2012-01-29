@@ -7,30 +7,6 @@
 using namespace boost::tuples;
 
 
-struct RPCClient : private UDPClient
-{
-    RPCClient(const std::string & inURL, unsigned inPort) :
-        UDPClient(inURL, inPort)
-    {
-    }
-
-    template<typename Command>
-    typename Command::Ret send(const Command & command)
-    {
-        std::string result = UDPClient::send(serialize(NameAndArg(Command::Name(), serialize(command.arg()))));
-        RetOrError retOrError = deserialize<RetOrError>(result);
-        if (retOrError.get_head())
-        {
-            return deserialize<typename Command::Ret>(retOrError.get<1>());
-        }
-        else
-        {
-            throw std::runtime_error("Server error: " + retOrError.get<1>());
-        }
-    }
-};
-
-
 void testSingle(RPCClient & client)
 {
     std::cout << std::endl << "Testing Single Commands (sync)" << std::endl;

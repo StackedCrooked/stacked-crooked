@@ -97,6 +97,7 @@ private:
 };
 
 
+#if 0
 template<typename C1,
          typename C2,
          typename Arg_ = typename C1::Arg,
@@ -121,17 +122,18 @@ struct ChainedCommand : public Base
 protected:
     ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
+#endif
 
 
 template<typename C,
          typename Arg = std::vector<typename C::Arg>,
          typename Ret = std::vector<typename C::Ret>,
          typename Base = ConcreteCommand<Ret(Arg)> >
-struct ParallelCommand : public Base
+struct BatchCommand : public Base
 {
-    typedef ParallelCommand<C, Arg, Ret> This;
+    typedef BatchCommand<C, Arg, Ret> This;
 
-    static std::string Name() { return "ParallelCommand<" + C::Name() + ">"; }
+    static std::string Name() { return "BatchCommand<" + C::Name() + ">"; }
 
 #if TARGET_IS_RPC_SERVER
     typedef typename C::Arg A;
@@ -150,7 +152,7 @@ struct ParallelCommand : public Base
 #endif
 
 protected:
-    ParallelCommand(const Arg & inArg) : Base(Name(), inArg) { }
+    BatchCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
 #if TARGET_IS_RPC_SERVER
@@ -182,7 +184,6 @@ template<typename C>
 void Register()
 {
     RegisterImpl<C>();
-    RegisterImpl<ParallelCommand<C> >();
 }
 #endif
 

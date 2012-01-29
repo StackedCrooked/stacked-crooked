@@ -35,13 +35,17 @@ Void StartStopwatch::Implement(const RemoteStopwatch & arg)
 unsigned StopStopwatch::Implement(const RemoteStopwatch & arg)
 {
     TRACE
-    return arg.get()->stop();
+    unsigned res = arg.get()->stop();
+    std::cout << "Elapsed on stop: " << res << std::endl;
+    return res;
+
 }
 
 
 unsigned CheckStopwatch::Implement(const RemoteStopwatch &arg)
 {
     TRACE
+    std::cout << "Elapsed on check: " << arg.get()->elapsedMs() << std::endl;
     return arg.get()->elapsedMs();
 }
 

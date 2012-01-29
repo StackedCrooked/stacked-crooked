@@ -6,6 +6,7 @@
 
 
 #if TARGET_IS_RPC_SERVER
+
 #define RPC_DECLARE_CALL(RET, NAME, ARG) \
     struct NAME : public ConcreteCommand<RET(ARG)> { \
         static std::string Name() { return #NAME; } \
@@ -21,18 +22,36 @@
     } \
     struct Register##NAME { Register##NAME() { Register<NAME>(); } } gRegister##NAME;
 
+#define RPC_BATCH_CALL(NAME, ARG) \
+    struct NAME##Batch : public BatchCommand<NAME> { \
+        NAME##Batch(const std::vector<ARG> & args) : \
+            BatchCommand<NAME>(args) { } \
+    }; \
+    struct NAME##Batch##Registrator { \
+        NAME##Batch##Registrator() { \
+            Register<NAME##Batch>(); \
+        } \
+    } g##NAME##Batch##Registrator;
+
 #define RPC_CALL(R, N, A) \
     RPC_DECLARE_CALL(R, N, A) \
-    RPC_IMPLEMENT_CALL(R, N, A)
+    RPC_IMPLEMENT_CALL(R, N, A) \
+    RPC_BATCH_CALL(N, A)
 
-#else // TARGET_IS_RPC_SERVER
+#else
+
+#define RPC_BATCH_CALL(NAME, ARG) \
+    struct NAME##Batch : public BatchCommand<NAME> { \
+        NAME##Batch(const std::vector<ARG> & args) : \
+            BatchCommand<NAME>(args) { } \
+    };
 
 #define RPC_CALL(RET, NAME, ARG) \
     struct NAME : public ConcreteCommand<RET(ARG)> { \
         static std::string Name() { return #NAME; } \
         NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
-    };
-
+    }; \
+    RPC_BATCH_CALL(NAME, ARG)
 #endif // TARGET_IS_RPC_SERVER
 
 
@@ -45,20 +64,6 @@ RPC_CALL(Void,            StartStopwatch   , RemoteStopwatch )
 RPC_CALL(unsigned,        CheckStopwatch   , RemoteStopwatch )
 RPC_CALL(unsigned,        StopStopwatch    , RemoteStopwatch )
 RPC_CALL(Void,            DestroyStopwatch , RemoteStopwatch )
-
-
-//RPC_MULTI_CALL(CreateStopwatch)
-
-
-struct CreateAndStartStopwatch : public ChainedCommand<CreateStopwatch, StartStopwatch>
-{
-    typedef ChainedCommand<CreateStopwatch, StartStopwatch> Base;
-    CreateAndStartStopwatch(const Arg & arg) : Base(arg) {}
-};
-#if TARGET_IS_RPC_SERVER
-struct RegisterCreateAndStartStopwatch { RegisterCreateAndStartStopwatch() { Register<CreateAndStartStopwatch>(); } };
-RegisterCreateAndStartStopwatch gRegisterCreateAndStartStopwatch;
-#endif
 
 
 #endif // RPC_COMMANDS_H

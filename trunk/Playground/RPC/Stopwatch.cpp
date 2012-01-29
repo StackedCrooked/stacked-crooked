@@ -33,7 +33,7 @@ unsigned Stopwatch::stop()
 {
     if (mStop == 0)
     {
-        mStop = GetCurrentTimeMs();
+        mStop = GetCurrentTimeMs() - mStart;
     }
     return mStop;
 }

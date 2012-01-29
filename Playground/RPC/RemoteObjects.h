@@ -15,7 +15,7 @@ struct RemoteStopwatch : public RemoteObject<Stopwatch>
     RemoteStopwatch() {}
 
     RemoteStopwatch(const Stopwatch & inStopwatch) :
-        Base(&inStopwatch),
+        Base(inStopwatch.id()),
         mName(inStopwatch.name())
     {
     }

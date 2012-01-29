@@ -10,18 +10,24 @@
 
 
 /**
- * Redirector redirects the RPC calls.
+ * Redirector (re-)directs the calls to `RemoteCall::send()`, for example
+ * when calling: `DoSomething(obj).send();`
  *
- * Simply allocate a Redirector object on the stack and it will redirect calls
- * for the duration of its lifetime.
+ * Allocate on the stack and provide a function object to indicate where the
+ * data should go to. The redirection will remain for the duration of the
+ * object's lifetime. Once the redirector goes out of scope the previous one
+ * becomes active.
  *
- * You need to create at least one Redirector object in order to direct the
- * data to it's original location.
+ * There needs to be at least one Redirector object or else the data will have
+ * no destination. An exception will be thrown if you try to send data without
+ * having a redirector.
  *
- * For example to direct the output to an UDPClient object:
+ * Usage example:
  *
- *  {
+ *     // Create an UDP client object.
  *     UDPClient client("127.0.0.1", 9001);
+ *
+ *     // All
  *     Redirector dest(boost::bind(&UDPClient::send, &client, _1));
  *     // ...
  *  }
@@ -31,15 +37,20 @@ struct Redirector : boost::noncopyable
 public:
     typedef boost::function<std::string(const std::string &)> Handler;
 
-    static bool IsSet()
+    Redirector(const Handler & inHandler) :
+        mHandler(inHandler)
     {
-        return !GetDestinations().empty();
+        GetDestinations().push_back(this);
     }
 
-    static Redirector & Get()
+    ~Redirector()
     {
-        return *GetDestinations().back();
+        GetDestinations().pop_back();
     }
+
+    static bool Empty() { return GetDestinations().empty(); }
+
+    static Redirector & Get() { return *GetDestinations().back(); }
 
     template<typename Command>
     typename Command::Ret send(const Command & command)
@@ -54,17 +65,6 @@ public:
         {
             throw std::runtime_error("Server error: " + retOrError.get<1>());
         }
-    }
-
-    Redirector(const Handler & inHandler) :
-        mHandler(inHandler)
-    {
-        GetDestinations().push_back(this);
-    }
-
-    ~Redirector()
-    {
-        GetDestinations().pop_back();
     }
 
 private:

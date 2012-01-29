@@ -42,6 +42,53 @@ struct Decompose<Ret_(Arg_)>
     typedef Ret_ Ret;
 };
 
+// Create an object on the stack in the main function of the client app.
+struct Destination : boost::noncopyable
+{
+public:
+    typedef boost::function<std::string(const std::string &)> Handler;
+
+    static bool IsSet()
+    {
+        return !sDestinations.empty();
+    }
+
+    static Destination & Get()
+    {
+        return *sDestinations.back();
+    }
+
+    template<typename Command>
+    typename Command::Ret send(const Command & command)
+    {
+        std::string result = mHandler(serialize(NameAndArg(command.name(), serialize(command.arg()))));
+        RetOrError retOrError = deserialize<RetOrError>(result);
+        if (retOrError.get_head())
+        {
+            return deserialize<typename Command::Ret>(retOrError.get<1>());
+        }
+        else
+        {
+            throw std::runtime_error("Server error: " + retOrError.get<1>());
+        }
+    }
+
+    Destination(const Handler & inHandler) :
+        mHandler(inHandler)
+    {
+        sDestinations.push_back(this);
+    }
+
+    ~Destination()
+    {
+        sDestinations.pop_back();
+    }
+
+private:
+    Handler mHandler;
+    static std::vector<Destination*> sDestinations;
+};
+
 
 struct CommandBase
 {
@@ -73,6 +120,16 @@ struct ConcreteCommand : public CommandBase
     }
 
     const Arg & arg() const { return mArg; }
+
+    Ret send()
+    {
+        if (!Destination::IsSet())
+        {
+            throw std::runtime_error("No default destination configured.");
+        }
+
+        return Destination::Get().send(*this);
+    }
 
 private:
     Arg mArg;

@@ -8,7 +8,7 @@
 #include <utility>
 
 
-static RPCServer & GetRPCServer()
+RPCServer & GetRPCServer()
 {
     static RPCServer fInstance;
     return fInstance;

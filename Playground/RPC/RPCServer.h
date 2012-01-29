@@ -28,6 +28,8 @@ public:
     // Start listening
     void listen(unsigned port);
 
+    // Maps the function name to it's implementation.
+    // Type erasure occurs here.
     template<typename Command>
     void registerCommand()
     {

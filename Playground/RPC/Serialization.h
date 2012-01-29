@@ -9,13 +9,17 @@
 #include <string>
 #include <sstream>
 
-
+/**
+ * NameAndArg is a tuple containing the function name and argument value.
+ * All RPC calls are sent/received in this structure.
+ */
 typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
 typedef boost::tuples::tuple<bool, std::string> RetOrError;
 
 
 /**
- * Generic serialize method
+ * Generic serialize method.
+ * Only works for types that have serialization enabled.
  */
 template<typename T>
 std::string serialize(const T & value)
@@ -28,7 +32,8 @@ std::string serialize(const T & value)
 
 
 /**
- * Generic deserialize method
+ * Generic deserialize method.
+ * Only works for types that have serialization enabled.
  */
 template<typename T>
 T deserialize(const std::string & buffer)

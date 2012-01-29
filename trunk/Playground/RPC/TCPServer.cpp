@@ -104,15 +104,15 @@ struct TCPServer::Impl
 
     }
 
-    void handle_accept(SessionPtr new_session,
+    void handle_accept(SessionPtr inSession,
                        const boost::system::error_code & error)
     {
         if (!error)
         {
-            new_session->start();
-            new_session.reset(new Session(mHandler));
-            mAcceptor->async_accept(new_session->socket(),
-                                   boost::bind(&Impl::handle_accept, this, new_session,
+            inSession->start();
+            inSession.reset(new Session(mHandler));
+            mAcceptor->async_accept(inSession->socket(),
+                                   boost::bind(&Impl::handle_accept, this, inSession,
                                                boost::asio::placeholders::error));
         }
     }

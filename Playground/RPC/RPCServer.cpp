@@ -22,13 +22,13 @@ struct RPCServer::Impl
         mUDPServer->run(boost::bind(&Impl::processRequest, this, _1));
     }
 
-    void addHandler(const std::string & inName, const Handler & inHandler)
+    static void addHandler(const std::string & inName, const Handler & inHandler)
     {
-        if (mHandlers.find(inName) != mHandlers.end())
+        if (GetHandlers().find(inName) != GetHandlers().end())
         {
             throw std::runtime_error("Handler already added for " + inName);
         }
-        mHandlers.insert(std::make_pair(inName, inHandler));
+        GetHandlers().insert(std::make_pair(inName, inHandler));
     }
 
     std::string processRequest(const std::string & inRequest)
@@ -49,8 +49,8 @@ struct RPCServer::Impl
     std::string processRequest(const std::string & inName, const std::string & inArg)
     {
         std::cout << "Finding callback for: " << inName << std::endl;
-        Handlers::iterator it = mHandlers.find(inName);
-        if (it == mHandlers.end())
+        Handlers::iterator it = GetHandlers().find(inName);
+        if (it == GetHandlers().end())
         {
             throw std::runtime_error("Command not registered: " + inName);
         }
@@ -60,7 +60,12 @@ struct RPCServer::Impl
 
     unsigned mPort;
     boost::scoped_ptr<UDPServer> mUDPServer;
-    Handlers mHandlers;
+
+    static Handlers & GetHandlers()
+    {
+        static Handlers fHandlers;
+        return fHandlers;
+    }
 };
 
 
@@ -83,5 +88,5 @@ void RPCServer::listen(unsigned port)
 
 void RPCServer::addHandler(const std::string & inName, const Handler & inHandler)
 {
-    mImpl->addHandler(inName, inHandler);
+    Impl::addHandler(inName, inHandler);
 }

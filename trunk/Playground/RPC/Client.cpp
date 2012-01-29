@@ -39,15 +39,15 @@ void testBatch(UDPClient & client)
     names.push_back("b");
     names.push_back("c");
 
-    std::vector<RemoteStopwatch> sw = send(client, CreateStopwatchBatch(names));
+    std::vector<RemoteStopwatch> sw = send(client, Batch<CreateStopwatch>(names));
     std::cout << "Created " << sw.size() << " stopwatches." << std::endl;
 
-    std::vector<Void> started = send(client, StartStopwatchBatch(sw));
+    std::vector<Void> started = send(client, Batch<StartStopwatch>(sw));
     std::cout << "Started " << started.size() << " stopwatches" << std::endl;
 
     std::cout << "Sleep for 1 second..." << std::endl;
 
-    std::vector<unsigned> el = send(client, CheckStopwatchBatch(sw));
+    std::vector<unsigned> el = send(client, Batch<CheckStopwatch>(sw));
     std::cout << "Checked: " << el.size() << " stopwatches" << std::endl;
 
     for (std::size_t idx = 0; idx < el.size(); ++idx)
@@ -55,7 +55,7 @@ void testBatch(UDPClient & client)
         std::cout << "Elapsed time: " << el[idx] << std::endl;
     }
 
-    std::vector<unsigned> stopped = send(client, StopStopwatchBatch(sw));
+    std::vector<unsigned> stopped = send(client, Batch<StopStopwatch>(sw));
     std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
 }
 

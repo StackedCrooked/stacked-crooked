@@ -21,7 +21,7 @@ typedef std::vector<StopwatchPtr> Stopwatches;
 Stopwatches mStopwatches;
 
 
-RemoteStopwatch CreateStopwatch::Implement(const std::string &arg)
+RemoteStopwatch CreateStopwatch::execute(const std::string &arg)
 {
     TRACE
     mStopwatches.push_back(StopwatchPtr(new Stopwatch(arg)));
@@ -29,7 +29,7 @@ RemoteStopwatch CreateStopwatch::Implement(const std::string &arg)
 }
 
 
-Void StartStopwatch::Implement(const RemoteStopwatch & arg)
+Void StartStopwatch::execute(const RemoteStopwatch & arg)
 {
     TRACE
     arg.get()->start();
@@ -37,7 +37,7 @@ Void StartStopwatch::Implement(const RemoteStopwatch & arg)
 }
 
 
-unsigned StopStopwatch::Implement(const RemoteStopwatch & arg)
+unsigned StopStopwatch::execute(const RemoteStopwatch & arg)
 {
     TRACE
     unsigned res = arg.get()->stop();
@@ -47,7 +47,7 @@ unsigned StopStopwatch::Implement(const RemoteStopwatch & arg)
 }
 
 
-unsigned CheckStopwatch::Implement(const RemoteStopwatch &arg)
+unsigned CheckStopwatch::execute(const RemoteStopwatch &arg)
 {
     TRACE
     std::cout << "Elapsed on check: " << arg.get()->elapsedMs() << std::endl;
@@ -55,7 +55,7 @@ unsigned CheckStopwatch::Implement(const RemoteStopwatch &arg)
 }
 
 
-Void DestroyStopwatch::Implement(const RemoteStopwatch &)
+Void DestroyStopwatch::execute(const RemoteStopwatch &)
 {
     TRACE
     return Void(); // TODO: implement

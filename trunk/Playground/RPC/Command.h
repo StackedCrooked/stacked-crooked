@@ -43,12 +43,6 @@ struct Decompose<Ret_(Arg_)>
 };
 
 
-#if TARGET_IS_RPC_SERVER
-template<typename C>
-void Register();
-#endif
-
-
 struct CommandBase
 {
     CommandBase(const std::string & inName) :
@@ -57,18 +51,6 @@ struct CommandBase
     }
 
     const std::string & name() const { return mName; }
-
-#if TARGET_IS_RPC_SERVER
-    template<typename C>
-    static std::string Run(const std::string & serialized)
-    {
-        typedef typename C::Arg Arg;
-        typedef typename C::Ret Ret;
-        Arg arg = deserialize<Arg>(serialized);
-        Ret ret = C::Implement(arg);
-        return serialize(ret);
-    }
-#endif
 
 private:
     std::string mName;
@@ -157,33 +139,11 @@ protected:
 
 
 template<typename C>
-struct Batch;
+void Register();
 
-
-#if TARGET_IS_RPC_SERVER
-typedef boost::function<std::string(const std::string)> Runner;
-typedef std::map<std::string, Runner> Runners;
-
-
-inline Runners & GetRunners()
-{
-    static Runners fRunners;
-    return fRunners;
-}
 
 template<typename C>
-inline void Register()
-{
-    const std::string name = C::Name();
-    if (GetRunners().find(name) != GetRunners().end())
-    {
-        std::cout << "Already registered: " << name << std::endl;
-        throw std::runtime_error("Already registered: " + name);
-    }
-    std::cout << "Registring " << name << std::endl;
-    GetRunners().insert(std::make_pair(name, boost::bind(&CommandBase::Run<C>, _1)));
-}
-#endif
+struct Batch;
 
 
 //

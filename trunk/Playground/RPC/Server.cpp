@@ -1,4 +1,4 @@
-#include "Networking.h"
+#include "RPCServer.h"
 #include "Commands.h"
 #include "Stopwatch.h"
 #include <boost/bind.hpp>
@@ -8,9 +8,14 @@
 #include <utility>
 
 
+static RPCServer & GetRPCServer()
+{
+    static RPCServer fInstance;
+    return fInstance;
+}
+
+
 using namespace boost::tuples;
-
-
 typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
 typedef std::vector<StopwatchPtr> Stopwatches;
 Stopwatches mStopwatches;
@@ -56,59 +61,21 @@ Void DestroyStopwatch::Implement(const RemoteStopwatch &)
     return Void(); // TODO: implement
 }
 
-struct RPCServer
+
+template<typename C>
+void Register()
 {
-    RPCServer(unsigned port = 9001) :
-        mUDPServer(port)
-    {
-        std::cout << "Listening to port " << port << std::endl;
-        mUDPServer.run(boost::bind(&RPCServer::processRequest, this, _1));
-    }
-
-    std::string processRequest(const std::string & inRequest)
-    {
-        std::cout << "\n*** Begin Request:\n" << inRequest << std::endl;
-        NameAndArg nameAndArg = deserialize<NameAndArg>(inRequest);
-        const std::string & name = nameAndArg.get<0>();
-        const std::string & arg  = nameAndArg.get<1>();
-        std::cout << "Name: " << name << ", Arg: " << arg << std::endl;
-
-        std::string result;
-        try
-        {
-            result = serialize(RetOrError(true, processRequest(name, arg)));
-        }
-        catch (const std::exception & exc)
-        {
-            result = serialize(RetOrError(false, exc.what()));
-        }
-        std::cout << "*** End Request" << std::endl;
-        return result;
-    }
-
-    std::string processRequest(const std::string & inName, const std::string & inArg)
-    {
-        std::cout << "Finding callback for: " << inName << std::endl;
-        Runners::iterator it = GetRunners().find(inName);
-        if (it == GetRunners().end())
-        {
-            throw std::runtime_error("Command not registered: " + inName);
-        }
-        Runner & runner = it->second;
-        return runner(inArg);
-    }
-
-private:
-    UDPServer mUDPServer;
-};
+    GetRPCServer().registerCommand<C>();
+}
 
 
 int main()
 {
     try
     {
-        RPCServer rpcServer;
-        (void)rpcServer;
+        const unsigned cPort = 9001;
+        std::cout << "Listening to port " << cPort << std::endl;
+        GetRPCServer().listen(cPort);
     }
     catch (const std::exception & exc)
     {

@@ -25,7 +25,7 @@ typename Command::Ret send(UDPClient & client, const Command & command)
 
 void testChain(UDPClient & client)
 {
-    Void v = send(client, ChainedCommand<CreateStopwatch, StartStopwatch>("ChainedStopwatch"));
+    Void v = send(client, CreateAndStartStopwatch("ChainedStopwatch"));
     (void)v;
 }
 

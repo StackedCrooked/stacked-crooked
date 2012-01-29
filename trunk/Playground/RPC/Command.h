@@ -9,11 +9,15 @@
 #include <boost/function.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
+#include <iostream>
 #include <map>
 #include <set>
 #include <vector>
 #include <sstream>
 #include <string>
+
+
+#define TRACE std::cout << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << std::endl;
 
 
 struct Void
@@ -39,6 +43,12 @@ struct Decompose<Ret_(Arg_)>
 };
 
 
+#if TARGET_IS_RPC_SERVER
+template<typename C>
+void Register();
+#endif
+
+
 struct CommandBase
 {
     CommandBase(const std::string & inName) :
@@ -48,6 +58,7 @@ struct CommandBase
 
     const std::string & name() const { return mName; }
 
+#if TARGET_IS_RPC_SERVER
     template<typename C>
     static std::string Run(const std::string & serialized)
     {
@@ -57,6 +68,7 @@ struct CommandBase
         Ret ret = C::Implement(arg);
         return serialize(ret);
     }
+#endif
 
 private:
     std::string mName;
@@ -87,16 +99,17 @@ private:
 
 template<typename C1,
          typename C2,
-         typename Arg = typename C1::Arg,
-         typename Ret = typename C2::Ret,
-         typename Base = ConcreteCommand<Ret(Arg)> >
+         typename Arg_ = typename C1::Arg,
+         typename Ret_ = typename C2::Ret,
+         typename Base = ConcreteCommand<Ret_(Arg_)> >
 struct ChainedCommand : public Base
 {
     BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
 
-    static std::string Name() { return "ChainedCommand"; }
+    typedef Arg_ Arg;
+    typedef Ret_ Ret;
 
-    ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
+    static std::string Name() { return "ChainedCommand<" + C1::Name() + ", " + C2::Name() + ">"; }
 
 #if TARGET_IS_RPC_SERVER
     static Ret Implement(const Arg & arg)
@@ -104,6 +117,9 @@ struct ChainedCommand : public Base
         return C2::Implement(C1::Implement(arg));
     }
 #endif
+
+protected:
+    ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
 
@@ -117,14 +133,13 @@ struct ParallelCommand : public Base
 
     static std::string Name() { return "ParallelCommand<" + C::Name() + ">"; }
 
-    ParallelCommand(const Arg & inArg) : Base(Name(), inArg) { }
-
 #if TARGET_IS_RPC_SERVER
     typedef typename C::Arg A;
     typedef typename C::Ret R;
 
     static std::vector<R> Implement(const std::vector<A> & arg)
     {
+        TRACE
         std::vector<R> result;
         for (std::size_t idx = 0; idx < arg.size(); ++idx)
         {
@@ -133,9 +148,12 @@ struct ParallelCommand : public Base
         return result;
     }
 #endif
+
+protected:
+    ParallelCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
-
+#if TARGET_IS_RPC_SERVER
 typedef boost::function<std::string(const std::string)> Runner;
 typedef std::map<std::string, Runner> Runners;
 
@@ -155,6 +173,7 @@ inline void RegisterImpl()
         std::cout << "Already registered: " << name << std::endl;
         throw std::runtime_error("Already registered: " + name);
     }
+    std::cout << "Registring " << name << std::endl;
     GetRunners().insert(std::make_pair(name, boost::bind(&CommandBase::Run<C>, _1)));
 }
 
@@ -165,6 +184,7 @@ void Register()
     RegisterImpl<C>();
     RegisterImpl<ParallelCommand<C> >();
 }
+#endif
 
 
 #endif // RPC_COMMAND_H

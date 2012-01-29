@@ -11,9 +11,6 @@
 using namespace boost::tuples;
 
 
-#define TRACE std::cout << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << std::endl;
-
-
 typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
 typedef std::vector<StopwatchPtr> Stopwatches;
 Stopwatches mStopwatches;

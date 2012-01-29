@@ -26,15 +26,13 @@ void run()
 {
     UDPClient client("127.0.0.1", 9001);
 
-//    std::vector<std::string> names;
-//    names.push_back("a");
-//    names.push_back("b");
-//    names.push_back("c");
-
     std::vector<std::string> names;
+    names.push_back("a");
+    names.push_back("b");
+    names.push_back("c");
 
     std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<Stopwatch_Create>(names));
-    std::cout << "sw.size: " << sw.size();
+    std::cout << "sw.size: " << sw.size() << std::endl;
 }
 
 

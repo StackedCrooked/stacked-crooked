@@ -10,7 +10,7 @@ using boost::asio::ip::udp;
 //
 // Always returns the same io_service instance.
 //
-static boost::asio::io_service & get_io_service()
+boost::asio::io_service & get_io_service()
 {
     static boost::asio::io_service io;
     return io;

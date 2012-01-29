@@ -27,7 +27,6 @@ struct TestClient
         std::vector<RemoteStopwatch> rs2 = Batch<CreateStopwatch>(std::vector<std::string>(2, "ABC")).send();
         std::cout << rs2.size() << std::endl;
 
-
         std::cout << std::endl << "Testing Batch Commands (sync)" << std::endl;
         std::vector<std::string> names;
         names.push_back("Stopwatch_01");
@@ -58,6 +57,10 @@ struct TestClient
 
         std::vector<unsigned> stopped = Batch<StopStopwatch>(stopwatches).send();
         std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
+
+        std::cout << "Getting all stopwatches." << std::endl;
+        RemoteStopwatches remoteStopwatches = GetStopwatches(Void()).send();
+        std::cout << "There are " << remoteStopwatches.size() << " remote stopwatches." << std::endl;
     }
 
     void run()

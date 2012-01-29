@@ -6,6 +6,7 @@
 #include "Stopwatch.h"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <vector>
 
 
 struct RemoteStopwatch : public RemoteObject<Stopwatch>
@@ -31,6 +32,9 @@ struct RemoteStopwatch : public RemoteObject<Stopwatch>
 
     std::string mName;
 };
+
+
+typedef std::vector<RemoteStopwatch> RemoteStopwatches;
 
 
 #endif // RPC_REMOTEOBJECTS_H

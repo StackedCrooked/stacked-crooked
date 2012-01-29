@@ -80,6 +80,18 @@ RemoteStopwatch CreateStopwatch::execute(const std::string &arg)
 }
 
 
+RemoteStopwatches GetStopwatches::execute(const Void & )
+{
+    RemoteStopwatches result;
+    TestServer::Stopwatches sw = TestServer::Get().getStopwatches();
+    for (std::size_t idx = 0; idx < sw.size(); ++idx)
+    {
+        result.push_back(RemoteStopwatch(*sw[idx]));
+    }
+    return result;
+}
+
+
 Void StartStopwatch::execute(const RemoteStopwatch & arg)
 {
     getStopwatch(arg.id()).start();

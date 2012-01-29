@@ -26,10 +26,10 @@ void run()
 {
     UDPClient client("127.0.0.1", 9001);
 
-    RemoteStopwatch remoteStopwatch = send(client, Stopwatch_Create("Stopwatch_01"));
-    send(client, Stopwatch_Start(remoteStopwatch));
+    RemoteStopwatch remoteStopwatch = send(client, CreateServer("Stopwatch_01"));
+    send(client, StartStopwatch(remoteStopwatch));
     sleep(1);
-    std::cout << "Elapsed: " << send(client, Stopwatch_Stop(remoteStopwatch)) << std::endl;
+    std::cout << "Elapsed: " << send(client, StopStopwatch(remoteStopwatch)) << std::endl;
 
     std::cout << "Parallel testing" << std::endl;
 
@@ -39,15 +39,15 @@ void run()
     names.push_back("b");
     names.push_back("c");
 
-    std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<Stopwatch_Create>(names));
+    std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<CreateServer>(names));
     std::cout << "Created " << sw.size() << " stopwatches." << std::endl;
 
-    std::vector<Void> started = send(client, ParallelCommand<Stopwatch_Start>(sw));
+    std::vector<Void> started = send(client, ParallelCommand<StartStopwatch>(sw));
     std::cout << "Started " << started.size() << " stopwatches" << std::endl;
 
     std::cout << "Sleep for 1 second..." << std::endl;
 
-    std::vector<unsigned> el = send(client, ParallelCommand<Stopwatch_Elapsed>(sw));
+    std::vector<unsigned> el = send(client, ParallelCommand<CheckStopwatch>(sw));
     std::cout << "Checked: " << el.size() << " stopwatches" << std::endl;
 
     for (std::size_t idx = 0; idx < el.size(); ++idx)
@@ -55,7 +55,7 @@ void run()
         std::cout << "Elapsed time: " << el[idx] << std::endl;
     }
 
-    std::vector<unsigned> stopped = send(client, ParallelCommand<Stopwatch_Stop>(sw));
+    std::vector<unsigned> stopped = send(client, ParallelCommand<StopStopwatch>(sw));
     std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
 }
 

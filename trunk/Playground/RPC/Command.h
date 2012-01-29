@@ -94,7 +94,7 @@ private:
 //{
 //    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
 
-//    static const char * Name() { return "ChainedCommand"; }
+//    static std::string Name() { return "ChainedCommand"; }
 
 //    ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
 //};
@@ -108,7 +108,7 @@ struct ParallelCommand : public Base
 {
     typedef ParallelCommand<C, Arg, Ret> This;
 
-    static const char * Name() { return "ParallelCommand"; }
+    static std::string Name() { return "ParallelCommand<" + C::Name() + ">"; }
 
     ParallelCommand(const Arg & inArg) : Base(Name(), inArg) { }
 
@@ -142,7 +142,13 @@ inline Runners & GetRunners()
 template<typename C>
 inline void RegisterImpl()
 {
-    GetRunners().insert(std::make_pair(C::Name(), boost::bind(&CommandBase::Run<C>, _1)));
+    const std::string name = C::Name();
+    if (GetRunners().find(name) != GetRunners().end())
+    {
+        std::cout << "Already registered: " << name << std::endl;
+        throw std::runtime_error("Already registered: " + name);
+    }
+    GetRunners().insert(std::make_pair(name, boost::bind(&CommandBase::Run<C>, _1)));
 }
 
 

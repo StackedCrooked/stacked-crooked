@@ -4,13 +4,12 @@ COMPILE=g++ -c -Wall -Wextra -Werror -O0 -ggdb -isystem /opt/local/include
 LIBS=/opt/local/lib/libboost_system.a /opt/local/lib/libboost_serialization.a 
 
 all: server client
-	rm *.o
 
 server: Server.o Stopwatch.o Networking.o
-	g++ -o server Server.o Stopwatch.o Networking.o ${LIBS}
+	g++ -ggdb -o server Server.o Stopwatch.o Networking.o ${LIBS}
 
 client: Client.o Stopwatch.o Networking.o
-	g++ -o client Client.o Stopwatch.o Networking.o ${LIBS}
+	g++ -ggdb -o client Client.o Stopwatch.o Networking.o ${LIBS}
 
 Client.o: Client.cpp ${HEADERS}
 	${COMPILE} Client.cpp

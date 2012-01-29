@@ -8,7 +8,7 @@
 #if TARGET_IS_RPC_SERVER
 #define RPC_DECLARE_CALL(RET, NAME, ARG) \
     struct NAME : public ConcreteCommand<RET(ARG)> { \
-        static const char * Name() { return #NAME; } \
+        static std::string Name() { return #NAME; } \
         NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
         static std::string Run(const std::string & arg); \
         static RET Implement(const ARG & arg); \
@@ -28,7 +28,7 @@
 
 #define RPC_CALL(RET, NAME, ARG) \
     struct NAME : public ConcreteCommand<RET(ARG)> { \
-        static const char * Name() { return #NAME; } \
+        static std::string Name() { return #NAME; } \
         NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
     };
 
@@ -39,11 +39,11 @@
 // RPC_CALL: quickly define a new RPC call.
 // Order of parameters: Return type, name, arg type
 //
-RPC_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
-RPC_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
-RPC_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )
-RPC_CALL(unsigned,        Stopwatch_Stop    , RemoteStopwatch )
-RPC_CALL(Void,            Stopwatch_Destroy , RemoteStopwatch )
+RPC_CALL(RemoteStopwatch, CreateServer     , std::string     )
+RPC_CALL(Void,            StartStopwatch   , RemoteStopwatch )
+RPC_CALL(unsigned,        CheckStopwatch   , RemoteStopwatch )
+RPC_CALL(unsigned,        StopStopwatch    , RemoteStopwatch )
+RPC_CALL(Void,            DestroyStopwatch , RemoteStopwatch )
 
 
 #endif // RPC_COMMANDS_H

@@ -132,15 +132,17 @@ struct ParallelCommand : public Super
 
     ParallelCommand(const Arg & inArg) : Super(Name(), inArg) { }
 
+    typedef typename C::Arg A;
+    typedef typename C::Ret R;
+
 
 #if TARGET_IS_RPC_SERVER
-    static Ret Implement(const Arg & arg)
+    static std::vector<R> Implement(const std::vector<A> & arg)
     {
-        Ret result;
+        std::vector<R> result;
         for (std::size_t idx = 0; idx < arg.size(); ++idx)
         {
-            typename C::Ret ret = C::Implement(typename C::Arg(arg[idx]));
-            result.push_back(ret);
+            result.push_back(C::Implement(A(arg[idx])));
         }
         return result;
     }

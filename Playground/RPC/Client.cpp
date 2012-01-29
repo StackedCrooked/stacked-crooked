@@ -32,39 +32,24 @@ void run()
     names.push_back("c");
 
     std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<Stopwatch_Create>(names));
-    std::cout << "sw.size: " << sw.size() << std::endl;
+    std::cout << "Created " << sw.size() << " stopwatches." << std::endl;
+
+    std::vector<Void> started = send(client, ParallelCommand<Stopwatch_Start>(sw));
+    std::cout << "Started " << started.size() << " stopwatches" << std::endl;
+
+    std::cout << "Sleep for 1 second..." << std::endl;
+
+    std::vector<unsigned> el = send(client, ParallelCommand<Stopwatch_Elapsed>(sw));
+    std::cout << "Checked: " << el.size() << " stopwatches" << std::endl;
+
+    for (std::size_t idx = 0; idx < el.size(); ++idx)
+    {
+        std::cout << "Elapsed time: " << el[idx] << std::endl;
+    }
+
+    std::vector<unsigned> stopped = send(client, ParallelCommand<Stopwatch_Stop>(sw));
+    std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
 }
-
-
-//void run()
-//{
-//    UDPClient client("127.0.0.1", 9001);
-
-
-//    RemoteStopwatch s1 = send(client, Stopwatch_Create("Stopwatch_01"));
-//    std::cout << "Created " << s1.name() << std::endl;
-
-//    RemoteStopwatch s2 = send(client, Stopwatch_Create("Stopwatch_02"));
-//    std::cout << "Created " << s2.name() << std::endl;
-
-//    send(client, Stopwatch_Start(s1));
-//    std::cout << "Started " << s1.name() << std::endl;
-
-//    send(client, Stopwatch_Start(s2));
-//    std::cout << "Started " << s2.name() << std::endl;
-
-//    std::cout << "Sleep for 1 second..." << std::endl;
-//    sleep(1);
-
-//    std::cout << "Progress for " << s1.name() << ": " << send(client, Stopwatch_Elapsed(s1)) << "ms" << std::endl;
-//    std::cout << "Progress for " << s2.name() << ": " << send(client, Stopwatch_Elapsed(s2)) << "ms" << std::endl;
-
-//    send(client, Stopwatch_Stop(s1));
-//    std::cout << "Stopped " << s1.name() << std::endl;
-
-//    send(client, Stopwatch_Stop(s2));
-//    std::cout << "Stopped " << s2.name() << std::endl;
-//}
 
 
 int main()

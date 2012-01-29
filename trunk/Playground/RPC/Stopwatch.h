@@ -17,7 +17,7 @@ public:
 
     void start();
 
-    void stop();
+    unsigned stop();
 
     /// Reset and start the stopwatch.
     void restart();

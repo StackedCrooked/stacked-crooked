@@ -35,12 +35,13 @@ void Stopwatch::start()
 }
 
 
-void Stopwatch::stop()
+unsigned Stopwatch::stop()
 {
     if (mStop == 0)
     {
         mStop = GetCurrentTimeMs();
     }
+    return mStop;
 }
 
 

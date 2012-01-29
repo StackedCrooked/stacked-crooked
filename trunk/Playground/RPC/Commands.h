@@ -4,6 +4,7 @@
 
 #include "Command.h"
 #include "RemoteObjects.h"
+#include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
@@ -25,18 +26,47 @@ struct Void
 };
 
 
-#define RPC_DECLARE_CALL(NAME, SIGNATURE) \
-    struct NAME : public ConcreteCommand<SIGNATURE> { \
+typedef boost::function<std::string(const std::string)> Runner;
+typedef std::map<std::string, Runner> Runners;
+
+
+inline Runners & GetRunners()
+{
+    static Runners fRunners;
+    return fRunners;
+}
+
+
+template<typename Command>
+inline void Register()
+{
+    GetRunners().insert(std::make_pair(Command::Name(), boost::bind(&Command::Run, _1)));
+}
+
+
+#define RPC_DECLARE_CALL(RET, NAME, ARG) \
+    struct NAME : public ConcreteCommand<RET(ARG)> { \
         static const char * Name() { return #NAME; } \
         NAME(const Arg & inArgs) : Super(Name(), inArgs) { } \
-    }
+        static std::string Run(const std::string & arg); \
+        static RET Implement(const ARG & arg); \
+    };
 
 
-RPC_DECLARE_CALL(Stopwatch_Create  , RemoteStopwatch(std::string) );
-RPC_DECLARE_CALL(Stopwatch_Start   , Void(RemoteStopwatch)        );
-RPC_DECLARE_CALL(Stopwatch_Elapsed , unsigned(RemoteStopwatch)    );
-RPC_DECLARE_CALL(Stopwatch_Stop    , unsigned(RemoteStopwatch)    );
-RPC_DECLARE_CALL(Stopwatch_Destroy , Void(RemoteStopwatch)        );
+#define RPC_IMPLEMENT_CALL(RET, NAME, ARG) \
+    std::string NAME::Run(const std::string & arg_str) { \
+        ARG arg = deserialize<ARG>(arg_str); \
+        RET ret = NAME::Implement(arg); \
+        return serialize(ret); \
+    } \
+    struct Register##NAME { Register##NAME() { Register<NAME>(); } } gRegister##NAME;
+
+
+RPC_DECLARE_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
+RPC_DECLARE_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
+RPC_DECLARE_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )
+RPC_DECLARE_CALL(unsigned,        Stopwatch_Stop    , RemoteStopwatch )
+RPC_DECLARE_CALL(Void,            Stopwatch_Destroy , RemoteStopwatch )
 
 
 template<class C1, class C2,

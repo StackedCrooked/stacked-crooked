@@ -1,6 +1,5 @@
 ./Client.cpp
 ./Client.h
-./Commands.h
 ./Networking.cpp
 ./Networking.h
 ./RemoteCall.h

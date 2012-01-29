@@ -12,7 +12,15 @@ unsigned GetCurrentTimeMs()
 }
 
 
+static long GetNewId()
+{
+    static long id = 0;
+    return id++;
+}
+
+
 Stopwatch::Stopwatch(const std::string & inName) :
+    mId(GetNewId()),
     mName(inName),
     mStart(0),
     mStop(0)

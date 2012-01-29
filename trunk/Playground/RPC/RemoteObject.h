@@ -5,67 +5,34 @@
 #include <string>
 
 
-struct RemotePtr
-{
-    RemotePtr() : mValue(0) {}
-
-    RemotePtr(long inValue) : mValue(inValue) {}
-
-    template<typename T>
-    RemotePtr(T * ptr) : mValue(reinterpret_cast<long>(ptr)) {}
-
-    long value() const { return mValue; }
-
-    template<typename T>
-    T * cast() const { return reinterpret_cast<T*>(mValue); }
-
-    template<typename Archive>
-    void serialize(Archive & ar, const unsigned int)
-    {
-        ar & mValue;
-    }
-
-    long mValue;
-};
-
-
-inline bool operator<(const RemotePtr & lhs, const RemotePtr & rhs)
-{
-    return lhs.value() < rhs.value();
-}
-
-
 template<class LocalType>
 struct RemoteObject
 {
-    RemoteObject(RemotePtr inRemotePtr = RemotePtr()) :
-        mRemotePtr(inRemotePtr)
+    RemoteObject(long inId = 0) :
+        mId(inId)
     {
     }
 
     virtual ~RemoteObject() {}
 
-    LocalType * get() const
-    {
-        return mRemotePtr.cast<LocalType>();
-    }
+    long id() const { return mId; }
 
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
     {
-        ar & mClassName & mRemotePtr;
+        ar & mClassName & mId;
     }
 
 private:
     std::string mClassName;
-    RemotePtr mRemotePtr;
+    long mId;
 };
 
 
 template<class T>
 inline bool operator<(const RemoteObject<T> & lhs, const RemoteObject<T> & rhs)
 {
-    return lhs.remotePtr() < rhs.remotePtr();
+    return lhs.Id() < rhs.Id();
 }
 
 

@@ -16,6 +16,8 @@ public:
     /// Creates and starts the stopwatch.
     Stopwatch(const std::string & inName);
 
+    long id() const { return mId; }
+
     const std::string & name() const { return mName; }
 
     void start();
@@ -29,6 +31,7 @@ public:
     unsigned elapsedMs() const;
 
 private:
+    long mId;
     std::string mName;
     unsigned mStart;
     unsigned mStop;

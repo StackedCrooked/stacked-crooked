@@ -48,7 +48,6 @@ struct RPCServer::Impl
 
     std::string processRequest(const std::string & inName, const std::string & inArg)
     {
-        std::cout << "Finding callback for: " << inName << std::endl;
         Handlers::iterator it = GetHandlers().find(inName);
         if (it == GetHandlers().end())
         {

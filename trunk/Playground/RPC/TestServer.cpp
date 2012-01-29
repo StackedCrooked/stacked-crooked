@@ -2,56 +2,107 @@
 #include "RemoteCall.h"
 #include "Stopwatch.h"
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <utility>
 
 
-using namespace boost::tuples;
-typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
-typedef std::vector<StopwatchPtr> Stopwatches;
-Stopwatches mStopwatches;
+
+
+struct TestServer
+{
+public:
+    static TestServer & Get()
+    {
+        static TestServer fTestServer;
+        return fTestServer;
+    }
+
+    typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
+    typedef std::vector<StopwatchPtr> Stopwatches;
+
+    Stopwatch & addStopwatch(const std::string & inName)
+    {
+        mStopwatches.push_back(StopwatchPtr(new Stopwatch(inName)));
+        return *mStopwatches.back();
+    }
+
+    static long GetId(const StopwatchPtr & ptr)
+    {
+        return ptr->id();
+    }
+
+    void removeStopwatch(long id)
+    {
+        mStopwatches.erase(std::remove_if(mStopwatches.begin(), mStopwatches.end(), boost::bind(&TestServer::GetId, _1) == id));
+    }
+
+
+
+    Stopwatches getStopwatches()
+    {
+        return mStopwatches;
+    }
+
+    Stopwatch & getStopwatchById(long id)
+    {
+        for (std::size_t idx = 0; idx < mStopwatches.size(); ++idx)
+        {
+            Stopwatch & sw = *mStopwatches[idx];
+            if (sw.id() == id)
+            {
+                return sw;
+            }
+        }
+        throw std::runtime_error("Stopwatch with id " + boost::lexical_cast<std::string>(id) + " was not found.");
+    }
+
+private:
+    Stopwatches mStopwatches;
+};
+
+
+namespace {
+
+Stopwatch & getStopwatch(long inId)
+{
+    return TestServer::Get().getStopwatchById(inId);
+}
+
+}
 
 
 RemoteStopwatch CreateStopwatch::execute(const std::string &arg)
 {
-    TRACE
-    mStopwatches.push_back(StopwatchPtr(new Stopwatch(arg)));
-    return RemoteStopwatch(*mStopwatches.back());
+    return RemoteStopwatch(TestServer::Get().addStopwatch(arg));
 }
 
 
 Void StartStopwatch::execute(const RemoteStopwatch & arg)
 {
-    TRACE
-    arg.get()->start();
+    getStopwatch(arg.id()).start();
     return Void();
 }
 
 
 unsigned StopStopwatch::execute(const RemoteStopwatch & arg)
 {
-    TRACE
-    unsigned res = arg.get()->stop();
-    std::cout << "Elapsed on stop: " << res << std::endl;
-    return res;
-
+    return getStopwatch(arg.id()).stop();
 }
 
 
 unsigned CheckStopwatch::execute(const RemoteStopwatch &arg)
 {
-    TRACE
-    std::cout << "Elapsed on check: " << arg.get()->elapsedMs() << std::endl;
-    return arg.get()->elapsedMs();
+    return getStopwatch(arg.id()).elapsedMs();
 }
 
 
-Void DestroyStopwatch::execute(const RemoteStopwatch &)
+Void DestroyStopwatch::execute(const RemoteStopwatch & arg)
 {
-    TRACE
-    return Void(); // TODO: implement
+    TestServer::Get().removeStopwatch(arg.id());
+    return Void();
 }
 
 

@@ -22,36 +22,51 @@ typename Command::Ret send(UDPClient & client, const Command & command)
     }
 }
 
-
 void run()
 {
     UDPClient client("127.0.0.1", 9001);
 
+//    std::vector<std::string> names;
+//    names.push_back("a");
+//    names.push_back("b");
+//    names.push_back("c");
 
-    RemoteStopwatch s1 = send(client, Stopwatch_Create("Stopwatch_01"));
-    std::cout << "Created " << s1.name() << std::endl;
+    std::vector<std::string> names;
 
-    RemoteStopwatch s2 = send(client, Stopwatch_Create("Stopwatch_02"));
-    std::cout << "Created " << s2.name() << std::endl;
-
-    send(client, Stopwatch_Start(s1));
-    std::cout << "Started " << s1.name() << std::endl;
-
-    send(client, Stopwatch_Start(s2));
-    std::cout << "Started " << s2.name() << std::endl;
-
-    std::cout << "Sleep for 1 second..." << std::endl;
-    sleep(1);
-
-    std::cout << "Progress for " << s1.name() << ": " << send(client, Stopwatch_Elapsed(s1)) << "ms" << std::endl;
-    std::cout << "Progress for " << s2.name() << ": " << send(client, Stopwatch_Elapsed(s2)) << "ms" << std::endl;
-
-    send(client, Stopwatch_Stop(s1));
-    std::cout << "Stopped " << s1.name() << std::endl;
-
-    send(client, Stopwatch_Stop(s2));
-    std::cout << "Stopped " << s2.name() << std::endl;
+    std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<Stopwatch_Create>(names));
+    std::cout << "sw.size: " << sw.size();
 }
+
+
+//void run()
+//{
+//    UDPClient client("127.0.0.1", 9001);
+
+
+//    RemoteStopwatch s1 = send(client, Stopwatch_Create("Stopwatch_01"));
+//    std::cout << "Created " << s1.name() << std::endl;
+
+//    RemoteStopwatch s2 = send(client, Stopwatch_Create("Stopwatch_02"));
+//    std::cout << "Created " << s2.name() << std::endl;
+
+//    send(client, Stopwatch_Start(s1));
+//    std::cout << "Started " << s1.name() << std::endl;
+
+//    send(client, Stopwatch_Start(s2));
+//    std::cout << "Started " << s2.name() << std::endl;
+
+//    std::cout << "Sleep for 1 second..." << std::endl;
+//    sleep(1);
+
+//    std::cout << "Progress for " << s1.name() << ": " << send(client, Stopwatch_Elapsed(s1)) << "ms" << std::endl;
+//    std::cout << "Progress for " << s2.name() << ": " << send(client, Stopwatch_Elapsed(s2)) << "ms" << std::endl;
+
+//    send(client, Stopwatch_Stop(s1));
+//    std::cout << "Stopped " << s1.name() << std::endl;
+
+//    send(client, Stopwatch_Stop(s2));
+//    std::cout << "Stopped " << s2.name() << std::endl;
+//}
 
 
 int main()

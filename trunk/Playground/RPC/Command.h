@@ -57,10 +57,7 @@ inline Runners & GetRunners()
 
 
 template<typename Command>
-inline void Register()
-{
-    GetRunners().insert(std::make_pair(Command::Name(), boost::bind(&Command::Run, _1)));
-}
+void Register();
 
 
 typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
@@ -127,37 +124,96 @@ struct ChainedCommand : public ConcreteCommand<C2Ret(C1Arg)>
 };
 
 
-template<typename C>
-struct ParallelCommand : public ConcreteCommand<std::vector<typename C::Ret>(std::vector<typename C::Arg>)>
+template<typename C,
+         typename Arg_ = std::vector<typename C::Arg>,
+         typename Ret_ = std::vector<typename C::Ret> >
+struct ParallelCommand : public ConcreteCommand<Ret_(Arg_)>
 {
+    typedef Arg_ Arg;
+    typedef Ret_ Ret;
+    typedef ConcreteCommand<Ret(Arg)> Super;
+    typedef ParallelCommand<C, Arg, Ret> This;
 
-    typedef std::vector<typename C::Ret> Results;
-    typedef std::vector<typename C::Arg> Args;
-    typedef ConcreteCommand<std::vector<typename C::Ret>(std::vector<typename C::Arg>)> Super;
-    typedef typename Super::Arg Arg;
-    typedef typename Super::Ret Ret;
-
-    static const char * Name() { return "ParallelCommand"; }
-    ParallelCommand(const Arg & inArg) : Super(Name(), inArg) { }
-    static std::string Run(const std::string & arg) {
-        return serialize(Implement(deserialize<Arg>(arg)));
+    static const char * Name()
+    {
+        return "ParallelCommand";
     }
-    static Ret Implement(const Arg & arg);
 
-
+#if TARGET_IS_RPC_SERVER
     struct Registrator
     {
         Registrator()
         {
-            GetRunners().insert(std::make_pair(Name(), boost::bind(&Run, _1)));
+            std::cout << "Registrator for " << typeid(This).name() << std::endl;
+            Register<This>();
+        }
+
+        void ping()
+        {
+            std::cout << "Registrator ping: " << typeid(This).name() << std::endl;
         }
     };
+
     static Registrator sRegistrator;
+#endif
+
+    ParallelCommand(const Arg & inArg) :
+        Super(Name(), inArg)
+    {
+        std::cout << "ParallelCommand constructor: " << typeid(This).name() << std::endl;
+#if TARGET_IS_RPC_SERVER
+        sRegistrator.ping();
+#endif
+    }
+
+
+#if TARGET_IS_RPC_SERVER
+    static Ret Implement(const Arg & arg)
+    {
+        Ret result;
+        for (std::size_t idx = 0; idx < arg.size(); ++idx)
+        {
+            typename C::Ret ret = C::Implement(typename C::Arg(arg[idx]));
+            result.push_back(ret);
+        }
+        return result;
+    }
+
+    static std::string Run(const std::string & argString)
+    {
+        Arg arg = deserialize<Arg>(argString);
+        Ret ret = This::Implement(arg);
+        return serialize(ret);
+    }
+#else
+    static Ret Implement(const Arg & arg);
+    static std::string Run(const std::string & argString);
+#endif
 };
 
 
-template<typename C>
-typename ParallelCommand<C>::Registrator ParallelCommand<C>::sRegistrator;
+#if TARGET_IS_RPC_SERVER
+template<typename C, typename Arg, typename Ret>
+typename ParallelCommand<C, Arg, Ret>::Registrator ParallelCommand<C, Arg, Ret>::sRegistrator;
+#endif
+
+
+template<typename Command>
+void RegisterImpl();
+
+template<typename Command>
+void Register()
+{
+    RegisterImpl<Command>();
+    RegisterImpl< ParallelCommand<Command> >();
+}
+
+template<typename Command>
+inline void RegisterImpl()
+{
+    std::cout << "Register " << Command::Name() << std::endl;
+    GetRunners().insert(std::make_pair(Command::Name(), boost::bind(&Command::Run, _1)));
+}
 
 
 #endif // RPC_COMMAND_H

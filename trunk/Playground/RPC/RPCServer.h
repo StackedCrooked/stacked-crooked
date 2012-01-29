@@ -31,7 +31,7 @@ public:
     // Maps the function name to it's implementation.
     // Type erasure occurs here.
     template<typename Command>
-    void registerCommand()
+    static void registerCommand()
     {
         addHandler(Command::Name(), boost::bind(&RPCServer::process<Command>, _1));
     }
@@ -50,7 +50,7 @@ private:
     typedef boost::function<std::string(const std::string &)> Handler;
     typedef std::map<std::string, Handler> Handlers;
 
-    void addHandler(const std::string & inName, const Handler & inHandler);
+    static void addHandler(const std::string & inName, const Handler & inHandler);
 
     struct Impl;
     boost::scoped_ptr<Impl> mImpl;

@@ -8,13 +8,6 @@
 #include <utility>
 
 
-RPCServer & GetRPCServer()
-{
-    static RPCServer fInstance;
-    return fInstance;
-}
-
-
 using namespace boost::tuples;
 typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
 typedef std::vector<StopwatchPtr> Stopwatches;
@@ -65,7 +58,7 @@ Void DestroyStopwatch::execute(const RemoteStopwatch &)
 template<typename C>
 void Register()
 {
-    GetRPCServer().registerCommand<C>();
+    RPCServer::registerCommand<C>();
 }
 
 
@@ -73,9 +66,10 @@ int main()
 {
     try
     {
+        RPCServer server;
         const unsigned cPort = 9001;
         std::cout << "Listening to port " << cPort << std::endl;
-        GetRPCServer().listen(cPort);
+        server.listen(cPort);
     }
     catch (const std::exception & exc)
     {

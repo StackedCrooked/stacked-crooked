@@ -6,10 +6,6 @@
 #include "Serialization.h"
 
 
-using boost::tuples::tuple;
-typedef std::string Name;
-
-
 struct Void
 {
     template<class Archive>
@@ -70,6 +66,7 @@ RPC_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
 RPC_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
 RPC_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )
 RPC_CALL(unsigned,        Stopwatch_Stop    , RemoteStopwatch )
+RPC_CALL(Void,            Stopwatch_Restart , RemoteStopwatch )
 RPC_CALL(Void,            Stopwatch_Destroy , RemoteStopwatch )
 
 

@@ -5,7 +5,6 @@
 ./RemoteCall.h
 ./RemoteObject.h
 ./RemoteObjects.h
-./RemotePtr.h
 ./RPCServer.cpp
 ./RPCServer.h
 ./Serialization.cpp

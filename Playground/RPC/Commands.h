@@ -10,10 +10,20 @@
  *
  * Defines a new Remote Procedure Call.
  *
- * The "RPC_CALL" macro has three parameters:
- * 1. return value.
- * 2. procedure name (internally used as an id )
- * 3. parameter. only one is allowed.
+ * The "RPC_CALL" macro takes two arguments: the function name and signature.
+ * A simple integer increment function could be defined and used as follows:
+ *
+ *   // Declare (required for both client and server)
+ *   RPC_CALL(Increment, int(int))
+ *
+ *   // Implemement (only required for server)
+ *   int Increment::Implement(int value)
+ *   {
+ *       return value + 1;
+ *   }
+ *
+ *   // Usage (only available for client code)
+ *   int result = Increment(3).send();
  *
  * Serialization and de-serialization for the return and parameter values is
  * taken care of under the hood. It works out-of-the box for builtin types,
@@ -24,17 +34,14 @@
  *
  * Multiple parameters can be passed if bundled in a tuple or standard container.
  * Passing a struct requires you to take care of serialization.
- * A nice solution is to use a typedef to a tuple object.
- *
- *
- * USAGE EXAMPLE: RPC call for multiplying two doubles
+ * A nice solution is to use a typedef to a tuple object. For example:
  *
  * // Define the parameter type: bundle the two arguments in tuple.
  * typedef tuple<double, double> two_doubles;
  *
  * // Define the RPC call. You can think of it as a function signature:
  * // double Multiply(double, double);
- * RPC_CALL(double, Multiply, two_doubles);
+ * RPC_CALL(Multiply, double(two_doubles));
  *
  * // The macro generated a declaration to the Multiply::Implement method.
  * // It's up to you to write the implementation. (If you don't do this then

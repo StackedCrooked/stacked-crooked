@@ -1,6 +1,6 @@
 #include "RemoteCall.h"
-#include "Asio.h"
 #include "RemoteObjects.h"
+#include "TCPClient.h"
 #include <iostream>
 #include <sstream>
 #include <utility>
@@ -69,8 +69,8 @@ struct TestClient
 
     void run()
     {
-        UDPClient client("127.0.0.1", 9001);
-        Redirector dest(boost::bind(&UDPClient::send, &client, _1));
+        TCPClient client("127.0.0.1", 9001);
+        Redirector dest(boost::bind(&TCPClient::send, &client, _1));
         testSingle();
         testBatch();
     }

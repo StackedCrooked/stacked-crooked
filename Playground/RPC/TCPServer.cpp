@@ -137,4 +137,5 @@ TCPServer::~TCPServer()
 void TCPServer::listen(short inPort, const Handler & inHandler)
 {
     mImpl->listen(inPort, inHandler);
+    get_io_service().run();
 }

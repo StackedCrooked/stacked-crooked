@@ -78,6 +78,20 @@ namespace serialization {
 
 
 template<typename Archive, typename T0>
+void serialize(Archive & ar, std::pair<T0, T0> & t, const unsigned int)
+{
+    ar & t.first & t.second;
+}
+
+
+template<typename Archive, typename T0, typename T1>
+void serialize(Archive & ar, std::pair<T0, T1> & t, const unsigned int)
+{
+    ar & t.first & t.second;
+}
+
+
+template<typename Archive, typename T0>
 void serialize(Archive & ar, tuple<T0> & t, const unsigned int)
 {
     ar & get<0>(t);

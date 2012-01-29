@@ -15,6 +15,7 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include <utility>
 
 
 #if ENABLE_TRACE
@@ -168,28 +169,28 @@ struct Batch;
  *
  *     RPC_CALL(Name, Signature)
  *
- * The signature always contains a return value and exactly one argument.
- * If you wan't multiple arguments you can use a struct, tuple or vector.
- * If want to return `void` then you can `return Void();`.
+ * The signature consists of a return value and one argument.
+ * If you want multiple arguments you can use a container, tuple of struct.
+ * You can emulate void with Void.
  *
- * A simple `Add` function for adding two numbers could be defined as:
+ * Here's a simple RPC call for adding two numbers:
  *
- *     // Declare call with a name and signature.
- *     RPC_CALL(Add, int(pair<int, int>)
+ *     RPC_CALL(Add, int(pair<int, int>))
  *
- * A helper class with the given name is generated.
- * You need to provide an implementation for its `execute` method:
+ * A class called Add is generated and is missing the implementation for the
+ * execute() method. We have to provide the implementation:
  *
  *     int Add::execute(const pair<int, int> & value)
  *     {
  *         return value.first + value.second;
  *     }
  *
- * You can now use it as follows:
+ * That's it. Now we can try it out:
  *
  *     int seven = Add(make_pair(3, 4)).send();
  *
- * There is also the `Batch` utility that allows to apply same method on multiple values:
+ * There is also the Batch template which enables us to apply same method on
+ * a vector of objects:
  *
  *     std::vector<pair<int, int> > pairs = ...;
  *     std::vector<int> sums = Batch<Add>(pairs).send();
@@ -204,6 +205,14 @@ RPC_CALL(StartStopwatch,   Void(RemoteStopwatch)        )
 RPC_CALL(CheckStopwatch,   unsigned(RemoteStopwatch)    )
 RPC_CALL(StopStopwatch,    unsigned(RemoteStopwatch)    )
 RPC_CALL(DestroyStopwatch, Void(RemoteStopwatch)        )
+
+// Sample
+RPC_CALL(Add, int(std::pair<int, int>))
+
+inline int Add::execute(const std::pair<int, int> & arg)
+{
+    return arg.first + arg.second;
+}
 
 
 #endif // RPC_COMMAND_H

@@ -5,7 +5,6 @@
 #include "Client.h"
 #include "RemoteObjects.h"
 #include "Serialization.h"
-#include "TupleSupport.h"
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/static_assert.hpp>

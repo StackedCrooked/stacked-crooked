@@ -52,7 +52,7 @@ struct TestClient
             {
                 std::cout << ", ";
             }
-            std::std::cout << el[idx];
+            std::cout << el[idx];
         }
         std::cout << std::endl;
 

@@ -7,7 +7,6 @@
 ./RemoteObjects.h
 ./RPCServer.cpp
 ./RPCServer.h
-./Serialization.cpp
 ./Serialization.h
 ./Server.cpp
 ./Stopwatch.cpp

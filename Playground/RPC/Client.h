@@ -50,7 +50,14 @@ public:
 
     static bool Empty() { return GetDestinations().empty(); }
 
-    static Redirector & Get() { return *GetDestinations().back(); }
+    static Redirector & Get()
+    {
+        if (Empty())
+        {
+            throw std::runtime_error("No Redirectors.");
+        }
+        return *GetDestinations().back();
+    }
 
     template<typename Command>
     typename Command::Ret send(const Command & command)

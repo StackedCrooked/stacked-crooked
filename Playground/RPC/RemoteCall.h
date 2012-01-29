@@ -57,10 +57,6 @@ struct RemoteCall
     #if RPC_CLIENT
     Ret send()
     {
-        if (Redirector::Empty())
-        {
-            throw std::runtime_error("No default destination configured.");
-        }
         return Redirector::Get().send(*this);
     }
     #endif // RPC_CLIENT

@@ -11,32 +11,25 @@
     struct NAME : public ConcreteCommand<RET(ARG)> { \
         static std::string Name() { return #NAME; } \
         NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
-        static std::string Run(const std::string & arg); \
         static RET Implement(const ARG & arg); \
     };
 
-#define RPC_IMPLEMENT_CALL(RET, NAME, ARG) \
-    std::string NAME::Run(const std::string & arg_str) { \
-        TRACE \
-        return serialize(NAME::Implement(deserialize<ARG>(arg_str))); \
-    } \
-    struct Register##NAME { Register##NAME() { Register<NAME>(); } } gRegister##NAME;
+#define RPC_COMMAND_REGISTER(NAME) \
+    struct NAME##Registrator { NAME##Registrator() { Register<NAME>(); } } g##NAME##Registrator;
 
 #define RPC_BATCH_CALL(NAME, ARG) \
     template<> \
     struct Batch<NAME> : public BatchCommand<NAME> { \
-        Batch(const std::vector<ARG> & args) : \
-            BatchCommand<NAME>(args) { } \
+        Batch(const std::vector<ARG> & args) : BatchCommand<NAME>(args) { } \
     }; \
     struct Batch##NAME##Registrator { \
-        Batch##NAME##Registrator() { \
-            Register< Batch<NAME> >(); \
-        } \
-    } g##Batch##NAME##Registrator;
+        Batch##NAME##Registrator() { Register< Batch<NAME> >(); } \
+    }; \
+    static Batch##NAME##Registrator g##Batch##NAME##Registrator;
 
 #define RPC_CALL(R, N, A) \
     RPC_DECLARE_CALL(R, N, A) \
-    RPC_IMPLEMENT_CALL(R, N, A) \
+    RPC_COMMAND_REGISTER(N) \
     RPC_BATCH_CALL(N, A)
 
 #else

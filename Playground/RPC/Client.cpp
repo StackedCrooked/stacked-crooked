@@ -27,7 +27,6 @@ void run()
 {
     UDPClient client("127.0.0.1", 9001);
 
-
     RemoteStopwatch s1 = send(client, Stopwatch_Create("Stopwatch_01"));
     std::cout << "Created " << s1.name() << std::endl;
 
@@ -49,7 +48,7 @@ void run()
     send(client, Stopwatch_Stop(s1));
     std::cout << "Stopped " << s1.name() << std::endl;
 
-    send(client, Stopwatch_Stop(s2));
+    send(client, Stopwatch_Restart(s2));
     std::cout << "Stopped " << s2.name() << std::endl;
 }
 

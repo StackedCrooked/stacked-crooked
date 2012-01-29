@@ -8,12 +8,27 @@
 #include <utility>
 
 
-using namespace boost::tuples;
-
+typedef std::set<long> RemotePointers;
+RemotePointers mRemotePointers;
 
 typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
 typedef std::vector<StopwatchPtr> Stopwatches;
 Stopwatches mStopwatches;
+
+
+
+template<typename T>
+T & get(const RemoteObject<T> & remote)
+{
+    RemotePtr ptr = remote.mRemotePtr;
+    RemotePointers::const_iterator it = mRemotePointers.find(ptr.mValue);
+    if (it == mRemotePointers.end())
+    {
+        throw std::runtime_error("Remote object no longer exists.");
+    }
+    long value = *it;
+    return *reinterpret_cast<T*>(value);
+}
 
 
 RemoteStopwatch Stopwatch_Create::Implement(const std::string &arg)
@@ -25,20 +40,27 @@ RemoteStopwatch Stopwatch_Create::Implement(const std::string &arg)
 
 Void Stopwatch_Start::Implement(const RemoteStopwatch & arg)
 {
-    arg.get()->start();
+    get(arg).start();
     return Void();
 }
 
 
 unsigned Stopwatch_Stop::Implement(const RemoteStopwatch & arg)
 {
-    return arg.get()->stop();
+    return get(arg).stop();
+}
+
+
+Void Stopwatch_Restart::Implement(const RemoteStopwatch &arg)
+{
+    get(arg).restart();
+    return Void();
 }
 
 
 unsigned Stopwatch_Elapsed::Implement(const RemoteStopwatch &arg)
 {
-    return arg.get()->elapsedMs();
+    return get(arg).elapsedMs();
 }
 
 
@@ -46,6 +68,7 @@ Void Stopwatch_Destroy::Implement(const RemoteStopwatch &)
 {
     return Void(); // TODO: implement
 }
+
 
 struct RPCServer
 {
@@ -85,8 +108,6 @@ struct RPCServer
 private:
     UDPServer mUDPServer;
 };
-
-
 
 
 int main()

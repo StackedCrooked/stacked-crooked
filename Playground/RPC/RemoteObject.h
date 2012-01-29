@@ -16,11 +16,6 @@ struct RemoteObject
 
     virtual ~RemoteObject() {}
 
-    LocalType * get() const
-    {
-        return mRemotePtr.cast<LocalType>();
-    }
-
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
     {

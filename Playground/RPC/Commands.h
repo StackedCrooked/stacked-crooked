@@ -52,7 +52,7 @@ inline void Register()
         static RET Implement(const ARG & arg); \
     };
 
-
+#if TARGET_IS_RPC_SERVER
 #define RPC_IMPLEMENT_CALL(RET, NAME, ARG) \
     std::string NAME::Run(const std::string & arg_str) { \
         ARG arg = deserialize<ARG>(arg_str); \
@@ -60,13 +60,24 @@ inline void Register()
         return serialize(ret); \
     } \
     struct Register##NAME { Register##NAME() { Register<NAME>(); } } gRegister##NAME;
+#endif
 
 
-RPC_DECLARE_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
-RPC_DECLARE_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
-RPC_DECLARE_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )
-RPC_DECLARE_CALL(unsigned,        Stopwatch_Stop    , RemoteStopwatch )
-RPC_DECLARE_CALL(Void,            Stopwatch_Destroy , RemoteStopwatch )
+#if TARGET_IS_RPC_SERVER
+#define RPC_CALL(RET, NAME, ARG) \
+    RPC_DECLARE_CALL(RET, NAME, ARG) \
+    RPC_IMPLEMENT_CALL(RET, NAME, ARG)
+#else
+#define RPC_CALL(RET, NAME, ARG) \
+    RPC_DECLARE_CALL(RET, NAME, ARG)
+#endif
+
+
+RPC_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
+RPC_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
+RPC_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )
+RPC_CALL(unsigned,        Stopwatch_Stop    , RemoteStopwatch )
+RPC_CALL(Void,            Stopwatch_Destroy , RemoteStopwatch )
 
 
 template<class C1, class C2,

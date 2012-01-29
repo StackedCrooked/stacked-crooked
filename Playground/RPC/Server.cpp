@@ -16,12 +16,6 @@ typedef std::vector<StopwatchPtr> Stopwatches;
 Stopwatches mStopwatches;
 
 
-RPC_IMPLEMENT_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
-RPC_IMPLEMENT_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
-RPC_IMPLEMENT_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )
-RPC_IMPLEMENT_CALL(unsigned,        Stopwatch_Stop    , RemoteStopwatch )
-RPC_IMPLEMENT_CALL(Void,            Stopwatch_Destroy , RemoteStopwatch )
-
 RemoteStopwatch Stopwatch_Create::Implement(const std::string &arg)
 {
     mStopwatches.push_back(StopwatchPtr(new Stopwatch(arg)));

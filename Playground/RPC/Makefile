@@ -15,7 +15,7 @@ Client.o: Client.cpp ${HEADERS}
 	${COMPILE} Client.cpp
  
 Server.o: Server.cpp ${HEADERS}
-	${COMPILE} Server.cpp
+	${COMPILE} -DTARGET_IS_RPC_SERVER Server.cpp
 
 Stopwatch.o: Stopwatch.cpp ${HEADERS}
 	${COMPILE} Stopwatch.cpp

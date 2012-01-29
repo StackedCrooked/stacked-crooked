@@ -155,6 +155,11 @@ protected:
     BatchCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
+
+template<typename C>
+struct Batch;
+
+
 #if TARGET_IS_RPC_SERVER
 typedef boost::function<std::string(const std::string)> Runner;
 typedef std::map<std::string, Runner> Runners;

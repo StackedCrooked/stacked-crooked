@@ -23,15 +23,16 @@
     struct Register##NAME { Register##NAME() { Register<NAME>(); } } gRegister##NAME;
 
 #define RPC_BATCH_CALL(NAME, ARG) \
-    struct NAME##Batch : public BatchCommand<NAME> { \
-        NAME##Batch(const std::vector<ARG> & args) : \
+    template<> \
+    struct Batch<NAME> : public BatchCommand<NAME> { \
+        Batch(const std::vector<ARG> & args) : \
             BatchCommand<NAME>(args) { } \
     }; \
-    struct NAME##Batch##Registrator { \
-        NAME##Batch##Registrator() { \
-            Register<NAME##Batch>(); \
+    struct Batch##NAME##Registrator { \
+        Batch##NAME##Registrator() { \
+            Register< Batch<NAME> >(); \
         } \
-    } g##NAME##Batch##Registrator;
+    } g##Batch##NAME##Registrator;
 
 #define RPC_CALL(R, N, A) \
     RPC_DECLARE_CALL(R, N, A) \
@@ -41,8 +42,9 @@
 #else
 
 #define RPC_BATCH_CALL(NAME, ARG) \
-    struct NAME##Batch : public BatchCommand<NAME> { \
-        NAME##Batch(const std::vector<ARG> & args) : \
+    template<> \
+    struct Batch<NAME> : public BatchCommand<NAME> { \
+        Batch(const std::vector<ARG> & args) : \
             BatchCommand<NAME>(args) { } \
     };
 

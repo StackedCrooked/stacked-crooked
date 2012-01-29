@@ -5,6 +5,7 @@
 #include "Command.h"
 
 
+#if TARGET_IS_RPC_SERVER
 #define RPC_DECLARE_CALL(RET, NAME, ARG) \
     struct NAME : public ConcreteCommand<RET(ARG)> { \
         static const char * Name() { return #NAME; } \
@@ -13,25 +14,31 @@
         static RET Implement(const ARG & arg); \
     };
 
-#if TARGET_IS_RPC_SERVER
 #define RPC_IMPLEMENT_CALL(RET, NAME, ARG) \
     std::string NAME::Run(const std::string & arg_str) { \
         return serialize(NAME::Implement(deserialize<ARG>(arg_str))); \
     } \
     struct Register##NAME { Register##NAME() { Register<NAME>(); } } gRegister##NAME;
-#endif
 
+#define RPC_CALL(R, N, A) \
+    RPC_DECLARE_CALL(R, N, A) \
+    RPC_IMPLEMENT_CALL(R, N, A)
 
-#if TARGET_IS_RPC_SERVER
+#else // TARGET_IS_RPC_SERVER
+
 #define RPC_CALL(RET, NAME, ARG) \
-    RPC_DECLARE_CALL(RET, NAME, ARG) \
-    RPC_IMPLEMENT_CALL(RET, NAME, ARG)
-#else
-#define RPC_CALL(RET, NAME, ARG) \
-    RPC_DECLARE_CALL(RET, NAME, ARG)
-#endif
+    struct NAME : public ConcreteCommand<RET(ARG)> { \
+        static const char * Name() { return #NAME; } \
+        NAME(const Arg & inArgs) : Super(Name(), inArgs) { } \
+    };
+
+#endif // TARGET_IS_RPC_SERVER
 
 
+//
+// RPC_CALL: quickly define a new RPC call.
+// Order of parameters: Return type, name, arg type
+//
 RPC_CALL(RemoteStopwatch, Stopwatch_Create  , std::string     )
 RPC_CALL(Void,            Stopwatch_Start   , RemoteStopwatch )
 RPC_CALL(unsigned,        Stopwatch_Elapsed , RemoteStopwatch )

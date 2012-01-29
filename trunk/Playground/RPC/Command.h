@@ -154,8 +154,8 @@ struct ParallelCommand : public Super
         return serialize(ret);
     }
 #else
-    static Ret Implement(const Arg & arg);
-    static std::string Run(const std::string & argString);
+    //static Ret Implement(const Arg & arg);
+    //static std::string Run(const std::string & argString);
 #endif
 };
 

@@ -13,6 +13,9 @@ client: Client.o Stopwatch.o Networking.o Command.o
 
 Client.o: Client.cpp ${HEADERS}
 	${COMPILE} -DRPC_CLIENT Client.cpp
+
+Command.o: Command.cpp ${HEADERS}
+	${COMPILE} Command.cpp
  
 Server.o: Server.cpp ${HEADERS}
 	${COMPILE} -DRPC_SERVER Server.cpp
@@ -22,3 +25,6 @@ Stopwatch.o: Stopwatch.cpp ${HEADERS}
 
 Networking.o: Networking.cpp ${HEADERS}
 	${COMPILE} Networking.cpp
+
+RPCServer.o: RPCServer.cpp ${HEADERS}
+	${COMPILE} RPCServer.cpp

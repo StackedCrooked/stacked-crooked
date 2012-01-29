@@ -20,17 +20,6 @@
 #define TRACE std::cout << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << std::endl;
 
 
-struct Void
-{
-    template<class Archive>
-    void serialize(Archive & , const unsigned int) { }
-};
-
-
-typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
-typedef boost::tuples::tuple<bool, std::string> RetOrError;
-
-
 template<typename Signature>
 struct Decompose;
 
@@ -44,20 +33,36 @@ struct Decompose<Ret_(Arg_)>
 
 
 #if RPC_CLIENT
-// Create an object on the stack in the main function of the client app.
-struct Destination : boost::noncopyable
+/**
+ * Redirector redirects the RPC calls.
+ *
+ * Simply allocate a Redirector object on the stack and it will redirect calls
+ * for the duration of its lifetime.
+ *
+ * You need to create at least one Redirector object in order to direct the
+ * data to it's original location.
+ *
+ * For example to direct the output to an UDPClient object:
+ *
+ *  {
+ *     UDPClient client("127.0.0.1", 9001);
+ *     Redirector dest(boost::bind(&UDPClient::send, &client, _1));
+ *     // ...
+ *  }
+ */
+struct Redirector : boost::noncopyable
 {
 public:
     typedef boost::function<std::string(const std::string &)> Handler;
 
     static bool IsSet()
     {
-        return !sDestinations.empty();
+        return !GetDestinations().empty();
     }
 
-    static Destination & Get()
+    static Redirector & Get()
     {
-        return *sDestinations.back();
+        return *GetDestinations().back();
     }
 
     template<typename Command>
@@ -75,20 +80,26 @@ public:
         }
     }
 
-    Destination(const Handler & inHandler) :
+    Redirector(const Handler & inHandler) :
         mHandler(inHandler)
     {
-        sDestinations.push_back(this);
+        GetDestinations().push_back(this);
     }
 
-    ~Destination()
+    ~Redirector()
     {
-        sDestinations.pop_back();
+        GetDestinations().pop_back();
     }
 
 private:
+    typedef std::vector<Redirector*> Destinations;
+    static Destinations & GetDestinations()
+    {
+        static Destinations fDestinations;
+        return fDestinations;
+    }
+
     Handler mHandler;
-    static std::vector<Destination*> sDestinations;
 };
 #endif // RPC_CLIENT
 
@@ -127,12 +138,12 @@ struct ConcreteCommand : public CommandBase
 #if RPC_CLIENT
     Ret send()
     {
-        if (!Destination::IsSet())
+        if (!Redirector::IsSet())
         {
             throw std::runtime_error("No default destination configured.");
         }
 
-        return Destination::Get().send(*this);
+        return Redirector::Get().send(*this);
     }
 #endif // RPC_CLIENT
 
@@ -142,11 +153,13 @@ private:
 
 
 template<typename C,
-         typename Arg = std::vector<typename C::Arg>,
-         typename Ret = std::vector<typename C::Ret>,
-         typename Base = ConcreteCommand<Ret(Arg)> >
+         typename Arg_ = std::vector<typename C::Arg>,
+         typename Ret_ = std::vector<typename C::Ret>,
+         typename Base = ConcreteCommand<Ret_(Arg_)> >
 struct BatchCommand : public Base
 {
+    typedef Arg_ Arg;
+    typedef Ret_ Ret;
     typedef BatchCommand<C, Arg, Ret> This;
 
     static std::string Name() { return "BatchCommand<" + C::Name() + ">"; }
@@ -183,17 +196,22 @@ struct Batch;
 //
 // Helper macros for the RPC_CALL macro.
 //
-#define RPC_GENERATE_COMMAND(RET, NAME, ARG) \
-    struct NAME : public ConcreteCommand<RET(ARG)> { \
+#define RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
+    struct NAME : public ConcreteCommand<SIGNATURE> { \
+        typedef ConcreteCommand<SIGNATURE> Base; \
+        typedef Base::Arg Arg; \
+        typedef Base::Ret Ret; \
         static std::string Name() { return #NAME; } \
-        NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
-        static RET Implement(const ARG & arg); \
+        NAME(const Arg & inArgs) : ConcreteCommand<Ret(Arg)>(Name(), inArgs) { } \
+        static Ret Implement(const Arg & arg); \
     };
 
-#define RPC_GENERATE_BATCH_COMMAND(NAME, ARG) \
+#define RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE) \
     template<> \
     struct Batch<NAME> : public BatchCommand<NAME> { \
-        Batch(const std::vector<ARG> & args) : BatchCommand<NAME>(args) { } \
+        typedef BatchCommand<NAME>::Arg Arg; \
+        typedef BatchCommand<NAME>::Ret Ret; \
+        Batch(const Arg & args) : BatchCommand<NAME>(args) { } \
     };
 
 
@@ -212,17 +230,18 @@ struct Batch;
     }; \
     static Batch##NAME##Registrator g##Batch##NAME##Registrator;
 
-#define RPC_CALL(R, N, A) \
-    RPC_GENERATE_COMMAND(R, N, A) \
-    RPC_GENERATE_BATCH_COMMAND(N, A) \
-    RPC_REGISTER_COMMAND(N) \
-    RPC_REGISTER_BATCH_COMMAND(N)
+#define RPC_CALL(NAME, SIGNATURE) \
+    RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
+    RPC_REGISTER_COMMAND(NAME) \
+    RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE) \
+    RPC_REGISTER_BATCH_COMMAND(NAME)
 
 #else
 
-#define RPC_CALL(R, N, A) \
-	RPC_GENERATE_COMMAND(R, N, A) \
-	RPC_GENERATE_BATCH_COMMAND(N, A)
+#define RPC_CALL(NAME, SIGNATURE) \
+	RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
+	RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE)
+
 
 
 #endif // RPC_SERVER

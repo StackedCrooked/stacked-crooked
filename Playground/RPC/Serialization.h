@@ -2,6 +2,7 @@
 #define SERIALIZATION_H
 
 
+#include "TupleSupport.h"
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -28,6 +29,17 @@ T deserialize(const std::string & buffer)
     ia >> ret;
     return ret;
 }
+
+
+struct Void
+{
+    template<class Archive>
+    void serialize(Archive & , const unsigned int) { }
+};
+
+
+typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
+typedef boost::tuples::tuple<bool, std::string> RetOrError;
 
 
 #endif // SERIALIZATION_H

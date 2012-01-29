@@ -63,7 +63,7 @@ void testBatch()
 void run()
 {
     UDPClient client("127.0.0.1", 9001);
-    Destination dest(boost::bind(&UDPClient::send, &client, _1));
+    Redirector dest(boost::bind(&UDPClient::send, &client, _1));
     testSingle();
     testBatch();
 }

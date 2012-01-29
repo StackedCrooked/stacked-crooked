@@ -10,6 +10,8 @@
 
 struct RemoteStopwatch : public RemoteObject<Stopwatch>
 {
+    typedef RemoteObject<Stopwatch> Base;
+
     RemoteStopwatch() {}
 
     RemoteStopwatch(const Stopwatch & inStopwatch) :

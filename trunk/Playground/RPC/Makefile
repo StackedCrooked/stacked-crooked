@@ -1,5 +1,5 @@
 FILES=Client.cpp Networking.cpp RPCServer.cpp Serialization.cpp Server.cpp Stopwatch.cpp
-HEADERS=RemoteCall.h Networking.h RemoteObject.h RemoteObjects.h RemotePtr.h RPCServer.h Serialization.h Stopwatch.h TupleSupport.h
+HEADERS=RemoteCall.h Networking.h RemoteObject.h RemoteObjects.h RPCServer.h Serialization.h Stopwatch.h TupleSupport.h
 COMPILE=g++ -c -Wall -Wextra -Werror -O0 -ggdb -isystem /opt/local/include
 LIBS=/opt/local/lib/libboost_system.a /opt/local/lib/libboost_serialization.a 
 

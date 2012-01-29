@@ -12,10 +12,10 @@ client: Client.o Stopwatch.o Networking.o Command.o
 	g++ -ggdb -o client Client.o Stopwatch.o Networking.o Command.o ${LIBS}
 
 Client.o: Client.cpp ${HEADERS}
-	${COMPILE} Client.cpp
+	${COMPILE} -DRPC_CLIENT Client.cpp
  
 Server.o: Server.cpp ${HEADERS}
-	${COMPILE} -DTARGET_IS_RPC_SERVER Server.cpp
+	${COMPILE} -DRPC_SERVER Server.cpp
 
 Stopwatch.o: Stopwatch.cpp ${HEADERS}
 	${COMPILE} Stopwatch.cpp

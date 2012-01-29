@@ -39,7 +39,7 @@
 // RPC_CALL: quickly define a new RPC call.
 // Order of parameters: Return type, name, arg type
 //
-RPC_CALL(RemoteStopwatch, CreateServer     , std::string     )
+RPC_CALL(RemoteStopwatch, CreateStopwatch     , std::string     )
 RPC_CALL(Void,            StartStopwatch   , RemoteStopwatch )
 RPC_CALL(unsigned,        CheckStopwatch   , RemoteStopwatch )
 RPC_CALL(unsigned,        StopStopwatch    , RemoteStopwatch )

@@ -20,6 +20,13 @@ void testSingle()
 
 void testBatch()
 {
+    RemoteStopwatch rs = CreateStopwatch("Hello").send();
+    (void)rs;
+
+    std::vector<RemoteStopwatch> rs2 = Batch<CreateStopwatch>(std::vector<std::string>(2, "ABC")).send();
+    std::cout << rs2.size() << std::endl;
+
+
     std::cout << std::endl << "Testing Batch Commands (sync)" << std::endl;
     std::vector<std::string> names;
     names.push_back("Stopwatch_01");

@@ -42,6 +42,8 @@ struct Decompose<Ret_(Arg_)>
     typedef Ret_ Ret;
 };
 
+
+#if RPC_CLIENT
 // Create an object on the stack in the main function of the client app.
 struct Destination : boost::noncopyable
 {
@@ -88,6 +90,7 @@ private:
     Handler mHandler;
     static std::vector<Destination*> sDestinations;
 };
+#endif // RPC_CLIENT
 
 
 struct CommandBase
@@ -121,6 +124,7 @@ struct ConcreteCommand : public CommandBase
 
     const Arg & arg() const { return mArg; }
 
+#if RPC_CLIENT
     Ret send()
     {
         if (!Destination::IsSet())
@@ -130,38 +134,11 @@ struct ConcreteCommand : public CommandBase
 
         return Destination::Get().send(*this);
     }
+#endif // RPC_CLIENT
 
 private:
     Arg mArg;
 };
-
-
-#if 0
-template<typename C1,
-         typename C2,
-         typename Arg_ = typename C1::Arg,
-         typename Ret_ = typename C2::Ret,
-         typename Base = ConcreteCommand<Ret_(Arg_)> >
-struct ChainedCommand : public Base
-{
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
-
-    typedef Arg_ Arg;
-    typedef Ret_ Ret;
-
-    static std::string Name() { return "ChainedCommand<" + C1::Name() + ", " + C2::Name() + ">"; }
-
-#if TARGET_IS_RPC_SERVER
-    static Ret Implement(const Arg & arg)
-    {
-        return C2::Implement(C1::Implement(arg));
-    }
-#endif
-
-protected:
-    ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
-};
-#endif
 
 
 template<typename C,
@@ -174,7 +151,7 @@ struct BatchCommand : public Base
 
     static std::string Name() { return "BatchCommand<" + C::Name() + ">"; }
 
-#if TARGET_IS_RPC_SERVER
+#if RPC_SERVER
     typedef typename C::Arg A;
     typedef typename C::Ret R;
 
@@ -224,7 +201,7 @@ struct Batch;
 // The server can provide implementations for the RPC calls by
 // implementating the "Implement" method in the generated command.
 //
-#if TARGET_IS_RPC_SERVER
+#if RPC_SERVER
 
 #define RPC_REGISTER_COMMAND(NAME) \
     struct NAME##Registrator { NAME##Registrator() { Register<NAME>(); } } g##NAME##Registrator;
@@ -248,18 +225,7 @@ struct Batch;
 	RPC_GENERATE_BATCH_COMMAND(N, A)
 
 
-#endif // TARGET_IS_RPC_SERVER
-
-
-//
-// RPC_CALL: quickly define a new RPC call.
-// Order of parameters: Return type, name, arg type
-//
-RPC_CALL(RemoteStopwatch, CreateStopwatch     , std::string  )
-RPC_CALL(Void,            StartStopwatch   , RemoteStopwatch )
-RPC_CALL(unsigned,        CheckStopwatch   , RemoteStopwatch )
-RPC_CALL(unsigned,        StopStopwatch    , RemoteStopwatch )
-RPC_CALL(Void,            DestroyStopwatch , RemoteStopwatch )
+#endif // RPC_SERVER
 
 
 #endif // RPC_COMMAND_H

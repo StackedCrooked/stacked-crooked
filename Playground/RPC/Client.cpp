@@ -26,6 +26,14 @@ void run()
 {
     UDPClient client("127.0.0.1", 9001);
 
+    RemoteStopwatch remoteStopwatch = send(client, Stopwatch_Create("Stopwatch_01"));
+    send(client, Stopwatch_Start(remoteStopwatch));
+    sleep(1);
+    std::cout << "Elapsed: " << send(client, Stopwatch_Stop(remoteStopwatch)) << std::endl;
+
+    std::cout << "Parallel testing" << std::endl;
+
+
     std::vector<std::string> names;
     names.push_back("a");
     names.push_back("b");

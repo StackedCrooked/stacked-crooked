@@ -31,7 +31,7 @@ struct RemoteObject
     RemotePtr mRemotePtr;
 
 protected:
-    typedef RemoteObject<LocalType> Super;
+    typedef RemoteObject<LocalType> Base;
 };
 
 

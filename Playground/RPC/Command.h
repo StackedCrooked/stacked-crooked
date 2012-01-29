@@ -80,40 +80,37 @@ struct ConcreteCommand : public CommandBase
 
     const Arg & arg() const { return mArg; }
 
-protected:
-    typedef ConcreteCommand<Signature> Super;
-
 private:
     Arg mArg;
 };
 
 
-template<typename C1,
-         typename C2,
-         typename Arg = typename C1::Arg,
-         typename Ret = typename C2::Ret,
-         typename Super = ConcreteCommand<Ret(Arg)> >
-struct ChainedCommand : public Super
-{
-    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
+//template<typename C1,
+//         typename C2,
+//         typename Arg = typename C1::Arg,
+//         typename Ret = typename C2::Ret,
+//         typename Base = ConcreteCommand<Ret(Arg)> >
+//struct ChainedCommand : public Base
+//{
+//    BOOST_STATIC_ASSERT_MSG((boost::is_same<typename C1::Ret, typename C2::Arg>::value), "Types don't line up correctly.");
 
-    static const char * Name() { return "ChainedCommand"; }
+//    static const char * Name() { return "ChainedCommand"; }
 
-    ChainedCommand(const Arg & inArg) : Super(Name(), inArg) { }
-};
+//    ChainedCommand(const Arg & inArg) : Base(Name(), inArg) { }
+//};
 
 
 template<typename C,
          typename Arg = std::vector<typename C::Arg>,
          typename Ret = std::vector<typename C::Ret>,
-         typename Super = ConcreteCommand<Ret(Arg)> >
-struct ParallelCommand : public Super
+         typename Base = ConcreteCommand<Ret(Arg)> >
+struct ParallelCommand : public Base
 {
     typedef ParallelCommand<C, Arg, Ret> This;
 
     static const char * Name() { return "ParallelCommand"; }
 
-    ParallelCommand(const Arg & inArg) : Super(Name(), inArg) { }
+    ParallelCommand(const Arg & inArg) : Base(Name(), inArg) { }
 
 #if TARGET_IS_RPC_SERVER
     typedef typename C::Arg A;

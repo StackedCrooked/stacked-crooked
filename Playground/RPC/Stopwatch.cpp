@@ -4,17 +4,11 @@
 #include <stdexcept>
 
 
-namespace {
-
-
 unsigned GetCurrentTimeMs()
 {
     boost::posix_time::ptime time = boost::posix_time::microsec_clock::local_time();
     boost::posix_time::time_duration duration(time.time_of_day());
     return static_cast<unsigned>(duration.total_milliseconds());
-}
-
-
 }
 
 

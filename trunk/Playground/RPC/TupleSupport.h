@@ -1,3 +1,6 @@
+#ifndef TUPLESUPPORT_H
+#define TUPLESUPPORT_H
+
 #include <boost/serialization/serialization.hpp>
 #include <boost/tuple/tuple.hpp>
 
@@ -41,3 +44,6 @@ void serialize(Archive & ar, tuple<T0, T1, T2, T3> & t, const unsigned int)
 
 
 } } // namespace boost::serialization
+
+
+#endif // TUPLESUPPORT_H

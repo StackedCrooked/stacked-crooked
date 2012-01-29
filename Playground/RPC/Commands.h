@@ -3,38 +3,6 @@
 
 
 #include "Command.h"
-#include "Serialization.h"
-
-
-using boost::tuples::tuple;
-typedef std::string Name;
-
-
-struct Void
-{
-    template<class Archive>
-    void serialize(Archive & , const unsigned int)
-    {
-    }
-};
-
-
-typedef boost::function<std::string(const std::string)> Runner;
-typedef std::map<std::string, Runner> Runners;
-
-
-inline Runners & GetRunners()
-{
-    static Runners fRunners;
-    return fRunners;
-}
-
-
-template<typename Command>
-inline void Register()
-{
-    GetRunners().insert(std::make_pair(Command::Name(), boost::bind(&Command::Run, _1)));
-}
 
 
 #define RPC_DECLARE_CALL(RET, NAME, ARG) \
@@ -48,9 +16,7 @@ inline void Register()
 #if TARGET_IS_RPC_SERVER
 #define RPC_IMPLEMENT_CALL(RET, NAME, ARG) \
     std::string NAME::Run(const std::string & arg_str) { \
-        ARG arg = deserialize<ARG>(arg_str); \
-        RET ret = NAME::Implement(arg); \
-        return serialize(ret); \
+        return serialize(NAME::Implement(deserialize<ARG>(arg_str))); \
     } \
     struct Register##NAME { Register##NAME() { Register<NAME>(); } } gRegister##NAME;
 #endif

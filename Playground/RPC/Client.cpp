@@ -7,65 +7,80 @@
 using namespace boost::tuples;
 
 
-template<typename Command>
-typename Command::Ret send(UDPClient & client, const Command & command)
+struct RPCClient : private UDPClient
 {
-    std::string result = client.send(serialize(NameAndArg(Command::Name(), serialize(command.arg()))));
-    RetOrError retOrError = deserialize<RetOrError>(result);
-    if (retOrError.get_head())
+    RPCClient(const std::string & inURL, unsigned inPort) :
+        UDPClient(inURL, inPort)
     {
-        return deserialize<typename Command::Ret>(retOrError.get<1>());
     }
-    else
+
+    template<typename Command>
+    typename Command::Ret send(const Command & command)
     {
-        throw std::runtime_error("Server error: " + retOrError.get<1>());
+        std::string result = UDPClient::send(serialize(NameAndArg(Command::Name(), serialize(command.arg()))));
+        RetOrError retOrError = deserialize<RetOrError>(result);
+        if (retOrError.get_head())
+        {
+            return deserialize<typename Command::Ret>(retOrError.get<1>());
+        }
+        else
+        {
+            throw std::runtime_error("Server error: " + retOrError.get<1>());
+        }
     }
+};
+
+
+void testSingle(RPCClient & client)
+{
+    std::cout << std::endl << "Testing Single Commands (sync)" << std::endl;
+    RemoteStopwatch remoteStopwatch = client.send(CreateStopwatch("Stopwatch_01"));
+    client.send(StartStopwatch(remoteStopwatch));
+    std::cout << "Check: " << client.send(CheckStopwatch(remoteStopwatch)) << std::endl;
+    std::cout << "Stop: " << client.send(StopStopwatch(remoteStopwatch)) << std::endl;
 }
 
-void testSingle(UDPClient & client)
+
+void testBatch(RPCClient & client)
 {
-    RemoteStopwatch remoteStopwatch = send(client, CreateStopwatch("Stopwatch_01"));
-    send(client, StartStopwatch(remoteStopwatch));
-
-    std::cout << "Check: " << send(client, CheckStopwatch(remoteStopwatch)) << std::endl;
-    std::cout << "Stop: " << send(client, StopStopwatch(remoteStopwatch)) << std::endl;
-}
-
-
-void testBatch(UDPClient & client)
-{
+    std::cout << std::endl << "Testing Batch Commands (sync)" << std::endl;
     std::vector<std::string> names;
-    names.push_back("a");
-    names.push_back("b");
-    names.push_back("c");
+    names.push_back("Stopwatch_01");
+    names.push_back("Stopwatch_02");
+    names.push_back("Stopwatch_03");
 
-    std::vector<RemoteStopwatch> sw = send(client, Batch<CreateStopwatch>(names));
-    std::cout << "Created " << sw.size() << " stopwatches." << std::endl;
+    // Create all stopwatches
+    std::vector<RemoteStopwatch> stopwatches = client.send(Batch<CreateStopwatch>(names));
 
-    std::vector<Void> started = send(client, Batch<StartStopwatch>(sw));
-    std::cout << "Started " << started.size() << " stopwatches" << std::endl;
+    // Start them
+    client.send(Batch<StartStopwatch>(stopwatches));
 
-    std::cout << "Sleep for 1 second..." << std::endl;
+    // Wait a second
+    sleep(1);
 
-    std::vector<unsigned> el = send(client, Batch<CheckStopwatch>(sw));
-    std::cout << "Checked: " << el.size() << " stopwatches" << std::endl;
-
+    // Check their time
+    std::vector<unsigned> el = client.send(Batch<CheckStopwatch>(stopwatches));
+    std::cout << "Elapsed: ";
     for (std::size_t idx = 0; idx < el.size(); ++idx)
     {
-        std::cout << "Elapsed time: " << el[idx] << std::endl;
+        if (idx != 0)
+        {
+            std::cout << ", ";
+        }
+        std::cout << el[idx];
     }
+    std::cout << std::endl;
 
-    std::vector<unsigned> stopped = send(client, Batch<StopStopwatch>(sw));
+    std::vector<unsigned> stopped = client.send(Batch<StopStopwatch>(stopwatches));
     std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
 }
 
+
 void run()
 {
-    UDPClient client("127.0.0.1", 9001);
-
+    RPCClient client("127.0.0.1", 9001);
     testSingle(client);
     testBatch(client);
-
 }
 
 

@@ -1,6 +1,6 @@
 #include "RPCServer.h"
-#include "Asio.h"
 #include "Serialization.h"
+#include "TCPServer.h"
 #include <boost/tuple/tuple.hpp>
 
 
@@ -8,7 +8,7 @@ struct RPCServer::Impl
 {
     Impl() :
         mPort(),
-        mUDPServer()
+        mTCPServer()
     {
     }
 
@@ -18,8 +18,8 @@ struct RPCServer::Impl
 
     void listen(unsigned port)
     {
-        mUDPServer.reset(new UDPServer(port));
-        mUDPServer->run(boost::bind(&Impl::processRequest, this, _1));
+        mTCPServer.reset(new TCPServer());
+        mTCPServer->listen(port, boost::bind(&Impl::processRequest, this, _1));
     }
 
     static void addHandler(const std::string & inName, const Handler & inHandler)
@@ -58,7 +58,7 @@ struct RPCServer::Impl
     }
 
     unsigned mPort;
-    boost::scoped_ptr<UDPServer> mUDPServer;
+    boost::scoped_ptr<TCPServer> mTCPServer;
 
     static Handlers & GetHandlers()
     {

@@ -7,6 +7,9 @@
 #include <string>
 
 
+unsigned GetCurrentTimeMs();
+
+
 class Stopwatch : boost::noncopyable
 {
 public:

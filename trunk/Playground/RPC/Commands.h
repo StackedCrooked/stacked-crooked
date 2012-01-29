@@ -9,7 +9,7 @@
 #define RPC_DECLARE_CALL(RET, NAME, ARG) \
     struct NAME : public ConcreteCommand<RET(ARG)> { \
         static const char * Name() { return #NAME; } \
-        NAME(const Arg & inArgs) : Super(Name(), inArgs) { } \
+        NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
         static std::string Run(const std::string & arg); \
         static RET Implement(const ARG & arg); \
     };
@@ -29,7 +29,7 @@
 #define RPC_CALL(RET, NAME, ARG) \
     struct NAME : public ConcreteCommand<RET(ARG)> { \
         static const char * Name() { return #NAME; } \
-        NAME(const Arg & inArgs) : Super(Name(), inArgs) { } \
+        NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
     };
 
 #endif // TARGET_IS_RPC_SERVER

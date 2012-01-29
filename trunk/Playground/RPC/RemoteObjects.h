@@ -13,7 +13,7 @@ struct RemoteStopwatch : public RemoteObject<Stopwatch>
     RemoteStopwatch() {}
 
     RemoteStopwatch(const Stopwatch & inStopwatch) :
-        Super(&inStopwatch),
+        Base(&inStopwatch),
         mName(inStopwatch.name())
     {
     }
@@ -23,7 +23,7 @@ struct RemoteStopwatch : public RemoteObject<Stopwatch>
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
     {
-        ar & boost::serialization::base_object<Super>(*this);
+        ar & boost::serialization::base_object<Base>(*this);
         ar & mName;
     }
 

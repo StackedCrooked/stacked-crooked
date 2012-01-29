@@ -2,6 +2,7 @@
 #define SERIALIZATION_H
 
 
+#include <boost/archive/basic_archive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>

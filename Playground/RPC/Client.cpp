@@ -1,5 +1,6 @@
 #include "Commands.h"
 #include "Networking.h"
+#include "RemoteObjects.h"
 #include <iostream>
 #include <utility>
 
@@ -7,17 +8,17 @@
 using namespace boost::tuples;
 
 
-void testSingle(RPCClient & client)
+void testSingle()
 {
     std::cout << std::endl << "Testing Single Commands (sync)" << std::endl;
-    RemoteStopwatch remoteStopwatch = client.send(CreateStopwatch("Stopwatch_01"));
-    client.send(StartStopwatch(remoteStopwatch));
-    std::cout << "Check: " << client.send(CheckStopwatch(remoteStopwatch)) << std::endl;
-    std::cout << "Stop: " << client.send(StopStopwatch(remoteStopwatch)) << std::endl;
+    RemoteStopwatch remoteStopwatch = CreateStopwatch("Stopwatch_01").send();
+    StartStopwatch(remoteStopwatch).send();
+    std::cout << "Check: " << CheckStopwatch(remoteStopwatch).send() << std::endl;
+    std::cout << "Stop: " << StopStopwatch(remoteStopwatch).send() << std::endl;
 }
 
 
-void testBatch(RPCClient & client)
+void testBatch()
 {
     std::cout << std::endl << "Testing Batch Commands (sync)" << std::endl;
     std::vector<std::string> names;
@@ -26,16 +27,16 @@ void testBatch(RPCClient & client)
     names.push_back("Stopwatch_03");
 
     // Create all stopwatches
-    std::vector<RemoteStopwatch> stopwatches = client.send(Batch<CreateStopwatch>(names));
+    std::vector<RemoteStopwatch> stopwatches = Batch<CreateStopwatch>(names).send();
 
     // Start them
-    client.send(Batch<StartStopwatch>(stopwatches));
+    Batch<StartStopwatch>(stopwatches).send();
 
     // Wait a second
     sleep(1);
 
     // Check their time
-    std::vector<unsigned> el = client.send(Batch<CheckStopwatch>(stopwatches));
+    std::vector<unsigned> el = Batch<CheckStopwatch>(stopwatches).send();
     std::cout << "Elapsed: ";
     for (std::size_t idx = 0; idx < el.size(); ++idx)
     {
@@ -47,16 +48,17 @@ void testBatch(RPCClient & client)
     }
     std::cout << std::endl;
 
-    std::vector<unsigned> stopped = client.send(Batch<StopStopwatch>(stopwatches));
+    std::vector<unsigned> stopped = Batch<StopStopwatch>(stopwatches).send();
     std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
 }
 
 
 void run()
 {
-    RPCClient client("127.0.0.1", 9001);
-    testSingle(client);
-    testBatch(client);
+    UDPClient client("127.0.0.1", 9001);
+    Destination dest(boost::bind(&UDPClient::send, &client, _1));
+    testSingle();
+    testBatch();
 }
 
 

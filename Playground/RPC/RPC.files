@@ -15,3 +15,4 @@
 ./TupleSupport.h
 RPCServer.h
 RPCServer.cpp
+Command.cpp

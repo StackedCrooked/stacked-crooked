@@ -172,7 +172,7 @@ inline Runners & GetRunners()
 }
 
 template<typename C>
-inline void RegisterImpl()
+inline void Register()
 {
     const std::string name = C::Name();
     if (GetRunners().find(name) != GetRunners().end())
@@ -183,14 +183,66 @@ inline void RegisterImpl()
     std::cout << "Registring " << name << std::endl;
     GetRunners().insert(std::make_pair(name, boost::bind(&CommandBase::Run<C>, _1)));
 }
-
-
-template<typename C>
-void Register()
-{
-    RegisterImpl<C>();
-}
 #endif
+
+
+//
+// Helper macros for the RPC_CALL macro.
+//
+#define RPC_GENERATE_COMMAND(RET, NAME, ARG) \
+    struct NAME : public ConcreteCommand<RET(ARG)> { \
+        static std::string Name() { return #NAME; } \
+        NAME(const Arg & inArgs) : ConcreteCommand<RET(ARG)>(Name(), inArgs) { } \
+        static RET Implement(const ARG & arg); \
+    };
+
+#define RPC_GENERATE_BATCH_COMMAND(NAME, ARG) \
+    template<> \
+    struct Batch<NAME> : public BatchCommand<NAME> { \
+        Batch(const std::vector<ARG> & args) : BatchCommand<NAME>(args) { } \
+    };
+
+
+//
+// The server can provide implementations for the RPC calls by
+// implementating the "Implement" method in the generated command.
+//
+#if TARGET_IS_RPC_SERVER
+
+#define RPC_REGISTER_COMMAND(NAME) \
+    struct NAME##Registrator { NAME##Registrator() { Register<NAME>(); } } g##NAME##Registrator;
+
+#define RPC_REGISTER_BATCH_COMMAND(NAME) \
+    struct Batch##NAME##Registrator { \
+        Batch##NAME##Registrator() { Register< Batch<NAME> >(); } \
+    }; \
+    static Batch##NAME##Registrator g##Batch##NAME##Registrator;
+
+#define RPC_CALL(R, N, A) \
+    RPC_GENERATE_COMMAND(R, N, A) \
+    RPC_GENERATE_BATCH_COMMAND(N, A) \
+    RPC_REGISTER_COMMAND(N) \
+    RPC_REGISTER_BATCH_COMMAND(N)
+
+#else
+
+#define RPC_CALL(R, N, A) \
+	RPC_GENERATE_COMMAND(R, N, A) \
+	RPC_GENERATE_BATCH_COMMAND(N, A)
+
+
+#endif // TARGET_IS_RPC_SERVER
+
+
+//
+// RPC_CALL: quickly define a new RPC call.
+// Order of parameters: Return type, name, arg type
+//
+RPC_CALL(RemoteStopwatch, CreateStopwatch     , std::string  )
+RPC_CALL(Void,            StartStopwatch   , RemoteStopwatch )
+RPC_CALL(unsigned,        CheckStopwatch   , RemoteStopwatch )
+RPC_CALL(unsigned,        StopStopwatch    , RemoteStopwatch )
+RPC_CALL(Void,            DestroyStopwatch , RemoteStopwatch )
 
 
 #endif // RPC_COMMAND_H

@@ -1,21 +1,21 @@
-FILES=Client.cpp Networking.cpp RPCServer.cpp Server.cpp Stopwatch.cpp
+FILES=TestClient.cpp Networking.cpp RPCServer.cpp TestServer.cpp Stopwatch.cpp
 HEADERS=RemoteCall.h Networking.h RemoteObject.h RemoteObjects.h RPCServer.h Serialization.h Stopwatch.h
 COMPILE=g++ -c -Wall -Wextra -Werror -O0 -ggdb -isystem /opt/local/include
 LIBS=/opt/local/lib/libboost_system.a /opt/local/lib/libboost_serialization.a 
 
 all: server client
 
-server: Server.o Stopwatch.o Networking.o RPCServer.o 
-	g++ -ggdb -o server RPCServer.o Server.o Stopwatch.o Networking.o ${LIBS}
+server: TestServer.o Stopwatch.o Networking.o RPCServer.o 
+	g++ -ggdb -o server RPCServer.o TestServer.o Stopwatch.o Networking.o ${LIBS}
 
-client: Client.o Stopwatch.o Networking.o 
-	g++ -ggdb -o client Client.o Stopwatch.o Networking.o ${LIBS}
+client: TestClient.o Stopwatch.o Networking.o 
+	g++ -ggdb -o client TestClient.o Stopwatch.o Networking.o ${LIBS}
 
-Client.o: Client.cpp ${HEADERS}
-	${COMPILE} -DRPC_CLIENT Client.cpp
+TestClient.o: TestClient.cpp ${HEADERS}
+	${COMPILE} -DRPC_CLIENT TestClient.cpp
 
-Server.o: Server.cpp ${HEADERS}
-	${COMPILE} -DRPC_SERVER Server.cpp
+TestServer.o: TestServer.cpp ${HEADERS}
+	${COMPILE} -DRPC_SERVER TestServer.cpp
 
 Stopwatch.o: Stopwatch.cpp ${HEADERS}
 	${COMPILE} Stopwatch.cpp

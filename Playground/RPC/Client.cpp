@@ -22,41 +22,32 @@ typename Command::Ret send(UDPClient & client, const Command & command)
     }
 }
 
-
-void testChain(UDPClient & client)
+void testSingle(UDPClient & client)
 {
-    Void v = send(client, CreateAndStartStopwatch("ChainedStopwatch"));
-    (void)v;
-}
-
-void run()
-{
-    UDPClient client("127.0.0.1", 9001);
-
-    testChain(client);
-
     RemoteStopwatch remoteStopwatch = send(client, CreateStopwatch("Stopwatch_01"));
     send(client, StartStopwatch(remoteStopwatch));
-    sleep(1);
-    std::cout << "Elapsed: " << send(client, StopStopwatch(remoteStopwatch)) << std::endl;
 
-    std::cout << "Parallel testing" << std::endl;
+    std::cout << "Check: " << send(client, CheckStopwatch(remoteStopwatch)) << std::endl;
+    std::cout << "Stop: " << send(client, StopStopwatch(remoteStopwatch)) << std::endl;
+}
 
 
+void testBatch(UDPClient & client)
+{
     std::vector<std::string> names;
     names.push_back("a");
     names.push_back("b");
     names.push_back("c");
 
-    std::vector<RemoteStopwatch> sw = send(client, ParallelCommand<CreateStopwatch>(names));
+    std::vector<RemoteStopwatch> sw = send(client, CreateStopwatchBatch(names));
     std::cout << "Created " << sw.size() << " stopwatches." << std::endl;
 
-    std::vector<Void> started = send(client, ParallelCommand<StartStopwatch>(sw));
+    std::vector<Void> started = send(client, StartStopwatchBatch(sw));
     std::cout << "Started " << started.size() << " stopwatches" << std::endl;
 
     std::cout << "Sleep for 1 second..." << std::endl;
 
-    std::vector<unsigned> el = send(client, ParallelCommand<CheckStopwatch>(sw));
+    std::vector<unsigned> el = send(client, CheckStopwatchBatch(sw));
     std::cout << "Checked: " << el.size() << " stopwatches" << std::endl;
 
     for (std::size_t idx = 0; idx < el.size(); ++idx)
@@ -64,8 +55,17 @@ void run()
         std::cout << "Elapsed time: " << el[idx] << std::endl;
     }
 
-    std::vector<unsigned> stopped = send(client, ParallelCommand<StopStopwatch>(sw));
+    std::vector<unsigned> stopped = send(client, StopStopwatchBatch(sw));
     std::cout << "Stopped " << stopped.size() << " stopwatches" << std::endl;
+}
+
+void run()
+{
+    UDPClient client("127.0.0.1", 9001);
+
+    testSingle(client);
+    testBatch(client);
+
 }
 
 

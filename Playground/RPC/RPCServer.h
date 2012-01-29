@@ -40,7 +40,7 @@ public:
         typedef typename Command::Arg Arg;
         typedef typename Command::Ret Ret;
         Arg arg = deserialize<Arg>(serialized);
-        Ret ret = Command::Implement(arg);
+        Ret ret = Command::execute(arg);
         return serialize(ret);
     }
 

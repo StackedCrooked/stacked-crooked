@@ -1,11 +1,11 @@
 - Add 'GetStopwatches'
-- RAII for remote objects (Low Priority)
-- Composition (Very High Priority)
 - Results of time (Very High Priority)
-- Return error (High Priority)
 - Async (Med Priority)
-- Automatic registration (Med Priority)
 - Introspection (Med Priority)
+- RAII for remote objects (Low Priority)
+v Automatic registration (Med Priority)
+v Return error (High Priority)
+v Composition (Very High Priority)
 
 
 Composition

@@ -16,3 +16,4 @@
 RPCServer.h
 RPCServer.cpp
 Command.cpp
+Client.h

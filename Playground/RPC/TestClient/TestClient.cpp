@@ -4,6 +4,7 @@
 #include "Core/Asio.h"
 #include "Core/RemoteCall.h"
 #include "Core/RemoteObjects.h"
+#include "Core/Test.h"
 #include <iostream>
 #include <sstream>
 #include <utility>

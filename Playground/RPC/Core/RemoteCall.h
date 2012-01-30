@@ -157,13 +157,6 @@ struct Batch;
 
 #else
 
-#define RPC_CALL(NAME, SIGNATURE) \
-	RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
-	RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE)
-
-#endif // RPC_SERVER
-
-
 
 /**
  * RPC_CALL macro for defining remote procedure calls.
@@ -202,12 +195,11 @@ struct Batch;
  * boost tuple types and any combination of these. User defined structs and
  * classes must be made serializable. See the boost documentation for more info.
  */
-RPC_CALL(CreateStopwatch,  RemoteStopwatch(std::string) )
-RPC_CALL(GetStopwatches,   RemoteStopwatches(Void)      )
-RPC_CALL(StartStopwatch,   Void(RemoteStopwatch)        )
-RPC_CALL(CheckStopwatch,   unsigned(RemoteStopwatch)    )
-RPC_CALL(StopStopwatch,    unsigned(RemoteStopwatch)    )
-RPC_CALL(DestroyStopwatch, Void(RemoteStopwatch)        )
+#define RPC_CALL(NAME, SIGNATURE) \
+	RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
+	RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE)
+
+#endif // RPC_SERVER
 
 
 #endif // RPC_COMMAND_H

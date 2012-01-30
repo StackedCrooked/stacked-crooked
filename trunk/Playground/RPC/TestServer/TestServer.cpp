@@ -1,7 +1,6 @@
-#define RPC_SERVER
-
 #include "Core/RPCServer.h"
 #include "Core/RemoteCall.h"
+#include "Core/ConcurrentCall.h"
 #include "Core/Test.h"
 #include "Stopwatch.h"
 #include <boost/bind.hpp>

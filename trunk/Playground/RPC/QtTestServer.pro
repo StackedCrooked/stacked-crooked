@@ -4,6 +4,8 @@ CONFIG -= qt
 
 LIBS += -lboost_serialization -lboost_system -pthread
 
+DEFINES += RPC_SERVER
+
 SOURCES += \
     Core/Asio.cpp \
     Core/TCPServer.cpp \

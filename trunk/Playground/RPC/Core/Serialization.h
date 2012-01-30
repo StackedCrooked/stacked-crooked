@@ -47,18 +47,27 @@ std::string serialize(const T & value)
     return ss.str();
 }
 
-
 /**
  * Generic deserialize method.
  * Only works for types that have serialization enabled.
  */
 template<typename T>
-T deserialize(const std::string & buffer)
+void deserialize(const std::string & buffer, T & ret)
 {
     std::istringstream ss(buffer);
     boost::archive::text_iarchive ia(ss);
-    T ret;
     ia >> ret;
+}
+
+
+/**
+ * Deserialize method with return value.
+ */
+template<typename T>
+T deserialize(const std::string & buffer)
+{
+    T ret;
+    deserialize(buffer, ret);
     return ret;
 }
 

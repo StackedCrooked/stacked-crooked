@@ -1,8 +1,6 @@
-#define RPC_CLIENT
-
-
 #include "Core/Asio.h"
 #include "Core/RemoteCall.h"
+#include "Core/ConcurrentCall.h"
 #include "Core/RemoteObjects.h"
 #include "Core/Test.h"
 #include <iostream>
@@ -71,12 +69,24 @@ struct TestClient
         std::cout << std::endl;
     }
 
+
+    void testConcurrent()
+    {
+        std::cout << "Testing concurrent calls" << std::endl;
+        RemoteStopwatch s = CreateStopwatch("s1").send();
+
+        std::cout << "Concurrent call..." << std::endl;
+        boost::tuples::tuple<Void, unsigned> result = Concurrent(StartStopwatch(s), StopStopwatch(s));
+        std::cout << "Time: " << result.get<1>() << std::endl;
+    }
+
     void run()
     {
         UDPClient client("127.0.0.1", 9001);
         Redirector dest(boost::bind(&UDPClient::send, &client, _1));
         testSingle();
-        testBatch();
+        //testBatch();
+        testConcurrent();
     }
 
 };

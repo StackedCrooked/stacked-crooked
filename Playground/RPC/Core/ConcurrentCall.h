@@ -12,7 +12,7 @@ using namespace boost::tuples;
 
 std::string PerformRemoteCall(const NameAndArg & )
 {
-    throw;
+    throw std::runtime_error("Concurrent call not yet implemented.");
 }
 
 

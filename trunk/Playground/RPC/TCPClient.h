@@ -1,3 +1,4 @@
+#if 0
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
@@ -23,3 +24,4 @@ private:
 
 
 #endif // TCPCLIENT_H
+#endif

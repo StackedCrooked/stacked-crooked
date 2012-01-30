@@ -2,7 +2,8 @@ CPP_FILES=Asio.cpp RPCServer.cpp Stopwatch.cpp TCPServer.cpp TCPClient.cpp
 O_FILES=Asio.o RPCServer.o Stopwatch.o TCPServer.o TCPClient.o
 HEADERS= Asio.h Client.h RemoteCall.h RemoteObject.h RemoteObjects.h RPCServer.h Serialization.h Stopwatch.h TCPServer.h TCPClient.h
 COMPILE=g++ -c -Wall -Wextra -Werror -O0 -ggdb -isystem /opt/local/include
-LIBS=/opt/local/lib/libboost_system.a /opt/local/lib/libboost_serialization.a 
+LIBDIR=/usr/lib
+LIBS=${LIBDIR}/libboost_system.a ${LIBDIR}/libboost_serialization.a -lpthread
 
 all: server client
 

@@ -1,3 +1,4 @@
+#if 0
 #include "TCPClient.h"
 #include <cstdlib>
 #include <cstring>
@@ -61,3 +62,4 @@ std::string TCPClient::send(const std::string & inRequest)
 {
     return mImpl->send(inRequest);
 }
+#endif

@@ -1,35 +1,39 @@
-CPP_FILES=Asio.cpp RPCServer.cpp Stopwatch.cpp TCPServer.cpp TCPClient.cpp
-O_FILES=Asio.o RPCServer.o Stopwatch.o TCPServer.o TCPClient.o
-HEADERS= Asio.h Client.h RemoteCall.h RemoteObject.h RemoteObjects.h RPCServer.h Serialization.h Stopwatch.h TCPServer.h TCPClient.h
+CORE_H_FILES= Core/Asio.h Core/RPCServer.h Core/Stopwatch.h Core/TCPClient.h Core/TCPServer.h
+CORE_CPP_FILES= Core/Asio.cpp Core/RPCServer.cpp Core/Stopwatch.cpp Core/TCPClient.cpp Core/TCPServer.cpp
+CORE_OBJ_FILES= Asio.o RPCServer.o Stopwatch.o TCPClient.o TCPServer.o
+TEST_SERVER_CPP_FILES=TestServer.cpp
+TEST_SERVER_OBJ_FILES=TestServer.o
+TEST_CLIENT_CPP_FILES=TestClient.cpp
+TEST_CLIENT_OBJ_FILES=TestClient.o
 COMPILE=g++ -c -Wall -Wextra -Werror -O0 -ggdb -isystem /opt/local/include
 LIBDIR=/usr/lib
 LIBS=${LIBDIR}/libboost_system.a ${LIBDIR}/libboost_serialization.a -lpthread
 
 all: server client
 
-server: ${O_FILES} TestServer.o 
-	g++ -ggdb -o server TestServer.o ${O_FILES} ${LIBS}
+server: ${CORE_OBJ_FILES} ${TEST_SERVER_OBJ_FILES}
+	g++ -ggdb -o server ${TEST_SERVER_OBJ_FILES} ${CORE_OBJ_FILES} ${LIBS}
 
-client: ${O_FILES} TestClient.o
-	g++ -ggdb -o client TestClient.o ${O_FILES} ${LIBS}
+client: ${CORE_OBJ_FILES} ${TEST_CLIENT_OBJ_FILES}
+	g++ -ggdb -o client ${TEST_CLIENT_OBJ_FILES} ${CORE_OBJ_FILES} ${LIBS}
 
-TCPClient.o: TCPClient.cpp
-	${COMPILE} TCPClient.cpp
+TestServer.o: TestServer/TestServer.cpp ${CORE_H_FILES}
+	${COMPILE} -DRPC_SERVER TestServer/TestServer.cpp
 
-TCPServer.o: TCPServer.cpp
-	${COMPILE} TCPServer.cpp
+TestClient.o: TestClient/TestClient.cpp ${CORE_H_FILES}
+	${COMPILE} -DRPC_CLIENT TestClient/TestClient.cpp
 
-TestClient.o: TestClient.cpp ${HEADERS}
-	${COMPILE} -DRPC_CLIENT TestClient.cpp
+TCPClient.o: Core/TCPClient.cpp ${CORE_H_FILES}
+	${COMPILE} Core/TCPClient.cpp
 
-TestServer.o: TestServer.cpp ${HEADERS}
-	${COMPILE} -DRPC_SERVER TestServer.cpp
+TCPServer.o: Core/TCPServer.cpp ${CORE_H_FILES}
+	${COMPILE} Core/TCPServer.cpp
 
-Stopwatch.o: Stopwatch.cpp ${HEADERS}
-	${COMPILE} Stopwatch.cpp
+Stopwatch.o: Core/Stopwatch.cpp ${CORE_H_FILES}
+	${COMPILE} Core/Stopwatch.cpp
 
-Asio.o: Asio.cpp ${HEADERS}
-	${COMPILE} Asio.cpp
+Asio.o: Core/Asio.cpp ${CORE_H_FILES}
+	${COMPILE} Core/Asio.cpp
 
-RPCServer.o: RPCServer.cpp ${HEADERS}
-	${COMPILE} RPCServer.cpp
+RPCServer.o: Core/RPCServer.cpp ${CORE_H_FILES}
+	${COMPILE} Core/RPCServer.cpp

@@ -1,5 +1,7 @@
-#include "RPCServer.h"
-#include "RemoteCall.h"
+#define RPC_SERVER
+
+#include "Core/RPCServer.h"
+#include "Core/RemoteCall.h"
 #include "Stopwatch.h"
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
@@ -72,7 +74,8 @@ Stopwatch & getStopwatch(long inId)
 
 RemoteStopwatch CreateStopwatch::execute(const std::string &arg)
 {
-    return RemoteStopwatch(TestServer::Get().addStopwatch(arg));
+    Stopwatch & sw = TestServer::Get().addStopwatch(arg);
+    return RemoteStopwatch(sw.id(), sw.name());
 }
 
 
@@ -82,7 +85,8 @@ RemoteStopwatches GetStopwatches::execute(const Void & )
     TestServer::Stopwatches sw = TestServer::Get().getStopwatches();
     for (std::size_t idx = 0; idx < sw.size(); ++idx)
     {
-        result.push_back(RemoteStopwatch(*sw[idx]));
+        Stopwatch & s = *sw[idx];
+        result.push_back(RemoteStopwatch(s.id(), s.name()));
     }
     return result;
 }

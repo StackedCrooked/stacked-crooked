@@ -11,7 +11,7 @@
 #include <vector>
 
 
-class UDPServer
+class UDPServer : boost::noncopyable
 {
 public:
     UDPServer(unsigned port);

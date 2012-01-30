@@ -19,11 +19,10 @@ struct RemoteObject
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
     {
-        ar & mClassName & mId;
+        ar & mId;
     }
 
 private:
-    std::string mClassName;
     long mId;
 };
 

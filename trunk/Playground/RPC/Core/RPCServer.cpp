@@ -32,17 +32,21 @@ struct RPCServer::Impl
 
     std::string processRequest(const std::string & inRequest)
     {
+        std::cout << "Request size: " << inRequest.size() << std::endl;
+        std::string result;
         NameAndArg name_arg = deserialize<NameAndArg>(inRequest);
         try
         {
             const std::string & name = name_arg.get<0>();
             const std::string & arg  = name_arg.get<1>();
-            return serialize(RetOrError(true, processRequest(name, arg)));
+            result = serialize(RetOrError(true, processRequest(name, arg)));
         }
         catch (const std::exception & exc)
         {
-            return serialize(RetOrError(false, exc.what()));
+            result = serialize(RetOrError(false, exc.what()));
         }
+        std::cout << "Result size: " << result.size() << std::endl << std::endl;
+        return result;
     }
 
     std::string processRequest(const std::string & inName, const std::string & inArg)

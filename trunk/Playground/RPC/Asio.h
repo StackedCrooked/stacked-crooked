@@ -6,9 +6,7 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <map>
 #include <string>
-#include <vector>
 
 
 class UDPServer : boost::noncopyable

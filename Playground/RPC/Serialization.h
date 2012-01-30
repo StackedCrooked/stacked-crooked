@@ -11,11 +11,15 @@
 #include <sstream>
 
 
+using boost::tuples::make_tuple;
+using boost::tuples::tuple;
+
+
 /**
  * Every RPC message is sent as a NameAndArg tuple. The name field is used
  * as the key in the lookup table that contains the function objects.
  */
-typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
+typedef tuple<std::string, std::string> NameAndArg;
 
 
 /**
@@ -27,7 +31,7 @@ typedef boost::tuples::tuple<std::string, std::string> NameAndArg;
  * If the boolean field is false then the call has failed and the string field
  * contains an error message and an exception will be thrown with this message.
  */
-typedef boost::tuples::tuple<bool, std::string> RetOrError;
+typedef tuple<bool, std::string> RetOrError;
 
 
 /**

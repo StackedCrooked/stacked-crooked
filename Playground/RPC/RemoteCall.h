@@ -25,6 +25,9 @@
 #endif
 
 
+using boost::tuples::tuple;
+
+
 template<typename Signature>
 struct Decompose;
 
@@ -175,25 +178,25 @@ struct Batch;
  *
  * Here's a simple RPC call for adding two numbers:
  *
- *     RPC_CALL(Add, int(pair<int, int>))
+ *     RPC_CALL(Add, int(tuple<int, int>))
  *
  * A class called Add is generated and is missing the implementation for the
  * execute() method. We have to provide the implementation:
  *
- *     int Add::execute(const pair<int, int> & value)
+ *     int Add::execute(const tuple<int, int> & value)
  *     {
  *         return value.first + value.second;
  *     }
  *
  * That's it. Now we can try it out:
  *
- *     int seven = Add(make_pair(3, 4)).send();
+ *     int seven = Add(make_tuple(3, 4)).send();
  *
  * There is also the Batch template which enables us to apply same method on
  * a vector of objects:
  *
- *     std::vector<pair<int, int> > pairs = ...;
- *     std::vector<int> sums = Batch<Add>(pairs).send();
+ *     std::vector<tuple<int, int> > args = ...;
+ *     std::vector<int> sums = Batch<Add>(args).send();
  *
  * Serialization works out-of-the box for builtin types, most standard containers,
  * boost tuple types and any combination of these. User defined structs and
@@ -205,14 +208,6 @@ RPC_CALL(StartStopwatch,   Void(RemoteStopwatch)        )
 RPC_CALL(CheckStopwatch,   unsigned(RemoteStopwatch)    )
 RPC_CALL(StopStopwatch,    unsigned(RemoteStopwatch)    )
 RPC_CALL(DestroyStopwatch, Void(RemoteStopwatch)        )
-
-// Sample
-RPC_CALL(Add, int(std::pair<int, int>))
-
-inline int Add::execute(const std::pair<int, int> & arg)
-{
-    return arg.first + arg.second;
-}
 
 
 #endif // RPC_COMMAND_H

@@ -71,11 +71,8 @@ struct TestClient
     {
         UDPClient client("127.0.0.1", 9001);
         Redirector dest(boost::bind(&UDPClient::send, &client, _1));
-
-        int seven = Add(std::make_pair(3, 4)).send();
-        std::cout << "seven: " << seven << std::endl;
-//        testSingle();
-//        testBatch();
+        testSingle();
+        testBatch();
     }
 
 };

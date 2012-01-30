@@ -9,8 +9,6 @@
 #include <utility>
 
 
-
-
 struct TestServer
 {
 public:
@@ -38,8 +36,6 @@ public:
     {
         mStopwatches.erase(std::remove_if(mStopwatches.begin(), mStopwatches.end(), boost::bind(&TestServer::GetId, _1) == id));
     }
-
-
 
     Stopwatches getStopwatches()
     {

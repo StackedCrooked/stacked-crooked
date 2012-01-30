@@ -1,5 +1,5 @@
-#ifndef RPC_COMMAND_H
-#define RPC_COMMAND_H
+#ifndef RPC_CALL_H
+#define RPC_CALL_H
 
 
 #include "Client.h"
@@ -115,7 +115,7 @@ struct Batch;
 //
 // Helper macros for the RPC_CALL macro.
 //
-#define RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
+#define RPC_GENERATE_CALL(NAME, SIGNATURE) \
     struct NAME : public RemoteCall<SIGNATURE> { \
         typedef RemoteCall<SIGNATURE> Base; \
         typedef Base::Arg Arg; \
@@ -125,7 +125,7 @@ struct Batch;
         static Ret execute(const Arg & arg); \
     };
 
-#define RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE) \
+#define RPC_GENERATE_BATCH_CALL(NAME, SIGNATURE) \
     template<> \
     struct Batch<NAME> : public RemoteBatchCall<NAME> { \
         typedef RemoteBatchCall<NAME>::Arg Arg; \
@@ -136,24 +136,24 @@ struct Batch;
 
 //
 // The server can provide implementations for the RPC calls by
-// implementating the "execute" method in the generated command.
+// implementating the "execute" method in the generated call.
 //
 #ifdef RPC_SERVER
 
-#define RPC_REGISTER_COMMAND(NAME) \
+#define RPC_REGISTER_CALL(NAME) \
     struct NAME##Registrator { NAME##Registrator() { Register<NAME>(); } } g##NAME##Registrator;
 
-#define RPC_REGISTER_BATCH_COMMAND(NAME) \
+#define RPC_REGISTER_BATCH_CALL(NAME) \
     struct Batch##NAME##Registrator { \
         Batch##NAME##Registrator() { Register< Batch<NAME> >(); } \
     }; \
     static Batch##NAME##Registrator g##Batch##NAME##Registrator;
 
 #define RPC_CALL(NAME, SIGNATURE) \
-    RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
-    RPC_REGISTER_COMMAND(NAME) \
-    RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE) \
-    RPC_REGISTER_BATCH_COMMAND(NAME)
+    RPC_GENERATE_CALL(NAME, SIGNATURE) \
+    RPC_REGISTER_CALL(NAME) \
+    RPC_GENERATE_BATCH_CALL(NAME, SIGNATURE) \
+    RPC_REGISTER_BATCH_CALL(NAME)
 
 #else
 
@@ -196,10 +196,10 @@ struct Batch;
  * classes must be made serializable. See the boost documentation for more info.
  */
 #define RPC_CALL(NAME, SIGNATURE) \
-	RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
-	RPC_GENERATE_BATCH_COMMAND(NAME, SIGNATURE)
+    RPC_GENERATE_CALL(NAME, SIGNATURE) \
+    RPC_GENERATE_BATCH_CALL(NAME, SIGNATURE)
 
 #endif // RPC_SERVER
 
 
-#endif // RPC_COMMAND_H
+#endif // RPC_CALL_H

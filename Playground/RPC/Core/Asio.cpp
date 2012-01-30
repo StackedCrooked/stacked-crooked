@@ -104,5 +104,4 @@ std::string UDPClient::send(const std::string & inMessage)
     udp::endpoint sender_endpoint;
     size_t reply_length = mImpl->socket.receive_from(boost::asio::buffer(reply, cMaxLength), sender_endpoint);
     return std::string(reply, reply_length);
-
 }

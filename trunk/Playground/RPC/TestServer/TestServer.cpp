@@ -2,6 +2,7 @@
 
 #include "Core/RPCServer.h"
 #include "Core/RemoteCall.h"
+#include "Core/Test.h"
 #include "Stopwatch.h"
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>

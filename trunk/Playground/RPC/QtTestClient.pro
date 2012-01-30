@@ -20,5 +20,6 @@ HEADERS += \
     Core/RemoteObject.h \
     Core/RemoteCall.h \
     Core/Client.h \
-    Core/Asio.h
+    Core/Asio.h \
+    Core/Test.h
 

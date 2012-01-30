@@ -4,6 +4,8 @@ CONFIG -= qt
 
 LIBS += -lboost_serialization -lboost_system -pthread
 
+DEFINES += RPC_CLIENT
+
 SOURCES += \
     Core/TCPServer.cpp \
     Core/TCPClient.cpp \
@@ -21,5 +23,6 @@ HEADERS += \
     Core/RemoteCall.h \
     Core/Client.h \
     Core/Asio.h \
-    Core/Test.h
+    Core/Test.h \
+    Core/ConcurrentCall.h
 

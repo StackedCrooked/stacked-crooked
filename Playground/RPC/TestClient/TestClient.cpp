@@ -30,7 +30,7 @@ struct TestClient
         for (std::size_t idx = 0; idx < 100; ++idx)
         {
             std::stringstream ss;
-            ss << "Stopwatch_" << std::setw(3) << idx;
+            ss << "S" << std::setw(3) << idx;
             names.push_back(ss.str());
         }
 

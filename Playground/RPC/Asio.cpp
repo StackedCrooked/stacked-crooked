@@ -22,17 +22,10 @@ boost::asio::io_service & get_io_service()
 //
 struct UDPServer::Impl
 {
-    Impl(unsigned inPort) :
+    Impl(unsigned inPort, const RequestHandler & inRequestHandler) :
         mPort(inPort),
+        mRequestHandler(inRequestHandler),
         mSocket(get_io_service(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), mPort))
-    {
-    }
-
-    ~Impl()
-    {
-    }
-
-    void run(const RequestHandler & inRequestHandler)
     {
         while (true)
         {
@@ -45,25 +38,24 @@ struct UDPServer::Impl
         }
     }
 
+    ~Impl()
+    {
+    }
+
     unsigned mPort;
+    RequestHandler mRequestHandler;
     boost::asio::ip::udp::socket mSocket;
 };
 
 
-UDPServer::UDPServer(unsigned inPort) :
-    mImpl(new Impl(inPort))
+UDPServer::UDPServer(unsigned inPort, const RequestHandler & inRequestHandler) :
+    mImpl(new Impl(inPort, inRequestHandler))
 {
 }
 
 
 UDPServer::~UDPServer()
 {
-}
-
-
-void UDPServer::run(const RequestHandler & inRequestHandler)
-{
-    mImpl->run(inRequestHandler);
 }
 
 

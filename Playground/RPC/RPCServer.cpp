@@ -18,8 +18,7 @@ struct RPCServer::Impl
 
     void listen(unsigned port)
     {
-        mUDPServer.reset(new UDPServer(port));
-        mUDPServer->run(boost::bind(&Impl::processRequest, this, _1));
+        mUDPServer.reset(new UDPServer(port, boost::bind(&Impl::processRequest, this, _1)));
     }
 
     static void addHandler(const std::string & inName, const Handler & inHandler)

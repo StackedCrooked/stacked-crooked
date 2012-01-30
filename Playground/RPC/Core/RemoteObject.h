@@ -5,7 +5,6 @@
 #include <string>
 
 
-template<class LocalType>
 struct RemoteObject
 {
     RemoteObject(long inId = 0) :
@@ -29,10 +28,9 @@ private:
 };
 
 
-template<class T>
-inline bool operator<(const RemoteObject<T> & lhs, const RemoteObject<T> & rhs)
+inline bool operator<(const RemoteObject & lhs, const RemoteObject & rhs)
 {
-    return lhs.Id() < rhs.Id();
+    return lhs.id() < rhs.id();
 }
 
 

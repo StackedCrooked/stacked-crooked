@@ -58,7 +58,7 @@ struct RemoteCall
 
     const Arg & arg() const { return mArg; }
 
-    #if RPC_CLIENT
+    #ifdef RPC_CLIENT
     Ret send()
     {
         return Redirector::Get().send(*this);
@@ -83,7 +83,7 @@ struct RemoteBatchCall : public Base
 
     static std::string Name() { return "RemoteBatchCall<" + C::Name() + ">"; }
 
-#if RPC_SERVER
+#ifdef RPC_SERVER
     typedef typename C::Arg A;
     typedef typename C::Ret R;
 
@@ -138,7 +138,7 @@ struct Batch;
 // The server can provide implementations for the RPC calls by
 // implementating the "execute" method in the generated command.
 //
-#if RPC_SERVER
+#ifdef RPC_SERVER
 
 #define RPC_REGISTER_COMMAND(NAME) \
     struct NAME##Registrator { NAME##Registrator() { Register<NAME>(); } } g##NAME##Registrator;

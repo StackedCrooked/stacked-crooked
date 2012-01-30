@@ -1,6 +1,9 @@
-#include "Asio.h"
-#include "RemoteCall.h"
-#include "RemoteObjects.h"
+#define RPC_CLIENT
+
+
+#include "Core/Asio.h"
+#include "Core/RemoteCall.h"
+#include "Core/RemoteObjects.h"
 #include <iostream>
 #include <sstream>
 #include <utility>

@@ -3,21 +3,19 @@
 
 
 #include "RemoteObject.h"
-#include "Stopwatch.h"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <vector>
 
 
-struct RemoteStopwatch : public RemoteObject<Stopwatch>
+struct RemoteStopwatch : public RemoteObject
 {
-    typedef RemoteObject<Stopwatch> Base;
 
     RemoteStopwatch() {}
 
-    RemoteStopwatch(const Stopwatch & inStopwatch) :
-        Base(inStopwatch.id()),
-        mName(inStopwatch.name())
+    RemoteStopwatch(long inId, const std::string & inName) :
+        RemoteObject(inId),
+        mName(inName)
     {
     }
 
@@ -26,7 +24,7 @@ struct RemoteStopwatch : public RemoteObject<Stopwatch>
     template<typename Archive>
     void serialize(Archive & ar, const unsigned int)
     {
-        ar & boost::serialization::base_object<Base>(*this);
+        ar & boost::serialization::base_object<RemoteObject>(*this);
         ar & mName;
     }
 

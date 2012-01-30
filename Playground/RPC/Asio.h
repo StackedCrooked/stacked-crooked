@@ -14,7 +14,7 @@
 class UDPServer : boost::noncopyable
 {
 public:
-    // RequestHandler functor takes the request as a string and returns the reponse as a string.
+    // RequestHandler functor receives requests as strings and sends responses as strings.
     typedef boost::function<std::string(const std::string &)> RequestHandler;
 
     UDPServer(unsigned port, const RequestHandler & requestHandler);
@@ -34,6 +34,7 @@ public:
 
     ~UDPClient();
 
+    // Sends a (blocking) request and returns the response received from the server.
     std::string send(const std::string & inMessage);
 
 private:

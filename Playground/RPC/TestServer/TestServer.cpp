@@ -118,13 +118,6 @@ Void DestroyStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 }
 
 
-Void Sleep::execute(RPCServer &, const unsigned &arg)
-{
-    sleep(arg);
-    return Void();
-}
-
-
 template<typename C>
 void Register()
 {

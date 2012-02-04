@@ -17,7 +17,7 @@ struct CombinedCall : public RemoteCall<std::vector<std::string>(std::vector<Nam
     typedef RemoteCall<std::vector<std::string>(std::vector<NameAndArg>)> Base;
     typedef Base::Arg Arg;
     typedef Base::Ret Ret;
-    static std::string Name() { return "ConcurrentCall"; }
+    static std::string Name() { return "CombinedCall"; }
 
     CombinedCall(const Arg & arg) :
         Base(Name(), arg)
@@ -25,7 +25,6 @@ struct CombinedCall : public RemoteCall<std::vector<std::string>(std::vector<Nam
     }
 
     #ifdef RPC_SERVER
-
     static std::vector<std::string> execute(RPCServer & server, const std::vector<NameAndArg> & args)
     {
         std::vector<std::string> result;

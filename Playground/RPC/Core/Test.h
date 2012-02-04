@@ -11,7 +11,6 @@ RPC_CALL(StartStopwatch,   Void(RemoteStopwatch)        )
 RPC_CALL(CheckStopwatch,   unsigned(RemoteStopwatch)    )
 RPC_CALL(StopStopwatch,    unsigned(RemoteStopwatch)    )
 RPC_CALL(DestroyStopwatch, Void(RemoteStopwatch)        )
-RPC_CALL(Sleep,            Void(unsigned))
 
 
 #endif // TEST_H

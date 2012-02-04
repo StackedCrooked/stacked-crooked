@@ -63,6 +63,21 @@ Combine(const C0 & c0, const C1 & c1)
     return boost::tuples::make_tuple(deserialize<typename C0::Ret>(result[0]),
                                      deserialize<typename C1::Ret>(result[1]));
 }
+
+template<typename C0, typename C1, typename C2>
+boost::tuples::tuple<typename C0::Ret, typename C1::Ret, typename C2::Ret>
+Combine(const C0 & c0, const C1 & c1, const C2 & c2)
+{
+    std::vector<NameAndArg> args;
+    args.push_back(NameAndArg(c0.name(), serialize(c0.arg())));
+    args.push_back(NameAndArg(c1.name(), serialize(c1.arg())));
+    args.push_back(NameAndArg(c2.name(), serialize(c2.arg())));
+
+    std::vector<std::string> result = CombinedCall(args).send();
+    return boost::tuples::make_tuple(deserialize<typename C0::Ret>(result[0]),
+                                     deserialize<typename C1::Ret>(result[1]),
+                                     deserialize<typename C2::Ret>(result[2]));
+}
 #endif
 
 

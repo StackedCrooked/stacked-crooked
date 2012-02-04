@@ -21,9 +21,11 @@ T deserialize(const std::string &);
 class RPCServer : boost::noncopyable
 {
 public:
-    RPCServer();
-
-    ~RPCServer();
+    static RPCServer & Instance()
+    {
+        static RPCServer fInstance;
+        return fInstance;
+    }
 
     // Start listening
     void listen(unsigned port);
@@ -31,26 +33,31 @@ public:
     // Maps the function name to it's implementation.
     // Type erasure occurs here.
     template<typename Command>
-    static void registerCommand()
+    void registerCommand()
     {
-        addHandler(Command::Name(), boost::bind(&RPCServer::process<Command>, _1));
+        addHandler(Command::Name(), boost::bind(&RPCServer::process<Command>, this, _1));
     }
 
     template<typename Command>
-    static std::string process(const std::string & serialized)
+    std::string process(const std::string & serialized)
     {
         typedef typename Command::Arg Arg;
         typedef typename Command::Ret Ret;
         Arg arg = deserialize<Arg>(serialized);
-        Ret ret = Command::execute(arg);
+        Ret ret = Command::execute(*this, arg);
         return serialize(ret);
     }
 
+    std::string processRequest(const std::string & inRequest);
+
 private:
+    RPCServer();
+    ~RPCServer();
+
     typedef boost::function<std::string(const std::string &)> Handler;
     typedef std::map<std::string, Handler> Handlers;
 
-    static void addHandler(const std::string & inName, const Handler & inHandler);
+    void addHandler(const std::string & inName, const Handler & inHandler);
 
     struct Impl;
     boost::scoped_ptr<Impl> mImpl;

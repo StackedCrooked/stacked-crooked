@@ -72,14 +72,14 @@ Stopwatch & getStopwatch(long inId)
 }
 
 
-RemoteStopwatch CreateStopwatch::execute(const std::string &arg)
+RemoteStopwatch CreateStopwatch::execute(RPCServer &, const std::string &arg)
 {
     Stopwatch & sw = TestServer::Get().addStopwatch(arg);
     return RemoteStopwatch(sw.id(), sw.name());
 }
 
 
-RemoteStopwatches GetStopwatches::execute(const Void & )
+RemoteStopwatches GetStopwatches::execute(RPCServer &, const Void & )
 {
     RemoteStopwatches result;
     TestServer::Stopwatches sw = TestServer::Get().getStopwatches();
@@ -92,26 +92,26 @@ RemoteStopwatches GetStopwatches::execute(const Void & )
 }
 
 
-Void StartStopwatch::execute(const RemoteStopwatch & arg)
+Void StartStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 {
     getStopwatch(arg.id()).start();
     return Void();
 }
 
 
-unsigned StopStopwatch::execute(const RemoteStopwatch & arg)
+unsigned StopStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 {
     return getStopwatch(arg.id()).stop();
 }
 
 
-unsigned CheckStopwatch::execute(const RemoteStopwatch &arg)
+unsigned CheckStopwatch::execute(RPCServer &, const RemoteStopwatch &arg)
 {
     return getStopwatch(arg.id()).elapsedMs();
 }
 
 
-Void DestroyStopwatch::execute(const RemoteStopwatch & arg)
+Void DestroyStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 {
     TestServer::Get().removeStopwatch(arg.id());
     return Void();
@@ -121,7 +121,8 @@ Void DestroyStopwatch::execute(const RemoteStopwatch & arg)
 template<typename C>
 void Register()
 {
-    RPCServer::registerCommand<C>();
+    RPCServer & server = RPCServer::Instance();
+    server.registerCommand<C>();
 }
 
 
@@ -129,10 +130,9 @@ int main()
 {
     try
     {
-        RPCServer server;
         const unsigned cPort = 9001;
         std::cout << "Listening to port " << cPort << std::endl;
-        server.listen(cPort);
+        RPCServer::Instance().listen(cPort);
     }
     catch (const std::exception & exc)
     {

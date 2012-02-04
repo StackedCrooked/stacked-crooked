@@ -21,13 +21,13 @@ struct RPCServer::Impl
         mUDPServer.reset(new UDPServer(port, boost::bind(&Impl::processRequest, this, _1)));
     }
 
-    static void addHandler(const std::string & inName, const Handler & inHandler)
+    void addHandler(const std::string & inName, const Handler & inHandler)
     {
-        if (GetHandlers().find(inName) != GetHandlers().end())
+        if (mHandlers.find(inName) != mHandlers.end())
         {
             throw std::runtime_error("Handler already added for " + inName);
         }
-        GetHandlers().insert(std::make_pair(inName, inHandler));
+        mHandlers.insert(std::make_pair(inName, inHandler));
     }
 
     std::string processRequest(const std::string & inRequest)
@@ -51,8 +51,8 @@ struct RPCServer::Impl
 
     std::string processRequest(const std::string & inName, const std::string & inArg)
     {
-        Handlers::iterator it = GetHandlers().find(inName);
-        if (it == GetHandlers().end())
+        Handlers::iterator it = mHandlers.find(inName);
+        if (it == mHandlers.end())
         {
             throw std::runtime_error("Command not registered: " + inName);
         }
@@ -62,17 +62,12 @@ struct RPCServer::Impl
 
     unsigned mPort;
     boost::scoped_ptr<UDPServer> mUDPServer;
-
-    static Handlers & GetHandlers()
-    {
-        static Handlers fHandlers;
-        return fHandlers;
-    }
+    Handlers mHandlers;
 };
 
 
 RPCServer::RPCServer() :
-    mImpl(new Impl)
+    mImpl(new Impl())
 {
 }
 
@@ -88,7 +83,13 @@ void RPCServer::listen(unsigned port)
 }
 
 
+std::string RPCServer::processRequest(const std::string & inRequest)
+{
+    return mImpl->processRequest(inRequest);
+}
+
+
 void RPCServer::addHandler(const std::string & inName, const Handler & inHandler)
 {
-    Impl::addHandler(inName, inHandler);
+    mImpl->addHandler(inName, inHandler);
 }

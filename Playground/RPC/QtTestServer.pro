@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= qt
 
-LIBS += -lboost_serialization -lboost_system -pthread
+LIBS += -L/opt/local/lib -lboost_serialization -lboost_system -pthread
 
 DEFINES += RPC_SERVER
 

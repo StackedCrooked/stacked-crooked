@@ -19,8 +19,8 @@ std::string PerformRemoteCall(const NameAndArg & )
 struct ConcurrentCall : public RemoteCall<std::vector<std::string>(std::vector<NameAndArg>)>
 {
     typedef RemoteCall<std::vector<std::string>(std::vector<NameAndArg>)> Base;
-    typedef typename Base::Arg Arg;
-    typedef typename Base::Ret Ret;
+    typedef Base::Arg Arg;
+    typedef Base::Ret Ret;
     static std::string Name() { return "ConcurrentCall"; }
 
     ConcurrentCall(const Arg & arg) :

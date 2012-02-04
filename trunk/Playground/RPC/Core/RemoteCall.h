@@ -115,9 +115,9 @@ struct Batch;
 //
 // Helper macros for the RPC_CALL macro.
 //
-#define RPC_GENERATE_CALL(NAME, SIGNATURE) \
-    struct NAME : public RemoteCall<SIGNATURE> { \
-        typedef RemoteCall<SIGNATURE> Base; \
+#define RPC_GENERATE_CALL(NAME, Signature) \
+    struct NAME : public RemoteCall<Signature> { \
+        typedef RemoteCall<Signature> Base; \
         typedef Base::Arg Arg; \
         typedef Base::Ret Ret; \
         static std::string Name() { return #NAME; } \
@@ -125,7 +125,7 @@ struct Batch;
         static Ret execute(const Arg & arg); \
     };
 
-#define RPC_GENERATE_BATCH_CALL(NAME, SIGNATURE) \
+#define RPC_GENERATE_BATCH_CALL(NAME) \
     template<> \
     struct Batch<NAME> : public RemoteBatchCall<NAME> { \
         typedef RemoteBatchCall<NAME>::Arg Arg; \
@@ -133,29 +133,9 @@ struct Batch;
         Batch(const Arg & args) : RemoteBatchCall<NAME>(args) { } \
     };
 
+#define RPC_RUN_ON_STARTUP(Name, Statement) \
+    namespace { struct RunOnStartup_##Name { RunOnStartup_##Name() { Statement; } } g##RunOnStartup_##Name; }
 
-//
-// The server can provide implementations for the RPC calls by
-// implementating the "execute" method in the generated call.
-//
-#ifdef RPC_SERVER
-
-#define RPC_RUN_ON_STARTUP(Statement) \
-    namespace { struct __FILE__##"_"##__LINE { __FILE__##"_"##__LINE() { Statement } }; g##__FILE__##"_"##__LINE; }
-
-#define RPC_REGISTER_BATCH_CALL(NAME) \
-    struct Batch##NAME##Registrator { \
-        Batch##NAME##Registrator() { Register< Batch<NAME> >(); } \
-    }; \
-    static Batch##NAME##Registrator g##Batch##NAME##Registrator;
-
-#define RPC_CALL(NAME, SIGNATURE) \
-    RPC_GENERATE_CALL(NAME, SIGNATURE) \
-    RPC_RUN_ON_STARTUP(Register<NAME>();) \
-    RPC_GENERATE_BATCH_CALL(NAME, SIGNATURE) \
-    RPC_REGISTER_BATCH_CALL(NAME)
-
-#else
 
 
 /**
@@ -195,11 +175,21 @@ struct Batch;
  * boost tuple types and any combination of these. User defined structs and
  * classes must be made serializable. See the boost documentation for more info.
  */
-#define RPC_CALL(NAME, SIGNATURE) \
-    RPC_GENERATE_CALL(NAME, SIGNATURE) \
-    RPC_GENERATE_BATCH_CALL(NAME, SIGNATURE)
+#ifdef RPC_SERVER
 
-#endif // RPC_SERVER
+#define RPC_CALL(Name, Signature) \
+    RPC_GENERATE_CALL(Name, Signature) \
+    RPC_RUN_ON_STARTUP(Name, Register<Name>()) \
+    RPC_GENERATE_BATCH_CALL(Name) \
+    RPC_RUN_ON_STARTUP(Batch_##Name, Register< Batch<Name> >())
+
+#else
+
+#define RPC_CALL(Name, Signature) \
+    RPC_GENERATE_CALL(Name, Signature) \
+    RPC_GENERATE_BATCH_CALL(Name, Signature)
+
+#endif
 
 
 #endif // RPC_CALL_H

@@ -140,8 +140,8 @@ struct Batch;
 //
 #ifdef RPC_SERVER
 
-#define RPC_REGISTER_CALL(NAME) \
-    struct NAME##Registrator { NAME##Registrator() { Register<NAME>(); } } g##NAME##Registrator;
+#define RPC_RUN_ON_STARTUP(Statement) \
+    namespace { struct __FILE__##"_"##__LINE { __FILE__##"_"##__LINE() { Statement } }; g##__FILE__##"_"##__LINE; }
 
 #define RPC_REGISTER_BATCH_CALL(NAME) \
     struct Batch##NAME##Registrator { \
@@ -151,7 +151,7 @@ struct Batch;
 
 #define RPC_CALL(NAME, SIGNATURE) \
     RPC_GENERATE_CALL(NAME, SIGNATURE) \
-    RPC_REGISTER_CALL(NAME) \
+    RPC_RUN_ON_STARTUP(Register<NAME>();) \
     RPC_GENERATE_BATCH_CALL(NAME, SIGNATURE) \
     RPC_REGISTER_BATCH_CALL(NAME)
 

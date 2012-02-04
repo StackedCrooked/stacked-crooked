@@ -87,13 +87,13 @@ struct RemoteBatchCall : public Base
     typedef typename C::Arg A;
     typedef typename C::Ret R;
 
-    static std::vector<R> execute(const std::vector<A> & arg)
+    static std::vector<R> execute(RPCServer & server, const std::vector<A> & arg)
     {
         TRACE
         std::vector<R> result;
         for (std::size_t idx = 0; idx < arg.size(); ++idx)
         {
-            result.push_back(C::execute(A(arg[idx])));
+            result.push_back(C::execute(server, A(arg[idx])));
         }
         return result;
     }
@@ -122,7 +122,7 @@ struct Batch;
         typedef Base::Ret Ret; \
         static std::string Name() { return #NAME; } \
         NAME(const Arg & inArgs) : RemoteCall<Ret(Arg)>(Name(), inArgs) { } \
-        static Ret execute(const Arg & arg); \
+        static Ret execute(RPCServer & server, const Arg & arg); \
     };
 
 #define RPC_GENERATE_BATCH_CALL(NAME) \
@@ -156,7 +156,7 @@ struct Batch;
  * A class called Add is generated and is missing the implementation for the
  * execute() method. We have to provide the implementation:
  *
- *     int Add::execute(const tuple<int, int> & value)
+ *     int Add::execute(RPCServer & server, const tuple<int, int> & value)
  *     {
  *         return value.first + value.second;
  *     }
@@ -187,7 +187,7 @@ struct Batch;
 
 #define RPC_CALL(Name, Signature) \
     RPC_GENERATE_CALL(Name, Signature) \
-    RPC_GENERATE_BATCH_CALL(Name, Signature)
+    RPC_GENERATE_BATCH_CALL(Name)
 
 #endif
 

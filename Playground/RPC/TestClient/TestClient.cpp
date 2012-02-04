@@ -70,23 +70,26 @@ struct TestClient
     }
 
 
-    void testConcurrent()
+    void testCombined()
     {
-        std::cout << "Testing concurrent calls" << std::endl;
+        std::cout << "Testing combined calls" << std::endl;
+
+        std::cout << "First we create a stopwatch." << std::endl;
         RemoteStopwatch s = CreateStopwatch("s1").send();
 
         std::cout << "Concurrent call..." << std::endl;
-        boost::tuples::tuple<Void, unsigned> result = Concurrent(StartStopwatch(s), StopStopwatch(s));
-        std::cout << "Time: " << result.get<1>() << std::endl;
+        std::cout << "Now we request both StartStopwatch and StopStopwatch." << std::endl;
+        boost::tuples::tuple<Void, unsigned> result = Combine(StartStopwatch(s), StopStopwatch(s));
+        std::cout << "Result: Void and " << result.get<1>() << std::endl;
     }
 
     void run()
     {
         UDPClient client("127.0.0.1", 9001);
         Redirector dest(boost::bind(&UDPClient::send, &client, _1));
-        testSingle();
+        //testSingle();
         //testBatch();
-        testConcurrent();
+        testCombined();
     }
 
 };

@@ -2,9 +2,17 @@
 #define SERIALIZATION_H
 
 
+#define RPC_BINARY 0
+
+
 #include <boost/archive/basic_archive.hpp>
-#include <boost/archive/text_oarchive.hpp>
+#if RPC_BINARY
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#else
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#endif
 #include <boost/serialization/vector.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <string>
@@ -42,7 +50,11 @@ template<typename T>
 std::string serialize(const T & value)
 {
     std::ostringstream ss;
+#if RPC_BINARY
+    boost::archive::binary_oarchive oa(ss);
+#else
     boost::archive::text_oarchive oa(ss);
+#endif
     oa << value;
     return ss.str();
 }
@@ -55,7 +67,11 @@ template<typename T>
 void deserialize(const std::string & buffer, T & ret)
 {
     std::istringstream ss(buffer);
+#if RPC_BINARY
+    boost::archive::binary_iarchive ia(ss);
+#else
     boost::archive::text_iarchive ia(ss);
+#endif
     ia >> ret;
 }
 

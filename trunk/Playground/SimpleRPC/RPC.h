@@ -113,14 +113,14 @@ struct Decompose<Ret_(Arg_)>
 
 
 template<typename Signature_>
-struct RemoteCall
+struct RemoteCommand
 {
     typedef Signature_ Signature;
-    typedef RemoteCall<Signature> This;
+    typedef RemoteCommand<Signature> This;
     typedef typename Decompose<Signature>::Ret Ret;
     typedef typename Decompose<Signature>::Arg Arg;
 
-    RemoteCall(const std::string & inName, const Arg & inArg) :
+    RemoteCommand(const std::string & inName, const Arg & inArg) :
         mName(inName),
         mArg(inArg)
     {
@@ -139,14 +139,14 @@ private:
 template<typename C,
          typename Arg_ = std::vector<typename C::Arg>,
          typename Ret_ = std::vector<typename C::Ret>,
-         typename Base = RemoteCall<Ret_(Arg_)> >
-struct RemoteBatchCall : public Base
+         typename Base = RemoteCommand<Ret_(Arg_)> >
+struct RemoteBatchCommand : public Base
 {
     typedef Arg_ Arg;
     typedef Ret_ Ret;
-    typedef RemoteBatchCall<C, Arg, Ret> This;
+    typedef RemoteBatchCommand<C, Arg, Ret> This;
 
-    static std::string Name() { return "RemoteBatchCall<" + C::Name() + ">"; }
+    static std::string Name() { return "RemoteBatchCommand<" + C::Name() + ">"; }
 
     #ifdef RPC_SERVER
     typedef typename C::Arg A;
@@ -164,7 +164,7 @@ struct RemoteBatchCall : public Base
     #endif
 
 protected:
-    RemoteBatchCall(const Arg & inArg) : Base(Name(), inArg) { }
+    RemoteBatchCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
 
@@ -173,24 +173,24 @@ struct Batch;
 
 
 //
-// Helper macros for the RPC_CALL macro.
+// Helper macros for the RPC_COMMAND macro.
 //
-#define RPC_GENERATE_CALL(NAME, Signature) \
-    struct NAME : public RemoteCall<Signature> { \
-        typedef RemoteCall<Signature> Base; \
+#define RPC_GENERATE_COMMAND(NAME, Signature) \
+    struct NAME : public RemoteCommand<Signature> { \
+        typedef RemoteCommand<Signature> Base; \
         typedef Base::Arg Arg; \
         typedef Base::Ret Ret; \
         static std::string Name() { return #NAME; } \
-        NAME(const Arg & inArgs) : RemoteCall<Ret(Arg)>(Name(), inArgs) { } \
+        NAME(const Arg & inArgs) : RemoteCommand<Ret(Arg)>(Name(), inArgs) { } \
         static Ret execute(RPCServer & server, const Arg & arg); \
     };
 
-#define RPC_GENERATE_BATCH_CALL(NAME) \
+#define RPC_GENERATE_BATCH_COMMAND(NAME) \
     template<> \
-    struct Batch<NAME> : public RemoteBatchCall<NAME> { \
-        typedef RemoteBatchCall<NAME>::Arg Arg; \
-        typedef RemoteBatchCall<NAME>::Ret Ret; \
-        Batch(const Arg & args) : RemoteBatchCall<NAME>(args) { } \
+    struct Batch<NAME> : public RemoteBatchCommand<NAME> { \
+        typedef RemoteBatchCommand<NAME>::Arg Arg; \
+        typedef RemoteBatchCommand<NAME>::Ret Ret; \
+        Batch(const Arg & args) : RemoteBatchCommand<NAME>(args) { } \
     };
 
 #define RPC_RUN_ON_STARTUP(Name, Statement) \
@@ -199,11 +199,11 @@ struct Batch;
 
 
 /**
- * RPC_CALL macro for defining remote procedure calls.
+ * RPC_COMMAND macro for defining remote procedure calls.
  *
  * Technically the macro only takes two arguments: name and signature:
  *
- *     RPC_CALL(Name, Signature)
+ *     RPC_COMMAND(Name, Signature)
  *
  * The signature consists of a return value and one argument.
  * If you want multiple arguments you can use a container, tuple of struct.
@@ -211,7 +211,7 @@ struct Batch;
  *
  * Here's a simple RPC call for adding two numbers:
  *
- *     RPC_CALL(Add, int(tuple<int, int>))
+ *     RPC_COMMAND(Add, int(tuple<int, int>))
  *
  * A class called Add is generated and is missing the implementation for the
  * execute() method. We have to provide the implementation:
@@ -237,17 +237,17 @@ struct Batch;
  */
 #ifdef RPC_SERVER
 
-#define RPC_CALL(Name, Signature) \
-    RPC_GENERATE_CALL(Name, Signature) \
+#define RPC_COMMAND(Name, Signature) \
+    RPC_GENERATE_COMMAND(Name, Signature) \
     RPC_RUN_ON_STARTUP(Name, Register<Name>()) \
-    RPC_GENERATE_BATCH_CALL(Name) \
+    RPC_GENERATE_BATCH_COMMAND(Name) \
     RPC_RUN_ON_STARTUP(Batch_##Name, Register< Batch<Name> >())
 
 #else
 
-#define RPC_CALL(Name, Signature) \
-    RPC_GENERATE_CALL(Name, Signature) \
-    RPC_GENERATE_BATCH_CALL(Name)
+#define RPC_COMMAND(Name, Signature) \
+    RPC_GENERATE_COMMAND(Name, Signature) \
+    RPC_GENERATE_BATCH_COMMAND(Name)
 
 #endif
 

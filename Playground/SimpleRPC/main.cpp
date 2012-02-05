@@ -1,8 +1,8 @@
 #include "RPC.h"
+#include "Foreach.h"
 #include "RemoteObjects.h"
 #include "Stopwatch.h"
 #include <boost/lexical_cast.hpp>
-
 
 
 RPC_COMMAND(CreateStopwatch,  RemoteStopwatch(std::string) )
@@ -156,7 +156,9 @@ struct ClientApplication
         std::cout << std::endl << "Testing Single Commands (sync)" << std::endl;
         RemoteStopwatch remoteStopwatch = client.send(CreateStopwatch("Stopwatch_01"));
         client.send(StartStopwatch(remoteStopwatch));
+        sleep(1);
         std::cout << "Check: " << client.send(CheckStopwatch(remoteStopwatch)) << std::endl;
+        sleep(1);
         std::cout << "Stop: " << client.send(StopStopwatch(remoteStopwatch)) << std::endl;
         std::cout << std::endl;
     }
@@ -165,10 +167,10 @@ struct ClientApplication
     void testForeach()
     {
         std::vector<std::string> names;
-        for (std::size_t idx = 0; idx < 100; ++idx)
+        for (std::size_t idx = 0; idx < 5; ++idx)
         {
             std::stringstream ss;
-            ss << "S" << std::setw(3) << idx;
+            ss << "Stopwatch_" << std::setfill('0') << std::setw(2) << idx;
             names.push_back(ss.str());
         }
 
@@ -178,7 +180,7 @@ struct ClientApplication
         Foreach<StartStopwatch>(client, rs);
         std::cout << "Started " << rs.size() << " stopwatches." << std::endl;
 
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 1; ++i)
         {
             std::cout << "Updated times:" << std::endl;
             std::vector<unsigned> times = Foreach<CheckStopwatch>(client, rs);

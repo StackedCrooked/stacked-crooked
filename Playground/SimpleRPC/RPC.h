@@ -34,13 +34,16 @@ public:
     {
         typedef typename Command::Arg Arg;
         typedef typename Command::Ret Ret;
+        std::cout << "*** BEGIN " << Command::Name() << std::endl;
+        std::cout << "Serialized arg: " << serialized << std::endl;
         Arg arg = deserialize<Arg>(serialized);
         Ret ret = Command::execute(*this, arg);
+        std::cout << "Serialized result: " << serialize(ret) << std::endl;
+        std::cout << "END " << Command::Name() << std::endl << std::endl;
         return serialize(ret);
     }
 
-    // The string must be a serialized NameAndArg object.
-    std::string processRequest(const std::string & arg);
+    std::string process(const NameAndArg & inNameAndArg);
 
     std::vector<std::string> getRegisteredCommands();
 
@@ -155,85 +158,6 @@ private:
     std::string mName;
     Arg mArg;
 };
-
-
-/**
- * Foreach(CommandName, ObjectList)
- *   ReturnList(Tuple<CommandName, ObjectList>)
- *   CommandName -> std::string(std::string)
- */
-namespace ForeachHelper {
-
-
-typedef std::string CommandName;
-typedef std::vector<std::string> Objects;
-typedef std::vector<std::string> ReturnList;
-typedef boost::tuples::tuple<CommandName, Objects> Arg;
-typedef Command<ReturnList(Arg)> Base;
-
-
-struct ForeachCommand : public Base
-{
-    ForeachCommand(const CommandName & inCommandName,
-                   const Objects & inObjects) :
-        Base(Name(), Arg(inCommandName, inObjects))
-    {
-    }
-
-    static std::string Name() { return "Foreach"; }
-
-    #ifdef RPC_SERVER
-    static std::vector<std::string> execute(RPCServer & server, const Arg & arg)
-    {
-        ReturnList result;
-        const CommandName & commandName = boost::tuples::get<0>(arg);
-        const Objects & objects = boost::tuples::get<1>(arg);
-        for (std::size_t idx = 0; idx < objects.size(); ++idx)
-        {
-            result.push_back(server.processRequest(serialize(NameAndArg(commandName, objects[idx]))));
-        }
-        return result;
-    }
-    #endif
-};
-
-
-template<typename T>
-static std::vector<std::string> ConvertToStringList(const std::vector<T> & objects)
-{
-    std::vector<std::string> res;
-    for (std::size_t idx = 0; idx < objects.size(); ++idx)
-    {
-        res.push_back(serialize(objects[idx]));
-    }
-    return res;
-}
-
-
-template<typename T>
-static std::vector<T> ConvertFromStringList(const std::vector<std::string> & objects)
-{
-    std::vector<T> res;
-    for (std::size_t idx = 0; idx < objects.size(); ++idx)
-    {
-        res.push_back(deserialize<T>(objects[idx]));
-    }
-    return res;
-}
-
-
-} // namespace ForeachHelper
-
-
-#ifdef RPC_CLIENT
-template<class Command>
-std::vector<typename Command::Ret> Foreach(RPCClient & client, const std::vector<typename Command::Arg> & args)
-{
-    using namespace ForeachHelper;
-    std::vector<std::string> results = client.send(ForeachCommand(Command::Name(), ConvertToStringList<typename Command::Arg>(args)));
-    return ConvertFromStringList<typename Command::Ret>(results);
-}
-#endif
 
 
 /**

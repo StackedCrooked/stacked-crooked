@@ -1,5 +1,4 @@
 #include "RPC.h"
-#include "Foreach.h"
 #include "RemoteObjects.h"
 #include "Stopwatch.h"
 #include <boost/lexical_cast.hpp>
@@ -163,7 +162,7 @@ struct ClientApplication
         std::cout << std::endl;
     }
 
-
+#if 0
     void testForeach()
     {
         std::vector<std::string> names;
@@ -209,11 +208,11 @@ struct ClientApplication
         }
         std::cout << std::endl;
     }
+#endif
 
     void run()
     {
         testSingle();
-        testForeach();
     }
 
 private:

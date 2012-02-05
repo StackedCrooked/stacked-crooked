@@ -187,12 +187,6 @@ private:
  *
  *     int seven = Add(make_tuple(3, 4)).send();
  *
- * There is also the Foreach template which enables us to apply same method on
- * a vector of objects:
- *
- *     std::vector<tuple<int, int> > args = ...;
- *     std::vector<int> sums = Foreach<Add>(args).send();
- *
  * Serialization works out-of-the box for builtin types, most standard containers,
  * boost tuple types and any combination of these. User defined structs and
  * classes must be made serializable. See the boost documentation for more info.

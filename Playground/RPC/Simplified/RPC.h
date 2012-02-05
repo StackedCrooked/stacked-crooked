@@ -4,6 +4,66 @@
 
 #include "Networking.h"
 #include "Serialization.h"
+#include <map>
+#include <vector>
+
+
+#ifdef RPC_SERVER
+class RPCServer : boost::noncopyable
+{
+public:
+    static RPCServer & Instance()
+    {
+        static RPCServer fInstance;
+        return fInstance;
+    }
+
+    // Start listening
+    void listen(unsigned port);
+
+    // Maps the function name to it's implementation.
+    // Type erasure occurs here.
+    template<typename Command>
+    void registerCommand()
+    {
+        addHandler(Command::Name(), boost::bind(&RPCServer::process<Command>, this, _1));
+    }
+
+    template<typename Command>
+    std::string process(const std::string & serialized)
+    {
+        typedef typename Command::Arg Arg;
+        typedef typename Command::Ret Ret;
+        Arg arg = deserialize<Arg>(serialized);
+        Ret ret = Command::execute(*this, arg);
+        return serialize(ret);
+    }
+
+    std::string processRequest(const std::string & inRequest);
+
+private:
+    RPCServer();
+    ~RPCServer();
+
+    typedef boost::function<std::string(const std::string &)> Handler;
+    typedef std::map<std::string, Handler> Handlers;
+
+    void addHandler(const std::string & inName, const Handler & inHandler);
+
+    struct Impl;
+    boost::scoped_ptr<Impl> mImpl;
+};
+
+
+template<typename C>
+void Register()
+{
+    RPCServer::Instance().registerCommand<C>();
+}
+#else
+class RPCServer;
+typedef UDPClient RPCClient;
+#endif
 
 
 template<typename Signature>
@@ -37,9 +97,18 @@ struct RemoteCall
     const Arg & arg() const { return mArg; }
 
     #ifdef RPC_CLIENT
-    Ret send()
+    Ret send(RPCClient & client)
     {
-        return Redirector::Get().send(*this);
+        std::string result = client.send(serialize(NameAndArg(name(), serialize(arg()))));
+        RetOrError retOrError = deserialize<RetOrError>(result);
+        if (retOrError.get_head())
+        {
+            return deserialize<Ret>(retOrError.get<1>());
+        }
+        else
+        {
+            throw std::runtime_error("Server error: " + retOrError.get<1>());
+        }
     }
     #endif // RPC_CLIENT
 
@@ -61,13 +130,12 @@ struct RemoteBatchCall : public Base
 
     static std::string Name() { return "RemoteBatchCall<" + C::Name() + ">"; }
 
-#ifdef RPC_SERVER
+    #ifdef RPC_SERVER
     typedef typename C::Arg A;
     typedef typename C::Ret R;
 
     static std::vector<R> execute(RPCServer & server, const std::vector<A> & arg)
     {
-        TRACE
         std::vector<R> result;
         for (std::size_t idx = 0; idx < arg.size(); ++idx)
         {
@@ -75,15 +143,11 @@ struct RemoteBatchCall : public Base
         }
         return result;
     }
-#endif
+    #endif
 
 protected:
     RemoteBatchCall(const Arg & inArg) : Base(Name(), inArg) { }
 };
-
-
-template<typename C>
-void Register();
 
 
 template<typename C>

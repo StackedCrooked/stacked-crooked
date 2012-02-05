@@ -19,6 +19,18 @@ RPC_COMMAND(DestroyStopwatch, Void(RemoteStopwatch)        )
 struct ServerApplication
 {
 public:
+
+    ServerApplication()
+    {
+        std::vector<std::string> commands = RPCServer::Instance().getRegisteredCommands();
+        std::cout << "Registered commands:" << std::endl;
+        for (std::size_t idx = 0; idx < commands.size(); ++idx)
+        {
+            std::cout << commands[idx] << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
     typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
     typedef std::vector<StopwatchPtr> Stopwatches;
 
@@ -160,16 +172,16 @@ struct ClientApplication
             names.push_back(ss.str());
         }
 
-        RemoteStopwatches rs = client.send(Foreach<CreateStopwatch>(names));
+        RemoteStopwatches rs = Foreach<CreateStopwatch>(client, names);
         std::cout << "Created " << rs.size() << " remote Stopwatches." << std::endl;
 
-        client.send(Foreach<StartStopwatch>(rs));
+        Foreach<StartStopwatch>(client, rs);
         std::cout << "Started " << rs.size() << " stopwatches." << std::endl;
 
         for (int i = 0; i < 10; ++i)
         {
             std::cout << "Updated times:" << std::endl;
-            std::vector<unsigned> times = client.send(Foreach<CheckStopwatch>(rs));
+            std::vector<unsigned> times = Foreach<CheckStopwatch>(client, rs);
             for (std::size_t idx = 0; idx < times.size(); ++idx)
             {
                 if (idx != 0)
@@ -182,7 +194,7 @@ struct ClientApplication
             sleep(1);
         }
 
-        std::vector<unsigned> stopTimes = client.send(Foreach<StopStopwatch>(rs));
+        std::vector<unsigned> stopTimes = Foreach<StopStopwatch>(client, rs);
         std::cout << "Stopped " << stopTimes.size() << " stopwatches. Times: " << std::endl;
 
         for (std::size_t idx = 0; idx < stopTimes.size(); ++idx)
@@ -217,7 +229,7 @@ void runClient(const std::string & host, short port)
 #endif // RPC_CLIENT
 
 
-int main()
+void run()
 {
     short port = 9001;
 #if RPC_SERVER
@@ -225,4 +237,19 @@ int main()
 #else
     runClient("127.0.0.1", port);
 #endif
+}
+
+
+int main()
+{
+    try
+    {
+        run();
+        return 0;
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << exc.what() << std::endl;
+        return 1;
+    }
 }

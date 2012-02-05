@@ -1,5 +1,5 @@
-#ifndef RPC_H
-#define RPC_H
+#ifndef RPC_H_INCLUDED
+#define RPC_H_INCLUDED
 
 
 #include "Networking.h"
@@ -39,7 +39,10 @@ public:
         return serialize(ret);
     }
 
-    std::string processRequest(const std::string & inRequest);
+    // The string must be a serialized NameAndArg object.
+    std::string processRequest(const std::string & arg);
+
+    std::vector<std::string> getRegisteredCommands();
 
 private:
     RPCServer();
@@ -100,6 +103,24 @@ private:
 #endif
 
 
+#define RPC_GENERATE_COMMAND(NAME, Signature) \
+    struct NAME : public Command<Signature> { \
+        typedef Command<Signature> Base; \
+        typedef Base::Arg Arg; \
+        typedef Base::Ret Ret; \
+        static std::string Name() { return #NAME; } \
+        NAME(const Arg & inArgs) : Command<Ret(Arg)>(Name(), inArgs) { } \
+        static Ret execute(RPCServer & server, const Arg & arg); \
+    };
+
+#ifdef RPC_SERVER
+#define RPC_REGISTER(Name, Statement) \
+    namespace Registration { struct RunOnStartup_##Name { RunOnStartup_##Name() { Statement; } }; static RunOnStartup_##Name g##RunOnStartup_##Name; }
+#else
+#define RPC_REGISTER(Name, Statement)
+#endif
+
+
 template<typename Signature>
 struct Decompose;
 
@@ -136,66 +157,83 @@ private:
 };
 
 
-template<typename C,
-         typename Arg_ = std::vector<typename C::Arg>,
-         typename Ret_ = std::vector<typename C::Ret>,
-         typename Base = Command<Ret_(Arg_)> >
+/**
+ * Foreach(CommandName, ObjectList)
+ *   ReturnList(Tuple<CommandName, ObjectList>)
+ *   CommandName -> std::string(std::string)
+ */
+namespace ForeachHelper {
+
+
+typedef std::string CommandName;
+typedef std::vector<std::string> Objects;
+typedef std::vector<std::string> ReturnList;
+typedef boost::tuples::tuple<CommandName, Objects> Arg;
+typedef Command<ReturnList(Arg)> Base;
+
+
 struct ForeachCommand : public Base
 {
-    typedef Arg_ Arg;
-    typedef Ret_ Ret;
-    typedef ForeachCommand<C, Arg, Ret> This;
+    ForeachCommand(const CommandName & inCommandName,
+                   const Objects & inObjects) :
+        Base(Name(), Arg(inCommandName, inObjects))
+    {
+    }
 
-    static std::string Name() { return "ForeachCommand<" + C::Name() + ">"; }
+    static std::string Name() { return "Foreach"; }
 
     #ifdef RPC_SERVER
-    typedef typename C::Arg A;
-    typedef typename C::Ret R;
-
-    static std::vector<R> execute(RPCServer & server, const std::vector<A> & arg)
+    static std::vector<std::string> execute(RPCServer & server, const Arg & arg)
     {
-        std::vector<R> result;
-        for (std::size_t idx = 0; idx < arg.size(); ++idx)
+        ReturnList result;
+        const CommandName & commandName = boost::tuples::get<0>(arg);
+        const Objects & objects = boost::tuples::get<1>(arg);
+        for (std::size_t idx = 0; idx < objects.size(); ++idx)
         {
-            result.push_back(C::execute(server, A(arg[idx])));
+            result.push_back(server.processRequest(serialize(NameAndArg(commandName, objects[idx]))));
         }
         return result;
     }
     #endif
-
-protected:
-    ForeachCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
 
-template<typename C>
-struct Foreach;
+template<typename T>
+static std::vector<std::string> ConvertToStringList(const std::vector<T> & objects)
+{
+    std::vector<std::string> res;
+    for (std::size_t idx = 0; idx < objects.size(); ++idx)
+    {
+        res.push_back(serialize(objects[idx]));
+    }
+    return res;
+}
 
 
-//
-// Helper macros for the RPC_COMMAND macro.
-//
-#define RPC_GENERATE_COMMAND(NAME, Signature) \
-    struct NAME : public Command<Signature> { \
-        typedef Command<Signature> Base; \
-        typedef Base::Arg Arg; \
-        typedef Base::Ret Ret; \
-        static std::string Name() { return #NAME; } \
-        NAME(const Arg & inArgs) : Command<Ret(Arg)>(Name(), inArgs) { } \
-        static Ret execute(RPCServer & server, const Arg & arg); \
-    };
+template<typename T>
+static std::vector<T> ConvertFromStringList(const std::vector<std::string> & objects)
+{
+    std::vector<T> res;
+    for (std::size_t idx = 0; idx < objects.size(); ++idx)
+    {
+        res.push_back(deserialize<T>(objects[idx]));
+    }
+    return res;
+}
 
-#define RPC_GENERATE_BATCH_COMMAND(NAME) \
-    template<> \
-    struct Foreach<NAME> : public ForeachCommand<NAME> { \
-        typedef ForeachCommand<NAME>::Arg Arg; \
-        typedef ForeachCommand<NAME>::Ret Ret; \
-        Foreach(const Arg & args) : ForeachCommand<NAME>(args) { } \
-    };
 
-#define RPC_RUN_ON_STARTUP(Name, Statement) \
-    namespace { struct RunOnStartup_##Name { RunOnStartup_##Name() { Statement; } } g##RunOnStartup_##Name; }
+} // namespace ForeachHelper
 
+
+#ifdef RPC_CLIENT
+template<class Command>
+std::vector<typename Command::Ret> Foreach(RPCClient & client, const std::vector<typename Command::Arg> & args)
+{
+    using namespace ForeachHelper;
+    std::vector<std::string> results = client.send(ForeachCommand(Command::Name(), ConvertToStringList<typename Command::Arg>(args)));
+    return ConvertFromStringList<typename Command::Ret>(results);
+}
+#endif
 
 
 /**
@@ -239,17 +277,14 @@ struct Foreach;
 
 #define RPC_COMMAND(Name, Signature) \
     RPC_GENERATE_COMMAND(Name, Signature) \
-    RPC_RUN_ON_STARTUP(Name, Register<Name>()) \
-    RPC_GENERATE_BATCH_COMMAND(Name) \
-    RPC_RUN_ON_STARTUP(Foreach_##Name, Register< Foreach<Name> >())
+    RPC_REGISTER(Name, Register<Name>())
 
 #else
 
 #define RPC_COMMAND(Name, Signature) \
-    RPC_GENERATE_COMMAND(Name, Signature) \
-    RPC_GENERATE_BATCH_COMMAND(Name)
+    RPC_GENERATE_COMMAND(Name, Signature)
 
 #endif
 
 
-#endif // RPC_H
+#endif // RPC_H_INCLUDED

@@ -150,7 +150,7 @@ struct ClientApplication
     }
 
 
-    void testBatch()
+    void testForeach()
     {
         std::vector<std::string> names;
         for (std::size_t idx = 0; idx < 100; ++idx)
@@ -160,16 +160,16 @@ struct ClientApplication
             names.push_back(ss.str());
         }
 
-        RemoteStopwatches rs = client.send(Batch<CreateStopwatch>(names));
+        RemoteStopwatches rs = client.send(Foreach<CreateStopwatch>(names));
         std::cout << "Created " << rs.size() << " remote Stopwatches." << std::endl;
 
-        client.send(Batch<StartStopwatch>(rs));
+        client.send(Foreach<StartStopwatch>(rs));
         std::cout << "Started " << rs.size() << " stopwatches." << std::endl;
 
         for (int i = 0; i < 10; ++i)
         {
             std::cout << "Updated times:" << std::endl;
-            std::vector<unsigned> times = client.send(Batch<CheckStopwatch>(rs));
+            std::vector<unsigned> times = client.send(Foreach<CheckStopwatch>(rs));
             for (std::size_t idx = 0; idx < times.size(); ++idx)
             {
                 if (idx != 0)
@@ -182,7 +182,7 @@ struct ClientApplication
             sleep(1);
         }
 
-        std::vector<unsigned> stopTimes = client.send(Batch<StopStopwatch>(rs));
+        std::vector<unsigned> stopTimes = client.send(Foreach<StopStopwatch>(rs));
         std::cout << "Stopped " << stopTimes.size() << " stopwatches. Times: " << std::endl;
 
         for (std::size_t idx = 0; idx < stopTimes.size(); ++idx)
@@ -199,7 +199,7 @@ struct ClientApplication
     void run()
     {
         testSingle();
-        testBatch();
+        testForeach();
     }
 
 private:

@@ -140,13 +140,13 @@ template<typename C,
          typename Arg_ = std::vector<typename C::Arg>,
          typename Ret_ = std::vector<typename C::Ret>,
          typename Base = Command<Ret_(Arg_)> >
-struct BatchCommand : public Base
+struct ForeachCommand : public Base
 {
     typedef Arg_ Arg;
     typedef Ret_ Ret;
-    typedef BatchCommand<C, Arg, Ret> This;
+    typedef ForeachCommand<C, Arg, Ret> This;
 
-    static std::string Name() { return "BatchCommand<" + C::Name() + ">"; }
+    static std::string Name() { return "ForeachCommand<" + C::Name() + ">"; }
 
     #ifdef RPC_SERVER
     typedef typename C::Arg A;
@@ -164,12 +164,12 @@ struct BatchCommand : public Base
     #endif
 
 protected:
-    BatchCommand(const Arg & inArg) : Base(Name(), inArg) { }
+    ForeachCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
 
 template<typename C>
-struct Batch;
+struct Foreach;
 
 
 //
@@ -187,10 +187,10 @@ struct Batch;
 
 #define RPC_GENERATE_BATCH_COMMAND(NAME) \
     template<> \
-    struct Batch<NAME> : public BatchCommand<NAME> { \
-        typedef BatchCommand<NAME>::Arg Arg; \
-        typedef BatchCommand<NAME>::Ret Ret; \
-        Batch(const Arg & args) : BatchCommand<NAME>(args) { } \
+    struct Foreach<NAME> : public ForeachCommand<NAME> { \
+        typedef ForeachCommand<NAME>::Arg Arg; \
+        typedef ForeachCommand<NAME>::Ret Ret; \
+        Foreach(const Arg & args) : ForeachCommand<NAME>(args) { } \
     };
 
 #define RPC_RUN_ON_STARTUP(Name, Statement) \
@@ -225,11 +225,11 @@ struct Batch;
  *
  *     int seven = Add(make_tuple(3, 4)).send();
  *
- * There is also the Batch template which enables us to apply same method on
+ * There is also the Foreach template which enables us to apply same method on
  * a vector of objects:
  *
  *     std::vector<tuple<int, int> > args = ...;
- *     std::vector<int> sums = Batch<Add>(args).send();
+ *     std::vector<int> sums = Foreach<Add>(args).send();
  *
  * Serialization works out-of-the box for builtin types, most standard containers,
  * boost tuple types and any combination of these. User defined structs and
@@ -241,7 +241,7 @@ struct Batch;
     RPC_GENERATE_COMMAND(Name, Signature) \
     RPC_RUN_ON_STARTUP(Name, Register<Name>()) \
     RPC_GENERATE_BATCH_COMMAND(Name) \
-    RPC_RUN_ON_STARTUP(Batch_##Name, Register< Batch<Name> >())
+    RPC_RUN_ON_STARTUP(Foreach_##Name, Register< Foreach<Name> >())
 
 #else
 

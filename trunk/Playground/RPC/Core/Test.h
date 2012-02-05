@@ -12,5 +12,7 @@ RPC_CALL(CheckStopwatch,   unsigned(RemoteStopwatch)    )
 RPC_CALL(StopStopwatch,    unsigned(RemoteStopwatch)    )
 RPC_CALL(DestroyStopwatch, Void(RemoteStopwatch)        )
 
+RPC_CALL(Add, int(std::vector<int>))
+
 
 #endif // TEST_H

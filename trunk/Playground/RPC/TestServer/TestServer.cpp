@@ -118,6 +118,22 @@ Void DestroyStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 }
 
 
+int Add::execute(RPCServer &, const std::vector<int> &arg)
+{
+    if (arg.empty())
+    {
+        throw std::runtime_error("There is nothing to add");
+    }
+
+    int result = arg[0];
+    for (std::size_t idx = 1; idx < arg.size(); ++idx)
+    {
+        result += arg[idx];
+    }
+    return result;
+}
+
+
 template<typename C>
 void Register()
 {

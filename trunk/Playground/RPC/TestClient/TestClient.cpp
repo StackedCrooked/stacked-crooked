@@ -3,6 +3,7 @@
 #include "Core/ConcurrentCall.h"
 #include "Core/RemoteObjects.h"
 #include "Core/Test.h"
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <utility>
@@ -22,6 +23,7 @@ struct TestClient
         std::cout << "Stop: " << StopStopwatch(remoteStopwatch).send() << std::endl;
         std::cout << std::endl;
     }
+
 
     void testBatch()
     {
@@ -135,9 +137,19 @@ struct TestClient
     {
         UDPClient client("127.0.0.1", 9001);
         Redirector dest(boost::bind(&UDPClient::send, &client, _1));
-        testSingle();
-        testBatch();
-        testCombined();
+
+
+        std::vector<int> n;
+        n.push_back(2);
+        n.push_back(3);
+        n.push_back(4);
+        std::cout << "Result: " << Add(n).send() << std::endl;
+        std::cout << "Result empty: " << Add(std::vector<int>()).send() << std::endl;
+
+
+//        testSingle();
+//        testBatch();
+//        testCombined();
     }
 
 };

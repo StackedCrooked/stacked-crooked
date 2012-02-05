@@ -113,14 +113,14 @@ struct Decompose<Ret_(Arg_)>
 
 
 template<typename Signature_>
-struct RemoteCommand
+struct Command
 {
     typedef Signature_ Signature;
-    typedef RemoteCommand<Signature> This;
+    typedef Command<Signature> This;
     typedef typename Decompose<Signature>::Ret Ret;
     typedef typename Decompose<Signature>::Arg Arg;
 
-    RemoteCommand(const std::string & inName, const Arg & inArg) :
+    Command(const std::string & inName, const Arg & inArg) :
         mName(inName),
         mArg(inArg)
     {
@@ -139,14 +139,14 @@ private:
 template<typename C,
          typename Arg_ = std::vector<typename C::Arg>,
          typename Ret_ = std::vector<typename C::Ret>,
-         typename Base = RemoteCommand<Ret_(Arg_)> >
-struct RemoteBatchCommand : public Base
+         typename Base = Command<Ret_(Arg_)> >
+struct BatchCommand : public Base
 {
     typedef Arg_ Arg;
     typedef Ret_ Ret;
-    typedef RemoteBatchCommand<C, Arg, Ret> This;
+    typedef BatchCommand<C, Arg, Ret> This;
 
-    static std::string Name() { return "RemoteBatchCommand<" + C::Name() + ">"; }
+    static std::string Name() { return "BatchCommand<" + C::Name() + ">"; }
 
     #ifdef RPC_SERVER
     typedef typename C::Arg A;
@@ -164,7 +164,7 @@ struct RemoteBatchCommand : public Base
     #endif
 
 protected:
-    RemoteBatchCommand(const Arg & inArg) : Base(Name(), inArg) { }
+    BatchCommand(const Arg & inArg) : Base(Name(), inArg) { }
 };
 
 
@@ -176,21 +176,21 @@ struct Batch;
 // Helper macros for the RPC_COMMAND macro.
 //
 #define RPC_GENERATE_COMMAND(NAME, Signature) \
-    struct NAME : public RemoteCommand<Signature> { \
-        typedef RemoteCommand<Signature> Base; \
+    struct NAME : public Command<Signature> { \
+        typedef Command<Signature> Base; \
         typedef Base::Arg Arg; \
         typedef Base::Ret Ret; \
         static std::string Name() { return #NAME; } \
-        NAME(const Arg & inArgs) : RemoteCommand<Ret(Arg)>(Name(), inArgs) { } \
+        NAME(const Arg & inArgs) : Command<Ret(Arg)>(Name(), inArgs) { } \
         static Ret execute(RPCServer & server, const Arg & arg); \
     };
 
 #define RPC_GENERATE_BATCH_COMMAND(NAME) \
     template<> \
-    struct Batch<NAME> : public RemoteBatchCommand<NAME> { \
-        typedef RemoteBatchCommand<NAME>::Arg Arg; \
-        typedef RemoteBatchCommand<NAME>::Ret Ret; \
-        Batch(const Arg & args) : RemoteBatchCommand<NAME>(args) { } \
+    struct Batch<NAME> : public BatchCommand<NAME> { \
+        typedef BatchCommand<NAME>::Arg Arg; \
+        typedef BatchCommand<NAME>::Ret Ret; \
+        Batch(const Arg & args) : BatchCommand<NAME>(args) { } \
     };
 
 #define RPC_RUN_ON_STARTUP(Name, Statement) \

@@ -3,3 +3,7 @@
 /Users/francis/svn/stacked-crooked/Playground/RPC/Simplified/RPC.h
 Serialization.h
 Networking.h
+Networking.cpp
+Stopwatch.h
+Stopwatch.cpp
+RemoteObjects.h

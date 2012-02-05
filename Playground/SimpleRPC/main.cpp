@@ -5,12 +5,12 @@
 
 
 
-RPC_CALL(CreateStopwatch,  RemoteStopwatch(std::string) )
-RPC_CALL(GetStopwatches,   RemoteStopwatches(Void)      )
-RPC_CALL(StartStopwatch,   Void(RemoteStopwatch)        )
-RPC_CALL(CheckStopwatch,   unsigned(RemoteStopwatch)    )
-RPC_CALL(StopStopwatch,    unsigned(RemoteStopwatch)    )
-RPC_CALL(DestroyStopwatch, Void(RemoteStopwatch)        )
+RPC_COMMAND(CreateStopwatch,  RemoteStopwatch(std::string) )
+RPC_COMMAND(GetStopwatches,   RemoteStopwatches(Void)      )
+RPC_COMMAND(StartStopwatch,   Void(RemoteStopwatch)        )
+RPC_COMMAND(CheckStopwatch,   unsigned(RemoteStopwatch)    )
+RPC_COMMAND(StopStopwatch,    unsigned(RemoteStopwatch)    )
+RPC_COMMAND(DestroyStopwatch, Void(RemoteStopwatch)        )
 
 
 #ifdef RPC_SERVER

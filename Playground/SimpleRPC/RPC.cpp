@@ -30,7 +30,6 @@ struct RPCServer::Impl
 
     std::string processRequest(const std::string & inRequest)
     {
-        std::cout << "Request size: " << inRequest.size() << std::endl;
         std::string result;
         NameAndArg name_arg = deserialize<NameAndArg>(inRequest);
         try
@@ -75,6 +74,23 @@ RPCServer::~RPCServer()
 }
 
 
+void RPCServer::addHandler(const std::string & inName, const Handler & inHandler)
+{
+    return mImpl->addHandler(inName, inHandler);
+}
+
+
+std::vector<std::string> RPCServer::getRegisteredCommands()
+{
+    std::vector<std::string> result;
+    for (Handlers::const_iterator it = mImpl->mHandlers.begin(), end = mImpl->mHandlers.end(); it != end; ++it)
+    {
+        result.push_back(it->first);
+    }
+    return result;
+}
+
+
 void RPCServer::listen(unsigned port)
 {
     mImpl->listen(port);
@@ -87,10 +103,9 @@ std::string RPCServer::processRequest(const std::string & inRequest)
 }
 
 
-void RPCServer::addHandler(const std::string & inName, const Handler & inHandler)
-{
-    mImpl->addHandler(inName, inHandler);
-}
+#ifdef RPC_SERVER
+RPC_REGISTER(Foreach, Register<ForeachHelper::ForeachCommand>())
+#endif
 
 
 #endif // RPC_SERVER

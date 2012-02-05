@@ -16,15 +16,9 @@ RPC_CALL(DestroyStopwatch, Void(RemoteStopwatch)        )
 #ifdef RPC_SERVER
 
 
-struct TestServer
+struct ServerApplication
 {
 public:
-    static TestServer & Instance()
-    {
-        static TestServer fTestServer;
-        return fTestServer;
-    }
-
     typedef boost::shared_ptr<Stopwatch> StopwatchPtr;
     typedef std::vector<StopwatchPtr> Stopwatches;
 
@@ -41,7 +35,7 @@ public:
 
     void removeStopwatch(long id)
     {
-        mStopwatches.erase(std::remove_if(mStopwatches.begin(), mStopwatches.end(), boost::bind(&TestServer::GetId, _1) == id));
+        mStopwatches.erase(std::remove_if(mStopwatches.begin(), mStopwatches.end(), boost::bind(&ServerApplication::GetId, _1) == id));
     }
 
     Stopwatches getStopwatches()
@@ -67,15 +61,18 @@ private:
 };
 
 
+ServerApplication gServerApp;
+
+
 static Stopwatch & getStopwatch(long inId)
 {
-    return TestServer::Instance().getStopwatchById(inId);
+    return gServerApp.getStopwatchById(inId);
 }
 
 
 RemoteStopwatch CreateStopwatch::execute(RPCServer &, const std::string &arg)
 {
-    Stopwatch & sw = TestServer::Instance().addStopwatch(arg);
+    Stopwatch & sw = gServerApp.addStopwatch(arg);
     return RemoteStopwatch(sw.id(), sw.name());
 }
 
@@ -83,7 +80,7 @@ RemoteStopwatch CreateStopwatch::execute(RPCServer &, const std::string &arg)
 RemoteStopwatches GetStopwatches::execute(RPCServer &, const Void & )
 {
     RemoteStopwatches result;
-    TestServer::Stopwatches sw = TestServer::Instance().getStopwatches();
+    ServerApplication::Stopwatches sw = gServerApp.getStopwatches();
     for (std::size_t idx = 0; idx < sw.size(); ++idx)
     {
         Stopwatch & s = *sw[idx];
@@ -114,7 +111,7 @@ unsigned CheckStopwatch::execute(RPCServer &, const RemoteStopwatch &arg)
 
 Void DestroyStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 {
-    TestServer::Instance().removeStopwatch(arg.id());
+    gServerApp.removeStopwatch(arg.id());
     return Void();
 }
 
@@ -135,9 +132,9 @@ void runServer(short port)
 #ifdef RPC_CLIENT
 
 
-struct TestClient
+struct ClientApplication
 {
-    TestClient(const std::string & host, short port) :
+    ClientApplication(const std::string & host, short port) :
         client(host, port)
     {
     }
@@ -212,7 +209,7 @@ private:
 
 void runClient(const std::string & host, short port)
 {
-    TestClient client(host, port);
+    ClientApplication client(host, port);
     client.run();
 }
 

@@ -16,7 +16,7 @@ struct RPCServer::Impl
 
     void listen(unsigned port)
     {
-        mUDPServer.reset(new UDPServer(port, boost::bind(&Impl::processRequest, this, _1)));
+        mUDPServer.reset(new UDPServer(port, boost::bind(&Impl::handleUDPMessage, this, _1)));
     }
 
     void addHandler(const std::string & inName, const Handler & inHandler)
@@ -28,22 +28,23 @@ struct RPCServer::Impl
         mHandlers.insert(std::make_pair(inName, inHandler));
     }
 
-    std::string processRequest(const std::string & inRequest)
+    std::string handleUDPMessage(const std::string & inMessage)
     {
-        std::string result;
-        NameAndArg name_arg = deserialize<NameAndArg>(inRequest);
+        return process(deserialize<NameAndArg>(inMessage));
+    }
+
+    std::string process(const NameAndArg & name_arg)
+    {
         try
         {
             const std::string & name = name_arg.get<0>();
             const std::string & arg  = name_arg.get<1>();
-            result = serialize(RetOrError(true, processRequest(name, arg)));
+            return serialize(RetOrError(true, processRequest(name, arg)));
         }
         catch (const std::exception & exc)
         {
-            result = serialize(RetOrError(false, exc.what()));
+            return serialize(RetOrError(false, exc.what()));
         }
-        std::cout << "Result size: " << result.size() << std::endl << std::endl;
-        return result;
     }
 
     std::string processRequest(const std::string & inName, const std::string & inArg)
@@ -97,15 +98,10 @@ void RPCServer::listen(unsigned port)
 }
 
 
-std::string RPCServer::processRequest(const std::string & inRequest)
+std::string RPCServer::process(const NameAndArg & inNameAndArg)
 {
-    return mImpl->processRequest(inRequest);
+    return mImpl->process(inNameAndArg);
 }
-
-
-#ifdef RPC_SERVER
-RPC_REGISTER(Foreach, Register<ForeachHelper::ForeachCommand>())
-#endif
 
 
 #endif // RPC_SERVER

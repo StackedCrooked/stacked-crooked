@@ -145,10 +145,10 @@ struct TestClient
     void testSingle()
     {
         std::cout << std::endl << "Testing Single Commands (sync)" << std::endl;
-        RemoteStopwatch remoteStopwatch = CreateStopwatch("Stopwatch_01").send(client);
-        StartStopwatch(remoteStopwatch).send(client);
-        std::cout << "Check: " << CheckStopwatch(remoteStopwatch).send(client) << std::endl;
-        std::cout << "Stop: " << StopStopwatch(remoteStopwatch).send(client) << std::endl;
+        RemoteStopwatch remoteStopwatch = client.send(CreateStopwatch("Stopwatch_01"));
+        client.send(StartStopwatch(remoteStopwatch));
+        std::cout << "Check: " << client.send(CheckStopwatch(remoteStopwatch)) << std::endl;
+        std::cout << "Stop: " << client.send(StopStopwatch(remoteStopwatch)) << std::endl;
         std::cout << std::endl;
     }
 
@@ -163,16 +163,16 @@ struct TestClient
             names.push_back(ss.str());
         }
 
-        RemoteStopwatches rs = Batch<CreateStopwatch>(names).send(client);
+        RemoteStopwatches rs = client.send(Batch<CreateStopwatch>(names));
         std::cout << "Created " << rs.size() << " remote Stopwatches." << std::endl;
 
-        Batch<StartStopwatch>(rs).send(client);
+        client.send(Batch<StartStopwatch>(rs));
         std::cout << "Started " << rs.size() << " stopwatches." << std::endl;
 
         for (int i = 0; i < 10; ++i)
         {
             std::cout << "Updated times:" << std::endl;
-            std::vector<unsigned> times = Batch<CheckStopwatch>(rs).send(client);
+            std::vector<unsigned> times = client.send(Batch<CheckStopwatch>(rs));
             for (std::size_t idx = 0; idx < times.size(); ++idx)
             {
                 if (idx != 0)
@@ -185,7 +185,7 @@ struct TestClient
             sleep(1);
         }
 
-        std::vector<unsigned> stopTimes = Batch<StopStopwatch>(rs).send(client);
+        std::vector<unsigned> stopTimes = client.send(Batch<StopStopwatch>(rs));
         std::cout << "Stopped " << stopTimes.size() << " stopwatches. Times: " << std::endl;
 
         for (std::size_t idx = 0; idx < stopTimes.size(); ++idx)
@@ -206,7 +206,7 @@ struct TestClient
     }
 
 private:
-    UDPClient client;
+    RPCClient client;
 };
 
 

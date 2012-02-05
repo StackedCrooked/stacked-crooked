@@ -60,9 +60,43 @@ void Register()
 {
     RPCServer::Instance().registerCommand<C>();
 }
-#else
+
+#endif
+
+#ifdef RPC_CLIENT
+
+
 class RPCServer;
-typedef UDPClient RPCClient;
+
+
+class RPCClient
+{
+public:
+    RPCClient(const std::string & host, short port) :
+        mUDPClient(host, port)
+    {
+
+    }
+
+    template<typename C>
+    typename C::Ret send(const C & command)
+    {
+        std::string result = mUDPClient.send(serialize(NameAndArg(command.name(), serialize(command.arg()))));
+        RetOrError retOrError = deserialize<RetOrError>(result);
+        if (retOrError.get_head())
+        {
+            return deserialize<typename C::Ret>(retOrError.get<1>());
+        }
+        else
+        {
+            throw std::runtime_error("Server error: " + retOrError.get<1>());
+        }
+    }
+
+private:
+    UDPClient mUDPClient;
+};
+
 #endif
 
 
@@ -95,22 +129,6 @@ struct RemoteCall
     const std::string & name() const { return mName; }
 
     const Arg & arg() const { return mArg; }
-
-    #ifdef RPC_CLIENT
-    Ret send(RPCClient & client)
-    {
-        std::string result = client.send(serialize(NameAndArg(name(), serialize(arg()))));
-        RetOrError retOrError = deserialize<RetOrError>(result);
-        if (retOrError.get_head())
-        {
-            return deserialize<Ret>(retOrError.get<1>());
-        }
-        else
-        {
-            throw std::runtime_error("Server error: " + retOrError.get<1>());
-        }
-    }
-    #endif // RPC_CLIENT
 
 private:
     std::string mName;

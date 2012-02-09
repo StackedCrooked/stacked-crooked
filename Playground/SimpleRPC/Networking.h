@@ -51,6 +51,8 @@ public:
 
     ~UDPReceiver();
 
+    void receiveOne();
+
 private:
     struct Impl;
     boost::scoped_ptr<Impl> mImpl;

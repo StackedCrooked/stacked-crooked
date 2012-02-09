@@ -150,7 +150,6 @@ template<typename C,
          typename Base = Command<Ret(Arg)> >
 struct WithProgress : public Base
 {
-
     static std::string Name()
     {
         return "WithProgress<" + C::Name() + ">";
@@ -164,11 +163,13 @@ struct WithProgress : public Base
     #ifdef RPC_SERVER
     static Ret execute(RPCServer & server, const std::vector<A> & args)
     {
+        UDPSender sender("127.0.0.1", 9002);
         Ret ret;
         for (std::size_t idx = 0; idx < args.size(); ++idx)
         {
-            A & a = args[idx];
-            ret.push_back(C::execute(a));
+            const A & a = args[idx];
+            ret.push_back(C::execute(server, a));
+            sender.send(serialize(ret.back()));
         }
         return ret;
     }
@@ -198,7 +199,8 @@ struct WithProgress : public Base
 #ifdef RPC_SERVER
 #define RPC_COMMAND(NAME, SIGNATURE) \
     RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
-    RPC_REGISTER(NAME, Register<NAME>())
+    RPC_REGISTER(NAME, Register<NAME>()) \
+    RPC_REGISTER(WithProgress##_##NAME, Register< WithProgress<NAME> >())
 #else
 #define RPC_COMMAND(NAME, SIGNATURE) \
     RPC_GENERATE_COMMAND(NAME, SIGNATURE)

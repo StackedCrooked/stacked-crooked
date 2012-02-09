@@ -44,6 +44,13 @@ struct RemoteStopwatch : public RemoteObject
 
     const std::string & name() const { return mName; }
 
+    template<typename Archive>
+    void serialize(Archive & ar, const unsigned int)
+    {
+        ar & boost::serialization::base_object<RemoteObject>(*this);
+        ar & mName;
+    }
+
     std::string mName;
 };
 

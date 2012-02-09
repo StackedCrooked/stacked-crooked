@@ -112,72 +112,63 @@ std::string UDPClient::send(const std::string & inMessage)
 //
 struct UDPReceiver::Impl
 {
-    Impl(unsigned inPort,
-         const RequestHandler & inRequestHandler,
-         const StopCheck & inStopCheck) :
+    typedef UDPReceiver::RequestHandler RequestHandler;
+
+    Impl(UDPReceiver * inUDPReceiver,
+         unsigned inPort,
+         const RequestHandler & inRequestHandler) :
+        mUDPReceiver(inUDPReceiver),
         mPort(inPort),
         mRequestHandler(inRequestHandler),
-        mSocket(get_io_service(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), mPort)),
-        mStopCheck(inStopCheck)
+        mSocket(get_io_service(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), mPort))
     {
-        std::cout << "Listening to port " << mPort << std::endl;
-        receive();
+        prepareForReceiving();
     }
 
 
     ~Impl()
     {
-        std::cout << "Stop listening to port " << mPort << std::endl;
     }
 
 
 
-    void receive()
+    void prepareForReceiving()
     {
-        if (!mStopCheck())
-        {
-            std::cout << "StopCheck returns false. Waiting to receive data" << std::endl;
-            mSocket.async_receive_from(boost::asio::buffer(mData, cMaxLength), mSenderEndpoint,
-                                       boost::bind(&Impl::onReceive, this,
-                                                   boost::asio::placeholders::error,
-                                                   boost::asio::placeholders::bytes_transferred));
-        }
-        else
-        {
-            std::cout << "StopCheck returns true. Stop trying to receive." << std::endl;
-        }
+        mSocket.async_receive_from(boost::asio::buffer(mData, cMaxLength), mSenderEndpoint,
+                                   boost::bind(&Impl::handleReceivedData, this,
+                                               boost::asio::placeholders::error,
+                                               boost::asio::placeholders::bytes_transferred));
     }
 
-    void onReceive(const boost::system::error_code & inError,
-                 std::size_t inSize)
+    void handleReceivedData(const boost::system::error_code & inError, std::size_t inSize)
     {
         if (!inError && inSize > 0)
         {
-            std::cout << "Received data: " << std::string(mData, inSize) << std::endl;
-            mRequestHandler(std::string(mData, inSize));
-            receive();
+            if (mRequestHandler(std::string(mData, inSize)))
+            {
+                prepareForReceiving();
+                mUDPReceiver->receiveOne();
+            }
+            // else: stop listening
         }
         else
         {
-            std::cout << "BAD: size: " << inSize << ". error: " << inError.message() << std::endl;
-            receive();
+            throw std::runtime_error(inError.message());
         }
     }
 
+    UDPReceiver * mUDPReceiver;
     unsigned mPort;
     RequestHandler mRequestHandler;
     boost::asio::ip::udp::socket mSocket;
     udp::endpoint mSenderEndpoint;
-    StopCheck mStopCheck;
     enum { cMaxLength = 1024 * 1024 };
     char mData[cMaxLength];
 };
 
 
-UDPReceiver::UDPReceiver(unsigned inPort,
-                         const RequestHandler & inRequestHandler,
-                         const StopCheck & inStopCheck) :
-    mImpl(new Impl(inPort, inRequestHandler, inStopCheck))
+UDPReceiver::UDPReceiver(unsigned inPort, const RequestHandler & inRequestHandler) :
+    mImpl(new Impl(this, inPort, inRequestHandler))
 {
 }
 

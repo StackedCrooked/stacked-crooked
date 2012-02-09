@@ -236,37 +236,23 @@ struct ClientApplication
 #endif
 
 
-    void onRemoteStopwatchCreated(const std::string & inMessage)
+    bool onRemoteStopwatchCreated(const std::string & inMessage)
     {
-        std::cout << "onRemoteStopwatchCreated: " << inMessage << std::endl;
         RemoteStopwatch theRemoteStopwatch = deserialize<RemoteStopwatch>(inMessage);
+        std::cout << "Progress: Created stopwatch: " << theRemoteStopwatch.name() << std::endl;
         mRemoteStopwatches.push_back(theRemoteStopwatch);
-    }
-
-
-    bool checkComplete()
-    {
-        std::cout << "Check complete: " << mRemoteStopwatches.size() << "/" << mCount << std::endl;
-        return mRemoteStopwatches.size() >= mCount;
+        return mRemoteStopwatches.size() < mCount;
     }
 
 
     void testProgress()
     {
-        std::cout << "Testing progress" << std::endl;
+        std::cout << "Starting Operation" << std::endl;
         mRemoteStopwatches.clear();
-        UDPReceiver receiver(9002,
-                             boost::bind(&ClientApplication::onRemoteStopwatchCreated, this, _1),
-                             boost::bind(&ClientApplication::checkComplete, this));
+        UDPReceiver receiver(9002, boost::bind(&ClientApplication::onRemoteStopwatchCreated, this, _1));
         std::vector<RemoteStopwatch> remoteStopwatches = client.send(WithProgress<CreateStopwatch>(getNames(mCount)));
-
-        while (mRemoteStopwatches.size() < mCount)
-        {
-            receiver.receiveOne();
-        }
-
-        std::cout << "Progress complete. Returned " << remoteStopwatches.size() << " stopwatches" << std::endl;
-        (void)receiver;
+        receiver.receiveOne();
+        std::cout << "Operation Completed." << std::endl;
     }
 
     void run()

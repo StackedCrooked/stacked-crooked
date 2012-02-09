@@ -6,6 +6,7 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/strong_typedef.hpp>
 #include <string>
 
 
@@ -42,12 +43,9 @@ private:
 class UDPReceiver : boost::noncopyable
 {
 public:
-    typedef boost::function<void(const std::string &)> RequestHandler;
-    typedef boost::function<bool()> StopCheck;
+    typedef boost::function<bool(const std::string &)> RequestHandler;
 
-    UDPReceiver(unsigned port,
-                const RequestHandler & requestHandler,
-                const StopCheck & inStopCheck);
+    UDPReceiver(unsigned port, const RequestHandler & handler);
 
     ~UDPReceiver();
 

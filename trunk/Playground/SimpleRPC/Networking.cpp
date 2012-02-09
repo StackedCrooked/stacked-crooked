@@ -141,7 +141,6 @@ struct UDPReceiver::Impl
                                        boost::bind(&Impl::onReceive, this,
                                                    boost::asio::placeholders::error,
                                                    boost::asio::placeholders::bytes_transferred));
-
         }
         else
         {
@@ -187,6 +186,11 @@ UDPReceiver::~UDPReceiver()
 {
 }
 
+
+void UDPReceiver::receiveOne()
+{
+    get_io_service().run_one();
+}
 
 
 //

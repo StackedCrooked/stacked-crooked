@@ -6,7 +6,6 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <boost/strong_typedef.hpp>
 #include <string>
 
 

@@ -247,12 +247,9 @@ struct ClientApplication
 
     void testProgress()
     {
-        std::cout << "Starting Operation" << std::endl;
-        mRemoteStopwatches.clear();
         UDPReceiver receiver(9002, boost::bind(&ClientApplication::onRemoteStopwatchCreated, this, _1));
-        std::vector<RemoteStopwatch> remoteStopwatches = client.send(WithProgress<CreateStopwatch>(getNames(mCount)));
-        receiver.receiveOne();
-        std::cout << "Operation Completed." << std::endl;
+        client.send(WithProgress<CreateStopwatch>(getNames(mCount)));
+        receiver.waitForAll();
     }
 
     void run()

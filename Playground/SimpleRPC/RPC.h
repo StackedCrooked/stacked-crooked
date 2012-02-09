@@ -23,24 +23,16 @@ public:
 
     // Maps the function name to it's implementation.
     // Type erasure occurs here.
-    template<typename Command>
+    template<typename C>
     void registerCommand()
     {
-        addHandler(Command::Name(), boost::bind(&RPCServer::process<Command>, this, _1));
+        addHandler(C::Name(), boost::bind(&RPCServer::process<C>, this, _1));
     }
 
-    template<typename Command>
+    template<typename C>
     std::string process(const std::string & serialized)
     {
-        typedef typename Command::Arg Arg;
-        typedef typename Command::Ret Ret;
-        std::cout << "*** BEGIN " << Command::Name() << std::endl;
-        std::cout << "Serialized arg: " << serialized << std::endl;
-        Arg arg = deserialize<Arg>(serialized);
-        Ret ret = Command::execute(*this, arg);
-        std::cout << "Serialized result: " << serialize(ret) << std::endl;
-        std::cout << "END " << Command::Name() << std::endl << std::endl;
-        return serialize(ret);
+        return serialize(C::execute(*this, deserialize<typename C::Arg>(serialized)));
     }
 
     std::string process(const NameAndArg & inNameAndArg);

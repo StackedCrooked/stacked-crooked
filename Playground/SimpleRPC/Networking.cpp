@@ -120,24 +120,47 @@ struct UDPReceiver::Impl
         mSocket(get_io_service(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), mPort)),
         mStopCheck(inStopCheck)
     {
-        while (!mStopCheck())
-        {
-            const unsigned int cMaxLength = 1024 * 1024;
-            char data[cMaxLength];
-            udp::endpoint sender_endpoint;
-            size_t length = mSocket.receive_from(boost::asio::buffer(data, cMaxLength), sender_endpoint);
-            inRequestHandler(std::string(data, length));
-        }
+        receive();
     }
+
 
     ~Impl()
     {
     }
 
+
+
+    void receive()
+    {
+        if (!mStopCheck())
+        {
+            mSocket.async_receive_from(boost::asio::buffer(mData, cMaxLength),
+                                       mSenderEndpoint,
+                                       boost::bind(&Impl::onReceive, this, _1, _2));
+        }
+    }
+
+    void onReceive(const boost::system::error_code & inError,
+                 std::size_t inSize)
+    {
+        if (!inError && inSize > 0)
+        {
+            mRequestHandler(std::string(mData, inSize));
+            receive();
+        }
+        else
+        {
+            receive();
+        }
+    }
+
     unsigned mPort;
     RequestHandler mRequestHandler;
     boost::asio::ip::udp::socket mSocket;
+    udp::endpoint mSenderEndpoint;
     StopCheck mStopCheck;
+    enum { cMaxLength = 1024 * 1024 };
+    char mData[cMaxLength];
 };
 
 

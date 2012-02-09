@@ -120,12 +120,14 @@ struct UDPReceiver::Impl
         mSocket(get_io_service(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), mPort)),
         mStopCheck(inStopCheck)
     {
+        std::cout << "Listening to port " << mPort << std::endl;
         receive();
     }
 
 
     ~Impl()
     {
+        std::cout << "Stop listening to port " << mPort << std::endl;
     }
 
 
@@ -134,9 +136,16 @@ struct UDPReceiver::Impl
     {
         if (!mStopCheck())
         {
-            mSocket.async_receive_from(boost::asio::buffer(mData, cMaxLength),
-                                       mSenderEndpoint,
-                                       boost::bind(&Impl::onReceive, this, _1, _2));
+            std::cout << "StopCheck returns false. Waiting to receive data" << std::endl;
+            mSocket.async_receive_from(boost::asio::buffer(mData, cMaxLength), mSenderEndpoint,
+                                       boost::bind(&Impl::onReceive, this,
+                                                   boost::asio::placeholders::error,
+                                                   boost::asio::placeholders::bytes_transferred));
+
+        }
+        else
+        {
+            std::cout << "StopCheck returns true. Stop trying to receive." << std::endl;
         }
     }
 
@@ -145,11 +154,13 @@ struct UDPReceiver::Impl
     {
         if (!inError && inSize > 0)
         {
+            std::cout << "Received data: " << std::string(mData, inSize) << std::endl;
             mRequestHandler(std::string(mData, inSize));
             receive();
         }
         else
         {
+            std::cout << "BAD: size: " << inSize << ". error: " << inError.message() << std::endl;
             receive();
         }
     }
@@ -189,11 +200,12 @@ struct UDPSender::Impl : boost::noncopyable
         query(udp::v4(), inURL.c_str(), boost::lexical_cast<std::string>(inPort).c_str()),
         iterator(resolver.resolve(query))
     {
-
+        std::cout << "UDPSender. Dest: " << inURL << " Port: " << inPort << std::endl;
     }
 
     ~Impl()
     {
+        std::cout << "~UDPSender" << std::endl;
     }
 
     udp::socket socket;
@@ -216,5 +228,6 @@ UDPSender::~UDPSender()
 
 void UDPSender::send(const std::string & inMessage)
 {
+    std::cout << "Sending: " << inMessage << std::endl;
     mImpl->socket.send_to(boost::asio::buffer(inMessage.c_str(), inMessage.size()), *mImpl->iterator);
 }

@@ -147,7 +147,7 @@ struct UDPReceiver::Impl
             if (mRequestHandler(std::string(mData, inSize)))
             {
                 prepareForReceiving();
-                mUDPReceiver->receiveOne();
+                mUDPReceiver->waitForAll();
             }
             // else: stop listening
         }
@@ -178,7 +178,7 @@ UDPReceiver::~UDPReceiver()
 }
 
 
-void UDPReceiver::receiveOne()
+void UDPReceiver::waitForAll()
 {
     get_io_service().run_one();
 }

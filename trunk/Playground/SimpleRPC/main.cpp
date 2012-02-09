@@ -163,7 +163,9 @@ void runServer(short port)
 struct ClientApplication
 {
     ClientApplication(const std::string & host, short port) :
-        client(host, port)
+        client(host, port),
+        mCount(5),
+        mRemoteStopwatches()
     {
     }
 
@@ -179,18 +181,24 @@ struct ClientApplication
         std::cout << std::endl;
     }
 
-#if 0
-    void testForeach()
+
+    std::vector<std::string> getNames(unsigned n = 10)
     {
         std::vector<std::string> names;
-        for (std::size_t idx = 0; idx < 5; ++idx)
+        for (std::size_t idx = 0; idx < n; ++idx)
         {
             std::stringstream ss;
             ss << "Stopwatch_" << std::setfill('0') << std::setw(2) << idx;
             names.push_back(ss.str());
         }
+        return names;
+    }
 
-        RemoteStopwatches rs = Foreach<CreateStopwatch>(client, names);
+#if 0
+    void testForeach()
+    {
+
+        RemoteStopwatches rs = Foreach<CreateStopwatch>(client, getNames());
         std::cout << "Created " << rs.size() << " remote Stopwatches." << std::endl;
 
         Foreach<StartStopwatch>(client, rs);
@@ -227,13 +235,43 @@ struct ClientApplication
     }
 #endif
 
+
+    void onRemoteStopwatchCreated(const std::string & inMessage)
+    {
+        std::cout << "onRemoteStopwatchCreated: " << inMessage << std::endl;
+        RemoteStopwatch theRemoteStopwatch = deserialize<RemoteStopwatch>(inMessage);
+        mRemoteStopwatches.push_back(theRemoteStopwatch);
+    }
+
+
+    bool checkComplete()
+    {
+        std::cout << "Check complete: " << mRemoteStopwatches.size() << "/" << mCount << std::endl;
+        return mRemoteStopwatches.size() >= mCount;
+    }
+
+
+    void testProgress()
+    {
+        std::cout << "Testing progress" << std::endl;
+        mRemoteStopwatches.clear();
+        UDPReceiver receiver(9002,
+                             boost::bind(&ClientApplication::onRemoteStopwatchCreated, this, _1),
+                             boost::bind(&ClientApplication::checkComplete, this));
+        client.send(WithProgress<CreateStopwatch>(getNames(mCount)));
+        (void)receiver;
+    }
+
     void run()
     {
-        testSingle();
+        testProgress();
+        //testSingle();
     }
 
 private:
     RPCClient client;
+    const std::size_t mCount;
+    RemoteStopwatches mRemoteStopwatches;
 };
 
 

@@ -106,24 +106,6 @@ private:
 #endif
 
 
-#define RPC_GENERATE_COMMAND(NAME, Signature) \
-    struct NAME : public Command<Signature> { \
-        typedef Command<Signature> Base; \
-        typedef Base::Arg Arg; \
-        typedef Base::Ret Ret; \
-        static std::string Name() { return #NAME; } \
-        NAME(const Arg & inArgs) : Command<Ret(Arg)>(Name(), inArgs) { } \
-        static Ret execute(RPCServer & server, const Arg & arg); \
-    };
-
-#ifdef RPC_SERVER
-#define RPC_REGISTER(Name, Statement) \
-    namespace Registration { struct RunOnStartup_##Name { RunOnStartup_##Name() { Statement; } }; static RunOnStartup_##Name g##RunOnStartup_##Name; }
-#else
-#define RPC_REGISTER(Name, Statement)
-#endif
-
-
 template<typename Signature>
 struct Decompose;
 
@@ -160,48 +142,66 @@ private:
 };
 
 
-/**
- * RPC_COMMAND macro for defining remote procedure calls.
- *
- * Technically the macro only takes two arguments: name and signature:
- *
- *     RPC_COMMAND(Name, Signature)
- *
- * The signature consists of a return value and one argument.
- * If you want multiple arguments you can use a container, tuple of struct.
- * You can emulate void with Void.
- *
- * Here's a simple RPC call for adding two numbers:
- *
- *     RPC_COMMAND(Add, int(tuple<int, int>))
- *
- * A class called Add is generated and is missing the implementation for the
- * execute() method. We have to provide the implementation:
- *
- *     int Add::execute(RPCServer & server, const tuple<int, int> & value)
- *     {
- *         return value.first + value.second;
- *     }
- *
- * That's it. Now we can try it out:
- *
- *     int seven = Add(make_tuple(3, 4)).send();
- *
- * Serialization works out-of-the box for builtin types, most standard containers,
- * boost tuple types and any combination of these. User defined structs and
- * classes must be made serializable. See the boost documentation for more info.
- */
+template<typename C,
+         typename A = typename C::Arg,
+         typename R = typename C::Ret,
+         typename Arg = std::vector<A>,
+         typename Ret = std::vector<R>,
+         typename Base = Command<Ret(Arg)> >
+struct WithProgress : public Base
+{
+
+    static std::string Name()
+    {
+        return "WithProgress<" + C::Name() + ">";
+    }
+
+    WithProgress(const Arg & inArg) :
+        Base(Name(), inArg)
+    {
+    }
+
+    #ifdef RPC_SERVER
+    static Ret execute(RPCServer & server, const std::vector<A> & args)
+    {
+        Ret ret;
+        for (std::size_t idx = 0; idx < args.size(); ++idx)
+        {
+            A & a = args[idx];
+            ret.push_back(C::execute(a));
+        }
+        return ret;
+    }
+    #endif
+};
+
+
+#define RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
+    struct NAME : public Command<SIGNATURE> { \
+        typedef Command<SIGNATURE> Base; \
+        typedef Base::Arg Arg; \
+        typedef Base::Ret Ret; \
+        static std::string Name() { return #NAME; } \
+        NAME(const Arg & inArgs) : Command<Ret(Arg)>(Name(), inArgs) { } \
+        static Ret execute(RPCServer & server, const Arg & arg); \
+    };
+
+
 #ifdef RPC_SERVER
-
-#define RPC_COMMAND(Name, Signature) \
-    RPC_GENERATE_COMMAND(Name, Signature) \
-    RPC_REGISTER(Name, Register<Name>())
-
+#define RPC_REGISTER(NAME, Statement) \
+    namespace Registration { struct RunOnStartup_##NAME { RunOnStartup_##NAME() { Statement; } }; static RunOnStartup_##NAME g##RunOnStartup_##NAME; }
 #else
+#define RPC_REGISTER(Name, Statement)
+#endif
 
-#define RPC_COMMAND(Name, Signature) \
-    RPC_GENERATE_COMMAND(Name, Signature)
 
+#ifdef RPC_SERVER
+#define RPC_COMMAND(NAME, SIGNATURE) \
+    RPC_GENERATE_COMMAND(NAME, SIGNATURE) \
+    RPC_REGISTER(NAME, Register<NAME>())
+#else
+#define RPC_COMMAND(NAME, SIGNATURE) \
+    RPC_GENERATE_COMMAND(NAME, SIGNATURE)
 #endif
 
 

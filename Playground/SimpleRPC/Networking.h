@@ -39,4 +39,37 @@ private:
 };
 
 
+class UDPReceiver : boost::noncopyable
+{
+public:
+    typedef boost::function<void(const std::string &)> RequestHandler;
+    typedef boost::function<bool()> StopCheck;
+
+    UDPReceiver(unsigned port,
+                const RequestHandler & requestHandler,
+                const StopCheck & inStopCheck);
+
+    ~UDPReceiver();
+
+private:
+    struct Impl;
+    boost::scoped_ptr<Impl> mImpl;
+};
+
+
+class UDPSender : boost::noncopyable
+{
+public:
+    UDPSender(const std::string & inHost, unsigned inPort);
+
+    ~UDPSender();
+
+    void send(const std::string & inMessage);
+
+private:
+    struct Impl;
+    boost::scoped_ptr<Impl> mImpl;
+};
+
+
 #endif // NETWORKING_H

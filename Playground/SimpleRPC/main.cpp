@@ -4,12 +4,29 @@
 #include <boost/lexical_cast.hpp>
 
 
-RPC_COMMAND(CreateStopwatch,  RemoteStopwatch(std::string) )
-RPC_COMMAND(GetStopwatches,   RemoteStopwatches(Void)      )
-RPC_COMMAND(StartStopwatch,   Void(RemoteStopwatch)        )
-RPC_COMMAND(CheckStopwatch,   unsigned(RemoteStopwatch)    )
-RPC_COMMAND(StopStopwatch,    unsigned(RemoteStopwatch)    )
-RPC_COMMAND(DestroyStopwatch, Void(RemoteStopwatch)        )
+BOOST_STRONG_TYPEDEF(unsigned, Milliseconds)
+
+
+namespace boost {
+namespace serialization {
+
+
+template<typename Archive>
+void serialize(Archive & ar, Milliseconds & ms, const unsigned int)
+{
+    ar & ms.t;
+}
+
+
+} } // namespace boost::serialization
+
+
+RPC_COMMAND(CreateStopwatch,  RemoteStopwatch(std::string)  )
+RPC_COMMAND(GetStopwatches,   RemoteStopwatches(Void)       )
+RPC_COMMAND(StartStopwatch,   Void(RemoteStopwatch)         )
+RPC_COMMAND(CheckStopwatch,   Milliseconds(RemoteStopwatch) )
+RPC_COMMAND(StopStopwatch,    Milliseconds(RemoteStopwatch) )
+RPC_COMMAND(DestroyStopwatch, Void(RemoteStopwatch)         )
 
 
 #ifdef RPC_SERVER
@@ -108,15 +125,15 @@ Void StartStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 }
 
 
-unsigned StopStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
+Milliseconds StopStopwatch::execute(RPCServer &, const RemoteStopwatch & arg)
 {
-    return getStopwatch(arg.id()).stop();
+    return Milliseconds(getStopwatch(arg.id()).stop());
 }
 
 
-unsigned CheckStopwatch::execute(RPCServer &, const RemoteStopwatch &arg)
+Milliseconds CheckStopwatch::execute(RPCServer &, const RemoteStopwatch &arg)
 {
-    return getStopwatch(arg.id()).elapsedMs();
+    return Milliseconds(getStopwatch(arg.id()).elapsedMs());
 }
 
 

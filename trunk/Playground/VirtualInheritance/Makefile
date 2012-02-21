@@ -1,3 +1,3 @@
 
 all:
-	g++ -o test main.cpp
+	g++ -o test -Wall -Wextra -Werror main.cpp

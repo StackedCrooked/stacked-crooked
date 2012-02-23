@@ -1,6 +1,0 @@
-Create ISO from directory
-isoimage -o myiso.iso mydir
-
-Mount ISO file:
-mount -o loop myiso.iso mydir
-

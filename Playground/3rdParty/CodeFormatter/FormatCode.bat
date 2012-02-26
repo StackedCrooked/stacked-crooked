@@ -1,1 +1,0 @@
-astyle  --indent=spaces=4 --brackets=break --indent-switches --indent-namespaces --indent-labels --indent-preprocessor --indent-col1-comments --max-instatement-indent=80 --pad-header --unpad-paren --convert-tabs --align-pointer=middle --suffix=none --lineend=windows --recursive *.h *.cpp 

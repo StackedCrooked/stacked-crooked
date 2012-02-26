@@ -4,7 +4,7 @@ for dep in $DEPENDENCIES; do
     type ${dep} &>/dev/null || { echo "${dep} not found. Dependencies: ${DEPENDENCIES}." >&2; exit 1; }
 done
 
-VIM_ADDONS=$HOME/vim-addons
+VIM_ADDONS=$HOME/.vim-addons
 if [ -d $VIM_ADDONS ]; then
     echo "The directory $VIM_ADDONS already exists."
     echo "Exiting."

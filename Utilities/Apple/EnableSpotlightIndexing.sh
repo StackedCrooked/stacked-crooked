@@ -1,0 +1,1 @@
+mdutil -a -i on

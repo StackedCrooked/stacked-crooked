@@ -78,7 +78,7 @@ typename boost::function_traits<Function>::result_type CallFunction(Function * f
 // EXPORT function to a string-based API for scripting languages.
 #define EXPORT(NAME) \
     std::string NAME(const std::vector<std::string> & args) { \
-        if (args.size() != GetArgCount(&API::NAME)) { throw std::invalid_argument("argc"); } \
+        if (args.size() != GetArgCount(&API::NAME)) { throw std::invalid_argument("Invalid number of arguments."); } \
         return boost::lexical_cast<std::string>(CallFunction(&API::NAME, args)); \
     }
 
@@ -98,10 +98,26 @@ EXPORT(sum)
 }
 
 
-int main()
+void test()
 {
     std::vector<std::string> args;
     args.push_back("1");
     args.push_back("2");
     std::cout << "Sum: " << Tcl::sum(args) << std::endl;
+
+    args.push_back("3");
+    std::cout << "Too many args: " << Tcl::sum(args) << std::endl;
+}
+
+
+int main()
+{
+    try
+    {
+        test();
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << "Error: " << exc.what() << std::endl;
+    }
 }

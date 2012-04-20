@@ -4,49 +4,57 @@
 #include <boost/lexical_cast.hpp>
 
 
-struct Calculator
+//
+// C++ API
+//
+namespace API {
+
+int sum(int a, int b) { return a + b; }
+
+int multiply(int a, int b) { return a * b; }
+
+}
+
+
+//
+// TCL Bindings
+//
+namespace Tcl {
+
+
+typedef std::string Arg;
+typedef std::vector<std::string> Args;
+
+
+std::string sum(const Args & args)
 {
-    int sum(int a, int b) { return a + b; }
-
-    int multiply(int a, int b) { return a * b; }
-};
-
-
-// Bindings to Tcl
-struct TclCalculator
-{
-    typedef std::string Arg;
-    typedef std::vector<Arg> Args;
-
-    std::string sum(const Args & args)
+    if (args.size() != 2)
     {
-        if (args.size() != 2)
-        {
-            throw std::invalid_argument("argc");
-        }
-
-        int result = c.sum(boost::lexical_cast<int>(args[0]),
-                         boost::lexical_cast<int>(args[1]));
-
-        return boost::lexical_cast<std::string>(result);
+        throw std::invalid_argument("argc");
     }
 
-    std::string multiply(const Args & args)
+    int result = API::sum(boost::lexical_cast<int>(args[0]),
+                          boost::lexical_cast<int>(args[1]));
+
+    return boost::lexical_cast<std::string>(result);
+}
+
+
+std::string multiply(const Args & args)
+{
+    if (args.size() != 2)
     {
-        if (args.size() != 2)
-        {
-            throw std::invalid_argument("argc");
-        }
-
-        int result = c.multiply(boost::lexical_cast<int>(args[0]),
-                              boost::lexical_cast<int>(args[1]));
-
-        return boost::lexical_cast<std::string>(result);
+        throw std::invalid_argument("argc");
     }
 
+    int result = API::multiply(boost::lexical_cast<int>(args[0]),
+                               boost::lexical_cast<int>(args[1]));
 
-    Calculator c;
-};
+    return boost::lexical_cast<std::string>(result);
+}
+
+
+} // namespace Tcl
 
 
 int main()

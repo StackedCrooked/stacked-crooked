@@ -2,6 +2,9 @@
 "  General Settings
 " -----------------------------------------------------------------------------
 
+" Paste doesn't indent or do funny stuff
+set paste
+
 " Add common search paths
 set path+=/usr/local/include,/opt/local/include
 

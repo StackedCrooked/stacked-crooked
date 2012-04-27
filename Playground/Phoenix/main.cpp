@@ -31,11 +31,17 @@ int main()
     // square root
     boost::phoenix::function<sqrt_impl> sq;
 
-    // first
+    // first solution
     auto x1 = (-b + sq(D)) / (2 * a);
+
+    // second solution
     auto x2 = (-b - sq(D)) / (2 * a);
 
     auto solve = [&x1, &x2](double a, double b, double c) -> std::pair<double, double> { return std::make_pair(x1(a, b, c), x2(a, b, c)); };
     auto result = solve(1.0, -1.0, -2.0);
+    std::cout << "x1: " << result.first << ", x2: " << result.second << std::endl;
+
+    // empty solution set (nan)
+    result = solve(1, 2, 3);
     std::cout << "x1: " << result.first << ", x2: " << result.second << std::endl;
 }

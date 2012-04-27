@@ -1,12 +1,20 @@
 #include <boost/phoenix.hpp>
 #include <boost/phoenix/stl/algorithm.hpp>
+#include <cassert>
 #include <iostream>
 
 
-double my_sqrt(double d)
+struct sqrt_impl
 {
-    return std::sqrt(d);
-}
+    template<typename Arg>
+    struct result { typedef double type; };
+
+    template<typename Arg>
+    typename result<Arg>::type operator()(Arg n)
+    {
+        return std::sqrt(static_cast<typename result<Arg>::type>(n));
+    }
+};
 
 
 int main()
@@ -21,13 +29,13 @@ int main()
     std::cout << "D(1, -1, -2): " << D(1.0, -1.0, -2.0) << std::endl;
 
     // square root
-    auto sq = boost::phoenix::bind(my_sqrt, a);
-    std::cout << "sq: " << sq(D(1.0, -1.0, -2.0)) << std::endl;
+    boost::phoenix::function<sqrt_impl> sq;
 
-    // sq ○ D
-    auto sqD = sq(D);
-    std::cout << "sq(D): " << sqD(1.0, -1.0, -2.0) << std::endl; // error: 'sqD' cannot be used as a function
+    // first
+    auto x1 = (-b + sq(D)) / (2 * a);
+    auto x2 = (-b - sq(D)) / (2 * a);
 
-    //auto x1 = (-b + sq(D)) / (2 * a);
-    //auto x2 = (-b - sq(D)) / (2 * a);
+    auto solve = [&x1, &x2](double a, double b, double c) -> std::pair<double, double> { return std::make_pair(x1(a, b, c), x2(a, b, c)); };
+    auto result = solve(1.0, -1.0, -2.0);
+    std::cout << "x1: " << result.first << ", x2: " << result.second << std::endl;
 }

@@ -36,8 +36,6 @@ FwdIt FindCycle(FwdIt it, FwdIt end, NodeList preceding = NodeList())
     return end;
 }
 
-template<typename T>
-struct Node_ConstIterator;
 
 template<typename T>
 struct Node
@@ -55,7 +53,7 @@ struct Node
     const std::vector<Node<T> > & children() const;
     std::vector<Node<T> > & children();
 
-    typedef ::Node_ConstIterator<T> const_iterator;
+    struct const_iterator;
     const_iterator begin() const;
     const_iterator end() const;
 
@@ -93,18 +91,18 @@ struct Node<T>::Impl
 
 
 template<typename T>
-struct Node_ConstIterator
+struct Node<T>::const_iterator
 {
     typedef typename Node<T>::container_type        container_type;
-    typedef typename container_type::const_iterator const_iterator;
+    typedef typename container_type::const_iterator iterator_type;
 
-    Node_ConstIterator(const container_type & c, const_iterator it) :
+    const_iterator(const container_type & c, iterator_type it) :
         mContainer(c),
         mIterator(it)
     {
     }
 
-    Node_ConstIterator & operator++()
+    const_iterator & operator++()
     {
         ++mIterator;
         return *this;
@@ -116,22 +114,27 @@ struct Node_ConstIterator
         return node;
     }
 
+    bool equals(const const_iterator & rhs) const
+    {
+        return mIterator == rhs.mIterator;
+    }
+
     const container_type & mContainer;
-    const_iterator mIterator;
+    iterator_type mIterator;
 };
 
 
-template<typename T>
-bool operator==(const Node_ConstIterator<T> & lhs, const Node_ConstIterator<T> & rhs)
+template<typename ConstIterator>
+bool operator==(const ConstIterator & lhs, const ConstIterator & rhs)
 {
-    return lhs.mIterator == rhs.mIterator;
+    return lhs.equals(rhs);
 }
 
 
-template<typename T>
-bool operator!=(const Node_ConstIterator<T> & lhs, const Node_ConstIterator<T> & rhs)
+template<typename ConstIterator>
+bool operator!=(const ConstIterator & lhs, const ConstIterator & rhs)
 {
-    return lhs.mIterator != rhs.mIterator;
+    return !lhs.equals(rhs);
 }
 
 
@@ -157,18 +160,16 @@ typename Node<T>::container_type & Node<T>::container()
 
 
 template<typename T>
-Node_ConstIterator<T> Node<T>::begin() const
+typename Node<T>::const_iterator Node<T>::begin() const
 {
-    typedef typename Node_ConstIterator<T>::container_type container_type;
-    const container_type & c = container();
-    return Node_ConstIterator<T>(c, c.begin());
+    return const_iterator(container(), container().begin());
 }
 
 
 template<typename T>
-Node_ConstIterator<T> Node<T>::end() const
+typename Node<T>::const_iterator Node<T>::end() const
 {
-    return Node_ConstIterator<T>(container(), container().end());
+    return const_iterator(container(), container().end());
 }
 
 

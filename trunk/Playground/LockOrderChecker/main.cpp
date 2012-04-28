@@ -4,36 +4,31 @@
 #include <vector>
 
 
-template<class FwdIt,
-         class Node = typename std::iterator_traits<FwdIt>::value_type,
-         class NodeList = std::vector<Node> >
-FwdIt FindCycle(FwdIt it, FwdIt end, NodeList preceding = NodeList())
+template<class Node,
+         class Preceding = std::vector<Node> >
+const Node * FindCycle(const Node & node, Preceding preceding = Preceding())
 {
-    if (it == end)
+    if (node.empty())
     {
-        return it;
+        return nullptr;
     }
 
-    const Node & node(*it);
-
-    if (std::find(begin(preceding), end(preceding), node) != end(preceding))
+    if (std::find(preceding.begin(), preceding.end(), node) != preceding.end())
     {
-        return it;
+        return &node;
     }
 
     preceding.push_back(node);
 
-    const auto & children = node.children();
-    for (auto it = children.begin(), end = children.end(); it != end; ++it)
+    for (const Node & child : node)
     {
-        auto found = FindCycle(it, end, preceding);
-        if (found != end)
+        if (const Node * found = FindCycle(child, preceding))
         {
             return found;
         }
     }
 
-    return end;
+    return nullptr;
 }
 
 
@@ -42,11 +37,13 @@ struct Node
 {
     typedef std::vector<Node<T> > container_type;
 
-    Node(const T & t = T());
+    explicit Node(const T & t);
 
     const T & value() const;
 
     T & value();
+
+    bool empty() const;
 
     Node<T> & add(const T & value);
 
@@ -56,6 +53,8 @@ struct Node
     struct const_iterator;
     const_iterator begin() const;
     const_iterator end() const;
+
+    bool equals(const Node<T> & rhs) const;
 
 private:
     const container_type & container() const;
@@ -67,11 +66,18 @@ private:
 
 
 template<typename T>
+Node<T> MakeNode(const T & value)
+{
+    return Node<T>(value);
+}
+
+
+template<typename T>
 struct Node<T>::Impl
 {
     typedef std::vector<Node<T> > Children;
 
-    Impl(const T & value) : mValue(value)
+    explicit Impl(const T & value) : mValue(value)
     {
     }
 
@@ -84,6 +90,12 @@ struct Node<T>::Impl
 
     const Children & children() const { return mChildren; }
     Children & children() { return mChildren; }
+
+    Node<T> & add(const T & value)
+    {
+        mChildren.push_back(MakeNode(value));
+        return mChildren.back();
+    }
 
     T mValue;
     Children mChildren;
@@ -139,9 +151,24 @@ bool operator!=(const ConstIterator & lhs, const ConstIterator & rhs)
 
 
 template<typename T>
-Node<T>::Node(const T & t) :
-    mImpl(new Impl(t))
+Node<T>::Node(const T & value = T()) :
+    mImpl(new Impl(value))
 {
+}
+
+
+template<typename T>
+bool Node<T>::equals(const Node<T> & rhs) const
+{
+    return this->mImpl.get() == rhs.mImpl.get();
+}
+
+
+
+template<typename T>
+bool Node<T>::empty() const
+{
+    return container().empty();
 }
 
 
@@ -176,8 +203,7 @@ typename Node<T>::const_iterator Node<T>::end() const
 template<typename T>
 Node<T> & Node<T>::add(const T & value)
 {
-    children().push_back(value);
-    return children().back();
+    return mImpl->add(value);
 }
 
 
@@ -219,5 +245,7 @@ int main()
     {
         std::cout << (*it).value() << std::endl;
     }
+
+    FindCycle(root);
 
 }

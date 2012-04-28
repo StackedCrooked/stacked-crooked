@@ -37,7 +37,7 @@ struct Node
 {
     typedef std::vector<Node<T> > container_type;
 
-    explicit Node(const T & t);
+    Node(const T & t);
 
     const T & value() const;
 
@@ -45,7 +45,7 @@ struct Node
 
     bool empty() const;
 
-    Node<T> & add(const T & value);
+    void push_back(const Node<T> & value);
 
     const std::vector<Node<T> > & children() const;
     std::vector<Node<T> > & children();
@@ -63,13 +63,6 @@ private:
     struct Impl;
     std::shared_ptr<Impl> mImpl;
 };
-
-
-template<typename T>
-Node<T> MakeNode(const T & value)
-{
-    return Node<T>(value);
-}
 
 
 template<typename T>
@@ -91,10 +84,9 @@ struct Node<T>::Impl
     const Children & children() const { return mChildren; }
     Children & children() { return mChildren; }
 
-    Node<T> & add(const T & value)
+    void push_back(const Node<T> & value)
     {
-        mChildren.push_back(MakeNode(value));
-        return mChildren.back();
+        mChildren.push_back(value);
     }
 
     T mValue;
@@ -108,8 +100,7 @@ struct Node<T>::const_iterator
     typedef typename Node<T>::container_type        container_type;
     typedef typename container_type::const_iterator iterator_type;
 
-    const_iterator(const container_type & c, iterator_type it) :
-        mContainer(c),
+    explicit const_iterator(iterator_type it) :
         mIterator(it)
     {
     }
@@ -131,7 +122,6 @@ struct Node<T>::const_iterator
         return mIterator == rhs.mIterator;
     }
 
-    const container_type & mContainer;
     iterator_type mIterator;
 };
 
@@ -189,21 +179,21 @@ typename Node<T>::container_type & Node<T>::container()
 template<typename T>
 typename Node<T>::const_iterator Node<T>::begin() const
 {
-    return const_iterator(container(), container().begin());
+    return const_iterator(container().begin());
 }
 
 
 template<typename T>
 typename Node<T>::const_iterator Node<T>::end() const
 {
-    return const_iterator(container(), container().end());
+    return const_iterator(container().end());
 }
 
 
 template<typename T>
-Node<T> & Node<T>::add(const T & value)
+void Node<T>::push_back(const Node<T> & value)
 {
-    return mImpl->add(value);
+    mImpl->push_back(value);
 }
 
 
@@ -238,7 +228,7 @@ std::vector<Node<T> > & Node<T>::children()
 int main()
 {
     Node<int> root(0);
-    root.add(1).add(2).add(3);
+    root.push_back(1);
     Node<int>::const_iterator it = root.begin();
     Node<int>::const_iterator end = root.end();
     for (; it != end; ++it)

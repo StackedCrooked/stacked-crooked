@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -37,7 +38,10 @@ struct Node
 {
     typedef std::vector<Node<T> > container_type;
 
-    Node(const T & t);
+    Node(Node<T> * parent, const T & t);
+
+    const Node<T> * parent() const;
+    Node<T> * parent();
 
     const T & value() const;
 
@@ -45,7 +49,12 @@ struct Node
 
     bool empty() const;
 
-    void push_back(const Node<T> & value);
+    void push_back(const T & value);
+
+    const Node<T> & back() const;
+    Node<T> & back();
+
+    void pop_back();
 
     const std::vector<Node<T> > & children() const;
     std::vector<Node<T> > & children();
@@ -70,7 +79,9 @@ struct Node<T>::Impl
 {
     typedef std::vector<Node<T> > Children;
 
-    explicit Impl(const T & value) : mValue(value)
+    explicit Impl(Node<T> * parent, const T & value) :
+        mParent(parent),
+        mValue(value)
     {
     }
 
@@ -78,17 +89,23 @@ struct Node<T>::Impl
     {
     }
 
+    const Node<T> * parent() const { return mParent; }
+    Node<T> * parent() { return mParent; }
+
+    const Node<T> & back() const { return children().back(); }
+    Node<T> & back() { return children().back(); }
+
     const T & value() const { return mValue; }
     T & value() { return mValue; }
 
     const Children & children() const { return mChildren; }
     Children & children() { return mChildren; }
 
-    void push_back(const Node<T> & value)
-    {
-        mChildren.push_back(value);
-    }
+    void push_back(const Node<T> & value) { children().push_back(value); }
 
+    void pop_back() { children().pop_back(); }
+
+    Node<T> * mParent;
     T mValue;
     Children mChildren;
 };
@@ -141,9 +158,23 @@ bool operator!=(const ConstIterator & lhs, const ConstIterator & rhs)
 
 
 template<typename T>
-Node<T>::Node(const T & value = T()) :
-    mImpl(new Impl(value))
+Node<T>::Node(Node<T> * parent, const T & value = T()) :
+    mImpl(new Impl(parent, value))
 {
+}
+
+
+template<typename T>
+const Node<T> * Node<T>::parent() const
+{
+    return mImpl->parent();
+}
+
+
+template<typename T>
+Node<T> * Node<T>::parent()
+{
+    return mImpl->parent();
 }
 
 
@@ -165,14 +196,14 @@ bool Node<T>::empty() const
 template<typename T>
 const typename Node<T>::container_type & Node<T>::container() const
 {
-    return container();
+    return mImpl->mChildren;
 }
 
 
 template<typename T>
 typename Node<T>::container_type & Node<T>::container()
 {
-    return container();
+    return mImpl->mChildren;
 }
 
 
@@ -191,9 +222,30 @@ typename Node<T>::const_iterator Node<T>::end() const
 
 
 template<typename T>
-void Node<T>::push_back(const Node<T> & value)
+void Node<T>::push_back(const T & value)
 {
-    mImpl->push_back(value);
+    mImpl->push_back(Node<T>(this, value));
+}
+
+
+template<typename T>
+const Node<T> & Node<T>::back() const
+{
+    return mImpl->back();
+}
+
+
+template<typename T>
+Node<T> & Node<T>::back()
+{
+    return mImpl->back();
+}
+
+
+template<typename T>
+void Node<T>::pop_back()
+{
+    mImpl->pop_back();
 }
 
 
@@ -225,17 +277,110 @@ std::vector<Node<T> > & Node<T>::children()
 }
 
 
-int main()
+struct Mutex;
+static Node<Mutex*> gRoot(nullptr);
+static Node<Mutex*> * gCurrent = &gRoot;
+
+
+struct Mutex
 {
-    Node<int> root(0);
-    root.push_back(1);
-    Node<int>::const_iterator it = root.begin();
-    Node<int>::const_iterator end = root.end();
-    for (; it != end; ++it)
+    Mutex(const std::string & inName) : mName(inName)
     {
-        std::cout << (*it).value() << std::endl;
     }
 
-    FindCycle(root);
+    Mutex(const Mutex &) = delete;
+    Mutex & operator=(const Mutex &) = delete;
 
+    const std::string & name() const { return mName; }
+
+    void lock()
+    {
+        gCurrent->push_back(this);
+        gCurrent = &gCurrent->back();
+        assert(!FindCycle(gRoot));
+    }
+
+    void unlock()
+    {
+        assert(gCurrent->value() == this);
+        gCurrent = gCurrent->parent();
+    }
+
+    std::string mName;
+};
+
+
+struct Lock
+{
+    Lock(Mutex & mutex) : mutex(mutex)
+    {
+        mutex.lock();
+    }
+
+    Lock(const Lock &) = delete;
+    Lock & operator=(const Lock &) = delete;
+
+    ~Lock()
+    {
+        mutex.unlock();
+    }
+
+    Mutex & mutex;
+};
+
+
+template<typename T>
+std::ostream & operator<<(std::ostream & os, const Node<T> & node)
+{
+    static int fDepth = 0;
+    std::string tab = std::string("  ");
+    std::string indent = std::string(tab.size() * fDepth, ' ');
+    os << std::endl << indent << node.value() << " ";
+    for (const auto & child : node)
+    {
+        fDepth++;
+        os << child;
+        if (--fDepth == 0)
+        {
+            os << std::endl;
+        }
+    }
+    return os;
+}
+
+
+std::ostream & operator<<(std::ostream & os, const Mutex * mutex)
+{
+    return os << (mutex ? mutex->name() : "null");
+}
+
+
+int main()
+{
+    Node<Mutex*> & theRoot = gRoot;
+    Mutex m1("m1");
+    Mutex m2("m2");
+    Mutex m3("m3");
+    Mutex m4("m4");
+    {
+        Lock l1(m1);
+        Lock l2(m2);
+    }
+    {
+        Lock l4(m4);
+        Lock l3(m3);
+    }
+    {
+        Lock l1(m1);
+        Lock l4(m4);
+    }
+    std::cout << theRoot << std::endl;
+    if (auto node = FindCycle(theRoot))
+    {
+        std::cout << "Found cycle at " << node->value()->name() << std::endl;
+    }
+    else
+    {
+        std::cout << "No cycles detected." << std::endl;
+    }
 }

@@ -8,6 +8,7 @@
 #include <vector>
  
  
+// See also on Ideone: http://ideone.com/xnSwz
 template<typename T>
 struct Buffer
 {

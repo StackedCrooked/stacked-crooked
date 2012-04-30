@@ -99,24 +99,24 @@ private:
 
 template<class T>
 bool HasCycles(const Node<T> & node,
-               std::vector<const T*> node_path = std::vector<const T*>())
+               std::vector<const T*> preceding = std::vector<const T*>())
 {
     if (!node.empty())
     {
         for (typename Node<T>::const_iterator it = node.begin(), end = node.end(); it != end; ++it)
         {
             Node<T> & child = **it;
-            if (std::find(node_path.begin(), node_path.end(), &child.get()) != node_path.end())
+            if (std::find(preceding.begin(), preceding.end(), &child.get()) != preceding.end())
             {
                 return true;
             }
             else
             {
-                node_path.push_back(&node.get());
+                preceding.push_back(&node.get());
 
                 // Previous nodes object is passed by value!
                 // This is an important aspect of the algorithm!
-                if (HasCycles(child, node_path))
+                if (HasCycles(child, preceding))
                 {
                     return true;
                 }

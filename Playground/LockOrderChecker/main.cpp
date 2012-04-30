@@ -24,53 +24,7 @@
 #define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
-template <class PointeeType>
-struct PointerPolicy_Normal_NoOwnership
-{
-    typedef PointeeType * PointerType;
-
-    static PointeeType * getRaw(PointerType p)
-    {
-        return p;
-    }
-
-    static void destroy(PointerType p) { }
-};
-
-
-template <class PointeeType>
-struct PointerPolicy_Normal_WithOwnership
-{
-    typedef PointeeType * PointerType;
-
-    static PointeeType * getRaw(PointerType p)
-    {
-        return p;
-    }
-
-    static void destroy(PointerType p)
-    {
-        delete p;
-    }
-};
-
-
-template <class PointeeType>
-struct PointerPolicy_Shared
-{
-    typedef boost::shared_ptr<PointeeType> PointerType;
-
-    static PointeeType * getRaw(PointerType p)
-    {
-        return p.get();
-    }
-
-    static void destroy(PointerType p) { }
-};
-
-
-template <class TDataType,
-          template <class> class PointerPolicy>
+template <class TDataType>
 class Node
 {
 public:
@@ -80,21 +34,12 @@ public:
 
     Node(const DataType & inData) : mData(inData) { }
 
-    typedef Node<DataType, PointerPolicy> This;
-    typedef typename PointerPolicy<This>::PointerType ChildPtr;
+    typedef Node<DataType> This;
+    typedef This* ChildPtr;
     typedef typename std::vector<ChildPtr> Container;
 
     typedef typename Container::iterator iterator;
     typedef typename Container::const_iterator const_iterator;
-
-    ~Node()
-    {
-        const_iterator it = this->begin(), endIt = this->end();
-        for (; it != endIt; ++it)
-        {
-            PointerPolicy<This>::destroy(*it);
-        }
-    }
 
     iterator begin()
     {
@@ -153,19 +98,18 @@ private:
 };
 
 
-template<class T,
-         template<class> class PointerType>
-bool HasCycles(const Node<T, PointerType> & node,
+template<class T>
+bool HasCycles(const Node<T> & node,
                std::vector<const T*> node_path = std::vector<const T*>())
 {
-    typedef Node<T, PointerType> NodeType;
+    typedef Node<T> NodeType;
     typedef typename NodeType::Container Container;
 
     if (!node.empty())
     {
         for (typename Container::const_iterator it = node.begin(), end = node.end(); it != end; ++it)
         {
-            Node<T, PointerType> & child = **it;
+            Node<T> & child = **it;
             if (std::find(node_path.begin(), node_path.end(), &child.data()) != node_path.end())
             {
                 return true;
@@ -225,7 +169,7 @@ void Lock(T & a, T & b, T& c, T & d)
 void testNode()
 {
     // Defined the tree with PointerPolicy_Normal_NoOwnership to void deleting stack-allocated objects.
-    typedef Node<Mutex, PointerPolicy_Normal_NoOwnership> MutexNode;
+    typedef Node<Mutex> MutexNode;
     MutexNode a('a');
     MutexNode b('b');
     MutexNode c('c');
@@ -279,7 +223,7 @@ template<class T>
 struct LockMany : boost::noncopyable
 {
     // No ownership here to prevent cycles causing infinite recursion on destruction.
-    typedef Node<Mutex*, PointerPolicy_Normal_NoOwnership> MutexNode;
+    typedef Node<Mutex*> MutexNode;
 
     LockMany() :
         mRootNode(),

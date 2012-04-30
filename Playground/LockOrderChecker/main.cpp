@@ -98,32 +98,38 @@ private:
 
 
 template<class T>
-bool HasCycles(const Node<T> & node,
-               std::vector<const T*> preceding = std::vector<const T*>())
+typename Node<T>::const_iterator FindCycle(const Node<T> & node,
+                                           std::vector<const T*> preceding = std::vector<const T*>())
 {
-    if (!node.empty())
+    typename Node<T>::const_iterator it = node.begin(), end = node.end();
+    for (; it != end; ++it)
     {
-        for (typename Node<T>::const_iterator it = node.begin(), end = node.end(); it != end; ++it)
+        Node<T> & child = **it;
+        if (std::find(preceding.begin(), preceding.end(), &child.get()) != preceding.end())
         {
-            Node<T> & child = **it;
-            if (std::find(preceding.begin(), preceding.end(), &child.get()) != preceding.end())
-            {
-                return true;
-            }
-            else
-            {
-                preceding.push_back(&node.get());
+            return it;
+        }
+        else
+        {
+            preceding.push_back(&node.get());
 
-                // Previous nodes object is passed by value!
-                // This is an important aspect of the algorithm!
-                if (HasCycles(child, preceding))
-                {
-                    return true;
-                }
+            // Previous nodes object is passed by value!
+            // This is an important aspect of the algorithm!
+            typename Node<T>::const_iterator childIt = FindCycle(child, preceding);
+            if (childIt != child.end())
+            {
+                return childIt;
             }
         }
     }
-    return false;
+    return it;
+}
+
+
+template<class T>
+bool HasCycles(const Node<T> & node)
+{
+    return FindCycle(node) != node.end();
 }
 
 
@@ -320,6 +326,6 @@ int main()
 {
     testNode();
     testLockMany();
-    std::cout << "Everything turned out better than expected." << std::endl << std::flush;
+    std::cout << "Everything is OK." << std::endl << std::flush;
     return 0;
 }

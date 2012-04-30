@@ -30,14 +30,23 @@ class Node
 public:
     typedef T value_type;
 
-    Node() { }
+    Node() : _parent(NULL) { }
 
-    Node(const value_type & value) : _value(value) { }
+    Node(Node<T> * parent, const value_type & value) :
+        _parent(parent),
+        _value(value)
+    {
+    }
 
     typedef Node<value_type>                        this_type;
     typedef typename std::vector<this_type>         container_type;
     typedef typename container_type::iterator       iterator;
     typedef typename container_type::const_iterator const_iterator;
+
+    Node<T> & parent()
+    {
+        return * _parent;
+    }
 
     const_iterator begin() const
     {
@@ -59,9 +68,10 @@ public:
         return _children.end();
     }
 
-    void insert(const this_type & item)
+    Node<T> & insert(const value_type & item)
     {
-        _children.push_back(item);
+        _children.push_back(Node<T>(this, item));
+        return _children.back();
     }
 
     size_t size() const
@@ -90,6 +100,7 @@ public:
     }
 
 private:
+    Node<T> * _parent;
     value_type _value;
     container_type _children;
 };
@@ -130,102 +141,86 @@ bool HasCycles(const Node<T> & node)
     return FindCycle(node) != node.end();
 }
 
+#if 0
 
+ m1 m2 // OK
+ m2 m1 // Cycle!
+
+ m1 m2 // OK
+ m1 m3
+ m1 m3 m2 // OK
+ m1 m2 m3 // Cycle!
+
+#endif
 struct Mutex
 {
+     static Node<Mutex*> & GetRoot()
+     {
+         static Node<Mutex*> root;
+         return root;
+     }
+
+     static Node<Mutex*> & GetLast()
+     {
+         static Node<Mutex*> last = GetRoot();
+         return last;
+     }
+
     Mutex(char inChar) :
-        mChar(inChar)
+        mChar(inChar),
+        mPrevious()
     {
-
-    }
-
-    static Node<Mutex*> & Get()
-    {
-        static Node<Mutex*> fList;
-        return fList;
     }
 
     void lock()
     {
-        Get().insert(this);
+        GetLast() = GetLast().insert(this);
     }
 
     void unlock()
     {
-        // No action required.
+        GetLast() = GetLast().parent();
     }
 
     char mChar;
+    Mutex * mPrevious;
 };
 
 
-void Lock(Mutex & a)
+struct ScopedLock
 {
-    a.lock();
-}
+    ScopedLock(Mutex & inMutex) :
+        mMutex(inMutex)
+    {
+        mMutex.lock();
+    }
 
+    ~ScopedLock()
+    {
+        mMutex.unlock();
+    }
 
-void Lock(Mutex & a,
-          Mutex & b)
-{
-    a.lock();
-    b.lock();
-}
+    Mutex mMutex;
+};
 
-
-void Lock(Mutex & a,
-          Mutex & b,
-          Mutex & c)
-{
-    a.lock();
-    b.lock();
-    c.lock();
-}
-
-
-void Lock(Mutex & a,
-          Mutex & b,
-          Mutex & c,
-          Mutex & d)
-{
-    a.lock();
-    b.lock();
-    c.lock();
-}
 
 
 void testNode()
 {
-    // Defined the tree with PointerPolicy_Normal_NoOwnership to void deleting stack-allocated objects.
-
     Mutex a('a');
     Mutex b('b');
-    Mutex c('c');
-    Mutex d('d');
 
-    Lock(a, b);
-    Verify(!HasCycles(Mutex::Get()));
+    {
+        ScopedLock lock_a(a);
+        ScopedLock lock_b(b);
+        Verify(!HasCycles(Mutex::GetRoot()));
+    }
 
-    Lock(a, c);
-    Verify(!HasCycles(Mutex::Get()));
-
-    Lock(b, d);
-    Verify(!HasCycles(Mutex::Get()));
-
-    Lock(a, b, c);
-    Verify(!HasCycles(Mutex::Get()));
-
-    Lock(a, b, d);
-    Verify(!HasCycles(Mutex::Get()));
-
-    Lock(a, b, c, d);
-    Verify(!HasCycles(Mutex::Get()));
-
-    Lock(a, b, d, c);
-    Verify(!HasCycles(Mutex::Get()));
-
-    Lock(b, a);
-    Verify(HasCycles(Mutex::Get()));
+    {
+        ScopedLock lock_a(b);
+        ScopedLock lock_b(a);
+        Verify(HasCycles(Mutex::GetRoot()));
+    }
 }
 
 

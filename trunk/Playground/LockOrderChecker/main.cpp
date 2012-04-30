@@ -32,7 +32,7 @@ public:
 
     Node() { }
 
-    Node(const value_type & inData) : mData(inData) { }
+    Node(const value_type & value) : _value(value) { }
 
     typedef Node<value_type>                        this_type;
     typedef this_type*                              ptr_type;
@@ -42,58 +42,58 @@ public:
 
     const_iterator begin() const
     {
-        return mChildren.begin();
+        return _children.begin();
     }
 
     const_iterator end() const
     {
-        return mChildren.end();
+        return _children.end();
     }
 
     iterator begin()
     {
-        return mChildren.begin();
+        return _children.begin();
     }
 
     iterator end()
     {
-        return mChildren.end();
+        return _children.end();
     }
 
     void insert(this_type * inItem)
     {
         ptr_type item(inItem);
-        mChildren.push_back(item);
+        _children.push_back(item);
     }
 
     size_t size() const
     {
-        return mChildren.size();
+        return _children.size();
     }
 
     bool empty() const
     {
-        return mChildren.empty();
+        return _children.empty();
     }
 
-    value_type & data()
+    value_type & get()
     {
-        return mData;
+        return _value;
     }
 
-    const value_type & data() const
+    const value_type & get() const
     {
-        return mData;
+        return _value;
     }
 
-    void setData(const value_type & value)
+    void set(const value_type & value)
     {
-        mData = value;
+        _value = value;
     }
 
 private:
-    value_type mData;
-    container_type mChildren;
+    value_type _value;
+    container_type _children;
 };
 
 
@@ -106,13 +106,13 @@ bool HasCycles(const Node<T> & node,
         for (typename Node<T>::const_iterator it = node.begin(), end = node.end(); it != end; ++it)
         {
             Node<T> & child = **it;
-            if (std::find(node_path.begin(), node_path.end(), &child.data()) != node_path.end())
+            if (std::find(node_path.begin(), node_path.end(), &child.get()) != node_path.end())
             {
                 return true;
             }
             else
             {
-                node_path.push_back(&node.data());
+                node_path.push_back(&node.get());
 
                 // Previous nodes object is passed by value!
                 // This is an important aspect of the algorithm!

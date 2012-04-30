@@ -98,24 +98,24 @@ private:
 
 
 template<class T>
-typename Node<T>::const_iterator FindCycle(const Node<T> & node,
-                                           std::vector<const T*> preceding = std::vector<const T*>())
+typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
+                                           std::vector<const T*> inPreceding = std::vector<const T*>())
 {
-    typename Node<T>::const_iterator it = node.begin(), end = node.end();
+    typename Node<T>::const_iterator it = inNode.begin(), end = inNode.end();
     for (; it != end; ++it)
     {
         Node<T> & child = **it;
-        if (std::find(preceding.begin(), preceding.end(), &child.get()) != preceding.end())
+        if (std::find(inPreceding.begin(), inPreceding.end(), &child.get()) != inPreceding.end())
         {
             return it;
         }
         else
         {
-            preceding.push_back(&node.get());
+            inPreceding.push_back(&inNode.get());
 
             // Previous nodes object is passed by value!
             // This is an important aspect of the algorithm!
-            typename Node<T>::const_iterator childIt = FindCycle(child, preceding);
+            typename Node<T>::const_iterator childIt = FindCycle(child, inPreceding);
             if (childIt != child.end())
             {
                 return childIt;

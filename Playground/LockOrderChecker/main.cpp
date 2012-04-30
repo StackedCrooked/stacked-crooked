@@ -35,8 +35,7 @@ public:
     Node(const value_type & value) : _value(value) { }
 
     typedef Node<value_type>                        this_type;
-    typedef this_type*                              ptr_type;
-    typedef typename std::vector<ptr_type>          container_type;
+    typedef typename std::vector<this_type>         container_type;
     typedef typename container_type::iterator       iterator;
     typedef typename container_type::const_iterator const_iterator;
 
@@ -60,9 +59,8 @@ public:
         return _children.end();
     }
 
-    void insert(this_type * inItem)
+    void insert(const this_type & item)
     {
-        ptr_type item(inItem);
         _children.push_back(item);
     }
 
@@ -104,7 +102,7 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
     typename Node<T>::const_iterator it = inNode.begin(), end = inNode.end();
     for (; it != end; ++it)
     {
-        Node<T> & child = **it;
+        const Node<T> & child = *it;
         if (std::find(inPreceding.begin(), inPreceding.end(), &child.get()) != inPreceding.end())
         {
             return it;
@@ -135,197 +133,104 @@ bool HasCycles(const Node<T> & node)
 
 struct Mutex
 {
-    Mutex(char inChar) : mChar(inChar) {}
+    Mutex(char inChar) :
+        mChar(inChar)
+    {
 
-    void lock() {}
-    void unlock() {}
+    }
+
+    static Node<Mutex*> & Get()
+    {
+        static Node<Mutex*> fList;
+        return fList;
+    }
+
+    void lock()
+    {
+        Get().insert(this);
+    }
+
+    void unlock()
+    {
+        // No action required.
+    }
 
     char mChar;
 };
 
 
-template<class T>
-void Lock(T & a, T & b)
+void Lock(Mutex & a)
 {
-    a.insert(&b);
+    a.lock();
 }
 
 
-template<class T>
-void Lock(T & a, T & b, T& c)
+void Lock(Mutex & a,
+          Mutex & b)
 {
-    a.insert(&b);
-    b.insert(&c);
+    a.lock();
+    b.lock();
 }
 
 
-template<class T>
-void Lock(T & a, T & b, T& c, T & d)
+void Lock(Mutex & a,
+          Mutex & b,
+          Mutex & c)
 {
-    a.insert(&b);
-    b.insert(&c);
-    c.insert(&d);
+    a.lock();
+    b.lock();
+    c.lock();
+}
+
+
+void Lock(Mutex & a,
+          Mutex & b,
+          Mutex & c,
+          Mutex & d)
+{
+    a.lock();
+    b.lock();
+    c.lock();
 }
 
 
 void testNode()
 {
     // Defined the tree with PointerPolicy_Normal_NoOwnership to void deleting stack-allocated objects.
-    typedef Node<Mutex> MutexNode;
-    MutexNode a('a');
-    MutexNode b('b');
-    MutexNode c('c');
-    MutexNode d('d');
+
+    Mutex a('a');
+    Mutex b('b');
+    Mutex c('c');
+    Mutex d('d');
 
     Lock(a, b);
-    Verify(!HasCycles(a));
-    Verify(!HasCycles(b));
-    Verify(!HasCycles(c));
-    Verify(!HasCycles(d));
+    Verify(!HasCycles(Mutex::Get()));
 
     Lock(a, c);
-    Verify(!HasCycles(a));
-    Verify(!HasCycles(b));
-    Verify(!HasCycles(c));
-    Verify(!HasCycles(d));
+    Verify(!HasCycles(Mutex::Get()));
 
     Lock(b, d);
-    Verify(!HasCycles(a));
-    Verify(!HasCycles(b));
-    Verify(!HasCycles(c));
-    Verify(!HasCycles(d));
+    Verify(!HasCycles(Mutex::Get()));
 
     Lock(a, b, c);
-    Verify(!HasCycles(a));
-    Verify(!HasCycles(b));
-    Verify(!HasCycles(c));
-    Verify(!HasCycles(d));
+    Verify(!HasCycles(Mutex::Get()));
 
     Lock(a, b, d);
-    Verify(!HasCycles(a));
-    Verify(!HasCycles(b));
-    Verify(!HasCycles(c));
-    Verify(!HasCycles(d));
+    Verify(!HasCycles(Mutex::Get()));
 
     Lock(a, b, c, d);
-    Verify(!HasCycles(a));
-    Verify(!HasCycles(b));
-    Verify(!HasCycles(c));
-    Verify(!HasCycles(d));
+    Verify(!HasCycles(Mutex::Get()));
 
     Lock(a, b, d, c);
-    Verify(HasCycles(a));
-    Verify(HasCycles(b));
-    Verify(HasCycles(c));
-    Verify(HasCycles(d));
-}
+    Verify(!HasCycles(Mutex::Get()));
 
-
-template<class T>
-struct LockMany : boost::noncopyable
-{
-    // No ownership here to prevent cycles causing infinite recursion on destruction.
-    typedef Node<Mutex*> MutexNode;
-
-    LockMany() :
-        mRootNode(),
-        mLastNode(&mRootNode)
-    {
-    }
-
-    ~LockMany()
-    {
-        unlockAll();
-    }
-
-    void lock(Mutex & inMutex)
-    {
-        MutexNode * node = getMutexNode(&inMutex);
-        mLastNode->insert(node);
-        mLastNode = node;
-    }
-
-    void unlockAll()
-    {
-        mLastNode = &mRootNode;
-    }
-
-    MutexNode * getMutexNode(Mutex * inMutex)
-    {
-        typename MutexNodes::iterator it = mMutexNodes.find(inMutex);
-        if (it == mMutexNodes.end())
-        {
-            MutexNode * theMutexNode = new MutexNode(inMutex);
-            mMutexNodes.insert(std::make_pair(inMutex, theMutexNode));
-            return theMutexNode;
-        }
-        return it->second.get();
-    }
-
-    typedef std::map<Mutex*, boost::shared_ptr<MutexNode> > MutexNodes;
-    MutexNodes mMutexNodes;
-    MutexNode mRootNode;
-    MutexNode * mLastNode;
-};
-
-
-void testLockMany()
-{
-    LockMany<char> locker;
-
-    Mutex a('1');
-    Mutex b('2');
-    Mutex c('3');
-
-    // Ok
-    locker.lock(a);
-    locker.lock(b);
-    Verify(!HasCycles(locker.mRootNode));
-    Verify(!HasCycles(*locker.getMutexNode(&a)));
-    Verify(!HasCycles(*locker.getMutexNode(&b)));
-    locker.unlockAll();
-
-    // Ok
-    locker.lock(a);
-    locker.lock(b);
-    Verify(!HasCycles(locker.mRootNode));
-    Verify(!HasCycles(*locker.getMutexNode(&a)));
-    Verify(!HasCycles(*locker.getMutexNode(&b)));
-    locker.unlockAll();
-
-    // Ok
-    locker.lock(b);
-    locker.lock(c);
-    Verify(!HasCycles(locker.mRootNode));
-    Verify(!HasCycles(*locker.getMutexNode(&a)));
-    Verify(!HasCycles(*locker.getMutexNode(&b)));
-    Verify(!HasCycles(*locker.getMutexNode(&c)));
-    locker.unlockAll();
-
-    // Ok
-    locker.lock(a);
-    locker.lock(c);
-    Verify(!HasCycles(locker.mRootNode));
-    Verify(!HasCycles(*locker.getMutexNode(&a)));
-    Verify(!HasCycles(*locker.getMutexNode(&b)));
-    Verify(!HasCycles(*locker.getMutexNode(&c)));
-    locker.unlockAll();
-
-    // Test inconsistent locking order here:
-    locker.lock(b);
-    locker.lock(a);
-    Verify(HasCycles(locker.mRootNode));
-    Verify(HasCycles(*locker.getMutexNode(&a)));
-    Verify(HasCycles(*locker.getMutexNode(&b)));
-    Verify(!HasCycles(*locker.getMutexNode(&c))); // no cycles here
-    locker.unlockAll();
+    Lock(b, a);
+    Verify(HasCycles(Mutex::Get()));
 }
 
 
 int main()
 {
     testNode();
-    testLockMany();
-    std::cout << "Everything is OK." << std::endl << std::flush;
     return 0;
 }

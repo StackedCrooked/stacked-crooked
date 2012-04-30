@@ -24,32 +24,21 @@
 #define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
-template <class TDataType>
+template <class T>
 class Node
 {
 public:
-    typedef TDataType DataType;
+    typedef T value_type;
 
     Node() { }
 
-    Node(const DataType & inData) : mData(inData) { }
+    Node(const value_type & inData) : mData(inData) { }
 
-    typedef Node<DataType> This;
-    typedef This* ChildPtr;
-    typedef typename std::vector<ChildPtr> Container;
-
-    typedef typename Container::iterator iterator;
-    typedef typename Container::const_iterator const_iterator;
-
-    iterator begin()
-    {
-        return mChildren.begin();
-    }
-
-    iterator end()
-    {
-        return mChildren.end();
-    }
+    typedef Node<value_type>                        this_type;
+    typedef this_type*                              ptr_type;
+    typedef typename std::vector<ptr_type>          container_type;
+    typedef typename container_type::iterator       iterator;
+    typedef typename container_type::const_iterator const_iterator;
 
     const_iterator begin() const
     {
@@ -61,9 +50,19 @@ public:
         return mChildren.end();
     }
 
-    void insert(This * inItem)
+    iterator begin()
     {
-        ChildPtr item(inItem);
+        return mChildren.begin();
+    }
+
+    iterator end()
+    {
+        return mChildren.end();
+    }
+
+    void insert(this_type * inItem)
+    {
+        ptr_type item(inItem);
         mChildren.push_back(item);
     }
 
@@ -77,24 +76,24 @@ public:
         return mChildren.empty();
     }
 
-    DataType & data()
+    value_type & data()
     {
         return mData;
     }
 
-    const DataType & data() const
+    const value_type & data() const
     {
         return mData;
     }
 
-    void setData(const DataType & inData)
+    void setData(const value_type & value)
     {
-        mData = inData;
+        mData = value;
     }
 
 private:
-    DataType mData;
-    Container mChildren;
+    value_type mData;
+    container_type mChildren;
 };
 
 
@@ -102,12 +101,9 @@ template<class T>
 bool HasCycles(const Node<T> & node,
                std::vector<const T*> node_path = std::vector<const T*>())
 {
-    typedef Node<T> NodeType;
-    typedef typename NodeType::Container Container;
-
     if (!node.empty())
     {
-        for (typename Container::const_iterator it = node.begin(), end = node.end(); it != end; ++it)
+        for (typename Node<T>::const_iterator it = node.begin(), end = node.end(); it != end; ++it)
         {
             Node<T> & child = **it;
             if (std::find(node_path.begin(), node_path.end(), &child.data()) != node_path.end())

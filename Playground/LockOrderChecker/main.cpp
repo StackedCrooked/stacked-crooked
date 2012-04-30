@@ -24,48 +24,6 @@
 #define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
-template<class T>
-struct ContainerPolicy_Set
-{
-    typedef std::set<T> Container;
-    static void insert(Container & ioContainer, const T & inValue)
-    {
-        ioContainer.insert(inValue);
-    }
-
-    static size_t size(const Container & ioContainer)
-    {
-        return ioContainer.size();
-    }
-
-    static bool empty(const Container & ioContainer)
-    {
-        return ioContainer.empty();
-    }
-};
-
-
-template<class T>
-struct ContainerPolicy_Vector
-{
-    typedef std::vector<T> Container;
-    static void insert(Container & ioContainer, const T & inValue)
-    {
-        ioContainer.push_back(inValue);
-    }
-
-    static size_t size(const Container & ioContainer)
-    {
-        return ioContainer.size();
-    }
-
-    static bool empty(const Container & ioContainer)
-    {
-        return ioContainer.empty();
-    }
-};
-
-
 template <class PointeeType>
 struct PointerPolicy_Normal_NoOwnership
 {

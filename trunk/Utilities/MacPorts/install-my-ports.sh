@@ -1,0 +1,1 @@
+port install apr apr-util ccache cctools cctools-headers cmake curl-ca-bundle cyrus-sasl2 db46 expat gcc47 gcc_select gettext glpk gmp ld64 libedit libffi libiconv libidn libmpc llvm-3.0 llvm_select mpfr ncurses neon openssl ppl serf1 sqlite3 subversion zlib

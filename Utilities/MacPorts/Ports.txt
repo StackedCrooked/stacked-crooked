@@ -5,6 +5,7 @@ bzr
 ccache
 cctools
 cctools-headers
+cgdb
 cmake
 ctags
 curl
@@ -48,6 +49,7 @@ py27-pyrex
 py27-roman
 python27
 python_select
+readline
 rsync
 serf1
 sqlite3

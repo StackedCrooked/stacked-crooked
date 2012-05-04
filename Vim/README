@@ -1,16 +1,16 @@
 Installation
 ------------
-1. Create symbolic links:
+- Create symbolic links:
     ln -s `pwd`/_vimrc $HOME/.vimrc
     ln -s `pwd`/_gvimrc $HOME/.gvimrc
 
-2. Install the addon manager:
-    sh InstallAddonManager.sh
 
-3. Start Vim:
-    vim
-
-4. Wait while the plugins are installing.
-
-5. Done.
+Addon manager (optional)
+------------------------
+- Install the addon manager: sh InstallAddonManager.sh
+- Enable the addon manager in your _vimrc by uncommenting this line:
+    "call ActivateAddons
+- Start Vim
+- Wait while the plugins are installing.
+- Done!
 

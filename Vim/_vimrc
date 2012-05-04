@@ -111,7 +111,9 @@ fun! ActivateAddons()
     let g:vimrc_loaded = 1
   endif
 endf
-call ActivateAddons()
+
+" Uncomment this line to make use of the addons.
+"call ActivateAddons()
 
 
 " -----------------------------------------------------------------------------

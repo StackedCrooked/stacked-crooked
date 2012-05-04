@@ -20,14 +20,19 @@ gettext
 git-core
 glpk
 gmp
+gnutls
 ld64
 libedit
 libffi
+libgcrypt
+libgpg-error
 libiconv
 libidn
 libmpc
+libtasn1
 llvm-3.0
 llvm_select
+lzo2
 MacVim
 mercurial
 mpfr
@@ -54,5 +59,6 @@ rsync
 serf1
 sqlite3
 subversion
+wget
 xz
 zlib

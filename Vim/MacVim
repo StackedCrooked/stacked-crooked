@@ -1,0 +1,1 @@
+/Applications/MacPorts/MacVim.app/Contents/MacOS/Vim -g $*

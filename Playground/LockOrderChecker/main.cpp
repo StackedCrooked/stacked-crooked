@@ -1,6 +1,4 @@
-#include <boost/bind.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <map>
@@ -24,6 +22,32 @@
 #define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
+struct UniqueNumber
+{
+    UniqueNumber() :
+        mNumber(GetUniqueNumber())
+    {
+    }
+
+    unsigned get() const { return mNumber; }
+
+private:
+    static unsigned GetUniqueNumber()
+    {
+        static unsigned fUniqueNumber = 0;
+        return fUniqueNumber++;
+    }
+
+    unsigned mNumber;
+};
+
+
+bool operator<(const UniqueNumber & lhs, const UniqueNumber & rhs)
+{
+    return lhs.get() < rhs.get();
+}
+
+
 template <class T>
 class Node
 {
@@ -39,14 +63,22 @@ public:
     }
 
     typedef Node<value_type>                        this_type;
-    typedef typename std::vector<this_type>         container_type;
+    typedef typename std::set<this_type>            container_type;
     typedef typename container_type::iterator       iterator;
     typedef typename container_type::const_iterator const_iterator;
 
-    Node<T> & parent()
+    //! Returns the parent node.
+    //! If this is the root node then null is returned.
+    const Node<T> * parent() const { return _parent; }
+    Node<T> * parent() { return _parent; }
+
+    const Node<T> & root() const
     {
-        return * _parent;
+        if (!_parent) { return *this; }
+        return parent()->root();
     }
+
+    Node<T> & root() { return const_cast<Node<T>&>(static_cast<const Node<T>&>(*this).root()); }
 
     const_iterator begin() const
     {
@@ -68,10 +100,10 @@ public:
         return _children.end();
     }
 
-    Node<T> & insert(const value_type & item)
+    iterator insert(const value_type & item)
     {
-        _children.push_back(Node<T>(this, item));
-        return _children.back();
+        _children.insert(Node<T>(this, item));
+        return std::find_if(begin(), end(), [&](const Node<T> & child) { return child.get() == item; });
     }
 
     size_t size() const
@@ -103,7 +135,15 @@ private:
     Node<T> * _parent;
     value_type _value;
     container_type _children;
+    UniqueNumber mId;
 };
+
+
+template<typename T>
+bool operator<(const Node<T> & lhs, const Node<T> & rhs)
+{
+    return lhs.get() < rhs.get();
+}
 
 
 template<class T>
@@ -136,55 +176,45 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
 
 
 template<class T>
-bool HasCycles(const Node<T> & node)
+bool HasCycles(const Node<T> & inNode)
 {
-    return FindCycle(node) != node.end();
+    return FindCycle(inNode) != inNode.end();
 }
 
-#if 0
 
- m1 m2 // OK
- m2 m1 // Cycle!
-
- m1 m2 // OK
- m1 m3
- m1 m3 m2 // OK
- m1 m2 m3 // Cycle!
-
-#endif
 struct Mutex
 {
-     static Node<Mutex*> & GetRoot()
-     {
-         static Node<Mutex*> root;
-         return root;
-     }
-
-     static Node<Mutex*> & GetLast()
-     {
-         static Node<Mutex*> last = GetRoot();
-         return last;
-     }
-
-    Mutex(char inChar) :
-        mChar(inChar),
-        mPrevious()
+    Mutex() :
+        mId()
     {
     }
 
     void lock()
     {
-        GetLast() = GetLast().insert(this);
+        std::cout << "Lock " << sCurrentNode->get() << std::endl;
+
+        // append current node
+        Node<unsigned>::iterator it = sCurrentNode->insert(id());
+        const Node<unsigned> & last(*it);
+        sCurrentNode = const_cast<Node<unsigned>*>(&last);
     }
 
     void unlock()
     {
-        GetLast() = GetLast().parent();
+        sCurrentNode = sCurrentNode->parent();
+        std::cout << "Unlock " << sCurrentNode->get() << std::endl;
     }
 
-    char mChar;
-    Mutex * mPrevious;
+    unsigned id() const { return mId.get(); }
+
+private:
+    static Node<unsigned> * sCurrentNode;
+    UniqueNumber mId;
 };
+
+
+Node<unsigned> gRootNode;
+Node<unsigned> * Mutex::sCurrentNode = &gRootNode;
 
 
 struct ScopedLock
@@ -204,28 +234,29 @@ struct ScopedLock
 };
 
 
-
 void testNode()
 {
-    Mutex a('a');
-    Mutex b('b');
+    Mutex m1, m2;
 
     {
-        ScopedLock lock_a(a);
-        ScopedLock lock_b(b);
-        Verify(!HasCycles(Mutex::GetRoot()));
+        ScopedLock sl1(m1); (void)sl1;
+        ScopedLock sl2(m2); (void)sl2;
     }
 
+    Verify(!HasCycles(gRootNode));
+
     {
-        ScopedLock lock_a(b);
-        ScopedLock lock_b(a);
-        Verify(HasCycles(Mutex::GetRoot()));
+        ScopedLock sl1(m2); (void)sl1;
+        ScopedLock sl2(m1); (void)sl2;
     }
+
+    Verify(HasCycles(gRootNode));
 }
 
 
 int main()
 {
     testNode();
+    std::cout << "End of program." << std::endl;
     return 0;
 }

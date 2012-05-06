@@ -102,8 +102,7 @@ public:
 
     Node<T> & insert(const value_type & item)
     {
-        _children.insert(Node<T>(this, item));
-        return const_cast<Node<T>&>(*std::find_if(begin(), end(), [&](const Node<T> & child) { return child.get() == item; }));
+        return const_cast<Node<T>&>(*_children.insert(Node<T>(this, item)).first);
     }
 
     size_t size() const
@@ -131,6 +130,24 @@ public:
         _value = value;
     }
 
+    void print(std::ostream & os, unsigned depth = 0, unsigned limit = 16) const
+    {
+        if (depth == limit)
+        {
+            return;
+        }
+
+        static std::string tab(" ");
+        std::string indent(depth * tab.size(), ' ');
+
+        os << indent << get();
+        for (auto & child : _children)
+        {
+            os << std::endl << indent << tab;
+            child.print(os, depth + 1);
+        }
+    }
+
 private:
     Node<T> * _parent;
     value_type _value;
@@ -146,6 +163,14 @@ bool operator<(const Node<T> & lhs, const Node<T> & rhs)
 }
 
 
+template<typename T>
+std::ostream & operator<<(std::ostream & os, const Node<T> & node)
+{
+    node.print(os);
+    return os;
+}
+
+
 template<class T>
 typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
                                            std::vector<const T*> inPreceding = std::vector<const T*>())
@@ -154,7 +179,7 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
     for (; it != end; ++it)
     {
         const Node<T> & child = *it;
-        if (std::find(inPreceding.begin(), inPreceding.end(), &child.get()) != inPreceding.end())
+        if (std::find_if(inPreceding.begin(), inPreceding.end(), [&](const T * value) { return *value == child.get(); }) != inPreceding.end())
         {
             return it;
         }
@@ -236,16 +261,18 @@ struct ScopedLock
 void testFindCycles()
 {
     {
-        Node<int> nocycle(nullptr, 1);
-        nocycle.insert(2).insert(3);
-        nocycle.insert(3);
-        Verify(!HasCycles(nocycle));
+        Node<int> node(nullptr, 0);
+        node.insert(1).insert(0);
+        std::cout << node << std::endl;
+        Verify(HasCycles(node));
     }
 
     {
-        Node<int> cycle(0, 1);
-        cycle.insert(2).insert(3).insert(2);
-        Verify(HasCycles(cycle));
+        Node<int> node(nullptr, 0);
+        node.insert(1).insert(2);
+        node.insert(2).insert(1);
+        std::cout << node << std::endl;
+        Verify(HasCycles(node));
     }
 }
 
@@ -273,7 +300,7 @@ void testNode()
 int main()
 {
     testFindCycles();
-    testNode();
+    //testNode();
     std::cout << "End of program." << std::endl;
     return 0;
 }

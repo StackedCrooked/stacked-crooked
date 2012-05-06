@@ -149,7 +149,7 @@ public:
         mValue = value;
     }
 
-    void print(std::ostream & os, unsigned depth = 0, unsigned limit = 16) const
+    void print(std::ostream & os, unsigned depth = 0, unsigned limit = 8) const
     {
         if (depth == limit)
         {
@@ -163,7 +163,7 @@ public:
         for (auto & child : mChildren)
         {
             os << std::endl << indent << tab;
-            child.print(os, depth + 1);
+            child->print(os, depth + 1);
         }
     }
 
@@ -244,14 +244,23 @@ struct Mutex
     {
     }
 
-    static Node<Mutex*> & RootNode() { return sGraph.root(); }
+    static Graph<Mutex*> & graph()
+    {
+        static Graph<Mutex*> fGraph;
+        return fGraph;
+    }
+
+    static Node<Mutex*> & root()
+    {
+        return graph().root();
+    }
 
     void lock()
     {
         mPreviousNode = sCurrentNode;
 
         // append current node
-        Node<Mutex*> & node = sGraph.get(this);
+        Node<Mutex*> & node = graph().get(this);
         if (sCurrentNode)
         {
             sCurrentNode->insert(node);
@@ -265,13 +274,11 @@ struct Mutex
     }
 
 private:
-    static Graph<Mutex*> sGraph;
     static Node<Mutex*> * sCurrentNode;
     Node<Mutex*> * mPreviousNode;
 };
 
 
-Graph<Mutex*> Mutex::sGraph;
 Node<Mutex*> * Mutex::sCurrentNode = 0;
 
 
@@ -302,16 +309,19 @@ void testMutex()
     std::cout << __FUNCTION__ << std::endl;
 
     {
-        Mutex m1, m2, m3;
+        Mutex m1;
+        Mutex m2;
         {
             LOCK(m1);
             LOCK(m2);
-            Verify(!HasCycles(Mutex::RootNode()));
+            Verify(!HasCycles(Mutex::root()));
+            std::cout << Mutex::root() << std::endl;
         }
         {
             LOCK(m2);
             LOCK(m1);
-            Verify(HasCycles(Mutex::RootNode())); // FAIL atm
+            Verify(HasCycles(Mutex::root())); // FAIL atm
+            std::cout << Mutex::root() << std::endl;
         }
     }
 
@@ -322,6 +332,25 @@ void testMutex()
 void testNode()
 {
     std::cout << __FUNCTION__ << std::endl;
+    {
+        Graph<std::string> graph;
+
+        Node<std::string> & a = graph.get("a");
+        Node<std::string> & a1 = graph.get("a1");
+        Node<std::string> & a2 = graph.get("a2");
+        Node<std::string> & a3 = graph.get("a3");
+        Node<std::string> & a31 = graph.get("a31");
+        Node<std::string> & a32 = graph.get("a32");
+
+        a.insert(a1);
+        a.insert(a2);
+        a.insert(a3);
+
+        a3.insert(a31);
+        a3.insert(a32);
+
+        std::cout << graph.root() << std::endl;
+    }
     {
         Graph<int> graph;
 
@@ -344,6 +373,8 @@ void testNode()
 
         n4.insert(n3);
         Verify(HasCycles(graph.root()));
+
+        std::cout << graph.root() << std::endl;
     }
 
     {
@@ -361,6 +392,8 @@ void testNode()
 
         n3.insert(n1);
         Verify(HasCycles(graph.root()));
+
+        std::cout << graph.root() << std::endl;
     }
     std::cout << std::endl;
 }

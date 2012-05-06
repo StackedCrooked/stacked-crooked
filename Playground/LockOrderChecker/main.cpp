@@ -100,10 +100,10 @@ public:
         return _children.end();
     }
 
-    iterator insert(const value_type & item)
+    Node<T> & insert(const value_type & item)
     {
         _children.insert(Node<T>(this, item));
-        return std::find_if(begin(), end(), [&](const Node<T> & child) { return child.get() == item; });
+        return const_cast<Node<T>&>(*std::find_if(begin(), end(), [&](const Node<T> & child) { return child.get() == item; }));
     }
 
     size_t size() const
@@ -194,9 +194,8 @@ struct Mutex
         std::cout << "Lock " << sCurrentNode->get() << std::endl;
 
         // append current node
-        Node<unsigned>::iterator it = sCurrentNode->insert(id());
-        const Node<unsigned> & last(*it);
-        sCurrentNode = const_cast<Node<unsigned>*>(&last);
+        sCurrentNode = &sCurrentNode->insert(id());
+        assert(sCurrentNode->get() == id());
     }
 
     void unlock()
@@ -234,6 +233,23 @@ struct ScopedLock
 };
 
 
+void testFindCycles()
+{
+    {
+        Node<int> nocycle(nullptr, 1);
+        nocycle.insert(2).insert(3);
+        nocycle.insert(3);
+        Verify(!HasCycles(nocycle));
+    }
+
+    {
+        Node<int> cycle(0, 1);
+        cycle.insert(2).insert(3).insert(2);
+        Verify(HasCycles(cycle));
+    }
+}
+
+
 void testNode()
 {
     Mutex m1, m2;
@@ -256,6 +272,7 @@ void testNode()
 
 int main()
 {
+    testFindCycles();
     testNode();
     std::cout << "End of program." << std::endl;
     return 0;

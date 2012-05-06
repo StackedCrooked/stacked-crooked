@@ -292,29 +292,34 @@ struct ScopedLock
 };
 
 
-void testNode()
+#define CONCAT_HELPER(x, y) x ## y
+#define CONCAT(x, y) CONCAT_HELPER(x, y)
+#define LOCK(MTX) ScopedLock CONCAT(lock, __LINE__)(MTX)
+
+
+void testMutex()
 {
     std::cout << __FUNCTION__ << std::endl;
-    Mutex m1, m2;
 
     {
-        ScopedLock sl1(m1); (void)sl1;
-        ScopedLock sl2(m2); (void)sl2;
+        Mutex m1, m2, m3;
+        {
+            LOCK(m1);
+            LOCK(m2);
+            Verify(!HasCycles(Mutex::RootNode()));
+        }
+        {
+            LOCK(m2);
+            LOCK(m1);
+            Verify(HasCycles(Mutex::RootNode())); // FAIL atm
+        }
     }
 
-    Verify(!HasCycles(Mutex::RootNode()));
-
-    {
-        ScopedLock sl1(m2); (void)sl1;
-        ScopedLock sl2(m1); (void)sl2;
-    }
-
-    Verify(HasCycles(Mutex::RootNode()));
     std::cout << std::endl;
 }
 
 
-void testMutex()
+void testNode()
 {
     std::cout << __FUNCTION__ << std::endl;
     {

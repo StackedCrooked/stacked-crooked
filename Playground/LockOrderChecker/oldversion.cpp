@@ -266,7 +266,7 @@ void Lock(T & a, T & b, T& c, T & d)
 }
 
 
-void testNode()
+void testMutex()
 {
     // Defined the tree with PointerPolicy_Normal_NoOwnership to void deleting stack-allocated objects.
     typedef node_t<Mutex, ContainerPolicy_Set, PointerPolicy_Normal_NoOwnership> MutexNode;
@@ -422,7 +422,7 @@ void testLockMany()
 
 int main()
 {
-    testNode();
+    testMutex();
     testLockMany();
     std::cout << "Everything turned out better than expected." << std::endl << std::flush;
     return 0;

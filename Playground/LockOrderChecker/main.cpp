@@ -65,13 +65,23 @@ public:
         if (it == mNodes.end())
         {
             NodePtr ptr(new Node<T>(inValue));
+            if (mNodes.empty())
+            {
+                mRootNode = ptr;
+            }
             mNodes.insert(std::make_pair(inValue, ptr));
             return *ptr;
         }
         return *it->second;
     }
 
+    Node<T> & root()
+    {
+        return *mRootNode;
+    }
+
 private:
+    NodePtr mRootNode;
     std::map<T, NodePtr> mNodes;
 };
 
@@ -227,39 +237,46 @@ bool HasCycles(const Node<T> & inNode)
 }
 
 
-#if 0
 struct Mutex
 {
     Mutex() :
-        mId()
+        mId(),
+        mPreviousNode(nullptr)
     {
     }
 
+    static Node<unsigned> & RootNode() { return sGraph.root(); }
+
     void lock()
     {
-        std::cout << "Lock " << sCurrentNode->get() << std::endl;
+        mPreviousNode = sCurrentNode;
 
         // append current node
-        sCurrentNode = &sCurrentNode->insert(id());
-        assert(sCurrentNode->get() == id());
+        Node<unsigned> & node = sGraph.get(id());
+        if (sCurrentNode)
+        {
+            sCurrentNode->insert(node);
+        }
+        sCurrentNode = &node;
     }
 
     void unlock()
     {
-        sCurrentNode = sCurrentNode->parent();
-        std::cout << "Unlock " << sCurrentNode->get() << std::endl;
+        sCurrentNode = mPreviousNode;
     }
 
     unsigned id() const { return mId.get(); }
 
 private:
+    static Graph<unsigned> sGraph;
     static Node<unsigned> * sCurrentNode;
     UniqueNumber mId;
+    Node<unsigned> * mPreviousNode;
 };
 
 
-Node<unsigned> gRootNode;
-Node<unsigned> * Mutex::sCurrentNode = &gRootNode;
+Graph<unsigned> Mutex::sGraph;
+Node<unsigned> * Mutex::sCurrentNode = 0;
 
 
 struct ScopedLock
@@ -281,6 +298,7 @@ struct ScopedLock
 
 void testNode()
 {
+    std::cout << __FUNCTION__ << std::endl;
     Mutex m1, m2;
 
     {
@@ -288,20 +306,45 @@ void testNode()
         ScopedLock sl2(m2); (void)sl2;
     }
 
-    Verify(!HasCycles(gRootNode));
+    Verify(!HasCycles(Mutex::RootNode()));
 
     {
         ScopedLock sl1(m2); (void)sl1;
         ScopedLock sl2(m1); (void)sl2;
     }
 
-    Verify(HasCycles(gRootNode));
+    Verify(HasCycles(Mutex::RootNode()));
+    std::cout << std::endl;
 }
-#endif
 
 
-void testFindCycles()
+void testMutex()
 {
+    std::cout << __FUNCTION__ << std::endl;
+    {
+        Graph<int> graph;
+
+        Node<int> & n1 = graph.get(1);
+        Node<int> & n2 = graph.get(2);
+        Node<int> & n3 = graph.get(3);
+        Node<int> & n4 = graph.get(4);
+
+        n1.insert(n2);
+        Verify(!HasCycles(graph.root()));
+
+        n1.insert(n3);
+        Verify(!HasCycles(graph.root()));
+
+        n3.insert(n2);
+        Verify(!HasCycles(graph.root()));
+
+        n2.insert(n4);
+        Verify(!HasCycles(graph.root()));
+
+        n4.insert(n3);
+        Verify(HasCycles(graph.root()));
+    }
+
     {
         Graph<int> graph;
 
@@ -310,24 +353,22 @@ void testFindCycles()
         Node<int> & n3 = graph.get(3);
 
         n1.insert(n2);
-        Verify(!HasCycles(n1));
-
-        n1.insert(n3);
-        Verify(!HasCycles(n1));
-
-        n3.insert(n2);
-        Verify(!HasCycles(n1));
+        Verify(!HasCycles(graph.root()));
 
         n2.insert(n3);
-        Verify(HasCycles(n1));
+        Verify(!HasCycles(graph.root()));
+
+        n3.insert(n1);
+        Verify(HasCycles(graph.root()));
     }
+    std::cout << std::endl;
 }
 
 
 int main()
 {
-    testFindCycles();
-    //testNode();
+    testNode();
+    testMutex();
     std::cout << "End of program." << std::endl;
     return 0;
 }

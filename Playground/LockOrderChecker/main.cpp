@@ -48,6 +48,29 @@ bool operator<(const UniqueNumber & lhs, const UniqueNumber & rhs)
 }
 
 
+template<typename T>
+class Node;
+
+
+template<typename T>
+class Graph
+{
+public:
+    const Node<T> & get(const T & inValue) const
+    {
+        return mNodes[inValue];
+    }
+
+    Node<T> & get(const T & inValue)
+    {
+        return mNodes[inValue];
+    }
+
+private:
+    std::map<T, Node<T> > mNodes;
+};
+
+
 template <class T>
 class Node
 {

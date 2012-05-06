@@ -23,32 +23,6 @@
 #define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
 
 
-struct UniqueNumber
-{
-    UniqueNumber() :
-        mNumber(GetUniqueNumber())
-    {
-    }
-
-    unsigned get() const { return mNumber; }
-
-private:
-    static unsigned GetUniqueNumber()
-    {
-        static unsigned fUniqueNumber = 0;
-        return fUniqueNumber++;
-    }
-
-    unsigned mNumber;
-};
-
-
-bool operator<(const UniqueNumber & lhs, const UniqueNumber & rhs)
-{
-    return lhs.get() < rhs.get();
-}
-
-
 template<typename T>
 class Node;
 
@@ -182,7 +156,6 @@ private:
 
     value_type mValue;
     container_type mChildren;
-    UniqueNumber mId;
 };
 
 

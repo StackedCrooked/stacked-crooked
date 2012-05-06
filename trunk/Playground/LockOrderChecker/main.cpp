@@ -295,7 +295,7 @@ struct ScopedLock
         mMutex.unlock();
     }
 
-    Mutex mMutex;
+    Mutex & mMutex;
 };
 
 
@@ -314,14 +314,14 @@ void testMutex()
         {
             LOCK(m1);
             LOCK(m2);
-            Verify(!HasCycles(Mutex::root()));
             std::cout << Mutex::root() << std::endl;
+            Verify(!HasCycles(Mutex::root()));
         }
         {
             LOCK(m2);
             LOCK(m1);
-            Verify(HasCycles(Mutex::root())); // FAIL atm
             std::cout << Mutex::root() << std::endl;
+            Verify(HasCycles(Mutex::root())); // FAIL atm
         }
     }
 

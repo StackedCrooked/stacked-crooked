@@ -2,6 +2,7 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -56,18 +57,22 @@ template<typename T>
 class Graph
 {
 public:
-    const Node<T> & get(const T & inValue) const
-    {
-        return mNodes[inValue];
-    }
+    typedef std::shared_ptr< Node<T> > NodePtr;
 
     Node<T> & get(const T & inValue)
     {
-        return mNodes[inValue];
+        auto it = mNodes.find(inValue);
+        if (it == mNodes.end())
+        {
+            NodePtr ptr(new Node<T>(inValue));
+            mNodes.insert(std::make_pair(inValue, ptr));
+            return *ptr;
+        }
+        return *it->second;
     }
 
 private:
-    std::map<T, Node<T> > mNodes;
+    std::map<T, NodePtr> mNodes;
 };
 
 
@@ -77,80 +82,61 @@ class Node
 public:
     typedef T value_type;
 
-    Node() : _parent(NULL) { }
-
-    Node(Node<T> * parent, const value_type & value) :
-        _parent(parent),
-        _value(value)
-    {
-    }
-
     typedef Node<value_type>                        this_type;
-    typedef typename std::set<this_type>            container_type;
+    typedef typename std::set<this_type*>           container_type;
     typedef typename container_type::iterator       iterator;
     typedef typename container_type::const_iterator const_iterator;
-
-    //! Returns the parent node.
-    //! If this is the root node then null is returned.
-    const Node<T> * parent() const { return _parent; }
-    Node<T> * parent() { return _parent; }
-
-    const Node<T> & root() const
-    {
-        if (!_parent) { return *this; }
-        return parent()->root();
-    }
 
     Node<T> & root() { return const_cast<Node<T>&>(static_cast<const Node<T>&>(*this).root()); }
 
     const_iterator begin() const
     {
-        return _children.begin();
+        return mChildren.begin();
     }
 
     const_iterator end() const
     {
-        return _children.end();
+        return mChildren.end();
     }
 
     iterator begin()
     {
-        return _children.begin();
+        return mChildren.begin();
     }
 
     iterator end()
     {
-        return _children.end();
+        return mChildren.end();
     }
 
-    Node<T> & insert(const value_type & item)
+    void insert(Node<T> & item)
     {
-        return const_cast<Node<T>&>(*_children.insert(Node<T>(this, item)).first);
+        mChildren.insert(&item);
     }
 
     size_t size() const
     {
-        return _children.size();
+        return mChildren.size();
     }
 
     bool empty() const
     {
-        return _children.empty();
+        return mChildren.empty();
     }
 
     value_type & get()
     {
-        return _value;
+        return mValue;
     }
 
     const value_type & get() const
     {
-        return _value;
+        return mValue;
     }
 
     void set(const value_type & value)
     {
-        _value = value;
+        mValue = value;
     }
 
     void print(std::ostream & os, unsigned depth = 0, unsigned limit = 16) const
@@ -164,7 +150,7 @@ public:
         std::string indent(depth * tab.size(), ' ');
 
         os << indent << get();
-        for (auto & child : _children)
+        for (auto & child : mChildren)
         {
             os << std::endl << indent << tab;
             child.print(os, depth + 1);
@@ -172,9 +158,20 @@ public:
     }
 
 private:
-    Node<T> * _parent;
-    value_type _value;
-    container_type _children;
+    friend class Graph<T>;
+
+    Node() {}
+
+    Node(const value_type & value) :
+        mValue(value)
+    {
+    }
+
+    Node(const Node&);
+    Node& operator=(const Node&);
+
+    value_type mValue;
+    container_type mChildren;
     UniqueNumber mId;
 };
 
@@ -201,7 +198,7 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
     typename Node<T>::const_iterator it = inNode.begin(), end = inNode.end();
     for (; it != end; ++it)
     {
-        const Node<T> & child = *it;
+        const Node<T> & child = **it;
         if (std::find_if(inPreceding.begin(), inPreceding.end(), [&](const T * value) { return *value == child.get(); }) != inPreceding.end())
         {
             return it;
@@ -230,6 +227,7 @@ bool HasCycles(const Node<T> & inNode)
 }
 
 
+#if 0
 struct Mutex
 {
     Mutex() :
@@ -281,25 +279,6 @@ struct ScopedLock
 };
 
 
-void testFindCycles()
-{
-    {
-        Node<int> node(nullptr, 0);
-        node.insert(1).insert(0);
-        std::cout << node << std::endl;
-        Verify(HasCycles(node));
-    }
-
-    {
-        Node<int> node(nullptr, 0);
-        node.insert(1).insert(2);
-        node.insert(2).insert(1);
-        std::cout << node << std::endl;
-        Verify(HasCycles(node));
-    }
-}
-
-
 void testNode()
 {
     Mutex m1, m2;
@@ -317,6 +296,31 @@ void testNode()
     }
 
     Verify(HasCycles(gRootNode));
+}
+#endif
+
+
+void testFindCycles()
+{
+    {
+        Graph<int> graph;
+
+        Node<int> & n1 = graph.get(1);
+        Node<int> & n2 = graph.get(2);
+        Node<int> & n3 = graph.get(3);
+
+        n1.insert(n2);
+        Verify(!HasCycles(n1));
+
+        n1.insert(n3);
+        Verify(!HasCycles(n1));
+
+        n3.insert(n2);
+        Verify(!HasCycles(n1));
+
+        n2.insert(n3);
+        Verify(HasCycles(n1));
+    }
 }
 
 

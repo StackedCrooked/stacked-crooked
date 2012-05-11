@@ -25,7 +25,7 @@ static const std::vector<std::uint8_t> & GetRandomNumbers()
 {
     static std::vector<std::uint8_t> fNumbers = [](){
         std::vector<std::uint8_t> numbers;
-        for (unsigned i = 0; i != 255; ++i) { numbers.push_back(i%4); }
+        for (unsigned i = 0; i != 255; ++i) { numbers.push_back(i); }
         return numbers;
     }();
     std::random_shuffle(fNumbers.begin(), fNumbers.end());

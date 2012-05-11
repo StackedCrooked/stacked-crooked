@@ -46,8 +46,8 @@ MAC GetRandomMAC()
     result[1] = numbers[1];
     result[2] = numbers[2];
     result[3] = numbers[3];
-    result[4] = numbers[3];
-    result[5] = numbers[4];
+    result[4] = numbers[4];
+    result[5] = numbers[5];
     return result;
 }
 

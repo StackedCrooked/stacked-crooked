@@ -62,12 +62,12 @@ struct Hash
     {
         static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
         std::size_t key = 0;
-        key |= size_t(mac[0]) << 40;
-        key |= size_t(mac[1]) << 32;
-        key |= size_t(mac[2]) << 24;
-        key |= size_t(mac[3]) << 16;
-        key |= size_t(mac[4]) << 8;
-        key |= size_t(mac[5]) << 0;
+        key |= size_t(mac[0]) << 56;
+        key |= size_t(mac[1]) << 48;
+        key |= size_t(mac[2]) << 40;
+        key |= size_t(mac[3]) << 32;
+        key |= size_t(mac[4]) << 24;
+        key |= size_t(mac[5]) << 16;
         return key;
     }
 };

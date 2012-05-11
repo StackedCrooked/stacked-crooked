@@ -55,19 +55,23 @@ MAC GetRandomMAC()
 typedef std::map<MAC, bool> Map;
 
 
-
-
-
-class Hash
+struct Hash
 {
-public:
-    uint64_t operator()(const MAC &mac) const
+    template<typename MAC>
+    std::size_t operator()(const MAC & mac) const
     {
-        size_t copy = 0;
-        memcpy(&copy, &mac[0], std::max(sizeof(size_t), std::size_t(6)));
-        return copy;
+        static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
+        std::size_t key = 0;
+        key |= size_t(mac[0]) << 40;
+        key |= size_t(mac[1]) << 32;
+        key |= size_t(mac[2]) << 24;
+        key |= size_t(mac[3]) << 16;
+        key |= size_t(mac[4]) << 8;
+        key |= size_t(mac[5]) << 0;
+        return key;
     }
 };
+
 
 
 typedef std::unordered_map<MAC, bool, Hash> HashMap;

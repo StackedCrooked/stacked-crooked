@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 #include <unordered_map>
-#include <boost/functional/hash/hash.hpp>
 #include <sys/time.h>
 
 
@@ -62,11 +61,10 @@ typedef std::map<MAC, bool> Map;
 class Hash
 {
 public:
-    size_t operator()(const MAC &mac) const
+    uint64_t operator()(const MAC &mac) const
     {
-        static_assert(sizeof(size_t) >= 6, "mac doesn't fit in size_t");
         size_t copy = 0;
-        memcpy(&copy, &mac[0], 6);
+        memcpy(&copy, &mac[0], std::max(sizeof(size_t), std::size_t(6)));
         return copy;
     }
 };

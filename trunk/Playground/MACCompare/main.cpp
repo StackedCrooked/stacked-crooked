@@ -1,37 +1,14 @@
-#include <boost/lexical_cast.hpp>
-#include <cstddef>
+#include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <map>
-#include <sstream>
-#include <typeinfo>
-#include <stdexcept>
-#include <tuple>
-#include <cxxabi.h>
+#include <string>
+#include <unordered_map>
+#include <boost/functional/hash/hash.hpp>
 #include <sys/time.h>
-
-
-std::string demangle(const char * name)
-{
-    int st;
-    char * const p = abi::__cxa_demangle(name, 0, 0, &st);
-
-    if (st != 0)
-    {
-        switch (st)
-        {
-            case -1: throw std::runtime_error("A memory allocation failure occurred.");
-            case -2: throw std::runtime_error("Not a valid name under the GCC C++ ABI mangling rules.");
-            case -3: throw std::runtime_error("One of the arguments is invalid.");
-            default: throw std::runtime_error("Unexpected demangle status");
-        }
-    }
-
-    std::string result(p);
-    free(p);
-    return result;
-}
 
 
 double GetCurrentTime()
@@ -42,147 +19,145 @@ double GetCurrentTime()
 }
 
 
-std::uint8_t* Random();
-
-
-struct Memcmp
+//! Returns a vector containing range [0, 256).
+//! The vector shuffled before returning. This makes
+//! it some sort of random number generator.
+static const std::vector<std::uint8_t> & GetRandomNumbers()
 {
-    Memcmp(const std::uint8_t * inData)
-    {
-        memcpy(key, inData, sizeof(key));
-    }
-
-    friend bool operator<(const Memcmp & lhs, const Memcmp & rhs)
-    { return std::memcmp(lhs.key, rhs.key, 6) < 0; }
-
-    std::uint8_t key[6];
-};
-
-
-struct Pair
-{
-    Pair(const std::uint8_t * inData) :
-        key(*reinterpret_cast<const std::uint32_t*>(inData),
-            *reinterpret_cast<const std::uint16_t*>(inData + 4))
-    {
-    }
-
-    friend bool operator<(const Pair & lhs, const Pair & rhs)
-    { return lhs.key < rhs.key; }
-
-    std::pair<std::uint32_t, std::uint16_t> key;
-};
-
-
-struct ReversePair
-{
-    ReversePair(const std::uint8_t * inData) :
-        key(*reinterpret_cast<const std::uint16_t*>(inData),
-            *reinterpret_cast<const std::uint32_t*>(inData + 2))
-    {
-    }
-
-    friend bool operator<(const ReversePair & lhs, const ReversePair & rhs)
-    { return lhs.key < rhs.key; }
-
-    std::pair<std::uint16_t, std::uint32_t> key;
-};
-
-
-struct Single64
-{
-    Single64(const std::uint8_t * inData) :
-        key(0xFFFFFFFFFFFF0000 & *reinterpret_cast<const std::uint64_t*>(inData))
-    {
-    }
-
-    friend bool operator<(const Single64 & lhs, const Single64 & rhs)
-    { return lhs.key < rhs.key; }
-
-    std::uint64_t key;
-};
-
-
-
-struct Cheater
-{
-    Cheater(const std::uint8_t *) :
-        mKey(count())
-    {
-    }
-
-    friend bool operator<(const Cheater & lhs, const Cheater & rhs)
-    {
-        return std::string("abcabcabc" + boost::lexical_cast<std::string>(lhs.mKey))
-                <
-               std::string("abcabcabc" + boost::lexical_cast<std::string>(rhs.mKey));
-    }
-
-    static unsigned count()
-    {
-        static unsigned fCount = 0;
-        return fCount++;
-    }
-
-    unsigned mKey;
-};
-
-
-template<typename T>
-std::map<T, bool> GetMapping()
-{
-    std::map<T, bool> mapping;
-    for (std::size_t idx = 0; idx < 100; ++idx)
-    {
-        mapping.insert(std::make_pair(T(Random()), true));
-    }
-    std::cout << "Size of mapping: " << mapping.size() << std::endl;
-    return mapping;
+    static std::vector<std::uint8_t> fNumbers = [](){
+        std::vector<std::uint8_t> numbers;
+        for (unsigned i = 0; i != 255; ++i) { numbers.push_back(i%4); }
+        return numbers;
+    }();
+    std::random_shuffle(fNumbers.begin(), fNumbers.end());
+    return fNumbers;
 }
 
-template<typename T>
-std::tuple<double, unsigned, unsigned> Benchmark()
+
+//! 6-byte field for emulating MAC address
+typedef std::array<uint8_t, 6> MAC;
+
+
+//! Returns a random MAC address.
+MAC GetRandomMAC()
 {
-    std::cout << demangle(typeid(T).name()) << ": ";
-
-
-    static std::map<T, bool> fMapping = GetMapping<T>();
-
-    std::tuple<double, unsigned, unsigned> result;
-    double & time = std::get<0>(result);
-    unsigned & found = std::get<1>(result);
-    unsigned & unfound = std::get<2>(result);
-
-
-
-    double beginTime = GetCurrentTime();
-    for (std::size_t idx = 0; idx != 1000; ++idx)
-    {
-        if (fMapping.find(T(Random())) != fMapping.end())
-        {
-            found++;
-        }
-        else
-        {
-            unfound++;
-        }
-    }
-    time = unsigned(0.5 + 1000.0 * (GetCurrentTime() - beginTime));
+    MAC result;
+    const std::vector<std::uint8_t> & numbers = GetRandomNumbers();
+    result[0] = numbers[0];
+    result[1] = numbers[1];
+    result[2] = numbers[2];
+    result[3] = numbers[3];
+    result[4] = numbers[3];
+    result[5] = numbers[4];
     return result;
 }
 
 
-std::ostream & operator<<(std::ostream & os, const std::tuple<double, unsigned, unsigned> & result)
+typedef std::map<MAC, bool> Map;
+
+
+
+
+
+class Hash
 {
-    return os << "Time: " << std::get<0>(result) << " (" << std::get<1>(result) << "/" << std::get<2>(result) << ")";
+public:
+    size_t operator()(const MAC &mac) const
+    {
+        static_assert(sizeof(size_t) >= 6, "mac doesn't fit in size_t");
+        size_t copy = 0;
+        memcpy(&copy, &mac[0], 6);
+        return copy;
+    }
+};
+
+
+typedef std::unordered_map<MAC, bool, Hash> HashMap;
+
+
+std::size_t cSize = 1;
+
+
+HashMap gHashMap = [](std::size_t inSize) {
+    HashMap result;
+    while (result.size() < inSize)
+    {
+        result.insert(std::make_pair(GetRandomMAC(), false));
+    }
+    return result;
+}(cSize);
+
+
+
+
+
+template<typename ContainerType>
+std::tuple<unsigned, unsigned, unsigned> Benchmark(const ContainerType & container)
+{
+
+    // Generate a list of random MAC addresses
+    std::size_t cNumIterations = 100000;
+    static std::vector<MAC> randomMacs = [=]() {
+        std::vector<MAC> macs;
+        for (std::size_t idx = 0; idx != cNumIterations; ++idx) {
+            macs.push_back(GetRandomMAC());
+        }
+        return macs;
+    }();
+
+    // Search each random mac in the container and count the results.
+    // (The counter was introduced to prevent the compiler from optimizing everything away.)
+    double beginTime = GetCurrentTime();
+    unsigned found = 0;
+    for (auto & mac : randomMacs)
+    {
+        if (container.find(mac) != container.end())
+        {
+            found++;
+        }
+    }
+
+    return std::tuple<unsigned, unsigned, unsigned>(unsigned(0.5 + 1000 * (GetCurrentTime() - beginTime)),
+                                                    found,
+                                                    cNumIterations);
+}
+
+
+std::ostream & operator<<(std::ostream & os, const std::tuple<unsigned, unsigned, unsigned> & result)
+{
+    os << std::right << std::setw(10) << (std::to_string(std::get<0>(result)) + " ms") << std::flush;
+    os << std::left << std::setw(20) << std::string(" (" + std::to_string(std::get<1>(result)) + "/" + std::to_string(std::get<2>(result)) + ").");
+    return os;
 }
 
 
 int main()
 {
-    std::cout << Benchmark<Memcmp>() << std::endl;
-    std::cout << Benchmark<Pair>() << std::endl;
-    std::cout << Benchmark<ReversePair>() << std::endl;
-    std::cout << Benchmark<Single64>() << std::endl;
-    std::cout << Benchmark<Cheater>() << std::endl;
+    auto GetMap = [](std::size_t inSize) {
+            Map result;
+            while (result.size() < inSize)
+            {
+                result.insert(std::make_pair(GetRandomMAC(), false));
+            }
+            return result;
+        };
+
+    auto GetHashMap = [](std::size_t inSize) {
+        HashMap result;
+        while (result.size() < inSize)
+        {
+            result.insert(std::make_pair(GetRandomMAC(), false));
+        }
+        return result;
+    };
+
+
+    std::cout << "size, map/hash" << std::endl;
+
+    for (unsigned i = 1; i <= 1024; i *= 2)
+    {
+        std::cout << std::right << std::setw(5) << std::setfill(' ') << i << std::flush
+                  << std::right << Benchmark(GetMap(i)) << std::flush
+                  << std::right << Benchmark(GetHashMap(i)) << std::endl;
+    }
 }

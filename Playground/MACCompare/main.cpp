@@ -113,7 +113,9 @@ struct Cheater
 
     friend bool operator<(const Cheater & lhs, const Cheater & rhs)
     {
-        return boost::lexical_cast<std::string>(lhs.mKey) < boost::lexical_cast<std::string>(rhs.mKey);
+        return std::string("abcabcabc" + boost::lexical_cast<std::string>(lhs.mKey))
+                <
+               std::string("abcabcabc" + boost::lexical_cast<std::string>(rhs.mKey));
     }
 
     static unsigned count()
@@ -154,7 +156,7 @@ std::tuple<double, unsigned, unsigned> Benchmark()
 
 
     double beginTime = GetCurrentTime();
-    for (std::size_t idx = 0; idx != 10000; ++idx)
+    for (std::size_t idx = 0; idx != 1000; ++idx)
     {
         if (fMapping.find(T(Random())) != fMapping.end())
         {
@@ -165,7 +167,7 @@ std::tuple<double, unsigned, unsigned> Benchmark()
             unfound++;
         }
     }
-    time = unsigned(0.5 + 40.0 * (GetCurrentTime() - beginTime));
+    time = unsigned(0.5 + 1000.0 * (GetCurrentTime() - beginTime));
     return result;
 }
 

@@ -5,6 +5,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,9 @@
 
 
 #define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
+
+
+namespace Detail {
 
 
 template<typename T>
@@ -168,12 +172,18 @@ public:
     void push(const T & inValue)
     {
         graph().push(inValue);
+        assert(!HasCycles());
     }
 
     void pop(const T & inValue)
     {
         graph().pop(inValue);
     }
+
+protected:
+    CycleDetector() : mId(GetNextId()++) { }
+
+private:
 
     static void Print(std::ostream & os)
     {
@@ -185,10 +195,6 @@ public:
         return FindCycle(graph().root()) != graph().root().end();
     }
 
-protected:
-    CycleDetector() : mId(GetNextId()++) { }
-
-private:
     static Graph<T> & graph()
     {
         static Graph<T> fGraph;
@@ -231,32 +237,8 @@ public:
 };
 
 
-template<typename T>
-struct Identity
-{
-    typedef T Type;
-};
+} // namespace Detail
 
-
-template< template< template<class> class> class T>
-bool HasCyclesImpl(const Identity< T<CycleDetector> > &)
-{
-    return T<CycleDetector>::HasCycles();
-}
-
-
-template< template< template<class> class> class T>
-bool HasCyclesImpl(const Identity< T<NoCycleDetector> > &)
-{
-    return false;
-}
-
-
-template<typename T>
-bool HasCycles()
-{
-    return HasCyclesImpl(Identity<T>());
-}
 
 
 template<template<class> class CycleDetectorType>
@@ -275,9 +257,9 @@ struct BasicMutex : CycleDetectorType< BasicMutex<CycleDetectorType> >
 
 
 #ifndef NDEBUG
-typedef BasicMutex<CycleDetector> Mutex;
+typedef BasicMutex<Detail::CycleDetector> Mutex;
 #else
-typedef BasicMutex<NoCycleDetector> Mutex;
+typedef BasicMutex<Detail::NoCycleDetector> Mutex;
 #endif
 
 struct ScopedLock
@@ -302,76 +284,49 @@ struct ScopedLock
 #define LOCK(MTX) ScopedLock CONCAT(lock, __LINE__)(MTX)
 
 
-void testMutex()
+int main()
 {
     std::cout << __FUNCTION__ << std::endl;
 
+    Mutex a, b1, b2, c, d;
     {
-        Mutex a, b1, b2, c, d;
-        {
-            LOCK(a);
-            LOCK(b1);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(a);
-            LOCK(b1);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(a);
-            LOCK(b2);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(b1);
-            LOCK(c);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(b2);
-            LOCK(c);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(a);
-            LOCK(c);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(d);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(a);
-            LOCK(c);
-            LOCK(d);
-            std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
-        }
-        {
-            LOCK(d);
-            LOCK(a);
-            std::cout << std::endl;
-            Verify(HasCycles<Mutex>());
-        }
-
+        LOCK(a);
+        LOCK(b1);
+    }
+    {
+        LOCK(a);
+        LOCK(b1);
+    }
+    {
+        LOCK(a);
+        LOCK(b2);
+    }
+    {
+        LOCK(b1);
+        LOCK(c);
+    }
+    {
+        LOCK(b2);
+        LOCK(c);
+    }
+    {
+        LOCK(a);
+        LOCK(c);
+    }
+    {
+        LOCK(d);
+    }
+    {
+        LOCK(a);
+        LOCK(c);
+        LOCK(d);
+    }
+    {
+        LOCK(d);
+        LOCK(a); // Cycle!
     }
 
     std::cout << std::endl;
-}
-
-
-int main()
-{
-    testMutex();
     std::cout << "End of program." << std::endl;
     return 0;
 }

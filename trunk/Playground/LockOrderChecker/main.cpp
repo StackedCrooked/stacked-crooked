@@ -10,20 +10,6 @@
 #include <vector>
 
 
-#define VerifyWithFileAndWithLine(file, line, statement) \
-    if (true == (statement)) \
-    { \
-        std::cout << file << ":" << line << ": " << #statement << ": OK\n"; \
-    } \
-    else \
-    { \
-        std::cout << file << ":" << line << ": " << #statement << ": *** FAIL ***\n"; \
-    }
-
-
-#define Verify(statement) VerifyWithFileAndWithLine(__FILE__, __LINE__, statement);
-
-
 namespace Detail {
 
 
@@ -99,26 +85,6 @@ struct Node : std::set<Node<T>*>
 {
     T & get() { return mValue; }
     const T & get() const { return mValue; }
-
-    std::ostream & print(std::ostream & os, unsigned depth = 0, unsigned limit = 8) const
-    {
-        if (depth == limit)
-        {
-            return os;
-        }
-
-        static std::string tab(" ");
-        std::string indent(depth * tab.size(), ' ');
-
-        os << indent << mValue;
-        for (auto & child : *this)
-        {
-            os << std::endl << indent << tab;
-            child->print(os, depth + 1);
-        }
-        return os;
-    }
-
 private:
     friend class Graph<T>;
     friend class CycleDetector<T>;
@@ -128,10 +94,6 @@ private:
 
     friend bool operator<(const Node<T> & lhs, const Node<T> & rhs)
     { return lhs.get() < rhs.get(); }
-
-
-    friend std::ostream & operator<<(std::ostream & os, const Node<T> & node)
-    { return node.print(os); }
 
     T mValue;
 };
@@ -175,23 +137,14 @@ public:
     }
 
     void pop(const T & inValue)
-    {
-        graph().pop(inValue);
-    }
+    { graph().pop(inValue); }
 
 protected:
     CycleDetector() : mId(GetNextId()++) { }
 
 private:
-    static void Print(std::ostream & os)
-    {
-        os << graph().root();
-    }
-
     static bool HasCycles()
-    {
-        return FindCycle(graph().root()) != graph().root().end();
-    }
+    { return FindCycle(graph().root()) != graph().root().end(); }
 
     static Graph<T> & graph()
     {
@@ -208,19 +161,10 @@ private:
     unsigned id() const { return mId; }
 
     friend bool operator==(const CycleDetector<T> & lhs, const CycleDetector<T> & rhs)
-    {
-        return lhs.id() == rhs.id();
-    }
+    { return lhs.id() == rhs.id(); }
 
     friend bool operator<(const CycleDetector<T> & lhs, const CycleDetector<T> & rhs)
-    {
-        return lhs.id() < rhs.id();
-    }
-
-    friend std::ostream & operator<<(std::ostream & os, const CycleDetector<T> & inCycleDetector)
-    {
-        return os << inCycleDetector.id();
-    }
+    { return lhs.id() < rhs.id(); }
 
     unsigned mId;
 };
@@ -322,7 +266,8 @@ int main()
     }
     {
         LOCK(d);
-        LOCK(a); // Cycle!
+        std::cout << "Intential lock inconsitency. Should assert!" << std::endl;
+        LOCK(a); // Cycle! Assertion!
     }
 
     std::cout << std::endl;

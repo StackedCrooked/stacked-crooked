@@ -160,28 +160,9 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
 }
 
 
-template<typename T>
-class WithId
-{
-public:
-    WithId() : mId(Id()++) {}
-
-    unsigned id() const { return mId; }
-
-private:
-    static unsigned & Id()
-    {
-        static unsigned fId;
-        return fId;
-    }
-
-    unsigned mId;
-};
-
-
 
 template<typename T>
-class CycleDetector : WithId<T>
+class CycleDetector
 {
 public:
     void push(const T & inValue)
@@ -204,12 +185,23 @@ public:
         return FindCycle(graph().root()) != graph().root().end();
     }
 
+protected:
+    CycleDetector() : mId(GetNextId()++) { }
+
 private:
     static Graph<T> & graph()
     {
         static Graph<T> fGraph;
         return fGraph;
     }
+
+    static unsigned & GetNextId()
+    {
+        static unsigned fId;
+        return fId;
+    }
+
+    unsigned id() const { return mId; }
 
     friend bool operator==(const CycleDetector<T> & lhs, const CycleDetector<T> & rhs)
     {
@@ -226,11 +218,12 @@ private:
         return os << inCycleDetector.id();
     }
 
+    unsigned mId;
 };
 
 
 template<typename T>
-class NoCycleDetector : WithId<T>
+class NoCycleDetector
 {
 public:
     void push(const T &) { }

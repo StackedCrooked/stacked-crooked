@@ -66,7 +66,7 @@ std::tuple<unsigned, unsigned, unsigned> Benchmark(const ContainerType & contain
 {
 
     // Generate a list of random MAC addresses
-    std::size_t cNumIterations = 2000000;
+    std::size_t cNumIterations = 1000000;
 
 
     static auto randomMacs = [=]() -> std::vector<MAC> {

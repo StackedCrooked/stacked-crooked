@@ -40,15 +40,13 @@ typedef std::array<uint8_t, 6> MAC;
 typedef std::map<MAC, bool> Map;
 
 
-struct Hash
-{
-    template<typename MAC>
-    std::size_t operator()(const MAC & mac) const
-    {
+struct Hash {
+    std::size_t operator()(const std::array<uint8_t, 6> & mac) const {
         static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
         std::size_t key = 0;
-        boost::hash_combine(key, *reinterpret_cast<const uint32_t*>(&mac[0]));
-        boost::hash_combine(key, *reinterpret_cast<const uint16_t*>(&mac[4]));
+
+        // Possibly UB
+        boost::hash_combine(key, 0x0000FFFFFFFFFFFF & reinterpret_cast<const uint64_t&>(mac[0]));
         return key;
     }
 };

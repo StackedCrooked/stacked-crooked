@@ -2,6 +2,7 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <iomanip>
 #include <map>
@@ -26,7 +27,8 @@ uint8_t GetRandomByte()
         rng.seed(time(0));
         return rng;
     }();
-    return std::uniform_int_distribution<uint8_t>(0, 255)(rng);
+    static std::uniform_int_distribution<uint8_t> dist(0, 3);
+    return dist(rng);
 }
 
 
@@ -56,6 +58,21 @@ struct Hash
         return key;
     }
 };
+
+
+struct Hash2
+{
+    template<typename MAC>
+    std::size_t operator()(const MAC & mac) const
+    {
+        static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
+        std::size_t key = 0;
+        for(unsigned i = 0; i < 6; ++i)
+            key = key * 397 ^ size_t(mac[i]);
+        return key;
+    }
+};
+
 
 
 typedef std::unordered_map<MAC, bool, Hash> HashMap;

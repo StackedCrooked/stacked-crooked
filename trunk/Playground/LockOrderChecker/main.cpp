@@ -357,6 +357,7 @@ void testMutex()
             Verify(!HasCycles<Mutex>());
         }
         {
+            LOCK(a);
             LOCK(c);
             LOCK(d);
             std::cout << std::endl;
@@ -364,7 +365,7 @@ void testMutex()
         }
         {
             LOCK(d);
-            LOCK(b2);
+            LOCK(a);
             std::cout << std::endl;
             Verify(HasCycles<Mutex>());
         }

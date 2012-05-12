@@ -39,17 +39,18 @@ typedef std::array<uint8_t, 6> MAC;
 
 typedef std::map<MAC, bool> Map;
 
-    struct Hash {
-        std::size_t operator()(const std::array<uint8_t, 6> & mac) const {
-            static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
-            std::size_t key = 0;
 
-            // Possibly UB?
-            boost::hash_combine(key, reinterpret_cast<const uint32_t&>(mac[0]));
-            boost::hash_combine(key, reinterpret_cast<const uint16_t&>(mac[4]));
-            return key;
-        }
-    };
+struct Hash {
+    std::size_t operator()(const std::array<uint8_t, 6> & mac) const {
+        static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
+        std::size_t key = 0;
+
+        // Possibly UB?
+        boost::hash_combine(key, reinterpret_cast<const uint32_t&>(mac[0]));
+        boost::hash_combine(key, reinterpret_cast<const uint16_t&>(mac[4]));
+        return key;
+    }
+};
 
 
 typedef std::unordered_map<MAC, bool, Hash> HashMap;

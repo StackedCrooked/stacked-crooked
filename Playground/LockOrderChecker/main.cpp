@@ -63,10 +63,22 @@ private:
 template <class T>
 struct Node : std::set<Node<T>*>
 {
-    Node<T> & root() { return const_cast<Node<T>&>(static_cast<const Node<T>&>(*this).root()); }
-
     T & get() { return mValue; }
     const T & get() const { return mValue; }
+
+private:
+    friend class Graph<T>;
+
+    Node(const T & value) :
+        mValue(value)
+    {
+    }
+
+    Node(const Node&) = delete;
+    Node& operator=(const Node&) = delete;
+
+    friend bool operator<(const Node<T> & lhs, const Node<T> & rhs)
+    { return lhs.get() < rhs.get(); }
 
     void print(std::ostream & os, unsigned depth = 0, unsigned limit = 8) const
     {
@@ -86,34 +98,14 @@ struct Node : std::set<Node<T>*>
         }
     }
 
-private:
-    friend class Graph<T>;
-
-    Node(const T & value) :
-        mValue(value)
+    friend std::ostream & operator<<(std::ostream & os, const Node<T> & node)
     {
+        node.print(os);
+        return os;
     }
-
-    Node(const Node&) = delete;
-    Node& operator=(const Node&) = delete;
 
     T mValue;
 };
-
-
-template<typename T>
-bool operator<(const Node<T> & lhs, const Node<T> & rhs)
-{
-    return lhs.get() < rhs.get();
-}
-
-
-template<typename T>
-std::ostream & operator<<(std::ostream & os, const Node<T> & node)
-{
-    node.print(os);
-    return os;
-}
 
 
 template<class T>

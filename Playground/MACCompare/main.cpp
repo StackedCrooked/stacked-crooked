@@ -28,7 +28,7 @@ uint8_t GetRandomByte()
         rng.seed(time(0));
         return rng;
     }();
-    static std::uniform_int_distribution<uint8_t> dist(0, 255);
+    static std::uniform_int_distribution<uint8_t> dist(0, 3);
     return dist(rng);
 }
 
@@ -39,17 +39,17 @@ typedef std::array<uint8_t, 6> MAC;
 
 typedef std::map<MAC, bool> Map;
 
+    struct Hash {
+        std::size_t operator()(const std::array<uint8_t, 6> & mac) const {
+            static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
+            std::size_t key = 0;
 
-struct Hash {
-    std::size_t operator()(const std::array<uint8_t, 6> & mac) const {
-        static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
-        std::size_t key = 0;
-
-        // Possibly UB
-        boost::hash_combine(key, 0x0000FFFFFFFFFFFF & reinterpret_cast<const uint64_t&>(mac[0]));
-        return key;
-    }
-};
+            // Possibly UB?
+            boost::hash_combine(key, reinterpret_cast<const uint32_t&>(mac[0]));
+            boost::hash_combine(key, reinterpret_cast<const uint16_t&>(mac[4]));
+            return key;
+        }
+    };
 
 
 typedef std::unordered_map<MAC, bool, Hash> HashMap;

@@ -151,16 +151,30 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
 }
 
 
-
 template<typename T>
-class CycleDetector
+class WithId
 {
 public:
-    CycleDetector(const std::string & inName) :
-        mName(inName)
+    WithId() : mId(Id()++) {}
+
+    unsigned id() const { return mId; }
+
+private:
+    static unsigned & Id()
     {
+        static unsigned fId;
+        return fId;
     }
 
+    unsigned mId;
+};
+
+
+
+template<typename T>
+class CycleDetector : WithId<T>
+{
+public:
     void insert(const T & inValue)
     {
         graph().insert(inValue);
@@ -185,20 +199,18 @@ private:
 
     friend bool operator==(const CycleDetector<T> & lhs, const CycleDetector<T> & rhs)
     {
-        return lhs.mName == rhs.mName;
+        return lhs.id() == rhs.id();
     }
 
     friend bool operator<(const CycleDetector<T> & lhs, const CycleDetector<T> & rhs)
     {
-        return lhs.mName < rhs.mName;
+        return lhs.id() < rhs.id();
     }
 
     friend std::ostream & operator<<(std::ostream & os, const CycleDetector<T> & inCycleDetector)
     {
-        return os << inCycleDetector.mName;
+        return os << inCycleDetector.id();
     }
-
-    std::string mName;
 
 };
 
@@ -209,13 +221,9 @@ bool HasCycles()
     return T::HasCycles();
 }
 
+
 struct Mutex : CycleDetector<Mutex>
 {
-    Mutex(const std::string & inName) :
-        CycleDetector<Mutex>(inName)
-    {
-    }
-
     void lock()
     {
         this->insert(*this);
@@ -254,8 +262,7 @@ void testMutex()
     std::cout << __FUNCTION__ << std::endl;
 
     {
-        Mutex m1("m1");
-        Mutex m2("m2");
+        Mutex m1, m2;
         {
             LOCK(m1);
             LOCK(m2);

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <map>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <sys/time.h>
@@ -18,18 +19,18 @@ double GetCurrentTime()
 }
 
 
-//! Returns a vector containing range [0, 256).
-//! The vector shuffled before returning. This makes
-//! it some sort of random number generator.
-static const std::vector<std::uint8_t> & GetRandomNumbers()
+std::mt19937 GetRNG()
 {
-    static std::vector<std::uint8_t> fNumbers = [](){
-        std::vector<std::uint8_t> numbers;
-        for (unsigned i = 0; i != 255; ++i) { numbers.push_back(i); }
-        return numbers;
-    }();
-    std::random_shuffle(fNumbers.begin(), fNumbers.end());
-    return fNumbers;
+    std::mt19937 rng;
+    rng.seed(time(0));
+    return rng;
+}
+
+
+uint8_t GetRandomByte()
+{
+    static auto rng = GetRNG();
+    return std::uniform_int_distribution<uint8_t>(0, 255)(rng);
 }
 
 
@@ -37,22 +38,10 @@ static const std::vector<std::uint8_t> & GetRandomNumbers()
 typedef std::array<uint8_t, 6> MAC;
 
 
-//! Returns a random MAC address.
 MAC GetRandomMAC()
 {
-    MAC result;
-    const std::vector<std::uint8_t> & numbers = GetRandomNumbers();
-    result[0] = numbers[0];
-    result[1] = numbers[1];
-    result[2] = numbers[2];
-    result[3] = numbers[3];
-    result[4] = numbers[4];
-    result[5] = numbers[5];
-    return result;
+    return MAC({{ GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte() }});
 }
-
-
-typedef std::map<MAC, bool> Map;
 
 
 struct Hash
@@ -73,24 +62,8 @@ struct Hash
 };
 
 
-
 typedef std::unordered_map<MAC, bool, Hash> HashMap;
-
-
-std::size_t cSize = 1;
-
-
-HashMap gHashMap = [](std::size_t inSize) {
-    HashMap result;
-    while (result.size() < inSize)
-    {
-        result.insert(std::make_pair(GetRandomMAC(), false));
-    }
-    return result;
-}(cSize);
-
-
-
+typedef std::map<MAC, bool> Map;
 
 
 template<typename ContainerType>
@@ -98,22 +71,24 @@ std::tuple<unsigned, unsigned, unsigned> Benchmark(const ContainerType & contain
 {
 
     // Generate a list of random MAC addresses
-    std::size_t cNumIterations = 100000;
-    static std::vector<MAC> randomMacs = [=]() {
-        std::vector<MAC> macs;
-        for (std::size_t idx = 0; idx != cNumIterations; ++idx) {
-            macs.push_back(GetRandomMAC());
-        }
-        return macs;
-    }();
+    std::size_t cNumIterations = 1000000;
 
+
+    static auto randomMacs = [=](){
+        std::vector<MAC> result;
+        for (unsigned i = 0; i < cNumIterations; ++i)
+        {
+            result.push_back(GetRandomMAC());
+        }
+        return result;
+    }();
     // Search each random mac in the container and count the results.
     // (The counter was introduced to prevent the compiler from optimizing everything away.)
     double beginTime = GetCurrentTime();
     unsigned found = 0;
-    for (auto & mac : randomMacs)
+    for (std::size_t idx = 0; idx < cNumIterations; ++idx)
     {
-        if (container.find(mac) != container.end())
+        if (container.find(randomMacs[idx]) != container.end())
         {
             found++;
         }
@@ -135,20 +110,29 @@ std::ostream & operator<<(std::ostream & os, const std::tuple<unsigned, unsigned
 
 int main()
 {
-    auto GetMap = [](std::size_t inSize) {
-            Map result;
-            while (result.size() < inSize)
-            {
-                result.insert(std::make_pair(GetRandomMAC(), false));
-            }
-            return result;
-        };
+    unsigned cMAX = 1000000;
+    auto randomMacs = [&]() {
+        std::vector<MAC> macs;
+        for (std::size_t idx = 0; idx != cMAX; ++idx) {
+            macs.push_back(GetRandomMAC());
+        }
+        return macs;
+    }();
 
-    auto GetHashMap = [](std::size_t inSize) {
-        HashMap result;
-        while (result.size() < inSize)
+    auto GetMap = [&](std::size_t inSize) {
+        Map result;
+        for (std::size_t idx = 0; idx != inSize; ++idx)
         {
-            result.insert(std::make_pair(GetRandomMAC(), false));
+            result.insert(std::make_pair(randomMacs[idx % randomMacs.size()], false));
+        }
+        return result;
+    };
+
+    auto GetHashMap = [&](std::size_t inSize) {
+        HashMap result;
+        for (std::size_t idx = 0; idx != inSize; ++idx)
+        {
+            result.insert(std::make_pair(randomMacs[idx % randomMacs.size()], false));
         }
         return result;
     };
@@ -156,9 +140,9 @@ int main()
 
     std::cout << "size, map/hash" << std::endl;
 
-    for (unsigned i = 1; i <= 1024; i *= 2)
+    for (unsigned i = 1; i <= cMAX; i *= 2)
     {
-        std::cout << std::right << std::setw(5) << std::setfill(' ') << i << std::flush
+        std::cout << std::right << std::setw(10) << std::setfill(' ') << i << std::flush
                   << std::right << Benchmark(GetMap(i)) << std::flush
                   << std::right << Benchmark(GetHashMap(i)) << std::endl;
     }

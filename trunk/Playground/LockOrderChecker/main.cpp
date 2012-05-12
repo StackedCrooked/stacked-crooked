@@ -228,11 +228,13 @@ private:
 };
 
 
-template<typename T>
 class NoCycleDetector
 {
 public:
+    template<typename T>
     void push(const T &) { }
+
+    template<typename T>
     void pop(const T &) { }
 };
 
@@ -240,9 +242,14 @@ public:
 } // namespace Detail
 
 
+#ifndef NDEBUG
+typedef Detail::CycleDetector<struct Mutex> MutexBase;
+#else
+typedef Detail::NoCycleDetector MutexBase;
+#endif
 
-template<template<class> class CycleDetectorType>
-struct BasicMutex : CycleDetectorType< BasicMutex<CycleDetectorType> >
+
+struct Mutex : MutexBase
 {
     void lock()
     {
@@ -254,13 +261,6 @@ struct BasicMutex : CycleDetectorType< BasicMutex<CycleDetectorType> >
         this->pop(*this);
     }
 };
-
-
-#ifndef NDEBUG
-typedef BasicMutex<Detail::CycleDetector> Mutex;
-#else
-typedef BasicMutex<Detail::NoCycleDetector> Mutex;
-#endif
 
 struct ScopedLock
 {

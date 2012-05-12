@@ -1,22 +1,7 @@
 #!/bin/bash
 # Subversion passes $6 as HEAD file and $7 as modified file.
-echo $*
-echo "1: $1"
-echo "2: $2"
-echo "3: $3"
-echo "4: $4"
-echo "5: $5"
-echo "6: $6"
-echo "7: $7"
-echo "8: $8"
-echo "9: $9"
-echo "10: $10"
-
 LEFT=$6
-echo "Left: $LEFT"
-
 RIGHT=$7
-echo "Right: $RIGHT"
 if [[ "`uname`" == 'Darwin' ]]; then
     diffmerge $LEFT $RIGHT
 else

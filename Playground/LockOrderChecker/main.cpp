@@ -68,23 +68,18 @@ struct Node : std::set<Node<T>*>
 
 private:
     friend class Graph<T>;
-
-    Node(const T & value) :
-        mValue(value)
-    {
-    }
-
+    Node(const T & value) : mValue(value) { }
     Node(const Node&) = delete;
     Node& operator=(const Node&) = delete;
 
     friend bool operator<(const Node<T> & lhs, const Node<T> & rhs)
     { return lhs.get() < rhs.get(); }
 
-    void print(std::ostream & os, unsigned depth = 0, unsigned limit = 8) const
+    std::ostream & print(std::ostream & os, unsigned depth = 0, unsigned limit = 8) const
     {
         if (depth == limit)
         {
-            return;
+            return os;
         }
 
         static std::string tab(" ");
@@ -96,13 +91,11 @@ private:
             os << std::endl << indent << tab;
             child->print(os, depth + 1);
         }
+        return os;
     }
 
     friend std::ostream & operator<<(std::ostream & os, const Node<T> & node)
-    {
-        node.print(os);
-        return os;
-    }
+    { return node.print(os); }
 
     T mValue;
 };

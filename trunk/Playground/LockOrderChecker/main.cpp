@@ -103,7 +103,7 @@ private:
 
 template<class T>
 typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
-                                           std::vector<const T*> & inPreceding)
+                                           std::vector<const T*> inPreceding = std::vector<const T*>()) // by value!
 {
     typename Node<T>::const_iterator it = inNode.begin(), end = inNode.end();
     for (; it != end; ++it)
@@ -122,19 +122,9 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
             {
                 return childIt;
             }
-
-            inPreceding.pop_back();
         }
     }
     return it;
-}
-
-
-template<class T>
-typename Node<T>::const_iterator FindCycle(const Node<T> & inNode)
-{
-    std::vector<const T*> preceding;
-    return FindCycle(inNode, preceding);
 }
 
 

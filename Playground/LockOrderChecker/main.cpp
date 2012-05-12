@@ -327,7 +327,7 @@ ScopedLock<N> Lock(Mutex<N> & inMutex)
 
 #define CONCAT_HELPER(x, y) x ## y
 #define CONCAT(x, y) CONCAT_HELPER(x, y)
-#define LOCK(MTX) auto CONCAT(lock, __LINE__) = Lock(MTX); (void)CONCAT(lock, __LINE__);
+#define LOCK(MTX) auto CONCAT(lock, __LINE__) = Lock(MTX);
 
 
 // Core namespace for the lower layer.

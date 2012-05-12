@@ -33,7 +33,29 @@ class Graph
 public:
     typedef std::shared_ptr< Node<T> > NodePtr;
 
-    Node<T> & get(const T & inValue)
+    Graph() :
+        mRootNode(),
+        mLastNode()
+    {
+    }
+
+    void insert(const T & inValue)
+    {
+        Node<T> * node = get(inValue);
+        if (mLastNode)
+        {
+            mLastNode->insert(node);
+        }
+        mLastNode = node;
+    }
+
+    Node<T> & root()
+    {
+        return *mRootNode;
+    }
+
+private:
+    Node<T> * get(const T & inValue)
     {
         auto it = mNodes.find(inValue);
         if (it == mNodes.end())
@@ -44,20 +66,19 @@ public:
                 mRootNode = ptr;
             }
             mNodes.insert(std::make_pair(inValue, ptr));
-            return *ptr;
+            return ptr.get();
         }
-        return *it->second;
+        return it->second.get();
     }
 
-    Node<T> & root()
-    {
-        return *mRootNode;
-    }
-
-private:
     NodePtr mRootNode;
+    Node<T> * mLastNode;
     std::map<T, NodePtr> mNodes;
 };
+
+
+template <class T>
+struct CycleDetector;
 
 
 template <class T>
@@ -65,15 +86,6 @@ struct Node : std::set<Node<T>*>
 {
     T & get() { return mValue; }
     const T & get() const { return mValue; }
-
-private:
-    friend class Graph<T>;
-    Node(const T & value) : mValue(value) { }
-    Node(const Node&) = delete;
-    Node& operator=(const Node&) = delete;
-
-    friend bool operator<(const Node<T> & lhs, const Node<T> & rhs)
-    { return lhs.get() < rhs.get(); }
 
     std::ostream & print(std::ostream & os, unsigned depth = 0, unsigned limit = 8) const
     {
@@ -85,7 +97,7 @@ private:
         static std::string tab(" ");
         std::string indent(depth * tab.size(), ' ');
 
-        os << indent << get();
+        os << indent << mValue;
         for (auto & child : *this)
         {
             os << std::endl << indent << tab;
@@ -93,6 +105,17 @@ private:
         }
         return os;
     }
+
+private:
+    friend class Graph<T>;
+    friend class CycleDetector<T>;
+    Node(const T & value) : mValue(value) { }
+    Node(const Node&) = delete;
+    Node& operator=(const Node&) = delete;
+
+    friend bool operator<(const Node<T> & lhs, const Node<T> & rhs)
+    { return lhs.get() < rhs.get(); }
+
 
     friend std::ostream & operator<<(std::ostream & os, const Node<T> & node)
     { return node.print(os); }
@@ -128,56 +151,79 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
 }
 
 
-template<class T>
-bool HasCycles(const Node<T> & inNode)
+
+template<typename T>
+class CycleDetector
 {
-    return FindCycle(inNode) != inNode.end();
+public:
+    CycleDetector(const std::string & inName) :
+        mName(inName)
+    {
+    }
+
+    void insert(const T & inValue)
+    {
+        graph().insert(inValue);
+    }
+
+    static void Print(std::ostream & os)
+    {
+        os << graph().root();
+    }
+
+    static bool HasCycles()
+    {
+        return FindCycle(graph().root()) != graph().root().end();
+    }
+
+private:
+    static Graph<T> & graph()
+    {
+        static Graph<T> fGraph;
+        return fGraph;
+    }
+
+    friend bool operator==(const CycleDetector<T> & lhs, const CycleDetector<T> & rhs)
+    {
+        return lhs.mName == rhs.mName;
+    }
+
+    friend bool operator<(const CycleDetector<T> & lhs, const CycleDetector<T> & rhs)
+    {
+        return lhs.mName < rhs.mName;
+    }
+
+    friend std::ostream & operator<<(std::ostream & os, const CycleDetector<T> & inCycleDetector)
+    {
+        return os << inCycleDetector.mName;
+    }
+
+    std::string mName;
+
+};
+
+
+template<typename T>
+bool HasCycles()
+{
+    return T::HasCycles();
 }
 
-
-struct Mutex
+struct Mutex : CycleDetector<Mutex>
 {
-    Mutex() : mPrevious(nullptr) { }
-
-    static Node<Mutex*> & root()
+    Mutex(const std::string & inName) :
+        CycleDetector<Mutex>(inName)
     {
-        return graph().root();
     }
 
     void lock()
     {
-        mPrevious = current();
-
-        // append current node
-        Node<Mutex*> & node = graph().get(this);
-        if (current())
-        {
-            current()->insert(&node);
-        }
-        current() = &node;
+        this->insert(*this);
     }
 
     void unlock()
     {
-        current() = mPrevious;
     }
-
-private:
-    typedef Node<Mutex*> * NodePtr;
-
-    static Graph<Mutex*> & graph()
-    {
-        static Graph<Mutex*> fGraph;
-        return fGraph;
-    }
-
-    static NodePtr & current()
-    {
-        static NodePtr fNodePtr;
-        return fNodePtr;
-    }
-
-    NodePtr mPrevious;
 };
 
 
@@ -208,98 +254,31 @@ void testMutex()
     std::cout << __FUNCTION__ << std::endl;
 
     {
-        Mutex m1;
-        Mutex m2;
+        Mutex m1("m1");
+        Mutex m2("m2");
         {
             LOCK(m1);
             LOCK(m2);
-            std::cout << Mutex::root() << std::endl;
-            Verify(!HasCycles(Mutex::root()));
+            Mutex::Print(std::cout);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
         }
         {
             LOCK(m2);
             LOCK(m1);
-            std::cout << Mutex::root() << std::endl;
-            Verify(HasCycles(Mutex::root())); // FAIL atm
+            Mutex::Print(std::cout);
+            std::cout << std::endl;
+            Verify(HasCycles<Mutex>());
         }
+
     }
 
-    std::cout << std::endl;
-}
-
-
-void testNode()
-{
-    std::cout << __FUNCTION__ << std::endl;
-    {
-        Graph<std::string> graph;
-
-        Node<std::string> & a = graph.get("a");
-        Node<std::string> & a1 = graph.get("a1");
-        Node<std::string> & a2 = graph.get("a2");
-        Node<std::string> & a3 = graph.get("a3");
-        Node<std::string> & a31 = graph.get("a31");
-        Node<std::string> & a32 = graph.get("a32");
-
-        a.insert(&a1);
-        a.insert(&a2);
-        a.insert(&a3);
-        a3.insert(&a31);
-        a3.insert(&a32);
-
-        std::cout << graph.root() << std::endl;
-    }
-    {
-        Graph<int> graph;
-
-        Node<int> & n1 = graph.get(1);
-        Node<int> & n2 = graph.get(2);
-        Node<int> & n3 = graph.get(3);
-        Node<int> & n4 = graph.get(4);
-
-        n1.insert(&n2);
-        Verify(!HasCycles(graph.root()));
-
-        n1.insert(&n3);
-        Verify(!HasCycles(graph.root()));
-
-        n3.insert(&n2);
-        Verify(!HasCycles(graph.root()));
-
-        n2.insert(&n4);
-        Verify(!HasCycles(graph.root()));
-
-        n4.insert(&n3);
-        Verify(HasCycles(graph.root()));
-
-        std::cout << graph.root() << std::endl;
-    }
-
-    {
-        Graph<int> graph;
-
-        Node<int> & n1 = graph.get(1);
-        Node<int> & n2 = graph.get(2);
-        Node<int> & n3 = graph.get(3);
-
-        n1.insert(&n2);
-        Verify(!HasCycles(graph.root()));
-
-        n2.insert(&n3);
-        Verify(!HasCycles(graph.root()));
-
-        n3.insert(&n1);
-        Verify(HasCycles(graph.root()));
-
-        std::cout << graph.root() << std::endl;
-    }
     std::cout << std::endl;
 }
 
 
 int main()
 {
-    testNode();
     testMutex();
     std::cout << "End of program." << std::endl;
     return 0;

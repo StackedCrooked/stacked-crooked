@@ -30,23 +30,32 @@ class Node;
 template<typename T>
 class Graph
 {
+private:
+    enum MakeNode { MakeNode_Yes, MakeNode_No };
 public:
     typedef std::shared_ptr< Node<T> > NodePtr;
 
     Graph() :
         mRootNode(),
-        mLastNode()
+        mLastNodes()
     {
     }
 
-    void insert(const T & inValue)
+    void push(const T & inValue)
     {
-        Node<T> * node = get(inValue);
-        if (mLastNode)
+        Node<T> * node = get(inValue, MakeNode_Yes);
+        if (!mLastNodes.empty())
         {
-            mLastNode->insert(node);
+            mLastNodes.back()->insert(node);
         }
-        mLastNode = node;
+        mLastNodes.push_back(node);
+    }
+
+    void pop(const T & inValue)
+    {
+        Node<T> * node = get(inValue, MakeNode_No);
+        assert(node == mLastNodes.back());
+        mLastNodes.pop_back();
     }
 
     Node<T> & root()
@@ -55,10 +64,10 @@ public:
     }
 
 private:
-    Node<T> * get(const T & inValue)
+    Node<T> * get(const T & inValue, MakeNode inMakeNode)
     {
         auto it = mNodes.find(inValue);
-        if (it == mNodes.end())
+        if (it == mNodes.end() && inMakeNode == MakeNode_Yes)
         {
             NodePtr ptr(new Node<T>(inValue));
             if (mNodes.empty())
@@ -72,7 +81,7 @@ private:
     }
 
     NodePtr mRootNode;
-    Node<T> * mLastNode;
+    std::vector<Node<T> * > mLastNodes;
     std::map<T, NodePtr> mNodes;
 };
 
@@ -175,9 +184,14 @@ template<typename T>
 class CycleDetector : WithId<T>
 {
 public:
-    void monitor(const T & inValue)
+    void push(const T & inValue)
     {
-        graph().insert(inValue);
+        graph().push(inValue);
+    }
+
+    void pop(const T & inValue)
+    {
+        graph().pop(inValue);
     }
 
     static void Print(std::ostream & os)
@@ -219,7 +233,8 @@ template<typename T>
 class NoCycleDetector : WithId<T>
 {
 public:
-    void monitor(const T &) { }
+    void push(const T &) { }
+    void pop(const T &) { }
 };
 
 
@@ -251,16 +266,17 @@ bool HasCycles()
 }
 
 
-template<template<class> class CycleDetection>
-struct BasicMutex : CycleDetection< BasicMutex<CycleDetection> >
+template<template<class> class CycleDetectorType>
+struct BasicMutex : CycleDetectorType< BasicMutex<CycleDetectorType> >
 {
     void lock()
     {
-        this->monitor(*this);
+        this->push(*this);
     }
 
     void unlock()
     {
+        this->pop(*this);
     }
 };
 
@@ -298,16 +314,57 @@ void testMutex()
     std::cout << __FUNCTION__ << std::endl;
 
     {
-        Mutex m1, m2;
+        Mutex a, b1, b2, c, d;
         {
-            LOCK(m1);
-            LOCK(m2);
+            LOCK(a);
+            LOCK(b1);
             std::cout << std::endl;
             Verify(!HasCycles<Mutex>());
         }
         {
-            LOCK(m2);
-            LOCK(m1);
+            LOCK(a);
+            LOCK(b1);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
+        }
+        {
+            LOCK(a);
+            LOCK(b2);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
+        }
+        {
+            LOCK(b1);
+            LOCK(c);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
+        }
+        {
+            LOCK(b2);
+            LOCK(c);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
+        }
+        {
+            LOCK(a);
+            LOCK(c);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
+        }
+        {
+            LOCK(d);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
+        }
+        {
+            LOCK(c);
+            LOCK(d);
+            std::cout << std::endl;
+            Verify(!HasCycles<Mutex>());
+        }
+        {
+            LOCK(d);
+            LOCK(b2);
             std::cout << std::endl;
             Verify(HasCycles<Mutex>());
         }

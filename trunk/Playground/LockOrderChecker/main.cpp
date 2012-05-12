@@ -251,8 +251,8 @@ bool HasCycles()
 }
 
 
-template<template<class> class Monitor>
-struct BasicMutex : Monitor< BasicMutex<Monitor> >
+template<template<class> class CycleDetection>
+struct BasicMutex : CycleDetection< BasicMutex<CycleDetection> >
 {
     void lock()
     {

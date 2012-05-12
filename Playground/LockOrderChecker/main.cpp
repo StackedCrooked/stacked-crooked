@@ -61,64 +61,21 @@ private:
 
 
 template <class T>
-class Node
+struct Node : std::set<Node<T>*>
 {
-public:
-    typedef T value_type;
-
-    typedef Node<value_type>                        this_type;
-    typedef typename std::set<this_type*>           container_type;
-    typedef typename container_type::iterator       iterator;
-    typedef typename container_type::const_iterator const_iterator;
-
     Node<T> & root() { return const_cast<Node<T>&>(static_cast<const Node<T>&>(*this).root()); }
 
-    const_iterator begin() const
-    {
-        return mChildren.begin();
-    }
-
-    const_iterator end() const
-    {
-        return mChildren.end();
-    }
-
-    iterator begin()
-    {
-        return mChildren.begin();
-    }
-
-    iterator end()
-    {
-        return mChildren.end();
-    }
-
-    void insert(Node<T> & item)
-    {
-        mChildren.insert(&item);
-    }
-
-    size_t size() const
-    {
-        return mChildren.size();
-    }
-
-    bool empty() const
-    {
-        return mChildren.empty();
-    }
-
-    value_type & get()
+    T & get()
     {
         return mValue;
     }
 
-    const value_type & get() const
+    const T & get() const
     {
         return mValue;
     }
 
-    void set(const value_type & value)
+    void set(const T & value)
     {
         mValue = value;
     }
@@ -134,7 +91,7 @@ public:
         std::string indent(depth * tab.size(), ' ');
 
         os << indent << get();
-        for (auto & child : mChildren)
+        for (auto & child : *this)
         {
             os << std::endl << indent << tab;
             child->print(os, depth + 1);
@@ -144,18 +101,15 @@ public:
 private:
     friend class Graph<T>;
 
-    Node() {}
-
-    Node(const value_type & value) :
+    Node(const T & value) :
         mValue(value)
     {
     }
 
-    Node(const Node&);
-    Node& operator=(const Node&);
+    Node(const Node&) = delete;
+    Node& operator=(const Node&) = delete;
 
-    value_type mValue;
-    container_type mChildren;
+    T mValue;
 };
 
 
@@ -236,7 +190,7 @@ struct Mutex
         Node<Mutex*> & node = graph().get(this);
         if (sCurrentNode)
         {
-            sCurrentNode->insert(node);
+            sCurrentNode->insert(&node);
         }
         sCurrentNode = &node;
     }
@@ -315,12 +269,11 @@ void testNode()
         Node<std::string> & a31 = graph.get("a31");
         Node<std::string> & a32 = graph.get("a32");
 
-        a.insert(a1);
-        a.insert(a2);
-        a.insert(a3);
-
-        a3.insert(a31);
-        a3.insert(a32);
+        a.insert(&a1);
+        a.insert(&a2);
+        a.insert(&a3);
+        a3.insert(&a31);
+        a3.insert(&a32);
 
         std::cout << graph.root() << std::endl;
     }
@@ -332,19 +285,19 @@ void testNode()
         Node<int> & n3 = graph.get(3);
         Node<int> & n4 = graph.get(4);
 
-        n1.insert(n2);
+        n1.insert(&n2);
         Verify(!HasCycles(graph.root()));
 
-        n1.insert(n3);
+        n1.insert(&n3);
         Verify(!HasCycles(graph.root()));
 
-        n3.insert(n2);
+        n3.insert(&n2);
         Verify(!HasCycles(graph.root()));
 
-        n2.insert(n4);
+        n2.insert(&n4);
         Verify(!HasCycles(graph.root()));
 
-        n4.insert(n3);
+        n4.insert(&n3);
         Verify(HasCycles(graph.root()));
 
         std::cout << graph.root() << std::endl;
@@ -357,13 +310,13 @@ void testNode()
         Node<int> & n2 = graph.get(2);
         Node<int> & n3 = graph.get(3);
 
-        n1.insert(n2);
+        n1.insert(&n2);
         Verify(!HasCycles(graph.root()));
 
-        n2.insert(n3);
+        n2.insert(&n3);
         Verify(!HasCycles(graph.root()));
 
-        n3.insert(n1);
+        n3.insert(&n1);
         Verify(HasCycles(graph.root()));
 
         std::cout << graph.root() << std::endl;

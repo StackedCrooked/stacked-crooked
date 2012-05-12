@@ -34,8 +34,6 @@ class Node;
 template<typename T>
 class Graph
 {
-private:
-    enum MakeNode { MakeNode_Yes, MakeNode_No };
 public:
     typedef std::shared_ptr< Node<T> > NodePtr;
 
@@ -68,6 +66,8 @@ public:
     }
 
 private:
+    enum MakeNode { MakeNode_Yes, MakeNode_No };
+
     Node<T> * get(const T & inValue, MakeNode inMakeNode)
     {
         auto it = mNodes.find(inValue);
@@ -164,7 +164,6 @@ typename Node<T>::const_iterator FindCycle(const Node<T> & inNode,
 }
 
 
-
 template<typename T>
 class CycleDetector
 {
@@ -184,7 +183,6 @@ protected:
     CycleDetector() : mId(GetNextId()++) { }
 
 private:
-
     static void Print(std::ostream & os)
     {
         os << graph().root();
@@ -261,6 +259,7 @@ struct Mutex : MutexBase
         this->pop(*this);
     }
 };
+
 
 struct ScopedLock
 {

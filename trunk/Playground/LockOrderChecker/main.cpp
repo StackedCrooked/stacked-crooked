@@ -175,7 +175,7 @@ template<typename T>
 class CycleDetector : WithId<T>
 {
 public:
-    void insert(const T & inValue)
+    void monitor(const T & inValue)
     {
         graph().insert(inValue);
     }
@@ -216,17 +216,47 @@ private:
 
 
 template<typename T>
-bool HasCycles()
+class NoCycleDetector : WithId<T>
 {
-    return T::HasCycles();
+public:
+    void monitor(const T &) { }
+};
+
+
+template<typename T>
+struct Identity
+{
+    typedef T Type;
+};
+
+
+template< template< template<class> class> class T>
+bool HasCyclesImpl(const Identity< T<CycleDetector> > &)
+{
+    return T<CycleDetector>::HasCycles();
 }
 
 
-struct Mutex : CycleDetector<Mutex>
+template< template< template<class> class> class T>
+bool HasCyclesImpl(const Identity< T<NoCycleDetector> > &)
+{
+    return false;
+}
+
+
+template<typename T>
+bool HasCycles()
+{
+    return HasCyclesImpl(Identity<T>());
+}
+
+
+template<template<class> class Monitor>
+struct BasicMutex : Monitor< BasicMutex<Monitor> >
 {
     void lock()
     {
-        this->insert(*this);
+        this->monitor(*this);
     }
 
     void unlock()
@@ -234,6 +264,12 @@ struct Mutex : CycleDetector<Mutex>
     }
 };
 
+
+#ifndef NDEBUG
+typedef BasicMutex<CycleDetector> Mutex;
+#else
+typedef BasicMutex<NoCycleDetector> Mutex;
+#endif
 
 struct ScopedLock
 {
@@ -266,14 +302,12 @@ void testMutex()
         {
             LOCK(m1);
             LOCK(m2);
-            Mutex::Print(std::cout);
             std::cout << std::endl;
             Verify(!HasCycles<Mutex>());
         }
         {
             LOCK(m2);
             LOCK(m1);
-            Mutex::Print(std::cout);
             std::cout << std::endl;
             Verify(HasCycles<Mutex>());
         }

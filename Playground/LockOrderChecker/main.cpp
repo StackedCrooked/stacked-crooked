@@ -245,15 +245,15 @@ struct Identity
 };
 
 
-template< template< template<class> class> class T>
-bool HasCyclesImpl(const Identity< T<CycleDetector> > &)
+template< template< template<class> class, unsigned> class T, unsigned N>
+bool HasCyclesImpl(const Identity< T<CycleDetector, N> > &)
 {
-    return T<CycleDetector>::HasCycles();
+    return T<CycleDetector, N>::HasCycles();
 }
 
 
-template< template< template<class> class> class T>
-bool HasCyclesImpl(const Identity< T<NoCycleDetector> > &)
+template< template< template<class> class, unsigned> class T, unsigned N>
+bool HasCyclesImpl(const Identity< T<NoCycleDetector, N> > &)
 {
     return false;
 }
@@ -266,8 +266,8 @@ bool HasCycles()
 }
 
 
-template<template<class> class CycleDetectorType>
-struct BasicMutex : CycleDetectorType< BasicMutex<CycleDetectorType> >
+template<template<class> class CycleDetectorType, unsigned N>
+struct BasicMutex : CycleDetectorType< BasicMutex<CycleDetectorType, N> >
 {
     void lock()
     {
@@ -282,31 +282,67 @@ struct BasicMutex : CycleDetectorType< BasicMutex<CycleDetectorType> >
 
 
 #ifndef NDEBUG
-typedef BasicMutex<CycleDetector> Mutex;
+template<unsigned N>
+using Mutex = BasicMutex<CycleDetector, N>;
 #else
-typedef BasicMutex<NoCycleDetector> Mutex;
+template<unsigned N>
+using Mutex = BasicMutex<NoCycleDetector, N>;
 #endif
 
+
+template<unsigned N, class MutexType = Mutex<N> >
 struct ScopedLock
 {
-    ScopedLock(Mutex & inMutex) :
-        mMutex(inMutex)
+    ScopedLock(MutexType & inMutex) :
+        mMutex(&inMutex)
     {
-        mMutex.lock();
+        mMutex->lock();
+    }
+
+    ScopedLock(ScopedLock && inScopedLock) :
+        mMutex(inScopedLock.mMutex)
+    {
+        inScopedLock.mMutex = 0;
+
     }
 
     ~ScopedLock()
     {
-        mMutex.unlock();
+        if (mMutex)
+        {
+            mMutex->unlock();
+        }
     }
 
-    Mutex & mMutex;
+    MutexType * mMutex;
 };
+
+
+template<unsigned N>
+ScopedLock<N> Lock(Mutex<N> & inMutex)
+{
+    return ScopedLock<N>(inMutex);
+}
 
 
 #define CONCAT_HELPER(x, y) x ## y
 #define CONCAT(x, y) CONCAT_HELPER(x, y)
-#define LOCK(MTX) ScopedLock CONCAT(lock, __LINE__)(MTX)
+#define LOCK(MTX) auto CONCAT(lock, __LINE__) = Lock(MTX); (void)CONCAT(lock, __LINE__);
+
+
+// Core namespace for the lower layer.
+namespace Core
+{
+    typedef ::Mutex<0> Mutex;
+}
+
+
+
+// Application namespace for the higher layer.
+namespace Application
+{
+    typedef ::Mutex<10> Mutex;
+}
 
 
 void testMutex()
@@ -314,60 +350,60 @@ void testMutex()
     std::cout << __FUNCTION__ << std::endl;
 
     {
-        Mutex a, b1, b2, c, d;
+        Core::Mutex a, b1, b2, c, d;
         {
             LOCK(a);
             LOCK(b1);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex >());
         }
         {
             LOCK(a);
             LOCK(b1);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex>());
         }
         {
             LOCK(a);
             LOCK(b2);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex>());
         }
         {
             LOCK(b1);
             LOCK(c);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex>());
         }
         {
             LOCK(b2);
             LOCK(c);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex>());
         }
         {
             LOCK(a);
             LOCK(c);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex>());
         }
         {
             LOCK(d);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex>());
         }
         {
             LOCK(a);
             LOCK(c);
             LOCK(d);
             std::cout << std::endl;
-            Verify(!HasCycles<Mutex>());
+            Verify(!HasCycles<Core::Mutex>());
         }
         {
             LOCK(d);
             LOCK(a);
             std::cout << std::endl;
-            Verify(HasCycles<Mutex>());
+            Verify(HasCycles<Core::Mutex>());
         }
 
     }

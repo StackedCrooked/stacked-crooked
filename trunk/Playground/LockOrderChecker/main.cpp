@@ -137,16 +137,7 @@ bool HasCycles(const Node<T> & inNode)
 
 struct Mutex
 {
-    Mutex() :
-        mPreviousNode(nullptr)
-    {
-    }
-
-    static Graph<Mutex*> & graph()
-    {
-        static Graph<Mutex*> fGraph;
-        return fGraph;
-    }
+    Mutex() : mPrevious(nullptr) { }
 
     static Node<Mutex*> & root()
     {
@@ -155,29 +146,39 @@ struct Mutex
 
     void lock()
     {
-        mPreviousNode = sCurrentNode;
+        mPrevious = current();
 
         // append current node
         Node<Mutex*> & node = graph().get(this);
-        if (sCurrentNode)
+        if (current())
         {
-            sCurrentNode->insert(&node);
+            current()->insert(&node);
         }
-        sCurrentNode = &node;
+        current() = &node;
     }
 
     void unlock()
     {
-        sCurrentNode = mPreviousNode;
+        current() = mPrevious;
     }
 
 private:
-    static Node<Mutex*> * sCurrentNode;
-    Node<Mutex*> * mPreviousNode;
+    typedef Node<Mutex*> * NodePtr;
+
+    static Graph<Mutex*> & graph()
+    {
+        static Graph<Mutex*> fGraph;
+        return fGraph;
+    }
+
+    static NodePtr & current()
+    {
+        static NodePtr fNodePtr;
+        return fNodePtr;
+    }
+
+    NodePtr mPrevious;
 };
-
-
-Node<Mutex*> * Mutex::sCurrentNode = 0;
 
 
 struct ScopedLock

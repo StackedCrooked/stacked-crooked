@@ -65,20 +65,8 @@ struct Node : std::set<Node<T>*>
 {
     Node<T> & root() { return const_cast<Node<T>&>(static_cast<const Node<T>&>(*this).root()); }
 
-    T & get()
-    {
-        return mValue;
-    }
-
-    const T & get() const
-    {
-        return mValue;
-    }
-
-    void set(const T & value)
-    {
-        mValue = value;
-    }
+    T & get() { return mValue; }
+    const T & get() const { return mValue; }
 
     void print(std::ostream & os, unsigned depth = 0, unsigned limit = 8) const
     {

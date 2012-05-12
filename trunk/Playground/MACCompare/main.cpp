@@ -19,17 +19,13 @@ double GetCurrentTime()
 }
 
 
-std::mt19937 GetRNG()
-{
-    std::mt19937 rng;
-    rng.seed(time(0));
-    return rng;
-}
-
-
 uint8_t GetRandomByte()
 {
-    static auto rng = GetRNG();
+    static auto rng = [](){
+        std::mt19937 rng;
+        rng.seed(time(0));
+        return rng;
+    }();
     return std::uniform_int_distribution<uint8_t>(0, 255)(rng);
 }
 

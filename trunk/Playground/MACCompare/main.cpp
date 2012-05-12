@@ -1,3 +1,4 @@
+#include <boost/functional/hash.hpp>
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -22,12 +23,12 @@ double GetCurrentTime()
 
 uint8_t GetRandomByte()
 {
-    static auto rng = [](){
+    static auto rng = []() -> std::mt19937 {
         std::mt19937 rng;
         rng.seed(time(0));
         return rng;
     }();
-    static std::uniform_int_distribution<uint8_t> dist(0, 3);
+    static std::uniform_int_distribution<uint8_t> dist(0, 255);
     return dist(rng);
 }
 
@@ -36,10 +37,7 @@ uint8_t GetRandomByte()
 typedef std::array<uint8_t, 6> MAC;
 
 
-MAC GetRandomMAC()
-{
-    return MAC({{ GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte() }});
-}
+typedef std::map<MAC, bool> Map;
 
 
 struct Hash
@@ -49,12 +47,8 @@ struct Hash
     {
         static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
         std::size_t key = 0;
-        key |= size_t(mac[0]) << 56;
-        key |= size_t(mac[1]) << 48;
-        key |= size_t(mac[2]) << 40;
-        key |= size_t(mac[3]) << 32;
-        key |= size_t(mac[4]) << 24;
-        key |= size_t(mac[5]) << 16;
+        boost::hash_combine(key, *reinterpret_cast<const uint32_t*>(&mac[0]));
+        boost::hash_combine(key, *reinterpret_cast<const uint16_t*>(&mac[4]));
         return key;
     }
 };
@@ -63,23 +57,10 @@ struct Hash
 typedef std::unordered_map<MAC, bool, Hash> HashMap;
 
 
-struct Hash2
+MAC GetRandomMAC()
 {
-    template<typename MAC>
-    std::size_t operator()(const MAC & mac) const
-    {
-        static_assert(sizeof(std::size_t) >= 6, "MAC address doesn't fit in std::size_t!");
-        std::size_t key = 0;
-        for(unsigned i = 0; i < 6; ++i)
-            key = key * 397 ^ size_t(mac[i]);
-        return key;
-    }
-};
-
-
-
-typedef std::unordered_map<MAC, bool, Hash2> HashMap2;
-typedef std::map<MAC, bool> Map;
+    return MAC({{ GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte(), GetRandomByte() }});
+}
 
 
 template<typename ContainerType>
@@ -87,10 +68,10 @@ std::tuple<unsigned, unsigned, unsigned> Benchmark(const ContainerType & contain
 {
 
     // Generate a list of random MAC addresses
-    std::size_t cNumIterations = 1000000;
+    std::size_t cNumIterations = 2000000;
 
 
-    static auto randomMacs = [=](){
+    static auto randomMacs = [=]() -> std::vector<MAC> {
         std::vector<MAC> result;
         for (unsigned i = 0; i < cNumIterations; ++i)
         {
@@ -126,8 +107,8 @@ std::ostream & operator<<(std::ostream & os, const std::tuple<unsigned, unsigned
 
 int main()
 {
-    unsigned cMAX = 1000000;
-    auto randomMacs = [&]() {
+    unsigned cMAX = 512;
+    auto randomMacs = [&]() -> std::vector<MAC> {
         std::vector<MAC> macs;
         for (std::size_t idx = 0; idx != cMAX; ++idx) {
             macs.push_back(GetRandomMAC());
@@ -135,7 +116,7 @@ int main()
         return macs;
     }();
 
-    auto GetMap = [&](std::size_t inSize) {
+    auto GetMap = [&](std::size_t inSize) -> Map {
         Map result;
         for (std::size_t idx = 0; idx != inSize; ++idx)
         {
@@ -144,7 +125,7 @@ int main()
         return result;
     };
 
-    auto GetHashMap = [&](std::size_t inSize) {
+    auto GetHashMap = [&](std::size_t inSize) -> HashMap {
         HashMap result;
         for (std::size_t idx = 0; idx != inSize; ++idx)
         {
@@ -153,23 +134,16 @@ int main()
         return result;
     };
 
-    auto GetHashMap2 = [&](std::size_t inSize) {
-        HashMap2 result;
-        for (std::size_t idx = 0; idx != inSize; ++idx)
-        {
-            result.insert(std::make_pair(randomMacs[idx % randomMacs.size()], false));
-        }
-        return result;
-    };
-
-
     std::cout << "size, map/hash" << std::endl;
+
+    std::cout << std::right << std::setw(10) << std::setfill(' ') << "Size" << std::flush
+              << std::right << std::setw(10) << "Map" << std::setw(20) << " " << std::flush
+              << std::right << std::setw(10) << "Hash" << std::setw(20) << " " << std::endl;
 
     for (unsigned i = 1; i <= cMAX; i *= 2)
     {
         std::cout << std::right << std::setw(10) << std::setfill(' ') << i << std::flush
                   << std::right << Benchmark(GetMap(i)) << std::flush
-                  << std::right << Benchmark(GetHashMap(i)) << std::flush
-                  << std::right << Benchmark(GetHashMap2(i)) << std::endl;
+                  << std::right << Benchmark(GetHashMap(i)) << std::endl;
     }
 }

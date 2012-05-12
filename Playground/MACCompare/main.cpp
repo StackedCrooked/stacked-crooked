@@ -60,6 +60,9 @@ struct Hash
 };
 
 
+typedef std::unordered_map<MAC, bool, Hash> HashMap;
+
+
 struct Hash2
 {
     template<typename MAC>
@@ -75,7 +78,7 @@ struct Hash2
 
 
 
-typedef std::unordered_map<MAC, bool, Hash> HashMap;
+typedef std::unordered_map<MAC, bool, Hash2> HashMap2;
 typedef std::map<MAC, bool> Map;
 
 
@@ -150,6 +153,15 @@ int main()
         return result;
     };
 
+    auto GetHashMap2 = [&](std::size_t inSize) {
+        HashMap2 result;
+        for (std::size_t idx = 0; idx != inSize; ++idx)
+        {
+            result.insert(std::make_pair(randomMacs[idx % randomMacs.size()], false));
+        }
+        return result;
+    };
+
 
     std::cout << "size, map/hash" << std::endl;
 
@@ -157,6 +169,7 @@ int main()
     {
         std::cout << std::right << std::setw(10) << std::setfill(' ') << i << std::flush
                   << std::right << Benchmark(GetMap(i)) << std::flush
-                  << std::right << Benchmark(GetHashMap(i)) << std::endl;
+                  << std::right << Benchmark(GetHashMap(i)) << std::flush
+                  << std::right << Benchmark(GetHashMap2(i)) << std::endl;
     }
 }

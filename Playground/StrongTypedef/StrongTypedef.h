@@ -40,7 +40,7 @@ struct StrongTypedef
  * @example FUTILE_STRONG_TYPEDEF(int, Width)
  */
 #define FUTILE_STRONG_TYPEDEF(TYPE, NAME) \
-    typedef Futile::StrongTypedef<struct NAME##_, TYPE> NAME;
+    typedef Futile::StrongTypedef<struct Futile##_##NAME##_##TYPE, TYPE> NAME;
 
 
 #endif // FUTILE_STRONG_TYPEDEF_H

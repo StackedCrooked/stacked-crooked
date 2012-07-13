@@ -11,7 +11,20 @@ struct ImageViewer::Impl
         mToolbar = mImageViewer.addToolBar(tr("File"));
         mStatusbar = mImageViewer.statusBar();
         mImageViewer.statusBar()->setSizeGripEnabled(true);
+
+        QGridLayout * layout = new QGridLayout;
+        layout->setRowStretch(0, 1);
+        layout->setRowStretch(1, 0);
+        layout->setRowStretch(2, 1);
+        layout->setColumnStretch(0, 1);
+        layout->setColumnStretch(1, 0);
+        layout->setColumnStretch(2, 1);
+
+        // Add Graphics view in the middle.
+        layout->addWidget(&mView, 1, 1, 0, 0);
+
         mImageViewer.setCentralWidget(&mView);
+
         mView.show();
         mScene.update();
     }
@@ -26,25 +39,25 @@ struct ImageViewer::Impl
         return *mImageViewer.centralWidget();
     }
 
-    void adjustWindowSize()
-    {
-        QRect desktopRect = QDesktopWidget().availableGeometry(&mImageViewer);
+//    void adjustWindowSize()
+//    {
+//        QRect desktopRect = QDesktopWidget().availableGeometry(&mImageViewer);
 
-        auto w = std::min(desktopRect.width(), mQPixmap.width());
-        auto h = std::min(desktopRect.height(), minimumWindowHeight());
-        mImageViewer.resize(w, h);
+//        auto w = std::min(desktopRect.width(), mQPixmap.width());
+//        auto h = std::min(desktopRect.height(), minimumWindowHeight());
+//        mImageViewer.resize(w, h);
 
-        mView.resize(w, h);
-        mView.setMinimumSize(w, h);
+//        mView.resize(w, h);
+//        mView.setMinimumSize(w, h);
 
-        auto & cw = *mImageViewer.centralWidget();
-        cw.resize(w, h - mToolbar->height());
-        cw.setMinimumSize(w, h);
+//        auto & cw = *mImageViewer.centralWidget();
+//        cw.resize(w, h - mToolbar->height());
+//        cw.setMinimumSize(w, h);
 
-        mScene.setSceneRect(cw.rect());
+//        mScene.setSceneRect(cw.rect());
 
-        mImageViewer.setMinimumSize(w, minimumWindowHeight());
-    }
+//        mImageViewer.setMinimumSize(w, minimumWindowHeight());
+//    }
 
     void centerWindow()
     {
@@ -66,8 +79,8 @@ struct ImageViewer::Impl
         mScene.clear();
         mQPixmap.load(inPath.c_str());
         mScene.addPixmap(mQPixmap);
-        adjustWindowSize();
-        centerWindow();
+        //adjustWindowSize();
+        //centerWindow();
     }
 
     ImageViewer & mImageViewer;
@@ -100,7 +113,7 @@ ImageViewer::ImageViewer() :
     //
     // Toolbar
     //
-    connect(mImpl->mToolbar->addAction("Open"), SIGNAL(triggered()), this, SLOT(onToobarOpen()));
+    connect(mImpl->mToolbar->addAction("Open"), SIGNAL(triggered()), this, SLOT(onToolbarOpen()));
 
     mImpl->centerWindow();
 }
@@ -114,13 +127,18 @@ ImageViewer::~ImageViewer()
 
 QSize ImageViewer::sizeHint() const
 {
-    return QSize(mImpl->mQPixmap.width(), mImpl->minimumWindowHeight());
+    return QMainWindow::sizeHint();
+//    static const int cDefaultWidth = 640;
+//    static const int cDefaultHeight = 480;
+//    return QSize(std::max(cDefaultWidth, mImpl->mQPixmap.width()),
+//                 std::max(cDefaultHeight, mImpl->minimumWindowHeight()));
 }
 
 
 QSize ImageViewer::minimumSizeHint() const
 {
-    return QSize(mImpl->mQPixmap.width(), mImpl->minimumWindowHeight());
+    return QMainWindow::minimumSizeHint();
+    //return QSize(mImpl->mQPixmap.width(), mImpl->minimumWindowHeight());
 }
 
 
@@ -133,12 +151,18 @@ void ImageViewer::setImage(const std::string & inFile)
 void ImageViewer::onMenuOpen()
 {
     QString str = QFileDialog::getOpenFileName();
-    setImage(str.toUtf8().data());
+    if (!str.isNull())
+    {
+        setImage(str.toUtf8().data());
+    }
 }
 
 
-void ImageViewer::onToobarOpen()
+void ImageViewer::onToolbarOpen()
 {
     QString str = QFileDialog::getOpenFileName();
-    setImage(str.toUtf8().data());
+    if (!str.isNull())
+    {
+        setImage(str.toUtf8().data());
+    }
 }

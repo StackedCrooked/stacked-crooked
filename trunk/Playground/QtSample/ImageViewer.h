@@ -36,7 +36,7 @@ public:
 
 private Q_SLOTS:
     void onMenuOpen();
-    void onToobarOpen();
+    void onToolbarOpen();
 
 private:
     ImageViewer(const ImageViewer&) = delete;

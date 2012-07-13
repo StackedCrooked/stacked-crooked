@@ -1,9 +1,31 @@
 #include "ImageViewer.h"
 
 
-struct ImageViewer::Impl
+struct RememberWindowPosition : QSettings
+{
+
+    RememberWindowPosition(QWidget & inWidget) :
+        QSettings("Mesmerizing", "Charm"),
+        mWidget(inWidget)
+    {
+        mWidget.restoreGeometry(value(Key()).toByteArray());
+    }
+
+    ~RememberWindowPosition()
+    {
+        setValue(Key(), mWidget.saveGeometry());
+    }
+
+    static const char * Key() { return "geometry"; }
+
+    QWidget & mWidget;
+};
+
+
+struct ImageViewer::Impl : RememberWindowPosition
 {
     Impl(ImageViewer & inImageViewer) :
+        RememberWindowPosition(inImageViewer),
         mImageViewer(inImageViewer),
         mScene(&inImageViewer),
         mView(&mScene)
@@ -37,16 +59,6 @@ struct ImageViewer::Impl
     QWidget & centralWidget()
     {
         return *mImageViewer.centralWidget();
-    }
-
-    void centerWindow()
-    {
-        QRect desktopRect = QDesktopWidget().availableGeometry(&mImageViewer);
-        auto w = std::min(desktopRect.width(), mQPixmap.width());
-        auto h = std::min(desktopRect.height(), minimumWindowHeight());
-        auto x = (desktopRect.width() - w) / 2;
-        auto y = (desktopRect.height() - h) / 2;
-        mImageViewer.move(x, y);
     }
 
     int minimumWindowHeight()
@@ -92,8 +104,6 @@ ImageViewer::ImageViewer() :
     // Toolbar
     //
     connect(mImpl->mToolbar->addAction("Open"), SIGNAL(triggered()), this, SLOT(onToolbarOpen()));
-
-    mImpl->centerWindow();
 }
 
 
@@ -105,7 +115,7 @@ ImageViewer::~ImageViewer()
 
 QSize ImageViewer::sizeHint() const
 {
-    return QMainWindow::sizeHint();
+    return QSize(800, 600);
 //    static const int cDefaultWidth = 640;
 //    static const int cDefaultHeight = 480;
 //    return QSize(std::max(cDefaultWidth, mImpl->mQPixmap.width()),

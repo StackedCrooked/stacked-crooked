@@ -1,4 +1,5 @@
 #include "Poco/Foundation.h"
+#include "Poco/File.h"
 #include "Poco/InflatingStream.h"
 #include "Poco/Path.h"
 #include "Poco/StreamCopier.h"
@@ -27,36 +28,48 @@ void DownloadAndDecompressFile(const std::string & inUrl, const std::string & in
 {
     static Register fRegister;
 
-
-    Poco::URI uri(inUrl);
-    boost::scoped_ptr<std::istream> pStr(Poco::URIStreamOpener::defaultOpener().open(uri));
-
-    std::string dataString;
-
-    while (true)
+    if (!Poco::File(inTargetPath).exists())
     {
-        int c = pStr->get();
-        if (c != -1)
-        {
-           dataString += (char) c;
-           std::cout << "\rsize: " << dataString.size();
-        }
-        else
-        {
-            break;
-        }
-    }
-    std::cout << std::endl;
+        Poco::URI uri(inUrl);
+        boost::scoped_ptr<std::istream> pStr(Poco::URIStreamOpener::defaultOpener().open(uri));
 
-	// Print output (debugging)
-    for (char c : dataString)
-    {
-        std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << int(uint8_t(c)) << " (" << std::dec << int(uint8_t(c)) << ") ";
-    }
-    std::cout << std::endl;
+        std::string dataString;
 
-    std::istringstream is(dataString);
-    Poco::Zip::Decompress(is, inTargetPath);
+        while (true)
+        {
+            int c = pStr->get();
+            if (c != -1)
+            {
+               dataString += (char) c;
+               std::cout << "\rsize: " << dataString.size();
+            }
+            else
+            {
+                break;
+            }
+        }
+        std::cout << std::endl;
+
+
+        {
+            std::cout << "Writing to file" << std::endl;
+            std::ofstream of("downloaded.zip", std::ios::out | std::ios::binary);
+            of << dataString;
+        }
+
+//        {
+//            // Print output (debugging)
+//            for (char c : dataString)
+//            {
+//                std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << int(uint8_t(c)) << " (" << std::dec << int(uint8_t(c)) << ") ";
+//            }
+//            std::cout << std::endl;
+//        }
+    }
+
+    std::ifstream is("downloaded.zip", std::ios::in | std::ios::binary);
+    Poco::Zip::Decompress decompressor(is, inTargetPath);
+    decompressor.decompressAllFiles();
 }
 
 

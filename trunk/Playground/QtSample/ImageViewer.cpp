@@ -1,22 +1,28 @@
 #include "ImageViewer.h"
 
 
-struct RememberWindowPosition : QSettings
+class RememberWindowPosition
 {
+public:
     RememberWindowPosition(QWidget & inWidget) :
-        QSettings("Mesmerizing", "Charm"),
+        mSettings("Mesmerizing", "Charm"),
         mWidget(inWidget)
     {
-        mWidget.restoreGeometry(value(Key()).toByteArray());
+        mWidget.restoreGeometry(mSettings.value(Key()).toByteArray());
     }
 
     ~RememberWindowPosition()
     {
-        setValue(Key(), mWidget.saveGeometry());
+        mSettings.setValue(Key(), mWidget.saveGeometry());
     }
+
+private:
+    RememberWindowPosition(const RememberWindowPosition&) = delete;
+    RememberWindowPosition& operator=(const RememberWindowPosition&) = delete;
 
     static const char * Key() { return "geometry"; }
 
+    QSettings mSettings;
     QWidget & mWidget;
 };
 

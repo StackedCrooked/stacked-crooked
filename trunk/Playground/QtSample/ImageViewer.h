@@ -1,30 +1,26 @@
-//#ifndef IMAGEVIEWER_H
-//#define IMAGEVIEWER_H
+#ifndef IMAGEVIEWER_H
+#define IMAGEVIEWER_H
 
 
-//#include <QtGui/QtGui>
+#include <QtGui/QtGui>
 
 
+class ImageViewer : public QMainWindow
+{
+public:
+    ImageViewer();
 
-//struct ImageWidget : QWidget
-//{
-//};
+    virtual ~ImageViewer();
 
+    void setImage(const std::string & inFile);
 
-//struct ImageViewer : QMainWindow
-//{
-//    Q_OBJECT
+private:
+    ImageViewer(const ImageViewer&) = delete;
+    ImageViewer& operator=(const ImageViewer&) = delete;
 
-//    ImageViewer()
-//    {
-//        QHBoxLayout * hbox = new QHBoxLayout();
-//        hbox->addWidget();
-//    }
-
-
-//    Q
-//    ImageWidget * mImageWidget;
-//};
+    struct Impl;
+    Impl * mImpl;
+};
 
 
-//#endif // IMAGEVIEWER_H
+#endif // IMAGEVIEWER_H

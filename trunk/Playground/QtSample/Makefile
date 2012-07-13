@@ -5,6 +5,8 @@ CXX_FLAGS=-std=c++0x -g -O0 -Wall -Werror -Wextra ${INCLUDE} -L/opt/local/lib -L
 
 all:
 	rm -f *.o
+	${MOC} ${INCLUDE} -o moc_ImageViewer.cxx ImageViewer.h
+	g++ -c  ${CXX_FLAGS} moc_ImageViewer.cxx
 	g++ -c  ${CXX_FLAGS} main.cpp
 	g++ -c  ${CXX_FLAGS} ImageViewer.cpp
 	g++ -o test *.o ${CXX_FLAGS}

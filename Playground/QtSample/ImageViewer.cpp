@@ -24,8 +24,6 @@ struct ImageViewer::Impl
         return *mImageViewer.centralWidget();
     }
 
-
-
     void setImage(const std::string & inPath)
     {
         mScene.addPixmap(QPixmap(inPath.c_str()));
@@ -34,6 +32,7 @@ struct ImageViewer::Impl
     ImageViewer & mImageViewer;
     QGraphicsScene mScene;
     QGraphicsView mView;
+
 };
 
 
@@ -41,6 +40,9 @@ ImageViewer::ImageViewer() :
     QMainWindow(),
     mImpl(new Impl(*this))
 {
+    auto fileToolBar = addToolBar(tr("File"));
+    auto openAction = fileToolBar->addAction("Open");
+    connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
 }
 
 
@@ -53,4 +55,11 @@ ImageViewer::~ImageViewer()
 void ImageViewer::setImage(const std::string & inFile)
 {
     mImpl->setImage(inFile);
+}
+
+
+void ImageViewer::openFile()
+{
+    QString str = QFileDialog::getOpenFileName();
+    setImage(str.toUtf8().data());
 }

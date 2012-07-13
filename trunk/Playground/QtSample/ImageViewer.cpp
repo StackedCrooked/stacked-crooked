@@ -37,8 +37,6 @@ struct ImageViewer::Impl : RememberWindowPosition
     {
         mToolbar = mImageViewer.addToolBar("The Toolbar");
         mToolbar->setMovable(false);
-        mStatusbar = mImageViewer.statusBar();
-        mImageViewer.statusBar()->setSizeGripEnabled(true);
 
         // We make a 3x3 grid layout where each row and column pushes equally against the middle square.
         // This way it is centered horizontally and vertically.
@@ -71,7 +69,7 @@ struct ImageViewer::Impl : RememberWindowPosition
 
     int minimumWindowHeight()
     {
-        return mStatusbar->height() + mQPixmap.height() + mToolbar->height();
+        return mQPixmap.height() + mToolbar->height();
     }
 
     void setImage(const std::string & inPath)
@@ -85,7 +83,6 @@ struct ImageViewer::Impl : RememberWindowPosition
     QGraphicsScene mScene;
     QGraphicsView mView;
     QToolBar * mToolbar;
-    QStatusBar * mStatusbar;
     QPixmap mQPixmap;
 };
 

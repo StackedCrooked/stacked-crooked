@@ -33,6 +33,8 @@ struct ImageViewer::Impl : RememberWindowPosition
         mStatusbar = mImageViewer.statusBar();
         mImageViewer.statusBar()->setSizeGripEnabled(true);
 
+        // We make a 3x3 grid layout where each row and column pushes equally against the middle square.
+        // This way it is centered horizontally and vertically.
         QGridLayout * layout = new QGridLayout;
         layout->setRowStretch(0, 1);
         layout->setRowStretch(1, 0);

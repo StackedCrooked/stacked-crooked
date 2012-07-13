@@ -3,7 +3,6 @@
 
 struct RememberWindowPosition : QSettings
 {
-
     RememberWindowPosition(QWidget & inWidget) :
         QSettings("Mesmerizing", "Charm"),
         mWidget(inWidget)
@@ -86,23 +85,14 @@ ImageViewer::ImageViewer() :
     QMainWindow(),
     mImpl(new Impl(*this))
 {
-    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-
-    //
     // File menu
-    //
-
     auto fileMenu = menuBar()->addMenu("&File");
     auto addAction = fileMenu->addAction("&Open...");
     addAction->setShortcut(QKeySequence("Ctrl+O"));
     connect(addAction, SIGNAL(triggered(bool)), this, SLOT(onMenuOpen()));
     menuBar()->setNativeMenuBar(true);
 
-
-    //
     // Toolbar
-    //
     connect(mImpl->mToolbar->addAction("Open"), SIGNAL(triggered()), this, SLOT(onToolbarOpen()));
 }
 
@@ -115,18 +105,13 @@ ImageViewer::~ImageViewer()
 
 QSize ImageViewer::sizeHint() const
 {
-    return QSize(800, 600);
-//    static const int cDefaultWidth = 640;
-//    static const int cDefaultHeight = 480;
-//    return QSize(std::max(cDefaultWidth, mImpl->mQPixmap.width()),
-//                 std::max(cDefaultHeight, mImpl->minimumWindowHeight()));
+    return QMainWindow::sizeHint();
 }
 
 
 QSize ImageViewer::minimumSizeHint() const
 {
     return QMainWindow::minimumSizeHint();
-    //return QSize(mImpl->mQPixmap.width(), mImpl->minimumWindowHeight());
 }
 
 

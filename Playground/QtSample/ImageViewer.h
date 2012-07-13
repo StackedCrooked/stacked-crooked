@@ -31,6 +31,9 @@ public:
 
     void setImage(const std::string & inFile);
 
+    virtual QSize minimumSizeHint() const;
+    QSize sizeHint() const;
+
 private Q_SLOTS:
     void openFile();
 

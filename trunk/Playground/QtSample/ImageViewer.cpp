@@ -8,7 +8,7 @@ struct ImageViewer::Impl
         mScene(&inImageViewer),
         mView(&mScene)
     {
-        mImageViewer.resize(1280, 1024);
+        mToolbar = mImageViewer.addToolBar(tr("File"));
         mImageViewer.setCentralWidget(&mView);
         mView.show();
         mScene.update();
@@ -26,12 +26,20 @@ struct ImageViewer::Impl
 
     void setImage(const std::string & inPath)
     {
-        mScene.addPixmap(QPixmap(inPath.c_str()));
+        QPixmap pm(inPath.c_str());
+        mScene.addPixmap(pm);
+
+        auto requiredHeight =  pm.height() + mToolbar->height();
+        auto requiredWidth = pm.width();
+        mImageViewer.resize(std::max(mImageViewer.width(), requiredWidth),
+                            std::max(mImageViewer.height(), requiredHeight));
+
     }
 
     ImageViewer & mImageViewer;
     QGraphicsScene mScene;
     QGraphicsView mView;
+    QToolBar * mToolbar;
 
 };
 
@@ -40,9 +48,13 @@ ImageViewer::ImageViewer() :
     QMainWindow(),
     mImpl(new Impl(*this))
 {
-    auto fileToolBar = addToolBar(tr("File"));
-    auto openAction = fileToolBar->addAction("Open");
-    connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    resize(1280, 1024);
+    QRect desktopRect = QDesktopWidget().availableGeometry();
+    move((desktopRect.width() - width()) / 2, (desktopRect.height() - height()) / 2);
+
+
+    connect(mImpl->mToolbar->addAction("Open"), SIGNAL(triggered()), this, SLOT(openFile()));
 }
 
 

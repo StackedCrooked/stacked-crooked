@@ -96,6 +96,13 @@ ImageViewer::ImageViewer() :
 
     // Toolbar
     connect(mImpl->mToolbar->addAction("Open"), SIGNAL(triggered()), this, SLOT(onToolbarOpen()));
+    connect(mImpl->mToolbar->addAction("Back"), SIGNAL(triggered()), this, SLOT(onToolbarBack()));
+    connect(mImpl->mToolbar->addAction("Forward"), SIGNAL(triggered()), this, SLOT(onToolbarForward()));
+
+    connect(mImpl->mToolbar->addAction("Skip"),         SIGNAL(triggered()), this, SLOT(onToolbarSkip()));
+    connect(mImpl->mToolbar->addAction("Charming"),     SIGNAL(triggered()), this, SLOT(onToolbarCharming()));
+    connect(mImpl->mToolbar->addAction("Hot"),          SIGNAL(triggered()), this, SLOT(onToolbarHot()));
+    connect(mImpl->mToolbar->addAction("Mesmerizing"),  SIGNAL(triggered()), this, SLOT(onToolbarMesmerizing()));
 }
 
 
@@ -141,3 +148,40 @@ void ImageViewer::onToolbarOpen()
         setImage(str.toUtf8().data());
     }
 }
+
+
+void ImageViewer::onToolbarBack()
+{
+    // TODO: Show previous image. (Rotate)
+}
+
+
+void ImageViewer::onToolbarForward()
+{
+    // TODO: Show next image. (Rotate)
+}
+
+
+void ImageViewer::onToolbarSkip()
+{
+    // TODO: Implement!
+}
+
+
+void ImageViewer::onToolbarCharming()
+{
+    // TODO: Implement!
+}
+
+
+void ImageViewer::onToolbarHot()
+{
+    // TODO: Implement!
+}
+
+
+void ImageViewer::onToolbarMesmerizing()
+{
+    // TODO: Implement!
+}
+

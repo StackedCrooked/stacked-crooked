@@ -6,6 +6,6 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     ImageViewer iv;
-    iv.show();
+    iv.menuBar()->show();
     return a.exec();
 }

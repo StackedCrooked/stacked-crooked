@@ -37,6 +37,14 @@ public:
 private Q_SLOTS:
     void onMenuOpen();
     void onToolbarOpen();
+    void onToolbarBack();
+    void onToolbarForward();
+
+    void onToolbarSkip();
+    void onToolbarCharming();
+    void onToolbarHot();
+    void onToolbarMesmerizing();
+
 
 private:
     ImageViewer(const ImageViewer&) = delete;

@@ -35,7 +35,8 @@ public:
     QSize sizeHint() const;
 
 private Q_SLOTS:
-    void openFile();
+    void onMenuOpen();
+    void onToobarOpen();
 
 private:
     ImageViewer(const ImageViewer&) = delete;

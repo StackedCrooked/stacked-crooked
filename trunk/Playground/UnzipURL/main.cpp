@@ -8,8 +8,10 @@
 #include "Poco/Zip/Decompress.h"
 #include <boost/scoped_ptr.hpp>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 
 
@@ -25,19 +27,36 @@ void DownloadAndDecompressFile(const std::string & inUrl, const std::string & in
 {
     static Register fRegister;
 
+
     Poco::URI uri(inUrl);
     boost::scoped_ptr<std::istream> pStr(Poco::URIStreamOpener::defaultOpener().open(uri));
 
-    std::ofstream out(inTargetPath.c_str(), std::ios::binary);
-    Poco::InflatingOutputStream outInflate(out, Poco::InflatingStreamBuf::STREAM_ZLIB);
+    std::string dataString;
 
-    std::streamsize s = 0;
-    while (auto n = Poco::StreamCopier::copyStream(*pStr.get(), outInflate))
+    while (true)
     {
-        s += n;
-        std::cout << s << " bytes written (" << n << ")" << std::endl;
+        int c = pStr->get();
+        if (c != -1)
+        {
+           dataString += (char) c;
+           std::cout << "\rsize: " << dataString.size();
+        }
+        else
+        {
+            break;
+        }
     }
     std::cout << std::endl;
+
+	// Print output (debugging)
+    for (char c : dataString)
+    {
+        std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << int(uint8_t(c)) << " (" << std::dec << int(uint8_t(c)) << ") ";
+    }
+    std::cout << std::endl;
+
+    std::istringstream is(dataString);
+    Poco::Zip::Decompress(is, inTargetPath);
 }
 
 

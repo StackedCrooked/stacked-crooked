@@ -7,5 +7,4 @@ all:
 	rm -f *.o
 	g++ -c  ${CXX_FLAGS} main.cpp
 	g++ -c  ${CXX_FLAGS} ImageViewer.cpp
-	${MOC} ${INCLUDE} -o moc_ImageViewer.cxx ImageViewer.h
 	g++ -o test *.o ${CXX_FLAGS}

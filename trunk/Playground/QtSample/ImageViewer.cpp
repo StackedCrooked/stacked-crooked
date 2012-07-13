@@ -35,7 +35,8 @@ struct ImageViewer::Impl : RememberWindowPosition
         mScene(&inImageViewer),
         mView(&mScene)
     {
-        mToolbar = mImageViewer.addToolBar(tr("File"));
+        mToolbar = mImageViewer.addToolBar("The Toolbar");
+        mToolbar->setMovable(false);
         mStatusbar = mImageViewer.statusBar();
         mImageViewer.statusBar()->setSizeGripEnabled(true);
 
@@ -101,14 +102,25 @@ ImageViewer::ImageViewer() :
     menuBar()->setNativeMenuBar(true);
 
     // Toolbar
-    connect(mImpl->mToolbar->addAction("Open"), SIGNAL(triggered()), this, SLOT(onToolbarOpen()));
-    connect(mImpl->mToolbar->addAction("Back"), SIGNAL(triggered()), this, SLOT(onToolbarBack()));
-    connect(mImpl->mToolbar->addAction("Forward"), SIGNAL(triggered()), this, SLOT(onToolbarForward()));
+#define MESMERIZE_TOOLBAR_BUTTON(Name) \
+    auto the##Name##Action = mImpl->mToolbar->addAction(#Name); \
+    the##Name##Action->setDisabled(true); \
+    connect(the##Name##Action, SIGNAL(triggered()), this, SLOT(onToolbarBack()));
 
-    connect(mImpl->mToolbar->addAction("Skip"),         SIGNAL(triggered()), this, SLOT(onToolbarSkip()));
-    connect(mImpl->mToolbar->addAction("Charming"),     SIGNAL(triggered()), this, SLOT(onToolbarCharming()));
-    connect(mImpl->mToolbar->addAction("Hot"),          SIGNAL(triggered()), this, SLOT(onToolbarHot()));
-    connect(mImpl->mToolbar->addAction("Mesmerizing"),  SIGNAL(triggered()), this, SLOT(onToolbarMesmerizing()));
+
+    MESMERIZE_TOOLBAR_BUTTON(Back);
+    MESMERIZE_TOOLBAR_BUTTON(Forward);
+    MESMERIZE_TOOLBAR_BUTTON(Skip);
+    MESMERIZE_TOOLBAR_BUTTON(Charming);
+    MESMERIZE_TOOLBAR_BUTTON(Hot);
+    MESMERIZE_TOOLBAR_BUTTON(Mesmerizing);
+
+//    connect(mImpl->mToolbar->addAction("Back"), SIGNAL(triggered()), this, SLOT(onToolbarBack()));
+//    connect(mImpl->mToolbar->addAction("Forward"), SIGNAL(triggered()), this, SLOT(onToolbarForward()));
+//    connect(mImpl->mToolbar->addAction("Skip"),         SIGNAL(triggered()), this, SLOT(onToolbarSkip()));
+//    connect(mImpl->mToolbar->addAction("Charming"),     SIGNAL(triggered()), this, SLOT(onToolbarCharming()));
+//    connect(mImpl->mToolbar->addAction("Hot"),          SIGNAL(triggered()), this, SLOT(onToolbarHot()));
+//    connect(mImpl->mToolbar->addAction("Mesmerizing"),  SIGNAL(triggered()), this, SLOT(onToolbarMesmerizing()));
 }
 
 
@@ -137,16 +149,6 @@ void ImageViewer::setImage(const std::string & inFile)
 
 
 void ImageViewer::onMenuOpen()
-{
-    QString str = QFileDialog::getOpenFileName();
-    if (!str.isNull())
-    {
-        setImage(str.toUtf8().data());
-    }
-}
-
-
-void ImageViewer::onToolbarOpen()
 {
     QString str = QFileDialog::getOpenFileName();
     if (!str.isNull())

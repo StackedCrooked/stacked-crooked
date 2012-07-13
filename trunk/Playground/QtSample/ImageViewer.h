@@ -36,7 +36,6 @@ public:
 
 private Q_SLOTS:
     void onMenuOpen();
-    void onToolbarOpen();
     void onToolbarBack();
     void onToolbarForward();
 

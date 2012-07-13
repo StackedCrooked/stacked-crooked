@@ -39,26 +39,6 @@ struct ImageViewer::Impl
         return *mImageViewer.centralWidget();
     }
 
-//    void adjustWindowSize()
-//    {
-//        QRect desktopRect = QDesktopWidget().availableGeometry(&mImageViewer);
-
-//        auto w = std::min(desktopRect.width(), mQPixmap.width());
-//        auto h = std::min(desktopRect.height(), minimumWindowHeight());
-//        mImageViewer.resize(w, h);
-
-//        mView.resize(w, h);
-//        mView.setMinimumSize(w, h);
-
-//        auto & cw = *mImageViewer.centralWidget();
-//        cw.resize(w, h - mToolbar->height());
-//        cw.setMinimumSize(w, h);
-
-//        mScene.setSceneRect(cw.rect());
-
-//        mImageViewer.setMinimumSize(w, minimumWindowHeight());
-//    }
-
     void centerWindow()
     {
         QRect desktopRect = QDesktopWidget().availableGeometry(&mImageViewer);
@@ -79,8 +59,6 @@ struct ImageViewer::Impl
         mScene.clear();
         mQPixmap.load(inPath.c_str());
         mScene.addPixmap(mQPixmap);
-        //adjustWindowSize();
-        //centerWindow();
     }
 
     ImageViewer & mImageViewer;

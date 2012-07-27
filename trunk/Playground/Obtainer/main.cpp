@@ -1,5 +1,5 @@
-#ifndef ClassOBTAINER_H
-#define ClassOBTAINER_H
+#ifndef ITEMFACTORY_H
+#define ITEMFACTORY_H
 
 
 #include <boost/function_types/function_type.hpp>
@@ -45,7 +45,7 @@ struct type_index
 } // namespace nonstd
 
 
-#define ClassOBTAINER_EXCEPTION(NAME, INFO) \
+#define ITEMFACTORY_EXCEPTION(NAME, INFO) \
     struct NAME : std::runtime_error { \
         NAME() : std::runtime_error(INFO) { } \
         virtual ~NAME() throw() {} \
@@ -87,7 +87,7 @@ ConcreteCreator<BaseType, SubType> & Creator<BaseType>::downcast()
 
 
 /**
- * ClassFactory is a object factory that allows you to create objects using string ids.
+ * ItemFactory is a object factory that allows you to create objects using string ids.
  *
  * @example
  *
@@ -100,11 +100,11 @@ ConcreteCreator<BaseType, SubType> & Creator<BaseType>::downcast()
  *  struct B : Base {};
  *
  *  // Create a factory for objects that inherit "Base".
- *  ClassFactory<Base> factory;
+ *  ItemFactory<Base> factory;
  *
  *  // Register types A as "a" and B as "b".
- *  factory.registerClass<A>("a");
- *  factory.registerClass<B>("b");
+ *  factory.registerItem<A>("a");
+ *  factory.registerItem<B>("b");
  *
  *  // Create an object and specifying its type as a template argument.
  *  std::unique_ptr<A> a = factory.create<A>();
@@ -118,30 +118,30 @@ ConcreteCreator<BaseType, SubType> & Creator<BaseType>::downcast()
  *
  */
 template<typename BaseType>
-struct ClassFactory
+struct ItemFactory
 {
-    ClassOBTAINER_EXCEPTION(NotRegistered, "No create function.");
-    ClassOBTAINER_EXCEPTION(AlreadyRegistered, "Already registered.");
+    ITEMFACTORY_EXCEPTION(NotRegistered, "No create function.");
+    ITEMFACTORY_EXCEPTION(AlreadyRegistered, "Already registered.");
 
     template<typename SubType>
-    void registerClass(const std::string & inName)
+    void registerItem(const std::string & inName)
     {
         static_assert(std::is_base_of<BaseType, SubType>::value, "Provided type is not a subtype of base type.");
         nonstd::type_index id = GetId<SubType>();
-        registerClassType(inName, id);
+        registerItemType(inName, id);
         registerCreateFunction<SubType>(id);
     }
 
     template<typename SubType, typename ...Args>
-    std::unique_ptr<BaseType> createClass(Args ...args)
+    std::unique_ptr<BaseType> createItem(Args ...args)
     {
-        return createClassImpl(GetId<SubType>(), args...);
+        return createItemImpl(GetId<SubType>(), args...);
     }
 
     template<typename ...Args>
-    std::unique_ptr<BaseType> createClass(const std::string & inClassName, Args ...args)
+    std::unique_ptr<BaseType> createItem(const std::string & inItemName, Args ...args)
     {
-        return createClassImpl(getClassId(inClassName), args...);
+        return createItemImpl(getItemId(inItemName), args...);
     }
 
 protected:
@@ -151,14 +151,14 @@ protected:
         return nonstd::type_index(typeid(T));
     }
 
-    void registerClassType(const std::string & inName, const nonstd::type_index & inTypeIndex)
+    void registerItemType(const std::string & inName, const nonstd::type_index & inTypeIndex)
     {
-        if (mClassTypes.find(inName) != mClassTypes.end())
+        if (mItemTypes.find(inName) != mItemTypes.end())
         {
             throw AlreadyRegistered();
         }
 
-        mClassTypes.insert(std::make_pair(inName, inTypeIndex));
+        mItemTypes.insert(std::make_pair(inName, inTypeIndex));
     }
 
     template<typename SubType>
@@ -175,7 +175,7 @@ protected:
     }
 
     template<typename ...Args>
-    std::unique_ptr<BaseType> createClassImpl(const nonstd::type_index & inTypeIndex, Args ...args)
+    std::unique_ptr<BaseType> createItemImpl(const nonstd::type_index & inTypeIndex, Args ...args)
     {
         auto it = mCreateFunctions.find(inTypeIndex);
         if (it == mCreateFunctions.end())
@@ -187,10 +187,10 @@ protected:
         return ptr->call(args...);
     }
 
-    nonstd::type_index getClassId(const std::string & inName) const
+    nonstd::type_index getItemId(const std::string & inName) const
     {
-        auto it = mClassTypes.find(inName);
-        if (it == mClassTypes.end())
+        auto it = mItemTypes.find(inName);
+        if (it == mItemTypes.end())
         {
             throw NotRegistered();
         }
@@ -198,8 +198,8 @@ protected:
     }
 
 private:
-    typedef std::map<std::string, nonstd::type_index> ClassTypes;
-    ClassTypes mClassTypes;
+    typedef std::map<std::string, nonstd::type_index> ItemTypes;
+    ItemTypes mItemTypes;
 
     typedef std::shared_ptr<Creator<BaseType> > CreatorPtr;
     typedef std::map<nonstd::type_index, CreatorPtr> CreateFunctions;
@@ -263,18 +263,18 @@ struct ConcreteCreator<Base, B> : Creator<Base>
 
 int main()
 {
-    ClassFactory<Base> factory;
+    ItemFactory<Base> factory;
 
-    factory.registerClass<A>("a");
-    std::unique_ptr<Base> base_a = factory.createClass("a");
+    factory.registerItem<A>("a");
+    std::unique_ptr<Base> base_a = factory.createItem("a");
     A & a = dynamic_cast<A&>(*base_a);
     std::cout << "A: " << &a << std::endl;
 
-    factory.registerClass<B>("b");
-    std::unique_ptr<Base> base_b = factory.createClass("b", 2); // calls B(2)
+    factory.registerItem<B>("b");
+    std::unique_ptr<Base> base_b = factory.createItem("b", 2); // calls B(2)
     B & b = dynamic_cast<B&>(*base_b);
     std::cout << "B: " << &b << std::endl;
 }
 
 
-#endif // ClassOBTAINER_H
+#endif // ITEMFACTORY_H

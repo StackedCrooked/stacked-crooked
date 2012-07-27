@@ -26,46 +26,27 @@ namespace Playground {
     }
 
 
-
 /**
- * ItemFactory is a object factory that allows you to create objects using string ids.
+ * ItemFactory is a simple string-based object factory.
  *
  * @example
- *
- *  // Define types
- *  struct Base {
- *      virtual ~Base() {}
- *  };
- *
+ *  // Define a simple class hierarchy
+ *  struct Base { virtual ~Base() {} };
  *  struct A : Base {};
  *  struct B : Base {};
  *
- *  // Create a factory for objects that inherit "Base".
+ *  // Create the factory for this class hierarchy.
  *  ItemFactory<Base> factory;
- *
- *  // Register types A as "a" and B as "b".
  *  factory.registerType<A>("a");
  *  factory.registerType<B>("b");
- *
- *  // Create an object and specifying its type as a template argument.
- *  std::unique_ptr<A> a = factory.create<A>();
- *
- *  // Create an object and specify its type using a string identifier.
- *  // In this case an object of the Base type is returned.
- *  std::unique_ptr<Base> b = factory.create("b");
- *
- *  // Use dynamic cast to get an object of derived type.
- *  B & b = dynamic_cast<B&>(*b);
- *
+ *  std::unique_ptr<Base> a = factory.create("a");
+ *  A & a = dynamic_cast<A&>(*a);
  */
-template<typename BaseType_>
+template<typename ItemType>
 struct ItemFactory
 {
     PP_DefineItemFactoryException(NotRegistered, "No create function.");
     PP_DefineItemFactoryException(AlreadyRegistered, "Already registered.");
-
-    typedef BaseType_ BaseType;
-    typedef std::unique_ptr<BaseType> BasePtr;
 
     template<typename T>
     void registerType(const std::string & inName)
@@ -75,11 +56,11 @@ struct ItemFactory
             throw AlreadyRegistered(inName);
         }
 
-        CreateFunction cf = [](){ return BasePtr(new T); };
+        CreateFunction cf = [](){ return ItemPtr(new T); };
         mCreateFunctions.insert(std::make_pair(inName, cf));
     }
 
-    BasePtr create(std::string inName)
+    std::unique_ptr<ItemType> create(const std::string & inName)
     {
         auto it = mCreateFunctions.find(inName);
         if (it == mCreateFunctions.end())
@@ -91,9 +72,50 @@ struct ItemFactory
     }
 
 private:
-    typedef std::function<BasePtr()> CreateFunction;
+    typedef std::unique_ptr<ItemType> ItemPtr;
+    typedef std::function<ItemPtr()> CreateFunction;
     typedef std::map<std::string, CreateFunction> CreateFunctions;
     CreateFunctions mCreateFunctions;
+};
+
+
+/**
+ * ItemObtainer stores at most one instance of each registered item type.
+ * The items are lazily created (or reused) when calling obtainItem.
+ *
+ * @example
+ *  ItemObtainer<Base> obtainer;
+ *  obtainer.registerType<A>("a");
+ *  obtainer.registerType<B>("b");
+ *  Base & base = obtainer.obtainItem("a");
+ *  std::cout << "A value: " << dynamic_cast<A&>(base).mValue << std::endl;
+ */
+template<typename ItemType>
+struct ItemObtainer
+{
+
+    template<typename T>
+    void registerType(const std::string & inName)
+    {
+        mFactory.registerType<T>(inName);
+    }
+
+    ItemType & obtainItem(const std::string & inName)
+    {
+        auto it = mItems.find(inName);
+        if (it != mItems.end())
+        {
+            return *it->second;
+        }
+
+        return *mItems.insert(std::make_pair(inName, mFactory.create(inName))).first->second;
+    }
+
+private:
+    ItemFactory<ItemType> mFactory;
+    typedef std::unique_ptr<ItemType> ItemPtr;
+    typedef std::map<std::string, ItemPtr> Items;
+    Items mItems;
 };
 
 
@@ -118,6 +140,11 @@ struct A : Base
         std::cout << "A()" << std::endl;
     }
 
+    ~A()
+    {
+        std::cout << "~A()" << std::endl;
+    }
+
     std::string mValue;
 };
 
@@ -127,6 +154,11 @@ struct B : Base
     B() : mValue("b")
     {
         std::cout << "B()" << std::endl;
+    }
+
+    ~B()
+    {
+        std::cout << "~B()" << std::endl;
     }
 
     std::string mValue;
@@ -139,18 +171,37 @@ struct B : Base
 int main()
 {
     using namespace Playground;
-    ItemFactory<Base> factory;
-    factory.registerType<A>("a");
-    factory.registerType<B>("b");
 
-    std::unique_ptr<Base> base_a = factory.create("a");
-    std::unique_ptr<Base> base_b = factory.create("b");
+    {
+        std::cout << "Testing factory: " << std::endl;
+        {
+            ItemFactory<Base> factory;
+            factory.registerType<A>("a");
+            factory.registerType<B>("b");
 
-    A & a = dynamic_cast<A&>(*base_a);
-    std::cout << "A: " << &a << ", " << a.mValue << std::endl;
+            factory.create("a");
+            factory.create("a");
+            factory.create("b");
+            factory.create("b");
+        }
+        std::cout << std::endl << "Done testing factory." << std::endl << std::endl;
+    }
 
-    B & b = dynamic_cast<B&>(*base_b);
-    std::cout << "B: " << &b << ", " << b.mValue << std::endl;
+
+    {
+        std::cout << "Testing obtainer: " << std::endl;
+        {
+            ItemObtainer<Base> obtainer;
+            obtainer.registerType<A>("a");
+            obtainer.registerType<B>("b");
+            Base & baseA = obtainer.obtainItem("a");
+            std::cout << "A value: " << dynamic_cast<A&>(baseA).mValue << std::endl;
+            obtainer.obtainItem("a");
+            obtainer.obtainItem("b");
+            obtainer.obtainItem("b");
+        }
+        std::cout << std::endl << "Done testing obtainer." << std::endl << std::endl;
+    }
 }
 
 

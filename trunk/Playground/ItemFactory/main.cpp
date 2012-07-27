@@ -28,6 +28,7 @@ namespace Playground {
 
 /**
  * ItemFactory is a simple string-based object factory.
+ * @note Requires ItemType to be default-constructible.
  *
  * @example
  *  // Define a simple class hierarchy
@@ -45,6 +46,9 @@ namespace Playground {
 template<typename ItemType>
 struct ItemFactory
 {
+    static_assert(std::is_default_constructible<ItemType>::value, "ItemType is not default constructible.");
+
+    // Define exceptions.
     PP_DefineItemFactoryException(NotRegistered, "No create function.");
     PP_DefineItemFactoryException(AlreadyRegistered, "Already registered.");
 
@@ -82,6 +86,7 @@ private:
 /**
  * ItemObtainer stores at most one instance of each registered item type.
  * The items are lazily created (or reused) when calling obtainItem.
+ * @note Requires ItemType to be default-constructible.
  *
  * @example
  *  ItemObtainer<Base> obtainer;
@@ -93,6 +98,7 @@ private:
 template<typename ItemType>
 struct ItemObtainer
 {
+    static_assert(std::is_default_constructible<ItemType>::value, "ItemType is not default constructible.");
 
     template<typename T>
     void registerType(const std::string & inName)

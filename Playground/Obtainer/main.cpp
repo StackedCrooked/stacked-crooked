@@ -13,11 +13,10 @@
     }
 
 
-
 template<typename BaseType>
 struct ItemFactory
 {
-    ITEMOBTAINER_DEFINE_EXCEPTION(NoCreateFunction, "No create function.");
+    ITEMOBTAINER_DEFINE_EXCEPTION(NotRegistered, "No create function.");
     ITEMOBTAINER_DEFINE_EXCEPTION(AlreadyRegistered, "Already registered.");
 
     template<typename SubType>
@@ -48,7 +47,7 @@ struct ItemFactory
         auto it = mCreateFunctions.find(inName);
         if (it == mCreateFunctions.end())
         {
-            throw NoCreateFunction();
+            throw NotRegistered();
         }
         return it->second();
     }
@@ -80,8 +79,6 @@ private:
     typedef std::map<std::string, ItemPtr> Items;
     Items mItems;
 };
-
-
 
 
 struct ItemBase

@@ -60,8 +60,7 @@ struct ItemFactory
             throw AlreadyRegistered(inName);
         }
 
-        CreateFunction cf = [](){ return ItemPtr(new T); };
-        mCreateFunctions.insert(std::make_pair(inName, cf));
+        mCreateFunctions.insert(std::make_pair(inName, [](){ return ItemPtr(new T); }));
     }
 
     std::unique_ptr<ItemType> create(const std::string & inName)

@@ -4,9 +4,11 @@
 
 #include <cassert>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <tuple>
 #include <typeinfo>
 
 
@@ -46,6 +48,18 @@ struct type_index
     }
 
 
+// Use local functor instead of lambda because lambda currently messes up my editor's indention logic.
+template<typename BaseType, typename SubType>
+struct Creator
+{
+    template<typename ...Args>
+    std::unique_ptr<BaseType> operator()(Args ...args) const
+    {
+        return std::unique_ptr<BaseType>(new SubType(args...));
+    }
+};
+
+
 /**
  * ItemFactory is a object factory that allows you to create objects using string ids.
  *
@@ -83,13 +97,13 @@ struct ItemFactory
     ITEMOBTAINER_EXCEPTION(NotRegistered, "No create function.");
     ITEMOBTAINER_EXCEPTION(AlreadyRegistered, "Already registered.");
 
-    template<typename SubType>
-    void registerItem(const std::string & inName)
+    template<typename SubType, typename ...Args>
+    void registerItem(const std::string & inName, Args ...args)
     {
         static_assert(std::is_base_of<BaseType, SubType>::value, "Provided type is not a subtype of base type.");
         nonstd::type_index itemIndex = GetId<SubType>();
         registerItemType(inName, itemIndex);
-        registerCreateFunction<SubType>(itemIndex);
+        registerCreateFunction<SubType>(itemIndex, args...);
     }
 
     template<typename SubType>
@@ -120,8 +134,8 @@ protected:
         mItemTypes.insert(std::make_pair(inName, inTypeIndex));
     }
 
-    template<typename SubType>
-    void registerCreateFunction(const nonstd::type_index & inTypeIndex)
+    template<typename SubType, typename ...Args>
+    void registerCreateFunction(const nonstd::type_index & inTypeIndex, Args ...args)
     {
         auto it = mCreateFunctions.find(inTypeIndex);
         if (it != mCreateFunctions.end())
@@ -129,16 +143,7 @@ protected:
             throw AlreadyRegistered();
         }
 
-        // Use local functor instead of lambda because lambda currently messes up my editor's indention logic.
-        struct Create
-        {
-            static std::unique_ptr<BaseType> create()
-            {
-                return std::unique_ptr<BaseType>(new SubType);
-            }
-        };
-
-        mCreateFunctions.insert(std::make_pair(inTypeIndex, std::bind(&Create::create)));
+        mCreateFunctions.insert(std::make_pair(inTypeIndex, std::bind(Creator<BaseType, SubType>(), args...)));
     }
 
     std::unique_ptr<BaseType> createItemImpl(const nonstd::type_index & inTypeIndex)
@@ -237,9 +242,23 @@ struct A : Base {};
 struct B : Base {};
 struct C : Base {};
 
+struct WithArgs : Base
+{
+    WithArgs(int n)
+    {
+        std::cout << "WithArgs: " << n << std::endl;
+    }
+};
+
 
 int main()
 {
+    ItemFactory<Base> factory;
+    int n = 2;
+    factory.registerItem<WithArgs>("WithArgs", n);
+    factory.createItem<WithArgs>();
+
+
     ItemObtainer<Base> obtainer;
     obtainer.registerItem<A>("a");
     obtainer.registerItem<B>("b");

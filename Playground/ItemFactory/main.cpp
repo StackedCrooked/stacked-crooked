@@ -17,12 +17,8 @@ namespace Playground {
 
 #define PP_DefineItemFactoryException(NAME, INFO) \
     struct NAME : std::runtime_error { \
-        NAME(const std::string & inDetail) : std::runtime_error(INFO), mDetail(inDetail) { } \
+        NAME(const std::string & inDetail) : std::runtime_error(std::string(INFO) + ". Detail: " + inDetail) {} \
         virtual ~NAME() throw() {} \
-        virtual const char* what() const throw() { return mDetail.c_str(); } \
-        const std::string & detail() const { return mDetail; } \
-    private:\
-        std::string mDetail; \
     }
 
 
@@ -49,8 +45,8 @@ struct ItemFactory
     static_assert(std::is_default_constructible<ItemType>::value, "ItemType is not default constructible.");
 
     // Define exceptions.
-    PP_DefineItemFactoryException(NotRegistered, "No create function.");
-    PP_DefineItemFactoryException(AlreadyRegistered, "Already registered.");
+    PP_DefineItemFactoryException(NotRegistered, "No create function");
+    PP_DefineItemFactoryException(AlreadyRegistered, "Already registered");
 
     template<typename T>
     void registerType(const std::string & inName)
@@ -206,6 +202,31 @@ int main()
             obtainer.obtainItem("b");
         }
         std::cout << std::endl << "Done testing obtainer." << std::endl << std::endl;
+    }
+
+    try
+    {
+        std::cout << "Testing exceptions: ";
+        ItemObtainer<Base>  obtainer;
+        obtainer.obtainItem("a");
+        assert(false);
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << exc.what() << std::endl;
+    }
+
+    try
+    {
+        std::cout << "Testing exceptions: ";
+        ItemObtainer<Base>  obtainer;
+        obtainer.registerType<B>("b");
+        obtainer.registerType<B>("b");
+        assert(false);
+    }
+    catch (const std::exception & exc)
+    {
+        std::cout << exc.what() << std::endl;
     }
 }
 

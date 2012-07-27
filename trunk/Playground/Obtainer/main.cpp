@@ -2,88 +2,30 @@
 #define ITEMFACTORY_H
 
 
-#include <boost/function_types/function_type.hpp>
-#include <boost/function_types/parameter_types.hpp>
-#include <boost/function_types/function_arity.hpp>
-#include <boost/typeof/std/utility.hpp>
 #include <cassert>
+#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
-#include <typeinfo>
+#include <typeindex>
 
 
-// Workaround for type_index which is not yet supported on GCC 4.5
-// Once we have upgraded to GCC 4.7+ we can replace "nonstd::type_index" with "std::type_index".
-namespace nonstd {
+namespace Playground {
 
 
-struct type_index
-{
-    type_index(const std::type_info & inInfo) :
-        mInfo(&inInfo)
-    {
-    }
-
-    friend bool operator<(const type_index & lhs, const type_index & rhs)
-    {
-        return lhs.mInfo->before(*rhs.mInfo);
-    }
-
-    friend bool operator==(const type_index & lhs, const type_index & rhs)
-    {
-        return lhs.mInfo == rhs.mInfo;
-    }
-
-    const std::type_info * mInfo;
-};
-
-
-} // namespace nonstd
-
-
-#define ITEMFACTORY_EXCEPTION(NAME, INFO) \
+#define PP_DefineItemFactoryException(NAME, INFO) \
     struct NAME : std::runtime_error { \
-        NAME() : std::runtime_error(INFO) { } \
+        NAME(const std::string & inDetail) : std::runtime_error(INFO), mDetail(inDetail) { } \
         virtual ~NAME() throw() {} \
+        virtual const char* what() const throw() { return mDetail.c_str(); } \
+        const std::string & detail() const { return mDetail; } \
+    private:\
+        std::string mDetail; \
     }
 
-
-// Use local functor instead of lambda because lambda currently messes up my editor's indention logic.
-
-
-template<typename BaseType, typename SubType>
-struct ConcreteCreator;
-
-
-template<typename BaseType>
-struct Creator
-{
-    virtual ~Creator() {}
-
-    template<typename SubType>
-    ConcreteCreator<BaseType, SubType> & downcast();
-
-    template<typename ...Args>
-    std::unique_ptr<BaseType> call(Args ...args)
-    {
-        auto t = std::make_tuple(args...);
-        return callImpl(static_cast<void*>(&t));
-    }
-
-    virtual std::unique_ptr<BaseType> callImpl(void *) = 0;
-};
-
-
-template<typename BaseType>
-template<typename SubType>
-ConcreteCreator<BaseType, SubType> & Creator<BaseType>::downcast()
-{
-    return dynamic_cast<ConcreteCreator<BaseType, SubType>&>(*this);
-}
 
 
 /**
@@ -103,8 +45,8 @@ ConcreteCreator<BaseType, SubType> & Creator<BaseType>::downcast()
  *  ItemFactory<Base> factory;
  *
  *  // Register types A as "a" and B as "b".
- *  factory.registerItem<A>("a");
- *  factory.registerItem<B>("b");
+ *  factory.registerType<A>("a");
+ *  factory.registerType<B>("b");
  *
  *  // Create an object and specifying its type as a template argument.
  *  std::unique_ptr<A> a = factory.create<A>();
@@ -117,92 +59,41 @@ ConcreteCreator<BaseType, SubType> & Creator<BaseType>::downcast()
  *  B & b = dynamic_cast<B&>(*b);
  *
  */
-template<typename BaseType>
+template<typename BaseType_>
 struct ItemFactory
 {
-    ITEMFACTORY_EXCEPTION(NotRegistered, "No create function.");
-    ITEMFACTORY_EXCEPTION(AlreadyRegistered, "Already registered.");
+    PP_DefineItemFactoryException(NotRegistered, "No create function.");
+    PP_DefineItemFactoryException(AlreadyRegistered, "Already registered.");
 
-    template<typename SubType>
-    void registerItem(const std::string & inName)
-    {
-        static_assert(std::is_base_of<BaseType, SubType>::value, "Provided type is not a subtype of base type.");
-        nonstd::type_index id = GetId<SubType>();
-        registerItemType(inName, id);
-        registerCreateFunction<SubType>(id);
-    }
+    typedef BaseType_ BaseType;
+    typedef std::unique_ptr<BaseType> BasePtr;
 
-    template<typename SubType, typename ...Args>
-    std::unique_ptr<BaseType> createItem(Args ...args)
-    {
-        return createItemImpl(GetId<SubType>(), args...);
-    }
-
-    template<typename ...Args>
-    std::unique_ptr<BaseType> createItem(const std::string & inItemName, Args ...args)
-    {
-        return createItemImpl(getItemId(inItemName), args...);
-    }
-
-protected:
     template<typename T>
-    static nonstd::type_index GetId()
+    void registerType(const std::string & inName)
     {
-        return nonstd::type_index(typeid(T));
-    }
-
-    void registerItemType(const std::string & inName, const nonstd::type_index & inTypeIndex)
-    {
-        if (mItemTypes.find(inName) != mItemTypes.end())
+        if (mCreateFunctions.find(inName) != mCreateFunctions.end())
         {
-            throw AlreadyRegistered();
+            throw AlreadyRegistered(inName);
         }
 
-        mItemTypes.insert(std::make_pair(inName, inTypeIndex));
+        CreateFunction cf = [](){ return BasePtr(new T); };
+        mCreateFunctions.insert(std::make_pair(inName, cf));
     }
 
-    template<typename SubType>
-    void registerCreateFunction(const nonstd::type_index & inTypeIndex)
+    BasePtr create(std::string inName)
     {
-        auto it = mCreateFunctions.find(inTypeIndex);
-        if (it != mCreateFunctions.end())
-        {
-            throw AlreadyRegistered();
-        }
-
-        CreatorPtr ptr(new ConcreteCreator<BaseType, SubType>());
-        mCreateFunctions.insert(std::make_pair(inTypeIndex, ptr));
-    }
-
-    template<typename ...Args>
-    std::unique_ptr<BaseType> createItemImpl(const nonstd::type_index & inTypeIndex, Args ...args)
-    {
-        auto it = mCreateFunctions.find(inTypeIndex);
+        auto it = mCreateFunctions.find(inName);
         if (it == mCreateFunctions.end())
         {
-            throw NotRegistered();
+            throw NotRegistered(std::move(inName));
         }
 
-        CreatorPtr ptr = it->second;
-        return ptr->call(args...);
-    }
-
-    nonstd::type_index getItemId(const std::string & inName) const
-    {
-        auto it = mItemTypes.find(inName);
-        if (it == mItemTypes.end())
-        {
-            throw NotRegistered();
-        }
-        return it->second;
+        return it->second();
     }
 
 private:
-    typedef std::map<std::string, nonstd::type_index> ItemTypes;
-    ItemTypes mItemTypes;
-
-    typedef std::shared_ptr<Creator<BaseType> > CreatorPtr;
-    typedef std::map<nonstd::type_index, CreatorPtr> CreateFunctions;
+    typedef std::function<BasePtr()> CreateFunction;
+    typedef std::map<std::string, CreateFunction> CreateFunctions;
     CreateFunctions mCreateFunctions;
 };
 
@@ -223,57 +114,44 @@ struct Base
 
 struct A : Base
 {
-    A()
+    A() : mValue("a")
     {
+        std::cout << "A()" << std::endl;
     }
+
+    std::string mValue;
 };
 
 
 struct B : Base
 {
-    B(int n) : Base(), _n(n)
+    B() : mValue("b")
     {
-        std::cout << "B: " << n << std::endl;
+        std::cout << "B()" << std::endl;
     }
 
-    int _n;
+    std::string mValue;
 };
 
 
-template<>
-struct ConcreteCreator<Base, A> : Creator<Base>
-{
-    virtual std::unique_ptr<Base> callImpl(void *)
-    {
-        return std::unique_ptr<Base>(new A);
-    }
-};
-
-
-template<>
-struct ConcreteCreator<Base, B> : Creator<Base>
-{
-    virtual std::unique_ptr<Base> callImpl(void * p)
-    {
-        std::tuple<int> & t = *reinterpret_cast<std::tuple<int>*>(p);
-        return std::unique_ptr<Base>(new B(std::get<0>(t)));
-    }
-};
+} // namespace Playground
 
 
 int main()
 {
+    using namespace Playground;
     ItemFactory<Base> factory;
+    factory.registerType<A>("a");
+    factory.registerType<B>("b");
 
-    factory.registerItem<A>("a");
-    std::unique_ptr<Base> base_a = factory.createItem("a");
+    std::unique_ptr<Base> base_a = factory.create("a");
+    std::unique_ptr<Base> base_b = factory.create("b");
+
     A & a = dynamic_cast<A&>(*base_a);
-    std::cout << "A: " << &a << std::endl;
+    std::cout << "A: " << &a << ", " << a.mValue << std::endl;
 
-    factory.registerItem<B>("b");
-    std::unique_ptr<Base> base_b = factory.createItem("b", 2); // calls B(2)
     B & b = dynamic_cast<B&>(*base_b);
-    std::cout << "B: " << &b << std::endl;
+    std::cout << "B: " << &b << ", " << b.mValue << std::endl;
 }
 
 

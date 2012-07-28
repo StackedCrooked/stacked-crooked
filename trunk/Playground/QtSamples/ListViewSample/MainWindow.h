@@ -17,9 +17,7 @@ public:
 
     static FileMenu * Create(QMenuBar * inMenuBar, const QString & inTitle, EventHandler & inEventHandler)
     {
-        FileMenu * result = new FileMenu(inMenuBar, inEventHandler);
-        result->setTitle(inTitle);
-        inMenuBar->addMenu(result);
+        FileMenu * result = new FileMenu(inMenuBar, inTitle, inEventHandler);
         return result;
     }
 
@@ -30,13 +28,15 @@ private Q_SLOTS:
     }
 
 private:
-    FileMenu(QMenuBar * inMenuBar, EventHandler & inEventHandler) :
+    FileMenu(QMenuBar * inMenuBar, const QString & inTitle, EventHandler & inEventHandler) :
         QMenu(inMenuBar),
         mEventHandler(inEventHandler)
     {
         QAction * action = addAction("&Open...");
         action->setShortcut(QKeySequence("Ctrl+O"));
         connect(action, SIGNAL(triggered(bool)), this, SLOT(onOpen()));
+        setTitle(inTitle);
+        inMenuBar->addMenu(this);
     }
 
     EventHandler & mEventHandler;

@@ -9,8 +9,7 @@ MainWindow::MainWindow(QWidget *inParent) :
     mCentralWidget = new CentralWidget(this);
     setCentralWidget(mCentralWidget);
 
-    FileMenu::Create(menuBar(), "&File", *this);
-    menuBar()->setNativeMenuBar(true);
+    new FileMenu(menuBar(), "&File", *this);
 }
 
 

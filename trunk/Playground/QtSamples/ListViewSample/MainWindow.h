@@ -15,19 +15,6 @@ public:
         virtual void onFileMenuTriggered(FileMenu&) = 0;
     };
 
-    static FileMenu * Create(QMenuBar * inMenuBar, const QString & inTitle, EventHandler & inEventHandler)
-    {
-        FileMenu * result = new FileMenu(inMenuBar, inTitle, inEventHandler);
-        return result;
-    }
-
-private Q_SLOTS:
-    void onOpen()
-    {
-        mEventHandler.onFileMenuTriggered(*this);
-    }
-
-private:
     FileMenu(QMenuBar * inMenuBar, const QString & inTitle, EventHandler & inEventHandler) :
         QMenu(inMenuBar),
         mEventHandler(inEventHandler)
@@ -39,6 +26,13 @@ private:
         inMenuBar->addMenu(this);
     }
 
+private Q_SLOTS:
+    void onOpen()
+    {
+        mEventHandler.onFileMenuTriggered(*this);
+    }
+
+private:
     EventHandler & mEventHandler;
 };
 

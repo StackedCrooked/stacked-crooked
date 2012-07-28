@@ -6,21 +6,18 @@ ListItemDelegate::ListItemDelegate(QObject * inParent) :
 {
 }
 
+
 void ListItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    (void)painter;
-    (void)option;
-    (void)index;
-
-    painter->fillRect(option.rect, QColor(0, 0, 255));
+    painter->fillRect(option.rect, Qt::white);
+    painter->setRenderHint(QPainter::Antialiasing, true);
 
     QIcon icon = index.data().value<QIcon>();
     icon.paint(painter, option.rect);
-
 }
 
 
 QSize ListItemDelegate::sizeHint(const QStyleOptionViewItem & /* option */, const QModelIndex & /* index */) const
 {
-    return QSize(40, 40);
+    return QSize(400, 400);
 }

@@ -2,7 +2,7 @@
 
 
 enum {
-    cItemSize = 20
+    cItemSize = 200
 };
 
 

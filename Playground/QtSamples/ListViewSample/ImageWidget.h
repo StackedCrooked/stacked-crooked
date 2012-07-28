@@ -19,7 +19,6 @@ protected:
 
 private:
     QString mFile;
-    QPixmap mPixmap;
 };
 
 

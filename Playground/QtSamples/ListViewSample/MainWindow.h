@@ -13,6 +13,9 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private Q_SLOTS:
+    void onFileOpen();
+
 private:
     CentralWidget * mCentralWidget;
 };

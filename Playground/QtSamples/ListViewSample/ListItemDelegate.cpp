@@ -1,4 +1,14 @@
 #include "ListItemDelegate.h"
+#include <algorithm>
+
+
+namespace {
+
+
+static const int cItemSize = 240;
+
+
+} // anonymous namespace
 
 
 ListItemDelegate::ListItemDelegate(QObject * inParent) :
@@ -12,13 +22,21 @@ void ListItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     painter->fillRect(option.rect, Qt::white);
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    QPixmap pixmap = index.data().value<QPixmap>();
-    QIcon(pixmap).paint(painter, option.rect);
+    QString file = index.data().toString();
+
+    QPixmap pixmap = QPixmap(file).scaled(QSize(cItemSize, cItemSize), Qt::KeepAspectRatio);
+
+    int x = option.rect.x() + (cItemSize - pixmap.width()) / 2;
+    int y = option.rect.y() + (cItemSize - pixmap.height()) / 2;
+    int w = pixmap.width();
+    int h = pixmap.height();
+
+    painter->drawPixmap(x, y, w, h, pixmap);
+    QIcon().paint(painter, option.rect);
 }
 
 
-QSize ListItemDelegate::sizeHint(const QStyleOptionViewItem & /* option */, const QModelIndex & inModelIndex) const
+QSize ListItemDelegate::sizeHint(const QStyleOptionViewItem & /* option */, const QModelIndex & /*inModelIndex*/) const
 {
-    QPixmap pixmap = inModelIndex.data().value<QPixmap>();
-    return pixmap.size();
+    return QSize(cItemSize, cItemSize);
 }

@@ -13,6 +13,8 @@ class CentralWidget : public QWidget
 public:
     CentralWidget(QWidget * inParent);
 
+    void addFile(const QString & inFile);
+
     void setFile(const QString & inFile);
 
     QSize sizeHint() const;

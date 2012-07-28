@@ -15,6 +15,13 @@ CentralWidget::CentralWidget(QWidget *inParent) :
 }
 
 
+void CentralWidget::addFile(const QString & inFile)
+{
+    mListModel->addFile(inFile);
+    setFile(inFile);
+}
+
+
 void CentralWidget::setFile(const QString & inFile)
 {
     mImageWidget->setFile(inFile);

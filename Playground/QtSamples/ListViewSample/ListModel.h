@@ -12,14 +12,13 @@ public:
 
     void addFile(const QString & inFile);
 
-    QVariant getData(int row) const;
+    QString getFile(int row) const;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     int rowCount(const QModelIndex &parent) const;
 
 private:
     QStringList mFiles;
-    QList<QPixmap> mPixmaps;
 };
 
 

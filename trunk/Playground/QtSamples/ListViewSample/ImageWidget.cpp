@@ -11,6 +11,7 @@ ImageWidget::ImageWidget(QWidget * inParent, const QString & inFile) :
 void ImageWidget::setFile(const QString & inFile)
 {
     mFile = inFile;
+    update();
 }
 
 

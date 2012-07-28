@@ -2,15 +2,15 @@
 
 
 enum {
-    cIconSize = 20,
-    cGridSize = 40
+    cIconSize = 200,
+    cGridSize = 400
 };
 
 
 ListView::ListView(QWidget * )
 {
     setDragEnabled(false);
-    setViewMode(QListView::IconMode);
+    setViewMode(QListView::ListMode);
     setIconSize(QSize(cIconSize, cIconSize));
     setGridSize(QSize(cGridSize, cIconSize));
     setSpacing(10);

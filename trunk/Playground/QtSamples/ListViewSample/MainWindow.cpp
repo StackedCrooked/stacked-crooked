@@ -1,19 +1,5 @@
 #include "MainWindow.h"
-
-
-//class FileMenu : public QMenu
-//{
-//public:
-//    FileMenu(QWidget * inParent) :
-//        QMenu(inParent)
-//    {
-//    }
-
-//    void triggered(QAction *action)
-//    {
-//        action->ge
-//    }
-//};
+#include <functional>
 
 
 MainWindow::MainWindow(QWidget *inParent) :
@@ -23,24 +9,17 @@ MainWindow::MainWindow(QWidget *inParent) :
     mCentralWidget = new CentralWidget(this);
     setCentralWidget(mCentralWidget);
 
-    //
-    // File menu
-    //
-    QMenu * fileMenu = menuBar()->addMenu("&File");
-    QAction * addAction = fileMenu->addAction("&Open...");
-    addAction->setShortcut(QKeySequence("Ctrl+O"));
-    connect(addAction, SIGNAL(triggered(bool)), this, SLOT(onFileOpen()));
+    FileMenu::Create(menuBar(), "&File", *this);
     menuBar()->setNativeMenuBar(true);
 }
 
 
 MainWindow::~MainWindow()
 {
-    
 }
 
 
-void MainWindow::onFileOpen()
+void MainWindow::onFileMenuTriggered(FileMenu&)
 {
     QString str = QFileDialog::getOpenFileName();
     if (!str.isNull())

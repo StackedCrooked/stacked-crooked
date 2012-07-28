@@ -1,20 +1,12 @@
 #include "MainWindow.h"
 
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    mListView(),
-    mListModel(),
-    mListItemDelegate()
+MainWindow::MainWindow(QWidget *inParent) :
+    QMainWindow(inParent),
+    mCentralWidget()
 {
-    mListView = new ListView(this);
-    setCentralWidget(mListView);
-
-    mListModel = new ListModel;
-    mListView->setModel(mListModel);
-
-    mListItemDelegate = new ListItemDelegate(this);
-    mListView->setItemDelegate(mListItemDelegate);
+    mCentralWidget = new CentralWidget(this);
+    setCentralWidget(mCentralWidget);
 }
 
 

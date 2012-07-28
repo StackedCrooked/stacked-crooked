@@ -1,36 +1,48 @@
 #include "ListModel.h"
+#include <cassert>
 
 
-enum {
-    cItemSize = 200
-};
-
-
-ListModel::ListModel()
+ListModel::ListModel() :
+    mFiles(),
+    mPixmaps()
 {
-    int row = 0;
-    beginInsertRows(QModelIndex(), row, row + 1);
-//    pixmaps.insert(row, pixmap);
-//    locations.insert(row, location);
+}
+
+
+QVariant ListModel::getData(int inRow) const
+{
+    if (inRow < 0 || inRow >= mPixmaps.size())
+    {
+        return QVariant();
+    }
+
+    return QVariant(mPixmaps.at(inRow));
+}
+
+
+void ListModel::addFile(const QString & inFile)
+{
+    int row = mFiles.size();
+    beginInsertRows(QModelIndex(), row, row);
+    mFiles.push_back(inFile);
+    mPixmaps.push_back(QPixmap(inFile));
     endInsertRows();
 }
 
 
-QVariant ListModel::data(const QModelIndex &index, int role) const
+QVariant ListModel::data(const QModelIndex &index, int /*role*/) const
 {
     if (!index.isValid())
     {
         return QVariant();
     }
 
-    if (role == Qt::DecorationRole)
+    if (index.row() < 0 || index.row() > mPixmaps.size())
     {
-        return QIcon("/Users/francis/QtSDK/Demos/4.7/arthurplugin/flower.jpg");
+        return QVariant();
     }
 
-    return QIcon("/Users/francis/QtSDK/Demos/4.7/arthurplugin/flower.jpg");
-
-    //return QVariant();
+    return mPixmaps.at(index.row());
 }
 
 
@@ -40,5 +52,6 @@ int ListModel::rowCount(const QModelIndex &parent) const
     {
         return 0;
     }
-    return 1;
+    assert(mPixmaps.size() == mFiles.size());
+    return mFiles.size();
 }

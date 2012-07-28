@@ -10,16 +10,18 @@
 class Menu;
 
 
-class MenuEvent : public QObject
+class MenuItem : public QObject
 {
     Q_OBJECT
 
 public:
-    MenuEvent(Menu * inMenu, const QString & inText, int inIndex) :
+    MenuItem(Menu * inMenu, const QString & inText, int inIndex) :
         QObject(),
         mMenu(inMenu),
         mText(inText),
-        mIndex(inIndex)
+        mIndex(inIndex),
+        mAction(),
+        mCallback()
     {
     }
 
@@ -38,11 +40,17 @@ public:
         return *mMenu;
     }
 
-    typedef boost::function<void(MenuEvent&)> Callback;
+    const QAction * getAction() const
+    {
+        return mAction;
+    }
+
+    typedef boost::function<void(MenuItem&)> Callback;
 
     void connectAction(QAction * inAction, const Callback & inCallback)
     {
         this->connect(inAction, SIGNAL(triggered(bool)), this, SLOT(onMenuTriggered()));
+        mAction = inAction;
         mCallback = inCallback;
     }
 
@@ -53,9 +61,10 @@ private Q_SLOTS:
     }
 
 private:
-    Menu * mMenu;
+    Menu * mMenu;    
     QString mText;
     int mIndex;
+    QAction * mAction;
     Callback mCallback;
 };
 
@@ -65,7 +74,7 @@ class Menu : public QMenu
 public:
     struct EventHandler
     {
-        virtual void onMenuTriggered(Menu&, MenuEvent&) = 0;
+        virtual void onMenuTriggered(Menu&, MenuItem&) = 0;
     };
 
     Menu(QMenuBar * inMenuBar, const QString & inTitle, EventHandler & inEventHandler) :
@@ -76,24 +85,24 @@ public:
         inMenuBar->addMenu(this);
     }
 
-    MenuEvent * addMenuItem(const QString & inText, const QKeySequence & inShortCut)
+    MenuItem * addMenuItem(const QString & inText, const QKeySequence & inShortCut)
     {
         QAction * action = addAction(inText);
         action->setShortcut(inShortCut);
 
-        MenuEvent * theMenuEvent = new MenuEvent(this, inText, mMenuEvents.size());
-        theMenuEvent->connectAction(action, boost::bind(&Menu::onOpen, this, boost::ref(*theMenuEvent)));
-        return theMenuEvent;
+        MenuItem * theMenuItem = new MenuItem(this, inText, mMenuItems.size());
+        theMenuItem->connectAction(action, boost::bind(&Menu::onOpen, this, boost::ref(*theMenuItem)));
+        return theMenuItem;
     }
 
 private:
-    void onOpen(MenuEvent & inMenuEvent)
+    void onOpen(MenuItem & inMenuItem)
     {
-        mEventHandler.onMenuTriggered(*this, inMenuEvent);
+        mEventHandler.onMenuTriggered(*this, inMenuItem);
     }
 
     EventHandler & mEventHandler;
-    QList<MenuEvent*> mMenuEvents;
+    QList<MenuItem*> mMenuItems;
 };
 
 
@@ -107,10 +116,10 @@ public:
     ~MainWindow();
 
 private:
-    void onMenuTriggered(Menu&, MenuEvent&);
+    void onMenuTriggered(Menu&, MenuItem&);
 
     CentralWidget * mCentralWidget;
-    MenuEvent * mFileOpenEvent;
+    MenuItem * mFileOpenEvent;
 };
 
 

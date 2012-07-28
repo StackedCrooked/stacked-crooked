@@ -21,7 +21,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::onMenuTriggered(Menu &, MenuEvent& inMenuEvent)
+void MainWindow::onMenuTriggered(Menu &, MenuItem& inMenuEvent)
 {
     if (&inMenuEvent == mFileOpenEvent)
     {

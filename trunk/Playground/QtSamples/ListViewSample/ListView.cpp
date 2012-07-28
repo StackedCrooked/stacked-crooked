@@ -3,6 +3,15 @@
 #include "ListItemDelegate.h"
 
 
+namespace {
+
+
+static const int cItemSize = 240; // TODO: Fix duplication
+
+
+} // anonymous namespace
+
+
 ListView::ListView(QWidget * inParent, ListModel * inListModel, ListItemDelegate * inListItemDelegate) :
     QListView(inParent),
     mListModel(inListModel),
@@ -15,12 +24,5 @@ ListView::ListView(QWidget * inParent, ListModel * inListModel, ListItemDelegate
 
 QSize ListView::sizeHint() const
 {
-    QVariant variant = mListModel->getData(0);
-    if (variant.isNull())
-    {
-        return QListView::sizeHint();
-    }
-
-    QPixmap pm = variant.value<QPixmap>();
-    return pm.size();
+    return QSize(cItemSize, cItemSize);
 }

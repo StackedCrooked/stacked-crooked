@@ -3,20 +3,19 @@
 
 
 ListModel::ListModel() :
-    mFiles(),
-    mPixmaps()
+    mFiles()
 {
 }
 
 
-QVariant ListModel::getData(int inRow) const
+QString ListModel::getFile(int inRow) const
 {
-    if (inRow < 0 || inRow >= mPixmaps.size())
+    if (inRow < 0 || inRow >= mFiles.size())
     {
-        return QVariant();
+        return QString();
     }
 
-    return QVariant(mPixmaps.at(inRow));
+    return mFiles[inRow];
 }
 
 
@@ -25,7 +24,6 @@ void ListModel::addFile(const QString & inFile)
     int row = mFiles.size();
     beginInsertRows(QModelIndex(), row, row);
     mFiles.push_back(inFile);
-    mPixmaps.push_back(QPixmap(inFile));
     endInsertRows();
 }
 
@@ -37,12 +35,7 @@ QVariant ListModel::data(const QModelIndex &index, int /*role*/) const
         return QVariant();
     }
 
-    if (index.row() < 0 || index.row() > mPixmaps.size())
-    {
-        return QVariant();
-    }
-
-    return mPixmaps.at(index.row());
+    return getFile(index.row());
 }
 
 
@@ -52,6 +45,5 @@ int ListModel::rowCount(const QModelIndex &parent) const
     {
         return 0;
     }
-    assert(mPixmaps.size() == mFiles.size());
     return mFiles.size();
 }

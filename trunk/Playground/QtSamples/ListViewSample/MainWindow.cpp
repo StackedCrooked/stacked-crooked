@@ -1,15 +1,18 @@
 #include "MainWindow.h"
+#include <cassert>
 #include <functional>
 
 
 MainWindow::MainWindow(QWidget *inParent) :
     QMainWindow(inParent),
-    mCentralWidget()
+    mCentralWidget(),
+    mFileOpenEvent()
 {
     mCentralWidget = new CentralWidget(this);
     setCentralWidget(mCentralWidget);
 
-    new FileMenu(menuBar(), "&File", *this);
+    Menu * fileMenu = new Menu(menuBar(), "&File", *this);
+    mFileOpenEvent = fileMenu->addMenuItem("&File", QKeySequence("Ctrl+O"));
 }
 
 
@@ -18,11 +21,18 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::onFileMenuTriggered(FileMenu&)
+void MainWindow::onMenuTriggered(Menu &, MenuEvent& inMenuEvent)
 {
-    QString str = QFileDialog::getOpenFileName();
-    if (!str.isNull())
+    if (&inMenuEvent == mFileOpenEvent)
     {
-        mCentralWidget->addFile(str);
+        QString str = QFileDialog::getOpenFileName();
+        if (!str.isNull())
+        {
+            mCentralWidget->addFile(str);
+        }
+    }
+    else
+    {
+        assert(false);
     }
 }

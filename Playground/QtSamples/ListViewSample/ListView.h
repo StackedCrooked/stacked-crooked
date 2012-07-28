@@ -5,10 +5,20 @@
 #include <QtGui>
 
 
+class ListModel;
+class ListItemDelegate;
+
+
 class ListView : public QListView
 {
 public:
-    ListView(QWidget * inParent);
+    ListView(QWidget * inParent, ListModel * inListModel, ListItemDelegate * inListItemDelegate);
+
+    QSize sizeHint() const;
+
+private:
+    ListModel * mListModel;
+    ListItemDelegate * mListItemDelegate;
 };
 
 

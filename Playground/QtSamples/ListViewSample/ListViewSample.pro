@@ -14,9 +14,13 @@ SOURCES += main.cpp\
         MainWindow.cpp \
     ListView.cpp \
     ListModel.cpp \
-    ListItemDelegate.cpp
+    ListItemDelegate.cpp \
+    ImageWidget.cpp \
+    CentralWidget.cpp
 
 HEADERS  += MainWindow.h \
     ListView.h \
     ListModel.h \
-    ListItemDelegate.h
+    ListItemDelegate.h \
+    ImageWidget.h \
+    CentralWidget.h

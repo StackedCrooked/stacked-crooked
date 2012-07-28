@@ -2,10 +2,7 @@
 #define MAINWINDOW_H
 
 
-#include <QtGui/QMainWindow>
-#include "ListView.h"
-#include "ListModel.h"
-#include "ListItemDelegate.h"
+#include "CentralWidget.h"
 
 
 class MainWindow : public QMainWindow
@@ -17,9 +14,7 @@ public:
     ~MainWindow();
 
 private:
-    ListView * mListView;
-    ListModel * mListModel;
-    ListItemDelegate * mListItemDelegate;
+    CentralWidget * mCentralWidget;
 };
 
 

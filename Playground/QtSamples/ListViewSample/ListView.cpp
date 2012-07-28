@@ -1,18 +1,26 @@
 #include "ListView.h"
+#include "ListModel.h"
+#include "ListItemDelegate.h"
 
 
-enum {
-    cIconSize = 200,
-    cGridSize = 400
-};
-
-
-ListView::ListView(QWidget * )
+ListView::ListView(QWidget * inParent, ListModel * inListModel, ListItemDelegate * inListItemDelegate) :
+    QListView(inParent),
+    mListModel(inListModel),
+    mListItemDelegate(inListItemDelegate)
 {
-    setDragEnabled(false);
-    setViewMode(QListView::ListMode);
-    setIconSize(QSize(cIconSize, cIconSize));
-    setGridSize(QSize(cGridSize, cIconSize));
-    setSpacing(10);
-    setAcceptDrops(false);
+    setModel(mListModel);
+    setItemDelegate(mListItemDelegate);
+}
+
+
+QSize ListView::sizeHint() const
+{
+    QVariant variant = mListModel->getData(0);
+    if (variant.isNull())
+    {
+        return QListView::sizeHint();
+    }
+
+    QPixmap pm = variant.value<QPixmap>();
+    return pm.size();
 }

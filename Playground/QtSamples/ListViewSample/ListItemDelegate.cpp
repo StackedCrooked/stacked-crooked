@@ -12,12 +12,13 @@ void ListItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     painter->fillRect(option.rect, Qt::white);
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    QIcon icon = index.data().value<QIcon>();
-    icon.paint(painter, option.rect);
+    QPixmap pixmap = index.data().value<QPixmap>();
+    QIcon(pixmap).paint(painter, option.rect);
 }
 
 
-QSize ListItemDelegate::sizeHint(const QStyleOptionViewItem & /* option */, const QModelIndex & /* index */) const
+QSize ListItemDelegate::sizeHint(const QStyleOptionViewItem & /* option */, const QModelIndex & inModelIndex) const
 {
-    return QSize(400, 400);
+    QPixmap pixmap = inModelIndex.data().value<QPixmap>();
+    return pixmap.size();
 }

@@ -8,6 +8,21 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <stdio.h>
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+
+
+void PrintStackTrace()
+{
+  void *array[10];
+  size_t size = backtrace(array, 10);
+
+  // print out all the frames to stderr
+  std::cerr << "\n*** Inconsistent lock ordering detected! ***" << std::endl;
+  backtrace_symbols_fd(array, size, 2);
+}
 
 
 namespace Detail {
@@ -133,7 +148,10 @@ public:
     void push(const T & inValue)
     {
         graph().push(inValue);
-        assert(!HasCycles());
+        if (HasCycles())
+        {
+            PrintStackTrace();
+        }
     }
 
     void pop(const T & inValue)
@@ -266,7 +284,8 @@ int main()
     }
     {
         LOCK(d);
-        std::cout << "Intential lock inconsitency. Should assert!" << std::endl;
+
+        // Intential lock inconsitency.
         LOCK(a); // Cycle! Assertion!
     }
 

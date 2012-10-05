@@ -69,32 +69,32 @@ int main()
     print_binary(network_data, 8);
     
     {
-        std::cout << "16-bit integer: ";
+        std::cout << "parse 16-bit integer: ";
         auto n = net_decode<uint16_t>(network_data);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
     {
-        std::cout << "32-bit integer: ";
+        std::cout << "parse 32-bit integer: ";
         auto n = net_decode<uint32_t>(network_data);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
     {
-        std::cout << "64-bit integer: ";
+        std::cout << "parse 64-bit integer: ";
         auto n = net_decode<uint64_t>(network_data);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
     {
-        std::cout << "64-bit object that is not an integer type: ";
+        std::cout << "parse 64-bit non-integral object: ";
         struct obj { uint16_t s[4]; };
         auto n = net_decode<obj>(network_data);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
     {
-        std::cout << "ip address: ";
+        std::cout << "parse array of length 4: ";
         typedef std::array<uint8_t, 4> ip_address;
         auto n = net_decode<ip_address>(network_data);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));

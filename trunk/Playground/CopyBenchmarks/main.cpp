@@ -89,43 +89,10 @@ void print_binary(const uint8_t * data, unsigned length)
 {
     print_binary(std::cout, data, length);
 }
-
-#ifndef ALIGNMENT
-#define ALIGNMENT 1
-#endif
  
 int main()
 {
-    std::cout << "Testing with alignment: " << ALIGNMENT << std::endl;
-    
-#if ALIGNMENT == 8    
-    // create storage object with 8-byte alignment
-    alignas(uint64) uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
-    
-    // fill the buffer
-    std::copy(default_network_data, default_network_data + sizeof(default_network_data), network_data);
-    for (int i = 0; i != sizeof(uint64_t); ++i) { network_data[i] = uint8_t(i); }
-    
-#elif ALIGNMENT == 2
-    
-    alignas(uint16_t) uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
-
-#elif ALIGNMENT == 1
-    
-    
-    alignas(uint64_t) uint8_t prefixed_network_data[] = { 0xff, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
-    uint8_t * network_data = prefixed_network_data + 1;
-    // storage object has 8-byte alignment.
-    // our contents starts at offset-1 and therefore is misaligned.
-    struct aligned_obj { uint64_t a, b; };
-    aligned_obj obj = { 0xffffffffffffffff, 0xffffffffffffffff };
-    uint8_t * network_data = reinterpret_cast<uint8_t*>(&obj) + 1;
-    {
-        uint8_t ref_data = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
-        
-    }
-
-#endif
+    uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
     
     // print the buffer for reference
     std::cout << "network_data: ";

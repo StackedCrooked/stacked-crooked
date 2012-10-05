@@ -1,5 +1,6 @@
 #include <array>
 #include <cassert>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <type_traits>
@@ -97,39 +98,38 @@ int main()
 {
     std::cout << "Testing with alignment: " << ALIGNMENT << std::endl;
     
-#if ALIGNMENT == 8
+#if ALIGNMENT == 8    
     // create storage object with 8-byte alignment
-    uint64_t bignum = 0;
- 
-    // get a byte buffer to the storage
-    uint8_t * network_data = static_cast<uint8_t*>(static_cast<void*>(&bignum));
+    alignas(uint64) uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
     
     // fill the buffer
+    std::copy(default_network_data, default_network_data + sizeof(default_network_data), network_data);
     for (int i = 0; i != sizeof(uint64_t); ++i) { network_data[i] = uint8_t(i); }
     
 #elif ALIGNMENT == 2
     
-    uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+    alignas(uint16_t) uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
 
 #elif ALIGNMENT == 1
+    
+    
+    alignas(uint64_t) uint8_t prefixed_network_data[] = { 0xff, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+    uint8_t * network_data = prefixed_network_data + 1;
     // storage object has 8-byte alignment.
     // our contents starts at offset-1 and therefore is misaligned.
-    typedef uint64_t uint64_array[2];    
-    uint64_array the_array;    
-    uint8_t * the_array_data = reinterpret_cast<uint8_t*>(&the_array);
+    struct aligned_obj { uint64_t a, b; };
+    aligned_obj obj = { 0xffffffffffffffff, 0xffffffffffffffff };
+    uint8_t * network_data = reinterpret_cast<uint8_t*>(&obj) + 1;
     {
-        const uint8_t cvalues[] = { 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-        std::copy(&cvalues[0], &cvalues[0] + sizeof(the_array), the_array_data);
-    }    
-    uint8_t * network_data = the_array_data + 1;
+        uint8_t ref_data = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+        
+    }
 
 #endif
-
-    enum { size = 8 };
     
     // print the buffer for reference
     std::cout << "network_data: ";
-    print_binary(network_data, size);
+    print_binary(network_data, 8);
     
     {
         std::cout << "16-bit integer: ";

@@ -88,21 +88,48 @@ void print_binary(const uint8_t * data, unsigned length)
 {
     print_binary(std::cout, data, length);
 }
+
+#ifndef ALIGNMENT
+#define ALIGNMENT 1
+#endif
  
 int main()
 {
+    std::cout << "Testing with alignment: " << ALIGNMENT << std::endl;
+    
+#if ALIGNMENT == 8
     // create storage object with 8-byte alignment
     uint64_t bignum = 0;
  
     // get a byte buffer to the storage
     uint8_t * network_data = static_cast<uint8_t*>(static_cast<void*>(&bignum));
- 
+    
     // fill the buffer
     for (int i = 0; i != sizeof(uint64_t); ++i) { network_data[i] = uint8_t(i); }
     
+#elif ALIGNMENT == 2
+    
+    uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+
+#elif ALIGNMENT == 1
+    // storage object has 8-byte alignment.
+    // our contents starts at offset-1 and therefore is misaligned.
+    typedef uint64_t uint64_array[2];    
+    uint64_array the_array;    
+    uint8_t * the_array_data = reinterpret_cast<uint8_t*>(&the_array);
+    {
+        const uint8_t cvalues[] = { 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+        std::copy(&cvalues[0], &cvalues[0] + sizeof(the_array), the_array_data);
+    }    
+    uint8_t * network_data = the_array_data + 1;
+
+#endif
+
+    enum { size = 8 };
+    
     // print the buffer for reference
     std::cout << "network_data: ";
-    print_binary(network_data, sizeof(bignum));
+    print_binary(network_data, size);
     
     {
         std::cout << "16-bit integer: ";

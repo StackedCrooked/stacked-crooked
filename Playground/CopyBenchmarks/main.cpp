@@ -27,7 +27,7 @@ void net_decode(const uint8_t * c, uint64_t & value)
     value = (uint64_t(c[0]) << 56) | (uint64_t(c[1]) << 48)
           | (uint64_t(c[2]) << 40) | (uint64_t(c[3]) << 32)
           | (uint64_t(c[4]) << 24) | (uint64_t(c[5]) << 16)
-          | (uint64_t(c[6]) << 8)  | (uint64_t(c[7]) << 0);
+          | (uint64_t(c[6]) <<  8)  | (uint64_t(c[7]) << 0);
 }
 
 template<typename T>

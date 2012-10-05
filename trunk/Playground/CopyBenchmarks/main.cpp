@@ -6,46 +6,60 @@
 #include <type_traits>
 #include <stdint.h>
 
-template<typename T, typename std::enable_if<std::is_integral<T>::value>::type* = 0>
+
+template<typename T>
+char * binary_cast(T & t) { return static_cast<char*>(static_cast<void*>(&t)); }
+
+template<typename T>
+const char * binary_cast(const T & t) { return static_cast<const char*>(static_cast<const void*>(&t)); }
+
+
+template<typename T>
 T net_decode(const uint8_t * data);
 
-template<typename T, typename std::enable_if<!std::is_integral<T>::value>::type* = 0>
-T net_decode(const uint8_t * data);
+
+void net_decode(const uint8_t * data, uint8_t & value)
+{
+    value = data[0];
+}
+
 
 void net_decode(const uint8_t * data, uint16_t & value)
 {       
-        value = data[0] << 8 | data[1];
+    value = data[0] << 8 | data[1];
 }
  
+
 void net_decode(const uint8_t * data, uint32_t & value)
-{           
-    value = data[0] << 24 | data[1] << 16 | data[2] <<  8 | data[3] <<  0;
+{
+    value = net_decode<uint16_t>(data) << 16 | net_decode<uint16_t>(data + 2);
 }
 
-void net_decode(const uint8_t * c, uint64_t & value)
+void net_decode(const uint8_t * data, uint64_t & value)
 {       
+    value = uint64_t(net_decode<uint32_t>(data)) << 32 | net_decode<uint32_t>(data + 4);
+
+#if 0
     value = (uint64_t(c[0]) << 56) | (uint64_t(c[1]) << 48)
           | (uint64_t(c[2]) << 40) | (uint64_t(c[3]) << 32)
           | (uint64_t(c[4]) << 24) | (uint64_t(c[5]) << 16)
-          | (uint64_t(c[6]) <<  8)  | (uint64_t(c[7]) << 0);
+          | (uint64_t(c[6]) <<  8) | (uint64_t(c[7]) << 0);
+#endif
 }
 
 template<typename T>
-T net_decode(const uint8_t * data, typename std::enable_if<std::is_integral<T>::value>::type * = 0)
+void net_decode(const uint8_t* data, T & t)
+{
+    std::copy(data, data + sizeof(t), binary_cast(t));
+}
+
+template<typename T>
+T net_decode(const uint8_t * data)
 {
         T t;
         net_decode(data, t);
         return t;
 }
-
-template<typename T>
-T net_decode(const uint8_t * source, typename std::enable_if<!std::is_integral<T>::value>::type* = 0)
-{
-    T t;
-    std::copy(source, source + sizeof(T), reinterpret_cast<uint8_t*>(&t));
-    return t;
-}
-
 void print_binary(std::ostream & os, const uint8_t * data, unsigned length)
 {
     for (unsigned i = 0; i != length; ++i)

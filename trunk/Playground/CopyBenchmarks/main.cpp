@@ -1,123 +1,89 @@
-#include <algorithm>
-#include <array>
 #include <cassert>
-#include <cxxabi.h>
-#include <cstring>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
-#include <typeinfo>
-
-template<typename T> uint8_t* get_binary(T & t);
-template<typename T> const uint8_t* get_const_binary(const T & t);
+#include <stdint.h>
 
 template<typename T>
-std::string make_hex(const T & t)
+T decode(const uint8_t * data);
+
+
+void decode(const unsigned char * network_data, uint16_t & value)
+{	
+	value = network_data[0] << 8 | network_data[1]; // automagically converted to host encoded-value
+}
+
+
+void decode(const unsigned char * c, uint32_t & value)
+{	
+    value = c[0] << 24 | c[1] << 16 | c[2] <<  8 | c[3] << 0;
+}
+
+
+void decode(const unsigned char * c, uint64_t & value)
+{	
+    value = (uint64_t(c[0]) << 56)
+          | (uint64_t(c[1]) << 48)
+          | (uint64_t(c[2]) << 40)
+          | (uint64_t(c[3]) << 32)
+          | (uint64_t(c[4]) << 16)
+          | (uint64_t(c[5]) << 8)
+          | (uint64_t(c[6]) << 0)
+          ;
+}
+
+
+template<typename T>
+T decode(const uint8_t * data)
 {
-    std::stringstream ss;
-    const uint8_t* c = get_const_binary(t);
-    for (unsigned i = 0; i < sizeof(t); ++i)
+	T t;
+	decode(data, t);
+	return t;
+}
+
+
+void print_binary(std::ostream & os, const uint8_t * data, unsigned length)
+{
+    for (unsigned loopIndex = 0; loopIndex != length; ++loopIndex)
     {
-        if (i != 0)
+        // print in network-encoding, so reversed order
+        int dataIndex = length - loopIndex;
+        
+        if (dataIndex != 0)
         {
-            ss << " ";
-        }
-        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(c[i]);        
+            os << " ";
+        }        
+        os << std::hex << std::setfill('0') << std::setw(2) << int(data[dataIndex]);
     }
-    return ss.str();
-}
-
-std::string make_string(uint8_t n)  { return static_cast<std::stringstream&>(std::stringstream() << n).str(); }
-std::string make_string(uint16_t n) { return static_cast<std::stringstream&>(std::stringstream() << n).str(); }
-std::string make_string(uint32_t n) { return static_cast<std::stringstream&>(std::stringstream() << n).str(); }
-std::string make_string(uint64_t n) { return static_cast<std::stringstream&>(std::stringstream() << n).str(); }
-
-template<typename T>
-std::string make_string(const T & t)
-{
-    return make_hex(t);
+    os << std::endl;
 }
 
 
-template<typename T>
-const uint8_t* get_const_binary(const T & t)
+void print_binary(const uint8_t * data, unsigned length)
 {
-    return static_cast<const uint8_t*>(static_cast<const void*>(&t));    
-}
-
-
-template<typename T>
-uint8_t* get_binary(T & t)
-{
-    return const_cast<uint8_t*>(get_const_binary(t));
-}
-
-
-template<typename Destination, unsigned Index, unsigned Size>
-struct copy_impl;
-
-template<typename Destination, unsigned Index, unsigned Size>
-struct copy_impl
-{
-    void operator()(uint8_t* dst, const uint8_t* src)
-    {
-        dst[Index] = src[Index];
-        copy_impl<Destination, Index + 1, Size>()(dst, src);
-    }
-};
-
-template<typename Destination, unsigned I>
-struct copy_impl<Destination, I, I>
-{
-    void operator()(uint8_t*, const uint8_t*) { }
-};
-
-template<typename Destination>
-void copy(Destination & dst, const uint8_t* data)
-{
-    uint8_t* bytes = get_binary(dst);
-    copy_impl<Destination, 0, sizeof(Destination)>()(bytes, data);
-    
-}
-
-template<typename T>
-T make(const uint8_t* data)
-{
-    T result;
-    copy(result, data);
-    return result;
-}
-
-
-template<typename T>
-void assert_eq(const T & a, const T & b)
-{
-    std::cout << "assert_eq:\n\t" << make_string(a) << "\n\t" << make_string(b) << std::endl;
-    std::cout << ((0 == memcmp(&a, &b, sizeof(T))) ? " => PASS" : " => FAIL") << std::endl << std::endl;
+    print_binary(std::cout, data, length);
 }
 
 
 int main()
 {
-    struct Header
-    {
-        uint32_t i;
-        uint16_t s[2];
-        uint8_t c[4];
-    };
+    // sample network encoded data (big endian)
+	uint8_t network_data[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
     
-    
-    Header h1;
-    uint8_t* c = reinterpret_cast<uint8_t*>(&h1);
-    for (unsigned i = 0; i < sizeof(h1); ++i)
     {
-        c[i] = i;
+        auto n = decode<uint16_t>(network_data);
+        std::cout << "16-bit: ";
+        print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
-    Header h2 = h1;
-    assert_eq(h1, h2);    
+    {
+        auto n = decode<uint32_t>(network_data);
+        std::cout << "32-bit: ";
+        print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
+    }
     
-    Header h3 = make<Header>(c);
-    assert_eq(h2, h3);
+    {
+        auto n = decode<uint64_t>(network_data);
+        std::cout << "64-bit: ";
+        print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
+    }
 }

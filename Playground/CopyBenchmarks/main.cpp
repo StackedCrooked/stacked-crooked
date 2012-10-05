@@ -31,25 +31,6 @@ void net_decode(const uint8_t * c, uint64_t & value)
 }
 
 template<typename T>
-void host_decode(const uint8_t * data, T &value)
-{
-    union Helper
-    {
-        T v;
-        uint8_t bytes[sizeof(value)];
-    };
-    
-    Helper helper;
-    std::copy(data, data + sizeof(value), helper.bytes);
-    
-    // NOTE:
-    // According to the C++ standard reading from a different union
-    // member than the last one written to results in undefined behavior.
-    // However, both GCC and Visual Studio explicitly allow this.
-    value = helper.v;
-}
-
-template<typename T>
 T net_decode(const uint8_t * data, typename std::enable_if<std::is_integral<T>::value>::type * = 0)
 {
         T t;
@@ -58,24 +39,13 @@ T net_decode(const uint8_t * data, typename std::enable_if<std::is_integral<T>::
 }
 
 template<typename T>
-T net_decode(const uint8_t * data, typename std::enable_if<!std::is_integral<T>::value>::type* = 0)
+T net_decode(const uint8_t * source, typename std::enable_if<!std::is_integral<T>::value>::type* = 0)
 {
-        union Helper
-        {
-            T t;
-            uint8_t bytes[sizeof(T)];
-        };
-        
-        Helper helper;
-        std::copy(data, data + sizeof(T), helper.bytes);
-        
-        // NOTE:
-        // According to the C++ standard reading from a different union
-        // member than the last one written to results in undefined behavior.
-        // However, both GCC and Visual Studio explicitly allow this.
-        return helper.t;
+    T t;
+    std::copy(source, source + sizeof(T), reinterpret_cast<uint8_t*>(&t));
+    return t;
 }
- 
+
 void print_binary(std::ostream & os, const uint8_t * data, unsigned length)
 {
     for (unsigned i = 0; i != length; ++i)

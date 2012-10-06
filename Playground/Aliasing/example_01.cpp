@@ -19,7 +19,7 @@ void apply(std::vector<Value> & values, const Delta & delta)
     }
 }
 
-int main()
+void example_01()
 {
     std::vector<Value> values(2);
     

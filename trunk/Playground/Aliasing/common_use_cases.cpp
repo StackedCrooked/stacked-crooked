@@ -32,9 +32,8 @@ void example_checksum16()
  * buggy_decode tries to create a c++ object from a network data packet.
  *
  * This implementation is buggy for the following reasons:
- * (1) According to the c++ type system no object has ever been constructed in
- *     that memory location. We are not allowed to alias a non-existing
- *     object. (*)
+ * (1) According to the c++ type system no object exists in that memory
+ *     location. We are not allowed to alias a non-existing object. (*)
  * (2) The pointer address of the network data may not match the native
  *     aligment of the target type. Misaligned objects can lead to
  *     performance overhead (Intel) or to process termination (ARM).
@@ -101,7 +100,7 @@ uint8_t GetRandomByte()
 }
 
 
-double GetCurrentTime()
+double get_current_time()
 {
     timeval tv;
     gettimeofday(&tv, NULL);
@@ -154,12 +153,12 @@ double benchmark_decode(unsigned count, bool force_misalignment, unsigned & opti
 
 
 
-    auto t = GetCurrentTime();
+    auto t = get_current_time();
     for (unsigned i = 0; i != count; ++i)
     {
         optimization_preventer += decode_function(buffer.data() + (count * sizeof(NetworkData)) + (force_misalignment ? 1 : 0)).ethertype;
     }
-    return GetCurrentTime() - t;
+    return get_current_time() - t;
 }
 
 template<typename decoder_function_t>

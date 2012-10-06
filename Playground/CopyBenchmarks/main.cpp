@@ -49,12 +49,44 @@ void decode(const uint8_t * data, uint64_t & value)
 }
 
 
-//! Fallback method for non-integral types.
-template<typename T>
-void decode(const uint8_t* data, T & t)
+template<unsigned N> struct type_with_size;
+template<> struct type_with_size<1> { typedef uint8_t type; };
+template<> struct type_with_size<2> { typedef uint16_t type; };
+template<> struct type_with_size<4> { typedef uint32_t type; };
+template<> struct type_with_size<8> { typedef uint64_t type; };
+
+
+template<typename T> struct half;
+template<> struct half<uint16_t> { typedef uint8_t type; };
+template<> struct half<uint32_t> { typedef uint16_t type; };
+template<> struct half<uint64_t> { typedef uint32_t type; };
+
+
+template<typename T> struct twice;
+template<> struct twice<uint8_t > { typedef uint16_t type; };
+template<> struct twice<uint16_t> { typedef uint32_t type; };
+template<> struct twice<uint32_t> { typedef uint64_t type; };
+
+
+template<typename T, typename Half = typename half<T>::type>
+T join(Half left, Half right)
 {
-    static_assert(!std::is_integral<T>::value, "");
-    std::copy(data, data + sizeof(t), binary_cast(t));
+    return T(left << sizeof(left)) | right;
+}
+
+
+template<typename T>
+void decode(const uint8_t * data, T & value, typename std::enable_if<std::is_integral<T>::value>::type * = 0)
+{
+    typedef typename half<T>::type Half;
+    value = join<T>(decode<Half>(data), decode<Half>(data + sizeof(Half)));
+}
+
+
+template<typename T>
+void decode(const uint8_t * data, T & value, typename std::enable_if<!std::is_integral<T>::value>::type * = 0)
+{
+    std::copy(data, data + sizeof(T), binary_cast(value));
 }
 
 

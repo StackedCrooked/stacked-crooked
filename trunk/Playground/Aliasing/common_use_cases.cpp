@@ -51,12 +51,16 @@ inline const T & buggy_decode(const uint8_t * bytes)
     return *reinterpret_cast<const T *>(bytes);
 }
 
-
+/**
+ * correct_decode creates a C++ object from network data.
+ * It alloates an object of type T on the stack. This ensures corrrect alignment.
+ * We proceed by copying the network data bytewise into our object.
+ */
 T correct_decode(const uint8_t * bytes)
 {
     T t;
     std::copy(bytes, bytes + sizeof(T), reinterpret_cast<char*>(&t));
-    return t;s
+    return t;
 }
     
 

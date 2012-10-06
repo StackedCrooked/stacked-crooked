@@ -34,15 +34,12 @@ void example_checksum16()
  *     aligment of the target type. Misaligned objects can lead to
  *     performance overhead (Intel) or to process termination (ARM).
  *     
- *  (*) We could use placement-new to construct an object that overlays the
- *      memory segment. However we would then be required to "initialize"
- *      the object before we can legally read from it. This would mean erasing
- *      the network data that we are trying to get access to. On the other
- *      hand, accessing the uninitialized object is akin to accessing any other
- *      uninitialized data from the c++ standard point-of-view and would result
- *      in Undefined Behavior.
- *      Also note that placement-new does not prevent the problems caused
- *      by misalignment.
+ * (*) Technically we could use placement-new to construct an object that
+ *     overlays the memory segment. However, that doesn't help us much
+ *     futher because it does nothing to prevent the potential alignment
+ *     problems. Furthermore the constructed object must be initialized
+ *     before we can legally read from its contents. "Initialization" implies
+ *     overwriting the network packet data. This obviously defeats our purpose.
  */
 template<typename T>
 inline const T & buggy_decode(const uint8_t * bytes)

@@ -5,3 +5,4 @@ run.sh
 test
 Makefile
 memcpy_vs_std_copy.cpp
+misalign.cpp

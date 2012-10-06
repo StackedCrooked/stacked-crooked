@@ -12,7 +12,10 @@ struct NetworkData
     uint64_t a, b, c;
 };
 
-double GetCurrentTime()
+
+
+
+double get_current_time()
 {
     timeval tv;
     gettimeofday(&tv, NULL);
@@ -63,7 +66,7 @@ struct copier_assign
 };
 
 
-const std::size_t iterations = 100000;
+const std::size_t iterations = 1000000;
 const uint64_t millisecond = uint64_t(1000);
 const uint64_t microseconds = uint64_t(1000) * uint64_t(1000);
 const uint64_t nanosecond = uint64_t(1000) * microseconds;
@@ -86,12 +89,12 @@ unsigned test(const CopyFunction & inCopyFunction, unsigned alignOffset)
     // Generate buffer large buffer
     std::vector<uint8_t> buffer = GetBuffer();
 
-    auto startTime = GetCurrentTime();
+    auto startTime = get_current_time();
     for (std::size_t i = 0; i != iterations; ++i)
     {
         inCopyFunction(buffer.data() + (i * sizeof(NetworkData)) + alignOffset);
     }
-    return unsigned(0.5 + ((100 * 1000) * (GetCurrentTime() - startTime)));
+    return unsigned(0.5 + ((100 * 1000) * (get_current_time() - startTime)));
 }
 
 

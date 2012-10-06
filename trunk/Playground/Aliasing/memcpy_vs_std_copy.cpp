@@ -19,24 +19,13 @@ double GetCurrentTime()
     return double (tv.tv_sec) + 0.000001 * tv.tv_usec;
 }
 
-uint8_t GetRandomByte()
-{
-    static auto rng = []() -> std::mt19937 {
-        std::mt19937 rng;
-        rng.seed(time(0));
-        return rng;
-    }();
-    static std::uniform_int_distribution<uint8_t> dist(0, 255);
-    return dist(rng);
-}
-
 
 std::size_t counter = 0; // prevent GCC from optimizating the entire program away
 
 
 struct copier_stdcopy
 {
-    static const char * name() { return "stdcopy"; }
+    static const char * name() { return "std::copy"; }
 
     void operator()(uint8_t * src) const
     {
@@ -74,7 +63,7 @@ struct copier_assign
 };
 
 
-const std::size_t iterations = 1000000;
+const std::size_t iterations = 100000;
 const uint64_t millisecond = uint64_t(1000);
 const uint64_t microseconds = uint64_t(1000) * uint64_t(1000);
 const uint64_t nanosecond = uint64_t(1000) * microseconds;
@@ -82,24 +71,17 @@ const uint64_t nanosecond = uint64_t(1000) * microseconds;
 
 std::vector<uint8_t> GetBuffer()
 {
-    std::vector<uint8_t> buffer(1 + iterations * sizeof(NetworkData));
-    for (auto & c : buffer)
+    std::vector<uint8_t> buffer(sizeof(long) + iterations * sizeof(NetworkData));
+    for (std::vector<uint8_t>::size_type i = 0; i != buffer.size(); ++i)
     {
-        c = GetRandomByte();
+        buffer[i] = uint8_t(buffer.size());
     }
     return buffer;
 }
 
 
-enum Alignment
-{
-    Alignment_OK,
-    Alignment_NOK
-};
-
-
 template<typename CopyFunction>
-void test(const CopyFunction & inCopyFunction, Alignment inAlignment)
+unsigned test(const CopyFunction & inCopyFunction, unsigned alignOffset)
 {
     // Generate buffer large buffer
     std::vector<uint8_t> buffer = GetBuffer();
@@ -107,28 +89,24 @@ void test(const CopyFunction & inCopyFunction, Alignment inAlignment)
     auto startTime = GetCurrentTime();
     for (std::size_t i = 0; i != iterations; ++i)
     {
-        inCopyFunction(&buffer[(i * sizeof(NetworkData)) + (inAlignment == Alignment_OK ? 0 : 1)]);
+        inCopyFunction(buffer.data() + (i * sizeof(NetworkData)) + alignOffset);
     }
-    auto elapsed = GetCurrentTime() - startTime;
-    std::cout << CopyFunction::name() << " with: " << (millisecond * elapsed) << " millisecond" << std::endl;
+    return unsigned(0.5 + ((100 * 1000) * (GetCurrentTime() - startTime)));
 }
 
 
 int main()
 {
-    std::setprecision(0);
-    std::cout.setf(std::ios::fixed);
-
-
     std::cout << "\nTest with good alignment" << std::endl;
-    test(copier_stdcopy(), Alignment_OK);
-    test(copier_memcpy(), Alignment_OK);
-    test(copier_assign(), Alignment_OK);
 
-    std::cout << "\nTest with bad alignment" << std::endl;
-    test(copier_stdcopy(), Alignment_NOK);
-    test(copier_memcpy(), Alignment_NOK);
-    test(copier_assign(), Alignment_NOK);
+    for (unsigned alignmentOffset = 0; alignmentOffset < (sizeof(long) / 2); ++alignmentOffset)
+    {
+        std::cout << "Alignment offset is now " << alignmentOffset << std::endl;
+        std::cout << "std::copy: "   << test(copier_stdcopy(), alignmentOffset)
+                  << "\nmemcpy   : " << test(copier_memcpy(),  alignmentOffset)
+                  << "\nassign   : " << test(copier_assign(),  alignmentOffset)
+                  << std::endl << std::endl;
+    }
     std::cout << "optimization prevention counter: " << counter << std::endl;
 
 }

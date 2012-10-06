@@ -7,134 +7,69 @@
 #include <type_traits>
 #include <stdint.h>
 
-
-template<typename T>
-char * binary_cast(T & t)
-{
-    return static_cast<char*>(static_cast<void*>(&t));
-}
-
-
-template<typename T>
-const char * binary_cast(const T & t)
-{
-    return static_cast<const char*>(static_cast<const void*>(&t));
-}
-
-
-void decode(const uint8_t * data, uint8_t & value)
-{
-    value = data[0];
-}
-
-
-void decode(const uint8_t * data, uint16_t & value)
-{       
-    value = data[0] << 8 | data[1];
-}
-
-
+//! Decodes the network data to the request type.
+//! Endianness conversion will be performed if T is an unsigned
+//! fixed-width integer type (e.g. uint16_t, uint32_t or uint64_t).
 template<typename T>
 T decode(const uint8_t * data);
- 
-
-void decode(const uint8_t * data, uint32_t & value)
-{
-    value = decode<uint16_t>(data) << 16 | decode<uint16_t>(data + 2);
-}
-
-
-void decode(const uint8_t * data, uint64_t & value)
-{
-    value = uint64_t(decode<uint32_t>(data)) << 32 | decode<uint32_t>(data + 4);
-}
-
-
-template<typename T> struct half;
-template<> struct half<uint16_t> { typedef uint8_t type; };
-template<> struct half<uint32_t> { typedef uint16_t type; };
-template<> struct half<uint64_t> { typedef uint32_t type; };
-
-
-template<typename T, typename H>
-T join(H left, H right)
-{
-    static_assert(std::is_same<typename half<T>::type, H>::value, "");
-    return T(left << sizeof(left)) | right;
-}
-
 
 template<typename T>
-void decode(const uint8_t * data, T & value, typename std::enable_if<std::is_integral<T>::value>::type * = 0)
+struct identity { typedef T type; };
+
+//! Decodes the network-encoded data to a host-encoded 16-bit integer.
+uint16_t decode_impl(const uint8_t * data, const identity<uint16_t>&)
 {
-    typedef typename half<T>::type half;    
-    value = join<T>(decode<half>(data), decode<half>(data + sizeof(half)));
+    return data[0] << 8 | data[1];
 }
 
+//! Decodes the network-encoded data to a host-encoded 32-bit integer.
+uint32_t decode_impl(const uint8_t * data, const identity<uint32_t>&)
+{
+    return decode<uint16_t>(data) << 16 | decode<uint16_t>(data + 2);
+}
 
+//! Decodes the network-encoded data to a host-encoded 64-bit integer.
+uint64_t decode_impl(const uint8_t * data, const identity<uint64_t>&)
+{
+    return uint64_t(decode<uint32_t>(data)) << 32 | decode<uint32_t>(data + 4);
+}
+
+//! Fallback decoder does not take endianness into account.
 template<typename T>
-void decode(const uint8_t * data, T & value, typename std::enable_if<!std::is_integral<T>::value>::type * = 0)
+T decode_impl(const uint8_t * data, const identity<T>&)
 {
-    std::copy(data, data + sizeof(T), binary_cast(value));
+    T t;
+    std::copy(data, data + sizeof(T), reinterpret_cast<char*>(&t));
+    return t;
 }
-
 
 template<typename T>
 T decode(const uint8_t * data)
 {
-    T t;
-    decode(data, t);
-    return t;
+    return decode_impl(data, identity<T>());
 }
 
-
-void print_binary(std::ostream & os, const uint8_t * data, unsigned length)
+void print_binary(const uint8_t * data, unsigned length)
 {
     for (unsigned i = 0; i != length; ++i)
     {
-        os << std::hex << std::setw(2) << std::setfill('0') << int(data[i]) << " ";
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << int(data[i]) << " ";
     }
-    os << std::endl;
+    std::cout << std::endl;
 }
-
- 
-void print_binary(const uint8_t * data, unsigned length)
-{
-    print_binary(std::cout, data, length);
-}
-
 
 template<typename T>
-void check(const uint8_t * data, T value, typename std::enable_if<!std::is_integral<T>::value>::type * = 0)
+void check(const uint8_t * data, T value)
 {
-    union Helper
+    union { T t; char c[sizeof(t)]; };
+    t = value;
+    if (std::is_integral<T>::value)
     {
-        T t;
-        char c[sizeof(T)];
-    };
-    
-    Helper h;
-    h.t = value;
-    assert(!memcmp(data, h.c, sizeof(T)));
+        std::reverse(c, c + sizeof(T));
+    }
+    assert(!memcmp(data, c, sizeof(T)));
 }
 
-
-template<typename T>
-void check(const uint8_t * data, T value, typename std::enable_if<std::is_integral<T>::value>::type * = 0)
-{
-    union Helper
-    {
-        T t;
-        char c[sizeof(T)];
-    };
-    
-    Helper h;
-    h.t = value;
-    std::reverse(h.c, h.c + sizeof(T));
-    assert(!memcmp(data, h.c, sizeof(T)));
-}
-
- 
 int main()
 {
     uint8_t network_data_[] = { 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };

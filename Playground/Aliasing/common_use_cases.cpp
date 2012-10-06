@@ -51,13 +51,18 @@ inline const T & buggy_decode(const uint8_t * bytes)
 /**
  * correct_decode creates a c++ pod object from a network data packet.
  *
- * It copies the data into a stack-allocated object of type T.
- * Allocation on the stack ensures that T has native alignment.
- * In order to creaate a binary copy of the network data over our object we
- * need to obtain binary access to the target object. This can be achieved
- * with one `reinterpret_cast` or by chaining two `static_cast`: 
+ * First we ensure that our c++ has native alignment by allocating it
+ * at a local variable on the stack. 
+ * Next we obtain a byte pointer to the memory segment occupied by our
+ * object. This form of aliasing is explicitly allowed by the c++ standard.
+ *
+ * The byte pointer can be obtained in two ways:
  *   (1) reinterpret_cast<char*>(&t);
  *   (2) static_cast<char*>(static_cast<void*>(&t));
+ *
+ * We must return the object by value because it is a local variable. In theory
+ * this means an extra copy. In practice this copy is fully optimized away by
+ * thanks to the Named-Return-Value-Optimization.
  */
 template<typename T>
 T correct_decode(const uint8_t * bytes)

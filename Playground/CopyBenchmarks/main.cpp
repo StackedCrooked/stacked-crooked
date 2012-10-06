@@ -1,4 +1,5 @@
 #include <array>
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <iomanip>
@@ -81,9 +82,9 @@ void decode(const uint8_t * data, T & value, typename std::enable_if<!std::is_in
 template<typename T>
 T decode(const uint8_t * data)
 {
-        T t;
-        decode(data, t);
-        return t;
+    T t;
+    decode(data, t);
+    return t;
 }
 
 
@@ -102,10 +103,42 @@ void print_binary(const uint8_t * data, unsigned length)
     print_binary(std::cout, data, length);
 }
 
+
+template<typename T>
+void check(const uint8_t * data, T value, typename std::enable_if<!std::is_integral<T>::value>::type * = 0)
+{
+    union Helper
+    {
+        T t;
+        char c[sizeof(T)];
+    };
+    
+    Helper h;
+    h.t = value;
+    assert(!memcmp(data, h.c, sizeof(T)));
+}
+
+
+template<typename T>
+void check(const uint8_t * data, T value, typename std::enable_if<std::is_integral<T>::value>::type * = 0)
+{
+    union Helper
+    {
+        T t;
+        char c[sizeof(T)];
+    };
+    
+    Helper h;
+    h.t = value;
+    std::reverse(h.c, h.c + sizeof(T));
+    assert(!memcmp(data, h.c, sizeof(T)));
+}
+
  
 int main()
 {
-    uint8_t network_data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+    uint8_t network_data_[] = { 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+    uint8_t * network_data = network_data_ + 1; // force non-aligned
     
     // print the buffer for reference
     std::cout << "network_data: ";
@@ -114,18 +147,21 @@ int main()
     {
         std::cout << "parse 16-bit integer: ";
         auto n = decode<uint16_t>(network_data);
+        check(network_data, n);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
     {
         std::cout << "parse 32-bit integer: ";
         auto n = decode<uint32_t>(network_data);
+        check(network_data, n);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
     {
         std::cout << "parse 64-bit integer: ";
         auto n = decode<uint64_t>(network_data);
+        check(network_data, n);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
@@ -133,6 +169,7 @@ int main()
         std::cout << "parse 64-bit non-integral object: ";
         struct obj { uint16_t s[4]; };
         auto n = decode<obj>(network_data);
+        check(network_data, n);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
     
@@ -140,6 +177,7 @@ int main()
         std::cout << "parse array of length 4: ";
         typedef std::array<uint8_t, 4> ip_address;
         auto n = decode<ip_address>(network_data);
+        check(network_data, n);
         print_binary(reinterpret_cast<uint8_t*>(&n), sizeof(n));
     }
 }

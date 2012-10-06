@@ -24,10 +24,10 @@ void example_checksum16()
 }
 
 /**
- * buggy_decode aims to overlay an C++ type-view over a segment of network data.
+ * buggy_decode tries to create a c++ object from a network data packet.
  *
  * This implementation is buggy for the following reasons:
- * (1) According to the C++ type system no object has ever been constructed in
+ * (1) According to the c++ type system no object has ever been constructed in
  *     that memory location. We are not allowed to alias a non-existing
  *     object. (*)
  * (2) The pointer address of the network data may not match the native
@@ -39,7 +39,7 @@ void example_checksum16()
  *      the object before we can legally read from it. This would mean erasing
  *      the network data that we are trying to get access to. On the other
  *      hand, accessing the uninitialized object is akin to accessing any other
- *      uninitialized data from the C++ standard point-of-view and would result
+ *      uninitialized data from the c++ standard point-of-view and would result
  *      in Undefined Behavior.
  *      Also note that placement-new does not prevent the problems caused
  *      by misalignment.
@@ -52,14 +52,21 @@ inline const T & buggy_decode(const uint8_t * bytes)
 }
 
 /**
- * correct_decode creates a C++ object from network data.
- * It alloates an object of type T on the stack. This ensures corrrect alignment.
- * We proceed by copying the network data bytewise into our object.
+ * correct_decode creates a c++ pod object from a network data packet.
+ *
+ * It copies the data into a stack-allocated object of type T.
+ * Allocation on the stack ensures that T has native alignment.
+ * In order to creaate a binary copy of the network data over our object we
+ * need to obtain binary access to the target object. This can be achieved
+ * with one `reinterpret_cast` or by chaining two `static_cast`: 
+ *   (1) reinterpret_cast<char*>(&t);
+ *   (2) static_cast<char*>(static_cast<void*>(&t));
  */
+template<typename T>
 T correct_decode(const uint8_t * bytes)
 {
     T t;
-    std::copy(bytes, bytes + sizeof(T), reinterpret_cast<char*>(&t));
+    std::copy(bytes, bytes + sizeof(T), static_cast<char*>(static_cast<void*>(&t)));
     return t;
 }
     

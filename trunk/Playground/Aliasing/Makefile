@@ -1,3 +1,3 @@
 
 all:
-	g++ -o test -std=c++0x -g -Wall -Wextra -fstrict-aliasing -Wstrict-aliasing=2 -O1 main.cpp
+	g++ -o test -std=c++11 -g -Wall -Wextra -Werror -pedantic-errors -O3 *.cpp

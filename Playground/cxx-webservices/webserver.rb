@@ -33,8 +33,7 @@ class SimpleHandler < Mongrel::HttpHandler
   end
 end
 
-host="localhost"
-port=4000
-h = Mongrel::HttpServer.new(host, port)
+
+h = Mongrel::HttpServer.new("173.203.57.63", 4001)
 h.register("/", SimpleHandler.new)
 h.run.join

@@ -3,20 +3,29 @@
     <style type="text/css">
 
 
-        textarea {
-            position: relative;
+        textarea {;
             width: 100%;
             height: 100%;
         }
 
+        .log {
+            position: relative;
+            height: 20%;
+        }
+
+        .output {
+            position: relative;
+            height: 20%;
+        }
+
         .input {;
             position: relative;
-            height: 60%;
+            height: 40%;
             margin-bottom: 5px
         }
 
         .output {
-            height: 30%;
+            height: 20%;
             margin-bottom: 5px;
         }
 
@@ -31,7 +40,7 @@
         var app = {};
 
 
-        app.alert = function (msg) {
+        app.log = function (msg) {
             console.log(msg);
         };
 
@@ -40,7 +49,7 @@
 
 
         app.send = function (title, payload) {
-            app.alert('app.send');
+            app.log('app.send');
             var httpRequest = new XMLHttpRequest();
             httpRequest.open("PUT", "http://localhost:4000/" + title, false);
             httpRequest.send(payload);
@@ -48,45 +57,43 @@
             httpRequest.onreadystatechange = function () {
                 if (httpRequest.readyState == 4) {
                     if (httpRequest.status == 200) {
-                        app.alert('HTTP STATUS 200');
-                        app.alert(JSON.stringify(httpRequest));
+                        app.log('HTTP STATUS 200');
+                        app.log(JSON.stringify(httpRequest));
                         app.onReply(httpRequest.responseText);
                     } else {
-                        app.alert("HTTP STATUS " + httpRequest.status);
+                        app.log("HTTP STATUS " + httpRequest.status);
                     }
                 } else {
-                    app.alert("HTTP STATUS " + httpRequest.status);
-                    app.alert("httpRequest.readyState: " + httpRequest.readyState);
+                    app.log("HTTP STATUS " + httpRequest.status);
+                    app.log("httpRequest.readyState: " + httpRequest.readyState);
                 }
             };
         };
 
         window.onload = function () {
-            app.alert("window.onload");
+            app.log("window.onload");
             app.input = document.getElementById("input");
-            app.output = document.getElementById("outputText");
-            app.commit = document.getElementById("compileButton");
-            app.input.style = { left:50, right:50, width:200 };
+            app.output = document.getElementById("output");
+            app.commit = document.getElementById("commit");
             app.enterTimeoutLoop();
         };
 
 
         app.enterTimeoutLoop = function () {
-            app.alert("app.enterTimeoutLoop");
-            window.setTimeout(app.enterTimeoutLoop, 2000);
+            window.setTimeout(app.enterTimeoutLoop, 500);
         };
 
 
         app.onCompile = function () {
-            app.alert('app.onCompile');
-            var compileButton = document.getElementById('TextArea');
-            alert("compile: " + compileButton.textContent);
-            app.send("compile", compileButton.textContent);
+            app.log('app.onCompile');
+            var commit = document.getElementById('TextArea');
+            alert("compile: " + commit.textContent);
+            app.send("compile", commit.textContent);
         };
 
         app.onReply = function (reply) {
-            app.alert(reply);
-            app.alert(JSON.parse(reply));
+            app.log(reply);
+            app.log(JSON.parse(reply));
             var obj = JSON.parse(reply);
         };
 
@@ -103,6 +110,9 @@
 </div>
 <div class=commit>
     <button id="commit">Compile!</button>
+</div>
+<div class=log>
+    <label for="log"></label><textarea id="log">Logger</textarea>
 </div>
 
 

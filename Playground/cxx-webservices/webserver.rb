@@ -6,40 +6,35 @@ require 'popen4'
 
 class SimpleHandler < Mongrel::HttpHandler
   def process(request, response)
-	command = request.params["REQUEST_PATH"][1..-1]
-    command = command.gsub(/%20/, " ").gsub(/%22/, "\"")
-    puts "Command: " + command
-    body = ""
+    command = request.params["REQUEST_PATH"][1..-1].gsub(/%20/, " ").gsub(/%22/, "\"")
+    puts "Received request: #{command}"
+
+    # Empty command is replied with the home page.
     if command == ""
       response.start(200) do |head,out|
         head["Content-Type"] = "text/html"
         FileUtils.copy_stream(File.new("cmd.html"), out)
       end      
+    # We don't return favicons.
     elsif command == "favicon.ico"
       # ignore this request
-    elsif command.match(/^cd/)
-      response.start(200) do |head,out|
-        head["Content-Type"] = "text/html"
-        dir = command[command.index(' ') + 1 .. -1]
-        puts "Dir: #{dir}"
-        Dir.chdir(dir)
-      end
-    else
-      response.start(200) do |head,out|
-        head["Content-Type"] = "text/html"
-        status = POpen4::popen4(command) do |stdout, stderr, stdin, pid|
-          stdin.close()
-          FileUtils.copy_stream(stdout, out)
-          FileUtils.copy_stream(stderr, out)
-          puts "Sent response."
-        end
-      end
+
+    # We accept the compile command and return the build output.
+    elsif command == "compile"
+        response.start(200) do |head,out|
+            head["Content-Type"] = "text/html"
+            File.open("dummy", "w") do |file|
+                request.body.read(file)
+            end
+
+            out.write("Compilation succeeded.")
+        end      
     end
   end
 end
 
- host="localhost"
- port=4000
- h = Mongrel::HttpServer.new(host, port)
- h.register("/", SimpleHandler.new)
- h.run.join
+host="localhost"
+port=4000
+h = Mongrel::HttpServer.new(host, port)
+h.register("/", SimpleHandler.new)
+h.run.join

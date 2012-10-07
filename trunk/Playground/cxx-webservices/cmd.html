@@ -1,40 +1,23 @@
 <html>
 <head>
-    <style type="text/css">
+<style type="text/css">
+
+    .cpp {
+        position: relative;
+        width: 100%;
+    }
+
+    #input   { height: 70% }
+    #output  { height: 20% }
+    #submit  { height: 10% }
 
 
-        textarea {;
-            width: 100%;
-            height: 100%;
-        }
 
-        .log {
-            position: relative;
-            height: 20%;
-        }
 
-        .output {
-            position: relative;
-            height: 20%;
-        }
 
-        .input {;
-            position: relative;
-            height: 40%;
-            margin-bottom: 5px
-        }
 
-        .output {
-            height: 20%;
-            margin-bottom: 5px;
-        }
-
-        .commit {
-            text-align: right;
-        }
-
-    </style>
-    <script type="text/javascript">
+</style>
+<script type="text/javascript">
 
 
         var app = {};
@@ -103,17 +86,10 @@
 <body>
 
 
-<div class="input">
-    <label for="input"></label><textarea id="input">Hello! </textarea>
-</div>
-<div class="output"><label for="output"></label><textarea id="output">You fool!</textarea>
-</div>
-<div class=commit>
-    <button id="commit">Compile!</button>
-</div>
-<div class=log>
-    <label for="log"></label><textarea id="log">Logger</textarea>
-</div>
+<textarea id="input"   class="cpp">int main(){}</textarea>
+<textarea id="output"  class="cpp">Ready!</textarea>
+<button   id="submit"  class="cpp">Submit!</button>
+
 
 
 </body>

@@ -1,52 +1,112 @@
 <html>
-<body>
-<div style="position: relative; width: 100%;  height: 80%;">
-    <label for="input" style="width: 100%; height: 100%;"></label>
-    <textarea id="input" style="position: relative; width: 100%; height: 100%;"></textarea>
-</div>
-<div style="position: relative; height:  20%; width: 100%;">
-    <button id="btn" style="position: relative; width: 20%; height: 23px; " onclick="alert('compiling');">Compile!</button>
-</div>
-
-
-<script type="text/javascript">
-    var Chat = {};
-    Chat.input = document.getElementById("input");
-    Chat.inputMargin = 10;
-    Chat.init = function () {
-        Chat.insertTimeoutLoop();
-    };
-
-    Chat.rebuildLayout = function () {
-        while (window.innerWidth - Chat.input.clientWidth > Chat.inputMargin) Chat.input.cols += 1;
-        while (window.innerHeight - Chat.input.clientHeight > Chat.inputMargin) Chat.input.rows += 1;
-    };
-
-    Chat.insertTimeoutLoop = function() {
-        //Chat.rebuildLayout();
-        setTimeout(Chat.insertTimeoutLoop, 100);
-    };
-
-    Chat.send = function (message) {
-        var httpRequest = new XMLHttpRequest();
-        httpRequest.open("GET", "http://localhost:4000/" + message, true);
-        httpRequest.onreadystatechange = function () {
-            if (httpRequest.readyState == 4) {
-                if (httpRequest.status == 200) {
-                    Chat.display(httpRequest.responseText);
+    <body>
+        <p></p>
+        <div id="outputDiv" >
+        <p style="font-size:small; background-color: lightgray; font-family: courier">Welcome to the JavaScript console.</p>        
+        </div>
+        <div>
+          <input type="text" id="commandInput" name="command" />
+        </div>
+        <script type="text/javascript">
+            var Chat = {};
+            Chat.init = function()
+            {     
+              document.getElementById("commandInput").onkeydown = function(evt)
+              {
+                if (evt.keyCode == 13)
+                {
+                  var text = document.getElementById("commandInput").value;
+                  if (text && text.length > 0)
+                  {
+                    Chat.send(text);
+                    Chat.displayCommand(text);
+                  }
+                  document.getElementById("commandInput").value = "";
                 }
-                else {
-                    Chat.display("Readystate is: " + httpRequest.status);
-                    Chat.display("Oops, it doesn't work...\n" +
-                            "- make sure the server is running (ruby webserver.rb)\n" +
-                            "- use this url: http://localhost:4000 (and not the local cmd.html)");
+              };
+              Chat.display("");
+              document.getElementById("commandInput").focus();
+            };
+            
+            function getStyle(el, style)
+            {             
+              var value = el.style[style];
+              if (!value)
+              {
+                if(document.defaultView)
+                {
+                  value = document.defaultView.getComputedStyle(el, "").getPropertyValue(style);
                 }
+                else if(el.currentStyle)
+                {
+                  value = el.currentStyle[style];
+                }
+              }
+              return value;
             }
-        };
-        httpRequest.send();
-    };
-    window.onload = Chat.init();
-</script>
-
-</body>
+            
+            Chat.rebuildLayout = function()
+            {
+              var outputDiv = document.getElementById("outputDiv");
+              outputDiv.setAttribute("style", "overflow:auto;height:" + (window.innerHeight - 50) + "px");
+              outputDiv.scrollTop = outputDiv.scrollHeight;
+              
+              var commandInput = document.getElementById("commandInput");
+              var w = getStyle(outputDiv, "width");
+              var newWidth = parseInt(w.substring(0, w.length - 2), 10) - 50;
+              commandInput.setAttribute("size", newWidth/6);
+            }
+            
+            
+            Chat.displayCommand = function(message)
+            {                 
+                var p = document.createElement("b");
+                p.setAttribute("style", "font-size:small; font-family: courier; background-color: white;");
+                p.innerText = message;
+                var outputDiv = document.getElementById("outputDiv").appendChild(p);
+                Chat.rebuildLayout();
+                (Chat.displayCount)++;
+                
+            };
+            
+            
+            Chat.display = function(message)
+            {                 
+                var p = document.createElement("pre");
+                p.setAttribute("style", "font-size:small; font-family: courier; background-color: lightgray;");
+                p.innerText = message;
+                var outputDiv = document.getElementById("outputDiv").appendChild(p);
+                Chat.rebuildLayout();
+                (Chat.displayCount)++;
+                
+            };
+            
+           
+            Chat.send = function(message)
+            {
+              var httpRequest = new XMLHttpRequest();
+              httpRequest.open("GET", "http://localhost:4000/" + message, true);
+              httpRequest.onreadystatechange = function()
+              {
+                if(httpRequest.readyState == 4)
+                {
+                  if (httpRequest.status == 200)
+                  {
+                    Chat.display(httpRequest.responseText);
+                  }
+                  else
+                  {
+                    Chat.display("Readystate is: " + httpRequest.status);
+                    Chat.display("Oops, it doesn't work...\n" + 
+                                 "- make sure the server is running (ruby webserver.rb)\n" + 
+                                 "- use this url: http://localhost:4000 (and not the local cmd.html)");
+                  }
+                }
+              };
+              httpRequest.send();
+            };         
+            window.onload = Chat.init();
+        </script>    
+    
+    </body>
 </html>

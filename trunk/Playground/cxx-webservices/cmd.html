@@ -9,18 +9,18 @@
             height: 100%;
         }
 
-        .inputTextArea {;
+        .input {;
             position: relative;
             height: 60%;
             margin-bottom: 5px
         }
 
-        .outputTextArea {
+        .output {
             height: 30%;
             margin-bottom: 5px;
         }
 
-        .submitButton {
+        .commit {
             text-align: right;
         }
 
@@ -63,10 +63,10 @@
 
         window.onload = function () {
             app.alert("window.onload");
-            app.inputTextArea = document.getElementById("inputTextArea");
-            app.outputTextArea = document.getElementById("outputText");
-            app.submitButton = document.getElementById("compileButton");
-            app.inputTextArea.style = { left:50, right:50, width:200 };
+            app.input = document.getElementById("input");
+            app.output = document.getElementById("outputText");
+            app.commit = document.getElementById("compileButton");
+            app.input.style = { left:50, right:50, width:200 };
             app.enterTimeoutLoop();
         };
 
@@ -94,13 +94,17 @@
     </script>
 </head>
 <body>
-<div class="inputTextArea">
-    <label for="inputTextArea"></label><textarea id="inputTextArea">Hello! </textarea>
+
+
+<div class="input">
+    <label for="input"></label><textarea id="input">Hello! </textarea>
 </div>
-<div class="outputTextArea"><label for="outputTextArea"></label><textarea id="outputTextArea">You fool!</textarea>
+<div class="output"><label for="output"></label><textarea id="output">You fool!</textarea>
 </div>
-<div class=submitButton>
-    <button id="submitButton">Compile!</button>
+<div class=commit>
+    <button id="commit">Compile!</button>
 </div>
+
+
 </body>
 </html>

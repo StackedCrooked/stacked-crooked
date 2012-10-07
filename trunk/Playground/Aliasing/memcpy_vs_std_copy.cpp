@@ -94,7 +94,7 @@ unsigned test(const CopyFunction & inCopyFunction, unsigned alignOffset)
     {
         inCopyFunction(buffer.data() + (i * sizeof(NetworkData)) + alignOffset);
     }
-    return unsigned(0.5 + ((100 * 1000) * (get_current_time() - startTime)));
+    return unsigned(0.5 + ((10 * 1000) * (get_current_time() - startTime)));
 }
 
 
@@ -105,9 +105,9 @@ int main()
     for (unsigned alignmentOffset = 0; alignmentOffset < (sizeof(long) / 2); ++alignmentOffset)
     {
         std::cout << "Alignment offset is now " << alignmentOffset << std::endl;
-        std::cout << "std::copy: "   << test(copier_stdcopy(), alignmentOffset)
-                  << "\nmemcpy   : " << test(copier_memcpy(),  alignmentOffset)
-                  << "\nassign   : " << test(copier_assign(),  alignmentOffset)
+        std::cout << "std::copy: "   << std::string(test(copier_stdcopy(), alignmentOffset), '.')
+                  << "\nmemcpy   : " << std::string(test(copier_memcpy(),  alignmentOffset), '.')
+                  << "\nassign   : " << std::string(test(copier_assign(),  alignmentOffset), '.')
                   << std::endl << std::endl;
     }
     std::cout << "optimization prevention counter: " << counter << std::endl;

@@ -1,27 +1,38 @@
 <html>
 <head>
     <style type="text/css">
+
+        textarea {
+            position: relative;
+            padding: 10px;
+            border-spacing: 50px;
+            width: 100%;
+            height: 100%;
+        }
+
+        div.inputTextArea {
+            position: relative;
+            height: 60%
+        }
+
+        div.outputTextArea {
+            height: 30%
+        }
+
+        div.submitButton {
+            text-align: right;
+        }
+
         div {
             position: relative;
             width: 100%;
             height: 100%;
         }
-
-        textarea {
-            padding: 10px;
-            border-spacing: 50px;
-            width: 100%;
-            height: 100%
+        span {
+            position: relative;
+            width: 80%;
+            height: 100%;
         }
-
-        div.inputTextArea {
-            height: 60%;
-        }
-
-        div.outputTextArea {
-            height: 30%;
-        }
-
 
     </style>
     <script type="text/javascript">
@@ -73,40 +84,7 @@
 
         app.enterTimeoutLoop = function () {
             app.alert("app.enterTimeoutLoop");
-            app.rebuildLayout();
             window.setTimeout(app.enterTimeoutLoop, 2000);
-        };
-
-        app.rebuildLayout = function () {
-            app.alert("app.rebuildLayout");
-            app.alert("window.innerHeight: " + window.innerHeight);
-            app.inputTextArea.style.left = app.margin;
-            app.inputTextArea.clientTop = app.margin;
-
-            while (app.inputTextArea.row)
-
-
-                while (app.inputTextArea.clientHeight + (2 * app.margin) < window.innerWidth) {
-                    app.inputTextArea.cols += 1;
-                }
-            while (app.inputTextArea.clientWidth > (window.innerWidth + (2 * app.margin))) {
-                app.inputTextArea.cols -= 1;
-            }
-
-            while (app.outputTextArea.clientHeight + (2 * app.margin) < window.innerHeight) {
-                app.inputTextArea.rows += 1;
-            }
-            while (app.outputTextArea.clientHeight > (window.innerHeight + (2 * app.margin))) {
-                app.inputTextArea.rows -= 1;
-            }
-
-            while (app.inputTextArea.clientHeight + 2 * app.margin < window.innerHeight) {
-                app.inputTextArea.rows += 1;
-            }
-            app.inputTextArea.clientWidth = 80 * window.innerWidth / 100;
-            app.alert("end app.rebuildLayout");
-
-
         };
 
 
@@ -127,15 +105,13 @@
     </script>
 </head>
 <body>
-<div class="root">
-    <div class="inputTextArea">
-        <label for="inputTextArea"><textarea id="inputTextArea">Hello! </textarea></label>
-    </div>
-    <div class="outputTextArea"><label for="outputTextArea"></label><textarea id="outputTextArea">You fool!</textarea>
-    </div>
-    <div class="submitButton">
-        <button id="submitButton">Compile!</button>
-    </div>
+<div class="inputTextArea">
+    <label for="inputTextArea"><textarea id="inputTextArea">Hello! </textarea></label>
+</div>
+<div class="outputTextArea"><label for="outputTextArea"></label><textarea id="outputTextArea">You fool!</textarea>
+</div>
+<div class=submitButton>
+    <button id="submitButton">Compile!</button>
 </div>
 </body>
 </html>

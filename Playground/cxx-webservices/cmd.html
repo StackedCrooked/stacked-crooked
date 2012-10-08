@@ -65,7 +65,6 @@
 
 
             app.input.onkeydown = function(e) {
-                app.changed = true;
                 app.onCompile();
                 if (!e && event.keyCode == 9)
                 {
@@ -82,13 +81,13 @@
             app.enterTimeoutLoop();
         };
 
-        app.changed = false;
+        app.previous = "";
 
 
         app.enterTimeoutLoop = function () {
-            if (app.changed === true) {
+            if (app.previous !== app.input.value) {
                 app.output.value = "Compiling...";
-                app.changed = false;
+                app.previous = app.input.value;
                 app.onCompile();
             }
             window.setTimeout(app.enterTimeoutLoop, 1000);

@@ -3,22 +3,6 @@ require 'fileutils'
 require 'mongrel'
 require 'popen4'
 
-# Runs a subprocess and applies handlers for stdout and stderr
-# Params:
-# - command: command line string to be executed by the system
-# - outhandler: proc object that takes a pipe object as first and only param (may be nil)
-# - errhandler: proc object that takes a pipe object as first and only param (may be nil)
-def execute_and_handle(command, outhandler, errhandler)
-    Open3.popen3(command) do |_, stdout, stderr|
-        if (outhandler)
-            outhandler.call(stdout)
-        end
-        if (errhandler)
-            errhandler.call(stderr)
-        end
-    end
-end
-
 
 class SimpleHandler < Mongrel::HttpHandler
     def process(request, response)
@@ -26,13 +10,15 @@ class SimpleHandler < Mongrel::HttpHandler
             head["Content-Type"] = "text/html"
             case get_location(request)
             when ""
-                out.write("hi")
+                FileUtils.copy_stream(File.new("cmd.html"), out)
             when "compile"
+                File.open("main.cpp", 'w') { |f| f << request.body }
                 status = POpen4::popen4("g++ -o test main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
                     stdin.close()
                 end
+                puts File.readlines("output") { |f| puts f }
                 FileUtils.copy_stream(File.new("output"), out)
-                puts "Sent response"
+                puts "Done"
             when "favicon.ico"
                 # Don't respond to favicon..
             else

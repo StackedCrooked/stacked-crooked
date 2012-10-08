@@ -32,7 +32,6 @@
             app.log('app.send');
             var httpRequest = new XMLHttpRequest();
             httpRequest.open("PUT", "http://localhost:4000/" + title, false);
-            httpRequest.send(payload);
 
             httpRequest.onreadystatechange = function () {
                 if (httpRequest.readyState == 4) {
@@ -48,6 +47,7 @@
                     app.log("httpRequest.readyState: " + httpRequest.readyState);
                 }
             };
+            httpRequest.send(payload, true);
         };
 
         window.onload = function () {
@@ -67,14 +67,11 @@
         app.onCompile = function () {
             app.log('app.onCompile');
             var commit = document.getElementById('TextArea');
-            alert("compile: " + commit.textContent);
-            app.send("compile", commit.textContent);
+            app.send("compile", output.textContent);
         };
 
         app.onReply = function (reply) {
-            app.log(reply);
-            app.log(JSON.parse(reply));
-            var obj = JSON.parse(reply);
+            output.textContent = reply;
         };
 
 
@@ -94,7 +91,7 @@
 </span>
 
 
-<button id="submit" class="cpp">Submit!</button>
+<button id="submit" class="cpp" onclick="app.onCompile();">Submit!</button>
 
 
 </body>

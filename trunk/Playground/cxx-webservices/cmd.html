@@ -66,6 +66,9 @@
         window.onload = function () {
             app.input = document.getElementById("input");
             app.output = document.getElementById("output");
+            if (localStorage.backup !== undefined) {
+                app.input.value = localStorage.backup;
+            }
             app.output.disabled = true;
 
 
@@ -108,6 +111,8 @@
                 app.next = app.input.value;
                 return;
             }
+
+            localStorage.backup = app.input.value;
 
             app.output.value = "Compiling...";
             app.previous = app.input.value;

@@ -24,14 +24,11 @@ class SimpleHandler < Mongrel::HttpHandler
 
                 # WRITE MAIN
                 File.open("main.cpp", 'w') { |f| f.write(request.body.string) }
-                puts "Verify main: #{File.readlines("main.cpp") { |f| puts f }}"
 
                 # COMPILE
                 status = POpen4::popen4("ccache /usr/bin/g++ -o test main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
                     stdin.close()
                 end
-
-                puts "Verify main: #{File.readlines("output") { |f| puts f }}"
 
                 if status == 0
                     out << "Compilation succeeded.\n\n"
@@ -39,7 +36,6 @@ class SimpleHandler < Mongrel::HttpHandler
                     out << "Compilation failed with the following errors:\n\n"
                 end
                 FileUtils.copy_stream(File.new("output"), out)
-                puts "Done"
             when "favicon.ico"
                 # Don't respond to favicon..
             else

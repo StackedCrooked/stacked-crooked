@@ -39,7 +39,7 @@
             var url = "http://" + window.location.hostname + ":" + window.location.port + '/compile';
 
             app.log("POST to " + url);
-            httpRequest.open("PUT", url, false);
+            httpRequest.open("PUT", url, true);
 
             httpRequest.onreadystatechange = function () {
                 if (httpRequest.readyState == 4) {
@@ -66,6 +66,7 @@
 
             app.input.onkeydown = function(e) {
                 app.changed = true;
+                app.onCompile();
                 if (!e && event.keyCode == 9)
                 {
                     event.returnValue = false;
@@ -88,7 +89,7 @@
             if (app.changed === true) {
                 app.output.value = "Compiling...";
                 app.changed = false;
-                window.setTimeout(app.onCompile, 100);
+                app.onCompile();
             }
             window.setTimeout(app.enterTimeoutLoop, 1000);
         };

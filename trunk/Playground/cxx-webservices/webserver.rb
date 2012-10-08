@@ -2,6 +2,7 @@ require 'rubygems'
 require 'fileutils'
 require 'mongrel'
 require 'popen4'
+require 'pp'
 
 
 class SimpleHandler < Mongrel::HttpHandler
@@ -12,11 +13,23 @@ class SimpleHandler < Mongrel::HttpHandler
             when ""
                 FileUtils.copy_stream(File.new("cmd.html"), out)
             when "compile"
-                File.open("main.cpp", 'w') { |f| f << request.body }
-                status = POpen4::popen4("g++ -o test main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
+
+                # WRITE MAIN
+                File.open("main.cpp", 'w') { |f| f.write(request.body.string) }
+                puts "Verify main: #{File.readlines("main.cpp") { |f| puts f }}"
+
+                # COMPILE
+                status = POpen4::popen4("/usr/bin/g++ -o test main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
                     stdin.close()
                 end
-                puts File.readlines("output") { |f| puts f }
+
+                puts "Verify main: #{File.readlines("output") { |f| puts f }}"
+
+                if status == 0
+                    out << "Compilation succeeded.\n\n"
+                else
+                    out << "Compilation failed with the following errors:\n\n"
+                end
                 FileUtils.copy_stream(File.new("output"), out)
                 puts "Done"
             when "favicon.ico"

@@ -32,7 +32,7 @@
             if (payload === "") { alert("Empty payload!"); return; };
             app.log('payload: ' + payload);
             var httpRequest = new XMLHttpRequest();
-            httpRequest.open("PUT", "http://localhost:4000/" + title, false);
+            httpRequest.open("PUT", "http://" + window.location.hostname + "/compile", false);
 
             httpRequest.onreadystatechange = function () {
                 if (httpRequest.readyState == 4) {
@@ -56,12 +56,28 @@
             app.input = document.getElementById("input");
             app.output = document.getElementById("output");
             app.commit = document.getElementById("commit");
+
+
+	    app.input.onkeydown = function(e) {
+		    if (!e && event.keyCode == 9)
+		    {
+			    event.returnValue = false;
+			    insertAtCursor(app.input, "    ");
+		    }
+		    else if (e.keyCode == 9)
+		    {
+			    e.preventDefault();
+			    insertAtCursor(app.input, "    ");
+		    }
+	    };
+
             app.enterTimeoutLoop();
         };
 
 
         app.enterTimeoutLoop = function () {
-            window.setTimeout(app.enterTimeoutLoop, 500);
+		app.onCompile();
+            window.setTimeout(app.enterTimeoutLoop, 5000);
         };
 
 
@@ -73,6 +89,24 @@
         app.onReply = function (reply) {
             app.output.value = reply;
         };
+
+	//http://alexking.org/blog/2003/06/02/inserting-at-the-cursor-using-javascript#comment-3817
+	function insertAtCursor(myField, myValue) {
+	  //IE support
+	if (document.selection) {
+		var temp;
+		myField.focus();
+		sel = document.selection.createRange();
+		temp = sel.text.length;
+		sel.text = myValue;
+		if (myValue.length == 0) {
+			sel.moveStart('character', myValue.length);
+			sel.moveEnd('character', myValue.length);
+		} else {
+			sel.moveStart('character', -myValue.length + temp);
+		}
+		sel.select();
+	}
 
 
     </script>

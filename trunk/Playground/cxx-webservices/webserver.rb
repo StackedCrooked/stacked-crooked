@@ -26,7 +26,7 @@ class SimpleHandler < Mongrel::HttpHandler
                 File.open("main.cpp", 'w') { |f| f.write(request.body.string) }
 
                 # COMPILE
-                status = POpen4::popen4("ccache g++ -o test main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
+                status = POpen4::popen4("ccache g++ -o test -std=c++0x main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
                     stdin.close()
                 end
 

@@ -24,7 +24,7 @@
         var app = {};
 
         app.cache = {};
-        app.sending = true;
+        app.bump = false;
 
 
         app.log = function (msg) {
@@ -61,7 +61,6 @@
                 }
             };
             httpRequest.send(payload);
-            app.sending = false;
         };
 
         window.onload = function () {
@@ -71,7 +70,7 @@
 
 
             app.input.onkeydown = function(e) {
-                app.onCompile();
+                app.bump = true;
                 if (!e && event.keyCode == 9)
                 {
                     event.returnValue = false;
@@ -91,20 +90,29 @@
 
 
         app.enterTimeoutLoop = function () {
-            if (app.sending === true) {
+            app.timeoutLoopImpl();
+            window.setTimeout(app.enterTimeoutLoop, 500);
+        };
+
+
+        app.timeoutLoopImpl = function() {
+
+            // Every time the user presses a key the compilation is delayed.
+            // This attempts prevent compilation while typing.
+            if (app.bump === true) {
+                app.bump = false;
                 return;
             }
 
             if (app.previous === app.input.value) {
+                app.next = app.input.value;
                 return;
             }
 
-            app.sending = true;
             app.output.value = "Compiling...";
             app.previous = app.input.value;
             app.onCompile();
-            window.setTimeout(app.enterTimeoutLoop, 100);
-        };
+        }
 
 
         app.onCompile = function () {

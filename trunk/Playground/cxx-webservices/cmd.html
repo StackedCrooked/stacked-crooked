@@ -23,6 +23,8 @@
 
         var app = {};
 
+        app.cache = {};
+
 
         app.log = function (msg) {
             console.log(msg);
@@ -33,33 +35,34 @@
 
 
         app.send = function (title, payload) {
-            app.log('payload: ' + payload);
+
+            if (app.cache[payload] !== undefined) {
+                app.onReply(app.cache[payload]);
+                app.output.style.color = "gray";
+                return;
+            }
+            else {
+                app.output.style.color = "black";
+            }
+
             var httpRequest = new XMLHttpRequest();
 
             var url = "http://" + window.location.hostname + ":" + window.location.port + '/compile';
 
-            app.log("POST to " + url);
             httpRequest.open("PUT", url, true);
 
             httpRequest.onreadystatechange = function () {
                 if (httpRequest.readyState == 4) {
                     if (httpRequest.status == 200) {
-                        app.log('HTTP STATUS 200');
-                        app.log(JSON.stringify(httpRequest));
+                        app.cache[payload] = httpRequest.responseText;
                         app.onReply(httpRequest.responseText);
-                    } else {
-                        app.log("HTTP STATUS " + httpRequest.status);
                     }
-                } else {
-                    app.log("HTTP STATUS " + httpRequest.status);
-                    app.log("httpRequest.readyState: " + httpRequest.readyState);
                 }
             };
             httpRequest.send(payload);
         };
 
         window.onload = function () {
-            app.log("window.onload");
             app.input = document.getElementById("input");
             app.output = document.getElementById("output");
 
@@ -90,12 +93,11 @@
                 app.previous = app.input.value;
                 app.onCompile();
             }
-            window.setTimeout(app.enterTimeoutLoop, 1000);
+            window.setTimeout(app.enterTimeoutLoop, 100);
         };
 
 
         app.onCompile = function () {
-            app.log('app.onCompile');
             app.send("compile", app.input.value);
         };
 

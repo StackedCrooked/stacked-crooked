@@ -5,6 +5,11 @@ require 'popen4'
 require 'pp'
 
 
+#$host = "173.203.57.63"
+$host = "stacked-crooked.com"
+$port = 80
+
+
 class SimpleHandler < Mongrel::HttpHandler
     def process(request, response)
         response.start(200) do |head,out|
@@ -19,7 +24,7 @@ class SimpleHandler < Mongrel::HttpHandler
                 puts "Verify main: #{File.readlines("main.cpp") { |f| puts f }}"
 
                 # COMPILE
-                status = POpen4::popen4("/usr/bin/g++ -o test main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
+                status = POpen4::popen4("ccache /usr/bin/g++ -o test main.cpp >output 2>&1") do |stdout, stderr, stdin, pid|
                     stdin.close()
                 end
 
@@ -52,14 +57,9 @@ class SimpleHandler < Mongrel::HttpHandler
 end
 
 
-#host = "173.203.57.63"
-host = "localhost"
-
-port = 4000
-#port = (9000 + 1000 * rand).round
 
 
-puts "Listening to port #{port}"
-h = Mongrel::HttpServer.new(host, port)
+puts "Listening to #{$host}:#{$port}"
+h = Mongrel::HttpServer.new($host, $port)
 h.register("/", SimpleHandler.new)
 h.run.join

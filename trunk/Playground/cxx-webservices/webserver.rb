@@ -5,9 +5,12 @@ require 'popen4'
 require 'pp'
 
 
-#$host = "173.203.57.63"
-$host = "stacked-crooked.com"
-$port = 80
+$local = true
+
+
+$host = $local ? "localhost" : "stacked-crooked.com"
+$port = $local ? "4000" : 80
+
 
 
 class SimpleHandler < Mongrel::HttpHandler
@@ -55,8 +58,6 @@ class SimpleHandler < Mongrel::HttpHandler
     end
 
 end
-
-
 
 
 puts "Listening to #{$host}:#{$port}"

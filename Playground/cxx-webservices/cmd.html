@@ -2,6 +2,11 @@
 <head>
     <style type="text/css">
 
+        textarea {
+            font-family: Courier New, monospace ;
+            font-size: medium;
+        }
+
         .cpp {
             position: relative;
             width: 100%;
@@ -81,8 +86,9 @@
 
         app.enterTimeoutLoop = function () {
             if (app.changed === true) {
-                app.onCompile();
+                app.output.value = "Compiling...";
                 app.changed = false;
+                window.setTimeout(app.onCompile, 100);
             }
             window.setTimeout(app.enterTimeoutLoop, 1000);
         };
@@ -132,7 +138,7 @@
 
 <span id="input_span" class="cpp">
     <label for="input"></label>
-    <textarea id="input" class="cpp">#include <iostream>
+    <textarea id="input" class="cpp">#include &ltiostream&gt
 
 int main()
 {

@@ -7,9 +7,8 @@
             width: 100%;
         }
 
-        #input   { height: 70% ; resize:none; }
+        #input   { height: 80% ; resize:none; }
         #output  { height: 20% ; resize:none; }
-        #submit  { height: 10% }
 
 
 
@@ -58,10 +57,10 @@
             app.log("window.onload");
             app.input = document.getElementById("input");
             app.output = document.getElementById("output");
-            app.commit = document.getElementById("commit");
 
 
             app.input.onkeydown = function(e) {
+                app.changed = true;
                 if (!e && event.keyCode == 9)
                 {
                     event.returnValue = false;
@@ -77,10 +76,15 @@
             app.enterTimeoutLoop();
         };
 
+        app.changed = false;
+
 
         app.enterTimeoutLoop = function () {
-            //app.onCompile();
-            window.setTimeout(app.enterTimeoutLoop, 5000);
+            if (app.changed === true) {
+                app.onCompile();
+                app.changed = false;
+            }
+            window.setTimeout(app.enterTimeoutLoop, 1000);
         };
 
 
@@ -136,9 +140,6 @@
     <label for="output"></label>
     <textarea id="output" class="cpp"></textarea>
 </span>
-
-
-<button id="submit" class="cpp" onclick="app.onCompile();">Submit!</button>
 
 
 </body>

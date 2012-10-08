@@ -29,7 +29,8 @@
 
 
         app.send = function (title, payload) {
-            app.log('app.send');
+            if (payload === "") { alert("Empty payload!"); return; };
+            app.log('payload: ' + payload);
             var httpRequest = new XMLHttpRequest();
             httpRequest.open("PUT", "http://localhost:4000/" + title, false);
 
@@ -47,7 +48,7 @@
                     app.log("httpRequest.readyState: " + httpRequest.readyState);
                 }
             };
-            httpRequest.send(payload, true);
+            httpRequest.send(payload);
         };
 
         window.onload = function () {
@@ -66,12 +67,11 @@
 
         app.onCompile = function () {
             app.log('app.onCompile');
-            var commit = document.getElementById('TextArea');
-            app.send("compile", output.textContent);
+            app.send("compile", app.input.value);
         };
 
         app.onReply = function (reply) {
-            output.textContent = reply;
+            app.output.value = reply;
         };
 
 
@@ -81,7 +81,7 @@
 
 <span class="input_span" class="cpp">
     <label for="input"></label>
-    <textarea id="input" class="cpp"></textarea>
+    <textarea id="input" class="cpp">int main() {}</textarea>
 </span>
 
 

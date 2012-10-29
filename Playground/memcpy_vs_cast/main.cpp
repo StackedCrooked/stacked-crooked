@@ -42,9 +42,8 @@ unsigned benchmark(const Function & f, std::vector<int> & container, unsigned & 
     double start = get_current_time();
     for (unsigned i = 0; i != iterations; ++i)
     {
-        const char * binary = reinterpret_cast<const char *>(container.data());
         unsigned offset = sizeof(int) * (random() % container.size());
-        counter += f(binary + offset);
+        counter += f(reinterpret_cast<const char*>(container.data()) + offset);
     }
     return unsigned(0.5 + 1000 * (get_current_time() - start));
 }
@@ -66,12 +65,10 @@ int main()
         }
         
         std::cout << std::setprecision(5);
-        std::cout << "cast      " << benchmark(&test_cast, numbers, counter)     << "ms" << std::endl;
-        std::cout << "memcpy    " << benchmark(&test_memcpy, numbers, counter)   << "ms" << std::endl;
-        std::cout << "std::copy " << benchmark(&test_std_copy, numbers, counter) << "ms" << std::endl;
-        std::cout << std::endl;
+        std::cout << "cast:      " << benchmark(&test_cast, numbers, counter)     << " ms" << std::endl;
+        std::cout << "memcpy:    " << benchmark(&test_memcpy, numbers, counter)   << " ms" << std::endl;
+        std::cout << "std::copy: " << benchmark(&test_std_copy, numbers, counter) << " ms" << std::endl;
+        std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
     }
-    
-    std::cout << "\n(Optimization prevention counter: " << counter << ")" << std::endl;
 }
 

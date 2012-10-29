@@ -3,21 +3,33 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <iomanip> 
-#include <iostream> 
+#include <iomanip>
+#include <iostream>
 #include <vector>
-#include <sys/time.h>
+#include <chrono>
 
-double get_current_time()
+class Stopwatch
 {
-    timeval tv;
-    gettimeofday(&tv, NULL);
-    return double (tv.tv_sec) + 0.000001 * tv.tv_usec;
-}
+public:
+    typedef std::chrono::high_resolution_clock Clock;
+
+    //! Constructor starts the stopwatch
+    Stopwatch() : mStart(Clock::now())
+    {
+    }
+
+    //! Returns elapsed number of seconds in decimal form.
+    double elapsed()
+    {
+        return 1.0 * (Clock::now() - mStart).count() / Clock::period::den;
+    }
+
+    Clock::time_point mStart;
+};
 
 struct test_cast
 {
-    int operator()(const char * data) const 
+    int operator()(const char * data) const
     {
         return *((int*)data);
     }
@@ -25,7 +37,7 @@ struct test_cast
 
 struct test_memcpy
 {
-    int operator()(const char * data) const 
+    int operator()(const char * data) const
     {
         int result;
         memcpy(&result, data, sizeof(result));
@@ -35,7 +47,7 @@ struct test_memcpy
 
 struct test_std_copy
 {
-    int operator()(const char * data) const 
+    int operator()(const char * data) const
     {
         int result;
         std::copy(data, data + sizeof(int), reinterpret_cast<char *>(&result));
@@ -49,41 +61,31 @@ enum
     container_size = 2000
 };
 
-std::vector<int> get_random_numbers()
+//! Returns a list of integers in binary form.
+std::vector<char> get_binary_data()
 {
-    std::vector<int> numbers(container_size);
-    for (std::vector<int>::size_type i = 0; i != numbers.size(); ++i)
+    std::vector<char> bytes(sizeof(int) * container_size);
+    for (std::vector<int>::size_type i = 0; i != bytes.size(); i += sizeof(int))
     {
-        numbers[i] = rand();
+        memcpy(&bytes[i], &i, sizeof(i));
     }
-    return numbers;
-}
-
-std::vector<int> get_random_indices()
-{
-    std::vector<int> numbers(container_size);
-    for (std::vector<int>::size_type i = 0; i != numbers.size(); ++i)
-    {
-        numbers[i] = i;
-    }
-    std::random_shuffle(numbers.begin(), numbers.end());
-    return numbers;
+    return bytes;
 }
 
 template<typename Function>
-unsigned benchmark(const Function & f, unsigned & counter)
+unsigned benchmark(const Function & function, unsigned & counter)
 {
-    std::vector<int> container = get_random_numbers();
-    std::vector<int> indices = get_random_indices();
-    double start = get_current_time();
+    std::vector<char> binary_data = get_binary_data();
+    Stopwatch sw;
     for (unsigned iter = 0; iter != iterations; ++iter)
     {
-        for (unsigned i = 0; i != container.size(); ++i)
+        for (unsigned i = 0; i != binary_data.size(); i += 4)
         {
-            counter += f(reinterpret_cast<const char*>(&container[indices[i]]));
+            const char * c = reinterpret_cast<const char*>(&binary_data[i]);
+            counter += function(c);
         }
     }
-    return unsigned(0.5 + 1000.0 * (get_current_time() - start));
+    return unsigned(0.5 + 1000.0 * sw.elapsed());
 }
 
 int main()
@@ -97,4 +99,3 @@ int main()
     std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
 
 }
-

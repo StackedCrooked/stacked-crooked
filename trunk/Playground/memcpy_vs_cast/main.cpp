@@ -90,20 +90,16 @@ std::vector<char> get_binary_data()
 std::string demangle(const char * name)
 {
     int st;
-    std::shared_ptr<char> ptr(abi::__cxa_demangle(name, 0, 0, &st), std::free);
+    char * const p = abi::__cxa_demangle(name, 0, 0, &st);
 
-    if (st != 0)
+    switch (st)
     {
-        switch (st)
-        {
-            case -1: throw std::runtime_error("A memory allocation failure occurred.");
-            case -2: throw std::runtime_error("Not a valid name under the GCC C++ ABI mangling rules.");
-            case -3: throw std::runtime_error("One of the arguments is invalid.");
-            default: throw std::runtime_error("Unexpected demangle status");
-        }
+        case 0:  return std::shared_ptr<const char>(p, std::free).get();
+        case -1: throw std::runtime_error("A memory allocation failure occurred.");
+        case -2: throw std::runtime_error("Not a valid name under the GCC C++ ABI mangling rules.");
+        case -3: throw std::runtime_error("One of the arguments is invalid.");
+        default: throw std::runtime_error("Unexpected demangle status");
     }
-
-    return ptr.get();
 }
 
 

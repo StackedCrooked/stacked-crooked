@@ -3,8 +3,10 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <functional>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 #include <chrono>
@@ -88,7 +90,7 @@ std::vector<char> get_binary_data()
 std::string demangle(const char * name)
 {
     int st;
-    char * const p = abi::__cxa_demangle(name, 0, 0, &st);
+    std::shared_ptr<char> ptr(abi::__cxa_demangle(name, 0, 0, &st), std::free);
 
     if (st != 0)
     {
@@ -101,9 +103,7 @@ std::string demangle(const char * name)
         }
     }
 
-    std::string result(p);
-    free(p);
-    return result;
+    return ptr.get();
 }
 
 
@@ -152,3 +152,4 @@ int main()
     std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
 
 }
+

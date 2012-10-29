@@ -69,7 +69,7 @@ struct test_std_copy
 
 enum
 {
-    iterations = 10000,
+    iterations = 1000,
     container_size = 2000
 };
 

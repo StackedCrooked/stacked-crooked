@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -42,28 +43,45 @@ struct test_std_copy
     }
 };
 
+enum
+{
+    iterations = 2000,
+    container_size = 2000
+};
+
 std::vector<int> get_random_numbers()
 {
-    std::vector<int> numbers;
-    numbers.reserve(1000);
-    for (std::vector<int>::size_type i = 0; i != numbers.capacity(); ++i)
+    std::vector<int> numbers(container_size);
+    for (std::vector<int>::size_type i = 0; i != numbers.size(); ++i)
     {
-        numbers.push_back(rand());
+        numbers[i] = rand();
     }
+    return numbers;
+}
+
+std::vector<int> get_random_indices()
+{
+    std::vector<int> numbers(container_size);
+    for (std::vector<int>::size_type i = 0; i != numbers.size(); ++i)
+    {
+        numbers[i] = i;
+    }
+    std::random_shuffle(numbers.begin(), numbers.end());
     return numbers;
 }
 
 template<typename Function>
 unsigned benchmark(const Function & f, unsigned & counter)
 {
-    enum { iterations = 1 * 1000 * 1000 };
     std::vector<int> container = get_random_numbers();
+    std::vector<int> indices = get_random_indices();
     double start = get_current_time();
-    for (unsigned i = 0; i != iterations; ++i)
+    for (unsigned iter = 0; iter != iterations; ++iter)
     {
-        const char * binary_data = reinterpret_cast<const char*>(container.data());
-        unsigned random_offset = sizeof(int) * (random() % container.size()); // aligned to int
-        counter += f(binary_data + random_offset);
+        for (unsigned i = 0; i != container.size(); ++i)
+        {
+            counter += f(reinterpret_cast<const char*>(&container[indices[i]]));
+        }
     }
     return unsigned(0.5 + 1000.0 * (get_current_time() - start));
 }
@@ -77,5 +95,6 @@ int main()
     std::cout << "memcpy:    " << benchmark(test_memcpy(),   counter) << " ms" << std::endl;
     std::cout << "std::copy: " << benchmark(test_std_copy(), counter) << " ms" << std::endl;
     std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
+
 }
 

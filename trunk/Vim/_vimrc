@@ -2,6 +2,9 @@
 "  General Settings
 " -----------------------------------------------------------------------------
 
+" Show line numbers
+set number
+
 " Paste doesn't indent or do funny stuff
 set paste
 

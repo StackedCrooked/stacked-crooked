@@ -107,17 +107,10 @@ std::string demangle(const char * name)
 }
 
 
-template<typename T>
-std::string demangle(const T &)
-{
-    return demangle(typeid(T).name());
-}
-
-
-//! Measures the time required to parse the binary data.
+//! Benchmarks the time required to parse the binary data.
 //! Returns time elapsed in milliseconds.
 template<typename Function>
-unsigned measure(const Function & function, unsigned & counter)
+unsigned benchmark(const Function & function, unsigned & counter)
 {
     std::vector<char> binary_data = get_binary_data();
     Stopwatch sw;
@@ -133,23 +126,29 @@ unsigned measure(const Function & function, unsigned & counter)
 }
 
 template<typename Function>
-void benchmark(const Function & function, unsigned & counter)
+void print_time(const Function & function, unsigned & counter)
 {
-    auto elapsedMs = measure(function, counter);
-    auto name = demangle(function);
-    std::cout << name << std::setw(18 - name.size()) << elapsedMs << " ms" << std::endl;
+    auto elapsedMs = benchmark(function, counter);
+    auto functionName = demangle(typeid(Function).name());
+    std::cout << functionName << std::setw(18 - functionName.size()) << elapsedMs << " ms" << std::endl;
 }
 
 int main()
 {
     srand(time(0));
 
+    // The counter is introduced to prevent the compiler
+    // from optimizating *everything* away.
     unsigned counter = 0;
-    benchmark(test_cast(),     counter);
-    benchmark(test_memcpy(),   counter);
-    benchmark(test_memmove(),  counter);
-    benchmark(test_std_copy(), counter);
 
+    // Print the times for the different strategies.
+    print_time(test_cast(),     counter);
+    print_time(test_memcpy(),   counter);
+    print_time(test_memmove(),  counter);
+    print_time(test_std_copy(), counter);
+
+    // Printing the counter to stdout prevents the compiler from
+    // optimizing away the inner loop of the benchmark function.
     std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
 
 }

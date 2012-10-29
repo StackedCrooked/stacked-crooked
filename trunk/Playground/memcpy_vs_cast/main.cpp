@@ -7,7 +7,6 @@
 #include <vector>
 #include <sys/time.h>
 
-
 double get_current_time()
 {
     timeval tv;
@@ -26,7 +25,6 @@ int test_memcpy(const char * data)
     memcpy(&result, data, sizeof(result));
     return result;
 }
-
 
 int test_std_copy(const char * data)
 {
@@ -54,8 +52,9 @@ unsigned benchmark(const Function & f, unsigned & counter)
     double start = get_current_time();
     for (unsigned i = 0; i != iterations; ++i)
     {
-        unsigned offset = random() % (sizeof(int) * container.size());
-        counter += f(reinterpret_cast<const char*>(container.data()) + offset);
+        const char * binary_data = reinterpret_cast<const char*>(container.data());
+        unsigned random_offset = sizeof(int) * (random() % container.size()); // aligned to int
+        counter += f(binary_data + random_offset);
     }
     return unsigned(0.5 + 1000.0 * (get_current_time() - start));
 }

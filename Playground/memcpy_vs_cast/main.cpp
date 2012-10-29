@@ -45,6 +45,16 @@ struct test_memcpy
     }
 };
 
+struct test_memmove
+{
+    int operator()(const char * data) const
+    {
+        int result;
+        memmove(&result, data, sizeof(result));
+        return result;
+    }
+};
+
 struct test_std_copy
 {
     int operator()(const char * data) const
@@ -57,7 +67,7 @@ struct test_std_copy
 
 enum
 {
-    iterations = 2000,
+    iterations = 20000,
     container_size = 2000
 };
 
@@ -95,6 +105,7 @@ int main()
 
     std::cout << "cast:      " << benchmark(test_cast(),     counter) << " ms" << std::endl;
     std::cout << "memcpy:    " << benchmark(test_memcpy(),   counter) << " ms" << std::endl;
+    std::cout << "memmove:   " << benchmark(test_memmove(),   counter) << " ms" << std::endl;
     std::cout << "std::copy: " << benchmark(test_std_copy(), counter) << " ms" << std::endl;
     std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
 

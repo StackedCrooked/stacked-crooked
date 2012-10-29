@@ -17,7 +17,7 @@ double get_current_time()
 
 int test_cast(const char * data)
 {
-    return *reinterpret_cast<const int*>(data);
+    return *((int*)data);
 }
 
 int test_memcpy(const char * data)
@@ -35,40 +35,39 @@ int test_std_copy(const char * data)
     return result;
 }
 
+std::vector<int> get_random_numbers()
+{
+    std::vector<int> numbers;
+    numbers.reserve(1000);
+    for (std::vector<int>::size_type i = 0; i != numbers.capacity(); ++i)
+    {
+        numbers.push_back(rand());
+    }
+    return numbers;
+}
+
 template<typename Function>
-unsigned benchmark(const Function & f, std::vector<int> & container, unsigned & counter)
+unsigned benchmark(const Function & f, unsigned & counter)
 {
     enum { iterations = 1 * 1000 * 1000 };
+    std::vector<int> container = get_random_numbers();
     double start = get_current_time();
     for (unsigned i = 0; i != iterations; ++i)
     {
-        unsigned offset = sizeof(int) * (random() % container.size());
+        unsigned offset = random() % (sizeof(int) * container.size());
         counter += f(reinterpret_cast<const char*>(container.data()) + offset);
     }
-    return unsigned(0.5 + 1000 * (get_current_time() - start));
+    return unsigned(0.5 + 1000.0 * (get_current_time() - start));
 }
-
 
 int main()
 {
     srand(time(0));
     unsigned counter = 0;
 
-    // Repeat benchmark 4 times.
-    for (unsigned i = 0; i != 4; ++i)
-    {
-        
-        std::vector<int> numbers(1000);
-        for (std::vector<int>::size_type i = 0; i != numbers.size(); ++i)
-        {
-            numbers[i] = rand();
-        }
-        
-        std::cout << std::setprecision(5);
-        std::cout << "cast:      " << benchmark(&test_cast, numbers, counter)     << " ms" << std::endl;
-        std::cout << "memcpy:    " << benchmark(&test_memcpy, numbers, counter)   << " ms" << std::endl;
-        std::cout << "std::copy: " << benchmark(&test_std_copy, numbers, counter) << " ms" << std::endl;
-        std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
-    }
+    std::cout << "cast:      " << benchmark(&test_cast,     counter)     << " ms" << std::endl;
+    std::cout << "memcpy:    " << benchmark(&test_memcpy,   counter)   << " ms" << std::endl;
+    std::cout << "std::copy: " << benchmark(&test_std_copy, counter) << " ms" << std::endl;
+    std::cout << "(counter:  " << counter << ")" << std::endl << std::endl;
 }
 

@@ -2,7 +2,7 @@
 #include <vector>
 
 struct Value
-{    
+{
     int x;
 };
 

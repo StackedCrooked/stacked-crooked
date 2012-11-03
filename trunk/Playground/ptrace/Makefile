@@ -1,5 +1,5 @@
-
+FLAGS = -O0 -std=c++0x -ggdb3 -Wall -Wextra -Werror -pedantic-errors
 all:
-	g++ -o test -O0 -ggdb3 -Wall -Wextra -Werror -pedantic-errors main.cpp
-	g++ -o teststdout -O0 -ggdb3 -Wall -Wextra -Werror -pedantic-errors teststdout.cpp
-	g++ -o teststderr -O0 -ggdb3 -Wall -Wextra -Werror -pedantic-errors teststderr.cpp
+	g++ -o test ${FLAGS} main.cpp
+	g++ -o teststdout ${FLAGS} teststdout.cpp
+	g++ -o teststderr ${FLAGS} teststderr.cpp

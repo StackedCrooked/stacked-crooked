@@ -15,6 +15,7 @@
 //  unsigned long int rsi;
 //  unsigned long int rdi;
 //  unsigned long int orig_rax;
+//#define SYSCALL_NUM(x)		(x)->orig_rax
 //#define ARGUMENT_0(x)		(ISLINUX32(x) ? (x)->rbx : (x)->rdi)
 //#define ARGUMENT_1(x)		(ISLINUX32(x) ? (x)->rcx : (x)->rsi)
 //#define ARGUMENT_2(x)		(ISLINUX32(x) ? (x)->rdx : (x)->rdx)
@@ -34,13 +35,7 @@ enum
 
 int main(int, char ** argv)
 {
-
-    pid_t child;
-    long orig_eax, rax;
-    long params[3];
-    int status;
-    int insyscall = 0;
-    child = fork();
+    pid_t child = fork();
     if (child == 0)
     {
         ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -48,28 +43,28 @@ int main(int, char ** argv)
     }
     else
     {
+        int insyscall = 0;
         while (1)
         {
+            pid_t status;
             wait(&status);
             if (WIFEXITED(status))
             {
                 break;
             }
-            orig_eax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
+            long orig_eax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
             if (orig_eax == SYS_write)
             {
                 if (insyscall == 0)
                 {
                     /* Syscall entry */
                     insyscall = 1;
-                    params[0] = ptrace(PTRACE_PEEKUSER, child, offset_arg0, NULL);
-                    params[1] = ptrace(PTRACE_PEEKUSER, child, offset_arg1, NULL);
-                    params[2] = ptrace(PTRACE_PEEKUSER, child, offset_arg2, NULL);
-                    std::cout << "Write called with " << params[0] << ", " << params[1] << ", " << params[2] << std::endl;
+                    auto channel = ptrace(PTRACE_PEEKUSER, child, offset_arg0, NULL);
+                    std::cout << "Channel: " << channel << std::endl;
                 }
                 else   /* Syscall exit */
                 {
-                    rax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
+                    long rax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
                     std::cout << "Write returned " << rax << std::endl;
                     insyscall = 0;
                 }

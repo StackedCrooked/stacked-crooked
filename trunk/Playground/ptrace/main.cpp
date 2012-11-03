@@ -52,22 +52,22 @@ int main(int, char ** argv)
             {
                 break;
             }
-            long orig_eax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
-            if (orig_eax == SYS_write)
+
+            if (insyscall == 0)
             {
-                if (insyscall == 0)
+                insyscall = 1;
+
+
+                long orig_eax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
+                if (orig_eax == SYS_write)
                 {
-                    /* Syscall entry */
-                    insyscall = 1;
                     auto channel = ptrace(PTRACE_PEEKUSER, child, offset_arg0, NULL);
                     std::cout << "Channel: " << channel << std::endl;
                 }
-                else   /* Syscall exit */
-                {
-                    long rax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
-                    std::cout << "Write returned " << rax << std::endl;
-                    insyscall = 0;
-                }
+            }
+            else
+            {
+                insyscall = 0;
             }
             ptrace(PTRACE_SYSCALL,
                    child, NULL, NULL);

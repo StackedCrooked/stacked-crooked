@@ -366,7 +366,10 @@ linux_write_returncode(pid_t pid, struct user_regs_struct* regs, long code)
 {
     SET_RETURN_CODE(regs, code);
     int res = ptrace(PTRACE_SETREGS, pid, NULL, regs);
-    THROW_PTRACE_EXCEPTION(PTRACE_SETREGS, res);
+    if (res != 0)
+    {
+        THROW_PTRACE_EXCEPTION(PTRACE_SETREGS, res);
+    }
 }
 
 

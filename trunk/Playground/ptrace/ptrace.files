@@ -1,3 +1,4 @@
 main.cpp
 teststdout.cpp
 teststderr.cpp
+testwritefile.cpp

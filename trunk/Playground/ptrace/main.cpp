@@ -1,33 +1,36 @@
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <x86_64-linux-gnu/asm/unistd_64.h>
 #include <unistd.h>
 #include <sys/user.h>
+#include <sys/reg.h>
 #include <sys/syscall.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <iostream>
 #include <cassert>
+#include <cstring>
 #include <string>
 #include <stdexcept>
 
 
-//#define ISLINUX32(x)		(linux_call_type((x)->cs) == LINUX32)
-//#define SYSCALL_NUM(x)		(x)->orig_rax
-//#define SET_RETURN_CODE(x, v)	(x)->rax = (v)
-//#define RETURN_CODE(x)		(ISLINUX32(x) ? (long)(int)(x)->rax : (x)->rax)
-//#define ARGUMENT_0(x)		(ISLINUX32(x) ? (x)->rbx : (x)->rdi)
-//#define ARGUMENT_1(x)		(ISLINUX32(x) ? (x)->rcx : (x)->rsi)
-//#define ARGUMENT_2(x)		(ISLINUX32(x) ? (x)->rdx : (x)->rdx)
-//#define ARGUMENT_3(x)		(ISLINUX32(x) ? (x)->rsi : (x)->rcx)
-//#define ARGUMENT_4(x)		(ISLINUX32(x) ? (x)->rdi : (x)->r8)
-//#define ARGUMENT_5(x)		(ISLINUX32(x) ? (x)->rbp : (x)->r9)
-//#define SET_ARGUMENT_0(x, v)	if (ISLINUX32(x)) (x)->rbx = (v); else (x)->rdi = (v)
-//#define SET_ARGUMENT_1(x, v)	if (ISLINUX32(x)) (x)->rcx = (v); else (x)->rsi = (v)
-//#define SET_ARGUMENT_2(x, v)	if (ISLINUX32(x)) (x)->rdx = (v); else (x)->rdx = (v)
-//#define SET_ARGUMENT_3(x, v)	if (ISLINUX32(x)) (x)->rsi = (v); else (x)->rcx = (v)
-//#define SET_ARGUMENT_4(x, v)	if (ISLINUX32(x)) (x)->rdi = (v); else (x)->r8 = (v)
-//#define SET_ARGUMENT_5(x, v)	if (ISLINUX32(x)) (x)->rbp = (v); else (x)->r9 = (v)
+//#define ISLINUX32(x)      (linux_call_type((x)->cs) == LINUX32)
+#define SYSCALL_NUM(x)        (x)->orig_rax
+#define SET_RETURN_CODE(x, v) (x)->rax = (v)
+#define RETURN_CODE(x)        (ISLINUX32(x) ? (long)(int)(x)->rax : (x)->rax)
+#define ARGUMENT_0(x)     ((x)->rdi)
+#define ARGUMENT_1(x)     ((x)->rsi)
+#define ARGUMENT_2(x)     ((x)->rdx)
+#define ARGUMENT_3(x)     ((x)->rcx)
+#define ARGUMENT_4(x)     ((x)->r8)
+#define ARGUMENT_5(x)     ((x)->r9)
+#define SET_ARGUMENT_0(x, v)  (x)->rdi = (v)
+#define SET_ARGUMENT_1(x, v)  (x)->rsi = (v)
+#define SET_ARGUMENT_2(x, v)  (x)->rdx = (v)
+#define SET_ARGUMENT_3(x, v)  (x)->rcx = (v)
+#define SET_ARGUMENT_4(x, v)  (x)->r8 = (v)
+#define SET_ARGUMENT_5(x, v)  (x)->r9 = (v)
 
 
 enum
@@ -35,12 +38,90 @@ enum
     offset_orig_rax = offsetof(user_regs_struct, orig_rax),
     offset_arg0 = offsetof(user_regs_struct, rdi),
     offset_arg1 = offsetof(user_regs_struct, rsi),
-    offset_arg2 = offsetof(user_regs_struct, rdi),
+    offset_arg2 = offsetof(user_regs_struct, rdx),
     offset_arg3 = offsetof(user_regs_struct, rcx),
+    offset_arg4 = offsetof(user_regs_struct, r8),
+    offset_arg5 = offsetof(user_regs_struct, r9),
     offset_ret = offsetof(user_regs_struct, rax)
 };
 
-const char *linux_syscallnames_64[] = {
+
+long get_arg0(const user_regs_struct & regs) { return regs.rdi; }
+long get_arg1(const user_regs_struct & regs) { return regs.rsi; }
+long get_arg2(const user_regs_struct & regs) { return regs.rdx; }
+long get_arg3(const user_regs_struct & regs) { return regs.rcx; }
+long get_arg4(const user_regs_struct & regs) { return regs.r8;  }
+long get_arg5(const user_regs_struct & regs) { return regs.r9;  }
+
+
+long get_arg0(pid_t child) { return ptrace(PTRACE_PEEKUSER, child, offset_arg0, NULL); }
+long get_arg1(pid_t child) { return ptrace(PTRACE_PEEKUSER, child, offset_arg1, NULL); }
+long get_arg2(pid_t child) { return ptrace(PTRACE_PEEKUSER, child, offset_arg2, NULL); }
+long get_arg3(pid_t child) { return ptrace(PTRACE_PEEKUSER, child, offset_arg3, NULL); }
+long get_arg4(pid_t child) { return ptrace(PTRACE_PEEKUSER, child, offset_arg4, NULL); }
+long get_arg5(pid_t child) { return ptrace(PTRACE_PEEKUSER, child, offset_arg5, NULL); }
+
+
+void getdata(pid_t child, long addr, char * str, int len)
+{
+    char * laddr;
+    int i, j;
+    union u
+    {
+        long val;
+        char chars[sizeof(long)];
+    } data;
+    i = 0;
+    j = len / sizeof(long);
+    laddr = str;
+    while (i < j)
+    {
+        data.val = ptrace(PTRACE_PEEKDATA, child, addr + i * sizeof(long), NULL);
+        memcpy(laddr, data.chars, sizeof(long));
+        ++i;
+        laddr += sizeof(long);
+    }
+    j = len % sizeof(long);
+    if (j != 0)
+    {
+        data.val = ptrace(PTRACE_PEEKDATA, child, addr + i * sizeof(long), NULL);
+        memcpy(laddr, data.chars, j);
+    }
+    str[len] = '\0';
+}
+
+
+void putdata(pid_t child, long addr, char * str, int len)
+{
+    char * laddr;
+    int i, j;
+    union u
+    {
+        long val;
+        char chars[sizeof(long)];
+    } data;
+    i = 0;
+    j = len / sizeof(long);
+    laddr = str;
+    while (i < j)
+    {
+        memcpy(data.chars, laddr, sizeof(long));
+        ptrace(PTRACE_POKEDATA, child,
+               addr + i * sizeof(long), data.val);
+        ++i;
+        laddr += sizeof(long);
+    }
+    j = len % sizeof(long);
+    if (j != 0)
+    {
+        memcpy(data.chars, laddr, j);
+        ptrace(PTRACE_POKEDATA, child,
+               addr + i * sizeof(long), data.val);
+    }
+}
+
+const char * linux_syscallnames_64[] =
+{
     "read", /* 0 */
     "write", /* 1 */
     "open", /* 2 */
@@ -340,43 +421,59 @@ const char *linux_syscallnames_64[] = {
     NULL
 };
 
-#define SET_RETURN_CODE(x, v)	(x)->rax = (v)
 
-
-struct ptrace_exception : std::runtime_error
+void print(const user_regs_struct & regs)
 {
-    ptrace_exception(const char * oper, int err) :
-        std::runtime_error(oper),
-        _err(err)
-    {
-    }
-
-    ~ptrace_exception() throw() {}
-
-    int get_err() const { return _err; }
-
-    int _err;
-};
-
-#define THROW_PTRACE_EXCEPTION(oper, errno) \
-    throw ptrace_exception(#oper, errno);
-
-static void
-linux_write_returncode(pid_t pid, struct user_regs_struct* regs, long code)
-{
-    SET_RETURN_CODE(regs, code);
-    int res = ptrace(PTRACE_SETREGS, pid, NULL, regs);
-    if (res != 0)
-    {
-        THROW_PTRACE_EXCEPTION(PTRACE_SETREGS, res);
-    }
+    std::cout << "regs.r15: " << regs.r15 << std::endl;
+    std::cout << "regs.r14: " << regs.r14 << std::endl;
+    std::cout << "regs.r13: " << regs.r13 << std::endl;
+    std::cout << "regs.r12: " << regs.r12 << std::endl;
+    std::cout << "regs.rbp: " << regs.rbp << std::endl;
+    std::cout << "regs.rbx: " << regs.rbx << std::endl;
+    std::cout << "regs.r11: " << regs.r11 << std::endl;
+    std::cout << "regs.r10: " << regs.r10 << std::endl;
+    std::cout << "regs.r9: " << regs.r9 << std::endl;
+    std::cout << "regs.r8: " << regs.r8 << std::endl;
+    std::cout << "regs.rax: " << regs.rax << std::endl;
+    std::cout << "regs.rcx: " << regs.rcx << std::endl;
+    std::cout << "regs.rdx: " << regs.rdx << std::endl;
+    std::cout << "regs.rsi: " << regs.rsi << std::endl;
+    std::cout << "regs.rdi: " << regs.rdi << std::endl;
+    std::cout << "regs.orig_rax: " << regs.orig_rax << std::endl;
+    std::cout << "regs.rip: " << regs.rip << std::endl;
+    std::cout << "regs.cs: " << regs.cs << std::endl;
+    std::cout << "regs.eflags: " << regs.eflags << std::endl;
+    std::cout << "regs.rsp: " << regs.rsp << std::endl;
+    std::cout << "regs.ss: " << regs.ss << std::endl;
+    std::cout << "regs.fs_base: " << regs.fs_base << std::endl;
+    std::cout << "regs.gs_base: " << regs.gs_base << std::endl;
+    std::cout << "regs.ds: " << regs.ds << std::endl;
+    std::cout << "regs.es: " << regs.es << std::endl;
+    std::cout << "regs.fs: " << regs.fs << std::endl;
+    std::cout << "regs.gs: " << regs.gs << std::endl;
 }
+
+
+void check(int n)
+{
+    assert(n == 0);
+}
+
+
+
+
+#define assert_eq(a, b) \
+    if (a != b) std::cout << #a << "!=" << #b << " (a = " << a << ", b = " << b << ")" << std::endl;
+
 
 
 
 int main(int, char ** argv)
 {
     pid_t child = fork();
+
+    user_regs_struct regs = user_regs_struct();
+
     if (child == 0)
     {
         ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -384,7 +481,7 @@ int main(int, char ** argv)
     }
     else
     {
-        int insyscall = 0;
+        int inside_syscall = 0;
         while (1)
         {
             pid_t status;
@@ -394,48 +491,95 @@ int main(int, char ** argv)
                 break;
             }
 
-            long orig_eax = ptrace(PTRACE_PEEKUSER, child, offset_orig_rax, NULL);
-            if (orig_eax == SYS_execve)
+            //user_regs_struct old_regs = regs;
+            regs = user_regs_struct();
+            check(ptrace(PTRACE_GETREGS, child, NULL, &regs));
+
+            //const char * callname = linux_syscallnames_64[regs.orig_rax];
+
+
+            static bool first_execve = true;
+            if (first_execve)
             {
-                static bool first_execve = true;
-                if (first_execve)
+                assert(regs.orig_rax == SYS_execve);
+                if (regs.orig_rax == SYS_execve)
                 {
                     ptrace(PTRACE_SYSCALL, child, NULL, NULL);
                     first_execve = false;
                     continue;
                 }
-                break;
             }
 
-            if (insyscall == 0)
+            assert_eq(get_arg0(child), get_arg0(regs));
+            assert_eq(get_arg1(child), get_arg1(regs));
+            assert_eq(get_arg2(child), get_arg2(regs));
+
+            if (inside_syscall == 0)
             {
-                std::cout << "<" << linux_syscallnames_64[orig_eax] << ">" << std::endl;
-                insyscall = 1;
-                switch (orig_eax)
+                inside_syscall = 1;
+                switch (regs.orig_rax)
                 {
-                    case SYS_read:
                     case SYS_write:
                     {
+                        int fd = static_cast<int>(ptrace(PTRACE_PEEKUSER, child, offset_arg0, NULL));
+
+                        ptrace(PTRACE_PEEKDATA, child, regs.orig_rax);
+                        std::cout << "\n<write>" << std::endl;
+                        std::string str(512, '\0');
+                        getdata(child, regs.rbx, (char*)str.data(), (int)str.size());
+                        std::cout << str.c_str() << std::endl;
+                        std::cout << "</write>" << std::endl;
+
+                        std::cout << "fd: " << fd << std::endl;
+                        if (fd != 1 || fd != 2)
+                        {
+                            fd = -1 ;
+                            check(ptrace(PTRACE_POKEUSER, child, offset_arg0, fd));
+                        }
                         break;
                     }
+                    case SYS_open:
+                    {
+                        ptrace(PTRACE_PEEKDATA, child, regs.orig_rax);
+                        print(regs);
+                        std::cout << "\n<open>" << std::endl;
+                        std::string str(512, '\0');
+                        getdata(child, regs.rbx, (char*)str.data(), (int)str.size());
+                        std::cout << str.c_str() << std::endl;
+                        std::cout << std::string(str.c_str()).size() << std::endl;
+                        std::cout << "</open>" << std::endl;
+                        break;
+
+//                        char * c1 = (char*)get_arg0(regs);
+
+//                        if (get_arg2(regs) != 0)
+//                        {
+//                            std::cout << "c1: " << std::string(c1) << std::endl;
+//                        }
+//                        static unsigned counter = 0;
+//                        if (counter++ >= 12)
+//                        {
+//                            std::cout << "SYS_open: allow startup call" << std::endl;
+//                            regs.orig_rax = SYS_getpid;
+//                            ptrace(PTRACE_SETREGS, child, NULL, &regs);
+//                        }
+//                        break;
+                    }
+                    case SYS_brk:
+                    case SYS_read:
+                    case SYS_readv:
+                    case SYS_writev:
+                    case SYS_mmap:
                     default:
                     {
-                        struct user_regs_struct regs;
-                        int res = ptrace(PTRACE_GETREGS, child, NULL, &regs);
-                        assert(res == 0);
-                        linux_write_returncode(child, &regs, 0);
                         break;
                     }
                 }
+
             }
             else
             {
-                struct user_regs_struct regs;
-                int res = ptrace(PTRACE_GETREGS, child, NULL, &regs);
-                assert(res == 0);
-                std::cout << "Return: " << regs.rax << std::endl;
-                std::cout << "</" << linux_syscallnames_64[orig_eax] << ">" << std::endl;
-                insyscall = 0;
+                inside_syscall = 0;
             }
             ptrace(PTRACE_SYSCALL, child, NULL, NULL);
         }

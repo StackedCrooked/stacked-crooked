@@ -1,7 +1,10 @@
+#include <iomanip>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-//#include <x86_64-linux-gnu/asm/unistd_64.h>
 #include <unistd.h>
 #include <sys/user.h>
 #include <sys/reg.h>
@@ -424,33 +427,33 @@ const char * linux_syscallnames_64[] =
 
 void print(const user_regs_struct & regs)
 {
-    std::cout << "regs.r15: " << regs.r15 << std::endl;
-    std::cout << "regs.r14: " << regs.r14 << std::endl;
-    std::cout << "regs.r13: " << regs.r13 << std::endl;
-    std::cout << "regs.r12: " << regs.r12 << std::endl;
-    std::cout << "regs.rbp: " << regs.rbp << std::endl;
-    std::cout << "regs.rbx: " << regs.rbx << std::endl;
-    std::cout << "regs.r11: " << regs.r11 << std::endl;
-    std::cout << "regs.r10: " << regs.r10 << std::endl;
-    std::cout << "regs.r9: " << regs.r9 << std::endl;
-    std::cout << "regs.r8: " << regs.r8 << std::endl;
-    std::cout << "regs.rax: " << regs.rax << std::endl;
-    std::cout << "regs.rcx: " << regs.rcx << std::endl;
-    std::cout << "regs.rdx: " << regs.rdx << std::endl;
-    std::cout << "regs.rsi: " << regs.rsi << std::endl;
-    std::cout << "regs.rdi: " << regs.rdi << std::endl;
-    std::cout << "regs.orig_rax: " << regs.orig_rax << std::endl;
-    std::cout << "regs.rip: " << regs.rip << std::endl;
-    std::cout << "regs.cs: " << regs.cs << std::endl;
-    std::cout << "regs.eflags: " << regs.eflags << std::endl;
-    std::cout << "regs.rsp: " << regs.rsp << std::endl;
-    std::cout << "regs.ss: " << regs.ss << std::endl;
-    std::cout << "regs.fs_base: " << regs.fs_base << std::endl;
-    std::cout << "regs.gs_base: " << regs.gs_base << std::endl;
-    std::cout << "regs.ds: " << regs.ds << std::endl;
-    std::cout << "regs.es: " << regs.es << std::endl;
-    std::cout << "regs.fs: " << regs.fs << std::endl;
-    std::cout << "regs.gs: " << regs.gs << std::endl;
+    std::cout << "regs.r15: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r15 << std::endl;
+    std::cout << "regs.r14: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r14 << std::endl;
+    std::cout << "regs.r13: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r13 << std::endl;
+    std::cout << "regs.r12: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r12 << std::endl;
+    std::cout << "regs.rbp: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rbp << std::endl;
+    std::cout << "regs.rbx: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rbx << std::endl;
+    std::cout << "regs.r11: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r11 << std::endl;
+    std::cout << "regs.r10: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r10 << std::endl;
+    std::cout << "regs.r9: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r9 << std::endl;
+    std::cout << "regs.r8: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.r8 << std::endl;
+    std::cout << "regs.rax: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rax << std::endl;
+    std::cout << "regs.rcx: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rcx << std::endl;
+    std::cout << "regs.rdx: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rdx << std::endl;
+    std::cout << "regs.rsi: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rsi << std::endl;
+    std::cout << "regs.rdi: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rdi << std::endl;
+    std::cout << "regs.orig_rax: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.orig_rax << std::endl;
+    std::cout << "regs.rip: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rip << std::endl;
+    std::cout << "regs.cs: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.cs << std::endl;
+    std::cout << "regs.eflags: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.eflags << std::endl;
+    std::cout << "regs.rsp: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.rsp << std::endl;
+    std::cout << "regs.ss: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.ss << std::endl;
+    std::cout << "regs.fs_base: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.fs_base << std::endl;
+    std::cout << "regs.gs_base: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.gs_base << std::endl;
+    std::cout << "regs.ds: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.ds << std::endl;
+    std::cout << "regs.es: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.es << std::endl;
+    std::cout << "regs.fs: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.fs << std::endl;
+    std::cout << "regs.gs: 0x" << std::hex << std::setw(8) << std::setfill('0') << regs.gs << std::endl;
 }
 
 
@@ -466,13 +469,60 @@ void check(int n)
     if (a != b) std::cout << #a << "!=" << #b << " (a = " << a << ", b = " << b << ")" << std::endl;
 
 
+void Abort() {}
+#define ASSERT_FALSE(Condition) if (Condition) { std::cout << __FILE__ << ":" << __LINE__ << ": Should be false: " << #Condition << std::endl; Abort(); }
+#define ASSERT_TRUE(Condition) if (!(Condition)) { std::cout << __FILE__ << ":" << __LINE__ << ": Should be true: " << #Condition << std::endl; Abort(); }
+const char *byte_to_binary(int x)
+{
+    static char b[9];
+    b[0] = '\0';
 
+    int z;
+    for (z = 128; z > 0; z >>= 1)
+    {
+        strcat(b, ((x & z) == z) ? "1" : "0");
+    }
+
+    return b;
+}
+
+pid_t child = 0;
+bool allowed(const user_regs_struct & regs)
+{
+
+    switch (regs.orig_rax)
+    {
+        case SYS_access:
+        case SYS_arch_prctl:
+        case SYS_brk:
+        case SYS_close:
+        case SYS_exit_group:
+        case SYS_fstat:
+        case SYS_mmap:
+        case SYS_mprotect:
+        case SYS_munmap:
+        case SYS_read:
+        case SYS_write:
+        {
+            return true;
+        }
+        case SYS_open:
+        {
+            assert(get_arg1(regs) == 0);
+            return true;
+        }
+        case SYS_execve:
+        default:
+        {
+            return false;
+        }
+    };
+}
 
 int main(int, char ** argv)
 {
-    pid_t child = fork();
+    child = fork();
 
-    user_regs_struct regs = user_regs_struct();
 
     if (child == 0)
     {
@@ -491,12 +541,8 @@ int main(int, char ** argv)
                 break;
             }
 
-            //user_regs_struct old_regs = regs;
-            regs = user_regs_struct();
+            user_regs_struct regs = user_regs_struct();
             check(ptrace(PTRACE_GETREGS, child, NULL, &regs));
-
-            //const char * callname = linux_syscallnames_64[regs.orig_rax];
-
 
             static bool first_execve = true;
             if (first_execve)
@@ -510,76 +556,21 @@ int main(int, char ** argv)
                 }
             }
 
-            assert_eq(get_arg0(child), get_arg0(regs));
-            assert_eq(get_arg1(child), get_arg1(regs));
-            assert_eq(get_arg2(child), get_arg2(regs));
-
             if (inside_syscall == 0)
             {
-                inside_syscall = 1;
-                switch (regs.orig_rax)
+                if (allowed(regs))
                 {
-                    case SYS_write:
-                    {
-                        int fd = static_cast<int>(ptrace(PTRACE_PEEKUSER, child, offset_arg0, NULL));
-
-                        ptrace(PTRACE_PEEKDATA, child, regs.orig_rax);
-                        std::cout << "\n<write>" << std::endl;
-                        std::string str(512, '\0');
-                        getdata(child, regs.rbx, (char*)str.data(), (int)str.size());
-                        std::cout << str.c_str() << std::endl;
-                        std::cout << "</write>" << std::endl;
-
-                        std::cout << "fd: " << fd << std::endl;
-                        if (fd != 1 || fd != 2)
-                        {
-                            fd = -1 ;
-                            check(ptrace(PTRACE_POKEUSER, child, offset_arg0, fd));
-                        }
-                        break;
-                    }
-                    case SYS_open:
-                    {
-                        ptrace(PTRACE_PEEKDATA, child, regs.orig_rax);
-                        print(regs);
-                        std::cout << "\n<open>" << std::endl;
-                        std::string str(512, '\0');
-                        getdata(child, regs.rbx, (char*)str.data(), (int)str.size());
-                        std::cout << str.c_str() << std::endl;
-                        std::cout << std::string(str.c_str()).size() << std::endl;
-                        std::cout << "</open>" << std::endl;
-                        break;
-
-//                        char * c1 = (char*)get_arg0(regs);
-
-//                        if (get_arg2(regs) != 0)
-//                        {
-//                            std::cout << "c1: " << std::string(c1) << std::endl;
-//                        }
-//                        static unsigned counter = 0;
-//                        if (counter++ >= 12)
-//                        {
-//                            std::cout << "SYS_open: allow startup call" << std::endl;
-//                            regs.orig_rax = SYS_getpid;
-//                            ptrace(PTRACE_SETREGS, child, NULL, &regs);
-//                        }
-//                        break;
-                    }
-                    case SYS_brk:
-                    case SYS_read:
-                    case SYS_readv:
-                    case SYS_writev:
-                    case SYS_mmap:
-                    default:
-                    {
-                        break;
-                    }
+                    inside_syscall = 1;
                 }
-
+                else
+                {
+                    abort();
+                }
             }
             else
             {
                 inside_syscall = 0;
+                std::cout << "/" << linux_syscallnames_64[regs.orig_rax] << std::endl;
             }
             ptrace(PTRACE_SYSCALL, child, NULL, NULL);
         }

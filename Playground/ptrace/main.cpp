@@ -1,7 +1,7 @@
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <x86_64-linux-gnu/asm/unistd_64.h>
+//#include <x86_64-linux-gnu/asm/unistd_64.h>
 #include <unistd.h>
 #include <sys/user.h>
 #include <sys/reg.h>

@@ -1,3 +1,3 @@
+set -x
 type xdotool &>/dev/null || { echo "xdotool not found." >&2; exit 1; }
-ln -s `pwd`/wleft ~/bin/wleft
-ln -s `pwd`/wright ~/bin/wright
+for i in `ls w*` ; do ln -s `pwd`/$i ~/bin/ ; done

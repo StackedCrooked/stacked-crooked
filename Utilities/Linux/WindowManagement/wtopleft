@@ -1,2 +1,2 @@
-xdotool windowsize $(xdotool getactivewindow) '50%' '45%'
-xdotool windowmove $(xdotool getactivewindow) 0 0 
+xdotool windowmove $(xdotool getactivewindow) 8 74
+xdotool windowsize $(xdotool getactivewindow) 947 519

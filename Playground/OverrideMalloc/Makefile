@@ -1,4 +1,4 @@
-OPTIONS = -DCOLIRU_SANDBOX_MEMORY_LIMIT=10 -std=c++0x -Wall -Wextra -Werror
+OPTIONS = -DCOLIRU_SANDBOX_MEMORY_LIMIT=10000000 -std=c++0x -Wall -Wextra -Werror
 
 all:
 	g++ ${OPTIONS} -fPIC -c malloc_hook.cpp

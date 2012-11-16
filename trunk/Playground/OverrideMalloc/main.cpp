@@ -1,15 +1,16 @@
 #include <iostream>
+#include <string>
 #include <stdexcept>
 #include <stdlib.h>
 
 
 int main()
 {
-    unsigned n = 1;
-    unsigned sum = 0;
+    auto n = 1ull;
+    auto sum = 0ull;
     while (sum < 10 * 1000 * 1000)
     {
-        void * ptr = malloc(n);
+        auto ptr = malloc(n);
         std::cout << "ptr: " << ptr << std::endl;
         if (!ptr)
         {

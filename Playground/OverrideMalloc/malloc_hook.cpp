@@ -8,9 +8,6 @@
 #include <dlfcn.h>
 
 
-//namespace { std::size_t gSum = 0; }
-
-
 void *malloc(size_t size)
 {
     typedef void* (*AllocFunction)(size_t);

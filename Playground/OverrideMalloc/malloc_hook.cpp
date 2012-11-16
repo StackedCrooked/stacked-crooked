@@ -6,7 +6,7 @@
 
 
 #ifndef COLIRU_SANDBOX_MEMORY_LIMIT
-#define COLIRU_SANDBOX_MEMORY_LIMIT 10 // bytes
+#error Build command should specify -DCOLIRU_SANDBOX_MEMORY_LIMIT=...
 #endif
 
 

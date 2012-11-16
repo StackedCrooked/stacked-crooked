@@ -1,21 +1,44 @@
 #include <stdexcept>
+#include <iostream>
 
-#define __USE_GNU
+//#define __USE_GNU
 #include <dlfcn.h>
 
 
-typedef void* (*AllocFunction)(size_t);
+#ifndef COLIRU_SANDBOX_MEMORY_LIMIT
+#define COLIRU_SANDBOX_MEMORY_LIMIT 1000 * 1000  // 1 MB
+#endif
+
+
+namespace {
+
+std::size_t gSum = 0;
+
+}
 
 
 void *malloc(size_t size)
 {
-    static AllocFunction real_malloc = reinterpret_cast<decltype(real_malloc)>(dlsym(RTLD_NEXT, "malloc"));
+	typedef void* (*AllocFunction)(size_t);
+	static AllocFunction real_malloc = reinterpret_cast<decltype(real_malloc)>(dlsym(RTLD_NEXT, "malloc"));
 
-    static std::size_t fSum = 0;
-    fSum += size;
-    if (fSum > 1000)
-    {
-        throw std::bad_alloc();
-    }
-    return real_malloc(size);
+	gSum += size;
+	if (gSum > COLIRU_SANDBOX_MEMORY_LIMIT)
+	{
+		return 0;
+	}
+	else
+	{
+		return real_malloc(size);
+	}
 }
+
+#if 0
+void free( void* ptr )
+{
+	typedef void (*FreeFunction)(size_t);
+	static FreeFunction real_free = reinterpret_cast<FreeFunction>(dlsym(RTLD_NEXT, "free"));
+
+    real_free(ptr);
+}
+#endif

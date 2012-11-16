@@ -1,21 +1,34 @@
+#include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <stdexcept>
-#include <stdlib.h>
 
+
+#ifndef COLIRU_SANDBOX_MEMORY_LIMIT
+#error Build command should specify -DCOLIRU_SANDBOX_MEMORY_LIMIT=...
+#endif
+
+
+#define TEST_MALLOC 0
+#define TEST_NEW    1
+#define TEST_CASE   TEST_NEW
 
 int main()
 {
-    auto n = 1llu;
-    auto sum = 0llu;
-    while (sum < 11)
+#if TEST_CASE == TEST_MALLOC
+    assert(malloc(COLIRU_SANDBOX_MEMORY_LIMIT - 1));
+    assert(malloc(1));
+    assert(!malloc(1));
+#elif TEST_CASE == TEST_NEW
+    new char[COLIRU_SANDBOX_MEMORY_LIMIT - 1]; // OK
+    new char[1]; // OK
+    try
     {
-        void * ptr = malloc(n);
-        std::cout << "ptr: " << ptr << std::endl;
-        if (!ptr)
-        {
-            throw std::runtime_error("Failed to allocate " + std::to_string(n) + " more bytes.");
-        }
-        sum += n;
-        std::cout << "sum: " << unsigned(sum) << " bytes" << std::endl;
+        new char[1]; // Error!
+        assert(false);
     }
+    catch (std::bad_alloc& exc)
+    {
+    }
+#endif
 }

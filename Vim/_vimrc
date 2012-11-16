@@ -116,7 +116,7 @@ fun! ActivateAddons()
 endf
 
 " Uncomment this line to make use of the addons.
-call ActivateAddons()
+"call ActivateAddons()
 
 
 " -----------------------------------------------------------------------------

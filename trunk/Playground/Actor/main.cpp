@@ -6,10 +6,15 @@
 #include <thread>
 
 
-// Encapsulates an object of type T, a queue and a thread. The outside world can
-// obtain access to T via callbacks. Callbacks are pushed to the queue from the
-// user's thread and popped by the Actor in it's encapsulated thread. The
-// callbacks are invoked in this thread as well.
+// The Actor class template provides a thread-safety wrapper around an object.
+// Access to T can be indirectly achieved by calling the execute(..) method
+// with a callback that that takes a T by reference or const-reference.
+//
+// Callbacks can be posted from any thread and will always be executed on the
+// Actor's thread. This removes the need for locking in most situations.
+//
+// Return values are clumsily encapsulated using std::promise and std::future.
+//
 template<typename T>
 class Actor
 {
@@ -31,6 +36,12 @@ public:
         }
         consumer_thread.join();
     }
+    
+    Actor(Actor&&) = default;
+    Actor& operator=(Actor&&) = default;
+    
+    Actor(const Actor&) = delete;
+    Actor& operator=(const Actor&) = delete;    
     
     template<typename Ret>
     std::future<Ret> execute(const std::function<Ret(const T &)> & f)
@@ -78,5 +89,3 @@ int main()
     age.wait();
     std::cout << "age: " << age.get() << std::endl;
 }
-
-

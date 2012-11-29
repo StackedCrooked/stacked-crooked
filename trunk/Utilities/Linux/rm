@@ -1,0 +1,1 @@
+/bin/rm --preserve-root --one-file-system $*

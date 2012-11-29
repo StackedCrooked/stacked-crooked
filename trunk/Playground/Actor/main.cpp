@@ -1,10 +1,8 @@
 #include <chrono>
-#include <condition_variable>
 #include <deque>
 #include <functional>
 #include <future>
 #include <iostream>
-#include <mutex>
 #include <thread>
 
 
@@ -22,8 +20,6 @@ public:
         started(false),
         quit(false),
         consumer_thread(std::bind(&Actor<T>::consume, this)),
-        mutex(),
-        cond(),
         queue()
     {
     }
@@ -31,9 +27,7 @@ public:
     ~Actor()
     {
         {
-            std::unique_lock<std::mutex> lock(mutex);
             quit = true;
-            cond.notify_all();
         }
         consumer_thread.join();
     }
@@ -41,7 +35,6 @@ public:
     template<typename Ret>
     std::future<Ret> execute(const std::function<Ret(const T &)> & f)
     {
-        std::unique_lock<std::mutex> lock;
         auto promisePtr = std::make_shared< std::promise<Ret> >();
         auto l = [this, f, promisePtr]() { promisePtr->set_value(f(obj)); };
         Task task(l);
@@ -58,21 +51,18 @@ private:
     {        
         while (!quit)
         {
-            std::unique_lock<std::mutex> lock(mutex);
-            cond.wait(lock);
             if (!queue.empty())
             {
                 queue.front()();
                 queue.pop_front();
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
     
     T obj;    
     std::atomic<bool> started, quit;
     std::thread consumer_thread;
-    std::mutex mutex;
-    std::condition_variable cond;
     std::deque<Task> queue; // lockless queue would be better
 };
 

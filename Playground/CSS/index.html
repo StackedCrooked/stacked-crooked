@@ -9,43 +9,44 @@
             height: 100%;
         }
 
-        .layout {
-             position: relative;
-             padding: 0;
-             margin: 0;
-         }
+        .box-layout {
+            display: -webkit-box;
+            position: relative;
+            padding: 0;
+            margin: 0;
+        }
 
-        .box {
+        .box-element {
             display: -webkit-box;
         }
 
-        .box-orient-horizontal {
+        .box-layout-orient-horizontal {
             -webkit-box-orient: horizontal;
         }
 
-        .box-orient-vertical {
+        .box-layout-orient-vertical {
             -webkit-box-orient: vertical;
         }
 
-        .box-flex-0 {
+        .box-element-flex-0 {
             -webkit-box-flex: 0;
         }
 
-        .box-flex-1 {
+        .box-element-flex-1 {
             -webkit-box-flex: 1.0;
         }
 
     </style>
 
 </head>
-<body class="layout box box-orient-vertical box-flex-1">
-    <button id="a" class="box box-flex-0"></button>
-    <div id="middle" class="layout box box-orient-horizontal box-flex-1">
-        <button id="b1" class="box box-flex-0">B1</button>
-        <button id="b2" class="box box-flex-1">B2</button>
-        <button id="b3" class="box box-flex-0">B3</button>
-    </div>
-    <button id="c" class="box box-flex-0"></button>
+<body class="box-layout">
+<button id="a" class="box-element box-element-flex-0"></button>
+<div id="middle" class="box-element box-element-flex-1">
+    <button id="b1" class="box-element box-element-flex-0">B1</button>
+    <button id="b2" class="box-element box-element-flex-1">B2</button>
+    <button id="b3" class="box-element box-element-flex-0">B3</button>
+</div>
+<button id="c" class="box-element box-element-flex-0"></button>
 <script>
 </script>
 

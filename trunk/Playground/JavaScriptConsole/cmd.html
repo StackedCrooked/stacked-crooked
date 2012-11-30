@@ -80,7 +80,14 @@
                 (Chat.displayCount)++;
                 
             };
-            
+
+
+            Chat.enterTimerLoop = function() {
+                Chat.rebuildLayout();
+                setTimeout(1000, Chat.enterTimerLoop());
+            };
+
+            Chat.enterTimerLoop();
            
             Chat.send = function(message)
             {

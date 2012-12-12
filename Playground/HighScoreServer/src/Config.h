@@ -25,6 +25,38 @@ DEFINE_HTTP_RESOURCE(HallOfFame, "hof")
 DEFINE_HTTP_RESOURCE(ErrorPage, "error-page")
 
 
+template<ContentType>
+struct ContentTypeString;
+
+
+struct ContentTypeString<ContentType_TextHTML>
+{
+    static const char * content_type = "text/html";
+};
+
+struct ContentTypeString<ContentType_TextHTML>
+{
+    static const char * content_type = "text/html";
+};
+template<Method>
+struct MethodValue;
+
+
+struct MethodValue<MethodType_Get>
+{
+    static const char * http_method = "GET";
+};
+    static const char * http_method = "GET";
+struct HighscorePostForm : ContentTypeString<ContentType_TextHTML>,
+
+{
+    static const char * location = "hs/post";
+    static const char * http_method = "GET";
+
+
+};
+
+
 class GetHighScorePostForm : public GenericRequestHandler<GetHighScorePostForm,
                                                           HighScorePostForm::Id,
                                                           Method_Get,
@@ -35,13 +67,21 @@ protected:
 };
 
 
-class GetHighScoreDeleteForm : public GenericRequestHandler<GetHighScoreDeleteForm,
-                                                            HighScoreDeleteForm::Id,
-                                                            Method_Get,
-                                                            ContentType_TextHTML>
+struct GetHighScoreDeleteForm : GenericRequestHandler<GetHighScoreDeleteForm, Method::GET, ContentType::TextHTML>,
+                                FileServer
 {
-protected:
-    virtual void generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse);
+    GetHighScoreDeleteForm() : FileServer("html/add.body")
+    {
+
+    }
+    void do_generateResponse(Poco::Net::HTTPServerRequest& inRequest, Poco::Net::HTTPServerResponse& outResponse)
+    {
+        std::string body;
+        ReadEntireFile("html/add.html", body);
+        outResponse.setContentLength(body.size());
+        outResponse.send() << body;
+
+    }
 };
 
 

@@ -18,11 +18,13 @@
 #include "Poco/StreamCopier.h"
 #include <atomic>
 #include <cassert>
-#include <iostream>
-#include <vector>
 #include <condition_variable>
+#include <future>
+#include <iostream>
+#include <memory>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 
 using namespace Poco;
@@ -30,67 +32,133 @@ using namespace Poco::Net;
 using namespace Poco::Util;
 
 
-struct PublicRequestHandler : public HTTPRequestHandler
+struct ServiceImplementor : public HTTPRequestHandler
 {
-    PublicRequestHandler() :
-        mMutex(),
-        mCondition(),
-        mReq(),
-        mQuit()
+    ServiceImplementor() :
+        mNewJobMutex(),
+        mNewJobCondition(),
+        mNewJob()
     {
     }
 
-    ~PublicRequestHandler()
+    enum class Type {
+        JobRequest,
+        JobResult
+    };
+
+    Type parseType(const std::string & str) const
     {
-        assert(mQuit);
+        if (str == "JobRequest")
+        {
+            return Type::JobRequest;
+        }
+        else
+        {
+            return Type::JobResult;
+        }
     }
 
-    void setQuitFlag()
+    std::pair<Type, std::string> getReq(HTTPServerRequest & httpReq)
     {
-        mQuit = true;
+        std::string type;
+        httpReq.stream() >> type;
+
+        std::string body;
+        httpReq.stream() >> body;
+        return std::make_pair(parseType(type), body);
+    }
+
+    void handleRequest(HTTPServerRequest& httpReq, HTTPServerResponse& resp)
+    {
+        auto req = getReq(httpReq);
+        if (req.first == Type::JobRequest)
+        {
+            // Wait for the user to submit a job.
+            std::unique_lock<std::mutex> lock(mNewJobMutex);
+            mNewJobCondition.wait(lock);
+            resp.send() << mNewJob;
+        }
+        else if (req.first == Type::JobResult)
+        {
+            std::unique_lock<std::mutex> lock(mJobResultMutex);
+            mJobResult = req.second;
+            mJobResultCondition.notify_one();
+        }
+    }
+
+    std::future<std::string> submitJob(const std::string & inJob)
+    {
+        std::unique_lock<std::mutex> lock(mNewJobMutex);
+        mNewJob = inJob;
+        mNewJobCondition.notify_one();
+
+        Task task([this]() -> std::string {
+            std::unique_lock<std::mutex> resultlock(mJobResultMutex);
+            mJobResultCondition.wait(resultlock);
+            return mJobResult;
+        });
+        auto result = task.get_future();
+        mTasks.insert(std::make_pair(inJob, std::make_shared<decltype(task)>(std::move(task))));
+        return result;
+    }
+
+    mutable std::mutex mNewJobMutex;
+    std::condition_variable mNewJobCondition;
+    std::string mNewJob;
+
+    mutable std::mutex mJobResultMutex;
+    std::condition_variable mJobResultCondition;
+    std::string mJobResult;
+
+    typedef std::packaged_task<std::string()> Task;
+    typedef std::shared_ptr<Task> TaskPtr;
+    typedef std::map<std::string, TaskPtr > Tasks;
+    Tasks mTasks;
+};
+
+
+struct ServiceProvider : public HTTPRequestHandler
+{
+    ServiceProvider(ServiceImplementor & inImplementor) :
+        mImplementor(inImplementor)
+    {
     }
 
     void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
     {
-        while (!mQuit)
-        {
-            std::unique_lock<std::mutex> lock(mMutex);
-            mCondition.wait(lock);
-            if (mQuit)
-            {
-                return;
-            }
-            Poco::StreamCopier::copyStream(mReq->stream(), response.send());
-            mReq = nullptr;
-        }
+        std::string job;
+        request.stream() >> job;
+        std::future<std::string> job_result = mImplementor.submitJob(job);
+        response.send() << job_result.get();
     }
 
-    void push(HTTPServerRequest & req)
-    {
-        mReq = &req;
-        mCondition.notify_one();
-    }
-
-    mutable std::mutex mMutex;
-    std::condition_variable mCondition;
-    HTTPServerRequest * mReq;
-    std::atomic<bool> mQuit;
+    ServiceImplementor & mImplementor;
 };
 
 
-struct TimeRequestHandlerFactory: public HTTPRequestHandlerFactory
+
+struct RequestHandlerFactory: public HTTPRequestHandlerFactory, ServiceImplementor
 {
     HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request)
     {
-        if (request.getURI() == "/")
-            return new PublicRequestHandler;
+        std::cout << request.getURI() << std::endl;
+        if (request.getURI() == "/ServiceImplementor")
+        {
+            return new ServiceImplementor();
+        }
+        else if (request.getURI() == "/ServiceProvider")
+        {
+            return new ServiceProvider(*this);
+        }
         else
-            return 0;
+        {
+            throw std::runtime_error(request.getURI());
+        }
     }
 };
 
 
-class HTTPTimeServer: public Poco::Util::ServerApplication
+class ColiruServer : public Poco::Util::ServerApplication
     /// The main application class.
     ///
     /// This class handles command-line arguments and
@@ -110,11 +178,11 @@ class HTTPTimeServer: public Poco::Util::ServerApplication
     /// To test the TimeServer you can use any web browser (http://localhost:9980/).
 {
 public:
-    HTTPTimeServer(): _helpRequested(false)
+    ColiruServer(): _helpRequested(false)
     {
     }
 
-    ~HTTPTimeServer()
+    ~ColiruServer()
     {
     }
 
@@ -157,7 +225,7 @@ protected:
         helpFormatter.format(std::cout);
     }
 
-    int main(const std::vector<std::string>& args)
+    int main(const std::vector<std::string>& )
     {
         if (_helpRequested)
         {
@@ -179,7 +247,7 @@ protected:
             // set-up a server socket
             ServerSocket svs(port);
             // set-up a HTTPServer instance
-            HTTPServer srv(new TimeRequestHandlerFactory, svs, pParams);
+            HTTPServer srv(new RequestHandlerFactory, svs, pParams);
             // start the HTTPServer
             srv.start();
             // wait for CTRL-C or kill
@@ -193,10 +261,8 @@ protected:
 private:
     bool _helpRequested;
 };
-
-
 int main(int argc, char** argv)
 {
-    HTTPTimeServer app;
+    ColiruServer app;
     return app.run(argc, argv);
 }

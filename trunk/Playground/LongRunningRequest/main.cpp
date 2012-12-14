@@ -23,13 +23,39 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <thread>
 #include <vector>
+
+
+struct LogItem
+{
+    ~LogItem()
+    {
+        std::cout << ss.str() << std::endl;
+    }
+
+    std::stringstream ss;
+};
+
+#define LOG() LogItem().ss << __FILE__ << ":" << __LINE__ << ": "
 
 
 using namespace Poco;
 using namespace Poco::Net;
 using namespace Poco::Util;
+
+
+enum class Type {
+    JobRequest,
+    JobResult
+};
+
+
+std::ostream& operator<<(std::ostream& os, Type type)
+{
+    return os << (type == Type::JobRequest ? "JobRequest" : "JobResult");
+}
 
 
 struct ServiceImplementor : public HTTPRequestHandler
@@ -41,20 +67,21 @@ struct ServiceImplementor : public HTTPRequestHandler
     {
     }
 
-    enum class Type {
-        JobRequest,
-        JobResult
-    };
-
     Type parseType(const std::string & str) const
     {
+        LOG() << "parseType: " << str;
         if (str == "JobRequest")
         {
             return Type::JobRequest;
         }
-        else
+        else if (str == "JobResult")
         {
             return Type::JobResult;
+        }
+        else
+        {
+            LOG() << "Invalid type. Throwing!";
+            throw std::runtime_error("Invalid request type: " + str);
         }
     }
 
@@ -71,30 +98,40 @@ struct ServiceImplementor : public HTTPRequestHandler
     void handleRequest(HTTPServerRequest& httpReq, HTTPServerResponse& resp)
     {
         auto req = getReq(httpReq);
+        LOG() << "Request type: " << req.first << ", body: " << req.second;
         if (req.first == Type::JobRequest)
         {
             // Wait for the user to submit a job.
+
+            LOG() << "Waiting for jobs.";
             std::unique_lock<std::mutex> lock(mNewJobMutex);
+            LOG() << "Got a job: " << mNewJob;
             mNewJobCondition.wait(lock);
             resp.send() << mNewJob;
         }
         else if (req.first == Type::JobResult)
         {
+            LOG() << "Doing job...";
             std::unique_lock<std::mutex> lock(mJobResultMutex);
             mJobResult = req.second;
+            LOG() << "Finished job! Result is: " << mJobResult;
             mJobResultCondition.notify_one();
         }
     }
 
     std::future<std::string> submitJob(const std::string & inJob)
     {
+        LOG() << "Waiting for job submissions.";
         std::unique_lock<std::mutex> lock(mNewJobMutex);
         mNewJob = inJob;
         mNewJobCondition.notify_one();
 
         Task task([this]() -> std::string {
             std::unique_lock<std::mutex> resultlock(mJobResultMutex);
+
+            LOG() << "Task: waiting for result";
             mJobResultCondition.wait(resultlock);
+            LOG() << "Task: got result. Returning: " << mJobResult;
             return mJobResult;
         });
         auto result = task.get_future();
@@ -141,6 +178,7 @@ struct RequestHandlerFactory: public HTTPRequestHandlerFactory, ServiceImplement
 {
     HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request)
     {
+        LOG() << "request.getURI(): " << request.getURI();
         std::cout << request.getURI() << std::endl;
         if (request.getURI() == "/ServiceImplementor")
         {

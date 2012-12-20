@@ -5,17 +5,8 @@
 #include <pthread.h>
 
 
-
-#ifdef __APPLE__
-typedef int pthread_spinlock_t;
-template<typename ...Args> void pthread_spin_init(Args && ...)    {}
-template<typename ...Args> void pthread_spin_destroy(Args && ...) {}
-template<typename ...Args> void pthread_spin_lock(Args && ...)    {}
-template<typename ...Args> void pthread_spin_unlock(Args && ...)  {}
-#endif // __APPLE__
-
-
 namespace Policy {
+
 
 enum class Recursive { Yes, No };
 enum class Spin      { Yes, No };
@@ -25,7 +16,13 @@ namespace Posix {
 
 
 template<Recursive>
-struct Attribute;
+struct Attribute
+{
+    pthread_mutexattr_t * getAttribute()
+    {
+        return nullptr;
+    }
+};
 
 
 template<>
@@ -51,21 +48,12 @@ struct Attribute<Recursive::Yes>
 };
 
 
-template<>
-struct Attribute<Recursive::No>
-{
-    pthread_mutexattr_t * getAttribute()
-    {
-        return nullptr;
-    }
-};
+template<Recursive, Spin>
+struct NativeMutex;
 
 
-template<Recursive, Spin> struct NativeMutex;
-
-
-template<Recursive recursive>
-struct NativeMutex<recursive, Spin::No> : Attribute<recursive>
+template<Recursive rec>
+struct NativeMutex<rec, Spin::No> : Attribute<rec>
 {
     typedef pthread_mutex_t Type;
 
@@ -84,6 +72,16 @@ struct NativeMutex<recursive, Spin::No> : Attribute<recursive>
 
     Type obj;
 };
+
+
+#ifdef __APPLE__
+typedef int pthread_spinlock_t;
+template<typename ...Args> void pthread_spin_init(Args && ...)    {}
+template<typename ...Args> void pthread_spin_destroy(Args && ...) {}
+template<typename ...Args> void pthread_spin_lock(Args && ...)    {}
+template<typename ...Args> void pthread_spin_unlock(Args && ...)  {}
+#endif // __APPLE__
+
 
 
 template<>
@@ -107,7 +105,6 @@ struct NativeMutex<Recursive::No, Spin::Yes>
     Type obj;
 };
 
-template<> struct NativeMutex<Recursive::Yes, Spin::Yes>; // undefined
 
 } // namespace Posix
 
@@ -124,6 +121,8 @@ typedef NativeMutex< Recursive::No , Spin::No  > Mutex;
 typedef NativeMutex< Recursive::Yes, Spin::No  > RecursiveMutex;
 typedef NativeMutex< Recursive::No , Spin::Yes > SpinMutex;
 
+
 } // namespace Policy
+
 
 #endif // POLICY_H

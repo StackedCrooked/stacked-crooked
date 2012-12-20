@@ -16,9 +16,11 @@
 #include "Poco/Util/OptionSet.h"
 #include "Poco/Util/HelpFormatter.h"
 #include "Poco/StreamCopier.h"
+#include "Utils.h"
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
+#include <deque>
 #include <future>
 #include <iostream>
 #include <memory>
@@ -56,7 +58,6 @@ std::ostream& operator<<(std::ostream& os, Type type)
 {
     return os << (type == Type::JobRequest ? "JobRequest" : "JobResult");
 }
-
 
 struct ServiceImplementor : public HTTPRequestHandler
 {
@@ -139,9 +140,6 @@ struct ServiceImplementor : public HTTPRequestHandler
         return result;
     }
 
-    mutable std::mutex mNewJobMutex;
-    std::condition_variable mNewJobCondition;
-    std::string mNewJob;
 
     mutable std::mutex mJobResultMutex;
     std::condition_variable mJobResultCondition;

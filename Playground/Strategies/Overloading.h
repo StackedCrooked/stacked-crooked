@@ -2,213 +2,63 @@
 #define Overloading_H
 
 
-#include <algorithm>
-#include <iostream>
-#include <memory>
-#include <string>
+#include <chrono>
+#include <deque>
+#include <list>
+#include <set>
 #include <vector>
-#include <utility>
-#include <type_traits>
 
 
 namespace Overloading {
 
 
-enum Dimension {
-    Width,
-    Height
-};
-
-enum Orientation {
-    Horizontal,
-    Vertical
-};
-
-
-
-template<Dimension dim, Orientation orient> struct calculate_width;
-
-enum BoxSizeAlgoritm {
-    Accumulate,
-    MaxSize
-};
-
-template<BoxSizeAlgoritm> struct calculate_size;
-
-template<> struct calculate_size<BoxSizeAlgoritm::Accumulate>
-{
-    template<typename Container>
-    void operator()(const Container & container) const
-    {
-        return std::accumulate(container.begin(), container.end(), 0);
-    }
-};
-
-template<> struct calculate_size<BoxSizeAlgoritm::MaxSize>
-{
-    template<typename Container>
-    void operator()(const Container & container) const
-    {
-        return std::accumulate(container.begin(), container.end(), 0);
-    }
-};
-
-template<> struct calculate_dimension : calculate_size<GetAlgorithm<dim, orient>>
-{
-    template<typename Container>
-    void operator()(const Container & container) const
-    {
-        return std::accumulate(container.begin(), container.end(), 0);
-    }
-};
-
-template<> struct calculate_dimension<Orientation::Vertical>
-{
-    template<typename Container>
-    void operator()(const Container & container) const
-    {
-        return std::max_element(container.begin(), container.end());
-    }
-};
-
-
-struct VerticalBox
-{
-    template<typename Container>
-    void calculate_width(const Container & container) const
-    {
-        return std::max_element(container.begin(), container.end());
-    }
-};
-
-
-template<Orientation> struct Orientation2BoxType;
-template<> struct Orientation2BoxType<Orientation::Horizontal> {  typedef HorizontalBox Type; };
-template<> struct Orientation2BoxType<Orientation::Vertical  > {  typedef VerticalBox   Type; };
-
-template<> struct Orientation2BoxType<Orientation::Horizontal>
-{
-    typedef VerticalBox Type;
-};
-
-
-template<Orientation orient>
-struct BoxLayout
-{
-    int width() const
-    {
-        return calculate_width<orient>()(elements);
-    }
-
-    std::vector<int> elements;
-};
-
-
-template<typename void sum
-
-//
-// .cpp file
-//
-class NativeMutex
+class Stopwatch
 {
 public:
-    // factory method
-    static std::unique_ptr<NativeMutex> Create();
+    typedef std::chrono::high_resolution_clock Clock;
 
-    virtual ~NativeMutex() {}
+    //! Constructor starts the stopwatch
+    Stopwatch() : mStart(Clock::now())
+    {
+    }
 
-    void lock()   { do_lock();   }
+    //! Returns elapsed number of seconds in decimal form.
+    double elapsed()
+    {
+        return 1.0 * (Clock::now() - mStart).count() / Clock::period::den;
+    }
 
-    void unlock() { do_unlock(); }
-
-private:
-    virtual void do_lock() = 0;
-    virtual void do_unlock() = 0;
-
-    pthread_mutex_t mMutex;
+    Clock::time_point mStart;
 };
 
 
-Mutex::Mutex() : mNativeMutex(NativeMutex::Create())
+template<typename T> void append(std::vector<T> & vec, const T & t) { vec.push_back(t); }
+template<typename T> void append(std::set<T>    & set, const T & t) { set.insert(t);    }
+template<typename T> void append(std::deque<T>  & deq, const T & t) { deq.push_back(t); }
+template<typename T> void append(std::list<T>   & lst, const T & t) { lst.push_back(t); }
+
+
+template<typename Container>
+double benchmark_container_growth()
 {
-}
-
-
-void Mutex::lock()
-{
-    mNativeMutex->lock();
-}
-
-
-void Mutex::unlock()
-{
-    mNativeMutex->unlock();
-}
-
-} // namespace Overloading
-
-
-#include <pthread.h>
-
-
-namespace Overloading {
-
-
-class PosixMutex : public NativeMutex
-{
-public:
-    PosixMutex() : NativeMutex(), mMutex()
+    Container c;
+    Stopwatch sw;
+    for (int i = 0; i != 1000000; ++i)
     {
-        pthread_mutex_init(&mMutex, NULL);
+        append(c, i);
     }
-
-    ~PosixMutex()
-    {
-        pthread_mutex_destroy(&mMutex);
-    }
-
-private:
-    void do_lock()
-    {
-        pthread_mutex_lock(&mMutex);
-    }
-
-    void do_unlock()
-    {
-        pthread_mutex_lock(&mMutex);
-    }
-
-    pthread_mutex_t mMutex;
-};
-
-
-
-std::unique_ptr<NativeMutex> NativeMutex::Create()
-{
-    // ifdef posix
-    return std::unique_ptr<NativeMutex>(new PosixMutex);
-    // else: return type according to platform
+    return sw.elapsed();
 }
-
-
-class ScopedLock
-{
-public:
-    ScopedLock(Mutex & inMutex) : mMutex(inMutex) {}
-
-private:
-    ScopedLock(const ScopedLock&) = delete;
-    ScopedLock& operator=(const ScopedLock&) = delete;
-
-    Mutex & mMutex;
-};
 
 
 void test()
 {
-    Mutex mutex;
-    ScopedLock lock(mutex);
+    benchmark_container_growth< std::vector<int> >();
+    benchmark_container_growth< std::set<int>    >();
+    benchmark_container_growth< std::list<int>   >();
+    benchmark_container_growth< std::deque<int>  >();
 }
+
 
 
 } // namespace Overloading

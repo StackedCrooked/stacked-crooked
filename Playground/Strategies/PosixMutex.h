@@ -113,7 +113,7 @@ struct NativeMutex<Recursive::No, Spin::Yes>
 #ifdef __APPLE__
 using namespace Posix;
 #else
-//using namespace Windows;
+using namespace Posix;
 #endif
 
 

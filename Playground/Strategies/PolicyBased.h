@@ -26,16 +26,11 @@ public:
 
 struct JSON
 {
-    std::string serialize(const std::string & str)
-    {
-        return str;
-    }
-
     template<typename T>
     std::string serialize(const T & t)
     {
         std::stringstream ss;
-        ss << t;
+        ss << "\"" << t << "\"";
         return ss.str();
     }
 

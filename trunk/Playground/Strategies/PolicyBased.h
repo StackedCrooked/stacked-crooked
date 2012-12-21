@@ -26,8 +26,14 @@ public:
 
 struct JSON
 {
-    template<typename T>
-    std::string serialize(const T & t)
+    std::string serialize(int n)
+    {
+        std::stringstream ss;
+        ss << n;
+        return ss.str();
+    }
+
+    std::string serialize(const std::string & t)
     {
         std::stringstream ss;
         ss << "\"" << t << "\"";
@@ -95,19 +101,12 @@ struct Test
     Test()
     {
         Archiver<JSON, NoCompression, StdOut> arch;
-        std::map<int, std::vector<std::map<int, std::string>>> object;
-
-        object[0].push_back({
-            { 0, "zero" },
-            { 1, "one"  },
-            { 2, "two" }
-        });
-        object[1].push_back({
-            { 3, "three" },
-            { 4, "four"  },
-            { 5, "five" }
-        });
-        arch.store(object);
+        typedef std::map<std::string, std::vector<int>> Data;
+        Data data = {
+            { "ip_1" , { 10, 0, 0, 1 } },
+            { "ip_2" , { 10, 0, 0, 2 } }
+        };
+        arch.store(data);
     }
 };
 

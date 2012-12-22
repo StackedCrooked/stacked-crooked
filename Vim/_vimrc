@@ -66,12 +66,6 @@ colorscheme default
 "  File types
 " -----------------------------------------------------------------------------
 
-" SWIG.
-" Requires the 'swig' plugin which is automatically
-" installed by the ActivateAddons() function below.
-au BufNewFile,BufRead *.i set filetype=swig 
-au BufNewFile,BufRead *.swg set filetype=swig 
-
 
 " -----------------------------------------------------------------------------
 " Key mappings
@@ -94,29 +88,6 @@ map Y y$
 
 " F4: Search destructors in a cpp file
 :map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
-
-
-" -----------------------------------------------------------------------------
-" Settings for the vim-addons plugin
-" -----------------------------------------------------------------------------
-fun! ActivateAddons()
-  if !exists('g:vimrc_loaded')
-    let addonsDir = $HOME . "/vim-addons"
-    set runtimepath+=~/vim-addons/vim-addon-manager
-    try
-      call vam#ActivateAddons([])
-      let g:vim_addon_manager['auto_install'] = 1
-      " The 'silent' command surpresses the "Press ENTER to continue" messages.
-      silent call vam#ActivateAddons(['Align294', 'swig', 'vcscommand', 'highlight', 'The_NERD_Commenter', 'The_NERD_tree'])
-    catch /.*/
-      echoe v:exception
-    endtry
-    let g:vimrc_loaded = 1
-  endif
-endf
-
-" Uncomment this line to make use of the addons.
-"call ActivateAddons()
 
 
 " -----------------------------------------------------------------------------

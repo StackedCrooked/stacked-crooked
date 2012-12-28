@@ -28,11 +28,6 @@ auto sq = [](int64_t v) { return v * v; };
 
 int main()
 {
-    std::vector<int64_t> numbers;
-    std::generate_n(std::back_inserter(numbers), 100,
-                    [](){ static int64_t n; return ++n; });
-
-
     auto sum_of_sq =
         std::accumulate(boost::make_counting_iterator(1),
                         boost::make_counting_iterator(100 + 1),
@@ -45,7 +40,5 @@ int main()
                            int64_t(),
                            [](int64_t & x, int64_t n) { x += n; return x; }));
 
-    std::cout << "sum_of_sq: " << sum_of_sq << std::endl;
-    std::cout << "sq_of_sum: " << sq_of_sum << std::endl;
-    std::cout << "(sum_of_sq - sq_of_sum): " << (sum_of_sq - sq_of_sum) << std::endl;
+    std::cout << (sum_of_sq - sq_of_sum) << std::endl;
 }

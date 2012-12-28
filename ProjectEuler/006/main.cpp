@@ -15,23 +15,6 @@
  */
 
 
-/*
-Solution:
-
-Define helper functions:
-  sum(n, fun)
-  sum_of_squares(n)
-  square_of_sum(n)
-
-
-  sum_elements(generate(1, 100, square))
-  boost::counting_iterator
-sum_of_squares(100)
-square_of_sum(100)
-
-*/
-
-
 #include <boost/iterator/counting_iterator.hpp>
 #include <algorithm>
 #include <numeric>
@@ -40,20 +23,8 @@ square_of_sum(100)
 #include <stdint.h>
 
 
+auto sq = [](int64_t v) { return v * v; };
 
-template<typename T>
-std::ostream& operator<<(std::ostream & os, const std::vector<T> & vec)
-{
-    os << "[ ";
-    for (const auto & v : vec)
-    {
-        os << v << " ";
-    }
-    return os << "]";
-}
-
-template<typename T>
-T sq(T v) { return v * v; }
 
 int main()
 {
@@ -70,9 +41,9 @@ int main()
 
     auto sq_of_sum =
         sq(std::accumulate(boost::make_counting_iterator(1),
-                        boost::make_counting_iterator(100 + 1),
-                        int64_t(),
-                        [](int64_t & x, int64_t n) { x += n; return x; }));
+                           boost::make_counting_iterator(100 + 1),
+                           int64_t(),
+                           [](int64_t & x, int64_t n) { x += n; return x; }));
 
     std::cout << "sum_of_sq: " << sum_of_sq << std::endl;
     std::cout << "sq_of_sum: " << sq_of_sum << std::endl;

@@ -17,26 +17,6 @@
 #include <vector>
 #include <stdint.h>
 
-
-/**
-Simple brute force:
-999 x 999
-998 x 999   998 x 998
-997 x 999   997 x 998   997 x 997
-
-
-For (i, i) in (999 - i) x (999 - j)
-(1, 1)
-(2, 1) (2, 2)
-(3, 1) (3, 2) (3, 3)
-
-
-(i, i-0)
-(i, i-1)  (i, i-0)
-(i, i-2)  (i, i-1)  (i, i-0)
-
-*/
-
 bool is_palindrome(const std::string & str)
 {
     std::string copy(str);

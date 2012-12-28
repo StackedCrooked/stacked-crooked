@@ -1,3 +1,3 @@
 
 all:
-	g++ -o test -Wall -Wextra -Werror main.cpp
+	g++ -o test -std=c++11 -Wall -Wextra -Werror main.cpp

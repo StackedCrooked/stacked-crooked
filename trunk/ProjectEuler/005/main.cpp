@@ -43,6 +43,8 @@ bool is_prime(uint64_t n, const std::vector<uint64_t> & preceding)
     }
     return true;
 }
+
+
 uint64_t next_prime(std::vector<uint64_t> & preceding)
 {
     if (preceding.empty())

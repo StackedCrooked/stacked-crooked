@@ -14,7 +14,7 @@
 
 bool is_prime(int64_t n, const std::vector<int64_t> & preceding)
 {
-    // precondition: "preceding" contains all primes < n
+    // precondition: "preceding" contains all primes < sqrt(n)
 
     for (auto p : preceding)
     {

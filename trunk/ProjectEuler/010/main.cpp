@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 
-bool is_prime(int64_t n, const std::vector<int64_t> & preceding)
+bool is_prime(uint64_t n, const std::vector<uint64_t> & preceding)
 {
     // precondition: "preceding" contains all primes < sqrt(n)
 
@@ -32,7 +32,7 @@ bool is_prime(int64_t n, const std::vector<int64_t> & preceding)
 }
 
 
-int64_t next_prime(const std::vector<int64_t> & preceding)
+uint64_t next_prime(const std::vector<uint64_t> & preceding)
 {
     if (preceding.empty())
     {
@@ -44,7 +44,7 @@ int64_t next_prime(const std::vector<int64_t> & preceding)
         return 3;
     }
 
-    for (int64_t n = preceding.back() + 2; ; n += 2)
+    for (uint64_t n = preceding.back() + 2; ; n += 2)
     {
         if (is_prime(n, preceding))
         {
@@ -54,13 +54,13 @@ int64_t next_prime(const std::vector<int64_t> & preceding)
 }
 
 
-std::vector<int64_t> get_primes_below(int64_t limit)
+std::vector<uint64_t> get_primes_below(uint64_t limit)
 {
-    std::vector<int64_t> result;
+    std::vector<uint64_t> result;
     result.reserve(limit / 2); // no reallocs
     for (;;)
     {
-        int64_t next = next_prime(result);
+        uint64_t next = next_prime(result);
         if (next >= limit)
         {
             return result;
@@ -73,5 +73,5 @@ std::vector<int64_t> get_primes_below(int64_t limit)
 int main()
 {
     auto primes = get_primes_below(2 * 1000 * 1000);
-    std::cout << std::accumulate(primes.begin(), primes.end(), int64_t()) << std::endl;
+    std::cout << std::accumulate(primes.begin(), primes.end(), uint64_t()) << std::endl;
 }

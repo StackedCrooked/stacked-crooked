@@ -18,6 +18,11 @@ bool is_prime(int64_t n, const std::vector<int64_t> & preceding)
 
     for (auto p : preceding)
     {
+        if ((p * p) > n)
+        {
+            return true;
+        }
+
         if (n % p == 0)
         {
             return false;

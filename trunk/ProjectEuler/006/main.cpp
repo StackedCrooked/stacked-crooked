@@ -40,5 +40,5 @@ int main()
                            int64_t(),
                            [](int64_t & x, int64_t n) { x += n; return x; }));
 
-    std::cout << (sum_of_sq - sq_of_sum) << std::endl;
+    std::cout << std::abs(sum_of_sq - sq_of_sum) << std::endl;
 }

@@ -31,17 +31,19 @@
  */
 
 
-/*
-Solution:
-Each element can serve as an "anchor" for multiple chains.
-Possible chains: horizontal, vertical, diagonal_left, diag_right.
-
-Algorithm:
-For each element:
-    for each chain:
-        calculate product and store mai
+/**
+ * Solution
+ * --------
+ * Each element can serve as an "anchor" for one or more chains.
+ * If we start in the upper left corner then we only need to consider
+ * 4 types of chains: horizontal-right, vertical-down, diagonal-down-left and
+ * diagonal-down-right.
+ *
+ * Algorithm:
+ *   for each element in the grid:
+ *     for each possible chain:
+ *       calculate product, compare old max and store new max
  */
-
 
 
 #include <array>
@@ -72,12 +74,8 @@ unsigned grid[20][20] = {
     {  1, 70, 54, 71, 83, 51, 54, 69, 16, 92, 33, 48, 61, 43, 52,  1, 89, 19, 67, 48 }
 };
 
-enum {
-    chain_length = 4
-};
 
-
-typedef std::array<unsigned, chain_length> Chain;
+typedef std::array<unsigned, 4> Chain;
 
 
 template<typename Grid>

@@ -60,10 +60,10 @@ struct Bridge
         while (true)
         {
             boost::unique_lock<boost::mutex> lock(mtx);
-            condition.wait_for(lock, boost::chrono::seconds(10));
+            condition.wait_for(lock, boost::chrono::seconds(1));
             if (!delegated.empty())
             {
-            for (const auto & pair : delegated)
+                for (const auto & pair : delegated)
                 {
                     const auto & question = pair.first;
                     answer = question;
@@ -84,6 +84,7 @@ struct Bridge
 
     void delegate(const std::string & command, const std::string & arg, const Callback & callback)
    {
+        std::cout << "*** delegate ***" << std::endl;
         boost::unique_lock<boost::mutex> lock(mtx);
         delegated.insert(std::make_pair(MakeRequest(command, arg), callback));
         condition.notify_one();
@@ -110,18 +111,21 @@ struct Server
 {
     std::string handle(const std::string & request)
     {
+        std::cout << "Server::handle " << request << std::endl;
         auto parts = split(request, '\t');
-        if (parts.size() != 2)
+        if (parts.empty())
         {
+            std::cout << "Invalid request: " << std::endl << request << std::endl;
             throw std::runtime_error("Invalid request.");
         }
         std::string answer;
-        handle(unescape(parts[0]), unescape(parts[1]), answer);
+        handle(unescape(parts[0]), unescape(parts.size() >= 2 ? parts[1] : ""), answer);
         return answer;
     }
 
     void handle(const std::string & command, const std::string & arg, std::string & answer)
     {
+        std::cout << "Server::handle " << command << ", " << arg << std::endl;
         if (command == "listen")
         {
             bridge.listen(answer);

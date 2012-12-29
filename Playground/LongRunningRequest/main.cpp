@@ -20,11 +20,39 @@ ResultServer luistert naar worker results  op poort 12342.
  */
 
 
+enum {
+    ClientPort = 12340,
+    WorkerPort = 12341,
+    ResultPort = 12342
+};
+
+
+struct ClientServer
+{
+    ClientServer(WorkerServer & worker_server,
+                 unsigned short port) :
+        mWorkerServer(&worker_server),
+        server_(port,
+               std::bind(&ClientServer::handle, this, std::placeholders::_1))
+    {
+    }
+
+    Response handle(const Request & request)
+    {
+        // De client server delegeert de user request naar de worker server.
+        return mWorkerServer->handle(request);
+    }
+
+    WorkerServer * mWorkerServer;
+    UDPServer server_;
+};
+
+
 int main()
 {
     boost::thread listener_thread([&](){
         std::cout << "start listener_thread" << std::endl;
-        Server server;
+        WorkerServer server;
         UDPServer(9100, [&](const Request & req) {
             std::cout << "Server received request: " << std::endl << req << std::endl;
             return Response(server.handle(req));

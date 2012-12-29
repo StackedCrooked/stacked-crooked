@@ -1,14 +1,16 @@
 #include <algorithm>
-#include <condition_variable>
-#include <future>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <set>
 #include <string>
 #include <sstream>
-#include <thread>
 #include <vector>
+#include <boost/chrono.hpp>
+#include <boost/thread.hpp>
+
+
+typedef std::function<void(const std::string&)> Callback;
+
 
 
 void replace_all(std::string & str, const std::string & oldStr, const std::string & newStr)
@@ -57,8 +59,8 @@ struct Bridge
     {
         while (true)
         {
-            std::unique_lock<std::mutex> lock(mtx);
-            condition.wait_for(lock, std::chrono::seconds(10));
+            boost::unique_lock<boost::mutex> lock(mtx);
+            condition.wait_for(lock, boost::chrono::seconds(10));
             if (!delegated.empty())
             {
             for (const auto & pair : delegated)
@@ -80,15 +82,11 @@ struct Bridge
         return join(command, arg);
     }
 
-    std::future<std::string> delegate(const std::string & command, const std::string & arg)
-    {
-        std::unique_lock<std::mutex> lock(mtx);
-        auto promPtr = std::make_shared<std::promise<std::string> >();
-        std::promise<std::string> & prom = *promPtr;
-        auto fut = prom.get_future();
-        delegated.insert(std::make_pair(MakeRequest(command, arg), promPtr));
+    void delegate(const std::string & command, const std::string & arg, const Callback & callback)
+   {
+        boost::unique_lock<boost::mutex> lock(mtx);
+        delegated.insert(std::make_pair(MakeRequest(command, arg), callback));
         condition.notify_one();
-        return fut;
     }
 
     void finished(const std::string & question, const std::string & answer)
@@ -98,13 +96,13 @@ struct Bridge
         {
             throw std::runtime_error("no matching request");
         }
-        std::promise<std::string> & prom = *it->second;
-        prom.set_value(answer);
+        const Callback & cb = it->second;
+        cb(answer);
     }
 
-    std::mutex mtx;
-    std::condition_variable condition;
-    std::map<std::string, std::shared_ptr<std::promise<std::string> > > delegated;
+    boost::mutex mtx;
+    boost::condition_variable condition;
+    std::map<std::string, Callback> delegated;
 };
 
 
@@ -137,7 +135,9 @@ struct Server
         }
         else
         {
-            bridge.delegate(command, arg);
+            bridge.delegate(command, arg, [&answer](const std::string & ans){
+                answer = ans;
+            });
         }
     }
 

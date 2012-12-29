@@ -86,24 +86,26 @@ struct Bridge
 };
 
 
-struct Server : Bridge
+struct Server
 {
     void handle(const std::string & command, const std::string & arg, std::string & answer)
     {
         if (command == "listen")
         {
-            listen(answer);
+            bridge.listen(answer);
         }
         else if (command == "finished")
         {
             auto sep = arg.find("\t");
             auto question = arg.substr(0, sep);
             auto answer = arg.substr(sep + 1, std::string::npos);
-            finished(question, answer);
+            bridge.finished(question, answer);
         }
         else
         {
-            this->delegate(command, arg);
+            bridge.delegate(command, arg);
         }
     }
+
+    Bridge bridge;
 };

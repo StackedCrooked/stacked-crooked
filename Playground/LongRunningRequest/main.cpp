@@ -1,3 +1,4 @@
+#if 0
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Net/HTTPRequestHandlerFactory.h"
@@ -302,3 +303,20 @@ int main(int argc, char** argv)
     ColiruServer app;
     return app.run(argc, argv);
 }
+#else
+
+
+#include "test.cpp"
+
+
+int main()
+{
+    Server server;
+
+
+    std::string answer;
+    server.handle("listen", "", answer);
+
+}
+
+#endif // 0

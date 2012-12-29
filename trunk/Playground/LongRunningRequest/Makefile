@@ -1,9 +1,9 @@
 
 all:
-	g++ -o server -std=c++0x -g -Wall -Wextra -Werror -pedantic-errors -I/opt/local/include -L/opt/local/lib \
+	g++ -o server -std=c++0x -g -Wall -Wextra -Werror -pedantic-errors -I/usr/local/include -L/usr/local/lib \
 	main.cpp Networking.cpp \
 	-pthread \
-	/opt/local/lib/libboost_system-mt.a \
-	/opt/local/lib/libboost_thread-mt.a \
-	/opt/local/lib/libboost_chrono-mt.a
+	-lboost_system-mt \
+	-lboost_thread-mt \
+	-lboost_chrono-mt
 

@@ -37,7 +37,7 @@ struct UDPServer::Impl
             std::string req(data, length);
             std::cout << "\nRequest size: " << req.size() << std::endl;
             std::cout << "Request data:\n" << req << std::endl;
-            std::string response = inRequestHandler(req);
+            std::string response = inRequestHandler(Request(req));
             std::cout << "\nResponse size: " << response.size() << std::endl;
             std::cout << "Response data:\n" << response << std::endl;
             mSocket.send_to(boost::asio::buffer(response.c_str(), response.size()), sender_endpoint);

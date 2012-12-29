@@ -10,9 +10,8 @@
 #include <string>
 
 
-BOOST_STRONG_TYPEDEF(std::string, Request)
-BOOST_STRONG_TYPEDEF(std::string, Response)
-
+typedef std::string Request;
+typedef std::string Response;
 
 
 class UDPServer : boost::noncopyable

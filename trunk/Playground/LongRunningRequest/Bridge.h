@@ -107,7 +107,7 @@ struct Bridge
 };
 
 
-struct Server
+struct WorkerServer
 {
     std::string handle(const std::string & request)
     {

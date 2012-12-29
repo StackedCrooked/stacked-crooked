@@ -13,4 +13,4 @@ cd Vim && ./Install.sh && cd -
 cd Utilities/CodeFormatter && ./Install.sh && cd -
 cd Utilities/svnscripts && ./Install.sh && cd -
 sudo apt-get -y install synaptic aptitude
-sudo apt-get install libboost1.50-dev libpoco-dev
+sudo apt-get -y install libboost1.50-dev libpoco-dev

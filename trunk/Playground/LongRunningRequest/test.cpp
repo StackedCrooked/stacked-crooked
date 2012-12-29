@@ -1,72 +1,109 @@
 #include <algorithm>
 #include <condition_variable>
-#include <deque>
+#include <future>
+#include <map>
+#include <memory>
 #include <mutex>
+#include <set>
 #include <thread>
-
-
-struct Server
-{
-    void handle(const std::string & question, std::string & answer)
-    {
-        if (question == "flip")
-        {
-            std::reverse(answer.begin(), answer.end());
-        }
-        else
-        {
-            // GIGO
-            answer = question;
-        }
-    }
-};
 
 
 struct Bridge
 {
-    Bridge(Server & s) : server(&s) {}
-
-    void handle(const std::string & question, std::string & answer)
+    void listen(std::string & answer)
     {
-        if (question == "listen")
+        while (true)
         {
-            while (true)
+            std::unique_lock<std::mutex> lock(mtx);
+            condition.wait_for(lock, std::chrono::seconds(10));
+            if (!delegated.empty())
             {
-                std::unique_lock<std::mutex> lock(mtx);
-                condition.wait_for(lock, std::chrono::seconds(10));
-                if (!questions.empty())
+                for (const auto & pair : delegated)
                 {
-                    answer = "[" + questions.front() + "]";
-                    questions.pop_front();
-                }
-                else
-                {
-                    answer = "[]";
+                    const auto & question = pair.first;
+                    answer = question;
+                    break; // assume only one request for now
                 }
             }
-        }
-        else
-        {
-            answer = std::move(question);
+            else
+            {
+                answer = "[]";
+            }
         }
     }
 
-    void delegate(const std::string & q)
+    void replace_all(std::string& str, const std::string& oldStr, const std::string& newStr)
+    {
+      size_t pos = 0;
+      while((pos = str.find(oldStr, pos)) != std::string::npos)
+      {
+         str.replace(pos, oldStr.length(), newStr);
+         pos += newStr.length();
+      }
+    }
+
+    std::string escape(std::string data)
+    {
+        replace_all(data, "\t", "\\t");
+        return data;
+    }
+
+    std::string join(const std::string & lhs, const std::string & rhs)
+    {
+        return escape(lhs) + "\t" + escape(rhs);
+    }
+
+    std::string MakeRequest(const std::string & command, const std::string & arg)
+    {
+        return join(command, arg);
+    }
+
+    std::future<std::string> delegate(const std::string & command, const std::string & arg)
     {
         std::unique_lock<std::mutex> lock(mtx);
-        questions.push_back(q);
+        auto promPtr = std::make_shared<std::promise<std::string> >();
+        std::promise<std::string> & prom = *promPtr;
+        auto fut = prom.get_future();
+        delegated.insert(std::make_pair(MakeRequest(command, arg), promPtr));
         condition.notify_one();
+        return fut;
     }
 
+    void finished(const std::string & question, const std::string & answer)
+    {
+        auto it = delegated.find(question);
+        if (it == delegated.end())
+        {
+            throw std::runtime_error("no matching request");
+        }
+        std::promise<std::string> & prom = *it->second;
+        prom.set_value(answer);
+    }
 
-    Server * server;
     std::mutex mtx;
     std::condition_variable condition;
-    std::deque<std::string> questions;
+    std::map<std::string, std::shared_ptr<std::promise<std::string> > > delegated;
 };
 
 
-int main()
+struct Server : Bridge
 {
-
-}
+    void handle(const std::string & command, const std::string & arg, std::string & answer)
+    {
+        if (command == "listen")
+        {
+            listen(answer);
+        }
+        else if (command == "finished")
+        {
+            auto sep = arg.find("\t");
+            auto question = arg.substr(0, sep);
+            auto answer = arg.substr(sep + 1, std::string::npos);
+            finished(question, answer);
+        }
+        else
+        {
+            this->delegate(command, arg);
+        }
+    }
+};

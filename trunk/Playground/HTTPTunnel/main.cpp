@@ -1,89 +1,79 @@
 #include "Networking.h"
-#include "Bridge.h"
+#include <iostream>
+#include <functional>
+#include <string>
+#include <boost/thread/condition.hpp>
+#include <boost/thread/future.hpp>
+#include <boost/thread/mutex.hpp>
 
 
-/*
-ClientServer luistert naar client requests op poort 12340.
-WorkerServer luistert naar worker requests op poort 12341.
-ResultServer luistert naar worker results  op poort 12342.
-
-- De worker client polt voor request bij de worker server. Dit is een long
-  running request die regelmatig vernieuwd wordt.
-- De user doet een request bij de client server en wacht op antwoord.
-- De client server delegeert de user request naar de worker server.
-- De worker server geeft de user request als reponse voor de long running
-  worker client request.
-- De worker client voert de opdract uit en post het resultaat naar de result
-  server.
-- De result server geeft het resultaat door aan de client server.
-- De client server geeft het resultaat als antwoord op de watchtende client.
- */
+typedef boost::mutex Mutex;
+typedef boost::unique_lock<Mutex> Lock;
+typedef boost::condition_variable Condition;
+typedef std::function<std::string()> Job;
 
 
-enum {
-    ClientPort = 12340,
-    WorkerPort = 12341,
-    ResultPort = 12342
-};
+template<typename T>
+using Future = boost::unique_future<T>;
 
 
-struct ClientServer
+
+
+
+struct Broker
 {
-    ClientServer(WorkerServer & worker_server,
-                 unsigned short port) :
-        mWorkerServer(&worker_server),
-        server_(port,
-               std::bind(&ClientServer::handle, this, std::placeholders::_1))
+    Broker() :
+        mUserServer(9000, std::bind(&Broker::handleClientRequest, this, std::placeholders::_1)),
+        mJobServer(9001, std::bind(&Broker::handleJobRequest, this, std::placeholders::_1)),
+        mResultReceiver(9002, std::bind(&Broker::receiveResult, this, std::placeholders::_1))
     {
     }
 
-    Response handle(const Request & request)
+    std::string handleClientRequest(const std::string & inRequest)
     {
-        // De client server delegeert de user request naar de worker server.
-        return mWorkerServer->handle(request);
+        {
+            Lock lock(mJobMutex);
+            mJob = inRequest;
+            mJobCondition.notify_one();
+        }
+
+        {
+            Lock lock(mResultMutex);
+            mResultCondition.wait(lock);
+            return mResult;
+        }
     }
 
-    WorkerServer * mWorkerServer;
-    UDPServer server_;
+    std::string handleJobRequest(const std::string &)
+    {
+        Lock l(mJobMutex);
+        mJobCondition.wait(l);
+        return mJob;
+    }
+
+    bool receiveResult(const std::string & str)
+    {
+        Lock lock(mResultMutex);
+        mResult = str;
+        mResultCondition.notify_one();
+        return false;
+    }
+
+    UDPServer mUserServer;
+    UDPServer mJobServer;
+    UDPReceiver mResultReceiver;
+
+    Condition mJobCondition;
+    Mutex mJobMutex;
+    std::string mJob;
+
+    Condition mResultCondition;
+    Mutex mResultMutex;
+    std::string mResult;
 };
 
 
 int main()
 {
-    boost::thread listener_thread([&](){
-        std::cout << "start listener_thread" << std::endl;
-        WorkerServer server;
-        UDPServer(9100, [&](const Request & req) {
-            std::cout << "Server received request: " << std::endl << req << std::endl;
-            return Response(server.handle(req));
-        });
-    });
-    boost::this_thread::sleep_for(boost::chrono::nanoseconds(1000 * 1000 * 1000));
-
-    boost::thread worker_thread([](){
-        std::cout << "start worker_thread" << std::endl;
-        UDPClient client("localhost", 9101);
-        std::string req = client.send("listen");
-        std::cout << "worker_thread: got request: " << req << std::endl;
-        auto parts = split(req);
-        if (parts.at(0) == "flip")
-        {
-            auto arg = parts.at(1);
-            std::reverse(arg.begin(), arg.end());
-            UDPSender("localhost", 9100).send(join("finished", join("flip", arg)));
-        }
-    });
-    boost::this_thread::sleep_for(boost::chrono::nanoseconds(1000 * 1000 * 1000));
-
-    boost::thread client_thread([](){
-        std::cout << "start client_thread" << std::endl;
-        UDPClient client("localhost", 9100);
-        std::string req = client.send(join("flip", "abc"));
-        std::cout << "client_thread: result of flip: " << req << std::endl;
-    });
-    boost::this_thread::sleep_for(boost::chrono::nanoseconds(1000 * 1000 * 1000));
-
-    client_thread.join();
-    worker_thread.join();
-    listener_thread.join();
+    Broker broker;
 }

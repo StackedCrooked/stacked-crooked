@@ -53,25 +53,17 @@ public:
 class RequestHandlerFactory: public HTTPRequestHandlerFactory
 {
 public:
-    RequestHandlerFactory(const std::string& format):
-        _format(format)
-    {
-    }
-
     HTTPRequestHandler* createRequestHandler(const HTTPServerRequest&)
     {
         return new RequestHandler;
     }
-
-private:
-    std::string _format;
 };
 
 
 class HTTPDispatcher: public Poco::Util::ServerApplication
 {
 private:
-    int main(const std::vector<std::string>& args)
+    int main(const std::vector<std::string>& )
     {
         ThreadPool::defaultPool().addCapacity(16);
 
@@ -82,7 +74,7 @@ private:
         // set-up a server socket
         ServerSocket svs(8080);
         // set-up a HTTPServer instance
-        HTTPServer srv(new RequestHandlerFactory(DateTimeFormat::SORTABLE_FORMAT), svs, pParams);
+        HTTPServer srv(new RequestHandlerFactory, svs, pParams);
         // start the HTTPServer
         srv.start();
         // wait for CTRL-C or kill

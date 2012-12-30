@@ -9,7 +9,7 @@ LIBS = \
 SRC = main.cpp
 
 all:
-	g++ -o server $(INCLUDE_DIRS) $(CPP_DEFINES) $(LIBS) $(SRC)
+	g++ -o server -Wall -Wextra -Werror -pedantic-errors $(INCLUDE_DIRS) $(CPP_DEFINES) $(LIBS) $(SRC)
 
 clean:
 	find . -type f -name "*.o" | xargs rm

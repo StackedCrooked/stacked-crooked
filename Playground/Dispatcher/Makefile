@@ -1,8 +1,9 @@
 CPP_DEFINES = -ggdb3
 INCLUDE_DIRS = -Iinclude -I/opt/local/include
 LIBS = \
-    -L/opt/local/lib \
-    -lPocoFoundation \
+	-L/opt/local/lib \
+	-lPocoFoundation \
+	-lPocoUtil \
 	-lPocoNet
 
 SRC = main.cpp

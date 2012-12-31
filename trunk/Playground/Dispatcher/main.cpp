@@ -20,6 +20,8 @@
 #include "Poco/Mutex.h"
 #include <functional>
 #include <iostream>
+#include <cstdlib>
+#include <thread>
 
 
 typedef Poco::Net::HTTPServerRequest Request;
@@ -95,13 +97,15 @@ struct Dispatcher : HTTPServer
         HTTPServer(std::bind(&Dispatcher::handleRequest,
                              this,
                              std::placeholders::_1,
-                             std::placeholders::_2))
+                             std::placeholders::_2)),
+        mSolicitor()
     {
     }
 
     void solicit(Request&, Response& response)
     {
         Poco::ScopedLock<Poco::Mutex> lock(mRequestMutex);
+        mSolicitor = true;
         mRequestCondition.wait(mRequestMutex);
         response.send() << mRequest;
     }
@@ -118,6 +122,11 @@ struct Dispatcher : HTTPServer
     {
         {
             Poco::ScopedLock<Poco::Mutex> requestLock(mRequestMutex);
+            if (!mSolicitor)
+            {
+                response.send() << "No solicitor!" << std::endl;
+                return;
+            }
             mRequest = toString(request.stream());
             mRequestCondition.signal();
         }
@@ -164,6 +173,8 @@ struct Dispatcher : HTTPServer
     Poco::Condition mRequestCondition;
     Poco::Mutex mRequestMutex;
     std::string mRequest;
+
+    bool mSolicitor;
 };
 
 

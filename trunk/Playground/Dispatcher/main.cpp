@@ -140,8 +140,8 @@ struct Dispatcher : HTTPServer
 
     static std::string toString(std::istream& stream)
     {
-        std::istreambuf_iterator<char> eos;
-        return std::string(std::istreambuf_iterator<char>(stream), eos);
+         return std::string(std::istreambuf_iterator<char>(stream),
+                            std::istreambuf_iterator<char>());
     }
 
     void handleRequest(Request& request, Response& response)

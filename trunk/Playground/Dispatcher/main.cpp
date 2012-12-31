@@ -106,6 +106,7 @@ struct Dispatcher : HTTPServer
     {
         Poco::ScopedLock<Poco::Mutex> lock(mRequestMutex);
         mSolicitor = true;
+        std::shared_ptr<void> unset(nullptr, [this](void*){ mSolicitor = false; });
         mRequestCondition.wait(mRequestMutex);
         response.send() << mRequest;
     }

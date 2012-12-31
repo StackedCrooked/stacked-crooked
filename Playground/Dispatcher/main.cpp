@@ -99,18 +99,19 @@ struct Dispatcher : HTTPServer
     {
     }
 
-    void solicitation(Request&, Response& response)
+    void solicit(Request&, Response& response)
     {
         Poco::ScopedLock<Poco::Mutex> lock(mRequestMutex);
         mRequestCondition.wait(mRequestMutex);
         response.send() << mRequest;
     }
 
-    void result(Request& request, Response& )
+    void result(Request& request, Response& response)
     {
         Poco::ScopedLock<Poco::Mutex> lock(mResultMutex);
         mResult = toString(request.stream());
         mResultCondition.signal();
+        response.send() << std::endl;
     }
 
     void client(Request& request, Response& response)
@@ -136,19 +137,23 @@ struct Dispatcher : HTTPServer
 
     void handleRequest(Request& request, Response& response)
     {
-        if (!request.getURI().find("/solicit"))
+        const std::string & uri = request.getURI();
+        if (!uri.find("/solicit"))
         {
-            solicitation(request, response);
+            solicit(request, response);
         }
-        else if (!request.getURI().find("/result"))
+        else if (!uri.find("/result"))
         {
             result(request, response);
         }
-        else
+        else if (!uri.find("/client"))
         {
             client(request, response);
         }
-        Poco::StreamCopier::copyStream(request.stream(), response.send());
+        else
+        {
+            response.send() << "Unsupported uri: " << uri << std::endl;
+        }
     }
 
 
@@ -168,58 +173,3 @@ int main(int argc, char** argv)
     Dispatcher app;
     return app.run(argc, argv);
 }
-
-
-
-#if 0
-struct Dispatcher
-{
-    Dispatcher() :
-        mUserServer(9000, std::bind(&Dispatcher::handleClientRequest, this, std::placeholders::_1)),
-        mJobServer(9001, std::bind(&Dispatcher::handleJobRequest, this, std::placeholders::_1)),
-        mResultReceiver(9002, std::bind(&Dispatcher::receiveResult, this, std::placeholders::_1))
-    {
-    }
-
-    std::string handleClientRequest(const std::string & inRequest)
-    {
-        {
-            Lock lock(mJobMutex);
-            mJob = inRequest;
-            mJobCondition.signal();
-        }
-
-        {
-            Lock lock(mResultMutex);
-            mResultCondition.wait(lock);
-            return mResult;
-        }
-    }
-
-    std::string handleJobRequest(const std::string &)
-    {
-        Poco::ScopedLock<Poco::Mutex> l(mJobMutex);
-        mJobCondition.wait(l);
-        return mJob;
-    }
-
-    bool receiveResult(const std::string & str)
-    {
-        Poco::ScopedLock<Poco::Mutex> lock(mResultMutex);
-        mResult = str;
-        mResultCondition.signal();
-        return false;
-    }
-
-    Poco::Net::HTTPServer mServer;
-
-
-    Poco::Condition mJobCondition;
-    Poco::Mutex mJobMutex;
-    std::string mJob;
-
-    Condition mResultCondition;
-    Mutex mResultMutex;
-    std::string mResult;
-};
-#endif

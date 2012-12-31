@@ -1,3 +1,6 @@
+#include <cstdlib>
+
+
 //
 // header.hpp
 // ~~~~~~~~~~
@@ -161,14 +164,12 @@ class request_handler
 {
 public:
   /// Construct with a directory containing files to be served.
-  explicit request_handler(const std::string& doc_root);
+  explicit request_handler();
 
   /// Handle a request and produce a reply.
   void handle_request(const request& req, reply& rep);
 
 private:
-  /// The directory containing the files to be served.
-  std::string doc_root_;
 
   /// Perform URL-decoding on a string. Returns false if the encoding was
   /// invalid.
@@ -377,8 +378,7 @@ class server
 public:
   /// Construct the server to listen on the specified TCP address and port, and
   /// serve up files from the given directory.
-  explicit server(const std::string& address, const std::string& port,
-      const std::string& doc_root, std::size_t thread_pool_size);
+  explicit server(const std::string& address, const std::string& port, std::size_t thread_pool_size = 8);
 
   /// Run the server's io_service loop.
   void run();
@@ -689,8 +689,7 @@ reply reply::stock_reply(reply::status_type status)
 namespace http {
 namespace server3 {
 
-request_handler::request_handler(const std::string& doc_root)
-  : doc_root_(doc_root)
+request_handler::request_handler()
 {
 }
 
@@ -728,7 +727,8 @@ void request_handler::handle_request(const request& req, reply& rep)
   }
 
   // Open the file to send back.
-  std::string full_path = doc_root_ + request_path;
+  std::string full_path = "tmp.txt";
+  system("echo 'test' > tmp.txt");
   std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
   if (!is)
   {
@@ -1215,13 +1215,12 @@ void connection::handle_write(const boost::system::error_code& e)
 namespace http {
 namespace server3 {
 
-server::server(const std::string& address, const std::string& port,
-    const std::string& doc_root, std::size_t thread_pool_size)
+server::server(const std::string& address, const std::string& port, std::size_t thread_pool_size)
   : thread_pool_size_(thread_pool_size),
     signals_(io_service_),
     acceptor_(io_service_),
     new_connection_(),
-    request_handler_(doc_root)
+    request_handler_()
 {
   // Register to handle the signals that indicate when the server should exit.
   // It is safe to register for the same signal multiple times in a program,
@@ -1329,10 +1328,28 @@ std::string extension_to_type(const std::string& extension)
 namespace http {
 
 
-server::server(const std::string & host, unsigned short port) :
-    http::server3::server(host, std::to_string(port))
+struct server::impl : http::server3::server
+{
+    impl(const std::string & host, unsigned short port) : http::server3::server(host, std::to_string(port))
+    {
+    }
+
+    ~impl()
+    {
+    }
+};
+
+
+server::server(const std::string & host, unsigned short port) : 
+    impl_(new impl(host, port))
 {
 }
 
 
+server::~server()
+{
 }
+
+
+} // namespace http
+

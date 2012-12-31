@@ -13,7 +13,7 @@ namespace HTTP {
 class Server
 {
 public:
-    Server(const std::string & host, unsigned short port = 80);
+    Server(const std::string & host, unsigned short port);
 
     ~Server();
 

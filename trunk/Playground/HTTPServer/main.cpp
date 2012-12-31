@@ -1,5 +1,7 @@
 #include "http_server.h"
 #include <ctime>
+#include <iostream>
+#include <string>
 
 
 using namespace http;
@@ -15,8 +17,13 @@ public:
     }
 
 private:
-    std::string do_handle(const Request &)
+    std::string do_handle(const Request & req)
     {
+        for (auto c : req.payload)
+        {
+            std::cout << '[' << c << ']' << std::flush;
+        }
+        std::cout << std::endl;
         return std::to_string(time(0));
     }
 };

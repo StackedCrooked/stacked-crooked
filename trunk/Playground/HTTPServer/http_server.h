@@ -25,6 +25,7 @@ struct Request
     int http_version_major;
     int http_version_minor;
     std::vector<Header> headers;
+    std::string payload;
 };
 
 

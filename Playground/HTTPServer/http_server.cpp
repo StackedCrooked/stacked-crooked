@@ -1,4 +1,6 @@
+#include "http_server.h"
 #include <cstdlib>
+#include <vector>
 
 
 //
@@ -18,17 +20,6 @@
 
 namespace http {
 namespace server3 {
-namespace mime_types {
-
-/// Convert a file extension into a MIME type.
-std::string extension_to_type(const std::string& extension);
-
-} // namespace mime_types
-} // namespace server3
-} // namespace http
-
-namespace http {
-namespace server3 {
 
 struct header
 {
@@ -36,6 +27,29 @@ struct header
   std::string value;
 };
 
+/// A request received from a client.
+struct request
+{
+  std::string method;
+  std::string uri;
+  int http_version_major;
+  int http_version_minor;
+  std::vector<header> headers;
+};
+
+} // namespace server3
+
+
+typedef std::function<std::string(const server3::request&)> HandleRequest;
+
+
+namespace server3 {
+namespace mime_types {
+
+/// Convert a file extension into a MIME type.
+std::string extension_to_type(const std::string& extension);
+
+} // namespace mime_types
 } // namespace server3
 } // namespace http
 
@@ -119,22 +133,6 @@ struct reply
 #include <string>
 #include <vector>
 
-namespace http {
-namespace server3 {
-
-/// A request received from a client.
-struct request
-{
-  std::string method;
-  std::string uri;
-  int http_version_major;
-  int http_version_minor;
-  std::vector<header> headers;
-};
-
-} // namespace server3
-} // namespace http
-
 #endif // HTTP_SERVER3_REQUEST_HPP
 //
 // request_handler.hpp
@@ -164,7 +162,7 @@ class request_handler
 {
 public:
   /// Construct with a directory containing files to be served.
-  explicit request_handler();
+  explicit request_handler(const HandleRequest & inHandleRequest);
 
   /// Handle a request and produce a reply.
   void handle_request(const request& req, reply& rep);
@@ -174,6 +172,8 @@ private:
   /// Perform URL-decoding on a string. Returns false if the encoding was
   /// invalid.
   static bool url_decode(const std::string& in, std::string& out);
+
+  HandleRequest mHandleRequest;
 };
 
 } // namespace server3
@@ -378,7 +378,7 @@ class server
 public:
   /// Construct the server to listen on the specified TCP address and port, and
   /// serve up files from the given directory.
-  explicit server(const std::string& address, const std::string& port, std::size_t thread_pool_size = 8);
+  explicit server(const std::string& address, const std::string& port, const HandleRequest &);
 
   /// Run the server's io_service loop.
   void run();
@@ -689,7 +689,8 @@ reply reply::stock_reply(reply::status_type status)
 namespace http {
 namespace server3 {
 
-request_handler::request_handler()
+
+request_handler::request_handler(const HandleRequest & inHandleRequest) : mHandleRequest(inHandleRequest)
 {
 }
 
@@ -726,21 +727,23 @@ void request_handler::handle_request(const request& req, reply& rep)
     extension = request_path.substr(last_dot_pos + 1);
   }
 
-  // Open the file to send back.
-  std::string full_path = "tmp.txt";
-  system("echo 'test' > tmp.txt");
-  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-  if (!is)
-  {
-    rep = reply::stock_reply(reply::not_found);
-    return;
-  }
+//  // Open the file to send back.
+//  std::string full_path = "tmp.txt";
+//  system("echo 'test' > tmp.txt");
+//  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+//  if (!is)
+//  {
+//    rep = reply::stock_reply(reply::not_found);
+//    return;
+//  }
 
-  // Fill out the reply to be sent to the client.
-  rep.status = reply::ok;
-  char buf[512];
-  while (is.read(buf, sizeof(buf)).gcount() > 0)
-    rep.content.append(buf, is.gcount());
+//  // Fill out the reply to be sent to the client.
+//  rep.status = reply::ok;
+//  char buf[512];
+//  while (is.read(buf, sizeof(buf)).gcount() > 0)
+//    rep.content.append(buf, is.gcount());
+
+  rep.content = mHandleRequest(req);
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";
   rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
@@ -1117,8 +1120,7 @@ bool request_parser::is_digit(int c)
 namespace http {
 namespace server3 {
 
-connection::connection(boost::asio::io_service& io_service,
-    request_handler& handler)
+connection::connection(boost::asio::io_service& io_service, request_handler& handler)
   : strand_(io_service),
     socket_(io_service),
     request_handler_(handler)
@@ -1215,12 +1217,12 @@ void connection::handle_write(const boost::system::error_code& e)
 namespace http {
 namespace server3 {
 
-server::server(const std::string& address, const std::string& port, std::size_t thread_pool_size)
-  : thread_pool_size_(thread_pool_size),
+server::server(const std::string& address, const std::string& port, const HandleRequest & inHandleRequest)
+  : thread_pool_size_(8),
     signals_(io_service_),
     acceptor_(io_service_),
     new_connection_(),
-    request_handler_()
+    request_handler_(inHandleRequest)
 {
   // Register to handle the signals that indicate when the server should exit.
   // It is safe to register for the same signal multiple times in a program,
@@ -1322,34 +1324,42 @@ std::string extension_to_type(const std::string& extension)
 }}} // namespace http::server3::mime_types
 
 
-#include "http_server.h"
+namespace HTTP {
 
 
-namespace http {
-
-
-struct server::impl : http::server3::server
+struct Server::impl : http::server3::server
 {
-    impl(const std::string & host, unsigned short port) : http::server3::server(host, std::to_string(port))
+    impl(const std::string & host, unsigned short port) : http::server3::server(host, std::to_string(port), std::bind(&impl::handle, this, std::placeholders::_1))
     {
     }
 
     ~impl()
     {
     }
+
+    std::string handle(const http::server3::request & req)
+    {
+        return "requested " + req.uri;
+    }
 };
 
 
-server::server(const std::string & host, unsigned short port) : 
+Server::Server(const std::string & host, unsigned short port) :
     impl_(new impl(host, port))
 {
 }
 
 
-server::~server()
+Server::~Server()
 {
 }
 
 
-} // namespace http
+std::string Server::handle(const std::string & req)
+{
+    return do_handle(req);
+}
+
+
+} // namespace HTTP
 

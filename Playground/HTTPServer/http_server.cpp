@@ -743,6 +743,7 @@ void request_handler::handle_request(const request& req, reply& rep)
 //  while (is.read(buf, sizeof(buf)).gcount() > 0)
 //    rep.content.append(buf, is.gcount());
 
+  rep.status = reply::ok;
   rep.content = mHandleRequest(req);
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";
@@ -1331,15 +1332,16 @@ struct Server::impl : http::server3::server
 {
     impl(const std::string & host, unsigned short port) : http::server3::server(host, std::to_string(port), std::bind(&impl::handle, this, std::placeholders::_1))
     {
+        this->run();
     }
 
     ~impl()
     {
     }
 
-    std::string handle(const http::server3::request & req)
+    std::string handle(const http::server3::request & /*req*/)
     {
-        return "requested " + req.uri;
+        return std::to_string(time(0)) + "\n";
     }
 };
 

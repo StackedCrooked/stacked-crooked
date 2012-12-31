@@ -16,79 +16,111 @@
 #include "Poco/Util/Option.h"
 #include "Poco/Util/OptionSet.h"
 #include "Poco/Util/HelpFormatter.h"
+#include <functional>
 #include <iostream>
 
 
-using Poco::Net::ServerSocket;
-using Poco::Net::HTTPRequestHandler;
-using Poco::Net::HTTPRequestHandlerFactory;
-using Poco::Net::HTTPServer;
-using Poco::Net::HTTPServerRequest;
-using Poco::Net::HTTPServerResponse;
-using Poco::Net::HTTPServerParams;
-using Poco::Timestamp;
-using Poco::DateTimeFormatter;
-using Poco::DateTimeFormat;
-using Poco::ThreadPool;
-using Poco::Util::ServerApplication;
-using Poco::Util::Application;
-using Poco::Util::Option;
-using Poco::Util::OptionSet;
-using Poco::Util::HelpFormatter;
+//using Poco::Net::ServerSocket;
+//using Poco::Net::HTTPRequestHandler;
+//using Poco::Net::HTTPRequestHandlerFactory;
+//using Poco::Net::HTTPServerRequest;
+//using Poco::Net::HTTPServerResponse;
+//using Poco::Net::HTTPServerParams;
+//using Poco::Timestamp;
+//using Poco::DateTimeFormatter;
+//using Poco::DateTimeFormat;
+//using Poco::ThreadPool;
+//using Poco::Util::ServerApplication;
+//using Poco::Util::Application;
+//using Poco::Util::Option;
+//using Poco::Util::OptionSet;
+//using Poco::Util::HelpFormatter;
 
 
-class RequestHandler: public HTTPRequestHandler
+class HTTPServer: public Poco::Util::ServerApplication
 {
 public:
-    void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
-    {
-        Application& app = Application::instance();
-        app.logger().information("Request from " + request.clientAddress().toString());
+    typedef std::function<void(Poco::Net::HTTPServerRequest&, Poco::Net::HTTPServerResponse&)> HandleRequest;
 
+    HTTPServer(const HandleRequest & inHandleRequest) : mHandleRequest(inHandleRequest)
+    {
+    }
+
+private:
+    int main(const std::vector<std::string>& )
+    {
+        Poco::ThreadPool::defaultPool().addCapacity(16);
+        Poco::Net::HTTPServerParams* pParams = new Poco::Net::HTTPServerParams;
+        pParams->setMaxQueued(100);
+        pParams->setMaxThreads(Poco::ThreadPool::defaultPool().capacity());
+
+        // set-up a server socket
+        Poco::Net::ServerSocket svs(8080);
+
+
+        struct RequestHandlerFactory: public Poco::Net::HTTPRequestHandlerFactory
+        {
+            RequestHandlerFactory(const HandleRequest & inHandleRequest) : mHandleRequest(inHandleRequest) {}
+
+            Poco::Net::HTTPRequestHandler* createRequestHandler(const Poco::Net::HTTPServerRequest&)
+            {
+                struct RequestHandler: public Poco::Net::HTTPRequestHandler
+                {
+                    RequestHandler(const HandleRequest & inHandleRequest) : mHandleRequest(inHandleRequest) {}
+
+                    void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+                    {
+                        mHandleRequest(request, response);
+                    }
+
+                    HandleRequest mHandleRequest;
+                };
+                return new RequestHandler(mHandleRequest);
+            }
+
+            HandleRequest mHandleRequest;
+        };
+
+        // set-up a HTTPServer instance
+        Poco::Net::HTTPServer srv(new RequestHandlerFactory(mHandleRequest), svs, pParams);
+
+        // start the HTTPServer
+        srv.start();
+
+        // wait for CTRL-C or kill
+        waitForTerminationRequest();
+
+        // Stop the HTTPServer
+        srv.stop();
+
+        return Application::EXIT_OK;
+    }
+
+    HandleRequest mHandleRequest;
+};
+
+
+struct Dispatcher : HTTPServer
+{
+    Dispatcher() :
+        HTTPServer(std::bind(&Dispatcher::handleRequest,
+                             this,
+                             std::placeholders::_1,
+                             std::placeholders::_2))
+    {
+    }
+
+    void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+    {
         Poco::StreamCopier::copyStream(request.stream(), response.send());
     }
 };
 
 
-class RequestHandlerFactory: public HTTPRequestHandlerFactory
-{
-public:
-    HTTPRequestHandler* createRequestHandler(const HTTPServerRequest&)
-    {
-        return new RequestHandler;
-    }
-};
-
-
-class HTTPDispatcher: public Poco::Util::ServerApplication
-{
-private:
-    int main(const std::vector<std::string>& )
-    {
-        ThreadPool::defaultPool().addCapacity(16);
-
-        HTTPServerParams* pParams = new HTTPServerParams;
-        pParams->setMaxQueued(100);
-        pParams->setMaxThreads(ThreadPool::defaultPool().capacity());
-
-        // set-up a server socket
-        ServerSocket svs(8080);
-        // set-up a HTTPServer instance
-        HTTPServer srv(new RequestHandlerFactory, svs, pParams);
-        // start the HTTPServer
-        srv.start();
-        // wait for CTRL-C or kill
-        waitForTerminationRequest();
-        // Stop the HTTPServer
-        srv.stop();
-        return Application::EXIT_OK;
-    }
-};
-
 
 int main(int argc, char** argv)
 {
-    HTTPDispatcher app;
+    Dispatcher app;
     return app.run(argc, argv);
 }
 

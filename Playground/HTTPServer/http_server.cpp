@@ -1118,14 +1118,16 @@ void connection::start()
           boost::asio::placeholders::bytes_transferred)));
 }
 
-void connection::handle_read(const boost::system::error_code& e,
-    std::size_t bytes_transferred)
+void connection::handle_read(const boost::system::error_code& e, std::size_t bytes_transferred)
 {
   if (!e)
   {
     boost::tribool result;
-    boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
+    typedef decltype(buffer_.data()) buffer_ptr;
+    buffer_ptr payload{};
+    boost::tie(result, payload) = request_parser_.parse(
         request_, buffer_.data(), buffer_.data() + bytes_transferred);
+    request_.payload = std::string(payload, payload + buffer_.size() - (payload - buffer_.data()));
 
     if (result)
     {

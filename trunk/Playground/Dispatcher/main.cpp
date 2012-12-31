@@ -16,31 +16,20 @@
 #include "Poco/Util/Option.h"
 #include "Poco/Util/OptionSet.h"
 #include "Poco/Util/HelpFormatter.h"
+#include "Poco/Condition.h"
+#include "Poco/Mutex.h"
 #include <functional>
 #include <iostream>
 
 
-//using Poco::Net::ServerSocket;
-//using Poco::Net::HTTPRequestHandler;
-//using Poco::Net::HTTPRequestHandlerFactory;
-//using Poco::Net::HTTPServerRequest;
-//using Poco::Net::HTTPServerResponse;
-//using Poco::Net::HTTPServerParams;
-//using Poco::Timestamp;
-//using Poco::DateTimeFormatter;
-//using Poco::DateTimeFormat;
-//using Poco::ThreadPool;
-//using Poco::Util::ServerApplication;
-//using Poco::Util::Application;
-//using Poco::Util::Option;
-//using Poco::Util::OptionSet;
-//using Poco::Util::HelpFormatter;
+typedef Poco::Net::HTTPServerRequest Request;
+typedef Poco::Net::HTTPServerResponse Response;
 
 
 class HTTPServer: public Poco::Util::ServerApplication
 {
 public:
-    typedef std::function<void(Poco::Net::HTTPServerRequest&, Poco::Net::HTTPServerResponse&)> HandleRequest;
+    typedef std::function<void(Request&, Response&)> HandleRequest;
 
     HTTPServer(const HandleRequest & inHandleRequest) : mHandleRequest(inHandleRequest)
     {
@@ -62,13 +51,13 @@ private:
         {
             RequestHandlerFactory(const HandleRequest & inHandleRequest) : mHandleRequest(inHandleRequest) {}
 
-            Poco::Net::HTTPRequestHandler* createRequestHandler(const Poco::Net::HTTPServerRequest&)
+            Poco::Net::HTTPRequestHandler* createRequestHandler(const Request&)
             {
                 struct RequestHandler: public Poco::Net::HTTPRequestHandler
                 {
                     RequestHandler(const HandleRequest & inHandleRequest) : mHandleRequest(inHandleRequest) {}
 
-                    void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+                    void handleRequest(Request& request, Response& response)
                     {
                         mHandleRequest(request, response);
                     }
@@ -110,10 +99,66 @@ struct Dispatcher : HTTPServer
     {
     }
 
-    void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+    void solicitation(Request&, Response& response)
     {
+        Poco::ScopedLock<Poco::Mutex> lock(mRequestMutex);
+        mRequestCondition.wait(mRequestMutex);
+        response.send() << mRequest;
+    }
+
+    void result(Request& request, Response& )
+    {
+        Poco::ScopedLock<Poco::Mutex> lock(mResultMutex);
+        mResult = toString(request.stream());
+        mResultCondition.signal();
+    }
+
+    void client(Request& request, Response& response)
+    {
+        {
+            Poco::ScopedLock<Poco::Mutex> requestLock(mRequestMutex);
+            mRequest = toString(request.stream());
+            mRequestCondition.signal();
+        }
+
+        {
+            Poco::ScopedLock<Poco::Mutex> resultLock(mResultMutex);
+            mResultCondition.wait(mResultMutex);
+            response.send() << mResult;
+        }
+    }
+
+    static std::string toString(std::istream& stream)
+    {
+        std::istreambuf_iterator<char> eos;
+        return std::string(std::istreambuf_iterator<char>(stream), eos);
+    }
+
+    void handleRequest(Request& request, Response& response)
+    {
+        if (!request.getURI().find("/solicit"))
+        {
+            solicitation(request, response);
+        }
+        else if (!request.getURI().find("/result"))
+        {
+            result(request, response);
+        }
+        else
+        {
+            client(request, response);
+        }
         Poco::StreamCopier::copyStream(request.stream(), response.send());
     }
+
+
+    Poco::Condition mResultCondition;
+    Poco::Mutex mResultMutex;
+    std::string mResult;
+
+    Poco::Condition mRequestCondition;
+    Poco::Mutex mRequestMutex;
+    std::string mRequest;
 };
 
 
@@ -141,7 +186,7 @@ struct Dispatcher
         {
             Lock lock(mJobMutex);
             mJob = inRequest;
-            mJobCondition.notify_one();
+            mJobCondition.signal();
         }
 
         {
@@ -162,7 +207,7 @@ struct Dispatcher
     {
         Poco::ScopedLock<Poco::Mutex> lock(mResultMutex);
         mResult = str;
-        mResultCondition.notify_one();
+        mResultCondition.signal();
         return false;
     }
 

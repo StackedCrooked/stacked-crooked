@@ -1321,3 +1321,18 @@ std::string extension_to_type(const std::string& extension)
 
 
 }}} // namespace http::server3::mime_types
+
+
+#include "http_server.h"
+
+
+namespace http {
+
+
+server::server(const std::string & host, unsigned short port) :
+    http::server3::server(host, std::to_string(port))
+{
+}
+
+
+}

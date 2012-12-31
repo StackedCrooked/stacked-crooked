@@ -5,9 +5,27 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <vector>
 
 
-namespace HTTP {
+namespace http {
+
+
+struct Header
+{
+    std::string name;
+    std::string value;
+};
+
+
+struct Request
+{
+    std::string method;
+    std::string uri;
+    int http_version_major;
+    int http_version_minor;
+    std::vector<Header> headers;
+};
 
 
 class Server
@@ -17,10 +35,10 @@ public:
 
     ~Server();
 
-private:
-    std::string handle(const std::string & req);
+    void run();
 
-    virtual std::string do_handle(const std::string & req) = 0;
+private:
+    virtual std::string do_handle(const Request & req) = 0;
 
     struct impl;
     std::unique_ptr<impl> impl_;

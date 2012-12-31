@@ -121,6 +121,7 @@ struct Dispatcher : HTTPServer
 
     void client(Request& request, Response& response)
     {
+        Poco::ScopedLock<Poco::Mutex> clientLock(mClientMutex);
         {
             Poco::ScopedLock<Poco::Mutex> requestLock(mRequestMutex);
             if (!mSolicitor)
@@ -162,6 +163,7 @@ struct Dispatcher : HTTPServer
         }
     }
 
+    Poco::Mutex mClientMutex;
 
     Poco::Condition mResultCondition;
     Poco::Mutex mResultMutex;

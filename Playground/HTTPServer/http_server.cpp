@@ -1,6 +1,5 @@
 #include "http_server.h"
 #include <cstdlib>
-#include <vector>
 
 
 //
@@ -19,28 +18,9 @@
 #include <string>
 
 namespace http {
-namespace server3 {
-
-struct header
-{
-  std::string name;
-  std::string value;
-};
-
-/// A request received from a client.
-struct request
-{
-  std::string method;
-  std::string uri;
-  int http_version_major;
-  int http_version_minor;
-  std::vector<header> headers;
-};
-
-} // namespace server3
 
 
-typedef std::function<std::string(const server3::request&)> HandleRequest;
+typedef std::function<std::string(const http::Request&)> HandleRequest;
 
 
 namespace server3 {
@@ -99,7 +79,7 @@ struct reply
   } status;
 
   /// The headers to be included in the reply.
-  std::vector<header> headers;
+  std::vector<Header> headers;
 
   /// The content to be sent in the reply.
   std::string content;
@@ -153,9 +133,6 @@ struct reply
 namespace http {
 namespace server3 {
 
-struct reply;
-struct request;
-
 /// The common handler for all incoming requests.
 class request_handler
   : private boost::noncopyable
@@ -165,7 +142,7 @@ public:
   explicit request_handler(const HandleRequest & inHandleRequest);
 
   /// Handle a request and produce a reply.
-  void handle_request(const request& req, reply& rep);
+  void handle_request(const Request& req, reply& rep);
 
 private:
 
@@ -199,8 +176,6 @@ private:
 namespace http {
 namespace server3 {
 
-struct request;
-
 /// Parser for incoming requests.
 class request_parser
 {
@@ -216,7 +191,7 @@ public:
   /// data is required. The InputIterator return value indicates how much of the
   /// input has been consumed.
   template <typename InputIterator>
-  boost::tuple<boost::tribool, InputIterator> parse(request& req,
+  boost::tuple<boost::tribool, InputIterator> parse(Request& req,
       InputIterator begin, InputIterator end)
   {
     while (begin != end)
@@ -231,7 +206,7 @@ public:
 
 private:
   /// Handle the next character of input.
-  boost::tribool consume(request& req, char input);
+  boost::tribool consume(Request& req, char input);
 
   /// Check if a byte is an HTTP character.
   static bool is_char(int c);
@@ -334,7 +309,7 @@ private:
   boost::array<char, 8192> buffer_;
 
   /// The incoming request.
-  request request_;
+  Request request_;
 
   /// The parser for the incoming request.
   request_parser request_parser_;
@@ -523,7 +498,7 @@ std::vector<boost::asio::const_buffer> reply::to_buffers()
   buffers.push_back(status_strings::to_buffer(status));
   for (std::size_t i = 0; i < headers.size(); ++i)
   {
-    header& h = headers[i];
+    Header& h = headers[i];
     buffers.push_back(boost::asio::buffer(h.name));
     buffers.push_back(boost::asio::buffer(misc_strings::name_value_separator));
     buffers.push_back(boost::asio::buffer(h.value));
@@ -694,7 +669,7 @@ request_handler::request_handler(const HandleRequest & inHandleRequest) : mHandl
 {
 }
 
-void request_handler::handle_request(const request& req, reply& rep)
+void request_handler::handle_request(const Request& req, reply& rep)
 {
   // Decode url to path.
   std::string request_path;
@@ -744,6 +719,7 @@ void request_handler::handle_request(const request& req, reply& rep)
 //    rep.content.append(buf, is.gcount());
 
   rep.status = reply::ok;
+  assert(mHandleRequest);
   rep.content = mHandleRequest(req);
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";
@@ -816,7 +792,7 @@ void request_parser::reset()
   state_ = method_start;
 }
 
-boost::tribool request_parser::consume(request& req, char input)
+boost::tribool request_parser::consume(Request& req, char input)
 {
   switch (state_)
   {
@@ -992,7 +968,7 @@ boost::tribool request_parser::consume(request& req, char input)
     }
     else
     {
-      req.headers.push_back(header());
+      req.headers.push_back(Header());
       req.headers.back().name.push_back(input);
       state_ = header_name;
       return boost::indeterminate;
@@ -1325,30 +1301,27 @@ std::string extension_to_type(const std::string& extension)
 }}} // namespace http::server3::mime_types
 
 
-namespace HTTP {
+namespace http {
 
 
 struct Server::impl : http::server3::server
 {
-    impl(const std::string & host, unsigned short port) : http::server3::server(host, std::to_string(port), std::bind(&impl::handle, this, std::placeholders::_1))
+    impl(Server & server, const std::string & host, unsigned short port) :
+        http::server3::server(host,
+                              std::to_string(port),
+                              std::bind(&Server::do_handle, &server, std::placeholders::_1))
     {
-        this->run();
     }
 
     ~impl()
     {
     }
-
-    std::string handle(const http::server3::request & /*req*/)
-    {
-        return std::to_string(time(0)) + "\n";
-    }
 };
 
 
 Server::Server(const std::string & host, unsigned short port) :
-    impl_(new impl(host, port))
-{
+    impl_(new impl(*this, host, port))
+{    
 }
 
 
@@ -1357,9 +1330,9 @@ Server::~Server()
 }
 
 
-std::string Server::handle(const std::string & req)
+void Server::run()
 {
-    return do_handle(req);
+    impl_->run();
 }
 
 

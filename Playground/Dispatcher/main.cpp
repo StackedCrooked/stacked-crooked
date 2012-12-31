@@ -155,13 +155,9 @@ struct Dispatcher : HTTPServer
         {
             result(request, response);
         }
-        else if (!uri.find("/client"))
-        {
-            client(request, response);
-        }
         else
         {
-            response.send() << "Unsupported uri: " << uri << std::endl;
+            client(request, response);
         }
     }
 

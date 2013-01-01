@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cxxabi.h>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
@@ -31,7 +32,7 @@ struct WithClassName
     WithClassName() :
         className_(demangle(typeid(T).name()))
     {
-		std::cout << className() << "()\n";
+    	std::cout << className() << "()\n";
     }
 
     ~WithClassName()
@@ -57,4 +58,5 @@ int main()
 {
 	B b;
 }
+
 

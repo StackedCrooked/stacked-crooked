@@ -10,8 +10,7 @@
 std::string demangle(const char * name)
 {
     int st;
-    char * const p = abi::__cxa_demangle(name, 0, 0, &st);
-
+    std::shared_ptr<char> p(abi::__cxa_demangle(name, 0, 0, &st), std::free);
     if (st != 0)
     {
         switch (st)
@@ -22,10 +21,7 @@ std::string demangle(const char * name)
             default: throw std::runtime_error("Unexpected demangle status");
         }
     }
-
-    std::string result(p);
-    free(p);
-    return result;
+    return std::string(p.get());
 }
 
 

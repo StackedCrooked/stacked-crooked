@@ -18,6 +18,7 @@ struct Actor {
     {
         quit_ = true;
         cond_.notify_all();
+        std::unique_lock<std::mutex> lock;
         thread_.join();
     }
 

@@ -23,6 +23,7 @@
 
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -31,8 +32,8 @@
 
 
 
-typedef std::map<unsigned, unsigned> Map;
-Map get_prime_factors(unsigned n);
+typedef std::map<uint64_t, uint64_t> Map;
+Map get_prime_factors(uint64_t n);
 
 
 template<typename T>
@@ -49,14 +50,14 @@ std::ostream& operator<<(std::ostream & os, const std::vector<T> & vec)
 template<typename T>
 std::ostream& operator<<(std::ostream & os, const std::map<T, T> & vec)
 {
-    unsigned c = 0;
+    uint64_t c = 0;
     for (const auto & p : vec)
     {
         if (c++)
         {
             os << '*';
         }
-        for (unsigned i = 0; i < p.second; ++i)
+        for (uint64_t i = 0; i < p.second; ++i)
         {
             if (i != 0)
             {
@@ -114,9 +115,9 @@ uint64_t next_prime(std::vector<uint64_t> & preceding)
 }
 
 
-unsigned num_divisors(unsigned n)
+uint64_t num_divisors(uint64_t n)
 {
-    unsigned result = 1;
+    uint64_t result = 1;
     for (auto pair : get_prime_factors(n))
     {
         result *= (pair.second + 1);
@@ -125,7 +126,7 @@ unsigned num_divisors(unsigned n)
 }
 
 
-unsigned triangle(unsigned n)
+uint64_t triangle(uint64_t n)
 {
     return n % 2 == 0 ? (n/2) * (n+1) : ((n+1)/2) * n;
 }
@@ -142,9 +143,9 @@ Map operator+(Map lhs, const Map & rhs)
 }
 
 
-Map get_prime_factors(unsigned n)
+Map get_prime_factors(uint64_t n)
 {
-    std::map<unsigned, unsigned> result;
+    std::map<uint64_t, uint64_t> result;
     static std::vector<uint64_t> pre = []{
         std::vector<uint64_t> result;
         for (int i = 0; i < 1000; ++i)
@@ -154,9 +155,12 @@ Map get_prime_factors(unsigned n)
         return result;
     }();
 
-    if (n >= pre.size()) throw "n exceeds precalculated";
+    while (n > pre.size())
+    {
+        next_prime(pre);
+    }
 
-    for (unsigned i = 0; i < pre.size(); ++i)
+    for (uint64_t i = 0; i < pre.size(); ++i)
     {
         auto p = pre[i];
         while (n % p == 0)
@@ -173,7 +177,7 @@ Map get_prime_factors(unsigned n)
 }
 
 
-Map get_prime_factors_of_tr(unsigned n)
+Map get_prime_factors_of_tr(uint64_t n)
 {
     if (n%2 ==0)
     {
@@ -186,19 +190,48 @@ Map get_prime_factors_of_tr(unsigned n)
 }
 
 
+uint64_t get_divisors_count_of_tr(uint64_t n)
+{
+    uint64_t result = 1;
+    for (auto pair : get_prime_factors_of_tr(n))
+    {
+        result *= pair.second + 1;
+    }
+    return result;
+}
+
+
+class Stopwatch
+{
+public:
+    typedef std::chrono::high_resolution_clock Clock;
+
+    //! Constructor starts the stopwatch
+    Stopwatch() : mStart(Clock::now())
+    {
+    }
+
+    //! Returns elapsed number of seconds in decimal form.
+    double elapsed()
+    {
+        return 1.0 * (Clock::now() - mStart).count() / Clock::period::den;
+    }
+
+    Clock::time_point mStart;
+};
+
+
 int main()
 {
+    Stopwatch sw;
+    for (uint64_t i = 2; ; ++i)
     {
-        std::vector<uint64_t> prec;
-        for (uint64_t i = 0; i != 100; ++i)
+        auto div = get_divisors_count_of_tr(i);
+        if (div > 500)
         {
-            std::cout << next_prime(prec) << " ";
+            std::cout << triangle(i) << std::endl;
+            break;
         }
     }
-    std::cout << "\n\ni	tr(i)	prime factors" << std::endl;
-    for (unsigned i = 2; i <= 20; ++i)
-    {
-        auto tr = triangle(i);
-        std::cout << i << ": " << tr << " -> " << get_prime_factors_of_tr(i) << std::endl;
-    }
+    std::cout << (1000 * sw.elapsed()) << "ms" << std::endl;
 }

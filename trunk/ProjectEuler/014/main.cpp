@@ -14,3 +14,32 @@
  *
  * Which starting number, under one million, produces the longest chain?
  */
+
+
+#include <iostream>
+
+
+constexpr unsigned get_collatz_sequence_length_impl(unsigned n)
+{
+    return n == 1 ? 1
+                  : 1 + get_collatz_sequence_length_impl(n % 2 == 0 ? n/2 : 3*n + 1);
+}
+
+constexpr unsigned get_collatz_sequence_length(unsigned n)
+{
+    return n == 0 ? 0 : get_collatz_sequence_length_impl(n);
+}
+
+int main()
+{
+    unsigned max = 0;
+    for (unsigned i = 1; i != 1000000; ++i)
+    {
+        auto len = get_collatz_sequence_length(i);
+        if (len > max)
+        {
+            max = len;
+            std::cout << i << ": " << max << std::endl;
+        }
+    }
+}

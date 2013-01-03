@@ -1,4 +1,6 @@
 Makefile
 main.cpp
+HTTPServer.h
 http_server.h
+HTTPServer.cpp
 http_server.cpp

@@ -1,91 +1,92 @@
 #include <chrono>
+#include <condition_variable>
 #include <deque>
 #include <functional>
 #include <future>
+#include <mutex>
 #include <iostream>
 #include <thread>
+#include <utility>
 
 
-// The Actor class template provides a thread-safety wrapper around an object.
-// Access to T can be indirectly achieved by calling the execute(..) method
-// with a callback that that takes a T by reference or const-reference.
-//
-// Callbacks can be posted from any thread and will always be executed on the
-// Actor's thread. This removes the need for locking in most situations.
-//
-// Return values are clumsily encapsulated using std::promise and std::future.
-//
 template<typename T>
-class Actor
-{
-public:
+struct Actor {
     template<typename ...Args>
-    Actor(Args && ...args) :
-        obj(std::forward<Args>(args)...),
-        started(false),
-        quit(false),
-        consumer_thread(std::bind(&Actor<T>::consume, this)),
-        queue()
-    {
-    }
-    
+    Actor(Args && ...args) : quit_(), obj_(std::forward<Args>(args)...), thread_(std::bind(&Actor<T>::consume, this)) { }
+
     ~Actor()
     {
-        {
-            quit = true;
-        }
-        consumer_thread.join();
+        quit_ = true;
+        cond_.notify_all();
+        thread_.join();
     }
-    
-    Actor(Actor&&) = default;
-    Actor& operator=(Actor&&) = default;
-    
-    Actor(const Actor&) = delete;
-    Actor& operator=(const Actor&) = delete;    
-    
-    template<typename Ret>
-    std::future<Ret> execute(const std::function<Ret(const T &)> & f)
+
+    template<typename F>
+    auto execute(F f) -> std::future<typename std::result_of<F(T&)>::type>
     {
-        auto promisePtr = std::make_shared< std::promise<Ret> >();
-        auto l = [this, f, promisePtr]() { promisePtr->set_value(f(obj)); };
-        Task task(l);
-        queue.push_back(task);
-        auto fut = promisePtr->get_future();
-        return fut;
-    } 
-    
-private:    
-    // type erased in order to allow various types of tasks
-    typedef std::function<void()> Task;
-    
+        typedef typename std::result_of<F(T&)>::type Ret;
+        typedef std::shared_ptr<std::promise<Ret>> SharedPromise;
+
+        SharedPromise promisePtr(std::make_shared<std::promise<Ret>>());
+
+        struct functor {
+            functor(T & obj, const SharedPromise & promise, F func) : obj_(&obj), promise_(promise), func_(func) { }
+
+            void operator()() const { promise_->set_value(func_(*obj_)); }
+
+            T * obj_;
+            SharedPromise promise_;
+            F func_;
+        };
+
+        std::unique_lock<std::mutex> lock(mtx_);
+        Task t(std::bind(functor{obj_, promisePtr, f}));
+        queue_.push_back(t);
+        return promisePtr->get_future();
+    }
+
+private:
+    Actor(const Actor&) = delete;
+    Actor& operator=(const Actor&) = delete;
+
+    typedef std::function<void()> Task; // type erased in order to allow various types of tasks
+
     void consume()
-    {        
-        while (!quit)
-        {
-            if (!queue.empty())
-            {
-                queue.front()();
-                queue.pop_front();
+    {
+        while (!quit_) {
+            Task t; {
+                std::unique_lock<std::mutex> lock(mtx_);
+                cond_.wait_for(lock, std::chrono::milliseconds(100)); // workaround for unfixed deadlock (yea i suck)
+                if (!queue_.empty()) {
+                    t = std::move(queue_.front());
+                    queue_.pop_front();
+                }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            if (t) t();
         }
     }
-    
-    T obj;    
-    std::atomic<bool> started, quit;
-    std::thread consumer_thread;
-    std::deque<Task> queue; // lockless queue would be better
+
+    std::atomic<bool> quit_;
+    std::condition_variable cond_;
+    std::mutex mtx_;
+    std::deque<Task> queue_; // lockless queue would be better
+    T obj_;
+    std::thread thread_;
 };
 
 struct Car
 {
-    unsigned age() const { return 2; }
+    unsigned age() const { return 777; }
+    unsigned weight() const { return 888; }
 };
 
 int main()
 {
-    Actor<Car> car;
-    std::future<unsigned> age = car.execute<unsigned>([](const Car & car) -> unsigned { return car.age(); });    
-    age.wait();
-    std::cout << "age: " << age.get() << std::endl;
+    Actor<Car> a,b,c;
+    auto age_a = a.execute([](Car & c) { return c.age(); });
+    auto age_b = b.execute([](Car & c) { return c.age(); });
+    auto age_c = c.execute([](Car & c) { return c.age(); });
+    std::cout << age_a.get() << std::endl;
+    std::cout << age_b.get() << std::endl;
+    std::cout << age_c.get() << std::endl;
 }

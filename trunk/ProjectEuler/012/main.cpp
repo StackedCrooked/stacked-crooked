@@ -22,44 +22,17 @@
  */
 
 
-/*
-Solution:
- - First 9 prime factors leads to 2^9 + 2 = 514 divisors
- - 2^1 * 3^1
- - p0^k0 + p1*k1 + p2^k2 + ...
-
-
- First nine primes are: 2, 3, 5, 7, 11, 13, 17, 19, 23.
- Their product is: 223092870
- Triangle number: 1 + 2 + ... + 223092870 = (223092870/2) + (223092870+1)
- n/2 => number of prime factors is reduced with 1
- n + 1 => number of prime factors is ...?
- n + (n+1) = sum of the number of prime factors of both
- We need 9 prime factors.
-
-
-n+1
-
-
-*/
-
-
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <map>
 #include <vector>
 #include <stdint.h>
 
 
-std::vector<unsigned> prime_factors = {
-    2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
-    73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151,
-    157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233,
-    239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317,
-    331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419,
-    421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503
-};
 
+typedef std::map<unsigned, unsigned> Map;
+Map get_prime_factors(unsigned n);
 
 
 template<typename T>
@@ -76,12 +49,23 @@ std::ostream& operator<<(std::ostream & os, const std::vector<T> & vec)
 template<typename T>
 std::ostream& operator<<(std::ostream & os, const std::map<T, T> & vec)
 {
-    os << "(";
+    unsigned c = 0;
     for (const auto & p : vec)
     {
-        os << "(" << p.first << " " << p.second << ")";
+        if (c++)
+        {
+            os << '*';
+        }
+        for (unsigned i = 0; i < p.second; ++i)
+        {
+            if (i != 0)
+            {
+                os << '*';
+            }
+            os << p.first;
+        }
     }
-    return os << ")";
+    return os;
 }
 
 
@@ -105,70 +89,37 @@ bool is_prime(uint64_t n, const std::vector<uint64_t> & preceding)
 }
 
 
-uint64_t next_prime(const std::vector<uint64_t> & preceding)
+uint64_t next_prime(std::vector<uint64_t> & preceding)
 {
     if (preceding.empty())
     {
-        return 2;
+        preceding.push_back(2);
+        return preceding.back();
     }
 
     if (preceding.back() == 2)
     {
-        return 3;
+        preceding.push_back(3);
+        return preceding.back();
     }
 
     for (uint64_t n = preceding.back() + 2; ; n += 2)
     {
         if (is_prime(n, preceding))
         {
-            return n;
+            preceding.push_back(n);
+            return preceding.back();
         }
     }
-}
-
-
-std::vector<uint64_t> get_primes_below(uint64_t limit)
-{
-    std::vector<uint64_t> result;
-    result.reserve(limit / 2); // no reallocs
-    for (;;)
-    {
-        uint64_t next = next_prime(result);
-        if (next >= limit)
-        {
-            return result;
-        }
-        result.push_back(next);
-    }
-}
-
-std::map<unsigned, unsigned> get_prime_factors(unsigned n)
-{
-    std::map<unsigned, unsigned> result;
-    std::vector<uint64_t> pre = {2};
-    for (unsigned i = 2; i <= n; i = next_prime(pre))
-    {
-        pre.push_back(i);
-        auto copy = n;
-        while (copy % i == 0)
-        {
-            result[i]++;
-            copy /= i;
-        }
-    }
-    return result;
 }
 
 
 unsigned num_divisors(unsigned n)
 {
-    if (n <= 3)
+    unsigned result = 1;
+    for (auto pair : get_prime_factors(n))
     {
-        unsigned result = 1;
-        for (auto pair : get_prime_factors(n))
-        {
-            result *= (pair.second + 1);
-        }
+        result *= (pair.second + 1);
     }
     return result;
 }
@@ -180,29 +131,74 @@ unsigned triangle(unsigned n)
 }
 
 
+
+Map operator+(Map lhs, const Map & rhs)
+{
+    for (auto p : rhs)
+    {
+        lhs[p.first] += p.second;
+    }
+    return lhs;
+}
+
+
+Map get_prime_factors(unsigned n)
+{
+    std::map<unsigned, unsigned> result;
+    static std::vector<uint64_t> pre = []{
+        std::vector<uint64_t> result;
+        for (int i = 0; i < 1000; ++i)
+        {
+            next_prime(result);
+        }
+        return result;
+    }();
+
+    if (n >= pre.size()) throw "n exceeds precalculated";
+
+    for (unsigned i = 0; i < pre.size(); ++i)
+    {
+        auto p = pre[i];
+        while (n % p == 0)
+        {
+            result[p]++;
+            n /= p;
+        }
+        if (p > n)
+        {
+            return result;
+        }
+    }
+    return result;
+}
+
+
+Map get_prime_factors_of_tr(unsigned n)
+{
+    if (n%2 ==0)
+    {
+        return get_prime_factors(n/2) + get_prime_factors(n + 1);
+    }
+    else
+    {
+        return get_prime_factors(n) + get_prime_factors((n + 1)/2);
+    }
+}
+
+
 int main()
 {
-    for (unsigned i = 0; i < 10; ++i)
     {
-        auto tr = triangle(i);
-        std::cout << i << "\t" << tr << "\t" << num_divisors(tr) << std::endl;
+        std::vector<uint64_t> prec;
+        for (uint64_t i = 0; i != 100; ++i)
+        {
+            std::cout << next_prime(prec) << " ";
+        }
     }
-
-    auto max = 0u;
-    for (unsigned i = 0; ; ++i)
+    std::cout << "\n\ni	tr(i)	prime factors" << std::endl;
+    for (unsigned i = 2; i <= 20; ++i)
     {
         auto tr = triangle(i);
-        auto d = num_divisors(tr);
-        if (d > max)
-        {
-            max = d;
-            std::cout << i << "\t" << tr << "\t" << d << std::endl;
-        }
-
-        if (i > 200) break;
-        if (d > 500)
-        {
-            break;
-        }
+        std::cout << i << ": " << tr << " -> " << get_prime_factors_of_tr(i) << std::endl;
     }
 }

@@ -29,7 +29,7 @@
 (import javax.swing.JPanel)
 (import javax.swing.UIManager)
 (import javax.swing.JOptionPane)
-(use 'clojure.contrib.math)
+;(use 'clojure.contrib.math)
 
 ; =============================================================================
 ; HTTP Utility functions
@@ -452,7 +452,7 @@
       (nth color-table grid-value)
       (Color/WHITE  ))))
 
-(defn half [n] (round (int (/ n 2))))
+(defn half [n] (int (/ n 2)))
 
 (defn center-in-screen [frame]
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
@@ -557,7 +557,7 @@
         time-interval       (if-not (zero? time-interval-s)
                               time-interval-s
                               1)]
-      (reset! fps (int (round (/ @frame-count time-interval))))
+      (reset! fps (int (/ @frame-count time-interval)))
       (reset! frame-count 0)
       (reset! start-time (current-time-ms))))
 
@@ -841,11 +841,11 @@
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
   (JOptionPane/showInputDialog nil "What is your name?" "Name" JOptionPane/QUESTION_MESSAGE))
       
-(defn get-high-scores []  
+;(defn get-high-scores []  
   ; we need to explicity ask for xml (using .xml) because
   ; for some mysterious reason the accept header of the
   ; clojure.xml/parse call is text/html.
-  (clojure.xml/parse (str "http://stacked-crooked.com/hof.xml")))
+  ;(clojure.xml/parse (str "http://stacked-crooked.com/hof.xml")))
   
 (def get-agent (agent nil))
 (def post-agent (agent nil))
@@ -868,12 +868,12 @@
               (println "POST agent errors: " (agent-errors post-agent))))
           ))
           
-      (try
-        (await-for 5000 (send get-agent (fn [_] (get-high-scores))))
-        (catch Exception exc (println "get-high-scores failed:" (.getMessage exc))))
-      (if (nil? (agent-errors get-agent))
-        (reset! hs-xml @get-agent)
-        (println "Failed to get high scores. (GET agent errors: " (agent-errors post-agent) ")"))
+      ;(try
+        ;(await-for 5000 (send get-agent (fn [_] (get-high-scores))))
+        ;(catch Exception exc (println "get-high-scores failed:" (.getMessage exc))))
+      ;(if (nil? (agent-errors get-agent))
+        ;(reset! hs-xml @get-agent)
+        ;(println "Failed to get high scores. (GET agent errors: " (agent-errors post-agent) ")"))
       )))
 
 (main)

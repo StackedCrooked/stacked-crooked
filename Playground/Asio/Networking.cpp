@@ -34,12 +34,7 @@ struct UDPServer::Impl
             char data[cMaxLength];
             udp::endpoint sender_endpoint;
             size_t length = mSocket.receive_from(boost::asio::buffer(data, cMaxLength), sender_endpoint);
-            std::string req(data, length);
-            std::cout << "\nRequest size: " << req.size() << std::endl;
-            std::cout << "Request data:\n" << req << std::endl;
-            std::string response = inRequestHandler(req);
-            std::cout << "\nResponse size: " << response.size() << std::endl;
-            std::cout << "Response data:\n" << response << std::endl;
+            std::string response = inRequestHandler(std::string(data, length));
             mSocket.send_to(boost::asio::buffer(response.c_str(), response.size()), sender_endpoint);
         }
     }
@@ -227,6 +222,5 @@ UDPSender::~UDPSender()
 
 void UDPSender::send(const std::string & inMessage)
 {
-    std::cout << "Sending: " << inMessage << std::endl;
     mImpl->socket.send_to(boost::asio::buffer(inMessage.c_str(), inMessage.size()), *mImpl->iterator);
 }

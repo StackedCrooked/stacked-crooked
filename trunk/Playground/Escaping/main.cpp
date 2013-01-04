@@ -3,17 +3,6 @@
 #include <iostream>
 
 
-static const std::string & file_data()
-{
-    static std::string fdata = [] {
-        std::string s;
-        std::ifstream is("input.txt");
-        return std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-    }();
-    return fdata;
-}
-
-
 typedef std::string delimiter;
 typedef std::string escape;
 
@@ -53,8 +42,15 @@ std::string decode_copy(std::string s, delimiter delim, escape esc)
 }
 
 
+std::string file_data()
+{
+    std::ifstream is("input.txt");
+    return std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+}
+
+
 int main()
-{   
+{
     std::string s = file_data(); 
     std::cout << s << std::endl << std::endl;
     

@@ -1,2 +1,4 @@
-echo "`date` activation" >> /Volumes/Lacie/Activate.txt
-echo "`date` activation" >> /Volumes/WesternDigital/Activate.txt
+#!/bin/bash
+echo "0: $0"
+echo "1: $1"
+nohup $(dirname $0)/_ActivateHD.sh &

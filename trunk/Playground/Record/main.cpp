@@ -101,12 +101,11 @@ template<typename Head, typename ...Tail>
 struct has_duplicates;
 
 
-template<typename Head>
-struct has_duplicates<Head> {  static constexpr bool value = false; };
+template<typename Head> struct has_duplicates<Head> : std::false_type {};
 
 
 template<typename Head, typename Tail>
-struct has_duplicates<Head, Tail> {  static constexpr bool value = std::is_same<Head, Tail>::value; };
+struct has_duplicates<Head, Tail> : std::is_same<Head, Tail> {};
 
 
 template<typename Head, typename Next, typename ...Tail>
@@ -115,7 +114,8 @@ struct has_duplicates<Head, Next, Tail...>
     static constexpr bool value =
         std::is_same<Head, Next>::value ||
         is_any_of<Head, Tail...>::value ||
-        is_any_of<Next, Tail...>::value;
+        is_any_of<Next, Tail...>::value ||
+        has_duplicates<Tail... >::value;
 };
 
 
@@ -172,19 +172,16 @@ int main()
     STATIC_ASSERT(HAS_DUPLICATES   (int, char, char))
     STATIC_ASSERT(HAS_DUPLICATES   (int, char, int ))
 
-    STRONG_TYPEDEF(unsigned long, Id         )
-    STRONG_TYPEDEF(std::string  , Author     )
-    STRONG_TYPEDEF(std::string  , Title      )
-    STRONG_TYPEDEF(std::string  , Description)
+    STATIC_ASSERT(HAS_NO_DUPLICATES(char, short, int, long))
+    STATIC_ASSERT(HAS_DUPLICATES(char, char , int  , long))
+    STATIC_ASSERT(HAS_DUPLICATES(char, short, char , long))
+    STATIC_ASSERT(HAS_DUPLICATES(char, short, int  , char))
+    STATIC_ASSERT(HAS_DUPLICATES(char, short, short, long))
+    STATIC_ASSERT(HAS_DUPLICATES(char, short, long , long))
 
-    auto book = make_record(Id(120),
-                            Title("Exploring the boundaries of the universe, a biography."),
-                            Author("Your mom"));
+    STRONG_TYPEDEF(std::string  , Hostname   )
+    STRONG_TYPEDEF(uint16_t     , Port       )
 
-    auto title = get<Title>(book);
-    auto author = get<Author>(book);
-
-    std::cout << title << " was written by " << author << "." << std::endl;
-
-//    std::cout << "End of program." << std::endl;
+    auto hostname_and_port = make_record(Hostname("bb-dev"), Port(9001));
+    std::cout << "Connecting to " << get<Hostname>(hostname_and_port) << ":" << get<Port>(hostname_and_port) << std::endl;
 }

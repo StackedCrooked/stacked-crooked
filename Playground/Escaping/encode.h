@@ -1,6 +1,34 @@
 #include <boost/algorithm/string/replace.hpp>
 
 
+template<typename CharSeq>
+struct Encoder
+{
+    Encoder(const CharSeq & inDelimiter, const CharSeq & inEscape, const CharSeq & inMetaEscape) :
+        mDelimiter(inDelimiter),
+        mEscape(inEscape),
+        mMetaEscape(inMetaEscape)
+    {
+    }
+
+    void encode(CharSeq & text)
+    {
+        using boost::algorithm::replace_all;
+        replace_all(text, mEscape,    mMetaEscape);
+        replace_all(text, mDelimiter, mEscape + mDelimiter);
+    }
+
+    void decode(CharSeq & text)
+    {
+        using boost::algorithm::replace_all;
+        replace_all(text, mEscape + mDelimiter, mDelimiter);
+        replace_all(text, mMetaEscape, mEscape);
+    }
+
+    CharSeq mDelimiter, mEscape, mMetaEscape;
+};
+
+
 typedef std::string delimiter;
 typedef std::string escape;
 

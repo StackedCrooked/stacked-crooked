@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
 {
     try
     {
-        Encoder<std::string> enc(",", ".", "..");
+        Encoder<std::string> enc(",", ".");
         std::string msg = R"(
                 a,b
                 a.b

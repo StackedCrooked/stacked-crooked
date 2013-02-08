@@ -11,6 +11,13 @@ struct Encoder
     {
     }
 
+    Encoder(const CharSeq & inDelimiter, const CharSeq & inEscape) :
+        mDelimiter(inDelimiter),
+        mEscape(inEscape),
+        mMetaEscape(inEscape + inEscape)
+    {
+    }
+
     void encode(CharSeq & text)
     {
         using boost::algorithm::replace_all;

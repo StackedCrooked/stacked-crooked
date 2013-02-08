@@ -1,64 +1,49 @@
-#include <boost/algorithm/string/replace.hpp>
+#include "encode.h"
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 
-typedef std::string delimiter;
-typedef std::string escape;
-
-
-void encode(std::string & s, delimiter delim, escape esc)
+struct InvalidUsage : std::runtime_error
 {
-    if (s.find(esc + delim) != std::string::npos)
+    InvalidUsage() : std::runtime_error("InvalidUsage") {}
+    ~InvalidUsage() throw() {}
+};
+
+
+void run(std::vector<std::string> args)
+{
+	if (args.size() < 3)
     {
-        encode(s, esc + delim, esc);
+        throw InvalidUsage();
     }
-    boost::algorithm::replace_all(s, delim, esc + delim);
-}
 
+    auto delim = ",";
+    auto escape = ".";
 
-
-void decode(std::string & s, delimiter delim, escape esc)
-{
-    if (s.find(esc + delim) != std::string::npos)
+    if (args[1] == "encode")
     {
-        boost::algorithm::replace_all(s, esc + delim, delim);
-        decode(s, esc + delim, esc);
+        std::cout << encode_copy(args[2], delim, escape) << std::endl;
+    }
+    else if (args[1] == "decode")
+    {
+        std::cout << decode_copy(args[2], delim, escape) << std::endl;
+    }
+    else
+    {
+        throw InvalidUsage();
     }
 }
 
-
-std::string encode_copy(std::string s, delimiter delim, escape esc)
+int main(int argc, char ** argv)
 {
-    encode(s, delim, esc);
-    return s;
-}
-
-
-std::string decode_copy(std::string s, delimiter delim, escape esc)
-{
-    decode(s, delim, esc);
-    return s;
-}
-
-
-std::string file_data()
-{
-    std::ifstream is("input.txt");
-    return std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-}
-
-
-int main()
-{
-    std::string s = file_data(); 
-    std::cout << s << std::endl << std::endl;
-    
-    std::string enc = encode_copy(s, "\t", "\\");
-    std::cout << enc << std::endl << std::endl;
-    std::ofstream("encoded.txt") << enc;
-    
-    std::string dec = decode_copy(enc, "\t", "\\");
-    std::cout << dec << std::endl << std::endl;
-    std::ofstream("decoded.txt") << dec;
+    try
+    {
+        run(std::vector<std::string>(argv, argv + argc));
+    }
+    catch (InvalidUsage&)
+    {
+        std::cerr << "Usage: " << argv[0] << " encode|decode Text" << std::endl;
+        return 1;
+    }
 }

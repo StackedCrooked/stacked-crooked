@@ -1,37 +1,34 @@
-#include "OOP.h"
-#include "Overloading.h"
-#include "PosixMutex.h"
-#include "PolicyBased.h"
+#include <iostream>
+#include <string>
 
+#define TRACE puts(__FUNCTION__);
 
-using namespace Policy;
+template<typename T, unsigned N>
+struct A
+{
+    A<T, N - 1> operator->() const
+    {
+        std::cout << "N: " << N << std::endl;
+        return A<T, N - 1>();
+    }
 
+    T t;
+};
+
+template<typename T>
+struct A<T, 0>
+{
+    const T * operator->() const
+    {
+        std::cout << "N: " << 0 << std::endl;
+        return &t;
+    }
+
+    T t;
+};
 
 int main()
 {
-    {
-        RecursiveMutex mutex;
-        mutex.lock();
-        mutex.unlock();
-    }
-
-    {
-        Mutex mutex;
-        mutex.lock();
-        mutex.unlock();
-    }
-
-    // Doesn't compile
-    //{
-    //    Mutex<Recursive::Yes, Spin::Yes> mutex;
-    //    mutex.lock();
-    //    mutex.unlock();
-    //}
-
-    {
-        SpinMutex mutex;
-        mutex.lock();
-        mutex.unlock();
-    }
-    return 0;
+    A<std::string, 10> a;
+    a->size();
 }

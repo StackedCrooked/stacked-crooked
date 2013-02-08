@@ -6,6 +6,7 @@
 #include <iostream>
 #include <type_traits>
 #include <stdint.h>
+#include <deque>
 
 //! Decodes the network data to the request type.
 //! Endianness conversion will be performed if T is an unsigned

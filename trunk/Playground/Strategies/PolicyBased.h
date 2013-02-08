@@ -8,12 +8,11 @@
 #include <vector>
 
 
-template<class Serializer,
-         class Compressor,
-         class Output>
-class Archiver : private Serializer,
-                 private Compressor,
-                 private Output
+//! The archive stores C++ objects.
+//! Three aspects of archivation are: (1) serialization, (2) compression and (3) output channel.
+//! Each aspect is controllable by specifying the corresponding template argument (aka policy).
+template<class Serializer, class Compressor, class Outputter>
+class Archiver : Serializer, Compressor, Outputter // private inheritance == composition
 {
 public:
     template<typename T>
@@ -96,22 +95,18 @@ struct StdOut
 };
 
 
-struct Test
+int main()
 {
-    Test()
-    {
-        Archiver<JSON, NoCompression, StdOut> arch;
-        typedef std::map<std::string, std::vector<int>> Data;
-        Data data = {
-            { "ip_1" , { 10, 0, 0, 1 } },
-            { "ip_2" , { 10, 0, 0, 2 } }
-        };
-        arch.store(data);
-    }
-};
+    // Create the archiver.
+    Archiver<JSON, NoCompression, StdOut> my_archiver;
 
+    // Generate an object.
+    typedef std::map<std::string, std::vector<int>> Data;
+    Data data = {
+        { "ip_1" , { 10, 0, 0, 1 } },
+        { "ip_2" , { 10, 0, 0, 2 } }
+    };
 
-Test t;
-
-
-#endif // POLICYBASED_H
+    // Store it with our archiver.
+    my_archiver.store(data);
+}

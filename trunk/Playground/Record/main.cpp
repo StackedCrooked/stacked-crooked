@@ -12,14 +12,19 @@ struct StrongTypedef
 {
     StrongTypedef(const T & data = T()) : data_(data) {}
     operator const T&() const { return data_; }
+    operator T&() { return data_; }
 
+    const T & get() const { return data_; }
+    T & get() { return data_; }
+
+private:
     T data_;
 };
 
 template<typename T, typename Disambiguator>
 std::ostream& operator<<(std::ostream& os, const StrongTypedef<T, Disambiguator> & obj)
 {
-    return os << static_cast<T>(obj);
+    return os << obj.get();
 }
 
 
@@ -80,10 +85,7 @@ struct is_any_of;
 
 
 template<typename T, typename Arg>
-struct is_any_of<T, Arg>
-{
-    static constexpr bool value = std::is_same<T, Arg>::value;
-};
+struct is_any_of<T, Arg> : std::is_same<T, Arg> {};
 
 
 template<typename T, typename Head, typename ...Tail>
@@ -179,8 +181,8 @@ int main()
     STATIC_ASSERT(HAS_DUPLICATES(char, short, short, long))
     STATIC_ASSERT(HAS_DUPLICATES(char, short, long , long))
 
-    STRONG_TYPEDEF(std::string  , Hostname   )
-    STRONG_TYPEDEF(uint16_t     , Port       )
+    STRONG_TYPEDEF(std::string, Hostname)
+    STRONG_TYPEDEF(uint16_t   , Port    )
 
     auto hostname_and_port = make_record(Hostname("bb-dev"), Port(9001));
     std::cout << "Connecting to " << get<Hostname>(hostname_and_port) << ":" << get<Port>(hostname_and_port) << std::endl;

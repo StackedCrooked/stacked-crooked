@@ -2,16 +2,16 @@
 
 
 template<typename CharSeq>
-struct Encoder
+struct Transcoder
 {
-    Encoder(const CharSeq & inDelimiter, const CharSeq & inEscape, const CharSeq & inMetaEscape) :
+    Transcoder(const CharSeq & inDelimiter, const CharSeq & inEscape, const CharSeq & inMetaEscape) :
         mDelimiter(inDelimiter),
         mEscape(inEscape),
         mMetaEscape(inMetaEscape)
     {
     }
 
-    Encoder(const CharSeq & inDelimiter, const CharSeq & inEscape) :
+    Transcoder(const CharSeq & inDelimiter, const CharSeq & inEscape) :
         mDelimiter(inDelimiter),
         mEscape(inEscape),
         mMetaEscape(inEscape + inEscape)

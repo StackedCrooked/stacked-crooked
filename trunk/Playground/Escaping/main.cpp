@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
 {
     try
     {
-        Encoder<std::string> enc(",", ".");
+        Transcoder<std::string> transcoder(",", ".");
         std::string msg = R"(
                 a,b
                 a.b
@@ -48,9 +48,9 @@ int main(int argc, char ** argv)
                 a,.,.b
                 )";
         std::cout << "Orig: " << msg << std::endl;
-        enc.encode(msg);
+        transcoder.encode(msg);
         std::cout << "Encoded: " << msg << std::endl;
-        enc.decode(msg);
+        transcoder.decode(msg);
         std::cout << "Decoded: " << msg << std::endl;
         run(std::vector<std::string>(argv, argv + argc));
     }

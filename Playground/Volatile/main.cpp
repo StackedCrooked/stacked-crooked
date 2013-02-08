@@ -1,53 +1,115 @@
-#include <boost/thread.hpp>
+#include <cassert>
+#include <cstddef>
+#include <condition_variable>
+#include <deque>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <memory>
+#include <mutex>
 
 
-template <typename T>
-class LockingPtr {
+#define TRACE std::cout << __PRETTY_FUNCTION__ << std::endl;
+
+
+template<class T, template<typename> class BeforeAndAfter>
+class Proxy;
+
+
+template<typename T>
+struct Wrap;
+
+
+template<typename T>
+Wrap<T> wrap(const Proxy<T> &);
+
+
+template<class T, template<typename> class BeforeAndAfter>
+class Proxy : private BeforeAndAfter<T>
+{
 public:
-   // Constructors/destructors
-   LockingPtr(volatile T& obj, boost::mutex& mtx)
-       : pObj_(const_cast<T*>(&obj)),
-        pMtx_(&mtx)
-   {    mtx.lock();    }
-   ~LockingPtr()
-   {    pMtx_->unlock();    }
-   // Pointer behavior
-   T& operator*()
-   {    return *pObj_;    }
-   T* operator->()
-   {   return pObj_;   }
+    template<typename ...Args>
+    explicit Proxy(Args && ...inArgs) :
+        mObject(std::forward<Args>(inArgs)...)
+    {
+    }
+
+    Wrap<T> operator->() const
+    {
+        return Wrap<T>(*this);
+    }
+
 private:
-   T* pObj_;
-   boost::mutex* pMtx_;
-   LockingPtr(const LockingPtr&);
-   LockingPtr& operator=(const LockingPtr&);
+    friend class Wrap<T>;
+    T mObject;
 };
 
 
-class Server
+template<typename T>
+struct Wrap
 {
-public:
-    void update()
-	{
-		std::cout << __PRETTY_FUNCTION__ << std::endl;
-	}
+    Wrap(Proxy<T> & proxy)
+    {
+        proxy.before();
+    }
 
-	void update() volatile
-	{
-		std::cout << __PRETTY_FUNCTION__ << std::endl;
-		LockingPtr<Server> ptr(*this, const_cast<boost::mutex&>(mMutex));
-		ptr->update();
-	}
-
-private:
-	mutable boost::mutex mMutex;
+    ~Wrap()
+    {
+        try
+        {
+            proxy.after();
+        }
+        catch (...)
+        {
+        }
+    }
 };
 
 
-int main()
+struct Item
 {
-	volatile Server s;
-	s.update();
-	return 0;
+    void foo() const { TRACE }
+    void bar() const { TRACE }
+};
+
+
+namespace Hooking {
+
+template<typename T>
+struct Logger
+{
+    void before() { TRACE }
+    void after() { TRACE }
+};
+
+
+template<typename T>
+struct Locker
+{
+    void before() { mtx.lock(); }
+    void after() { mtx.unlock(); }
+
+private:
+    Locker(Locker<T>&&) = default;
+    Locker<T>& operator=(Locker<T>&&) = delete;
+
+    Locker(const Locker<T>&) = delete;
+    Locker<T>& operator=(const Locker<T>&) = delete;
+
+    std::mutex mtx;
+};
+
+}
+
+
+int main() {
+
+    std::cout << "\nWith std::string:" << std::endl;
+    Proxy<std::string, Locker> s;
+
+    std::cout << "\nPushing back a character: " << std::endl;
+    s->push_back('a');
+
+    std::cout << "\nClearing the string: " << std::endl;
+    s->clear();
 }

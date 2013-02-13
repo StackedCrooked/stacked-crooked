@@ -2,23 +2,57 @@
 #include <iostream>
 #include <stdint.h>
 
+
+template<typename T>
+struct InvalidEnumerator : std::runtime_error
+{
+    InvalidEnumerator(T t) : std::runtime_error("InvalidEnumerator") {}
+    ~InvalidEnumerator() throw() {}
+    
+    T getEnumerator() const
+    {
+        return t;
+    }
+    
+    T t;
+};
+
+template<typename T>
+InvalidEnumerator<T> InvalidEnumerator(T t)
+{
+    return InvalidEnumerator<T>(t);
+}
+
 template<typename T, typename /*disambiguator*/>
-struct StrongTypedef {
+struct StrongTypedef
+{
     StrongTypedef(const T data = T()) : data_(data) {}
-    operator const T&() const { return data_; }
+    operator const T & () const
+    {
+        return data_;
+    }
     T data_;
 };
 
 #define STRONG_TYPEDEF(Type, Name) typedef StrongTypedef<Type, struct Name##_> Name;
 
 
-uint16_t Net2Host(uint16_t v) { return ntohs(v); }
-uint32_t Net2Host(uint32_t v) { return ntohl(v); }
+uint16_t Net2Host(uint16_t v)
+{
+    return ntohs(v);
+}
+uint32_t Net2Host(uint32_t v)
+{
+    return ntohl(v);
+}
 
 template<typename T>
 struct NetEncoded
 {
-    T hostValue() { return Net2Host(_value); }
+    T hostValue()
+    {
+        return Net2Host(_value);
+    }
     T _value;
 };
 
@@ -117,103 +151,114 @@ struct ICMPMessage
     Net16 mSequenceNumber;
 };
 
-using Raw = std::pair<uint8_t*, uint8_t*>;
-Raw increment(Raw raw, unsigned n)
+using Raw = std::pair<uint8_t *, uint8_t *>;
+
+Raw Inc(Raw raw, unsigned n)
 {
     assert(raw.first + n <= raw.second);
     return Raw(raw.first + n, raw.second);
 }
 
-template<typename Header, typename Tail>
-using Message = std::pair<Raw, std::pair<Header, Tail> >;
-
-
 template<typename Header>
-Raw RemoveHeader(Raw raw)
+Raw Inc(Raw raw)
 {
     return Raw(raw.first + sizeof(Header), raw.second);
 }
 
-template<typename Head>
-Message<Head, nullptr_t> Decode(Raw raw)
+EtherType GetHLPId(EthernetFrame eth)
 {
-    return Message(Raw(raw.first + sizeof(Head)), *reinterpret_cast<Head*>(raw.first), nullptr);
+    return static_cast<EtherType>(eth.mEtherType.hostValue());
 }
 
-template<typename T>
-struct InvalidEnumerator : std::runtime_error
+EtherType GetHLPId(VLANTag vlan)
 {
-    InvalidEnumerator(T t) : std::runtime_error("InvalidEnumerator") {}
-    ~InvalidEnumerator() throw() {}
-
-    T getEnumerator() const { return t; }
-
-    T t;
-};
-
-template<typename T>
-void ThrowInvalidEnumerator(T t)
-{
-    throw InvalidEnumerator<T>(t);
+    return static_cast<EtherType>(vlan.mEtherType.hostValue());
 }
 
-EtherType GetHLPId(VLANTag vlan)      { return static_cast<EtherType>(vlan.mEtherType.hostValue()); }
-EtherType GetHLPId(EthernetFrame eth) { return static_cast<EtherType>(eth.mEtherType.hostValue()); }
-IPProtNum GetHLPId(IPPacket ip)       { return static_cast<IPProtNum>(ip.mProtocol); }
+IPProtNum GetHLPId(IPPacket ip)
+{
+    return static_cast<IPProtNum>(ip.mProtocol);
+}
 
 template<typename Tail>
-auto GetHLPId(std::pair<Raw, Tail> tail) -> decltype(GetHLPId(tail.second))
+auto GetHLPId(std::pair<Raw, Tail> msg) -> decltype(GetHLPId(msg.second))
 {
-    return GetHLPId(tail.second);
+    return GetHLPId(msg.second);
 }
 
 void pop(const Raw & inRaw);
-
 void pop(std::pair<Raw, EthernetFrame> data);
 template<typename Tail> void pop(std::pair<Raw, std::pair<IPPacket     , Tail> > data);
 template<typename Tail> void pop(std::pair<Raw, std::pair<ICMPMessage  , Tail> > data);
+
+template<typename Head>
+std::pair<Raw, Head> Decode(Raw raw)
+{
+    return std::make_pair(Inc<Head>(raw), Decode<Head>(raw));
+}
+
+template<typename Head, typename Tail>
+std::pair<Raw, std::pair<Head, Tail> > Decode(const std::pair<Raw, Tail> & msg)
+{
+    return std::make_pair(Inc<Head>(msg.first), std::make_pair(Decode<Head>(msg.first), msg.second));
+}
 
 void pop(Raw raw)
 {
     return pop(Decode<EthernetFrame>(raw));
 }
 
-
-template<typename Header> 
-auto GetHLPId(std::pair<Raw, Header> data) -> decltype(GetHLPId(data.second))
-{ return GetHLPId(data.second); }
-
-
 template<typename Header, typename Tail>
 auto GetHLPId(std::pair<Header, Tail> data) -> decltype(GetHLPId(data.second))
-{ return GetHLPId(data.first); }
-
+{
+    return GetHLPId(data.first);
+}
 
 void pop(std::pair<Raw, EthernetFrame> data)
 {
     switch (GetHLPId(data))
     {
-        case EtherType::ARP: { pop(Decode<ARPMessage>(data)); break; }
-        case EtherType::IP : { pop(Decode<IPPacket  >(data)); break; }
-        default: ThrowInvalidEnumerator(data.first.mEtherType);
+        case EtherType::ARP:
+        {
+            pop(Decode<ARPMessage>(data));
+            break;
+        }
+        case EtherType::IP :
+        {
+            pop(Decode<IPPacket>(data));
+            break;
+        }
+        default:
+        {
+            throw InvalidEnumerator(data.first.mEtherType);
+        }
     }
 }
 
 template<typename Tail>
-void pop(Message<IPProtNum, Tail> data)
+void pop(std::pair<Raw, std::pair<IPProtNum, Tail> > msg)
 {
-    switch (GetHLPId(data))
+    switch (GetHLPId(msg))
     {
-        case IPProtNum::ICMP: { pop(Decode<ICMPMessage>(data)); break; }
-        default: ThrowInvalidEnumerator(protocol);
+        case IPProtNum::ICMP:
+        {
+            pop(Decode<ICMPMessage>(msg));
+            break;
+        }
+        default:
+        {
+             throw InvalidEnumerator(protocol);
+        }
     }
 }
 
+template<typename T> Flip(T) {}
+
 template<typename Tail>
-void pop(Message<ICMPMessage, Tail> data)
+void pop(std::pair<Raw, std::pair<ICMPMessage, Tail> > msg)
 {
     Packet packet;
-    packet.push(Flip(data.first));
-    push(packet, Chop(data));
+    packet.push(Flip(msg.first));
+    push(packet, msg.second);
 }
 

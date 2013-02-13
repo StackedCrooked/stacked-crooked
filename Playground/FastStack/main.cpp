@@ -7,6 +7,9 @@
 #include <stdint.h>
 
 
+#define TRACE std::cout << __PRETTY_FUNCTION__ << std::endl;
+
+
 typedef std::vector<uint8_t> DynamicBuffer;
 typedef std::vector<DynamicBuffer> DynamicBuffers;
 
@@ -275,6 +278,7 @@ Raw Inc(Raw raw, unsigned n)
 template<typename Header>
 Raw Inc(Raw raw)
 {
+    TRACE
     return Raw(raw.first + sizeof(Header), raw.second);
 }
 
@@ -303,12 +307,14 @@ template<typename Tail> void pop(std::pair<Raw, std::pair<ICMPMessage  , Tail> >
 template<typename Head>
 std::pair<Raw, Head> Decode(Raw raw)
 {
+    TRACE
     return std::make_pair(Inc<Head>(raw), *reinterpret_cast<Head*>(raw.first));
 }
 
 template<typename Head, typename Tail>
 std::pair<Raw, std::pair<Head, Tail> > Decode(const std::pair<Raw, Tail> & msg)
 {
+    TRACE
     auto p = Decode<Head>(msg.first);
     return std::make_pair(p.first, std::make_pair(p.second, msg.second));
 }
@@ -321,17 +327,20 @@ void pop(Raw raw)
 template<typename Header>
 auto GetHLPId(std::pair<Raw, Header> msg) -> decltype(GetHLPId(msg.second))
 {
+    TRACE
     return GetHLPId(msg.second);
 }
 
 template<typename Header, typename Tail>
 auto GetHLPId(std::pair<Header, Tail> msg) -> decltype(GetHLPId(msg.first))
 {
+    TRACE
     return GetHLPId(msg.first);
 }
 
 void pop(std::pair<Raw, EthernetFrame> msg)
 {
+    TRACE
     auto hlpId = GetHLPId(msg);
     switch (hlpId)
     {
@@ -356,6 +365,7 @@ void pop(std::pair<Raw, EthernetFrame> msg)
 template<typename Tail>
 void pop(std::pair<Raw, std::pair<IPPacket, Tail> > msg)
 {
+    TRACE
     auto hlpId = GetHLPId(msg);
     switch (hlpId)
     {
@@ -379,6 +389,7 @@ template<typename T> T Flip(T t)
 
 EthernetFrame Flip(EthernetFrame eth)
 {
+    TRACE
     using std::swap;
     swap(eth.mSource, eth.mTarget);
     return eth;
@@ -386,6 +397,7 @@ EthernetFrame Flip(EthernetFrame eth)
 
 IPPacket Flip(IPPacket ip)
 {
+    TRACE
     using std::swap;
     swap(ip.mSourceIP, ip.mTargetIP);
     ip.mFlagsAndFragmentOffset = Net16();
@@ -394,12 +406,14 @@ IPPacket Flip(IPPacket ip)
 
 void push(Packet & packet, Raw raw)
 {
+    TRACE
     packet.push_front(raw.first, raw.second - raw.first);
 }
 
 template<typename Header>
 void push(Packet & packet, Header hdr)
 {
+    TRACE
     auto flipped = Flip(hdr);
 	static_assert(std::is_pod<decltype(flipped)>::value, "");
     uint8_t* bytes = reinterpret_cast<uint8_t*>(&flipped);
@@ -409,6 +423,7 @@ void push(Packet & packet, Header hdr)
 template<typename Head, typename Tail>
 void push(Packet & packet, std::pair<Head, Tail> msg)
 {
+    TRACE
     push(packet, msg.first);
     push(packet, msg.second);
 }
@@ -416,6 +431,7 @@ void push(Packet & packet, std::pair<Head, Tail> msg)
 template<typename Tail>
 void pop(std::pair<Raw, std::pair<ICMPMessage, Tail> > msg)
 {
+    TRACE
     Packet packet;
     auto flipped = Flip(msg.second.first);
     static_assert(std::is_pod<decltype(flipped)>::value, "");
@@ -427,6 +443,7 @@ void pop(std::pair<Raw, std::pair<ICMPMessage, Tail> > msg)
 template<typename Tail>
 void pop(std::pair<Raw, std::pair<ARPMessage, Tail> > msg)
 {
+    TRACE
     Packet packet;
 	push(packet, msg);
 }
@@ -434,6 +451,7 @@ void pop(std::pair<Raw, std::pair<ARPMessage, Tail> > msg)
 
 void run()
 {
+    TRACE
 	auto cPayloadSize = 60;
 	auto size = sizeof(EthernetFrame) + sizeof(IPPacket) + sizeof(ICMPMessage) + cPayloadSize;
 	DynamicBuffer buffer(size, 0);

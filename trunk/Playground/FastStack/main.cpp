@@ -341,14 +341,15 @@ void pop(std::pair<Raw, EthernetFrame> msg)
             break;
         }
         case EtherType::IP:
+        default:
         {
             pop(Decode<IPPacket>(msg));
             break;
         }
-        default:
-        {
-            throw MakeInvalidEnumerator(hlpId);
-        }
+//        default:
+//        {
+//            throw MakeInvalidEnumerator(hlpId);
+//        }
     }
 }
 
@@ -359,14 +360,15 @@ void pop(std::pair<Raw, std::pair<IPPacket, Tail> > msg)
     switch (hlpId)
     {
         case IPProtNum::ICMP:
+        default:
         {
             pop(Decode<ICMPMessage>(msg));
             break;
         }
-        default:
-        {
-             throw MakeInvalidEnumerator(hlpId);
-        }
+//        default:
+//        {
+//             throw MakeInvalidEnumerator(hlpId);
+//        }
     }
 }
 

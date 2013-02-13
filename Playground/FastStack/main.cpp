@@ -55,9 +55,11 @@ public:
     }
 
     template<typename T>
-    void push_back(const T & inHeader)
+    void push_front(const T & inHeader)
     {
-        mParts.push_back(std::move(ConvertHeaderToString(inHeader)));
+		static_assert(std::is_pod<T>::value, "Must be header!");
+		const uint8_t * bytes = reinterpret_cast<const uint8_t*>(&inHeader);
+        push_front(bytes, sizeof(inHeader));
     }
 
     std::size_t getTotalSize() const
@@ -262,23 +264,23 @@ struct ICMPMessage
     Net16 mSequenceNumber;
 };
 
-struct Raw : std::pair<uint8_t*, uint8_t*>
+struct Payload : std::pair<uint8_t*, uint8_t*>
 {
     template<typename ...Args>
-    Raw(Args && ...args) : std::pair<uint8_t*, uint8_t*>(std::forward<Args>(args)...) {}
+    Payload(Args && ...args) : std::pair<uint8_t*, uint8_t*>(std::forward<Args>(args)...) {}
 };
 
 
-Raw Inc(Raw raw, unsigned n)
+Payload Inc(Payload payload, unsigned n)
 {
-    assert(raw.first + n <= raw.second);
-    return Raw(raw.first + n, raw.second);
+    assert(payload.first + n <= payload.second);
+    return Payload(payload.first + n, payload.second);
 }
 
 template<typename Header>
-Raw Inc(Raw raw)
+Payload Inc(Payload payload)
 {
-    return Raw(raw.first + sizeof(Header), raw.second);
+    return Payload(payload.first + sizeof(Header), payload.second);
 }
 
 EtherType GetHLPId(EthernetFrame eth)
@@ -296,33 +298,33 @@ IPProtNum GetHLPId(IPPacket ip)
     return static_cast<IPProtNum>(ip.mProtocol);
 }
 
-void pop(Raw raw);
-void pop(std::pair<Raw, EthernetFrame> msg);
-template<typename Tail> void pop(std::pair<Raw, EthernetFrame> msg);
-template<typename Tail> void pop(std::pair<Raw, std::pair<IPPacket     , Tail> > msg);
-template<typename Tail> void pop(std::pair<Raw, std::pair<ARPMessage   , Tail> > msg);
-template<typename Tail> void pop(std::pair<Raw, std::pair<ICMPMessage  , Tail> > msg);
+void pop(Payload payload);
+void pop(std::pair<Payload, EthernetFrame> msg);
+template<typename Tail> void pop(std::pair<Payload, EthernetFrame> msg);
+template<typename Tail> void pop(std::pair<Payload, std::pair<IPPacket     , Tail> > msg);
+template<typename Tail> void pop(std::pair<Payload, std::pair<ARPMessage   , Tail> > msg);
+template<typename Tail> void pop(std::pair<Payload, std::pair<ICMPMessage  , Tail> > msg);
 
 template<typename Head>
-std::pair<Raw, Head> Decode(Raw raw)
+std::pair<Payload, Head> Decode(Payload payload)
 {
-    return std::make_pair(Inc<Head>(raw), *reinterpret_cast<Head*>(raw.first));
+    return std::make_pair(Inc<Head>(payload), *reinterpret_cast<Head*>(payload.first));
 }
 
 template<typename Head, typename Tail>
-std::pair<Raw, std::pair<Head, Tail> > Decode(const std::pair<Raw, Tail> & msg)
+std::pair<Payload, std::pair<Head, Tail> > Decode(const std::pair<Payload, Tail> & msg)
 {
     auto p = Decode<Head>(msg.first);
     return std::make_pair(p.first, std::make_pair(p.second, msg.second));
 }
 
-void pop(Raw raw)
+void pop(Payload payload)
 {
-    return pop(Decode<EthernetFrame>(raw));
+    return pop(Decode<EthernetFrame>(payload));
 }
 
 template<typename Header>
-auto GetHLPId(std::pair<Raw, Header> msg) -> decltype(GetHLPId(msg.second))
+auto GetHLPId(std::pair<Payload, Header> msg) -> decltype(GetHLPId(msg.second))
 {
     return GetHLPId(msg.second);
 }
@@ -333,7 +335,7 @@ auto GetHLPId(std::pair<Header, Tail> msg) -> decltype(GetHLPId(msg.first))
     return GetHLPId(msg.first);
 }
 
-void pop(std::pair<Raw, EthernetFrame> msg)
+void pop(std::pair<Payload, EthernetFrame> msg)
 {
     TRACE
     auto hlpId = GetHLPId(msg);
@@ -358,7 +360,7 @@ void pop(std::pair<Raw, EthernetFrame> msg)
 }
 
 template<typename Tail>
-void pop(std::pair<Raw, std::pair<IPPacket, Tail> > msg)
+void pop(std::pair<Payload, std::pair<IPPacket, Tail> > msg)
 {
     TRACE
     auto hlpId = GetHLPId(msg);
@@ -377,10 +379,8 @@ void pop(std::pair<Raw, std::pair<IPPacket, Tail> > msg)
     }
 }
 
-template<typename T> T Flip(T t)
-{
-    return t;
-}
+template<typename T> T & Flip(T & t){ return t; }
+template<typename T> const T & Flip(const T & t){ return t; }
 
 EthernetFrame Flip(EthernetFrame eth)
 {
@@ -397,31 +397,36 @@ IPPacket Flip(IPPacket ip)
     return ip;
 }
 
-void push(Packet & packet, Raw raw)
+ARPMessage Flip(ARPMessage arp)
+{
+    using std::swap;
+    swap(arp.SHA, arp.THA);
+    swap(arp.SPA, arp.TPA);
+	return arp;
+}
+
+void push(Packet & packet, Payload payload)
 {
     TRACE
-    packet.push_front(raw.first, raw.second - raw.first);
+    packet.push_front(payload.first, payload.second - payload.first);
 }
 
 template<typename Header>
 void push(Packet & packet, Header hdr)
 {
     TRACE
-    auto flipped = Flip(hdr);
-	static_assert(std::is_pod<decltype(flipped)>::value, "");
-    uint8_t* bytes = reinterpret_cast<uint8_t*>(&flipped);
-    packet.push_front(bytes, sizeof(flipped));
+    packet.push_front(hdr);
 }
 
 template<typename Head, typename Tail>
 void push(Packet & packet, std::pair<Head, Tail> msg)
 {
-    push(packet, msg.first);
-    push(packet, msg.second);
+    push(packet, Flip(msg.first));
+    push(packet, Flip(msg.second));
 }
 
 template<typename Tail>
-void pop(std::pair<Raw, std::pair<ICMPMessage, Tail> > msg)
+void pop(std::pair<Payload, std::pair<ICMPMessage, Tail> > msg)
 {
     TRACE
     Packet packet;
@@ -429,7 +434,7 @@ void pop(std::pair<Raw, std::pair<ICMPMessage, Tail> > msg)
 }
 
 template<typename Tail>
-void pop(std::pair<Raw, std::pair<ARPMessage, Tail> > msg)
+void pop(std::pair<Payload, std::pair<ARPMessage, Tail> > msg)
 {
     TRACE
     Packet packet;
@@ -442,8 +447,8 @@ void run()
 	auto cPayloadSize = 60;
 	auto size = sizeof(EthernetFrame) + sizeof(IPPacket) + sizeof(ICMPMessage) + cPayloadSize;
 	DynamicBuffer buffer(size, 0);
-	Raw raw(buffer.data(), buffer.data() + buffer.size());
-	pop(raw);
+	Payload payload(buffer.data(), buffer.data() + buffer.size());
+	pop(payload);
 }
 
 int main()

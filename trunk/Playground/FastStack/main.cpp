@@ -2,6 +2,7 @@
 #include <array>
 #include <cassert>
 #include <deque>
+#include <iomanip>
 #include <iostream>
 #include <vector>
 #include <stdint.h>
@@ -162,7 +163,7 @@ uint32_t Net2Host(uint32_t v)
 template<typename T>
 struct NetEncoded
 {
-    T hostValue()
+    T hostValue() const
     {
         return Net2Host(_value);
     }
@@ -179,6 +180,19 @@ typedef MAC TargetMAC;
 typedef MAC LocalMAC;
 typedef MAC RemoteMAC;
 
+std::ostream & operator<< (std::ostream & os, const MAC & m)
+{
+    return os << std::hex
+              << std::setw(2) << std::setfill('0') << int(m[0]) << ":"
+              << std::setw(2) << std::setfill('0') << int(m[1]) << ":"
+              << std::setw(2) << std::setfill('0') << int(m[2]) << ":"
+              << std::setw(2) << std::setfill('0') << int(m[3]) << ":"
+              << std::setw(2) << std::setfill('0') << int(m[4]) << ":"
+              << std::setw(2) << std::setfill('0') << int(m[5]) << std::dec;
+}
+
+
+
 enum class EtherType : uint16_t
 {
     ARP   = 0x0806,
@@ -194,6 +208,30 @@ struct EthernetFrame
 };
 
 
+std::ostream & operator<< (std::ostream & os, EtherType eth)
+{
+    return os << int(static_cast<uint16_t>(eth));
+}
+
+
+std::ostream & operator<< (std::ostream & os, const EtherType & inEtherType)
+{
+    switch (inEtherType)
+    {
+        case EtherType::IP: return os << "IP";
+        case EtherType::ARP: return os << "ARP";
+        case EtherType::IP6: return os << "IP6";
+        default: throw MakeInvalidEnumerator(inEtherType);
+    }
+}
+std::ostream & operator<< (std::ostream & os, const EthernetFrame & inEthernetFrame)
+{
+    os << "Destination: " << inEthernetFrame.mTarget
+       << "\nSource: "    << inEthernetFrame.mSource
+       << "\nEtherType: " << inEthernetFrame.mEtherType.hostValue();
+    return os;
+}
+
 struct VLANTag
 {
     Net16 mEtherType;
@@ -206,6 +244,16 @@ typedef IP SourceIP;
 typedef IP TargetIP;
 typedef IP LocalIP;
 typedef IP RemoteIP;
+
+std::ostream & operator<< (std::ostream & os, const IP & ip)
+{
+    return os << std::dec
+              << int(ip[0]) << "."
+              << int(ip[1]) << "."
+              << int(ip[2]) << "."
+              << int(ip[3]);
+}
+
 
 enum class IPProtNum : uint8_t
 {
@@ -229,6 +277,9 @@ struct IPPacket
 };
 
 
+std::ostream & operator<< (std::ostream & os, const IPPacket & ip) { return os << "SourceIP: " << ip.mSourceIP << "\nTargetIP: " << ip.mTargetIP; }
+
+
 enum class ARPOperation : uint16_t
 {
     Request = 1,
@@ -249,6 +300,14 @@ struct ARPMessage
     TargetIP  TPA;
 };
 
+std::ostream & operator<< (std::ostream & os, const ARPMessage & arp)
+{
+    os << "SHA: " << arp.SHA << "\n";
+    os << "SPA: " << arp.SPA << "\n";
+    os << "THA: " << arp.THA << "\n";
+    os << "TPA: " << arp.TPA << "\n";
+    return os;
+}
 enum class ICMPType : uint8_t
 {
     EchoReply   = 0,
@@ -263,6 +322,16 @@ struct ICMPMessage
     Net16 mIdentifier;
     Net16 mSequenceNumber;
 };
+
+std::ostream & operator<< (std::ostream & os, const ICMPType & icmpType) { return os << std::string(icmpType == ICMPType::EchoReply ? "Reply" : "Request"); }
+std::ostream & operator<< (std::ostream & os, const ICMPMessage & icmp)  { return os << icmp.mType; }
+void Flip(ICMPMessage & msg)
+{
+    if (msg.mType == ICMPType::EchoRequest)
+    {
+        msg.mType = ICMPType::EchoReply;
+    }
+}
 
 struct Payload : std::pair<uint8_t*, uint8_t*>
 {
@@ -418,6 +487,7 @@ template<typename Header>
 void push(Packet & packet, Header hdr)
 {
     TRACE
+    std::cout << hdr << std::endl;
     packet.push_front(hdr);
 }
 
@@ -432,6 +502,7 @@ template<typename Tail>
 void pop(std::pair<Payload, std::pair<ICMPMessage, Tail> > msg)
 {
     TRACE
+    Flip(msg);
     Packet packet;
     push(packet, msg);
 }
@@ -440,8 +511,8 @@ template<typename Tail>
 void pop(std::pair<Payload, std::pair<ARPMessage, Tail> > msg)
 {
     TRACE
-    Packet packet;
     Flip(msg);
+    Packet packet;
 	push(packet, msg);
 }
 
@@ -451,6 +522,7 @@ void run()
 	auto cPayloadSize = 60;
 	auto size = sizeof(EthernetFrame) + sizeof(IPPacket) + sizeof(ICMPMessage) + cPayloadSize;
 	DynamicBuffer buffer(size, 0);
+
 	Payload payload(buffer.data(), buffer.data() + buffer.size());
 	pop(payload);
 }

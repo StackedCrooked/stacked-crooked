@@ -1,38 +1,91 @@
 #include <boost/algorithm/string/replace.hpp>
 
 
-template<typename CharSeq>
 struct Transcoder
 {
-    Transcoder(const CharSeq & inDelimiter, const CharSeq & inEscape, const CharSeq & inMetaEscape) :
-        mDelimiter(inDelimiter),
-        mEscape(inEscape),
+    Transcoder(const std::string & sep, const std::string & esc) :
+        sep(sep),
+        esc(esc)
+    {
+    }
+
+    std::string sep, esc;
+};
+
+
+struct Escape : Transcoder
+{
+    Escape(const std::string & sep, const std::string & esc) : Transcoder(sep, esc) {}
+
+    std::string operator()(std::string s) const
+    {
+        using boost::algorithm::replace_all;
+        replace_all(s, esc, esc + esc);
+        replace_all(s, sep, esc + sep);
+        return s;
+    }
+};
+
+
+struct Unescape : Transcoder
+{
+    Unescape(const std::string & sep, const std::string & esc) : Transcoder(sep, esc) {}
+
+    std::string operator()(std::string s) const
+    {
+        using boost::algorithm::replace_all;
+        replace_all(s, esc + sep, sep);
+        replace_all(s, esc + esc, esc);
+        return s;
+    }
+};
+
+
+struct Join
+{
+    Join(const std::string & sep, const std::string & esc) : sep(sep), esc(esc) {}
+
+    std::string operator()(const std::string & left, const std::string & right) const
+    {
+        Escape escape(sep, esc);
+        return escape(left) + esc + escape(right);
+    }
+
+    std::string sep, esc;
+};
+
+
+struct Encoder
+{
+    Encoder(const std::string & inDelimiter, const std::string & inEscape, const std::string & inMetaEscape) :
+        delim(inDelimiter),
+        esc(inEscape),
         mMetaEscape(inMetaEscape)
     {
     }
 
-    Transcoder(const CharSeq & inDelimiter, const CharSeq & inEscape) :
-        mDelimiter(inDelimiter),
-        mEscape(inEscape),
+    Encoder(const std::string & inDelimiter, const std::string & inEscape) :
+        delim(inDelimiter),
+        esc(inEscape),
         mMetaEscape(inEscape + inEscape)
     {
     }
 
-    void encode(CharSeq & text)
+    void encode(std::string & text)
     {
         using boost::algorithm::replace_all;
-        replace_all(text, mEscape,    mMetaEscape);
-        replace_all(text, mDelimiter, mEscape + mDelimiter);
+        replace_all(text, esc,    mMetaEscape);
+        replace_all(text, delim, esc + delim);
     }
 
-    void decode(CharSeq & text)
+    void decode(std::string & text)
     {
         using boost::algorithm::replace_all;
-        replace_all(text, mEscape + mDelimiter, mDelimiter);
-        replace_all(text, mMetaEscape, mEscape);
+        replace_all(text, esc + delim, delim);
+        replace_all(text, mMetaEscape, esc);
     }
 
-    CharSeq mDelimiter, mEscape, mMetaEscape;
+    std::string delim, esc, mMetaEscape;
 };
 
 

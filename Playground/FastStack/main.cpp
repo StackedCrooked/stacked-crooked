@@ -379,30 +379,33 @@ void pop(std::pair<Payload, std::pair<IPPacket, Tail> > msg)
     }
 }
 
-template<typename T> T & Flip(T & t){ return t; }
-template<typename T> const T & Flip(const T & t){ return t; }
+template<typename T> void Flip(T &) {}
 
-EthernetFrame Flip(EthernetFrame eth)
+void Flip(EthernetFrame & eth)
 {
     using std::swap;
     swap(eth.mSource, eth.mTarget);
-    return eth;
 }
 
-IPPacket Flip(IPPacket ip)
+void Flip(IPPacket & ip)
 {
     using std::swap;
     swap(ip.mSourceIP, ip.mTargetIP);
     ip.mFlagsAndFragmentOffset = Net16();
-    return ip;
 }
 
-ARPMessage Flip(ARPMessage arp)
+void Flip(ARPMessage & arp)
 {
     using std::swap;
     swap(arp.SHA, arp.THA);
     swap(arp.SPA, arp.TPA);
-	return arp;
+}
+
+template<typename T, typename U>
+void Flip(std::pair<T, U> & p)
+{
+    Flip(p.first);
+    Flip(p.second);
 }
 
 void push(Packet & packet, Payload payload)
@@ -421,8 +424,8 @@ void push(Packet & packet, Header hdr)
 template<typename Head, typename Tail>
 void push(Packet & packet, std::pair<Head, Tail> msg)
 {
-    push(packet, Flip(msg.first));
-    push(packet, Flip(msg.second));
+    push(packet, msg.first);
+    push(packet, msg.second);
 }
 
 template<typename Tail>
@@ -438,6 +441,7 @@ void pop(std::pair<Payload, std::pair<ARPMessage, Tail> > msg)
 {
     TRACE
     Packet packet;
+    Flip(msg);
 	push(packet, msg);
 }
 

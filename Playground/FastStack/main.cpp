@@ -293,7 +293,7 @@ IPProtNum GetHLPId(IPPacket ip)
     return static_cast<IPProtNum>(ip.mProtocol);
 }
 
-void pop(const Raw & inRaw);
+void pop(Raw raw);
 void pop(std::pair<Raw, EthernetFrame> msg);
 template<typename Tail> void pop(std::pair<Raw, EthernetFrame> msg);
 template<typename Tail> void pop(std::pair<Raw, std::pair<IPPacket     , Tail> > msg);
@@ -430,6 +430,16 @@ void pop(std::pair<Raw, std::pair<ARPMessage, Tail> > msg)
 }
 
 
+void run()
+{
+	auto cPayloadSize = 60;
+	auto size = sizeof(EthernetFrame) + sizeof(IPPacket) + sizeof(ICMPMessage) + cPayloadSize;
+	DynamicBuffer buffer(size, 0);
+	Raw raw(buffer.data(), buffer.data() + buffer.size());
+	pop(raw);
+}
+
 int main()
 {
+	run();
 }

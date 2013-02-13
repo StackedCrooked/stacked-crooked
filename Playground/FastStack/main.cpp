@@ -375,6 +375,42 @@ template<typename T> T Flip(T t)
     return t;
 }
 
+EthernetFrame Flip(EthernetFrame eth)
+{
+    using std::swap;
+    swap(eth.mSource, eth.mTarget);
+    return eth;
+}
+
+IPPacket Flip(IPPacket ip)
+{
+    using std::swap;
+    swap(ip.mSourceIP, ip.mTargetIP);
+    ip.mFlagsAndFragmentOffset = Net16();
+    return ip;
+}
+
+void push(Packet & packet, Raw raw)
+{
+    packet.push_front(raw.first, raw.second - raw.first);
+}
+
+template<typename Header>
+void push(Packet & packet, Header hdr)
+{
+    auto flipped = Flip(hdr);
+	static_assert(std::is_pod<decltype(flipped)>::value, "");
+    uint8_t* bytes = reinterpret_cast<uint8_t*>(&flipped);
+    packet.push_front(bytes, sizeof(flipped));
+}
+
+template<typename Head, typename Tail>
+void push(Packet & packet, std::pair<Head, Tail> msg)
+{
+    push(packet, msg.first);
+    push(packet, msg.second);
+}
+
 template<typename Tail>
 void pop(std::pair<Raw, std::pair<ICMPMessage, Tail> > msg)
 {
@@ -390,9 +426,7 @@ template<typename Tail>
 void pop(std::pair<Raw, std::pair<ARPMessage, Tail> > msg)
 {
     Packet packet;
-    Raw raw = msg.first;
-    packet.push_front(raw.first, raw.second - raw.first);
-    //push(msg.second);
+	push(packet, msg);
 }
 
 

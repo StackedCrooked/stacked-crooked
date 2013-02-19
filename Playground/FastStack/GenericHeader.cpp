@@ -86,21 +86,17 @@ struct Wrap
     T obj;
 };
 
-typedef Wrap<uint8_t, struct MACField_> MACField;
 
-typedef std::array<MACField, 6> MAC;
-typedef Wrap<MAC, struct SourceMAC_> SourceMAC;
-typedef Wrap<MAC, struct TargetMAC_> TargetMAC;
-
-typedef Wrap<Wrap<Wrap<MAC>>> DeepMAC;
+using MACField  = Wrap<uint8_t, struct MACField_>;
+using MACArray  = std::array<MACField, 6>;
+using SourceMAC = Wrap<MACArray, struct SourceMAC_>;
+using TargetMAC = Wrap<MACArray, struct TargetMAC_>;
 
 
-
-
-typedef Wrap<uint8_t, struct IPField_> IPField;
-typedef std::array<IPField, 4> IP;
-typedef Wrap<IP, struct SourceIP_> SourceIP;
-typedef Wrap<IP, struct DestinationIP_> DestinationIP;
+using IPField  = Wrap<uint8_t, struct IPField_>;
+using IPArray  = std::array<IPField, 4>;
+using SourceIP = Wrap<IPArray, struct SourceIP_>;
+using TargetIP = Wrap<IPArray, struct TargetIP_>;
 
 
 enum class EtherType : uint16_t
@@ -124,14 +120,14 @@ std::ostream& operator<<(std::ostream & os, const IPField & inByte)
 
 
 
-std::ostream& operator<<(std::ostream & os, const MAC & inMAC)
+std::ostream& operator<<(std::ostream & os, const MACArray & inMAC)
 {
     return os << inMAC[0] << ":" << inMAC[1] << ":" << inMAC[2] << ":" << inMAC[3] << ":" << inMAC[4] << ":" << inMAC[5];
 }
 
 
 
-std::ostream& operator<<(std::ostream & os, const IP & inIP)
+std::ostream& operator<<(std::ostream & os, const IPArray & inIP)
 {
     return os << inIP[0] << "." << inIP[1] << "." << inIP[2] << "." << inIP[3];
 }
@@ -174,7 +170,7 @@ HEADER(EthernetFrame,
 HEADER(IPPacket,
        (IPVersion)
        (SourceIP)
-       (DestinationIP))
+       (TargetIP))
 
 
 STATIC_ASSERT(std::is_pod<EthernetFrame>::value)

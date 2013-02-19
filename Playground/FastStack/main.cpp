@@ -239,13 +239,13 @@ struct VLANTag
 };
 
 
-typedef std::array<uint8_t, 4> IP;
-typedef IP SourceIP;
-typedef IP TargetIP;
-typedef IP LocalIP;
-typedef IP RemoteIP;
+typedef std::array<uint8_t, 4> IPArray;
+typedef IPArray SourceIP;
+typedef IPArray TargetIP;
+typedef IPArray LocalIP;
+typedef IPArray RemoteIP;
 
-std::ostream & operator<< (std::ostream & os, const IP & ip)
+std::ostream & operator<< (std::ostream & os, const IPArray & ip)
 {
     return os << std::dec
               << int(ip[0]) << "."

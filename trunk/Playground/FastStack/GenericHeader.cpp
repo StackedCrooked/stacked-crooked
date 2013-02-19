@@ -100,19 +100,16 @@ std::ostream& operator<<(std::ostream & os, const IPField & inByte)
 }
 
 
-
 std::ostream& operator<<(std::ostream & os, const MACArray & inMAC)
 {
     return os << inMAC[0] << ":" << inMAC[1] << ":" << inMAC[2] << ":" << inMAC[3] << ":" << inMAC[4] << ":" << inMAC[5];
 }
 
 
-
 std::ostream& operator<<(std::ostream & os, const IPArray & inIP)
 {
     return os << inIP[0] << "." << inIP[1] << "." << inIP[2] << "." << inIP[3];
 }
-
 
 
 std::ostream& operator<<(std::ostream& os, const EtherType & inEtherType)
@@ -127,14 +124,14 @@ std::ostream& operator<<(std::ostream& os, const EtherType & inEtherType)
 }
 
 
-
-
 typedef uint16_t IPVersion;
+
 
 HEADER(EthernetFrame,
        (TargetMAC)
        (SourceMAC)
        (EtherType))
+
 
 HEADER(IPPacket,
        (IPVersion)
@@ -142,8 +139,9 @@ HEADER(IPPacket,
        (TargetIP))
 
 
-STATIC_ASSERT(std::is_pod<EthernetFrame>::value)
-STATIC_ASSERT(std::is_pod<IPPacket>::value)
+STATIC_ASSERT_IS_POD(EthernetFrame)
+STATIC_ASSERT_IS_POD(IPPacket)
+
 
 int main()
 {

@@ -56,20 +56,30 @@ struct NetEncoded
 typedef NetEncoded<uint16_t> Net16;
 typedef NetEncoded<uint32_t> Net32;
 
-template<typename T>
+template<typename T, typename = int>
 struct Wrap
 {
+    T & get() { return obj; }
+    const T & get() const { return obj; }
+
     operator T() const { return obj; }
 
     T obj;
 };
 
-typedef std::array<Wrap<uint8_t>, 6> MAC;
-typedef MAC LocalMAC;
-typedef MAC RemoteMAC;
+typedef Wrap<uint8_t, struct MACField_> MACField;
 
-typedef MAC SourceMAC;
-typedef MAC TargetMAC;
+typedef std::array<MACField, 6> MAC;
+typedef Wrap<MAC, struct SourceMAC_> SourceMAC;
+typedef Wrap<MAC, struct TargetMAC_> TargetMAC;
+
+
+
+
+typedef Wrap<uint8_t, struct IPField_> IPField;
+typedef std::array<IPField, 4> IP;
+typedef Wrap<IP, struct SourceIP_> SourceIP;
+typedef Wrap<IP, struct DestinationIP_> DestinationIP;
 
 
 enum class EtherType : uint16_t
@@ -80,9 +90,15 @@ enum class EtherType : uint16_t
 };
 
 
-std::ostream& operator<<(std::ostream & os, const Wrap<uint8_t> & inByte)
+std::ostream& operator<<(std::ostream & os, const MACField & inByte)
 {
     return os << std::setw(2) << std::setfill('0') << static_cast<int>(inByte);
+}
+
+
+std::ostream& operator<<(std::ostream & os, const IPField & inByte)
+{
+    return os << static_cast<int>(inByte);
 }
 
 
@@ -90,6 +106,13 @@ std::ostream& operator<<(std::ostream & os, const Wrap<uint8_t> & inByte)
 std::ostream& operator<<(std::ostream & os, const MAC & inMAC)
 {
     return os << inMAC[0] << ":" << inMAC[1] << ":" << inMAC[2] << ":" << inMAC[3] << ":" << inMAC[4] << ":" << inMAC[5];
+}
+
+
+
+std::ostream& operator<<(std::ostream & os, const IP & inIP)
+{
+    return os << inIP[0] << "." << inIP[1] << "." << inIP[2] << "." << inIP[3];
 }
 
 
@@ -112,7 +135,6 @@ STATIC_ASSERT(std::is_pod<SourceMAC>::value)
 STATIC_ASSERT(std::is_pod<TargetMAC>::value)
 
 
-#define SEQ (w)(x)(y)(z)
 
 #define HEADER_MEMBER(A, B) A.B
 #define HEADER_PRINT_FIELD(r, Type, Elem) os << "  " << BOOST_PP_STRINGIZE(Elem) << ": " << HEADER_MEMBER(Type, BOOST_PP_CAT(m, Elem)) << "\n";
@@ -134,15 +156,22 @@ STATIC_ASSERT(std::is_pod<TargetMAC>::value)
 
 HEADER(EthernetFrame, (TargetMAC) (SourceMAC) (EtherType))
 
+typedef uint16_t IPVersion;
+HEADER(IPPacket, (IPVersion) (SourceIP) (DestinationIP))
+
 
 STATIC_ASSERT(std::is_pod<EthernetFrame>::value)
+STATIC_ASSERT(std::is_pod<IPPacket>::value)
 
 int main()
 {
     TargetMAC dst = { 0, 0, 0, 0, 0, 1 };
     SourceMAC src = { 0, 0, 0, 0, 0, 2 };
     EthernetFrame eth = { dst, src, EtherType::ARP };
+    std::swap(eth.mSourceMAC.get(), eth.mTargetMAC.get());
     std::cout << eth << std::endl;
+
+    std::cout << IPPacket() << std::endl;
 }
 
 

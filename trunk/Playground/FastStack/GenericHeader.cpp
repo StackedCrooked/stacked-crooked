@@ -11,18 +11,25 @@
 #include <arpa/inet.h>
 #include <boost/preprocessor.hpp>
 
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__);
+#define STATIC_ASSERT_IS_POD(T) STATIC_ASSERT(std::is_pod<T>::value)
 
+#define HEADER_MEMBER(A, B) \
+    A.B
 
-#define HEADER_MEMBER(A, B) A.B
-#define HEADER_PRINT_FIELD(r, Type, Elem) os << "  " << BOOST_PP_STRINGIZE(Elem) << ": " << HEADER_MEMBER(Type, BOOST_PP_CAT(m, Elem)) << "\n";
-#define HEADER_IMPL(r, _, Elem) Elem BOOST_PP_CAT(m, Elem);
+#define HEADER_PRINT_FIELD(r, Type, Elem) \
+    os << "  " << BOOST_PP_STRINGIZE(Elem) << ": " << HEADER_MEMBER(Type, BOOST_PP_CAT(m, Elem)) << "\n";
 
+#define HEADER_IMPL(r, _, Elem) \
+    Elem BOOST_PP_CAT(m, Elem);
 
-#define HEADER_TUPLE_ELEMENT(r, Type, Elem) Type
-#define HEADER_TUPLE(Name, Fields) struct Tuple<Name> { using type = std::tuple< BOOST_PP_SEQ_FOR_EACH(HEADER_IMPL, _, Fields) >; };
+#define HEADER_TUPLE_ELEMENT(r, Type, Elem) \
+    Type
 
+#define HEADER_TUPLE(Name, Fields) \
+    struct Tuple<Name> { \
+        using type = std::tuple< BOOST_PP_SEQ_FOR_EACH(HEADER_IMPL, _, Fields) >; \
+    };
 
 #define HEADER(Name, Fields) struct Name { \
         BOOST_PP_SEQ_FOR_EACH(HEADER_IMPL, _, Fields) \
@@ -34,48 +41,8 @@
     }
 
 
-
-template<typename T, typename /*disambiguator*/>
-struct StrongTypedef
-{
-    template<typename ...Args>
-    StrongTypedef(Args && ...args) : data_(std::forward<Args>(args)...) {}
-    operator const T & () const
-    {
-        return data_;
-    }
-    T & get() { return data_; }
-    const T & get() const { return data_; }
-    T data_;
-};
-
-#define STRONG_TYPEDEF(Type, Name) typedef StrongTypedef<Type, struct Name##_> Name;
-
-
-uint16_t Net2Host(uint16_t v)
-{
-    return ntohs(v);
-}
-uint32_t Net2Host(uint32_t v)
-{
-    return ntohl(v);
-}
-
-template<typename T>
-struct NetEncoded
-{
-    T hostValue() const
-    {
-        return Net2Host(_value);
-    }
-    T _value;
-};
-
-
-typedef NetEncoded<uint16_t> Net16;
-typedef NetEncoded<uint32_t> Net32;
-
-template<typename T, typename = int>
+// Type-wrapper that generate defines a "strong" typedef while retaining POD-ness.
+template<typename T, typename Disambiguator>
 struct Wrap
 {
     T & get() { return obj; }
@@ -84,6 +51,8 @@ struct Wrap
     operator T() const { return obj; }
 
     T obj;
+
+    STATIC_ASSERT(std::is_pod<T>::value)
 };
 
 
@@ -93,10 +62,22 @@ using SourceMAC = Wrap<MACArray, struct SourceMAC_>;
 using TargetMAC = Wrap<MACArray, struct TargetMAC_>;
 
 
+STATIC_ASSERT_IS_POD(MACField)
+STATIC_ASSERT_IS_POD(MACArray)
+STATIC_ASSERT_IS_POD(SourceMAC)
+STATIC_ASSERT_IS_POD(TargetMAC)
+
+
 using IPField  = Wrap<uint8_t, struct IPField_>;
 using IPArray  = std::array<IPField, 4>;
 using SourceIP = Wrap<IPArray, struct SourceIP_>;
 using TargetIP = Wrap<IPArray, struct TargetIP_>;
+
+
+STATIC_ASSERT_IS_POD(IPField)
+STATIC_ASSERT_IS_POD(IPArray)
+STATIC_ASSERT_IS_POD(SourceIP)
+STATIC_ASSERT_IS_POD(TargetIP)
 
 
 enum class EtherType : uint16_t
@@ -144,18 +125,6 @@ std::ostream& operator<<(std::ostream& os, const EtherType & inEtherType)
         default: return os << "Invalid";
     };
 }
-
-template<typename T, int N>
-struct TuplePOD_
-{
-    T t;
-};
-
-
-STATIC_ASSERT(std::is_pod<Net16>::value)
-STATIC_ASSERT(std::is_pod<Wrap<Net16>>::value)
-STATIC_ASSERT(std::is_pod<SourceMAC>::value)
-STATIC_ASSERT(std::is_pod<TargetMAC>::value)
 
 
 

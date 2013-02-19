@@ -12,8 +12,27 @@
 #include <boost/preprocessor.hpp>
 
 
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__);
+
+
+#define HEADER_MEMBER(A, B) A.B
+#define HEADER_PRINT_FIELD(r, Type, Elem) os << "  " << BOOST_PP_STRINGIZE(Elem) << ": " << HEADER_MEMBER(Type, BOOST_PP_CAT(m, Elem)) << "\n";
+#define HEADER_IMPL(r, _, Elem) Elem BOOST_PP_CAT(m, Elem);
+
+
+#define HEADER_TUPLE_ELEMENT(r, Type, Elem) Type
+#define HEADER_TUPLE(Name, Fields) struct Tuple<Name> { using type = std::tuple< BOOST_PP_SEQ_FOR_EACH(HEADER_IMPL, _, Fields) >; };
+
+
+#define HEADER(Name, Fields) struct Name { \
+        BOOST_PP_SEQ_FOR_EACH(HEADER_IMPL, _, Fields) \
+    }; \
+    std::ostream& operator<<(std::ostream& os, const Name & BOOST_PP_CAT(in, Name)) { \
+        os << BOOST_PP_STRINGIZE(Name) << ": " << std::endl; \
+        BOOST_PP_SEQ_FOR_EACH(HEADER_PRINT_FIELD, BOOST_PP_CAT(in, Name), Fields) \
+        return os << std::flush; \
+    }
+
 
 
 template<typename T, typename /*disambiguator*/>
@@ -73,6 +92,8 @@ typedef std::array<MACField, 6> MAC;
 typedef Wrap<MAC, struct SourceMAC_> SourceMAC;
 typedef Wrap<MAC, struct TargetMAC_> TargetMAC;
 
+typedef Wrap<Wrap<Wrap<MAC>>> DeepMAC;
+
 
 
 
@@ -85,8 +106,8 @@ typedef Wrap<IP, struct DestinationIP_> DestinationIP;
 enum class EtherType : uint16_t
 {
     ARP   = 0x0806,
-    IP  = 0x0800,
-    IP6  = 0x86DD
+    IP    = 0x0800,
+    IP6   = 0x86DD
 };
 
 
@@ -128,6 +149,12 @@ std::ostream& operator<<(std::ostream& os, const EtherType & inEtherType)
     };
 }
 
+template<typename T, int N>
+struct TuplePOD_
+{
+    T t;
+};
+
 
 STATIC_ASSERT(std::is_pod<Net16>::value)
 STATIC_ASSERT(std::is_pod<Wrap<Net16>>::value)
@@ -136,28 +163,18 @@ STATIC_ASSERT(std::is_pod<TargetMAC>::value)
 
 
 
-#define HEADER_MEMBER(A, B) A.B
-#define HEADER_PRINT_FIELD(r, Type, Elem) os << "  " << BOOST_PP_STRINGIZE(Elem) << ": " << HEADER_MEMBER(Type, BOOST_PP_CAT(m, Elem)) << "\n";
-#define HEADER_IMPL(r, _, Elem) Elem BOOST_PP_CAT(m, Elem);
-
-
-#define HEADER_TUPLE_ELEMENT(r, Type, Elem) Type
-#define HEADER_TUPLE(Name, Fields) struct Tuple<Name> { using type = std::tuple< BOOST_PP_SEQ_FOR_EACH(HEADER_IMPL, _, Fields) >; };
-
-
-#define HEADER(Name, Fields) struct Name { \
-        BOOST_PP_SEQ_FOR_EACH(HEADER_IMPL, _, Fields) \
-    }; \
-    std::ostream& operator<<(std::ostream& os, const Name & BOOST_PP_CAT(in, Name)) { \
-        os << BOOST_PP_STRINGIZE(Name) << ": " << std::endl; \
-        BOOST_PP_SEQ_FOR_EACH(HEADER_PRINT_FIELD, BOOST_PP_CAT(in, Name), Fields) \
-        return os << std::flush; \
-    }
-
-HEADER(EthernetFrame, (TargetMAC) (SourceMAC) (EtherType))
 
 typedef uint16_t IPVersion;
-HEADER(IPPacket, (IPVersion) (SourceIP) (DestinationIP))
+
+HEADER(EthernetFrame,
+       (TargetMAC)
+       (SourceMAC)
+       (EtherType))
+
+HEADER(IPPacket,
+       (IPVersion)
+       (SourceIP)
+       (DestinationIP))
 
 
 STATIC_ASSERT(std::is_pod<EthernetFrame>::value)
@@ -171,7 +188,12 @@ int main()
     std::swap(eth.mSourceMAC.get(), eth.mTargetMAC.get());
     std::cout << eth << std::endl;
 
-    std::cout << IPPacket() << std::endl;
+    IPPacket ip = {
+        4,
+        { 10, 0, 0, 1 },
+        { 10, 0, 0, 2 }
+    };
+    std::cout << ip << std::endl;
 }
 
 

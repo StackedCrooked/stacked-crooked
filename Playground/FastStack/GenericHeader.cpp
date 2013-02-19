@@ -139,7 +139,7 @@ std::ostream& operator<<(std::ostream& os, const EtherType & inEtherType)
     switch (inEtherType)
     {
         case EtherType::ARP: return os << "ARP";
-        case EtherType::IP: return os << "IP";
+        case EtherType::IP : return os << "IP";
         case EtherType::IP6: return os << "IP6";
         default: return os << "Invalid";
     };

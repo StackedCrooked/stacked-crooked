@@ -42,7 +42,7 @@
 
 
 // Type-wrapper that generate defines a "strong" typedef while retaining POD-ness.
-template<typename T, typename Disambiguator>
+template<typename T, typename /*disambiguator*/>
 struct Wrap
 {
     T & get() { return obj; }

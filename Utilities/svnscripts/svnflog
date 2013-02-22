@@ -1,0 +1,5 @@
+#!/bin/bash
+LIMIT=${LIMIT:-10}
+CMD="svn log --limit=${LIMIT} --xml |  xpath -q -e '/log/logentry' | tr '\n' ' ' | sed -e 's/[ ]\+/ /g' | sed -e 's,</logentry>,</logentry>\a,g' | tr '\a' '\n'"
+echo "${CMD}"
+bash -c "${CMD}"

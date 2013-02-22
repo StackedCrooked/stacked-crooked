@@ -1,1 +1,1 @@
-svn st | grep -e ^M | sed 's_^M[ ]*__'
+svn st * | grep -e ^M | sed 's_^M[+ ]*__'

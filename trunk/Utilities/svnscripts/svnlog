@@ -1,2 +1,2 @@
 #!/bin/sh
-nohup svnlogimpl $* 1>/dev/null 2>/dev/null &
+nohup svnlogimpl $* 

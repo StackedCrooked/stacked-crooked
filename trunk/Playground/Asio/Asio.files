@@ -1,3 +1,6 @@
 Networking.cpp
 Networking.h
-main.cpp
+TCPClient.cpp
+TCPClient.h
+TCPServer.cpp
+TCPServer.h

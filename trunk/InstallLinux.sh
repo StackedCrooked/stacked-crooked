@@ -1,3 +1,4 @@
+sudo apt-get install -y software-properties-common
 sudo apt-get install -y python-software-properties subversion vim
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt-get update

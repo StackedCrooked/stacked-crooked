@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 
-class TCPServer
+class MessageServer
 {
 public:
-    TCPServer(uint16_t port);
+    MessageServer(uint16_t port);
     
     
     

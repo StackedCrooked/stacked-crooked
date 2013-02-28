@@ -11,9 +11,6 @@
 #include <boost/asio.hpp>
 
 
-boost::asio::io_service gIOService;
-
-
 class MessageSession;
 typedef std::function<std::string(MessageSession&, const std::string &)> RequestHandler;
 
@@ -65,8 +62,9 @@ private:
 class MessageSession
 {
 public:    
-    MessageSession(const RequestHandler & inRequestHandler) :
-        socket_(gIOService),
+    MessageSession(boost::asio::io_service & io_serv, const RequestHandler & inRequestHandler) :
+        io_service_(io_serv),
+        socket_(io_service_),
         mRequestHandler(inRequestHandler)
     {
     }
@@ -79,6 +77,7 @@ public:
     boost::asio::ip::tcp::socket & socket() { return socket_; }
 
 private:
+    boost::asio::io_service & io_service_;
     boost::asio::ip::tcp::socket socket_;
     RequestHandler mRequestHandler;
 };
@@ -91,19 +90,21 @@ class MessageServer
 {
 public:
     
-    MessageServer(short port, const RequestHandler & inRequestHandler) :
-        acceptor_(gIOService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+    MessageServer(boost::asio::io_service & io_serv, short port, const RequestHandler & inRequestHandler) :
+        io_service_(io_serv),
+        acceptor_(io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         mRequestHandler(inRequestHandler)
     {
         while (true)
         {
-            MessageSessionPtr sessionPtr(new MessageSession(mRequestHandler));
+            MessageSessionPtr sessionPtr(new MessageSession(io_service_, mRequestHandler));
             acceptor_.accept(sessionPtr->socket());
             sessionPtr->start();
         }
     }
 
 private:
+    boost::asio::io_service & io_service_;
     boost::asio::ip::tcp::acceptor acceptor_;
     RequestHandler mRequestHandler;
 };
@@ -115,8 +116,9 @@ using boost::asio::ip::tcp;
 class MessageClient
 {
 public:
-    MessageClient(const std::string & host, short port) :
-        socket_(gIOService)
+    MessageClient(boost::asio::io_service & io_serv, const std::string & host, short port) :
+        io_service_(io_serv),
+        socket_(io_service_)
     {
         socket_.connect(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::from_string(host), port));
     }
@@ -128,6 +130,7 @@ public:
     }
 
 private:
+    boost::asio::io_service & io_service_;
     tcp::socket socket_;
 };
 
@@ -137,19 +140,19 @@ int main(int argc, char ** argv)
     std::vector<std::string> args(argv, argv + argc);
     try
     {
+        boost::asio::io_service io_serv;
         if (args.at(1) == "server")
         {
-            MessageServer server(9999, [](MessageSession& , std::string req) -> std::string {
+            MessageServer server(io_serv, 9999, [](MessageSession& , std::string req) -> std::string {
                 std::reverse(req.begin(), req.end());
                 return req;
             });
-            gIOService.run();
+            io_serv.run();
         }
         else
         {            
-            MessageClient client("127.0.0.1", 9999);
+            MessageClient client(io_serv, "127.0.0.1", 9999);
             std::cout << client.send("123456789") << std::endl;
-            gIOService.run();
         }
     }
     catch (std::exception & e)

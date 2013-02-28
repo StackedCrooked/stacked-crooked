@@ -196,7 +196,6 @@ int main(int argc, char ** argv)
             client.send("abc");
             gIOService.run();
         }
-
     }
     catch (std::exception & e)
     {

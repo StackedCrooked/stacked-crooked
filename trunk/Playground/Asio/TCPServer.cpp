@@ -14,115 +14,97 @@
 boost::asio::io_service gIOService;
 
 
-std::vector<char> MakeMessage(const std::string & msg)
+class MessageSession;
+typedef std::function<std::string(MessageSession&, const std::string &)> RequestHandler;
+
+struct Message
 {
-    uint32_t network_encoded_length = htonl(msg.size());
-    char * length_buffer = reinterpret_cast<char *>(&network_encoded_length);
-    std::vector<char> result;
-    result.insert(result.end(), length_buffer, length_buffer + sizeof(network_encoded_length));
-    result.insert(result.end(), msg.begin(), msg.end());
-    return result;
-}
-
-
-class TCPSession
-{
-public:
-    typedef std::function<std::string(TCPSession *, const std::string &)> RequestHandler;
-    
-    TCPSession(boost::asio::io_service & io_service, const RequestHandler & inRequestHandler) :
-        mTCPSocket(io_service),
-        mMessage(),
-        mRequestHandler(inRequestHandler)
+    template<typename Socket>
+    static std::string Read(Socket & socket)
     {
-        mMessage.reserve(1 * 1024 * 1024);
-    }
-
-    boost::asio::ip::tcp::socket & socket()
-    {
-        return mTCPSocket;
-    }
-
-    void start()
-    {
-        uint32_t network_encoded_length;
-        char * length_buffer = reinterpret_cast<char *>(&network_encoded_length);
-        boost::asio::read(mTCPSocket, boost::asio::buffer(length_buffer, sizeof(network_encoded_length)));
-        std::string payload;
-        payload.resize(ntohl(network_encoded_length));
-        std::cout << "payload length: " << payload.size() << std::endl;
-        if (boost::asio::read(mTCPSocket, boost::asio::buffer(&payload[0], payload.size())) != payload.size())
+        using namespace boost::asio;        
+        std::string payload(Message::get_length(socket), 0);
+        if (payload.size() != read(socket, buffer(&payload[0], payload.size())))
         {
             throw std::runtime_error("Not all bytes were read.");
         }
-        std::cout << "payload: " << payload << std::endl;
-        
-        std::string response;
-        
-        try
-        {
-            response = mRequestHandler(this, payload);
-        }
-        catch (const std::exception & exc)
-        {
-            response = exc.what();
-        }
-        
-        std::vector<char> response_msg = MakeMessage(response);
-
-        if (boost::asio::write(mTCPSocket, boost::asio::buffer(&response_msg[0], response_msg.size())) != response_msg.size())
+        return payload;
+    }
+    
+    template<typename Socket>
+    static void Write(Socket & socket, std::string payload)
+    {
+        using namespace boost::asio;
+        uint32_t length_ne = htonl(payload.size());        
+        payload.insert(payload.begin(), reinterpret_cast<char*>(&length_ne), reinterpret_cast<char*>(&length_ne) + sizeof(length_ne));
+        if (payload.size() != write(socket, buffer(&payload[0], payload.size())))
         {
             throw std::runtime_error("Not all bytes were written.");
         }
     }
+    
+private:
+    template<typename Socket>
+    static uint32_t get_length(Socket & socket)
+    {
+        using namespace boost::asio;
+        
+        // network-encoded length
+        uint32_t length_ne;
+        if (sizeof(length_ne) != read(socket, buffer(&length_ne, sizeof(length_ne))))
+        {
+            throw std::runtime_error("Failed to read message length.");
+        }
+        
+        // return host-encoded
+        return ntohl(length_ne);
+    }   
+};
+
+
+class MessageSession
+{
+public:    
+    MessageSession(const RequestHandler & inRequestHandler) :
+        socket_(gIOService),
+        mRequestHandler(inRequestHandler)
+    {
+    }
+
+    void start()
+    {
+        Message::Write(socket_, mRequestHandler(*this, Message::Read(socket_)));
+    }
+    
+    boost::asio::ip::tcp::socket & socket() { return socket_; }
 
 private:
-    boost::asio::ip::tcp::socket mTCPSocket;
-    std::string mMessage;
+    boost::asio::ip::tcp::socket socket_;
     RequestHandler mRequestHandler;
 };
 
 
-typedef std::shared_ptr<TCPSession> TCPSessionPtr;
+typedef std::shared_ptr<MessageSession> MessageSessionPtr;
 
 
-class TCPServer
+class MessageServer
 {
 public:
-    typedef std::function<std::string(TCPSession *, const std::string &)> RequestHandler;
     
-    TCPServer(short port, const RequestHandler & inRequestHandler) :
-        mTCPAcceptor(gIOService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+    MessageServer(short port, const RequestHandler & inRequestHandler) :
+        acceptor_(gIOService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         mRequestHandler(inRequestHandler)
     {
-        accept_connection();
-    }
-
-    void accept_connection()
-    {
-        TCPSessionPtr sessionPtr(new TCPSession(gIOService, mRequestHandler));
-        mTCPAcceptor.async_accept(sessionPtr->socket(),
-                                  boost::bind(&TCPServer::handle_new_connection,
-                                              this,
-                                              sessionPtr,
-                                              boost::asio::placeholders::error));
-    }
-
-    void handle_new_connection(TCPSessionPtr session,
-                               const boost::system::error_code & error)
-    {
-        if (!error)
+        while (true)
         {
-            session->start();
+            MessageSessionPtr sessionPtr(new MessageSession(mRequestHandler));
+            acceptor_.accept(sessionPtr->socket());
+            sessionPtr->start();
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-        accept_connection();
     }
 
 private:
-    boost::asio::ip::tcp::acceptor mTCPAcceptor;
+    boost::asio::ip::tcp::acceptor acceptor_;
     RequestHandler mRequestHandler;
 };
 
@@ -130,46 +112,19 @@ private:
 using boost::asio::ip::tcp;
 
 
-class TCPClient
+class MessageClient
 {
 public:
-    TCPClient(const std::string & host, short port) :
+    MessageClient(const std::string & host, short port) :
         socket_(gIOService)
     {
         socket_.connect(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::from_string(host), port));
     }
 
-    std::string send(const std::string & message)
+    std::string send(std::string message)
     {
-        uint32_t network_encoded_length = htonl(message.size());
-        {
-            std::vector<char> request;
-
-            request.insert(request.end(),
-                           reinterpret_cast<char *>(&network_encoded_length),
-                           reinterpret_cast<char *>(&network_encoded_length) + sizeof(network_encoded_length));
-            request.insert(request.end(),
-                           &message[0],
-                           &message[0] + message.size());
-            
-            std::cout << "Writing " << request.size() << " bytes" << std::endl;
-
-            boost::asio::write(socket_, boost::asio::buffer(&request[0], request.size()));
-        }
-        {
-            boost::asio::read(socket_,
-                              boost::asio::buffer(reinterpret_cast<char *>(&network_encoded_length),
-                                                  sizeof(network_encoded_length)));
-            std::string response;
-            response.resize(ntohl(network_encoded_length));
-            std::cout << "response length: " << response.size() << std::endl;
-            if (boost::asio::read(socket_, boost::asio::buffer(&response[0], response.size())) != response.size())
-            {
-                throw std::runtime_error("Not all bytes were read.");
-            }
-            std::cout << "response: " << response << std::endl;
-            return response;
-        }
+        Message::Write(socket_, message);
+        return Message::Read(socket_);
     }
 
 private:
@@ -184,7 +139,7 @@ int main(int argc, char ** argv)
     {
         if (args.at(1) == "server")
         {
-            TCPServer server(9999, [](TCPSession * , std::string req) -> std::string {
+            MessageServer server(9999, [](MessageSession& , std::string req) -> std::string {
                 std::reverse(req.begin(), req.end());
                 return req;
             });
@@ -192,8 +147,8 @@ int main(int argc, char ** argv)
         }
         else
         {            
-            TCPClient client("127.0.0.1", 9999);
-            client.send("abc");
+            MessageClient client("127.0.0.1", 9999);
+            std::cout << client.send("123456789") << std::endl;
             gIOService.run();
         }
     }

@@ -4,9 +4,9 @@
 
 
 GENERATE_MESSAGE(Point,
-                 ( (int)(x) )
-                 ( (int)(y) )
-                 ( (int)(z) ));
+                 ((int)(x))
+                 ((int)(y))
+                 ((int)(z)));
 
 
 template<unsigned N>
@@ -20,12 +20,14 @@ struct printer : printer<N - 1 >
     }
 };
 
+
 template<>
 struct printer<0>
 {
     template<typename T>
     printer(const T &) {}
 };
+
 
 template<typename ...Args>
 void print(const std::tuple<Args...> & tup)
@@ -38,5 +40,5 @@ int main()
 {
     Point p(1, 2, 3);
     print(p);
+    std::cout << std::endl;
 }
-

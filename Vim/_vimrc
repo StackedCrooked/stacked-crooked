@@ -59,7 +59,7 @@ set smartcase
 syntax enable
 
 " Set colorscheme
-colorscheme default
+colorscheme torte
 
 
 " -----------------------------------------------------------------------------
@@ -89,6 +89,13 @@ map Y y$
 " F4: Search destructors in a cpp file
 :map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
 
+fun! OpenFileBrowser()
+    let file = expand("%:t")
+    :Ve
+    exec ":normal 1G/^" . file . "\n"
+endf
+:map <S-F2> :call OpenFileBrowser()<CR>
+
 
 " -----------------------------------------------------------------------------
 " OpenFile. Modelled after the Firefox "Open Link in New Tab"-command.
@@ -106,4 +113,5 @@ endf
 
 " Map CTRL-G to the OpenFile function
 :map <C-G> :call OpenFile()<CR>
+
 

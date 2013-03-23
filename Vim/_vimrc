@@ -59,7 +59,7 @@ set smartcase
 syntax enable
 
 " Set colorscheme
-colorscheme torte
+colorscheme default
 
 
 " -----------------------------------------------------------------------------
@@ -77,24 +77,17 @@ colorscheme torte
 " Yank until end of line
 map Y y$
 
-" F1: Open the NERDTree
-:map <F1> :NERDTreeToggle<CR>
-
-" F2: Duplicate current tab
-:map <F2> :tab split<CR>
-
-" F3: Search constructors in a cpp file
-:map <F3> /\(\<[A-Z]\w*\)::\1\><CR>
-
-" F4: Search destructors in a cpp file
-:map <F4> /\(\<[A-Z]\w*\>\)::\~\1<CR>
 
 fun! OpenFileBrowser()
     let file = expand("%:t")
     :Ve
     exec ":normal 1G/^" . file . "\n"
 endf
-:map <S-F2> :call OpenFileBrowser()<CR>
+
+
+:map <F1> :NERDTreeToggle<CR>
+:map <F2> :tab split<CR>
+:map <F3> :NERDTreeFind<CR>
 
 
 " -----------------------------------------------------------------------------

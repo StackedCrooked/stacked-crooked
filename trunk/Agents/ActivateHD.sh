@@ -1,4 +1,6 @@
 #!/bin/bash
-echo "0: $0"
-echo "1: $1"
-nohup $(dirname $0)/_ActivateHD.sh &
+while true ; do 
+    echo "`date` activation" >> /Volumes/WesternDigital/Activate.txt
+    echo "`date` activation" >> /Volumes/Lacie/Activate.txt
+    sleep 60
+done

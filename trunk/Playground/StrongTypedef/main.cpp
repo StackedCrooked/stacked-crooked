@@ -2,8 +2,8 @@
 #include <iostream>
 
 
-FUTILE_STRONG_TYPEDEF(int, Width)
-FUTILE_STRONG_TYPEDEF(int, Height)
+STRONG_TYPEDEF(int, Width)
+STRONG_TYPEDEF(int, Height)
 
 
 int Area(Width w, Height h)

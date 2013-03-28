@@ -1,2 +1,0 @@
-#!/bin/sh
-/usr/bin/python /usr/lib/pymodules/python2.7/rabbitvcs/ui/log.py --vcs=svn $1

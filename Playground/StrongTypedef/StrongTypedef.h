@@ -15,7 +15,9 @@
         bool operator<(const Name & rhs) { return data < rhs.data; } \
         bool operator==(const Name & rhs) { return data == rhs.data; } \
         Type data; \
-        friend std::ostream & operator<<(std::ostream & os, const Name & obj) { return os << obj.data; } \
+        friend std::ostream & operator<<(std::ostream & os, const Name & obj) { \
+            return os << obj.data; \
+        } \
     };
 
 

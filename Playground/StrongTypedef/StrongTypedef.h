@@ -1,46 +1,22 @@
-#ifndef FUTILE_STRONG_TYPEDEF_H
-#define FUTILE_STRONG_TYPEDEF_H
+#ifndef STRONG_TYPEDEF_H
+#define STRONG_TYPEDEF_H
 
 
-namespace Futile {
+#include <boost/operators.hpp>
 
 
-/**
- * Helper class for the FUTILE_STRONG_TYPEDEF macro.
- */
-template<typename Differentiator, typename T>
-struct StrongTypedef
-{
-    explicit StrongTypedef(const T & inValue = T()) : mValue(inValue) { }
-
-    typedef const T& CRef;
-    typedef T& Ref;
-
-    operator CRef() const { return mValue; }
-    operator Ref ()       { return mValue; }
-
-    //typedef StrongTypedef<Differentiator, T> This;
-
-    //friend bool operator==(const This & lhs, const This & rhs) { return lhs.mValue == rhs.mValue; }
-    //friend bool operator< (const This & lhs, const This & rhs) { return lhs.mValue <  rhs.mValue; }
-
-    T mValue;
-};
+#define STRONG_TYPEDEF(Type, Name) \
+    struct Name : boost::operators<Name> { \
+        Name() : data() {} \
+        template<typename ...Args> \
+        explicit Name(Args && ...args) : data(std::forward<Args>(args)...) {} \
+        operator const Type&() const { return data; } \
+        operator Type&() { return data; } \
+        bool operator<(const Name & rhs) { return data < rhs.data; } \
+        bool operator==(const Name & rhs) { return data == rhs.data; } \
+        Type data; \
+        friend std::ostream & operator<<(std::ostream & os, const Name & obj) { return os << obj.data; } \
+    };
 
 
-} // namespace Futile
-
-
-/**
- * Create a "strong" typedef.
- *
- * The resulting type is a unique type and
- * can be used for differentating overloads.
- *
- * @example FUTILE_STRONG_TYPEDEF(int, Width)
- */
-#define FUTILE_STRONG_TYPEDEF(TYPE, NAME) \
-    typedef Futile::StrongTypedef<struct Futile##_##NAME##_##TYPE, TYPE> NAME;
-
-
-#endif // FUTILE_STRONG_TYPEDEF_H
+#endif // STRONG_TYPEDEF_H

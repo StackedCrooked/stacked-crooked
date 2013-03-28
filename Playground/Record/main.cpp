@@ -148,8 +148,6 @@ T& get(Tuple& tuple)
 }
 
 
-
-
 int main()
 {
     STRONG_TYPEDEF(int,  _)

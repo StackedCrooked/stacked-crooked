@@ -20,154 +20,11 @@ using namespace boost;
 using namespace boost::asio;
 using namespace boost::asio::placeholders;
 using namespace boost::system;
-using boost::asio::placeholders::error;
 
 
 typedef ip::tcp::resolver Resolver;
 typedef Resolver::iterator Iterator;
 typedef error_code Error;
-
-
-class MessageSession;
-typedef std::function<std::string(MessageSession &, const std::string &)> RequestHandler;
-
-
-namespace Detail {
-
-
-typedef ip::tcp::socket Socket;
-
-
-template<typename Socket>
-uint32_t get_length(Socket & socket)
-{
-    using namespace asio;
-
-    // network-encoded length
-    uint32_t length_ne;
-    if (sizeof(length_ne) != read(socket, buffer(&length_ne, sizeof(length_ne))))
-    {
-        throw std::runtime_error("Failed to read message length.");
-    }
-
-    // return host-encoded
-    return ntohl(length_ne);
-}
-
-
-std::string do_read(Socket & socket)
-{
-    using namespace asio;
-    std::string payload;
-    payload.resize(Detail::get_length(socket), 0);
-    if (payload.size() != read(socket, buffer(&payload[0], payload.size())))
-    {
-        throw std::runtime_error("Not all bytes were read.");
-    }
-    return payload;
-}
-
-
-void do_write(Socket & socket, std::string payload)
-{
-    using namespace asio;
-    uint32_t length_ne = htonl(payload.size());
-    payload.insert(payload.begin(), reinterpret_cast<char *>(&length_ne), reinterpret_cast<char *>(&length_ne) + sizeof(length_ne));
-    if (payload.size() != write(socket, buffer(&payload[0], payload.size())))
-    {
-        throw std::runtime_error("Not all bytes were written.");
-    }
-}
-
-
-std::string Read(Socket & socket)
-{
-    try
-    {
-        return do_read(socket);
-    }
-    catch (exception & exc)
-    {
-        std::cout << "Message::Read failed. Extra info: " << diagnostic_information(exc);
-        throw;
-    }
-}
-
-void Write(Socket & socket, std::string payload)
-{
-    try
-    {
-        do_write(socket, payload);
-    }
-    catch (exception & exc)
-    {
-        std::cout << "Message::Write failed. Extra info: " << diagnostic_information(exc);
-        throw;
-    }
-}
-
-
-}
-
-
-class MessageSession
-{
-public:
-    MessageSession(io_service & io_serv, const RequestHandler & inRequestHandler) :
-        io_service_(io_serv),
-        socket_(io_service_),
-        mRequestHandler(inRequestHandler)
-    {
-    }
-
-    void start()
-    {
-        Detail::Write(socket_, mRequestHandler(*this, Detail::Read(socket_)));
-    }
-
-    ip::tcp::socket & socket()
-    {
-        return socket_;
-    }
-
-private:
-    io_service & io_service_;
-    ip::tcp::socket socket_;
-    RequestHandler mRequestHandler;
-};
-
-
-typedef std::shared_ptr<MessageSession> MessageSessionPtr;
-
-
-class MessageServer
-{
-public:
-    MessageServer(io_service & io_serv, short port, const RequestHandler & inRequestHandler) :
-        io_service_(io_serv),
-        acceptor_(io_service_, ip::tcp::endpoint(ip::tcp::v4(), port)),
-        mRequestHandler(inRequestHandler)
-    {
-        while (true)
-        {
-            try
-            {
-                MessageSessionPtr sessionPtr(new MessageSession(io_service_, mRequestHandler));
-                acceptor_.accept(sessionPtr->socket());
-                sessionPtr->start();
-            }
-            catch (system_error & exc)
-            {
-                std::cout << "RPC session closed. Extra info: " << diagnostic_information(exc);
-            }
-        }
-    }
-
-private:
-    io_service & io_service_;
-    ip::tcp::acceptor acceptor_;
-    RequestHandler mRequestHandler;
-};
 
 
 struct Message
@@ -224,7 +81,11 @@ struct MessageClient
         Resolver::query query(host, std::to_string(port));
         Iterator endpoint_iterator = resolver.resolve(query);
         auto endpoint = *endpoint_iterator;
-        socket_.async_connect(endpoint, bind(&MessageClient::handleConnect, this, error, ++endpoint_iterator));
+        socket_.async_connect(endpoint,
+                              bind(&MessageClient::handleConnect,
+                                   this,
+                                   placeholders::error,
+                                   ++endpoint_iterator));
     }
 
     std::future<std::string> send(const std::string & msg)
@@ -330,7 +191,6 @@ private:
 
 
 using Asio::MessageClient;
-using Asio::MessageServer;
 
 
 #endif // MESSAGEPROTOCOL_H

@@ -255,10 +255,10 @@ struct MessageClient
                                    ++endpoint_iterator));
     }
 
-    std::future<std::string> send(const std::string & msg)
+    void send(const std::string & msg, std::function<void(std::string)> callback)
     {
+        callback_ = callback;
         write(Message(msg));
-        return promised_result_.get_future();
     }
 
     void close()
@@ -307,7 +307,15 @@ private:
             return;
         }
 
-        promised_result_.set_value(message_.body());
+        if (callback_)
+        {
+            callback_(message_.get_body());
+            callback_ = std::function<void(std::string)>();
+        }
+        else
+        {
+            std::cout << "CALLBACK NOT SET!";
+        }
 
         async_read(socket_,
                    buffer(message_.header(), Message::HeaderLength),
@@ -350,7 +358,7 @@ private:
     ip::tcp::socket socket_;
     Message message_;
     std::deque<Message> write_queue_;
-    std::promise<std::string> promised_result_;
+    std::function<void(std::string)> callback_;
 
 };
 

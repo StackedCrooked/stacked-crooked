@@ -2,7 +2,6 @@
 #define MESSAGEPROTOCOL_H
 
 
-#include "Logging.hpp"
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>

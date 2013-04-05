@@ -13,6 +13,19 @@
 #include <stdexcept>
 
 
+namespace Asio {
+
+
+using namespace boost;
+using namespace boost::asio;
+using namespace boost::asio::placeholders;
+using namespace boost::system;
+using boost::asio::placeholders::error;
+
+
+typedef ip::tcp::resolver Resolver;
+typedef Resolver::iterator Iterator;
+typedef error_code Error;
 
 
 class MessageSession;
@@ -22,13 +35,13 @@ typedef std::function<std::string(MessageSession &, const std::string &)> Reques
 namespace Detail {
 
 
-typedef boost::asio::ip::tcp::socket Socket;
+typedef ip::tcp::socket Socket;
 
 
 template<typename Socket>
 uint32_t get_length(Socket & socket)
 {
-    using namespace boost::asio;
+    using namespace asio;
 
     // network-encoded length
     uint32_t length_ne;
@@ -44,7 +57,7 @@ uint32_t get_length(Socket & socket)
 
 std::string do_read(Socket & socket)
 {
-    using namespace boost::asio;
+    using namespace asio;
     std::string payload;
     payload.resize(Detail::get_length(socket), 0);
     if (payload.size() != read(socket, buffer(&payload[0], payload.size())))
@@ -57,7 +70,7 @@ std::string do_read(Socket & socket)
 
 void do_write(Socket & socket, std::string payload)
 {
-    using namespace boost::asio;
+    using namespace asio;
     uint32_t length_ne = htonl(payload.size());
     payload.insert(payload.begin(), reinterpret_cast<char *>(&length_ne), reinterpret_cast<char *>(&length_ne) + sizeof(length_ne));
     if (payload.size() != write(socket, buffer(&payload[0], payload.size())))
@@ -73,9 +86,9 @@ std::string Read(Socket & socket)
     {
         return do_read(socket);
     }
-    catch (boost::exception & exc)
+    catch (exception & exc)
     {
-        std::cout << "Message::Read failed. Extra info: " << boost::diagnostic_information(exc);
+        std::cout << "Message::Read failed. Extra info: " << diagnostic_information(exc);
         throw;
     }
 }
@@ -86,9 +99,9 @@ void Write(Socket & socket, std::string payload)
     {
         do_write(socket, payload);
     }
-    catch (boost::exception & exc)
+    catch (exception & exc)
     {
-        std::cout << "Message::Write failed. Extra info: " << boost::diagnostic_information(exc);
+        std::cout << "Message::Write failed. Extra info: " << diagnostic_information(exc);
         throw;
     }
 }
@@ -100,7 +113,7 @@ void Write(Socket & socket, std::string payload)
 class MessageSession
 {
 public:
-    MessageSession(boost::asio::io_service & io_serv, const RequestHandler & inRequestHandler) :
+    MessageSession(io_service & io_serv, const RequestHandler & inRequestHandler) :
         io_service_(io_serv),
         socket_(io_service_),
         mRequestHandler(inRequestHandler)
@@ -112,14 +125,14 @@ public:
         Detail::Write(socket_, mRequestHandler(*this, Detail::Read(socket_)));
     }
 
-    boost::asio::ip::tcp::socket & socket()
+    ip::tcp::socket & socket()
     {
         return socket_;
     }
 
 private:
-    boost::asio::io_service & io_service_;
-    boost::asio::ip::tcp::socket socket_;
+    io_service & io_service_;
+    ip::tcp::socket socket_;
     RequestHandler mRequestHandler;
 };
 
@@ -130,9 +143,9 @@ typedef std::shared_ptr<MessageSession> MessageSessionPtr;
 class MessageServer
 {
 public:
-    MessageServer(boost::asio::io_service & io_serv, short port, const RequestHandler & inRequestHandler) :
+    MessageServer(io_service & io_serv, short port, const RequestHandler & inRequestHandler) :
         io_service_(io_serv),
-        acceptor_(io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+        acceptor_(io_service_, ip::tcp::endpoint(ip::tcp::v4(), port)),
         mRequestHandler(inRequestHandler)
     {
         while (true)
@@ -143,16 +156,16 @@ public:
                 acceptor_.accept(sessionPtr->socket());
                 sessionPtr->start();
             }
-            catch (boost::system::system_error & exc)
+            catch (system_error & exc)
             {
-                std::cout << "RPC session closed. Extra info: " << boost::diagnostic_information(exc);
+                std::cout << "RPC session closed. Extra info: " << diagnostic_information(exc);
             }
         }
     }
 
 private:
-    boost::asio::io_service & io_service_;
-    boost::asio::ip::tcp::acceptor acceptor_;
+    io_service & io_service_;
+    ip::tcp::acceptor acceptor_;
     RequestHandler mRequestHandler;
 };
 
@@ -160,7 +173,9 @@ private:
 struct Message
 {
     enum { HeaderLength = sizeof(uint32_t) };
+    typedef std::array<char, HeaderLength> Header;
 
+    Message(const std::string & str) : header_(Message::makeHeader(str)), body_(str) { }
     Message() : header_(), body_() { }
     
     const char * header() const { return &header_[0]; }
@@ -170,27 +185,35 @@ struct Message
     char * body() { return &body_[0]; }
     
     unsigned body_length() const { return body_.size(); }
-    
+
     void read_header()
     {
-        uint32_t n;
-        memcpy(&n, &header_[0], sizeof(n));
-        body_.resize(ntohl(n));        
+        body_.resize(Message::parseHeader(header_));
     }
 
-    std::array<char, HeaderLength> header_;
+    static unsigned parseHeader(const Header & hdr)
+    {
+        uint32_t n;
+        memcpy(&n, &hdr[0], sizeof(n));
+        return ntohl(n);
+    }
+
+    static Header makeHeader(const std::string & str)
+    {
+        Header result;
+        unsigned n = htonl(unsigned(str.size()));
+        memcpy(&result, &n, sizeof(result));
+        return result;
+    }
+
+    Header header_;
     std::string body_;
 };
 
 
-class MessageClient
+struct MessageClient
 {
-    typedef boost::asio::ip::tcp::resolver Resolver;
-    typedef Resolver::iterator Iterator;
-    typedef boost::system::error_code Error;
-
-public:
-    MessageClient(boost::asio::io_service & io_serv, const std::string & host, short port) :
+    MessageClient(io_service & io_serv, const std::string & host, short port) :
         io_service_(io_serv),
         host_(host),
         port_(port),
@@ -201,36 +224,39 @@ public:
         Resolver::query query(host, std::to_string(port));
         Iterator endpoint_iterator = resolver.resolve(query);
         auto endpoint = *endpoint_iterator;
-        socket_.async_connect(endpoint, boost::bind(&MessageClient::handle_connect, this, boost::asio::placeholders::error, ++endpoint_iterator));
+        socket_.async_connect(endpoint, bind(&MessageClient::handleConnect, this, error, ++endpoint_iterator));
     }
 
     std::future<std::string> send(const std::string & msg)
     {
-        Detail::Write(socket_, msg);
+        write(Message(msg));
         return promised_result_.get_future();
     }
 
+    void close()
+    {
+        socket_.close();
+    }
+
 private:
-    void handle_connect(const Error & error, Iterator it)
+    void handleConnect(const Error & error, Iterator it)
     {
         if (!error)
         {
-            boost::asio::async_read(
-                socket_,
-                boost::asio::buffer(message_.header(), Message::HeaderLength),
-                boost::bind(&MessageClient::handle_read_header, this, boost::asio::placeholders::error));
+            async_read(socket_,
+                       buffer(message_.header(), Message::HeaderLength),
+                       bind(&MessageClient::readHeader, this, error));
         }
         else if (it != Iterator())
         {
             socket_.close();
             auto endpoint = *it;
             socket_.async_connect(endpoint,
-                                  boost::bind(&MessageClient::handle_connect, this,
-                                            boost::asio::placeholders::error, ++it));
+                                  bind(&MessageClient::handleConnect, this, error, ++it));
         }
     }
 
-    void handle_read_header(const Error & error)
+    void readHeader(const Error & error)
     {
         if (error)
         {
@@ -240,13 +266,12 @@ private:
         
         message_.read_header();
 
-        boost::asio::async_read(
-                    socket_,
-                    boost::asio::buffer(message_.body(), message_.body_length()),
-                    boost::bind(&MessageClient::handle_read_body, this, boost::asio::placeholders::error));
+        async_read(socket_,
+                   buffer(message_.body(), message_.body_length()),
+                   bind(&MessageClient::readBody, this, error));
     }
 
-    void handle_read_body(const boost::system::error_code& error)
+    void readBody(const error_code& error)
     {
         if (error)
         {
@@ -256,21 +281,56 @@ private:
         
         promised_result_.set_value(message_.body());
         
-        boost::asio::async_read(socket_,
-                                boost::asio::buffer(message_.header(), Message::HeaderLength),
-                                boost::bind(&MessageClient::handle_read_header,
-                                          this,
-                                          boost::asio::placeholders::error));
+        async_read(socket_,
+                   buffer(message_.header(), Message::HeaderLength),
+                   bind(&MessageClient::readHeader, this, error));
     }
 
-    boost::asio::io_service & io_service_;
+    void write(const Message & msg)
+    {
+        bool write_in_progress = !write_queue_.empty();
+        write_queue_.push_back(msg);
+        if (!write_in_progress)
+        {
+            async_write(socket_,
+                        buffer(write_queue_.front().body(), write_queue_.front().body_length()),
+                        bind(&MessageClient::handleWrite, this, placeholders::error));
+        }
+    }
+
+    void handleWrite(const system::error_code & error)
+    {
+        if (error)
+        {
+            close();
+            return;
+        }
+
+        write_queue_.pop_front();
+        if (!write_queue_.empty())
+        {
+            Message & msg = write_queue_.front();
+            async_write(socket_,
+                        buffer(msg.body(), msg.body_length()),
+                        bind(&MessageClient::handleWrite, this, placeholders::error));
+        }
+    }
+
+    io_service & io_service_;
     std::string host_;
     short port_;
-    boost::asio::ip::tcp::socket socket_;
+    ip::tcp::socket socket_;
     Message message_;
+    std::deque<Message> write_queue_;
     std::promise<std::string> promised_result_;
     
 };
+
+} // Asio
+
+
+using Asio::MessageClient;
+using Asio::MessageServer;
 
 
 #endif // MESSAGEPROTOCOL_H

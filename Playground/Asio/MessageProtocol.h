@@ -18,6 +18,7 @@ namespace Asio {
 
 using namespace boost;
 using namespace boost::asio;
+using namespace boost::asio::ip;
 using namespace boost::asio::placeholders;
 using namespace boost::system;
 
@@ -34,16 +35,36 @@ struct Message
 
     Message(const std::string & str) : header_(Message::makeHeader(str)), body_(str) { }
     Message() : header_(), body_() { }
-    
-    const char * header() const { return &header_[0]; }
-    char * header() { return &header_[0]; }    
 
-    const char * body() const { return body_.data(); }
-    char * body() { return &body_[0]; }
-    
-    unsigned body_length() const { return body_.size(); }
+    const char * header() const
+    {
+        return &header_[0];
+    }
+    char * header()
+    {
+        return &header_[0];
+    }
 
-    void read_header()
+    const char * body() const
+    {
+        return body_.data();
+    }
+    char * body()
+    {
+        return &body_[0];
+    }
+
+    const std::string & get_body() const
+    {
+        return body_;
+    }
+
+    unsigned body_length() const
+    {
+        return body_.size();
+    }
+
+    void decode_header()
     {
         body_.resize(Message::parseHeader(header_));
     }
@@ -68,10 +89,156 @@ struct Message
 };
 
 
+io_service & get_io_service()
+{
+    static io_service serv;
+    return serv;
+}
+
+
+
+typedef std::function<std::string(std::string)> Callback;
+
+
+class Session
+{
+public:
+    Session(const Callback & callback) :
+        socket_(get_io_service()),
+        callback_(callback)
+    {
+    }
+
+    tcp::socket & socket()
+    {
+        return socket_;
+    }
+
+    void start()
+    {
+        async_read(socket_,
+                   buffer(read_msg_.header(), Message::HeaderLength),
+                   boost::bind(&Session::handle_read_header,
+                               this,
+                               placeholders::error));
+    }
+
+    void deliver(const Message & msg)
+    {
+        bool write_in_progress = !write_queue_.empty();
+        write_queue_.push_back(msg);
+        if (!write_in_progress)
+        {
+            Message & msg = write_queue_.front();
+            async_write(socket_,
+                        buffer(msg.body(), msg.body_length()),
+                        boost::bind(&Session::handle_write,
+                                    this,
+                                    placeholders::error));
+        }
+    }
+
+    void handle_read_header(const error_code & error)
+    {
+        if (error)
+        {
+            return;
+        }
+
+        read_msg_.decode_header();
+        async_read(socket_,
+                   buffer(read_msg_.body(), read_msg_.body_length()),
+                   boost::bind(&Session::handle_read_body, this, placeholders::error));
+    }
+
+    void handle_read_body(const error_code & error)
+    {
+        if (error)
+        {
+            return;
+        }
+
+        deliver(callback_(read_msg_.get_body()));
+        async_read(socket_,
+                   buffer(read_msg_.header(), read_msg_.HeaderLength),
+                   boost::bind(&Session::handle_read_header,
+                               this,
+                               placeholders::error));
+    }
+
+    void handle_write(const error_code & error)
+    {
+        if (error)
+        {
+            return;
+        }
+
+        write_queue_.pop_front();
+        if (!write_queue_.empty())
+        {
+            Message & msg = write_queue_.front();
+            async_write(socket_,
+                        buffer(msg.body(), msg.body_length()),
+                        boost::bind(&Session::handle_write,
+                                    this,
+                                    placeholders::error));
+        }
+    }
+
+private:
+    tcp::socket socket_;
+    Callback callback_;
+    Message read_msg_;
+    std::deque<Message> write_queue_;
+};
+
+
+
+typedef boost::shared_ptr<Session> SessionPtr;
+
+
+class MessageServer
+{
+public:
+    MessageServer(short port, const Callback & callback) :
+        io_service_(get_io_service()),
+        acceptor_(get_io_service(), tcp::endpoint(tcp::v4(), port)),
+        callback_(callback)
+    {
+        start_accept();
+        get_io_service().run();
+    }
+
+    void start_accept()
+    {
+        SessionPtr new_session(new Session(callback_));
+        acceptor_.async_accept(new_session->socket(),
+                               boost::bind(&MessageServer::handle_accept, this, new_session,
+                                           placeholders::error));
+    }
+
+    void handle_accept(SessionPtr session,
+                       const error_code & error)
+    {
+        if (!error)
+        {
+            session->start();
+        }
+
+        start_accept();
+    }
+
+private:
+    io_service & io_service_;
+    tcp::acceptor acceptor_;
+    Callback callback_;
+};
+
+
 struct MessageClient
 {
-    MessageClient(io_service & io_serv, const std::string & host, short port) :
-        io_service_(io_serv),
+    MessageClient(const std::string & host, short port) :
+        io_service_(get_io_service()),
         host_(host),
         port_(port),
         socket_(io_service_),
@@ -124,24 +291,24 @@ private:
             socket_.close();
             return;
         }
-        
-        message_.read_header();
+
+        message_.decode_header();
 
         async_read(socket_,
                    buffer(message_.body(), message_.body_length()),
                    bind(&MessageClient::readBody, this, error));
     }
 
-    void readBody(const error_code& error)
+    void readBody(const error_code & error)
     {
         if (error)
         {
             socket_.close();
             return;
         }
-        
+
         promised_result_.set_value(message_.body());
-        
+
         async_read(socket_,
                    buffer(message_.header(), Message::HeaderLength),
                    bind(&MessageClient::readHeader, this, error));
@@ -184,13 +351,10 @@ private:
     Message message_;
     std::deque<Message> write_queue_;
     std::promise<std::string> promised_result_;
-    
+
 };
 
 } // Asio
-
-
-using Asio::MessageClient;
 
 
 #endif // MESSAGEPROTOCOL_H

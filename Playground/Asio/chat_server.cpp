@@ -218,7 +218,7 @@ int main(int argc, char * argv[])
         for (int i = 1; i < argc; ++i)
         {
             using namespace std; // For atoi.
-            tcp::endpoint endpoint(tcp::v4(), atoi(argv[i]));
+            boost::asio::ip::tcp::endpoint endpoint(tcp::v4(), atoi(argv[i]));
             chat_server_ptr server(new chat_server(io_service, endpoint));
             servers.push_back(server);
         }

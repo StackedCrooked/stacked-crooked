@@ -2,7 +2,7 @@
 #define MESSAGEPROTOCOL_H
 
 
-
+#include "Logging.hpp"
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -12,6 +12,8 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
+
+
 
 
 class MessageSession;
@@ -226,10 +228,6 @@ private:
             socket_.async_connect(endpoint,
                                   boost::bind(&MessageClient::handle_connect, this,
                                             boost::asio::placeholders::error, ++it));
-        }
-        else
-        {
-            throw std::runtime_error("Resolve failed.");
         }
     }
 

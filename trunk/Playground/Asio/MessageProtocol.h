@@ -4,13 +4,16 @@
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/shared_ptr.hpp>
 #include <array>
 #include <functional>
 #include <future>
 #include <memory>
-#include <string>
+#include <set>
 #include <stdexcept>
+#include <string>
 
 
 namespace Asio {
@@ -100,9 +103,8 @@ io_service & get_io_service()
 typedef std::function<std::string(std::string)> Callback;
 
 
-class Session
+struct Session : boost::enable_shared_from_this<Session>
 {
-public:
     Session(const Callback & callback) :
         socket_(get_io_service()),
         callback_(callback)
@@ -116,6 +118,7 @@ public:
 
     void start()
     {
+        std::cout << "Session::start" << std::endl;
         async_read(socket_,
                    buffer(read_msg_.header(), Message::HeaderLength),
                    boost::bind(&Session::handle_read_header,
@@ -125,6 +128,7 @@ public:
 
     void deliver(const Message & msg)
     {
+        std::cout << "Session::deliver" << msg.get_body() << std::endl;
         bool write_in_progress = !write_queue_.empty();
         write_queue_.push_back(msg);
         if (!write_in_progress)
@@ -142,10 +146,14 @@ public:
     {
         if (error)
         {
+            std::cout << "Session::handle_read_header: error" << error << std::endl;
             return;
         }
 
+        std::cout << "Session::handle_read_header: ok" << std::endl;
+
         read_msg_.decode_header();
+        std::cout << "body length is: " << read_msg_.body_length() << std::endl;
         async_read(socket_,
                    buffer(read_msg_.body(), read_msg_.body_length()),
                    boost::bind(&Session::handle_read_body, this, placeholders::error));
@@ -155,10 +163,15 @@ public:
     {
         if (error)
         {
+            std::cout << "Session::handle_read_body: error" << error << std::endl;
             return;
         }
+        std::cout << "Session::handle_read_header: ok: " << read_msg_.get_body() << std::endl;
 
-        deliver(callback_(read_msg_.get_body()));
+        if (!read_msg_.get_body().empty())
+        {
+            deliver(callback_(read_msg_.get_body()));
+        }
         async_read(socket_,
                    buffer(read_msg_.header(), read_msg_.HeaderLength),
                    boost::bind(&Session::handle_read_header,
@@ -170,8 +183,11 @@ public:
     {
         if (error)
         {
+            std::cout << "Session::handle_write: error" << error << std::endl;
             return;
         }
+
+        std::cout << "Session::handle_write: ok" << std::endl;
 
         write_queue_.pop_front();
         if (!write_queue_.empty())
@@ -211,7 +227,12 @@ public:
 
     void start_accept()
     {
-        SessionPtr new_session(new Session(callback_));
+        std::cout << "Server: start_accept" << std::endl;
+        SessionPtr new_session(new Session(callback_), [=](Session* session) {
+            std::cout << "Erase session" << std::endl;
+            this->sessions_.erase(session->shared_from_this());
+            delete session;
+        });
         acceptor_.async_accept(new_session->socket(),
                                boost::bind(&MessageServer::handle_accept, this, new_session,
                                            placeholders::error));
@@ -220,11 +241,15 @@ public:
     void handle_accept(SessionPtr session,
                        const error_code & error)
     {
-        if (!error)
+        if (error)
         {
-            session->start();
+            std::cout << "handle_accept: error: " << error << std::endl;
+            return;
         }
 
+        std::cout << "handle_accept: ok: " << error << std::endl;
+        sessions_.insert(session);
+        session->start();
         start_accept();
     }
 
@@ -232,6 +257,7 @@ private:
     io_service & io_service_;
     tcp::acceptor acceptor_;
     Callback callback_;
+    std::set<SessionPtr> sessions_;
 };
 
 
@@ -311,6 +337,7 @@ private:
         {
             callback_(message_.get_body());
             callback_ = std::function<void(std::string)>();
+            message_ = Message();
         }
         else
         {
@@ -324,6 +351,7 @@ private:
 
     void write(const Message & msg)
     {
+        std::cout << "Client: write: " << msg.get_body() << std::endl;
         bool write_in_progress = !write_queue_.empty();
         write_queue_.push_back(msg);
         if (!write_in_progress)
@@ -338,9 +366,11 @@ private:
     {
         if (error)
         {
+            std::cout << "Client: handleWrite: error: "  << error << std::endl;
             close();
             return;
         }
+        std::cout << "Client: handleWrite: ok: " << std::endl;
 
         write_queue_.pop_front();
         if (!write_queue_.empty())

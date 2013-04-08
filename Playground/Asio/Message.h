@@ -2,6 +2,7 @@
 #define MESSAGE_H
 
 
+#include <boost/asio.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -11,6 +12,13 @@
 
 
 #include <iostream>
+
+
+boost::asio::io_service & get_io_service()
+{
+    static boost::asio::io_service result;
+    return result;
+}
 
 
 class Message

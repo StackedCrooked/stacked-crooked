@@ -25,8 +25,8 @@ public:
         {
             throw std::runtime_error("Message is too long: " + std::to_string(str.size()));
         }
-        mData.reserve(max_body_length);
-        mData.resize(str.size() + header_length);
+        mData.reserve(header_length + max_body_length);
+        mData.resize(header_length + str.size());
         memcpy(body(), str.data(), str.size());
         encode_header();
     }

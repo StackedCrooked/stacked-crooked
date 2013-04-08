@@ -1,11 +1,7 @@
-Asio.config
-Asio.creator
-Asio.files
-Asio.includes
+Client.h
+Message.h
+Server.h
 Makefile
-chat_client.cpp
-chat_message.hpp
-chat_server.cpp
 MessageProtocol.h
 TestServer.cpp
 TestClient.cpp

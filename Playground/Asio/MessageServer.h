@@ -41,7 +41,7 @@ public:
 
     void leave(AbstractSessionPtr participant)
     {
-        std::cout << "leave" << std::endl;        
+        std::cout << "leave" << std::endl;
         mSessions.erase(participant);
     }
 
@@ -63,7 +63,7 @@ private:
 
 
 class MessageSession : public AbstractMessageSession,
-                public boost::enable_shared_from_this<MessageSession>
+                       public boost::enable_shared_from_this<MessageSession>
 {
 public:
     MessageSession(boost::asio::io_service & io_service, MessageSessions & room) :
@@ -166,7 +166,7 @@ class MessageServer
 {
 public:
     MessageServer(boost::asio::io_service & io_service,
-                const tcp::endpoint & endpoint)
+                  const tcp::endpoint & endpoint)
         : io_service_(io_service),
           acceptor_(io_service, endpoint)
     {

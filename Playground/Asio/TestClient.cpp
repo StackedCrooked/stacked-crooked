@@ -12,15 +12,15 @@ int main(int argc, char * argv[])
             return 1;
         }
 
-        io_service io_service;
+        boost::asio::io_service ioservice;
 
-        tcp::resolver resolver(io_service);
-        tcp::resolver::query query(argv[1], argv[2]);
-        tcp::resolver::iterator iterator = resolver.resolve(query);
+        boost::asio::ip::tcp::resolver resolver(ioservice);
+        boost::asio::ip::tcp::resolver::query query(argv[1], argv[2]);
+        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        MessageClient c(io_service, iterator);
+        MessageClient c(ioservice, iterator);
 
-        std::thread t(bind(&io_service::run, &io_service));
+        std::thread t(boost::bind(&boost::asio::io_service::run, &ioservice));
 
         char line[Message::max_body_length + 1];
         while (std::cin.getline(line, Message::max_body_length + 1))

@@ -17,7 +17,7 @@ class Message
 {
 public:
     enum { header_length = 4 };
-    enum { max_body_length = 512 };
+    enum { max_body_length = 100*1024*1024 };
     
     Message(const std::string & str = "")
     {

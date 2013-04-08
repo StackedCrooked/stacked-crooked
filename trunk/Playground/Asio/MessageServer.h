@@ -169,18 +169,18 @@ typedef boost::shared_ptr<MessageSession> SessionPtr;
 class MessageServer
 {
 public:
-    MessageServer(boost::asio::io_service & io_service,
-                  const boost::asio::ip::tcp::endpoint & endpoint)
-        : io_service_(io_service),
-          acceptor_(io_service, endpoint)
-    {
+    MessageServer(uint16_t port) :
+        mIOService(get_io_service()),
+        mAcceptor(mIOService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
+    {        
         start_accept();
+        mIOService.run();
     }
 
     void start_accept()
     {
-        SessionPtr new_session(new MessageSession(io_service_, room_));
-        acceptor_.async_accept(new_session->socket(),
+        SessionPtr new_session(new MessageSession(mIOService, room_));
+        mAcceptor.async_accept(new_session->socket(),
                                boost::bind(&MessageServer::handle_accept, this, new_session,
                                            boost::asio::placeholders::error));
     }
@@ -197,8 +197,8 @@ public:
     }
 
 private:
-    boost::asio::io_service & io_service_;
-    boost::asio::ip::tcp::acceptor acceptor_;
+    boost::asio::io_service & mIOService;
+    boost::asio::ip::tcp::acceptor mAcceptor;
     MessageSessions room_;
 };
 

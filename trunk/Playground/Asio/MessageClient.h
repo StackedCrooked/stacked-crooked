@@ -10,13 +10,6 @@
 typedef std::deque<Message> RequestQueue;
 
 
-boost::asio::io_service & get_io_service()
-{
-    static boost::asio::io_service result;
-    return result;
-}
-
-
 class MessageClient
 {
 public:

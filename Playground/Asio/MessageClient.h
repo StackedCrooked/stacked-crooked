@@ -4,28 +4,41 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
+#include <stdint.h>
 
 
 typedef std::deque<Message> RequestQueue;
 
 
+boost::asio::io_service & get_io_service()
+{
+    static boost::asio::io_service result;
+    return result;
+}
+
+
 class MessageClient
 {
 public:
-    MessageClient(boost::asio::io_service & io_service, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
-        : io_service_(io_service),
-          mSocket(io_service)
+    MessageClient(const std::string & host, uint16_t port)
+        : io_service_(get_io_service()),
+          mSocket(io_service_)
     {
+        
+        boost::asio::ip::tcp::resolver resolver(io_service_);
+        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
+        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
         boost::asio::async_connect(
                     mSocket,
-                    endpoint_iterator,
+                    iterator,
                     boost::bind(&MessageClient::handle_connect,
                                 this,
                                 boost::asio::placeholders::error));
     }
 
-    void write(const Message & msg)
+    void write(const std::string & msg)
     {
+        Message message(msg);
         io_service_.post(boost::bind(&MessageClient::do_write, this, msg));
     }
 

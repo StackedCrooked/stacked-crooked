@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
+#include <string>
 
 
 class Message
@@ -12,10 +14,16 @@ class Message
 public:
     enum { header_length = 4 };
     enum { max_body_length = 512 };
-
-    Message()
-        : body_length_(0)
+    
+    Message(const std::string & str = "")
+        : body_length_(str.size())
     {
+        if (body_length_ > max_body_length)
+        {
+            throw std::runtime_error("too long: " + std::to_string(str.size()));
+        }
+        memcpy(body(), str.data(), str.size());
+        encode_header();
     }
 
     const char * data() const
@@ -57,7 +65,6 @@ public:
 
     bool decode_header()
     {
-        using namespace std; // For strncat and atoi.
         char header[header_length + 1] = "";
         strncat(header, data_, header_length);
         body_length_ = atoi(header);

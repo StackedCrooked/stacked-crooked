@@ -65,7 +65,8 @@ class MessageSession : public AbstractMessageSession,
 public:
     MessageSession(boost::asio::io_service & io_service, MessageSessions & room) :
         socket_(io_service),
-        room_(room)
+        room_(room),
+        read_msg_()
     {
     }
 

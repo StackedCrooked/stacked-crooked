@@ -32,8 +32,6 @@ public:
     {
         std::cout << "join" << std::endl;
         mSessions.insert(session);
-        std::for_each(mRequestQueue.begin(), mRequestQueue.end(),
-                      boost::bind(&AbstractMessageSession::deliver, session, _1));
     }
 
     void leave(AbstractSessionPtr participant)
@@ -42,20 +40,9 @@ public:
         mSessions.erase(participant);
     }
 
-    void deliver(const Message & msg)
-    {
-        mRequestQueue.push_back(msg);
-        while (mRequestQueue.size() > max_recent_msgs)
-            mRequestQueue.pop_front();
-
-        std::for_each(mSessions.begin(), mSessions.end(),
-                      boost::bind(&AbstractMessageSession::deliver, _1, boost::ref(msg)));
-    }
-
 private:
     std::set<AbstractSessionPtr> mSessions;
     enum { max_recent_msgs = 100 };
-    RequestQueue mRequestQueue;
 };
 
 
@@ -123,7 +110,7 @@ public:
     {
         if (!error)
         {
-            mSessions.deliver(mReadMessage);
+            deliver(mReadMessage);
             boost::asio::async_read(socket_,
                                     boost::asio::buffer(mReadMessage.data(), Message::header_length),
                                     boost::bind(&MessageSession::handle_read_header, shared_from_this(),

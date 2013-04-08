@@ -1,5 +1,5 @@
-#ifndef CHAT_MESSAGE_HPP
-#define CHAT_MESSAGE_HPP
+#ifndef MESSAGE_H
+#define MESSAGE_H
 
 
 #include <cstdio>
@@ -7,13 +7,13 @@
 #include <cstring>
 
 
-class chat_message
+class Message
 {
 public:
     enum { header_length = 4 };
     enum { max_body_length = 512 };
 
-    chat_message()
+    Message()
         : body_length_(0)
     {
     }
@@ -83,4 +83,4 @@ private:
 };
 
 
-#endif // CHAT_MESSAGE_HPP
+#endif // MESSAGE_H

@@ -66,7 +66,7 @@ public:
     MessageSession(boost::asio::io_service & io_service, MessageSessions & room) :
         socket_(io_service),
         mSessions(room),
-        read_msg_()
+        mReadMessage()
     {
         std::cout << "MessageSession created." << std::endl;
     }
@@ -85,7 +85,7 @@ public:
     {
         mSessions.join(shared_from_this());
         boost::asio::async_read(socket_,
-                                boost::asio::buffer(read_msg_.data(), Message::header_length),
+                                boost::asio::buffer(mReadMessage.data(), Message::header_length),
                                 boost::bind(&MessageSession::handle_read_header, shared_from_this(),
                                             boost::asio::placeholders::error));
     }
@@ -106,10 +106,10 @@ public:
 
     void handle_read_header(const boost::system::error_code & error)
     {
-        if (!error && read_msg_.decode_header())
+        if (!error && mReadMessage.decode_header())
         {
             boost::asio::async_read(socket_,
-                                    boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
+                                    boost::asio::buffer(mReadMessage.body(), mReadMessage.body_length()),
                                     boost::bind(&MessageSession::handle_read_body, shared_from_this(),
                                                 boost::asio::placeholders::error));
         }
@@ -123,9 +123,9 @@ public:
     {
         if (!error)
         {
-            mSessions.deliver(read_msg_);
+            mSessions.deliver(mReadMessage);
             boost::asio::async_read(socket_,
-                                    boost::asio::buffer(read_msg_.data(), Message::header_length),
+                                    boost::asio::buffer(mReadMessage.data(), Message::header_length),
                                     boost::bind(&MessageSession::handle_read_header, shared_from_this(),
                                                 boost::asio::placeholders::error));
         }
@@ -158,7 +158,7 @@ public:
 private:
     boost::asio::ip::tcp::socket socket_;
     MessageSessions & mSessions;
-    Message read_msg_;
+    Message mReadMessage;
     RequestQueue write_msgs_;
 };
 

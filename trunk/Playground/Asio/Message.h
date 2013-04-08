@@ -10,6 +10,9 @@
 #include <arpa/inet.h>
 
 
+#include <iostream>
+
+
 class Message
 {
 public:
@@ -58,9 +61,9 @@ public:
         return length() - header_length;
     }
 
-    void resize(uint32_t _new_length)
+    void resize(uint32_t new_body_length)
     {
-        uint32_t new_size = _new_length + header_length;
+        uint32_t new_size = new_body_length + header_length;
         if (new_size > mData.capacity())
         {
             throw std::runtime_error("New message size exceeds capacity: " + std::to_string(new_size));
@@ -71,13 +74,21 @@ public:
 
     bool decode_header()
     {
-        auto length = [this](){
-            uint32_t n;
-            memcpy(&n, mData.data(), sizeof(n));
-            return ntohl(n);
-        }();
-        resize(length);
-        return true;
+        try
+        {
+            auto length = [this](){
+                uint32_t n;
+                memcpy(&n, mData.data(), sizeof(n));
+                return ntohl(n);
+            }();
+            resize(length);
+            return true;
+        }
+        catch (const std::exception & e)
+        {
+            std::cerr << e.what() << std::endl;
+            return false;
+        }
     }
 
     void encode_header()

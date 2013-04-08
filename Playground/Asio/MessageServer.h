@@ -17,18 +17,18 @@ using boost::asio::ip::tcp;
 typedef std::deque<Message> RequestQueue;
 
 
-class AbstractSession
+class AbstractMessageSession
 {
 public:
-    virtual ~AbstractSession() {}
+    virtual ~AbstractMessageSession() {}
     virtual void deliver(const Message & msg) = 0;
 };
 
 
-typedef boost::shared_ptr<AbstractSession> AbstractSessionPtr;
+typedef boost::shared_ptr<AbstractMessageSession> AbstractSessionPtr;
 
 
-class Sessions
+class MessageSessions
 {
 public:
     void join(AbstractSessionPtr session)
@@ -36,7 +36,7 @@ public:
         std::cout << "join" << std::endl;
         mSessions.insert(session);
         std::for_each(mRequestQueue.begin(), mRequestQueue.end(),
-                      boost::bind(&AbstractSession::deliver, session, _1));
+                      boost::bind(&AbstractMessageSession::deliver, session, _1));
     }
 
     void leave(AbstractSessionPtr participant)
@@ -52,7 +52,7 @@ public:
             mRequestQueue.pop_front();
 
         std::for_each(mSessions.begin(), mSessions.end(),
-                      boost::bind(&AbstractSession::deliver, _1, boost::ref(msg)));
+                      boost::bind(&AbstractMessageSession::deliver, _1, boost::ref(msg)));
     }
 
 private:
@@ -62,11 +62,11 @@ private:
 };
 
 
-class Session : public AbstractSession,
-                public boost::enable_shared_from_this<Session>
+class MessageSession : public AbstractMessageSession,
+                public boost::enable_shared_from_this<MessageSession>
 {
 public:
-    Session(boost::asio::io_service & io_service, Sessions & room) :
+    MessageSession(boost::asio::io_service & io_service, MessageSessions & room) :
         socket_(io_service),
         room_(room)
     {
@@ -82,7 +82,7 @@ public:
         room_.join(shared_from_this());
         boost::asio::async_read(socket_,
                                 boost::asio::buffer(read_msg_.data(), Message::header_length),
-                                boost::bind(&Session::handle_read_header, shared_from_this(),
+                                boost::bind(&MessageSession::handle_read_header, shared_from_this(),
                                             boost::asio::placeholders::error));
     }
 
@@ -95,7 +95,7 @@ public:
             boost::asio::async_write(socket_,
                                      boost::asio::buffer(write_msgs_.front().data(),
                                                          write_msgs_.front().length()),
-                                     boost::bind(&Session::handle_write, shared_from_this(),
+                                     boost::bind(&MessageSession::handle_write, shared_from_this(),
                                                  boost::asio::placeholders::error));
         }
     }
@@ -106,7 +106,7 @@ public:
         {
             boost::asio::async_read(socket_,
                                     boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
-                                    boost::bind(&Session::handle_read_body, shared_from_this(),
+                                    boost::bind(&MessageSession::handle_read_body, shared_from_this(),
                                                 boost::asio::placeholders::error));
         }
         else
@@ -122,7 +122,7 @@ public:
             room_.deliver(read_msg_);
             boost::asio::async_read(socket_,
                                     boost::asio::buffer(read_msg_.data(), Message::header_length),
-                                    boost::bind(&Session::handle_read_header, shared_from_this(),
+                                    boost::bind(&MessageSession::handle_read_header, shared_from_this(),
                                                 boost::asio::placeholders::error));
         }
         else
@@ -141,7 +141,7 @@ public:
                 boost::asio::async_write(socket_,
                                          boost::asio::buffer(write_msgs_.front().data(),
                                                              write_msgs_.front().length()),
-                                         boost::bind(&Session::handle_write, shared_from_this(),
+                                         boost::bind(&MessageSession::handle_write, shared_from_this(),
                                                      boost::asio::placeholders::error));
             }
         }
@@ -153,19 +153,19 @@ public:
 
 private:
     tcp::socket socket_;
-    Sessions & room_;
+    MessageSessions & room_;
     Message read_msg_;
     RequestQueue write_msgs_;
 };
 
-typedef boost::shared_ptr<Session> SessionPtr;
+
+typedef boost::shared_ptr<MessageSession> SessionPtr;
 
 
-
-class Server
+class MessageServer
 {
 public:
-    Server(boost::asio::io_service & io_service,
+    MessageServer(boost::asio::io_service & io_service,
                 const tcp::endpoint & endpoint)
         : io_service_(io_service),
           acceptor_(io_service, endpoint)
@@ -175,9 +175,9 @@ public:
 
     void start_accept()
     {
-        SessionPtr new_session(new Session(io_service_, room_));
+        SessionPtr new_session(new MessageSession(io_service_, room_));
         acceptor_.async_accept(new_session->socket(),
-                               boost::bind(&Server::handle_accept, this, new_session,
+                               boost::bind(&MessageServer::handle_accept, this, new_session,
                                            boost::asio::placeholders::error));
     }
 
@@ -195,8 +195,9 @@ public:
 private:
     boost::asio::io_service & io_service_;
     tcp::acceptor acceptor_;
-    Sessions room_;
+    MessageSessions room_;
 };
 
-typedef boost::shared_ptr<Server> ServerPtr;
+
+typedef boost::shared_ptr<MessageServer> ServerPtr;
 typedef std::list<ServerPtr> Servers;

@@ -17,7 +17,7 @@ int main(int argc, char * argv[])
         for (int i = 1; i < argc; ++i)
         {
             using namespace std; // For atoi.
-            boost::asio::ip::tcp::endpoint endpoint(tcp::v4(), atoi(argv[i]));
+            boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), atoi(argv[i]));
             ServerPtr server(new MessageServer(io_service, endpoint));
             servers.push_back(server);
         }

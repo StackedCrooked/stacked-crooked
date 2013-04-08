@@ -11,9 +11,6 @@
 #include <set>
 
 
-using boost::asio::ip::tcp;
-
-
 typedef std::deque<Message> RequestQueue;
 
 
@@ -72,7 +69,7 @@ public:
     {
     }
 
-    tcp::socket & socket()
+    boost::asio::ip::tcp::socket & socket()
     {
         return socket_;
     }
@@ -152,7 +149,7 @@ public:
     }
 
 private:
-    tcp::socket socket_;
+    boost::asio::ip::tcp::socket socket_;
     MessageSessions & room_;
     Message read_msg_;
     RequestQueue write_msgs_;
@@ -166,7 +163,7 @@ class MessageServer
 {
 public:
     MessageServer(boost::asio::io_service & io_service,
-                  const tcp::endpoint & endpoint)
+                  const boost::asio::ip::tcp::endpoint & endpoint)
         : io_service_(io_service),
           acceptor_(io_service, endpoint)
     {
@@ -194,7 +191,7 @@ public:
 
 private:
     boost::asio::io_service & io_service_;
-    tcp::acceptor acceptor_;
+    boost::asio::ip::tcp::acceptor acceptor_;
     MessageSessions room_;
 };
 

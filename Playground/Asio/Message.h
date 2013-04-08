@@ -7,6 +7,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <string>
+#include <arpa/inet.h>
 
 
 class Message
@@ -16,77 +17,77 @@ public:
     enum { max_body_length = 512 };
     
     Message(const std::string & str = "")
-        : body_length_(str.size())
     {
-        if (body_length_ > max_body_length)
+        if (str.size() > max_body_length + header_length)
         {
-            throw std::runtime_error("too long: " + std::to_string(str.size()));
+            throw std::runtime_error("Message is too long: " + std::to_string(str.size()));
         }
+        mData.reserve(max_body_length);
+        mData.resize(str.size() + header_length);
         memcpy(body(), str.data(), str.size());
         encode_header();
     }
 
     const char * data() const
     {
-        return data_;
+        return mData.data();
     }
 
     char * data()
     {
-        return data_;
+        return &mData[0];
     }
 
     size_t length() const
     {
-        return header_length + body_length_;
+        return mData.size();
     }
 
     const char * body() const
     {
-        return data_ + header_length;
+        return data() + header_length;
     }
 
     char * body()
     {
-        return data_ + header_length;
+        return data() + header_length;
     }
 
     size_t body_length() const
     {
-        return body_length_;
+        return length() - header_length;
     }
 
-    void body_length(size_t new_length)
+    void resize(uint32_t _new_length)
     {
-        body_length_ = new_length;
-        if (body_length_ > max_body_length)
-            body_length_ = max_body_length;
+        uint32_t new_size = _new_length + header_length;
+        if (new_size > mData.capacity())
+        {
+            throw std::runtime_error("New message size exceeds capacity: " + std::to_string(new_size));
+        }
+        mData.resize(new_size);
+        encode_header();
     }
 
     bool decode_header()
     {
-        char header[header_length + 1] = "";
-        strncat(header, data_, header_length);
-        body_length_ = atoi(header);
-        if (body_length_ > max_body_length)
-        {
-            body_length_ = 0;
-            return false;
-        }
+        auto length = [this](){
+            uint32_t n;
+            memcpy(&n, mData.data(), sizeof(n));
+            return ntohl(n);
+        }();
+        resize(length);
         return true;
     }
 
     void encode_header()
     {
-        using namespace std; // For sprintf and memcpy.
-        char header[header_length + 1] = "";
-        sprintf(header, "%4d", static_cast<int>(body_length_));
-        memcpy(data_, header, header_length);
+        uint32_t n = htonl(mData.size() - header_length);
+        memcpy(&mData[0], &n, sizeof(n));
     }
 
 private:
-    char data_[header_length + max_body_length];
-    size_t body_length_;
+    std::string mData;
 };
 
 

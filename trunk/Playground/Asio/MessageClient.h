@@ -6,56 +6,54 @@
 #include <iostream>
 
 
-using namespace boost;
-using namespace asio;
-using ip::tcp;
-
-
 typedef std::deque<Message> RequestQueue;
 
 
 class MessageClient
 {
 public:
-    MessageClient(io_service & io_service, tcp::resolver::iterator endpoint_iterator)
+    MessageClient(boost::asio::io_service & io_service, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
         : io_service_(io_service),
-          socket_(io_service)
+          mSocket(io_service)
     {
-        async_connect(socket_, endpoint_iterator,
-                      bind(&MessageClient::handle_connect, this, placeholders::error));
+        boost::asio::async_connect(
+                    mSocket,
+                    endpoint_iterator,
+                    boost::bind(&MessageClient::handle_connect,
+                                this,
+                                boost::asio::placeholders::error));
     }
 
     void write(const Message & msg)
     {
-        io_service_.post(bind(&MessageClient::do_write, this, msg));
+        io_service_.post(boost::bind(&MessageClient::do_write, this, msg));
     }
 
     void close()
     {
-        io_service_.post(bind(&MessageClient::do_close, this));
+        io_service_.post(boost::bind(&MessageClient::do_close, this));
     }
 
 private:
-
-    void handle_connect(const system::error_code & error)
+    void handle_connect(const boost::system::error_code & error)
     {
         if (!error)
         {
-            async_read(socket_,
-                       buffer(read_msg_.data(), Message::header_length),
-                       bind(&MessageClient::handle_read_header, this,
-                            placeholders::error));
+            boost::asio::async_read(mSocket,
+                                    boost::asio::buffer(mReadMessage.data(), Message::header_length),
+                                    boost::bind(&MessageClient::handle_read_header, this,
+                                         boost::asio::placeholders::error));
         }
     }
 
-    void handle_read_header(const system::error_code & error)
+    void handle_read_header(const boost::system::error_code & error)
     {
-        if (!error && read_msg_.decode_header())
+        if (!error && mReadMessage.decode_header())
         {
-            async_read(socket_,
-                       buffer(read_msg_.body(), read_msg_.body_length()),
-                       bind(&MessageClient::handle_read_body, this,
-                            placeholders::error));
+            boost::asio::async_read(
+                        mSocket,
+                        boost::asio::buffer(mReadMessage.body(), mReadMessage.body_length()),
+                        boost::bind(&MessageClient::handle_read_body, this, boost::asio::placeholders::error));
         }
         else
         {
@@ -63,16 +61,16 @@ private:
         }
     }
 
-    void handle_read_body(const system::error_code & error)
+    void handle_read_body(const boost::system::error_code & error)
     {
         if (!error)
         {
-            std::cout.write(read_msg_.body(), read_msg_.body_length());
+            std::cout.write(mReadMessage.body(), mReadMessage.body_length());
             std::cout << "\n";
-            async_read(socket_,
-                       buffer(read_msg_.data(), Message::header_length),
-                       bind(&MessageClient::handle_read_header, this,
-                            placeholders::error));
+            boost::asio::async_read(mSocket,
+                       boost::asio::buffer(mReadMessage.data(), Message::header_length),
+                       boost::bind(&MessageClient::handle_read_header, this,
+                                   boost::asio::placeholders::error));
         }
         else
         {
@@ -82,28 +80,28 @@ private:
 
     void do_write(Message msg)
     {
-        bool write_in_progress = !write_msgs_.empty();
-        write_msgs_.push_back(msg);
+        bool write_in_progress = !mWriteMessages.empty();
+        mWriteMessages.push_back(msg);
         if (!write_in_progress)
         {
-            async_write(socket_,
-                        buffer(write_msgs_.front().data(),
-                               write_msgs_.front().length()),
-                        bind(&MessageClient::handle_write, this,
-                             placeholders::error));
+            boost::asio::async_write(mSocket,
+                        boost::asio::buffer(mWriteMessages.front().data(),
+                               mWriteMessages.front().length()),
+                        boost::bind(&MessageClient::handle_write, this,
+                                    boost::asio::placeholders::error));
         }
     }
 
-    void handle_write(const system::error_code & error)
+    void handle_write(const boost::system::error_code & error)
     {
         if (!error)
         {
-            write_msgs_.pop_front();
-            if (!write_msgs_.empty())
+            mWriteMessages.pop_front();
+            if (!mWriteMessages.empty())
             {
-                async_write(socket_,
-                            buffer(write_msgs_.front().data(), write_msgs_.front().length()),
-                            bind(&MessageClient::handle_write, this, placeholders::error));
+                boost::asio::async_write(mSocket,
+                            boost::asio::buffer(mWriteMessages.front().data(), mWriteMessages.front().length()),
+                            boost::bind(&MessageClient::handle_write, this, boost::asio::placeholders::error));
             }
         }
         else
@@ -114,12 +112,12 @@ private:
 
     void do_close()
     {
-        socket_.close();
+        mSocket.close();
     }
 
 private:
-    io_service & io_service_;
-    tcp::socket socket_;
-    Message read_msg_;
-    RequestQueue write_msgs_;
+    boost::asio::io_service & io_service_;
+    boost::asio::ip::tcp::socket mSocket;
+    Message mReadMessage;
+    RequestQueue mWriteMessages;
 };

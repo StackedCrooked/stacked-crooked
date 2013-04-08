@@ -1,7 +1,6 @@
-Client.h
+MessageClient.h
 Message.h
-Server.h
+MessageServer.h
 Makefile
-MessageProtocol.h
 TestServer.cpp
 TestClient.cpp

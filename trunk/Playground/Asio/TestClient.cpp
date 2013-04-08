@@ -1,4 +1,4 @@
-#include "Client.h"
+#include "MessageClient.h"
 #include <thread>
 
 
@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
         tcp::resolver::query query(argv[1], argv[2]);
         tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        Client c(io_service, iterator);
+        MessageClient c(io_service, iterator);
 
         std::thread t(bind(&io_service::run, &io_service));
 

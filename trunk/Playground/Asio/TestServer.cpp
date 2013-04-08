@@ -1,4 +1,4 @@
-#include "Server.h"
+#include "MessageServer.h"
 
 
 int main(int argc, char * argv[])
@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
         {
             using namespace std; // For atoi.
             boost::asio::ip::tcp::endpoint endpoint(tcp::v4(), atoi(argv[i]));
-            ServerPtr server(new Server(io_service, endpoint));
+            ServerPtr server(new MessageServer(io_service, endpoint));
             servers.push_back(server);
         }
 

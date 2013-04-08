@@ -39,10 +39,9 @@ public:
         std::cout << "leave" << std::endl;
         mSessions.erase(participant);
     }
-
+    
 private:
     std::set<AbstractSessionPtr> mSessions;
-    enum { max_recent_msgs = 100 };
 };
 
 

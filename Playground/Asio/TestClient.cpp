@@ -11,8 +11,7 @@ int main()
     std::string line;
     while (std::cin >> line)
     {
-        std::future<std::string> result = client.write(line);
-        std::cout << "Result: " << result.get() << std::endl;
+        client.write(line);
     }
 
     client.close();

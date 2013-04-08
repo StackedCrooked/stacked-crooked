@@ -65,9 +65,15 @@ class MessageSession : public AbstractMessageSession,
 public:
     MessageSession(boost::asio::io_service & io_service, MessageSessions & room) :
         socket_(io_service),
-        room_(room),
+        mSessions(room),
         read_msg_()
     {
+        std::cout << "MessageSession created." << std::endl;
+    }
+    
+    ~MessageSession()
+    {
+        std::cout << "MessageSession destroyed." << std::endl;
     }
 
     boost::asio::ip::tcp::socket & socket()
@@ -77,7 +83,7 @@ public:
 
     void start()
     {
-        room_.join(shared_from_this());
+        mSessions.join(shared_from_this());
         boost::asio::async_read(socket_,
                                 boost::asio::buffer(read_msg_.data(), Message::header_length),
                                 boost::bind(&MessageSession::handle_read_header, shared_from_this(),
@@ -109,7 +115,7 @@ public:
         }
         else
         {
-            room_.leave(shared_from_this());
+            mSessions.leave(shared_from_this());
         }
     }
 
@@ -117,7 +123,7 @@ public:
     {
         if (!error)
         {
-            room_.deliver(read_msg_);
+            mSessions.deliver(read_msg_);
             boost::asio::async_read(socket_,
                                     boost::asio::buffer(read_msg_.data(), Message::header_length),
                                     boost::bind(&MessageSession::handle_read_header, shared_from_this(),
@@ -125,7 +131,7 @@ public:
         }
         else
         {
-            room_.leave(shared_from_this());
+            mSessions.leave(shared_from_this());
         }
     }
 
@@ -145,13 +151,13 @@ public:
         }
         else
         {
-            room_.leave(shared_from_this());
+            mSessions.leave(shared_from_this());
         }
     }
 
 private:
     boost::asio::ip::tcp::socket socket_;
-    MessageSessions & room_;
+    MessageSessions & mSessions;
     Message read_msg_;
     RequestQueue write_msgs_;
 };

@@ -195,4 +195,5 @@ private:
 typedef boost::shared_ptr<MessageServer> ServerPtr;
 typedef std::list<ServerPtr> Servers;
 
-}
+
+} // MessageProtocol

@@ -10,7 +10,8 @@
 namespace MessageProtocol {
 
 
-
+using namespace boost::asio;
+using boost::bind;
 typedef std::deque<Message> RequestQueue;
 
 
@@ -22,26 +23,25 @@ public:
           mSocket(io_service_)
     {
         
-        boost::asio::ip::tcp::resolver resolver(io_service_);
-        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
-        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-        boost::asio::async_connect(
-                    mSocket,
-                    iterator,
-                    boost::bind(&MessageClient::handle_connect,
-                                this,
-                                boost::asio::placeholders::error));
+        ip::tcp::resolver resolver(io_service_);
+        ip::tcp::resolver::query query(host, std::to_string(port));
+        ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+        async_connect(mSocket,
+                      iterator,
+                      bind(&MessageClient::handle_connect,
+                           this,
+                           placeholders::error));
     }
 
     void write(const std::string & msg)
     {
         Message message(msg);
-        io_service_.post(boost::bind(&MessageClient::do_write, this, msg));
+        io_service_.post(bind(&MessageClient::do_write, this, msg));
     }
 
     void close()
     {
-        io_service_.post(boost::bind(&MessageClient::do_close, this));
+        io_service_.post(bind(&MessageClient::do_close, this));
     }
 
 private:
@@ -49,10 +49,9 @@ private:
     {
         if (!error)
         {
-            boost::asio::async_read(mSocket,
-                                    boost::asio::buffer(mReadMessage.data(), Message::header_length),
-                                    boost::bind(&MessageClient::handle_read_header, this,
-                                         boost::asio::placeholders::error));
+            async_read(mSocket,
+                       buffer(mReadMessage.data(), Message::header_length),
+                       bind(&MessageClient::handle_read_header, this, placeholders::error));
         }
     }
 
@@ -60,10 +59,9 @@ private:
     {
         if (!error && mReadMessage.decode_header())
         {
-            boost::asio::async_read(
-                        mSocket,
-                        boost::asio::buffer(mReadMessage.body(), mReadMessage.body_length()),
-                        boost::bind(&MessageClient::handle_read_body, this, boost::asio::placeholders::error));
+            async_read(mSocket,
+                       buffer(mReadMessage.body(), mReadMessage.body_length()),
+                       bind(&MessageClient::handle_read_body, this, placeholders::error));
         }
         else
         {
@@ -77,10 +75,10 @@ private:
         {
             std::cout.write(mReadMessage.body(), mReadMessage.body_length());
             std::cout << "\n";
-            boost::asio::async_read(mSocket,
-                       boost::asio::buffer(mReadMessage.data(), Message::header_length),
-                       boost::bind(&MessageClient::handle_read_header, this,
-                                   boost::asio::placeholders::error));
+            async_read(mSocket,
+                       buffer(mReadMessage.data(), Message::header_length),
+                       bind(&MessageClient::handle_read_header, this,
+                            placeholders::error));
         }
         else
         {
@@ -94,11 +92,11 @@ private:
         mWriteMessages.push_back(msg);
         if (!write_in_progress)
         {
-            boost::asio::async_write(mSocket,
-                        boost::asio::buffer(mWriteMessages.front().data(),
+            async_write(mSocket,
+                        buffer(mWriteMessages.front().data(),
                                mWriteMessages.front().length()),
-                        boost::bind(&MessageClient::handle_write, this,
-                                    boost::asio::placeholders::error));
+                        bind(&MessageClient::handle_write, this,
+                             placeholders::error));
         }
     }
 
@@ -109,9 +107,9 @@ private:
             mWriteMessages.pop_front();
             if (!mWriteMessages.empty())
             {
-                boost::asio::async_write(mSocket,
-                            boost::asio::buffer(mWriteMessages.front().data(), mWriteMessages.front().length()),
-                            boost::bind(&MessageClient::handle_write, this, boost::asio::placeholders::error));
+                async_write(mSocket,
+                            buffer(mWriteMessages.front().data(), mWriteMessages.front().length()),
+                            bind(&MessageClient::handle_write, this, placeholders::error));
             }
         }
         else
@@ -126,8 +124,8 @@ private:
     }
 
 private:
-    boost::asio::io_service & io_service_;
-    boost::asio::ip::tcp::socket mSocket;
+    io_service & io_service_;
+    ip::tcp::socket mSocket;
     Message mReadMessage;
     RequestQueue mWriteMessages;
 };

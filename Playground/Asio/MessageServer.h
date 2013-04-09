@@ -78,7 +78,7 @@ public:
         async_read(mSocket,
                    buffer(mReadMessage.data(), Message::header_length),
                    bind(&MessageSession::handle_read_header, shared_from_this(),
-                               placeholders::error));
+                        placeholders::error));
     }
 
     void deliver(const Message & msg)
@@ -88,10 +88,8 @@ public:
         if (!write_in_progress)
         {
             async_write(mSocket,
-                        buffer(mRequestQueue.front().data(),
-                               mRequestQueue.front().length()),
-                        bind(&MessageSession::handle_write, shared_from_this(),
-                                    placeholders::error));
+                        buffer(mRequestQueue.front().data(), mRequestQueue.front().length()),
+                        bind(&MessageSession::handle_write, shared_from_this(), placeholders::error));
         }
     }
 
@@ -101,8 +99,7 @@ public:
         {
             async_read(mSocket,
                        buffer(mReadMessage.body(), mReadMessage.body_length()),
-                       bind(&MessageSession::handle_read_body, shared_from_this(),
-                                   placeholders::error));
+                       bind(&MessageSession::handle_read_body, shared_from_this(), placeholders::error));
         }
         else
         {
@@ -117,8 +114,7 @@ public:
             deliver(mReadMessage);
             async_read(mSocket,
                        buffer(mReadMessage.data(), Message::header_length),
-                       bind(&MessageSession::handle_read_header, shared_from_this(),
-                                   placeholders::error));
+                       bind(&MessageSession::handle_read_header, shared_from_this(), placeholders::error));
         }
         else
         {
@@ -134,10 +130,8 @@ public:
             if (!mRequestQueue.empty())
             {
                 async_write(mSocket,
-                            buffer(mRequestQueue.front().data(),
-                                   mRequestQueue.front().length()),
-                            bind(&MessageSession::handle_write, shared_from_this(),
-                                        placeholders::error));
+                            buffer(mRequestQueue.front().data(), mRequestQueue.front().length()),
+                            bind(&MessageSession::handle_write, shared_from_this(), placeholders::error));
             }
         }
         else

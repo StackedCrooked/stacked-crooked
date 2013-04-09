@@ -14,6 +14,9 @@
 #include <iostream>
 
 
+namespace MessageProtocol {
+
+
 boost::asio::io_service & get_io_service()
 {
     static boost::asio::io_service result;
@@ -108,6 +111,9 @@ public:
 private:
     std::string mData;
 };
+
+
+} // MessageProtocol
 
 
 #endif // MESSAGE_H

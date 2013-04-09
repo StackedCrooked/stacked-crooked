@@ -132,4 +132,5 @@ private:
     RequestQueue mWriteMessages;
 };
 
-}
+
+} // MessageProtocol

@@ -11,6 +11,9 @@
 #include <set>
 
 
+namespace MessageProtocol {
+
+
 typedef std::deque<Message> RequestQueue;
 
 
@@ -78,13 +81,13 @@ public:
 
     void deliver(const Message & msg)
     {
-        bool write_in_progress = !write_msgs_.empty();
-        write_msgs_.push_back(msg);
+        bool write_in_progress = !mRequestQueue.empty();
+        mRequestQueue.push_back(msg);
         if (!write_in_progress)
         {
             boost::asio::async_write(socket_,
-                                     boost::asio::buffer(write_msgs_.front().data(),
-                                                         write_msgs_.front().length()),
+                                     boost::asio::buffer(mRequestQueue.front().data(),
+                                                         mRequestQueue.front().length()),
                                      boost::bind(&MessageSession::handle_write, shared_from_this(),
                                                  boost::asio::placeholders::error));
         }
@@ -125,12 +128,12 @@ public:
     {
         if (!error)
         {
-            write_msgs_.pop_front();
-            if (!write_msgs_.empty())
+            mRequestQueue.pop_front();
+            if (!mRequestQueue.empty())
             {
                 boost::asio::async_write(socket_,
-                                         boost::asio::buffer(write_msgs_.front().data(),
-                                                             write_msgs_.front().length()),
+                                         boost::asio::buffer(mRequestQueue.front().data(),
+                                                             mRequestQueue.front().length()),
                                          boost::bind(&MessageSession::handle_write, shared_from_this(),
                                                      boost::asio::placeholders::error));
             }
@@ -145,7 +148,7 @@ private:
     boost::asio::ip::tcp::socket socket_;
     MessageSessions & mSessions;
     Message mReadMessage;
-    RequestQueue write_msgs_;
+    RequestQueue mRequestQueue;
 };
 
 
@@ -191,3 +194,5 @@ private:
 
 typedef boost::shared_ptr<MessageServer> ServerPtr;
 typedef std::list<ServerPtr> Servers;
+
+}

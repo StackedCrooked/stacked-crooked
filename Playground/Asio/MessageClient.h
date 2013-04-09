@@ -7,6 +7,10 @@
 #include <stdint.h>
 
 
+namespace MessageProtocol {
+
+
+
 typedef std::deque<Message> RequestQueue;
 
 
@@ -127,3 +131,5 @@ private:
     Message mReadMessage;
     RequestQueue mWriteMessages;
 };
+
+}

@@ -14,6 +14,8 @@
 namespace MessageProtocol {
 
 
+using namespace boost::asio;
+using boost::bind;
 typedef std::deque<Message> RequestQueue;
 
 
@@ -52,8 +54,8 @@ class MessageSession : public AbstractMessageSession,
                        public boost::enable_shared_from_this<MessageSession>
 {
 public:
-    MessageSession(boost::asio::io_service & io_service, MessageSessions & room) :
-        socket_(io_service),
+    MessageSession(io_service & io_service, MessageSessions & room) :
+        mSocket(io_service),
         mSessions(room),
         mReadMessage()
     {
@@ -65,18 +67,18 @@ public:
         std::cout << "MessageSession destroyed." << std::endl;
     }
 
-    boost::asio::ip::tcp::socket & socket()
+    ip::tcp::socket & socket()
     {
-        return socket_;
+        return mSocket;
     }
 
     void start()
     {
         mSessions.join(shared_from_this());
-        boost::asio::async_read(socket_,
-                                boost::asio::buffer(mReadMessage.data(), Message::header_length),
-                                boost::bind(&MessageSession::handle_read_header, shared_from_this(),
-                                            boost::asio::placeholders::error));
+        async_read(mSocket,
+                   buffer(mReadMessage.data(), Message::header_length),
+                   bind(&MessageSession::handle_read_header, shared_from_this(),
+                               placeholders::error));
     }
 
     void deliver(const Message & msg)
@@ -85,11 +87,11 @@ public:
         mRequestQueue.push_back(msg);
         if (!write_in_progress)
         {
-            boost::asio::async_write(socket_,
-                                     boost::asio::buffer(mRequestQueue.front().data(),
-                                                         mRequestQueue.front().length()),
-                                     boost::bind(&MessageSession::handle_write, shared_from_this(),
-                                                 boost::asio::placeholders::error));
+            async_write(mSocket,
+                        buffer(mRequestQueue.front().data(),
+                               mRequestQueue.front().length()),
+                        bind(&MessageSession::handle_write, shared_from_this(),
+                                    placeholders::error));
         }
     }
 
@@ -97,10 +99,10 @@ public:
     {
         if (!error && mReadMessage.decode_header())
         {
-            boost::asio::async_read(socket_,
-                                    boost::asio::buffer(mReadMessage.body(), mReadMessage.body_length()),
-                                    boost::bind(&MessageSession::handle_read_body, shared_from_this(),
-                                                boost::asio::placeholders::error));
+            async_read(mSocket,
+                       buffer(mReadMessage.body(), mReadMessage.body_length()),
+                       bind(&MessageSession::handle_read_body, shared_from_this(),
+                                   placeholders::error));
         }
         else
         {
@@ -113,10 +115,10 @@ public:
         if (!error)
         {
             deliver(mReadMessage);
-            boost::asio::async_read(socket_,
-                                    boost::asio::buffer(mReadMessage.data(), Message::header_length),
-                                    boost::bind(&MessageSession::handle_read_header, shared_from_this(),
-                                                boost::asio::placeholders::error));
+            async_read(mSocket,
+                       buffer(mReadMessage.data(), Message::header_length),
+                       bind(&MessageSession::handle_read_header, shared_from_this(),
+                                   placeholders::error));
         }
         else
         {
@@ -131,11 +133,11 @@ public:
             mRequestQueue.pop_front();
             if (!mRequestQueue.empty())
             {
-                boost::asio::async_write(socket_,
-                                         boost::asio::buffer(mRequestQueue.front().data(),
-                                                             mRequestQueue.front().length()),
-                                         boost::bind(&MessageSession::handle_write, shared_from_this(),
-                                                     boost::asio::placeholders::error));
+                async_write(mSocket,
+                            buffer(mRequestQueue.front().data(),
+                                   mRequestQueue.front().length()),
+                            bind(&MessageSession::handle_write, shared_from_this(),
+                                        placeholders::error));
             }
         }
         else
@@ -145,7 +147,7 @@ public:
     }
 
 private:
-    boost::asio::ip::tcp::socket socket_;
+    ip::tcp::socket mSocket;
     MessageSessions & mSessions;
     Message mReadMessage;
     RequestQueue mRequestQueue;
@@ -160,7 +162,7 @@ class MessageServer
 public:
     MessageServer(uint16_t port) :
         mIOService(get_io_service()),
-        mAcceptor(mIOService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
+        mAcceptor(mIOService, ip::tcp::endpoint(ip::tcp::v4(), port))
     {        
         start_accept();
         mIOService.run();
@@ -170,8 +172,8 @@ public:
     {
         SessionPtr new_session(new MessageSession(mIOService, room_));
         mAcceptor.async_accept(new_session->socket(),
-                               boost::bind(&MessageServer::handle_accept, this, new_session,
-                                           boost::asio::placeholders::error));
+                               bind(&MessageServer::handle_accept, this, new_session,
+                                           placeholders::error));
     }
 
     void handle_accept(SessionPtr session,
@@ -186,8 +188,8 @@ public:
     }
 
 private:
-    boost::asio::io_service & mIOService;
-    boost::asio::ip::tcp::acceptor mAcceptor;
+    io_service & mIOService;
+    ip::tcp::acceptor mAcceptor;
     MessageSessions room_;
 };
 

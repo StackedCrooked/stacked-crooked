@@ -3,5 +3,5 @@
 
 int main()
 {
-    MessageServer server(9999);
+    MessageProtocol::MessageServer server(9999);
 }

@@ -24,7 +24,8 @@ boost::asio::io_service & get_io_service()
 }
 
 
-typedef std::function<std::string(const std::string&)> Callback;
+typedef uint32_t MessageId;
+typedef std::function<std::string(MessageId, const std::string&)> Callback;
 
 
 class Message
@@ -75,9 +76,9 @@ public:
         return length() - header_length;
     }
     
-    uint32_t get_id() const
+    MessageId get_id() const
     {
-        uint32_t id;
+        MessageId id;
         memcpy(&id, mData.data(), sizeof(id));
         return ntohl(id);
     }

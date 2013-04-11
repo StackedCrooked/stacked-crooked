@@ -11,7 +11,9 @@ int main()
     std::string line;
     while (std::cin >> line)
     {
-        client.write(line);
+        client.send(line, [](const std::string & str) {
+            std::cout << "received: " << str << std::endl;
+        });
     }
 
     client.close();

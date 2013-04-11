@@ -57,8 +57,9 @@ private:
 
     void handle_read_header(const boost::system::error_code & error)
     {
-        if (!error && mReadMessage.decode_header())
+        if (!error)
         {
+            mReadMessage.decode_header();
             async_read(mSocket,
                        buffer(mReadMessage.body(), mReadMessage.body_length()),
                        bind(&MessageClient::handle_read_body, this, placeholders::error));

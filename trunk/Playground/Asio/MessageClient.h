@@ -19,11 +19,11 @@ class MessageClient
 {
 public:
     MessageClient(const std::string & host, uint16_t port)
-        : io_service_(get_io_service()),
-          mSocket(io_service_)
+        : mIOService(get_io_service()),
+          mSocket(mIOService)
     {
         
-        ip::tcp::resolver resolver(io_service_);
+        ip::tcp::resolver resolver(mIOService);
         ip::tcp::resolver::query query(host, std::to_string(port));
         ip::tcp::resolver::iterator iterator = resolver.resolve(query);
         async_connect(mSocket,
@@ -36,12 +36,12 @@ public:
     void write(const std::string & msg)
     {
         Message message(msg);
-        io_service_.post(bind(&MessageClient::do_write, this, msg));
+        mIOService.post(bind(&MessageClient::do_write, this, msg));
     }
 
     void close()
     {
-        io_service_.post(bind(&MessageClient::do_close, this));
+        mIOService.post(bind(&MessageClient::do_close, this));
     }
 
 private:
@@ -125,7 +125,7 @@ private:
     }
 
 private:
-    io_service & io_service_;
+    io_service & mIOService;
     ip::tcp::socket mSocket;
     Message mReadMessage;
     RequestQueue mWriteMessages;

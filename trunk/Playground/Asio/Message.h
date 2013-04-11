@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <arpa/inet.h>
+#include <cstdlib>
 
 
 #include <iostream>
@@ -91,6 +92,11 @@ public:
     {
         return header() + cHeaderLength;
     }
+    
+    std::string copy_body() const
+    {
+        return std::string(body(), body() + body_length());
+    }
 
     size_t body_length() const
     {
@@ -102,6 +108,12 @@ public:
         uint32_t id;
         memcpy(&id, data(), sizeof(id));
         return ntohl(id);
+    }
+    
+    void set_id(uint32_t inId)
+    {
+        uint32_t netEncodedId = htonl(inId);
+        memcpy(data(), &netEncodedId, sizeof(netEncodedId));
     }
 
     void decode_header()
@@ -137,7 +149,10 @@ public:
 private:
     static uint32_t get_unique_id()
     {
-        static uint32_t id = 0;
+        static uint32_t id = [](){            
+            std::srand(std::time(0));
+            return std::rand();
+        }();
         return id++;
     }
 

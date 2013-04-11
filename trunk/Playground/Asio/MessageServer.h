@@ -20,11 +20,29 @@ using boost::bind;
 typedef std::deque<Message> RequestQueue;
 
 
+class AbstractMessageSession;
+
+
+typedef std::function<std::string(AbstractMessageSession&, const std::string&)> ServerCallback;
+
+
 class AbstractMessageSession
 {
-public:
+public:    
+    AbstractMessageSession(const ServerCallback & inCallback) :
+        mCallback(inCallback)
+    {
+    }
+    
     virtual ~AbstractMessageSession() {}
-    virtual void deliver(const Message & msg) = 0;
+    
+    std::string execute(const std::string & str)
+    {
+        return mCallback(*this, str);
+    }
+        
+private:
+    ServerCallback mCallback;
 };
 
 
@@ -34,6 +52,7 @@ typedef boost::shared_ptr<AbstractMessageSession> AbstractSessionPtr;
 class MessageSessions
 {
 public:
+    
     void join(AbstractSessionPtr session)
     {
         std::cout << "join" << std::endl;
@@ -55,17 +74,16 @@ class MessageSession : public AbstractMessageSession,
                        public boost::enable_shared_from_this<MessageSession>
 {
 public:
-    MessageSession(io_service & io_service, MessageSessions & room) :
+    MessageSession(io_service & io_service, MessageSessions & room, const ServerCallback & inServerCallback) :
+        AbstractMessageSession(inServerCallback),
         mSocket(io_service),
         mSessions(room),
         mReadMessage("")
     {
-        std::cout << "MessageSession created." << std::endl;
     }
     
     ~MessageSession()
     {
-        std::cout << "MessageSession destroyed." << std::endl;
     }
 
     ip::tcp::socket & socket()
@@ -76,69 +94,73 @@ public:
     void start()
     {
         mSessions.join(shared_from_this());
+        read_header();
+    }
+    
+    void read_header()
+    {        
         async_read(mSocket,
                    buffer(mReadMessage.header(), mReadMessage.header_length()),
-                   bind(&MessageSession::handle_read_header, shared_from_this(),
-                        placeholders::error));
-    }
-
-    void deliver(const Message & msg)
-    {
-        sleep(1);
-        bool write_in_progress = !mRequestQueue.empty();
-        mRequestQueue.push_back(msg);
-        if (!write_in_progress)
-        {
-            const Message & currentMessage = mRequestQueue.front();
-            async_write(mSocket,
-                        buffer(currentMessage.header(), currentMessage.length()),
-                        bind(&MessageSession::handle_write, shared_from_this(), placeholders::error));
-        }
+                   bind(&MessageSession::handle_read_header, shared_from_this(), placeholders::error));
     }
 
     void handle_read_header(const boost::system::error_code & error)
     {
         if (!error)
         {
-            std::cout << "Request id before decoding: " << mReadMessage.get_id() << std::endl;
             mReadMessage.decode_header();
-            std::cout << "Request id after decoding: " << mReadMessage.get_id() << std::endl;
-            async_read(mSocket,
-                       buffer(mReadMessage.body(), mReadMessage.body_length()),
-                       bind(&MessageSession::handle_read_body, shared_from_this(), placeholders::error));
+            read_body();
         }
         else
         {
             mSessions.leave(shared_from_this());
         }
+    }
+    
+    void read_body()
+    {        
+        async_read(mSocket,
+                   buffer(mReadMessage.body(), mReadMessage.body_length()),
+                   bind(&MessageSession::handle_read_body, shared_from_this(), placeholders::error));
     }
 
     void handle_read_body(const boost::system::error_code & error)
     {
         if (!error)
         {
-            deliver(mReadMessage);
-            async_read(mSocket,
-                       buffer(mReadMessage.header(), mReadMessage.header_length()),
-                       bind(&MessageSession::handle_read_header, shared_from_this(), placeholders::error));
+            write(mReadMessage.get_id(), execute(mReadMessage.copy_body()));
+            read_header();
         }
         else
         {
             mSessions.leave(shared_from_this());
         }
     }
+    
+    void write(uint32_t inId, const std::string & inString)
+    {
+        Message msg(inString);
+        msg.set_id(inId);
+        write(msg);
+        
+    }
+    
+    void write(const Message & inMessage)
+    {        
+        async_write(mSocket,
+                    buffer(inMessage.header(), inMessage.length()),
+                    bind(&MessageSession::handle_write, shared_from_this(), placeholders::error));
+    }
 
     void handle_write(const boost::system::error_code & error)
     {
         if (!error)
         {
-            mRequestQueue.pop_front();
             if (!mRequestQueue.empty())
             {
-                const Message & currentMessage = mRequestQueue.front();
-                async_write(mSocket,
-                            buffer(currentMessage.header(), currentMessage.length()),
-                            bind(&MessageSession::handle_write, shared_from_this(), placeholders::error));
+                auto msg = mRequestQueue.front();
+                mRequestQueue.pop_front();
+                write(msg);
             }
         }
         else
@@ -161,9 +183,10 @@ typedef boost::shared_ptr<MessageSession> SessionPtr;
 class MessageServer
 {
 public:
-    MessageServer(uint16_t port) :
+    MessageServer(uint16_t port, const ServerCallback & inServerCallback) :
         mIOService(get_io_service()),
-        mAcceptor(mIOService, ip::tcp::endpoint(ip::tcp::v4(), port))
+        mAcceptor(mIOService, ip::tcp::endpoint(ip::tcp::v4(), port)),
+        mServerCallback(inServerCallback)
     {        
         start_accept();
         mIOService.run();
@@ -171,7 +194,7 @@ public:
 
     void start_accept()
     {
-        SessionPtr new_session(new MessageSession(mIOService, room_));
+        SessionPtr new_session(new MessageSession(mIOService, mSessions, mServerCallback));
         mAcceptor.async_accept(new_session->socket(),
                                bind(&MessageServer::handle_accept, this, new_session,
                                            placeholders::error));
@@ -189,9 +212,10 @@ public:
     }
 
 private:
-    io_service & mIOService;
+    io_service & mIOService;    
     ip::tcp::acceptor mAcceptor;
-    MessageSessions room_;
+    MessageSessions mSessions;
+    ServerCallback mServerCallback;
 };
 
 

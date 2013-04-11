@@ -46,7 +46,6 @@ public:
         {
             throw std::runtime_error("Message is too long: " + std::to_string(str.size()));
         }
-        mData->reserve(cMaxTotalLength);
         mData->resize(cHeaderLength + str.size());
         memcpy(body(), str.data(), str.size());
         encode_header(get_unique_id());

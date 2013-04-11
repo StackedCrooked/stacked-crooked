@@ -33,10 +33,11 @@ public:
                            placeholders::error));
     }
 
-    void write(const std::string & msg)
+    uint32_t write(const std::string & msg)
     {
         Message message(msg);
         mIOService.post(bind(&MessageClient::do_write, this, msg));
+        return message.get_id();
     }
 
     void close()

@@ -55,7 +55,7 @@ private:
         if (!error)
         {
             async_read(mSocket,
-                       buffer(mReadMessage.header(), Message::header_length),
+                       buffer(mReadMessage.header(), mReadMessage.header_length()),
                        bind(&MessageClient::handle_read_header, this, placeholders::error));
         }
     }
@@ -102,7 +102,7 @@ private:
             }
             std::cout << "Number of pending requests: " << mCallbacks.size() << std::endl;
             async_read(mSocket,
-                       buffer(mReadMessage.header(), Message::header_length),
+                       buffer(mReadMessage.header(), mReadMessage.header_length()),
                        bind(&MessageClient::handle_read_header, this,
                             placeholders::error));
         }
@@ -118,10 +118,11 @@ private:
         mWriteMessages.push_back(msg);
         if (!write_in_progress)
         {
+            const Message & currentMessage = mWriteMessages.front();
             std::cout << "Writing to socket message with id " << mWriteMessages.front().get_id() << std::endl;
             async_write(mSocket,
-                        buffer(mWriteMessages.front().header(),
-                               mWriteMessages.front().length()),
+                        buffer(currentMessage.data(),
+                               currentMessage.length()),
                         bind(&MessageClient::handle_write, this,
                              placeholders::error));
         }
@@ -134,9 +135,10 @@ private:
             mWriteMessages.pop_front();
             if (!mWriteMessages.empty())
             {
+                const Message & currentMessage = mWriteMessages.front();
                 async_write(mSocket,
-                            buffer(mWriteMessages.front().header(),
-                                   mWriteMessages.front().length()),
+                            buffer(currentMessage.data(),
+                                   currentMessage.length()),
                             bind(&MessageClient::handle_write, this, placeholders::error));
             }
         }

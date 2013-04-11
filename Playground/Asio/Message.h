@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <arpa/inet.h>
@@ -30,57 +31,93 @@ typedef std::function<void(const std::string&)> ClientCallback;
 
 class Message
 {
-public:
-    enum { header_length = 8 };
-    enum { max_body_length = 100*1024*1024 };
-    
-    explicit Message(const std::string & str)
+    enum
     {
-        if (str.size() > max_body_length + header_length)
+        cHeaderLength = 8,
+        cMaxTotalLength = 100*1024*1024,
+        cMaxPayloadLength = cMaxTotalLength - cHeaderLength
+    };
+    
+public:    
+    explicit Message(const std::string & str) : mData(std::make_shared<std::string>())
+    {
+        if (str.size() > cMaxPayloadLength)
         {
             throw std::runtime_error("Message is too long: " + std::to_string(str.size()));
         }
-        mData.reserve(header_length + max_body_length);
-        mData.resize(header_length + str.size());
+        mData->reserve(cMaxTotalLength);
+        mData->resize(cHeaderLength + str.size());
         memcpy(body(), str.data(), str.size());
         encode_header(get_unique_id());
         std::cout << "Message created with id " << get_id() << std::endl;
     }
+    
+    Message(const Message& rhs) : mData(rhs.mData)
+    {
+        std::cout << "Message was copied." << std::endl;
+    }
+    
+    Message& operator=(Message rhs)
+    {
+        std::swap(mData, rhs.mData);
+        std::cout << "Message was copy assigned." << std::endl;
+        return *this;
+    }
+    
+    ~Message()
+    {
+        std::cout << "Message was destroyed." << std::endl;
+    }
+    
+    const char * data() const
+    {
+        return mData->data();
+    }
+    
+    char * data()
+    {
+        return const_cast<char*>(static_cast<const Message&>(*this).data());
+    }
+    
+    size_t length() const
+    {
+        return mData->size();
+    }
 
     const char * header() const
     {
-        return mData.data();
+        return data();
     }
 
     char * header()
     {
-        return &mData[0];
+        return &data()[0];
     }
-
-    size_t length() const
+    
+    size_t header_length() const
     {
-        return mData.size();
+        return cHeaderLength;
     }
 
     const char * body() const
     {
-        return header() + header_length;
+        return header() + cHeaderLength;
     }
 
     char * body()
     {
-        return header() + header_length;
+        return header() + cHeaderLength;
     }
 
     size_t body_length() const
     {
-        return length() - header_length;
+        return length() - cHeaderLength;
     }
     
     uint32_t get_id() const
     {
         uint32_t id;
-        memcpy(&id, mData.data(), sizeof(id));
+        memcpy(&id, data(), sizeof(id));
         return ntohl(id);
     }
 
@@ -88,16 +125,16 @@ public:
     {        
         auto body_length = [this]() {
             uint32_t n;
-            memcpy(&n, mData.data() + sizeof(uint32_t), sizeof(n));
+            memcpy(&n, data() + sizeof(uint32_t), sizeof(n));
             return ntohl(n);
         }();
         
-        uint32_t new_size = body_length + header_length;
-        if (new_size > mData.capacity())
+        uint32_t new_size = body_length + cHeaderLength;
+        if (new_size > cMaxTotalLength)
         {
-            throw std::runtime_error("New message size exceeds capacity: " + std::to_string(new_size));
+            throw std::runtime_error("Failed to decode message because it's length exceeds max total length: " + std::to_string(new_size));
         }
-        mData.resize(new_size);
+        mData->resize(new_size);
     }
     
     void encode_header()
@@ -108,10 +145,10 @@ public:
     void encode_header(uint32_t id)
     {
         auto netencoded_id = htonl(id);
-        memcpy(&mData[0], &netencoded_id, sizeof(netencoded_id));
+        memcpy(data(), &netencoded_id, sizeof(netencoded_id));
         
-        uint32_t len = htonl(mData.size() - header_length);
-        memcpy(&mData[sizeof(uint32_t)], &len, sizeof(len));
+        uint32_t len = htonl(mData->size() - cHeaderLength);
+        memcpy(data() + sizeof(uint32_t), &len, sizeof(len));
     }
 
 private:
@@ -121,7 +158,7 @@ private:
         return id++;
     }
 
-    std::string mData;
+    std::shared_ptr<std::string> mData;
 };
 
 

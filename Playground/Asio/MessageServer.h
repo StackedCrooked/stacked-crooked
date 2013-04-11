@@ -77,7 +77,7 @@ public:
     {
         mSessions.join(shared_from_this());
         async_read(mSocket,
-                   buffer(mReadMessage.header(), Message::header_length),
+                   buffer(mReadMessage.header(), mReadMessage.header_length()),
                    bind(&MessageSession::handle_read_header, shared_from_this(),
                         placeholders::error));
     }
@@ -119,7 +119,7 @@ public:
         {
             deliver(mReadMessage);
             async_read(mSocket,
-                       buffer(mReadMessage.header(), Message::header_length),
+                       buffer(mReadMessage.header(), mReadMessage.header_length()),
                        bind(&MessageSession::handle_read_header, shared_from_this(), placeholders::error));
         }
         else

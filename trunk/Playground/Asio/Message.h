@@ -30,7 +30,7 @@ typedef std::function<std::string(const std::string&)> Callback;
 class Message
 {
 public:
-    enum { header_length = 4 };
+    enum { header_length = 8 };
     enum { max_body_length = 100*1024*1024 };
     
     Message(const std::string & str = "")
@@ -74,14 +74,22 @@ public:
     {
         return length() - header_length;
     }
+    
+    uint32_t get_id() const
+    {
+        uint32_t id;
+        memcpy(&id, mData.data(), sizeof(id));
+        return ntohl(id);
+    }
 
     void decode_header()
-    {
-        auto body_length = [this](){
+    {        
+        auto body_length = [this]() {
             uint32_t n;
-            memcpy(&n, mData.data(), sizeof(n));
+            memcpy(&n, mData.data() + sizeof(uint32_t), sizeof(n));
             return ntohl(n);
         }();
+        
         uint32_t new_size = body_length + header_length;
         if (new_size > mData.capacity())
         {
@@ -92,11 +100,20 @@ public:
 
     void encode_header()
     {
-        uint32_t n = htonl(mData.size() - header_length);
-        memcpy(&mData[0], &n, sizeof(n));
+        uint32_t id = get_unique_id();
+        memcpy(&mData[0], &id, sizeof(id));
+        
+        uint32_t len = htonl(mData.size() - header_length);
+        memcpy(&mData[sizeof(uint32_t)], &len, sizeof(len));
     }
 
 private:
+    static uint32_t get_unique_id()
+    {
+        static uint32_t id = 0;
+        return id++;
+    }
+
     std::string mData;
 };
 

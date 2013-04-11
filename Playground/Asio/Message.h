@@ -45,12 +45,12 @@ public:
         encode_header();
     }
 
-    const char * data() const
+    const char * header() const
     {
         return mData.data();
     }
 
-    char * data()
+    char * header()
     {
         return &mData[0];
     }
@@ -62,12 +62,12 @@ public:
 
     const char * body() const
     {
-        return data() + header_length;
+        return header() + header_length;
     }
 
     char * body()
     {
-        return data() + header_length;
+        return header() + header_length;
     }
 
     size_t body_length() const
@@ -75,25 +75,19 @@ public:
         return length() - header_length;
     }
 
-    void resize(uint32_t new_body_length)
+    void decode_header()
     {
-        uint32_t new_size = new_body_length + header_length;
+        auto body_length = [this](){
+            uint32_t n;
+            memcpy(&n, mData.data(), sizeof(n));
+            return ntohl(n);
+        }();
+        uint32_t new_size = body_length + header_length;
         if (new_size > mData.capacity())
         {
             throw std::runtime_error("New message size exceeds capacity: " + std::to_string(new_size));
         }
         mData.resize(new_size);
-        encode_header();
-    }
-
-    void decode_header()
-    {
-        auto length = [this](){
-            uint32_t n;
-            memcpy(&n, mData.data(), sizeof(n));
-            return ntohl(n);
-        }();
-        resize(length);
     }
 
     void encode_header()

@@ -50,7 +50,7 @@ private:
         if (!error)
         {
             async_read(mSocket,
-                       buffer(mReadMessage.data(), Message::header_length),
+                       buffer(mReadMessage.header(), Message::header_length),
                        bind(&MessageClient::handle_read_header, this, placeholders::error));
         }
     }
@@ -77,7 +77,7 @@ private:
             std::cout.write(mReadMessage.body(), mReadMessage.body_length());
             std::cout << "\n";
             async_read(mSocket,
-                       buffer(mReadMessage.data(), Message::header_length),
+                       buffer(mReadMessage.header(), Message::header_length),
                        bind(&MessageClient::handle_read_header, this,
                             placeholders::error));
         }
@@ -94,7 +94,7 @@ private:
         if (!write_in_progress)
         {
             async_write(mSocket,
-                        buffer(mWriteMessages.front().data(),
+                        buffer(mWriteMessages.front().header(),
                                mWriteMessages.front().length()),
                         bind(&MessageClient::handle_write, this,
                              placeholders::error));
@@ -109,7 +109,8 @@ private:
             if (!mWriteMessages.empty())
             {
                 async_write(mSocket,
-                            buffer(mWriteMessages.front().data(), mWriteMessages.front().length()),
+                            buffer(mWriteMessages.front().header(),
+                                   mWriteMessages.front().length()),
                             bind(&MessageClient::handle_write, this, placeholders::error));
             }
         }

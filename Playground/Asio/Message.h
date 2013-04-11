@@ -24,6 +24,9 @@ boost::asio::io_service & get_io_service()
 }
 
 
+typedef std::function<std::string(const std::string&)> Callback;
+
+
 class Message
 {
 public:

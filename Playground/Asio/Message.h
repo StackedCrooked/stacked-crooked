@@ -51,24 +51,7 @@ public:
         encode_header(get_unique_id());
         std::cout << "Message created with id " << get_id() << std::endl;
     }
-    
-    Message(const Message& rhs) : mData(rhs.mData)
-    {
-        std::cout << "Message was copied." << std::endl;
-    }
-    
-    Message& operator=(Message rhs)
-    {
-        std::swap(mData, rhs.mData);
-        std::cout << "Message was copy assigned." << std::endl;
-        return *this;
-    }
-    
-    ~Message()
-    {
-        std::cout << "Message was destroyed." << std::endl;
-    }
-    
+        
     const char * data() const
     {
         return mData->data();

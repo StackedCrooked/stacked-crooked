@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <arpa/inet.h>
@@ -24,8 +25,7 @@ boost::asio::io_service & get_io_service()
 }
 
 
-typedef uint32_t MessageId;
-typedef std::function<std::string(MessageId, const std::string&)> Callback;
+typedef std::function<void(const std::string&)> ClientCallback;
 
 
 class Message
@@ -34,7 +34,7 @@ public:
     enum { header_length = 8 };
     enum { max_body_length = 100*1024*1024 };
     
-    Message(const std::string & str = "")
+    explicit Message(const std::string & str)
     {
         if (str.size() > max_body_length + header_length)
         {
@@ -43,7 +43,8 @@ public:
         mData.reserve(header_length + max_body_length);
         mData.resize(header_length + str.size());
         memcpy(body(), str.data(), str.size());
-        encode_header();
+        encode_header(get_unique_id());
+        std::cout << "Message created with id " << get_id() << std::endl;
     }
 
     const char * header() const
@@ -76,9 +77,9 @@ public:
         return length() - header_length;
     }
     
-    MessageId get_id() const
+    uint32_t get_id() const
     {
-        MessageId id;
+        uint32_t id;
         memcpy(&id, mData.data(), sizeof(id));
         return ntohl(id);
     }
@@ -98,11 +99,16 @@ public:
         }
         mData.resize(new_size);
     }
-
+    
     void encode_header()
     {
-        uint32_t id = get_unique_id();
-        memcpy(&mData[0], &id, sizeof(id));
+        encode_header(get_id());
+    }
+
+    void encode_header(uint32_t id)
+    {
+        auto netencoded_id = htonl(id);
+        memcpy(&mData[0], &netencoded_id, sizeof(netencoded_id));
         
         uint32_t len = htonl(mData.size() - header_length);
         memcpy(&mData[sizeof(uint32_t)], &len, sizeof(len));

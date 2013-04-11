@@ -9,6 +9,7 @@
 #include <iostream>
 #include <list>
 #include <set>
+#include <unistd.h>
 
 
 namespace MessageProtocol {
@@ -57,7 +58,7 @@ public:
     MessageSession(io_service & io_service, MessageSessions & room) :
         mSocket(io_service),
         mSessions(room),
-        mReadMessage()
+        mReadMessage("")
     {
         std::cout << "MessageSession created." << std::endl;
     }
@@ -83,6 +84,7 @@ public:
 
     void deliver(const Message & msg)
     {
+        sleep(1);
         bool write_in_progress = !mRequestQueue.empty();
         mRequestQueue.push_back(msg);
         if (!write_in_progress)
@@ -98,7 +100,9 @@ public:
     {
         if (!error)
         {
+            std::cout << "Request id before decoding: " << mReadMessage.get_id() << std::endl;
             mReadMessage.decode_header();
+            std::cout << "Request id after decoding: " << mReadMessage.get_id() << std::endl;
             async_read(mSocket,
                        buffer(mReadMessage.body(), mReadMessage.body_length()),
                        bind(&MessageSession::handle_read_body, shared_from_this(), placeholders::error));

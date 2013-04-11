@@ -16,8 +16,8 @@ int main()
         });
         std::cout << "sent " << i << std::endl;
     }
-
-    client.close();
+    
     t.join();
+    client.close();
     return 0;
 }

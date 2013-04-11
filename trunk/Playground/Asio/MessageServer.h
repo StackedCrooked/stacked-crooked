@@ -76,7 +76,7 @@ public:
     {
         mSessions.join(shared_from_this());
         async_read(mSocket,
-                   buffer(mReadMessage.data(), Message::header_length),
+                   buffer(mReadMessage.header(), Message::header_length),
                    bind(&MessageSession::handle_read_header, shared_from_this(),
                         placeholders::error));
     }
@@ -87,8 +87,9 @@ public:
         mRequestQueue.push_back(msg);
         if (!write_in_progress)
         {
+            const Message & currentMessage = mRequestQueue.front();
             async_write(mSocket,
-                        buffer(mRequestQueue.front().data(), mRequestQueue.front().length()),
+                        buffer(currentMessage.header(), currentMessage.length()),
                         bind(&MessageSession::handle_write, shared_from_this(), placeholders::error));
         }
     }
@@ -114,7 +115,7 @@ public:
         {
             deliver(mReadMessage);
             async_read(mSocket,
-                       buffer(mReadMessage.data(), Message::header_length),
+                       buffer(mReadMessage.header(), Message::header_length),
                        bind(&MessageSession::handle_read_header, shared_from_this(), placeholders::error));
         }
         else
@@ -130,8 +131,9 @@ public:
             mRequestQueue.pop_front();
             if (!mRequestQueue.empty())
             {
+                const Message & currentMessage = mRequestQueue.front();
                 async_write(mSocket,
-                            buffer(mRequestQueue.front().data(), mRequestQueue.front().length()),
+                            buffer(currentMessage.header(), currentMessage.length()),
                             bind(&MessageSession::handle_write, shared_from_this(), placeholders::error));
             }
         }

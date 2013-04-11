@@ -3,6 +3,7 @@
 
 
 #include <boost/asio.hpp>
+#include <atomic>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -49,7 +50,6 @@ public:
         mData->resize(cHeaderLength + str.size());
         memcpy(body(), str.data(), str.size());
         encode_header(get_unique_id());
-        std::cout << "Message created with id " << get_id() << std::endl;
     }
         
     const char * data() const
@@ -103,6 +103,12 @@ public:
         memcpy(&id, data(), sizeof(id));
         return ntohl(id);
     }
+    
+    void set_id(uint32_t id)
+    {
+        uint32_t netid = htonl(id);
+        memcpy(data(), &netid, sizeof(netid));
+    }
 
     void decode_header()
     {        
@@ -137,8 +143,8 @@ public:
 private:
     static uint32_t get_unique_id()
     {
-        static uint32_t id = 0;
-        return id++;
+        static std::atomic<uint32_t> id{};
+        return ++id;
     }
 
     std::shared_ptr<std::string> mData;

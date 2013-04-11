@@ -86,23 +86,14 @@ public:
         encode_header();
     }
 
-    bool decode_header()
+    void decode_header()
     {
-        try
-        {
-            auto length = [this](){
-                uint32_t n;
-                memcpy(&n, mData.data(), sizeof(n));
-                return ntohl(n);
-            }();
-            resize(length);
-            return true;
-        }
-        catch (const std::exception & e)
-        {
-            std::cerr << e.what() << std::endl;
-            return false;
-        }
+        auto length = [this](){
+            uint32_t n;
+            memcpy(&n, mData.data(), sizeof(n));
+            return ntohl(n);
+        }();
+        resize(length);
     }
 
     void encode_header()

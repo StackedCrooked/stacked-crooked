@@ -9,7 +9,6 @@
 #include <iostream>
 #include <list>
 #include <set>
-#include <unistd.h>
 
 
 namespace MessageProtocol {
@@ -36,13 +35,11 @@ class MessageSessions
 public:
     void join(AbstractSessionPtr session)
     {
-        std::cout << "join" << std::endl;
         mSessions.insert(session);
     }
 
     void leave(AbstractSessionPtr participant)
     {
-        std::cout << "leave" << std::endl;
         mSessions.erase(participant);
     }
     
@@ -55,17 +52,23 @@ class MessageSession : public AbstractMessageSession,
                        public boost::enable_shared_from_this<MessageSession>
 {
 public:
+    typedef std::function<std::string(const std::string&)> Callback;
+    
     MessageSession(io_service & io_service, MessageSessions & room) :
         mSocket(io_service),
         mSessions(room),
-        mReadMessage("")
+        mReadMessage(""),
+        mCallback()
     {
-        std::cout << "MessageSession created." << std::endl;
     }
     
     ~MessageSession()
     {
-        std::cout << "MessageSession destroyed." << std::endl;
+    }
+    
+    void setCallback(const Callback & inCallback)
+    {
+        mCallback = inCallback;
     }
 
     ip::tcp::socket & socket()
@@ -84,7 +87,6 @@ public:
 
     void deliver(const Message & msg)
     {
-        sleep(1);
         bool write_in_progress = !mRequestQueue.empty();
         mRequestQueue.push_back(msg);
         if (!write_in_progress)
@@ -100,9 +102,7 @@ public:
     {
         if (!error)
         {
-            std::cout << "Request id before decoding: " << mReadMessage.get_id() << std::endl;
             mReadMessage.decode_header();
-            std::cout << "Request id after decoding: " << mReadMessage.get_id() << std::endl;
             async_read(mSocket,
                        buffer(mReadMessage.body(), mReadMessage.body_length()),
                        bind(&MessageSession::handle_read_body, shared_from_this(), placeholders::error));
@@ -117,7 +117,9 @@ public:
     {
         if (!error)
         {
-            deliver(mReadMessage);
+            Message reply(mCallback(std::string(mReadMessage.body(), mReadMessage.body() + mReadMessage.body_length())));            
+            reply.set_id(mReadMessage.get_id());
+            deliver(Message(reply));
             async_read(mSocket,
                        buffer(mReadMessage.header(), mReadMessage.header_length()),
                        bind(&MessageSession::handle_read_header, shared_from_this(), placeholders::error));
@@ -152,6 +154,7 @@ private:
     MessageSessions & mSessions;
     Message mReadMessage;
     RequestQueue mRequestQueue;
+    Callback mCallback;
 };
 
 
@@ -161,9 +164,12 @@ typedef boost::shared_ptr<MessageSession> SessionPtr;
 class MessageServer
 {
 public:
-    MessageServer(uint16_t port) :
+    typedef std::function<std::string(const MessageSession&, const std::string&)> Callback;
+    
+    MessageServer(uint16_t port, const Callback & inCallback) :
         mIOService(get_io_service()),
-        mAcceptor(mIOService, ip::tcp::endpoint(ip::tcp::v4(), port))
+        mAcceptor(mIOService, ip::tcp::endpoint(ip::tcp::v4(), port)),
+        mCallback(inCallback)
     {        
         start_accept();
         mIOService.run();
@@ -171,7 +177,10 @@ public:
 
     void start_accept()
     {
-        SessionPtr new_session(new MessageSession(mIOService, room_));
+        SessionPtr new_session(new MessageSession(mIOService, mSessions));
+        new_session->setCallback([=](const std::string & response) {
+            return mCallback(*new_session, response);
+        });
         mAcceptor.async_accept(new_session->socket(),
                                bind(&MessageServer::handle_accept, this, new_session,
                                            placeholders::error));
@@ -191,7 +200,8 @@ public:
 private:
     io_service & mIOService;
     ip::tcp::acceptor mAcceptor;
-    MessageSessions room_;
+    MessageSessions mSessions;
+    Callback mCallback;
 };
 
 

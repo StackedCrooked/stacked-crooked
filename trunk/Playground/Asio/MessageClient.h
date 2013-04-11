@@ -41,7 +41,6 @@ public:
         auto id = message.get_id();
         mCallbacks.insert(std::make_pair(id, inCallback));
         mIOService.post(bind(&MessageClient::do_write, this, message));
-        std::cout << "Sent message with id " << id << std::endl;
     }
 
     void close()
@@ -64,9 +63,7 @@ private:
     {
         if (!error)
         {
-            std::cout << "Response id before decoding: " << mReadMessage.get_id() << std::endl;
             mReadMessage.decode_header();
-            std::cout << "Response id after decoding: " << mReadMessage.get_id() << std::endl;
             async_read(mSocket,
                        buffer(mReadMessage.body(), mReadMessage.body_length()),
                        bind(&MessageClient::handle_read_body, this, placeholders::error));
@@ -100,7 +97,6 @@ private:
             {
                 std::cerr << "Client received a response with unknown message id." << std::endl;
             }
-            std::cout << "Number of pending requests: " << mCallbacks.size() << std::endl;
             async_read(mSocket,
                        buffer(mReadMessage.header(), mReadMessage.header_length()),
                        bind(&MessageClient::handle_read_header, this,
@@ -119,7 +115,6 @@ private:
         if (!write_in_progress)
         {
             const Message & currentMessage = mWriteMessages.front();
-            std::cout << "Writing to socket message with id " << mWriteMessages.front().get_id() << std::endl;
             async_write(mSocket,
                         buffer(currentMessage.data(),
                                currentMessage.length()),

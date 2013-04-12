@@ -3,7 +3,8 @@
 #   compiled by GNU C version 4.7.2, GMP version 5.0.2, MPFR version 3.1.0-p3, MPC version 0.9
 # GGC heuristics: --param ggc-min-expand=30 --param ggc-min-heapsize=4096
 # options passed:  -imultilib . -imultiarch x86_64-linux-gnu -D_GNU_SOURCE
-# main.cpp -mtune=generic -march=x86-64 -auxbase-strip - -O3 -fverbose-asm
+# -D USE_ITERATOR main.cpp -mtune=generic -march=x86-64 -auxbase-strip -
+# -O3 -fverbose-asm
 # options enabled:  -faggressive-loop-optimizations
 # -fasynchronous-unwind-tables -fauto-inc-dec -fbranch-count-reg
 # -fcaller-saves -fcombine-stack-adjustments -fcommon -fcompare-elim
@@ -53,8 +54,8 @@
 _ZNSt6vectorIiSaIiEED2Ev:
 .LFB460:
     .cfi_startproc
-    movq    (%rdi), %rdi    # MEM[(struct _Vector_base *)this_1(D)]._M_impl._M_start, D.8684
-    testq   %rdi, %rdi  # D.8684
+    movq    (%rdi), %rdi    # MEM[(struct _Vector_base *)this_1(D)]._M_impl._M_start, D.8837
+    testq   %rdi, %rdi  # D.8837
     je  .L1 #,
     jmp _ZdlPv  #
     .p2align 4,,10
@@ -68,9 +69,9 @@ _ZNSt6vectorIiSaIiEED2Ev:
     .set    _ZNSt6vectorIiSaIiEED1Ev,_ZNSt6vectorIiSaIiEED2Ev
     .text
     .p2align 4,,15
-    .globl  _Z7processPiS_
-    .type   _Z7processPiS_, @function
-_Z7processPiS_:
+    .globl  _Z7processN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEES5_
+    .type   _Z7processN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEES5_, @function
+_Z7processN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEES5_:
 .LFB456:
     .cfi_startproc
     pushq   %rbp    #
@@ -80,18 +81,18 @@ _Z7processPiS_:
     pushq   %rbx    #
     .cfi_def_cfa_offset 24
     .cfi_offset 3, -24
-    movq    %rdi, %rbx  # begin, begin
+    movq    %rdi, %rbx  # begin, ivtmp.41
     subq    $8, %rsp    #,
     .cfi_def_cfa_offset 32
-    cmpq    %rsi, %rdi  # end, begin
+    cmpq    %rsi, %rdi  # end, ivtmp.41
     je  .L4 #,
     .p2align 4,,10
     .p2align 3
 .L8:
-    movl    (%rbx), %edi    # MEM[base: begin_11, offset: 0B],
-    addq    $4, %rbx    #, begin
+    movl    (%rbx), %edi    # MEM[base: _11, offset: 0],
+    addq    $4, %rbx    #, ivtmp.41
     call    _Z9disappeari   #
-    cmpq    %rbx, %rbp  # begin, end
+    cmpq    %rbx, %rbp  # ivtmp.41, end
     jne .L8 #,
 .L4:
     addq    $8, %rsp    #,
@@ -103,7 +104,7 @@ _Z7processPiS_:
     ret
     .cfi_endproc
 .LFE456:
-    .size   _Z7processPiS_, .-_Z7processPiS_
+    .size   _Z7processN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEES5_, .-_Z7processN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEES5_
     .section    .text.startup,"ax",@progbits
     .p2align 4,,15
     .globl  main
@@ -119,20 +120,17 @@ main:
     .cfi_offset 3, -24
     subq    $8, %rsp    #,
     .cfi_def_cfa_offset 32
-    movq    data(%rip), %rbx    # MEM[(struct vector *)&data], begin
-    movq    data+8(%rip), %rbp  # MEM[(const struct vector *)&data + 8B], D.8702
-    subq    %rbx, %rbp  # begin, D.8702
-    andq    $-4, %rbp   #, D.8702
-    addq    %rbx, %rbp  # begin, D.8701
-    cmpq    %rbp, %rbx  # D.8701, begin
+    movq    data+8(%rip), %rbp  # MEM[(int * const &)&data + 8], D.8856
+    movq    data(%rip), %rbx    # MEM[(int * const &)&data], ivtmp.49
+    cmpq    %rbx, %rbp  # ivtmp.49, D.8856
     je  .L14    #,
     .p2align 4,,10
     .p2align 3
 .L15:
-    movl    (%rbx), %edi    # MEM[base: begin_19, offset: 0B],
-    addq    $4, %rbx    #, begin
+    movl    (%rbx), %edi    # MEM[base: _12, offset: 0],
+    addq    $4, %rbx    #, ivtmp.49
     call    _Z9disappeari   #
-    cmpq    %rbx, %rbp  # begin, D.8701
+    cmpq    %rbx, %rbp  # ivtmp.49, D.8856
     jne .L15    #,
 .L14:
     addq    $8, %rsp    #,
@@ -149,7 +147,7 @@ main:
     .p2align 4,,15
     .type   _GLOBAL__sub_I_data, @function
 _GLOBAL__sub_I_data:
-.LFB526:
+.LFB534:
     .cfi_startproc
     subq    $8, %rsp    #,
     .cfi_def_cfa_offset 16
@@ -162,7 +160,7 @@ _GLOBAL__sub_I_data:
     .cfi_def_cfa_offset 8
     jmp __cxa_atexit    #
     .cfi_endproc
-.LFE526:
+.LFE534:
     .size   _GLOBAL__sub_I_data, .-_GLOBAL__sub_I_data
     .section    .init_array,"aw"
     .align 8

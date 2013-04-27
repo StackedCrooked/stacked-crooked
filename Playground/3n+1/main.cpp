@@ -47,9 +47,9 @@ void print_max_cycle_length(unsigned a, unsigned b)
 
 int main()
 {
-	print_max_cycle_length(1, 10);
-	print_max_cycle_length(100, 200);
-	print_max_cycle_length(201, 210);
-	print_max_cycle_length(900, 1000);
+	print_max_cycle_length(1   , 10);
+	print_max_cycle_length(100 , 200);
+	print_max_cycle_length(201 , 210);
+	print_max_cycle_length(900 , 1000);
 	return 0;
 }

@@ -88,7 +88,7 @@ std::vector<uint8_t> get_buffer()
 }
 
 
-template<typename T>:p
+template<typename T>
 void run_benchmark(const uint8_t * data, const std::vector<std::size_t> & indices)
 {
     for (unsigned i = 0; i != iterations; ++i)

@@ -1,4 +1,4 @@
-#include <thread>
+#include <boost/thread.hpp>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -6,7 +6,7 @@
 
 
 using Callback = std::function<void(std::string)>;
-std::vector<std::thread> threads;
+std::vector<boost::thread> threads;
 
 void http_get(const std::string & url, const Callback & callback)
 {
@@ -44,17 +44,9 @@ void callback2future2callback(const std::string & url, const Callback & cb)
 
 int main()
 {
-//    callback2future2callback("c", [](const std::string & result) {
-//        std::cout << result << std::endl;
-//    });
-
-    http_get("a", [](const std::string & result) { std::cout << result << std::endl; });
-    http_get("b", [](const std::string & result) { std::cout << result << std::endl; });
-    callback2future2callback("c", [](const std::string & result) { std::cout << result << std::endl; });
-    
+    std::cout << callback2future("abc").get() << std::endl;
     for (auto & t : threads)
     {
         t.join();
     }
 }
-

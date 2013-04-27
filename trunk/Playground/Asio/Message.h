@@ -40,13 +40,13 @@ class Message
     };
     
 public:    
-    explicit Message(const std::string & str) : mData(std::make_shared<std::string>())
+    explicit Message(const std::string & str) : mData()
     {
         if (str.size() > cMaxPayloadLength)
         {
             throw std::runtime_error("Message is too long: " + std::to_string(str.size()));
         }
-        mData->resize(cHeaderLength + str.size());
+        mData.resize(cHeaderLength + str.size());
         memcpy(body(), str.data(), str.size());
         encode_header(get_unique_id());
         std::cout << "Message created with id " << get_id() << std::endl;
@@ -54,7 +54,7 @@ public:
         
     const char * data() const
     {
-        return mData->data();
+        return mData.data();
     }
     
     char * data()
@@ -64,7 +64,7 @@ public:
     
     size_t length() const
     {
-        return mData->size();
+        return mData.size();
     }
 
     const char * header() const
@@ -128,7 +128,7 @@ public:
         {
             throw std::runtime_error("Failed to decode message because it's length exceeds max total length: " + std::to_string(new_size));
         }
-        mData->resize(new_size);
+        mData.resize(new_size);
     }
     
     void encode_header()
@@ -141,21 +141,18 @@ public:
         auto netencoded_id = htonl(id);
         memcpy(data(), &netencoded_id, sizeof(netencoded_id));
         
-        uint32_t len = htonl(mData->size() - cHeaderLength);
+        uint32_t len = htonl(mData.size() - cHeaderLength);
         memcpy(data() + sizeof(uint32_t), &len, sizeof(len));
     }
 
 private:
     static uint32_t get_unique_id()
     {
-        static uint32_t id = [](){            
-            std::srand(std::time(0));
-            return std::rand();
-        }();
+        static std::atomic<uint32_t> id{0};
         return id++;
     }
 
-    std::shared_ptr<std::string> mData;
+    std::string mData;
 };
 
 

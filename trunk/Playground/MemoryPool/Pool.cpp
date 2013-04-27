@@ -1,4 +1,6 @@
 #include "Pool.h"
+#include <cstdlib>
+#include <cstring>
 #include <stdexcept>
 
 

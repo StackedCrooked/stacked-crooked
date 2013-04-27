@@ -3,8 +3,10 @@
 
 
 #include "Pool.h"
+#include <limits>
 #include <memory>
 #include <numeric>
+#include <string>
 
 
 

@@ -1,8 +1,9 @@
 #include "Poco/Stopwatch.h"
-#include "allocator.h"
+#include "Allocator.h"
 #include "Pool.h"
 #include <boost/static_assert.hpp>
 #include <cassert>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <map>

@@ -1,4 +1,8 @@
 #!/bin/bash
+
+#
+# Darwin build
+#
 if [ "$(uname)" == "Darwin" ] ; then
     cd libcxx/lib
     export TRIPLE=-apple-
@@ -7,7 +11,9 @@ if [ "$(uname)" == "Darwin" ] ; then
 fi
 
 
-# Linx build
+#
+# Linux build
+#
 mkdir -p build && cd build
 export CC=clang
 export CXX=clang++

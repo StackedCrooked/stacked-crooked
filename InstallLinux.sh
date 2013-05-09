@@ -6,7 +6,7 @@ if [ $(whoami) != "root" ] ; then
 	exit 1
 fi
 
-apt-get install -y software-properties-common python-software-properties
+apt-get install -y subversion vim software-properties-common python-software-properties
 add-apt-repository ppa:ubuntu-toolchain-r/test
 apt-get update
 apt-get upgrade -y

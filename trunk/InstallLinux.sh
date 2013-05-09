@@ -6,12 +6,12 @@ if [ $(whoami) != "root" ] ; then
 	exit 1
 fi
 
-apt-get install -y subversion vim software-properties-common python-software-properties
+apt-get install -y subversion vim aptitude software-properties-common python-software-properties
 add-apt-repository ppa:ubuntu-toolchain-r/test
 apt-get update
 apt-get upgrade -y
 BOOST=$(aptitude search boost | grep -E 'libboost[0-9]\.[0-9]+-all-dev[^:]' | awk '{print $2}' | sort -n -r | head -n1)
-apt-get install -y g++-4.7 ccache subversion vim aptitude ${BOOST} libpoco-dev
+apt-get install -y g++-4.7 ccache ${BOOST} libpoco-dev
 mkdir -p $HOME/bin
 echo 'ccache g++-4.7 $*' >  $HOME/bin/g++ && chmod 755 $HOME/bin/g++
 echo 'ccache gcc-4.7 $*' >  $HOME/bin/gcc && chmod 755 $HOME/bin/gcc

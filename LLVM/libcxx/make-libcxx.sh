@@ -22,4 +22,4 @@ cmake -G "Unix Makefiles" \
     -DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="/usr/include/c++/4.8/;/usr/include/x86_64-linux-gnu/c++/4.8" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    ../libcxx
+    ../libcxx && make -j3 && make install

@@ -113,10 +113,28 @@ endf
 " Map CTRL-G to the OpenFile function
 :map <C-G> :call OpenFile()<CR>
 
+
+" -----------------------------------------------------------------------------
+" Setting up Vundle - the vim plugin bundler
+" -----------------------------------------------------------------------------
+let iCanHazVundle=1
+let vundle_readme=expand('~/.vim/bundle/vundle/README.md')
+if !filereadable(vundle_readme)
+    echo "Installing Vundle.."
+    echo ""
+    silent !mkdir -p ~/.vim/bundle
+    silent !apt-get -y install git || port install git
+    silent !git clone https://github.com/gmarik/vundle ~/.vim/bundle/vundle
+    let iCanHazVundle=0
+endif
+
+" -----------------------------------------------------------------------------
+" Vundle settings
+" -----------------------------------------------------------------------------
 set nocompatible               " be iMproved
 filetype off                   " required!
 
-set rtp+=~/.vim/bundle/vundle/
+set rtp+=~/.vim/bundle/vundle
 call vundle#rc()
 
 " let Vundle manage Vundle
@@ -134,6 +152,7 @@ Bundle 'tpope/vim-rails.git'
 Bundle 'L9'
 Bundle 'FuzzyFinder'
 " non github repos
+Bundle 'Align'
 Bundle 'git://git.wincent.com/command-t.git'
 " ...
 
@@ -147,3 +166,4 @@ filetype plugin indent on     " required!
 "
 " see :h vundle for more details or wiki for FAQ
 " NOTE: comments after Bundle command are not allowed..
+BundleInstall

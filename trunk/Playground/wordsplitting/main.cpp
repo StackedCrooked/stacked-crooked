@@ -32,38 +32,29 @@ int split(const std::string& text, std::string::size_type offset, const Words& i
         for (const std::string& word : input)
         {
             std::string::size_type current_text_index = ti;
-            std::string debug;
             std::string::size_type current_word_index = 0;
             while (true)
             {
-                //std::cout << "ti: " << ti << ", testing: " << word << ", current_text_index: " << current_text_index << ", current_word_index: " << current_word_index << std::endl;
                 if (current_text_index == text.size())
                 {
-                    //std::cout << "    eof1 " << std::endl;
                     break;
                 }
 
                 if (current_word_index == word.size())
                 {
-                    //std::cout << "    match1 " << word << std::endl;
                     break;
                 }
 
                 if (text.at(current_text_index) != word.at(current_word_index))
                 {
-                    //std::cout << "    fail1 " << word << std::endl;
                     break;
                 }
-                debug += text.at(current_text_index);
                 current_text_index++;
                 current_word_index++;
             }
 
             if (current_word_index == word.size())
             {
-                //std::cout << "    match2 " << debug << std::endl;
-                assert(debug == word);
-
                 Words output_copy = output;
                 output_copy.push_back(word);
 

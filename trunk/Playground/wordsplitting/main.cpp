@@ -3,90 +3,52 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
+#include <unordered_set>
 
-typedef std::vector<std::string> Words;
+typedef std::unordered_set<std::string> Words;
 
 Words get_words(const std::string& path, Words::size_type limit = -1)
 {
-    std::vector<std::string> result;
+    Words result;
     std::ifstream is(path);
     std::string word;
     while (result.size() < limit && is >> word)
     {
-        result.push_back(word);
+        result.insert(word);
     }
-
-    std::sort(result.begin(), result.end());
     return result;
 }
 
-int split(const std::string& text, std::string::size_type offset, const Words& input, Words& output, std::size_t count)
+bool split(const std::string& text, std::string::size_type offset, const Words& word_list, Words& output)
 {
-    assert(offset < text.size());
-    assert(count < 100);
-    for (const std::string& word : input)
+    for (std::string::size_type i = 0; i + offset != text.size(); ++i)
     {
-        std::string::size_type current_offset = offset;
-        std::string::size_type current_word_index = 0;
-        while (true)
+        std::string word = text.substr(offset, text.size() - offset - i);
+        if (word_list.count(word))
         {
-            if (current_offset == text.size())
+            if (split(text, offset + word.size(), word_list, output))
             {
-                break;
-            }
-
-            if (current_word_index == word.size())
-            {
-                break;
-            }
-
-            if (text.at(current_offset) != word.at(current_word_index))
-            {
-                break;
-            }
-            current_offset++;
-            current_word_index++;
-        }
-
-        if (current_word_index == word.size())
-        {
-            output.push_back(word);
-            std::cout << "Adding \"" << output.back() << "\" to the set." << std::endl;
-
-            if (text.size() == current_offset)
-            {
+                output.insert(word);
                 return true;
-            }
-            else if (split(text, current_offset, input, output, count + 1))
-            {
-                return true;
-            }
-            else
-            {
-                std::cout << "Removing \"" << output.back() << "\" from the set." << std::endl;
-                output.pop_back();
             }
         }
     }
-    return false;
+    return offset == text.size();
 }
 
 Words split(const std::string& text, const Words& input)
 {
-    std::cout << "Split " << text << std::endl;
     Words result;
-    if (!split(text, 0, input, result, 0))
-    {
-        result.clear();
-    }
+    split(text, 0, input, result);
     return result;
 }
 
 int main()
 {
-    // zillions, yesterday, zig, zigzagged, zag, zigzagging, zigzags
-    Words result = split("zillionsyesterdayzigzigzaggedzagzigzaggingzigzags", get_words("words.txt"));
+    // zillions, zig, zigzagged, zag, zigzagging, zigzags
+    const std::string s = "zillionszigzigzaggedzagzigzaggingzigzags";
+    std::cout << "Splitting \"" << s << "\" in words." << std::endl;
+    Words result = split(s, get_words("words.txt"));
     if (!result.empty())
     {
         std::cout << "We found " << result.size() << " words: ";
@@ -100,5 +62,4 @@ int main()
     {
         std::cout << "Not splittable." << std::endl;
     }
-
 }

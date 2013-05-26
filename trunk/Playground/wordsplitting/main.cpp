@@ -25,53 +25,49 @@ int split(const std::string& text, std::string::size_type offset, const Words& i
 {
     assert(offset < text.size());
     assert(count < 100);
-    for (std::string::size_type ti = offset; ti < text.size(); ++ti)
+    for (const std::string& word : input)
     {
-        for (const std::string& word : input)
+        std::string::size_type current_offset = offset;
+        std::string::size_type current_word_index = 0;
+        while (true)
         {
-            std::string::size_type current_text_index = ti;
-            std::string::size_type current_word_index = 0;
-            while (true)
+            if (current_offset == text.size())
             {
-                if (current_text_index == text.size())
-                {
-                    break;
-                }
-
-                if (current_word_index == word.size())
-                {
-                    break;
-                }
-
-                if (text.at(current_text_index) != word.at(current_word_index))
-                {
-                    break;
-                }
-                current_text_index++;
-                current_word_index++;
+                break;
             }
 
             if (current_word_index == word.size())
             {
-                output.push_back(word);
-                std::cout << "Adding \"" << output.back() << "\" to the set." << std::endl;
+                break;
+            }
 
-                if (text.size() == current_text_index)
-                {
-                    return true;
-                }
-                else if (split(text, current_text_index, input, output, count + 1))
-                {
-                    return true;
-                }
-                else
-                {
-                    std::cout << "Removing \"" << output.back() << "\" from the set." << std::endl;
-                    output.pop_back();
-                }
+            if (text.at(current_offset) != word.at(current_word_index))
+            {
+                break;
+            }
+            current_offset++;
+            current_word_index++;
+        }
+
+        if (current_word_index == word.size())
+        {
+            output.push_back(word);
+            std::cout << "Adding \"" << output.back() << "\" to the set." << std::endl;
+
+            if (text.size() == current_offset)
+            {
+                return true;
+            }
+            else if (split(text, current_offset, input, output, count + 1))
+            {
+                return true;
+            }
+            else
+            {
+                std::cout << "Removing \"" << output.back() << "\" from the set." << std::endl;
+                output.pop_back();
             }
         }
-        return false;
     }
     return false;
 }

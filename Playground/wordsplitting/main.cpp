@@ -25,10 +25,8 @@ int split(const std::string& text, std::string::size_type offset, const Words& i
 {
     assert(offset < text.size());
     assert(count < 100);
-    std::cout << "Recurse remainder: " << text.substr(offset) << std::endl;
     for (std::string::size_type ti = offset; ti < text.size(); ++ti)
     {
-        std::cout << "ti: " << ti << std::endl;
         for (const std::string& word : input)
         {
             std::string::size_type current_text_index = ti;
@@ -55,22 +53,21 @@ int split(const std::string& text, std::string::size_type offset, const Words& i
 
             if (current_word_index == word.size())
             {
-                Words output_copy = output;
-                output_copy.push_back(word);
+                output.push_back(word);
+                std::cout << "Adding \"" << output.back() << "\" to the set." << std::endl;
 
                 if (text.size() == current_text_index)
                 {
-                    std::cout << "word was: " << word << std::endl;
-                    std::cout << " end of text " << std::endl;
-                    output = output_copy;
                     return true;
                 }
-
-                if (split(text, current_text_index, input, output_copy, count + 1))
+                else if (split(text, current_text_index, input, output, count + 1))
                 {
-                    std::cout << " end of recurse " << std::endl;
-                    output = output_copy;
                     return true;
+                }
+                else
+                {
+                    std::cout << "Removing \"" << output.back() << "\" from the set." << std::endl;
+                    output.pop_back();
                 }
             }
         }
@@ -81,6 +78,7 @@ int split(const std::string& text, std::string::size_type offset, const Words& i
 
 Words split(const std::string& text, const Words& input)
 {
+    std::cout << "Split " << text << std::endl;
     Words result;
     if (!split(text, 0, input, result, 0))
     {
@@ -91,7 +89,8 @@ Words split(const std::string& text, const Words& input)
 
 int main()
 {
-    Words result = split("zillionsyesterday", get_words("words.txt"));
+    // zillions, yesterday, zig, zigzagged, zag, zigzagging, zigzags
+    Words result = split("zillionsyesterdayzigzigzaggedzagzigzaggingzigzags", get_words("words.txt"));
     if (!result.empty())
     {
         std::cout << "We found " << result.size() << " words: ";

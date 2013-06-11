@@ -10,14 +10,7 @@ apt-get install -y subversion vim aptitude software-properties-common python-sof
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
 apt-get update -y
 apt-get upgrade -y
-BOOST=$(aptitude search boost | grep -E 'libboost[0-9]\.[0-9]+-all-dev[^:]' | awk '{print $2}' | sort -n -r | head -n1)
-apt-get install -y g++-4.8 ccache ${BOOST} libpoco-dev
-mkdir -p $HOME/bin
-echo 'ccache g++-4.8 $*' >  $HOME/bin/g++ && chmod 755 $HOME/bin/g++
-echo 'ccache gcc-4.8 $*' >  $HOME/bin/gcc && chmod 755 $HOME/bin/gcc
-cd $HOME/bin && ln -fs `pwd`/g++ c++ && ln -fs `pwd`/gcc cc && cd -
 cd Vim && ./Install.sh && cd -
-cd Utilities/CodeFormatter && ./Install.sh && cd -
 cd Utilities/svnscripts && ./Install.sh && cd -
 
 echo 'export LC_ALL="en_US.UTF-8"' >> ~/.bashrc

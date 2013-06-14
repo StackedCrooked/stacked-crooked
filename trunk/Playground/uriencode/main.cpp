@@ -30,9 +30,8 @@ void encode(std::ostream& os, char c)
         case ']' : os.write("%5D", 3u); return;
         default  :
         {
-            uint8_t u;
-            memcpy(&u, &c, sizeof(c));
-            os.put(u);
+            uint8_t* u = reinterpret_cast<uint8_t*>(&c);
+            os.put(*u);
             return;
         }
     }

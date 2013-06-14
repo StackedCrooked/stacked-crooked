@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+<html>
+<head>
+        
+    <title>Turn a string into a valid filename in Python - Stack Overflow</title>
+    <link rel="shortcut icon" href="http://cdn.sstatic.net/stackoverflow/img/favicon.ico">
+    <link rel="apple-touch-icon image_src" href="http://cdn.sstatic.net/stackoverflow/img/apple-touch-icon.png">
+    <link rel="search" type="application/opensearchdescription+xml" title="Stack Overflow" href="/opensearch.xml">
+    
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://cdn.sstatic.net/js/stub.js?v=e9e6d9e79912"></script>
+    <link rel="stylesheet" type="text/css" href="http://cdn.sstatic.net/stackoverflow/all.css?v=03fc82f1c4f0">
+    
+    <link rel="canonical" href="http://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename-in-python">
+    <link rel="alternate" type="application/atom+xml" title="Feed for question 'Turn a string into a valid filename in Python'" href="/feeds/question/295135">
+    <script type="text/javascript">
+        
+        StackExchange.ready(function () {
+            StackExchange.using("postValidation", function () {
+                StackExchange.postValidation.initOnBlurAndSubmit($('#post-form'), 2, 'answer');
+            });
+
+            
+            StackExchange.question.init({canOpenBounty:true,votesCast:[],canViewVoteCounts:true,totalCommentCount:2,shownCommentCount:2,highlightColor:'#F4A83D',backgroundColor:'#FFF',questionId:295135});
+
+            styleCode();
+
+                StackExchange.realtime.subscribeToQuestion('1', '295135');
+            
+                
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        StackExchange.ready(function () {
+            StackExchange.realtime.init('ws://sockets.ny.stackexchange.com:80');
+            StackExchange.realtime.subscribeToInboxNotifications();
+                    StackExchange.realtime.subscribeToReputationNotifications('1');
+                });
+    </script>
+    <script type="text/javascript">
+        StackExchange.init({"stackAuthUrl":"https://stackauth.com","serverTime":1371235851,"styleCode":true,"enableUserHovercards":true,"site":{"name":"Stack Overflow","description":"Q&A for professional and enthusiast programmers","isNoticesTabEnabled":true,"recaptchaPublicKey":"6LdchgIAAAAAAJwGpIzRQSOFaO0pU6s44Xt8aTwc","enableSocialMediaInSharePopup":true},"user":{"fkey":"49334b1c18ac653a56928cfdacc3667f","isRegistered":true,"userId":75889,"accountId":28416,"gravatar":"<div class=\"\"><img src=\"http://www.gravatar.com/avatar/37aa3ec65ec47c5a3f9e2a80534837f3?s=32&d=identicon&r=PG\" alt=\"\" width=\"32\" height=\"32\"></div>","profileUrl":"http://stackoverflow.com/users/75889/stackedcrooked","notificationsUnviewedCount":0,"inboxUnviewedCount":0}});
+        StackExchange.using.setCacheBreakers({"js/prettify-full.js":"6c261bebf56a","js/moderator.js":"f96f7e4ee5dc","js/full-anon.js":"0916c60ba5ef","js/full.js":"4890977376c7","js/wmd.js":"028571a2bde1","js/third-party/jquery.autocomplete.min.js":"e5f01e97f7c3","js/mobile.js":"6eb68240242f","js/help.js":"1745cc3d535a","js/tageditor.js":"450c9e8426fc","js/tageditornew.js":"b6c68ad4c7dd","js/inline-tag-editing.js":"8e84e8a137f7","js/revisions.js":"7273bb714bba","js/review.js":"56c3941a5bfc","js/tagsuggestions.js":"aa48ef6154df","js/post-validation.js":"4aec80fc0009","js/explore-qlist.js":"1c5bbd79b562"});
+        
+    </script>
+    <script type="text/javascript">
+        StackExchange.using("gps", function() {
+             StackExchange.gps.init(true);
+        });
+    </script>
+    
+</head>
+<body class="question-page">
+    <noscript><div id="noscript-padding"></div></noscript>
+    <div id="notify-container"></div>
+    <div id="overlay-header"></div>
+    <div id="custom-header"></div>
+
+    <div class="container">
+        <div id="header" >
+            <div id="portalLink">
+                <a class="genu" href="http://stackexchange.com" onclick="StackExchange.ready(function(){genuwine.click();});return false;">Stack Exchange</a>
+            </div>
+            <div id="topbar">
+                <div id="hlinks">
+                    
+<span id="hlinks-user">        <span class="profile-triangle">▼</span><a href="/users/75889/stackedcrooked" class="profile-link">StackedCrooked</a>&nbsp;<a href="/users/75889/stackedcrooked?tab=reputation"><span class="reputation-score" title="your reputation; view reputation changes" dir="ltr">10,411</span></a><span title="4 gold badges"><span class="badge1"></span><span class="badgecount">4</span></span><span title="46 silver badges"><span class="badge2"></span><span class="badgecount">46</span></span><span title="127 bronze badges"><span class="badge3"></span><span class="badgecount">127</span></span>
+ <span class="lsep">|</span>
+
+</span>
+<span id="hlinks-nav">                <a href="/tools/flagged" class="mod-flag-indicator supernovabg" title="we have posts flagged for moderator attention, perhaps you can help">278</a>
+                    <a href="/review">review</a>
+
+ <span class="lsep">|</span>
+        <a href="/review/suggested-edits" class="mod-flag-indicator hotbg suggested-edits-count" title="suggested edits pending approval">7</a>
+
+ <span class="lsep">|</span>
+</span>
+<span id="hlinks-custom">            <a href="http://chat.stackoverflow.com">chat</a>
+
+ <span class="lsep">|</span>
+                <a href="http://meta.stackoverflow.com">meta</a>
+
+ <span class="lsep">|</span>
+        <a href="/help">help</a>
+</span>
+                </div>
+                <div id="hsearch">
+                    <form id="search" action="/search" method="get" autocomplete="off">
+                        <div>
+                            <input autocomplete="off" name="q" class="textbox" placeholder="search" tabindex="1" type="text" maxlength="240" size="28" value="">
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <br class="cbt">
+            <div id="hlogo">
+                <a href="/" >
+                    Stack Overflow
+                </a>
+            </div>
+            <div id="hmenus">
+                <div class="nav mainnavs ">
+                    <ul>
+                            <li class="youarehere"><a id="nav-questions" href="/questions">Questions</a></li>
+                            <li><a id="nav-tags" href="/tags">Tags</a></li>
+                            <li><a id="nav-users" href="/users">Users</a></li>
+                            <li><a id="nav-badges" href="/badges">Badges</a></li>
+                            <li><a id="nav-unanswered" href="/unanswered">Unanswered</a></li>
+                    </ul>
+                </div>
+                <div class="nav askquestion">
+                    <ul>
+                        <li>
+                            <a id="nav-askquestion"  href="/questions/ask">Ask Question</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+
+
+
+        <div id="content">
+            
+
+<div itemscope itemtype="http://schema.org/Article">
+<link itemprop="image" href="http://cdn.sstatic.net/stackoverflow/img/apple-touch-icon.png">
+<div id="question-header">
+    <h1 itemprop="name"><a href="/questions/295135/turn-a-string-into-a-valid-filename-in-python" class="question-hyperlink">Turn a string into a valid filename in Python</a></h1>
+</div>
+<div id="mainbar">
+
+
+
+<div class="question" data-questionid="295135"  id="question">
+    
+        <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295135">
+    <a class="vote-up-off" title="This question shows research effort; it is useful and clear (click again to undo)">up vote</a>
+    <span class="vote-count-post ">60</span>
+    <a class="vote-down-off" title="This question does not show any research effort; it is unclear or not useful (click again to undo)">down vote</a>
+    
+    <a class="star-off" href="#" title="This is a favorite question (click again to undo)">favorite</a>
+    <div class="favoritecount"><b>34</b></div>   
+
+</div>
+
+            </td>
+            
+<td class="postcell">
+<div>
+    <div class="post-text" itemprop="description">
+        <p>I have a string that I want to use as a filename, so I want to remove all characters that wouldn't be allowed in filenames, using Python.</p>
+
+<p>I'd rather be strict than otherwise, so let's say I want to retain only letters, digits, and a small set of other characters like <code>"_-.() "</code>. What's the most elegant solution?</p>
+
+<p>The filename needs to be valid on multiple operating systems (Windows, Linux and Mac OS) - it's an MP3 file in my library with the song title as the filename, and is shared and backed up between 3 machines.</p>
+
+    </div>
+    <div class="post-taglist">
+        <a href="/questions/tagged/python" class="post-tag" title="show questions tagged 'python'" rel="tag">python</a> <a href="/questions/tagged/filenames" class="post-tag" title="show questions tagged 'filenames'" rel="tag">filenames</a> <a href="/questions/tagged/slug" class="post-tag" title="show questions tagged 'slug'" rel="tag">slug</a> <a href="/questions/tagged/sanitize" class="post-tag" title="show questions tagged 'sanitize'" rel="tag">sanitize</a> 
+    </div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/q/295135/75889" title="short permalink to this question" class="short-link" id="link-post-295135">share</a><span class="lsep">|</span><a href="/posts/295135/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="close-question-295135" title="vote to close this question (when closed, no new answers can be added)">close</a><span class="lsep">|</span><a id="flag-post-295135" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>        
+
+<script type="text/javascript">
+    StackExchange.using("inlineTagEditing", function () {
+        StackExchange.inlineTagEditing.init();
+    });
+</script>    </td>
+    <td align="right" class="post-signature">
+
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                            <a href="/posts/295135/revisions" title="show all edits to this post">edited <span title="2009-03-31 18:03:42Z" class="relativetime">Mar 31 '09 at 18:03</span></a>
+
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/1897/imran"><div class=""><img src="http://www.gravatar.com/avatar/09d9b10ad83581c21328d44e48c77b9d?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/1897/imran">Imran</a><br>
+            <span class="reputation-score" title="reputation score 15284" dir="ltr">15.3k</span><span title="5 gold badges"><span class="badge1"></span><span class="badgecount">5</span></span><span title="42 silver badges"><span class="badge2"></span><span class="badgecount">42</span></span><span title="79 bronze badges"><span class="badge3"></span><span class="badgecount">79</span></span>
+        </div>
+    </div>
+    </td>
+    <td class="post-signature owner">
+        
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                                    asked <span title="2008-11-17 09:02:07Z" class="relativetime">Nov 17 '08 at 9:02</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/37134/sophie-gage"><div class=""><img src="http://www.gravatar.com/avatar/2bcab04cf96b77ced4a8382480dd75d0?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/37134/sophie-gage">Sophie Gage</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">680</span><span title="2 gold badges"><span class="badge1"></span><span class="badgecount">2</span></span><span title="11 silver badges"><span class="badge2"></span><span class="badgecount">11</span></span><span title="14 bronze badges"><span class="badge3"></span><span class="badgecount">14</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</div>
+</td>
+        </tr>
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295135" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-13488388" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">3</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Shouldn&#39;t this be built into the os.path module?</span> &ndash;&nbsp;<a href="/users/125507/endolith" title="2848 reputation" class="comment-user">endolith</a> <span class="comment-date" dir="ltr"><span title="2009-03-10 13:59:51Z" class="relativetime-clean">Mar 10 '09 at 13:59</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-24399922" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Perhaps, although her use case would require a single path that&#39;s safe across <i>all</i> platforms, not just the current one, which is something os.path isn&#39;t designed to handle.</span> &ndash;&nbsp;<a href="/users/992720/javawizard" title="424 reputation" class="comment-user">javawizard</a> <span class="comment-date" dir="ltr"><span title="2013-06-03 21:37:14Z" class="relativetime-clean">Jun 3 at 21:37</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295135"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295135" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>                  <tr class="bounty-notification">
+          <td class="votecell"></td>
+          <td>
+          <div style="margin-top:20px">
+            <a class="bounty-link bounty" title="offer some of your reputation for better answers">
+                start a bounty
+            </a>
+          </div>
+          </td>
+          </tr>
+    </table>    
+</div>
+
+
+<div id="answers">
+
+    <a name="tab-top"></a>
+    <div id="answers-header">
+        <div class="subheader answers-subheader">
+            <h2>
+                    17 Answers
+            </h2>
+            <div id="tabs">
+                <a href="/questions/295135/turn-a-string-into-a-valid-filename-in-python?answertab=active#tab-top" title="Answers with the latest activity first">active</a>
+<a href="/questions/295135/turn-a-string-into-a-valid-filename-in-python?answertab=oldest#tab-top" title="Answers in the order they were provided">oldest</a>
+<a class="youarehere" href="/questions/295135/turn-a-string-into-a-valid-filename-in-python?answertab=votes#tab-top" title="Answers with the highest score first">votes</a>
+
+            </div>
+        </div>    
+    </div>    
+
+
+
+
+  
+<a name="295146"></a>
+<div id="answer-295146" class="answer" data-answerid="295146" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295146">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">43</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>This whitelist approach (ie, allowing only the chars present in valid_chars) will work if there aren't limits on the formatting of the files or combination of valid chars that are illegal (like ".."), for example, what you say would allow a filename named " . txt" which I think is not valid on Windows. As this is the most simple approach I'd try to remove whitespace from the valid_chars and prepend a known valid string in case of error, any other approach will have to know about what is allowed where to cope with <a href="http://stackoverflow.com/questions/62771/how-check-if-given-string-is-legal-allowed-file-name-under-windows">Windows file naming limitations</a> and thus be a lot more complex. </p>
+
+<pre><code>&gt;&gt;&gt; import string
+&gt;&gt;&gt; valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+&gt;&gt;&gt; valid_chars
+'-_.() abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+&gt;&gt;&gt; filename = "This Is a (valid) - filename%$&amp;$ .txt"
+&gt;&gt;&gt; ''.join(c for c in filename if c in valid_chars)
+'This Is a (valid) - filename .txt'
+</code></pre>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295146/75889" title="short permalink to this answer" class="short-link" id="link-post-295146">share</a><span class="lsep">|</span><a href="/posts/295146/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295146" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+    <td align="right" class="post-signature">
+
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                            <a href="/posts/295146/revisions" title="show all edits to this post">edited <span title="2008-11-17 10:25:30Z" class="relativetime">Nov 17 '08 at 10:25</span></a>
+
+        </div>
+        <div class="user-gravatar32">
+            
+        </div>
+        <div class="user-details">
+            <br>
+            
+        </div>
+    </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 09:10:49Z" class="relativetime">Nov 17 '08 at 9:10</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/5190/vinko-vrsalovic"><div class=""><img src="http://www.gravatar.com/avatar/27a12fdc32baf8748018d373a973d22f?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/5190/vinko-vrsalovic">Vinko Vrsalovic</a><br>
+            <span class="reputation-score" title="reputation score 88740" dir="ltr">88.7k</span><span title="12 gold badges"><span class="badge1"></span><span class="badgecount">12</span></span><span title="196 silver badges"><span class="badge2"></span><span class="badgecount">196</span></span><span title="270 bronze badges"><span class="badge3"></span><span class="badgecount">270</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295146" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-142516" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy"><code>string.letters</code> depends on current locale, therefore It might contain unsafe symbols for filename.</span> &ndash;&nbsp;<a href="/users/4279/j-f-sebastian" title="73671 reputation" class="comment-user">J.F. Sebastian</a> <span class="comment-date" dir="ltr"><span title="2008-11-17 09:31:39Z" class="relativetime-clean">Nov 17 '08 at 9:31</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-142609" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">2</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy"><code>valid_chars = frozenset(valid_chars)</code> wouldn&#39;t hurt. It is 1.5 times faster if applied to allchars.</span> &ndash;&nbsp;<a href="/users/4279/j-f-sebastian" title="73671 reputation" class="comment-user">J.F. Sebastian</a> <span class="comment-date" dir="ltr"><span title="2008-11-17 11:14:42Z" class="relativetime-clean">Nov 17 '08 at 11:14</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-13748490" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Warning: This maps two different strings to the same string
+&gt;&gt;&gt; import string
+&gt;&gt;&gt; valid_chars = &quot;-<i>.() %s%s&quot; % (string.ascii_letters, string.digits)
+&gt;&gt;&gt; valid_chars
+&#39;-</i>.() abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&#39;
+&gt;&gt;&gt; filename = &quot;a.com/hello/world&quot;
+&gt;&gt;&gt; &#39;&#39;.join(c for c in filename if c in valid_chars)
+&#39;a.comhelloworld&#39;
+&gt;&gt;&gt; filename = &quot;a.com/helloworld&quot;
+&gt;&gt;&gt; &#39;&#39;.join(c for c in filename if c in valid_chars)
+&#39;a.comhelloworld&#39;
+&gt;&gt;&gt;</span> &ndash;&nbsp;<a href="/users/632088/robert-king" title="4067 reputation" class="comment-user">robert king</a> <span class="comment-date" dir="ltr"><span title="2012-05-16 00:53:55Z" class="relativetime-clean">May 16 '12 at 0:53</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-14928506" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Not to mention that naming a file <code>&quot;CON&quot;</code> on Windows will get you into trouble...</span> &ndash;&nbsp;<a href="/users/193619/nathan-osman" title="9260 reputation" class="comment-user">Nathan Osman</a> <span class="comment-date" dir="ltr"><span title="2012-07-05 04:09:44Z" class="relativetime-clean">Jul 5 '12 at 4:09</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295146"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295146" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295466"></a>
+<div id="answer-295466" class="answer" data-answerid="295466" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295466">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">41</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>You can look at the <a href="http://www.djangoproject.com">Django framework</a> for how they create a "slug" from arbitrary text.  A slug is URL- and filename- friendly.</p>
+
+<p>Their <code>template/defaultfilters.py</code> (at around line 183) defines a function, <code>slugify</code>, that's probably the gold standard for this kind of thing.  Essentially, their code is the following.</p>
+
+<pre><code>def slugify(value):
+    """
+    Normalizes string, converts to lowercase, removes non-alpha characters,
+    and converts spaces to hyphens.
+    """
+    import unicodedata
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+    value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
+    ... re.sub('[-\s]+', '-', value)
+</code></pre>
+
+<p>There's more, but I left it out, since it doesn't address slugification, but escaping.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295466/75889" title="short permalink to this answer" class="short-link" id="link-post-295466">share</a><span class="lsep">|</span><a href="/posts/295466/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295466" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 12:23:52Z" class="relativetime">Nov 17 '08 at 12:23</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/10661/s-lott"><div class=""><img src="http://www.gravatar.com/avatar/c2c732bbf13dc96670b210b3c0c1ead5?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/10661/s-lott">S.Lott</a><br>
+            <span class="reputation-score" title="reputation score 178040" dir="ltr">178k</span><span title="27 gold badges"><span class="badge1"></span><span class="badgecount">27</span></span><span title="227 silver badges"><span class="badge2"></span><span class="badgecount">227</span></span><span title="483 bronze badges"><span class="badge3"></span><span class="badgecount">483</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295466" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-4140344" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">2</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">The last line should be: value = unicode(re.sub(&#39;[-\s]+&#39;, &#39;-&#39;, value))</span> &ndash;&nbsp;<a href="/users/82733/joseph-turian" title="1872 reputation" class="comment-user">Joseph Turian</a> <span class="comment-date" dir="ltr"><span title="2010-10-08 06:49:30Z" class="relativetime-clean">Oct 8 '10 at 6:49</span></span><span class="edited-yes" title="this comment was edited"></span></div></td>
+    </tr>
+            
+    <tr id="comment-11040476" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Thanks - I could be missing something, but I&#39;m getting: &quot;normalize() argument 2 must be unicode, not str&quot;</span> &ndash;&nbsp;<a href="/users/560792/alex-cook" title="111 reputation" class="comment-user">Alex Cook</a> <span class="comment-date" dir="ltr"><span title="2012-01-12 19:21:27Z" class="relativetime-clean">Jan 12 '12 at 19:21</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-11040594" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">&quot;normalize() argument 2&quot;.  Means the <code>value</code>.  If the value must be Unicode, then, you have to be sure that it&#39;s actually Unicode.  Or.  You might want to leave out unicode normalization if your actual value is actually an ASCII string.</span> &ndash;&nbsp;<a href="/users/10661/s-lott" title="178040 reputation" class="comment-user">S.Lott</a> <span class="comment-date" dir="ltr"><span title="2012-01-12 19:27:27Z" class="relativetime-clean">Jan 12 '12 at 19:27</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-18106823" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">1</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">In case anyone hasn&#39;t noticed the positive side of this approach is that it doesn&#39;t just remove non-alpha characters, but attempts to find good substitutes first (via the NFKD normalization), so &#233; becomes e, a superscript 1 becomes a normal 1, etc.  Thanks</span> &ndash;&nbsp;<a href="/users/1293501/michael-scott-cuthbert" title="492 reputation" class="comment-user">Michael Scott Cuthbert</a> <span class="comment-date" dir="ltr"><span title="2012-11-08 02:13:46Z" class="relativetime-clean">Nov 8 '12 at 2:13</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295466"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295466" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295150"></a>
+<div id="answer-295150" class="answer" data-answerid="295150" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295150">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">27</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>What is the reason to use the strings as file names? If human readability is not a factor I would go with base64 module which can produce file system safe strings. It won't be readable but you won't have to deal with collisions and it is reversible.</p>
+
+<pre><code>import base64
+file_name_string = base64.urlsafe_b64encode(your_string)
+</code></pre>
+
+<p><strong>Update</strong>: Changed based on Matthew comment.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295150/75889" title="short permalink to this answer" class="short-link" id="link-post-295150">share</a><span class="lsep">|</span><a href="/posts/295150/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295150" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+    <td align="right" class="post-signature">
+
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                            <a href="/posts/295150/revisions" title="show all edits to this post">edited <span title="2009-04-13 16:48:36Z" class="relativetime">Apr 13 '09 at 16:48</span></a>
+
+        </div>
+        <div class="user-gravatar32">
+            
+        </div>
+        <div class="user-details">
+            <br>
+            
+        </div>
+    </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 09:12:02Z" class="relativetime">Nov 17 '08 at 9:12</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/25737/igal-serban"><div class=""><img src="http://www.gravatar.com/avatar/2926e81277ffe197b2ec9f6385305900?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/25737/igal-serban">Igal Serban</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">6,407</span><span title="1 gold badge"><span class="badge1"></span><span class="badgecount">1</span></span><span title="15 silver badges"><span class="badge2"></span><span class="badgecount">15</span></span><span title="22 bronze badges"><span class="badge3"></span><span class="badgecount">22</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295150" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-143559" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">1</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Obviously this is the best answer if that is the case.</span> &ndash;&nbsp;<a href="/users/32141/user32141" title="173 reputation" class="comment-user">user32141</a> <span class="comment-date" dir="ltr"><span title="2008-11-17 20:16:52Z" class="relativetime-clean">Nov 17 '08 at 20:16</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-552805" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="hot">16</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Warning! base64 encoding by default includes the &quot;/&quot; character as valid output which isn&#39;t valid in filenames on a lot of systems.
+
+Instead use base64.urlsafe_b64encode(your_string)</span> &ndash;&nbsp;<a href="/users/1645/matthew" title="544 reputation" class="comment-user">Matthew</a> <span class="comment-date" dir="ltr"><span title="2009-04-12 01:33:42Z" class="relativetime-clean">Apr 12 '09 at 1:33</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295150"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295150" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295152"></a>
+<div id="answer-295152" class="answer" data-answerid="295152" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295152">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">19</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>You can use list comprehension together with the string methods.</p>
+
+<pre><code>&gt;&gt;&gt; s
+'foo-bar#baz?qux@127/\\9]'
+&gt;&gt;&gt; "".join(x for x in s if x.isalnum())
+'foobarbazqux1279'
+</code></pre>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295152/75889" title="short permalink to this answer" class="short-link" id="link-post-295152">share</a><span class="lsep">|</span><a href="/posts/295152/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295152" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+    <td align="right" class="post-signature">
+
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                            <a href="/posts/295152/revisions" title="show all edits to this post">edited <span title="2012-10-29 09:59:05Z" class="relativetime">Oct 29 '12 at 9:59</span></a>
+
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/75033/john-mee"><div class="gravatar-wrapper-32"><img src="http://i.stack.imgur.com/yqUcc.jpg?s=32&g=1" alt=""></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/75033/john-mee">John Mee</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">8,174</span><span title="3 gold badges"><span class="badge1"></span><span class="badgecount">3</span></span><span title="40 silver badges"><span class="badge2"></span><span class="badgecount">40</span></span><span title="69 bronze badges"><span class="badge3"></span><span class="badgecount">69</span></span>
+        </div>
+    </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 09:12:49Z" class="relativetime">Nov 17 '08 at 9:12</span>
+        </div>
+        <div class="user-gravatar32">
+            <span class="anonymous-gravatar"></span>
+        </div>
+        <div class="user-details">
+            lutz<br>
+            
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295152" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-2649615" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">This works great, and is the simplest one yet.</span> &ndash;&nbsp;<a href="/users/224705/t-k" title="423 reputation" class="comment-user">T.K.</a> <span class="comment-date" dir="ltr"><span title="2010-04-14 07:41:21Z" class="relativetime-clean">Apr 14 '10 at 7:41</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-5385533" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Although it doesn&#39;t include the few extra chars he wanted &quot;_-.() &quot;. Still my favourite solution though ;)</span> &ndash;&nbsp;<a href="/users/276093/matt-burns" title="3251 reputation" class="comment-user">matt burns</a> <span class="comment-date" dir="ltr"><span title="2011-01-31 09:06:33Z" class="relativetime-clean">Jan 31 '11 at 9:06</span></span><span class="edited-yes" title="this comment was edited"></span></div></td>
+    </tr>
+            
+    <tr id="comment-9492366" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">2</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Note that you can omit the square brackets. In this case a <a href="http://docs.python.org/glossary.html#term-generator-expression" rel="nofollow">generator expression</a> is passed to join, which saves the step of creating an otherwise unused list.</span> &ndash;&nbsp;<a href="/users/151299/oben-sonne" title="5181 reputation" class="comment-user">Oben Sonne</a> <span class="comment-date" dir="ltr"><span title="2011-10-17 11:25:43Z" class="relativetime-clean">Oct 17 '11 at 11:25</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-12573642" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">2</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">x.isalnum() does the same</span> &ndash;&nbsp;<a href="/users/851737/schlamar" title="2120 reputation" class="comment-user">schlamar</a> <span class="comment-date" dir="ltr"><span title="2012-03-25 17:40:32Z" class="relativetime-clean">Mar 25 '12 at 17:40</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-18903193" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">2</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">+1 Loved this. Slight modification I&#39;ve done: &quot;&quot;.join([x if x.isalnum() else &quot;_&quot; for x in s]) -- would yield a result where invalid items are _, like they&#39;re blanked.  Maybe tha thelps someone else.</span> &ndash;&nbsp;<a href="/users/56349/eddie-parker" title="2202 reputation" class="comment-user">Eddie Parker</a> <span class="comment-date" dir="ltr"><span title="2012-12-06 22:44:52Z" class="relativetime-clean">Dec 6 '12 at 22:44</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295152"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295152" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295206"></a>
+<div id="answer-295206" class="answer" data-answerid="295206" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295206">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">18</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Just to further complicate things, you are not guaranteed to get a valid filename just by removing invalid characters.  Since allowed characters differ on different filenames, a conservative approach could end up turning a valid name into an invalid one.  You may want to add special handling for the cases where:</p>
+
+<ul>
+<li><p>The string is all invalid characters (leaving you with an empty string)</p></li>
+<li><p>You end up with a string with a special meaning, eg "." or ".."</p></li>
+<li><p>On windows, <a href="http://msdn.microsoft.com/en-us/library/aa365247.aspx">certain device names</a> are reserved.  For instance, you can't create a file named "nul", "nul.txt" (or nul.anything in fact)  The reserved names are:</p>
+
+<p>CON, PRN, AUX, NUL, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9, LPT1, LPT2,  LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9</p></li>
+</ul>
+
+<p>You can probably work around these issues by prepending some string to the filenames that can never result in one of these cases, and stripping invalid characters.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295206/75889" title="short permalink to this answer" class="short-link" id="link-post-295206">share</a><span class="lsep">|</span><a href="/posts/295206/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295206" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 09:57:40Z" class="relativetime">Nov 17 '08 at 9:57</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/9493/brian"><div class=""><img src="http://www.gravatar.com/avatar/7895e5fdbabe3fc5e09272bb602257d7?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/9493/brian">Brian</a><br>
+            <span class="reputation-score" title="reputation score 35302" dir="ltr">35.3k</span><span title="13 gold badges"><span class="badge1"></span><span class="badgecount">13</span></span><span title="49 silver badges"><span class="badge2"></span><span class="badgecount">49</span></span><span title="77 bronze badges"><span class="badge3"></span><span class="badgecount">77</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295206" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295206"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295206" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="698714"></a>
+<div id="answer-698714" class="answer accepted-answer" data-answerid="698714" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="698714">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">6</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+            <span class="vote-accepted-on load-accepted-answer-date" title="loading when this answer was accepted...">accepted</span>
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>This is the solution I ultimately used:</p>
+
+<pre><code>import unicodedata
+
+validFilenameChars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+
+def removeDisallowedFilenameChars(filename):
+    cleanedFilename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore')
+    return ''.join(c for c in cleanedFilename if c in validFilenameChars)
+</code></pre>
+
+<p>The unicodedata.normalize call replaces accented characters with the unaccented equivalent, which is better than simply stripping them out. After that all disallowed characters are removed.</p>
+
+<p>My solution doesn't prepend a known string to avoid possible disallowed filenames, because I know they can't occur given my particular filename format. A more general solution would need to do so.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/698714/75889" title="short permalink to this answer" class="short-link" id="link-post-698714">share</a><span class="lsep">|</span><a href="/posts/698714/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-698714" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature owner">   
+       
+
+    
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                                        answered <span title="2009-03-30 19:40:17Z" class="relativetime">Mar 30 '09 at 19:40</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/37134/sophie-gage"><div class=""><img src="http://www.gravatar.com/avatar/2bcab04cf96b77ced4a8382480dd75d0?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/37134/sophie-gage">Sophie Gage</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">680</span><span title="2 gold badges"><span class="badge1"></span><span class="badgecount">2</span></span><span title="11 silver badges"><span class="badge2"></span><span class="badgecount">11</span></span><span title="14 bronze badges"><span class="badge3"></span><span class="badgecount">14</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-698714" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-511663" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">you should be able to use uuid.uuid4() for your unique prefix</span> &ndash;&nbsp;<a href="/users/13263/slf" title="13511 reputation" class="comment-user">slf</a> <span class="comment-date" dir="ltr"><span title="2009-03-30 19:50:51Z" class="relativetime-clean">Mar 30 '09 at 19:50</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-1097602" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">1</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">too verbose ahh</span> &ndash;&nbsp;<a href="/users/15055/claudiu" title="38365 reputation" class="comment-user">Claudiu</a> <span class="comment-date" dir="ltr"><span title="2009-08-13 00:34:50Z" class="relativetime-clean">Aug 13 '09 at 0:34</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-698714"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-698714" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295242"></a>
+<div id="answer-295242" class="answer" data-answerid="295242" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295242">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">5</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><pre><code>&gt;&gt;&gt; import string
+&gt;&gt;&gt; safechars = '_-.()' + string.digits + string.ascii_letters
+&gt;&gt;&gt; allchars = string.maketrans('', '')
+&gt;&gt;&gt; deletions = ''.join(set(allchars) - set(safechars))
+&gt;&gt;&gt; filename = '#abc.$%.txt'
+&gt;&gt;&gt; safe_filename = string.translate(filename, allchars, deletions)
+&gt;&gt;&gt; safe_filename
+'abc..txt'
+&gt;&gt;&gt;
+</code></pre>
+
+<p>The above code doesn't work for unicode strings. It doesn't handle empty strings, special filenames ('nul', 'con', etc) also.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295242/75889" title="short permalink to this answer" class="short-link" id="link-post-295242">share</a><span class="lsep">|</span><a href="/posts/295242/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295242" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+    <td align="right" class="post-signature">
+
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                            <a href="/posts/295242/revisions" title="show all edits to this post">edited <span title="2008-11-17 10:57:26Z" class="relativetime">Nov 17 '08 at 10:57</span></a>
+
+        </div>
+        <div class="user-gravatar32">
+            
+        </div>
+        <div class="user-details">
+            <br>
+            
+        </div>
+    </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 10:15:15Z" class="relativetime">Nov 17 '08 at 10:15</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/4279/j-f-sebastian"><div class=""><img src="http://www.gravatar.com/avatar/d92ce60d3a4cbe03598e27c2e8dee69d?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/4279/j-f-sebastian">J.F. Sebastian</a><br>
+            <span class="reputation-score" title="reputation score 73671" dir="ltr">73.7k</span><span title="11 gold badges"><span class="badge1"></span><span class="badgecount">11</span></span><span title="112 silver badges"><span class="badge2"></span><span class="badgecount">112</span></span><span title="195 bronze badges"><span class="badge3"></span><span class="badgecount">195</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295242" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-447044" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">+1 for translation tables, it is by far the most efficient method.
+For the special filenames/empties, a simple pre-condition check will suffice and for extraneous periods that&#39;s a simple correction as well.</span> &ndash;&nbsp;<a href="/users/69893/christian-witts" title="3604 reputation" class="comment-user">Christian Witts</a> <span class="comment-date" dir="ltr"><span title="2009-03-11 10:59:30Z" class="relativetime-clean">Mar 11 '09 at 10:59</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-1866784" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">1</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">While translate is slightly more efficient than a regexp, that time will most likely be dwarfed if you actually try to open the file, which no doubt you are intending to do.  Thus I prefer more a more readable regexp solution than the mess above</span> &ndash;&nbsp;<a href="/users/110296/nosatalian" title="1042 reputation" class="comment-user">nosatalian</a> <span class="comment-date" dir="ltr"><span title="2009-12-23 19:21:17Z" class="relativetime-clean">Dec 23 '09 at 19:21</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-13260579" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">I&#39;m also worried about the blacklist. Granted, it&#39;s a blacklist that&#39;s based off a whitelist, but still. It seems less... safe. How do you know that &quot;allchars&quot; is actually complete?</span> &ndash;&nbsp;<a href="/users/971529/isaaclw" title="175 reputation" class="comment-user">isaaclw</a> <span class="comment-date" dir="ltr"><span title="2012-04-24 18:23:03Z" class="relativetime-clean">Apr 24 '12 at 18:23</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-13272285" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">@isaaclw: &#39;.translate()&#39; accepts 256-char string as a translation table (byte-to-byte translation). &#39;.maketrans()&#39; creates such string. All values are covered; it is a pure whitelist approach</span> &ndash;&nbsp;<a href="/users/4279/j-f-sebastian" title="73671 reputation" class="comment-user">J.F. Sebastian</a> <span class="comment-date" dir="ltr"><span title="2012-04-25 07:48:09Z" class="relativetime-clean">Apr 25 '12 at 7:48</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295242"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295242" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295354"></a>
+<div id="answer-295354" class="answer" data-answerid="295354" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295354">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">5</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Why not just wrap the "osopen" with a try/except and let the underlying OS sort out whether the file is valid?</p>
+
+<p>This seems like much less work and is valid no matter which OS you use.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295354/75889" title="short permalink to this answer" class="short-link" id="link-post-295354">share</a><span class="lsep">|</span><a href="/posts/295354/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295354" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+    <td align="right" class="post-signature">
+
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                            <a href="/posts/295354/revisions" title="show all edits to this post">edited <span title="2012-05-30 01:46:53Z" class="relativetime">May 30 '12 at 1:46</span></a>
+
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/67097/dplante"><div class=""><img src="http://www.gravatar.com/avatar/f98e8bbc010d8ff9818c2f46319b86cc?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/67097/dplante">dplante</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">1,627</span><span title="2 gold badges"><span class="badge1"></span><span class="badgecount">2</span></span><span title="10 silver badges"><span class="badge2"></span><span class="badgecount">10</span></span><span title="22 bronze badges"><span class="badge3"></span><span class="badgecount">22</span></span>
+        </div>
+    </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 11:24:49Z" class="relativetime">Nov 17 '08 at 11:24</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/38207/james-anderson"><div class=""><img src="http://www.gravatar.com/avatar/8e2c3bc8e5b3f634cc9a77606e983226?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/38207/james-anderson">James Anderson</a><br>
+            <span class="reputation-score" title="reputation score 15780" dir="ltr">15.8k</span><span title="2 gold badges"><span class="badge1"></span><span class="badgecount">2</span></span><span title="18 silver badges"><span class="badge2"></span><span class="badgecount">18</span></span><span title="39 bronze badges"><span class="badge3"></span><span class="badgecount">39</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295354" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295354"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295354" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295298"></a>
+<div id="answer-295298" class="answer" data-answerid="295298" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295298">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">5</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Keep in mind, there are actually no restrictions on filenames on Unix systems other than </p>
+
+<ul>
+<li>It may not contain \0 </li>
+<li>It may not contain  /</li>
+</ul>
+
+<p>Everything else is fair game. </p>
+
+<pre>
+$ touch "
+> even multiline
+> haha
+> ^[[31m red ^[[0m
+> evil"
+$ ls -la 
+-rw-r--r--       0 Nov 17 23:39 ?even multiline?haha??[31m red ?[0m?evil
+$ ls -lab
+-rw-r--r--       0 Nov 17 23:39 \neven\ multiline\nhaha\n\033[31m\ red\ \033[0m\nevil
+$ perl -e 'for my $i ( glob(q{./*even*}) ){ print $i; } '
+./
+even multiline
+haha
+ red 
+evil
+</pre>
+
+<p>Yes, i just stored ANSI Colour Codes in a file name and had them take effect. </p>
+
+<p>For entertainment, put a BEL character in a directory name and watch the fun that ensues when you CD into it ;) </p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295298/75889" title="short permalink to this answer" class="short-link" id="link-post-295298">share</a><span class="lsep">|</span><a href="/posts/295298/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295298" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 10:45:54Z" class="relativetime">Nov 17 '08 at 10:45</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/15614/kent-fredric"><div class=""><img src="http://www.gravatar.com/avatar/7455fbe2cde016f6cd36b4352be52eaf?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/15614/kent-fredric">Kent Fredric</a><br>
+            <span class="reputation-score" title="reputation score 30149" dir="ltr">30.1k</span><span title="6 gold badges"><span class="badge1"></span><span class="badgecount">6</span></span><span title="62 silver badges"><span class="badge2"></span><span class="badgecount">62</span></span><span title="115 bronze badges"><span class="badge3"></span><span class="badgecount">115</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295298" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295298"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295298" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="634023"></a>
+<div id="answer-634023" class="answer" data-answerid="634023" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="634023">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">3</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Though you have to be careful. It is not clearly said in your intro, if you are looking only at latine language. Some words can become meaningless or another meaning if you sanitize them with ascii characters only.</p>
+
+<p>imagine you have "forêt poésie" (forest poetry), your sanitization might give "fort-posie" (strong + something meaningless)</p>
+
+<p>Worse if  you have to deal with chinese characters.</p>
+
+<p>"下北沢" your system might end up doing "---" which is doomed to fail after a while and not very helpful. So if you deal with only files I would encourage to either call them a generic chain that you control or to keep the characters as it is. For URIs, about the same.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/634023/75889" title="short permalink to this answer" class="short-link" id="link-post-634023">share</a><span class="lsep">|</span><a href="/posts/634023/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-634023" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2009-03-11 10:44:46Z" class="relativetime">Mar 11 '09 at 10:44</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/62262/karlcow"><div class="gravatar-wrapper-32"><img src="http://i.stack.imgur.com/sMJuS.jpg?s=32&g=1" alt=""></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/62262/karlcow">karlcow</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">3,235</span><span title="11 silver badges"><span class="badge2"></span><span class="badgecount">11</span></span><span title="33 bronze badges"><span class="badge3"></span><span class="badgecount">33</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-634023" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-634023"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-634023" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295560"></a>
+<div id="answer-295560" class="answer" data-answerid="295560" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295560">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">3</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Another issue that the other comments haven't addressed yet is the empty string, which is obviously not a valid filename. You can also end up with an empty string from stripping too many characters.</p>
+
+<p>What with the Windows reserved filenames and issues with dots, the safest answer to the question “how do I normalise a valid filename from arbitrary user input?” is “don't even bother try”: if you can find any other way to avoid it (eg. using integer primary keys from a database as filenames), do that.</p>
+
+<p>If you must, and you really need to allow spaces and ‘.’ for file extensions as part of the name, try something like:</p>
+
+<pre><code>import re
+badchars= re.compile(r'[^A-Za-z0-9_. ]+|^\.|\.$|^ | $|^$')
+badnames= re.compile(r'(aux|com[1-9]|con|lpt[1-9]|prn)(\.|$)')
+
+def makeName(s):
+    name= badchars.sub('_', s)
+    if badnames.match(name):
+        name= '_'+name
+    return name
+</code></pre>
+
+<p>Even this can't be guaranteed right especially on unexpected OSs — for example RISC OS hates spaces and uses ‘.’ as a directory separator.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295560/75889" title="short permalink to this answer" class="short-link" id="link-post-295560">share</a><span class="lsep">|</span><a href="/posts/295560/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295560" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 13:24:19Z" class="relativetime">Nov 17 '08 at 13:24</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/18936/bobince"><div class=""><img src="http://www.gravatar.com/avatar/3f6f1bea81a68b2f1cfe3efbb9be94bc?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/18936/bobince">bobince</a><br>
+            <span class="reputation-score" title="reputation score 211826" dir="ltr">212k</span><span title="39 gold badges"><span class="badge1"></span><span class="badgecount">39</span></span><span title="263 silver badges"><span class="badge2"></span><span class="badgecount">263</span></span><span title="466 bronze badges"><span class="badge3"></span><span class="badgecount">466</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295560" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295560"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295560" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="10610768"></a>
+<div id="answer-10610768" class="answer" data-answerid="10610768" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="10610768">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">1</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Most of these solutions don't work.</p>
+
+<p>'/hello/world' -> 'helloworld'</p>
+
+<p>'/helloworld'/ -> 'helloworld'</p>
+
+<p>This isn't what you want generally, say you are saving the html for each link, you're going to overwrite the html for a different webpage.</p>
+
+<p>I pickle a dict such as:</p>
+
+<pre><code>{'helloworld': 
+    (
+    {'/hello/world': 'helloworld', '/helloworld/': 'helloworld1'},
+    2)
+    }
+</code></pre>
+
+<p>2 represents the number that should be appended to the next filename.</p>
+
+<p>I look up the filename each time from the dict. If it's not there, I create a new one, appending the max number if needed.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/10610768/75889" title="short permalink to this answer" class="short-link" id="link-post-10610768">share</a><span class="lsep">|</span><a href="/posts/10610768/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-10610768" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2012-05-16 01:04:34Z" class="relativetime">May 16 '12 at 1:04</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/632088/robert-king"><div class=""><img src="http://www.gravatar.com/avatar/4b02313659bcb668d49a0075c2de0bc1?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/632088/robert-king">robert king</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">4,067</span><span title="5 silver badges"><span class="badge2"></span><span class="badgecount">5</span></span><span title="26 bronze badges"><span class="badge3"></span><span class="badgecount">26</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-10610768" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-10610768"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-10610768" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295147"></a>
+<div id="answer-295147" class="answer" data-answerid="295147" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295147">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">1</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>You could use the re.sub() method to replace anything not "filelike". But in effect, every character could be valid; so there are no prebuilt functions (I believe), to get it done.</p>
+
+<pre><code>import re
+
+str = "File!name?.txt"
+f = open(os.path.join("/tmp", re.sub('[^a-zA-Z0-9_-.() ]+', '', str))
+</code></pre>
+
+<p>Would result in a filehandle to /tmp/filename.txt.</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295147/75889" title="short permalink to this answer" class="short-link" id="link-post-295147">share</a><span class="lsep">|</span><a href="/posts/295147/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295147" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+    <td align="right" class="post-signature">
+
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                            <a href="/posts/295147/revisions" title="show all edits to this post">edited <span title="2008-11-17 18:26:18Z" class="relativetime">Nov 17 '08 at 18:26</span></a>
+
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/4279/j-f-sebastian"><div class=""><img src="http://www.gravatar.com/avatar/d92ce60d3a4cbe03598e27c2e8dee69d?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/4279/j-f-sebastian">J.F. Sebastian</a><br>
+            <span class="reputation-score" title="reputation score 73671" dir="ltr">73.7k</span><span title="11 gold badges"><span class="badge1"></span><span class="badgecount">11</span></span><span title="112 silver badges"><span class="badge2"></span><span class="badgecount">112</span></span><span title="195 bronze badges"><span class="badge3"></span><span class="badgecount">195</span></span>
+        </div>
+    </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 09:10:53Z" class="relativetime">Nov 17 '08 at 9:10</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/21580/gx"><div class=""><img src="http://www.gravatar.com/avatar/0d28d26af4a37fd8936b9626df6f900b?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/21580/gx">gx.</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">168</span><span title="1 silver badge"><span class="badge2"></span><span class="badgecount">1</span></span><span title="7 bronze badges"><span class="badge3"></span><span class="badgecount">7</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295147" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-142594" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">&#39;(?i)&#39; is unnecessary here.</span> &ndash;&nbsp;<a href="/users/4279/j-f-sebastian" title="73671 reputation" class="comment-user">J.F. Sebastian</a> <span class="comment-date" dir="ltr"><span title="2008-11-17 11:02:29Z" class="relativetime-clean">Nov 17 '08 at 11:02</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-142704" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">True, sorry, habits.</span> &ndash;&nbsp;<a href="/users/21580/gx" title="168 reputation" class="comment-user">gx.</a> <span class="comment-date" dir="ltr"><span title="2008-11-17 12:48:32Z" class="relativetime-clean">Nov 17 '08 at 12:48</span></span></div></td>
+    </tr>
+            
+    <tr id="comment-4528592" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span title="number of 'useful comment' votes received" class="cool">1</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">You need the dash to go first in the group matcher so it doesn&#39;t appear as a range.  re.sub(&#39;[^-a-zA-Z0-9_.() ]+&#39;, &#39;&#39;, str)</span> &ndash;&nbsp;<a href="/users/33342/phord" title="1315 reputation" class="comment-user">phord</a> <span class="comment-date" dir="ltr"><span title="2010-11-16 00:09:19Z" class="relativetime-clean">Nov 16 '10 at 0:09</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-295147"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-295147" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="10458710"></a>
+<div id="answer-10458710" class="answer" data-answerid="10458710" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="10458710">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">0</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>I'm sure this isn't a great answer, since it modifies the string it's looping over, but it seems to work alright:</p>
+
+<pre><code>import string
+for chr in your_string:
+ if chr == ' ':
+   your_string = your_string.replace(' ', '_')
+ elif chr not in string.ascii_letters or chr not in string.digits:
+    your_string = your_string.replace(chr, '')
+</code></pre>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/10458710/75889" title="short permalink to this answer" class="short-link" id="link-post-10458710">share</a><span class="lsep">|</span><a href="/posts/10458710/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-10458710" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2012-05-05 03:56:00Z" class="relativetime">May 5 '12 at 3:56</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/541208/tankorsmash"><div class=""><img src="http://www.gravatar.com/avatar/2dfc2e563d2150994a6e06ef37f9e7be?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/541208/tankorsmash">TankorSmash</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">2,106</span><span title="6 silver badges"><span class="badge2"></span><span class="badgecount">6</span></span><span title="18 bronze badges"><span class="badge3"></span><span class="badgecount">18</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-10458710" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-10458710"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-10458710" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="1108783"></a>
+<div id="answer-1108783" class="answer" data-answerid="1108783" >
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="1108783">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">0</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>The <code>bobcat</code> project contains a python module that does just this.</p>
+
+<p>It's not completely robust, see this <a href="http://mail.python.org/pipermail/python-list/2007-September/628023.html" rel="nofollow">post</a> and this <a href="http://mail.python.org/pipermail/python-list/2007-September/628042.html" rel="nofollow">reply</a>.</p>
+
+<p>So, as noted: <code>base64</code> encoding is probably a better idea if readability doesn't matter.</p>
+
+<ul>
+<li>Docs <a href="https://svn.origo.ethz.ch/bobcat/src-doc/safefilename-module.html" rel="nofollow">https://svn.origo.ethz.ch/bobcat/src-doc/safefilename-module.html</a></li>
+<li>Source <a href="https://svn.origo.ethz.ch/bobcat/trunk/src/bobcatlib/safefilename.py" rel="nofollow">https://svn.origo.ethz.ch/bobcat/trunk/src/bobcatlib/safefilename.py</a></li>
+</ul>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/1108783/75889" title="short permalink to this answer" class="short-link" id="link-post-1108783">share</a><span class="lsep">|</span><a href="/posts/1108783/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-1108783" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                                        answered <span title="2009-07-10 10:19:11Z" class="relativetime">Jul 10 '09 at 10:19</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/72787/wires"><div class=""><img src="http://www.gravatar.com/avatar/9a2601268a5194646e6c7532947764db?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/72787/wires">wires</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">427</span><span title="3 silver badges"><span class="badge2"></span><span class="badgecount">3</span></span><span title="7 bronze badges"><span class="badge3"></span><span class="badgecount">7</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-1108783" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        <tfoot>
+            <tr>
+                <td></td>
+                <td class="comment-form"><form id="add-comment-1108783"></form></td>
+            </tr>
+        </tfoot>
+    
+        </table>
+    </div>
+    <a id="comments-link-1108783" class="comments-link" data-comments-count="0" title="ask author for clarification about this post">add comment</a>
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="630303"></a>
+<div id="answer-630303" class="answer deleted-answer" data-answerid="630303" >
+        <input type="hidden" id="630303-only-allow-inform-moderator-flagging" value="true"/>
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="630303">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">1</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Shouldn't this be built into the os.path module?</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/630303/75889" title="short permalink to this answer" class="short-link" id="link-post-630303">share</a><span class="lsep">|</span><a href="/posts/630303/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-630303" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                
+
+            <div class="deleted-answer-info">
+                deleted by <a href="/users/1288/bill-the-lizard">Bill the Lizard</a><span class="mod-flair" title="moderator">&#9830;</span> <span title="2012-05-04 11:03:11Z" class="relativetime">May 4 '12 at 11:03</span>
+            </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info user-hover">
+        <div class="user-action-time">
+                                        answered <span title="2009-03-10 13:59:51Z" class="relativetime">Mar 10 '09 at 13:59</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/125507/endolith"><div class=""><img src="http://www.gravatar.com/avatar/2a59853d36056b7a088f33c96e3a1619?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/125507/endolith">endolith</a><br>
+            <span class="reputation-score" title="reputation score" dir="ltr">2,848</span><span title="3 gold badges"><span class="badge1"></span><span class="badgecount">3</span></span><span title="22 silver badges"><span class="badge2"></span><span class="badgecount">22</span></span><span title="55 bronze badges"><span class="badge3"></span><span class="badgecount">55</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-630303" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        </table>
+    </div>
+    
+</td>
+</tr>
+    </table>
+</div>
+
+  
+<a name="295137"></a>
+<div id="answer-295137" class="answer deleted-answer downvoted-answer" data-answerid="295137" >
+        <input type="hidden" id="295137-only-allow-inform-moderator-flagging" value="true"/>
+    <table>
+        <tr>
+            <td class="votecell">
+                
+
+<div class="vote">
+    <input type="hidden" value="295137">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post ">-4</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+    
+
+</div>
+
+            </td>
+            
+
+
+<td class="answercell">
+    <div class="post-text"><p>Maybe the most elegant way would be to use a regex ?</p>
+</div>
+    <table class="fw">
+    <tr>
+    <td class="vt">
+
+
+
+
+
+
+
+
+
+<div class="post-menu"><a href="/a/295137/75889" title="short permalink to this answer" class="short-link" id="link-post-295137">share</a><span class="lsep">|</span><a href="/posts/295137/edit" class="edit-post" title="revise and improve this post">edit</a><span class="lsep">|</span><a id="flag-post-295137" href="#" title="flag this post for serious problems or moderator attention">flag</a></div>                
+
+            <div class="deleted-answer-info">
+                deleted by owner <span title="2012-02-23 17:25:03Z" class="relativetime">Feb 23 '12 at 17:25</span>
+            </div>
+    </td>
+            
+
+
+    <td align="right" class="post-signature">   
+       
+
+    
+
+    <div class="user-info ">
+        <div class="user-action-time">
+                                        answered <span title="2008-11-17 09:03:53Z" class="relativetime">Nov 17 '08 at 9:03</span>
+        </div>
+        <div class="user-gravatar32">
+            <a href="/users/31610/tempus"><div class=""><img src="http://www.gravatar.com/avatar/8ea9cd83f6b0ebc96d1e9e47744ca2c3?s=32&d=identicon&r=PG" alt="" width="32" height="32"></div></a>
+        </div>
+        <div class="user-details">
+            <a href="/users/31610/tempus">Tempus</a><br>
+            <span class="reputation-score" title="reputation score 18224" dir="ltr">18.2k</span><span title="22 gold badges"><span class="badge1"></span><span class="badgecount">22</span></span><span title="112 silver badges"><span class="badge2"></span><span class="badgecount">112</span></span><span title="265 bronze badges"><span class="badge3"></span><span class="badgecount">265</span></span>
+        </div>
+    </div>
+
+    </td>
+    </tr>
+    </table>
+</td>
+        </tr>
+
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-295137" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-142510" class="comment">
+        <td class="comment-actions"><table><tbody><tr>
+<td class="comment-score">
+<span>&nbsp;</span>
+</td>
+<td>
+<a class="comment-up comment-up-off" title="this comment adds something useful to the post">upvote</a>
+</td></tr>
+<tr><td>&nbsp;</td><td><a class="comment-flag" title="flag this comment as unconstructive, offensive, or spam">flag</a></td></tr></tbody></table></td>
+        <td class="comment-text"><div><span class="comment-copy">Such as the one posted right above this comment.</span> &ndash;&nbsp;<a href="/users/21580/gx" title="168 reputation" class="comment-user">gx.</a> <span class="comment-date" dir="ltr"><span title="2008-11-17 09:17:22Z" class="relativetime-clean">Nov 17 '08 at 9:17</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        </table>
+    </div>
+    
+</td>
+</tr>
+    </table>
+</div>
+    <a name='new-answer'></a>
+    <form id="post-form" action="/questions/295135/answer/submit" method="post"  class="post-form">
+        <input type="hidden" id="post-id" value="295135" />
+        <h2 class="space">Your Answer</h2>
+
+
+
+    
+<script type="text/javascript">
+    StackExchange.ready(function() {
+        initTagRenderer("".split(" "), "".split(" "));
+         
+        prepareEditor({
+            heartbeatType: 'answer',
+            bindNavPrevention: true,
+            postfix: "",
+            onDemand: false,
+            discardSelector: ".discard-answer"
+            
+        });
+        
+
+    });  
+</script>
+
+
+<div id="post-editor" class="post-editor">
+
+    <div style="position: relative;">     
+        <div class="wmd-container">
+            <div id="wmd-button-bar" class="wmd-button-bar"></div>
+            <textarea id="wmd-input" class="wmd-input" name="post-text" cols="92" rows="15" tabindex="101" data-min-length=""></textarea>
+        </div>
+    </div>
+
+    <div class="fl" style="margin-top: 8px; height:24px;">&nbsp;</div>
+    <div id="draft-saved" class="draft-saved community-option fl" style="margin-top: 8px; height:24px; display:none;">draft saved</div>
+
+    <div id="draft-discarded" class="draft-discarded community-option fl" style="margin-top: 8px; height:24px; display:none;">draft discarded</div>
+
+    <div class="community-option">
+        <input id="communitymode" name="communitymode" type="checkbox" >
+        <label for="communitymode" title="Marking an answer community wiki encourages others to edit it by lowering the reputation barrier required to edit. However, you will not gain any upvote reputation from it. This cannot be undone.">community wiki</label>
+    </div>
+
+
+    <div id="wmd-preview" class="wmd-preview"></div>
+    <div></div>
+    <div class="edit-block">
+        <input id="fkey" name="fkey" type="hidden" value="49334b1c18ac653a56928cfdacc3667f">
+        <input id="author" name="author" type="text">
+    </div>
+</div>
+        <div style="position: relative;"> 
+        </div>
+           
+            <div class="form-submit cbt">
+            <input id="submit-button" type="submit" value="Post Your Answer" tabindex="110">
+            <a href="#" class="discard-answer dno">discard</a>
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        StackExchange.using("inlineEditing", function () {
+            StackExchange.inlineEditing.init();
+        });
+    </script>
+
+
+        <h2 class="bottom-notice">
+                Not the answer you're looking for? 
+            Browse other questions tagged <a href="/questions/tagged/python" class="post-tag" title="show questions tagged 'python'" rel="tag">python</a> <a href="/questions/tagged/filenames" class="post-tag" title="show questions tagged 'filenames'" rel="tag">filenames</a> <a href="/questions/tagged/slug" class="post-tag" title="show questions tagged 'slug'" rel="tag">slug</a> <a href="/questions/tagged/sanitize" class="post-tag" title="show questions tagged 'sanitize'" rel="tag">sanitize</a> 
+                or <a href="/questions/ask">ask your own question</a>.
+        </h2>
+</div>
+</div>
+<div id="sidebar" class="show-votes">
+        <div class="module question-stats">
+        <p class="label-key">tagged</p>
+        <div class="tagged"><a href="/questions/tagged/python" class="post-tag" title="show questions tagged 'python'" rel="tag">python</a>&nbsp;<span class="item-multiplier"><span class="item-multiplier-x">&times;</span>&nbsp;<span class="item-multiplier-count">195937</span></span><br>
+<a href="/questions/tagged/filenames" class="post-tag" title="show questions tagged 'filenames'" rel="tag">filenames</a>&nbsp;<span class="item-multiplier"><span class="item-multiplier-x">&times;</span>&nbsp;<span class="item-multiplier-count">1180</span></span><br>
+<a href="/questions/tagged/slug" class="post-tag" title="show questions tagged 'slug'" rel="tag">slug</a>&nbsp;<span class="item-multiplier"><span class="item-multiplier-x">&times;</span>&nbsp;<span class="item-multiplier-count">281</span></span><br>
+<a href="/questions/tagged/sanitize" class="post-tag" title="show questions tagged 'sanitize'" rel="tag">sanitize</a>&nbsp;<span class="item-multiplier"><span class="item-multiplier-x">&times;</span>&nbsp;<span class="item-multiplier-count">179</span></span><br>
+</div>
+        <table id="qinfo">
+            <tr>
+                <td><p class="label-key">asked</p></td>
+                <td style="padding-left:10px"><p class="label-key" title="2008-11-17 09:02:07Z"><b>4 years ago</b></p></td>
+            </tr>
+            <tr>
+                <td><p class="label-key">viewed</p></td>
+
+                <td style="padding-left:10px">
+                    <p class="label-key">
+                        <b>30621 times</b>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td><p class="label-key">active</p></td>
+                <td style="padding-left:10px"><p class="label-key"><b><a href="?lastactivity" class="lastactivity-link" title="2012-10-29 09:59:05Z">7 months ago</a></b></p></td>
+            </tr>
+        </table>
+    </div>
+        
+                    <script type="text/javascript">
+                    var scriptSrc = "http://engine.adzerk.net/z/8277/adzerk2_2_17_45?keywords=python,filenames,slug,sanitize,x-user-registered,x-user-highrep";
+                    if (document.referrer) {
+                        if (/\?/.test(scriptSrc))
+                            scriptSrc += "&";
+                        else
+                            scriptSrc += "?";
+                        scriptSrc += "xReferrer=" + document.referrer;
+                    }
+                    StackExchange.ready(function() {
+                        var z = document.createElement("script");
+                        z.type = "text/javascript";
+                        z.async = "true";
+                        z.src = scriptSrc;
+                        var s = document.getElementsByTagName("script")[0];
+                        s.parentNode.insertBefore(z, s);
+                    });
+                </script>
+            <div class="everyonelovesstackoverflow" id="adzerk2">
+            </div>
+    <div id="hireme">
+        <script type="text/javascript">
+window.careers_adurl="http://careers.stackoverflow.com/gethired/js",window.careers_cssurl="//cdn-careers.sstatic.net/careers/gethired/sidebar.min.css?v=17be6ca0db4b",window.careers_leaderboardcssurl="//cdn-careers.sstatic.net/careers/gethired/ninja.min.css?v=78ccbfa5c59f",window.careers_companycssurl="//cdn-careers.sstatic.net/careers/gethired/company",window.careers_adselector="div.hireme, div#hireme",StackExchange.ready(function(){$.ajax({url:"//cdn-careers.sstatic.net/careers/gethired/loader.min.js?v=607ab2dda910",dataType:"script",cache:!0})})        </script>
+    </div>
+
+
+
+      
+    
+    <div class="module sidebar-linked">
+        <h4 id="h-linked">Linked</h4>
+        <div class="linked" data-tracker="lq=1">
+            <div class="spacer">
+<a href="/q/62771" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">65</div>
+</a>
+<a href="/questions/62771/how-check-if-given-string-is-legal-allowed-file-name-under-windows" class="question-hyperlink">How check if given string is legal (allowed) file name under Windows?</a>
+</div>
+<div class="spacer">
+<a href="/q/4734837" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">1</div>
+</a>
+<a href="/questions/4734837/how-to-properly-sanitize-a-filename-protect-against-shell-injection" class="question-hyperlink">How to properly sanitize a filename (protect against shell injection)?</a>
+</div>
+<div class="spacer">
+<a href="/q/5444810" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">0</div>
+</a>
+<a href="/questions/5444810/how-to-remove-unsafe-characters-to-save-file" class="question-hyperlink">How to remove unsafe characters to save file</a>
+</div>
+<div class="spacer">
+<a href="/q/5251330" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">2</div>
+</a>
+<a href="/questions/5251330/python-function-to-make-arbitrary-strings-valid-filenames" class="question-hyperlink">Python function to make arbitrary strings valid filenames</a>
+</div>
+<div class="spacer">
+<a href="/q/11604256" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">1</div>
+</a>
+<a href="/questions/11604256/check-to-see-if-a-directory-is-valid-in-python" class="question-hyperlink">check to see if a directory is valid in Python</a>
+</div>
+<div class="spacer">
+<a href="/q/9527253" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">0</div>
+</a>
+<a href="/questions/9527253/turn-a-string-into-a-valid-filename-in-php" class="question-hyperlink">Turn a string into a valid filename in PHP</a>
+</div>
+<div class="spacer">
+<a href="/q/7668659" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes default">1</div>
+</a>
+<a href="/questions/7668659/python-get-list-of-characters-inapplicable-for-file-naming" class="question-hyperlink">Python: get list of characters inapplicable for file naming?</a>
+</div>
+<div class="spacer">
+<a href="/q/1902926" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes default">0</div>
+</a>
+<a href="/questions/1902926/potential-errors-with-my-makevalidfilename-function" class="question-hyperlink">Potential errors with my makeValidFilename function?</a>
+</div>
+
+        </div>
+    </div>
+    <div class="module sidebar-related">
+        <h4 id="h-related">Related</h4>
+        <div class="related" data-tracker="rq=1">
+            <div class="spacer">
+<a href="/q/183480" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">10</div>
+</a>
+<a href="/questions/183480/is-this-the-best-way-to-get-unique-version-of-filename-w-python" class="question-hyperlink">Is this the best way to get unique version of filename w/ Python?</a>
+</div>
+<div class="spacer">
+<a href="/q/541390" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted large">187</div>
+</a>
+<a href="/questions/541390/extracting-extension-from-filename-in-python" class="question-hyperlink">Extracting extension from filename in Python</a>
+</div>
+<div class="spacer">
+<a href="/q/965053" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted large">287</div>
+</a>
+<a href="/questions/965053/extract-filename-and-extension-in-bash" class="question-hyperlink">Extract filename and extension in bash</a>
+</div>
+<div class="spacer">
+<a href="/q/3878253" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes default">0</div>
+</a>
+<a href="/questions/3878253/how-to-sanitize-user-created-filenames-for-a-networked-application" class="question-hyperlink">How to sanitize user created filenames for a networked application?</a>
+</div>
+<div class="spacer">
+<a href="/q/5251330" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">2</div>
+</a>
+<a href="/questions/5251330/python-function-to-make-arbitrary-strings-valid-filenames" class="question-hyperlink">Python function to make arbitrary strings valid filenames</a>
+</div>
+<div class="spacer">
+<a href="/q/5574042" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes default">8</div>
+</a>
+<a href="/questions/5574042/string-slugification-in-python" class="question-hyperlink">String slugification in Python</a>
+</div>
+<div class="spacer">
+<a href="/q/5718368" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">0</div>
+</a>
+<a href="/questions/5718368/python-string-parsing-filenames-with-spaces" class="question-hyperlink">Python String parsing: filenames with spaces</a>
+</div>
+<div class="spacer">
+<a href="/q/7681698" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">3</div>
+</a>
+<a href="/questions/7681698/managing-mac-os-created-filenames-with-non-ascii-characters-in-windows-environme" class="question-hyperlink">Managing Mac OS created filenames with non ASCII characters in windows environments?</a>
+</div>
+<div class="spacer">
+<a href="/q/7863464" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">1</div>
+</a>
+<a href="/questions/7863464/batch-search-and-replace-strings-in-filenames-with-python" class="question-hyperlink">batch search and replace strings in filenames with python</a>
+</div>
+<div class="spacer">
+<a href="/q/8686880" title="Vote score (upvotes - downvotes)">
+        <div class="answer-votes answered-accepted default">2</div>
+</a>
+<a href="/questions/8686880/validate-a-filename-in-python" class="question-hyperlink">Validate a filename in python</a>
+</div>
+
+        </div>
+    </div>
+</div>
+
+<div id="feed-link">
+    <div id="feed-link-text"><a href="/feeds/question/295135" title="feed of this question and its answers"><span class="feed-icon"></span>question feed</a></div>
+</div>
+<script type="text/javascript">
+StackExchange.ready(function(){$.get('/posts/295135/ivc/f597');});
+</script>
+<noscript>
+    <div><img src="/posts/295135/ivc/f597" class="dno" alt="" width="0" height="0"></div>
+</noscript><div style="display:none" id="prettify-lang">default</div></div>
+
+
+        </div>
+    </div>
+    <div id="footer" class="categories">
+        <div class="footerwrap">
+            <div id="footer-menu">
+                <div class="top-footer-links">
+                        <a href="/about">about</a>
+                    <a href="/help">help</a>
+                    <a href="http://blog.stackexchange.com?blb=1">blog</a>
+                        <a href="http://chat.stackoverflow.com">chat</a>
+                    <a href="http://data.stackexchange.com">data</a>
+                    <a href="http://stackexchange.com/legal">legal</a>
+                    <a href="http://stackexchange.com/legal/privacy-policy">privacy policy</a>
+                    <a href="http://stackexchange.com/about/hiring">jobs</a>
+                    <a href="http://engine.adzerk.net/redirect/0/2776/2751/0/4de3c60f719c4dfcb1a57531c7050090/0">advertising info</a>
+
+                    <a onclick='StackExchange.switchMobile("on", "/questions/295135/turn-a-string-into-a-valid-filename-in-python")'>mobile</a>
+                    <b><a href="/contact">contact us</a></b>
+                        <b><a href="http://meta.stackoverflow.com">feedback</a></b>
+                </div>
+                <div id="footer-sites">
+                <table>
+    <tr>
+            <th colspan=3>
+                Technology
+            </th>
+            <th >
+                Life / Arts
+            </th>
+            <th >
+                Culture / Recreation
+            </th>
+            <th >
+                Science
+            </th>
+            <th >
+                Other
+            </th>
+    </tr>
+    <tr>
+            <td>
+                <ol>
+                        <li><a href="http://stackoverflow.com" title="professional and enthusiast programmers">Stack Overflow</a></li>
+                        <li><a href="http://serverfault.com" title="professional system and network administrators">Server Fault</a></li>
+                        <li><a href="http://superuser.com" title="computer enthusiasts and power users">Super User</a></li>
+                        <li><a href="http://webapps.stackexchange.com" title="power users of web applications">Web Applications</a></li>
+                        <li><a href="http://askubuntu.com" title="Ubuntu users and developers">Ask Ubuntu</a></li>
+                        <li><a href="http://webmasters.stackexchange.com" title="pro webmasters">Webmasters</a></li>
+                        <li><a href="http://gamedev.stackexchange.com" title="professional and independent game developers">Game Development</a></li>
+                        <li><a href="http://tex.stackexchange.com" title="users of TeX, LaTeX, ConTeXt, and related typesetting systems">TeX - LaTeX</a></li>
+                            </ol></td><td><ol>
+                        <li><a href="http://programmers.stackexchange.com" title="professional programmers interested in conceptual questions about software development">Programmers</a></li>
+                        <li><a href="http://unix.stackexchange.com" title="users of Linux, FreeBSD and other Un*x-like operating systems.">Unix &amp; Linux</a></li>
+                        <li><a href="http://apple.stackexchange.com" title="power users of Apple hardware and software">Ask Different (Apple)</a></li>
+                        <li><a href="http://wordpress.stackexchange.com" title="WordPress developers and administrators">WordPress Answers</a></li>
+                        <li><a href="http://gis.stackexchange.com" title="cartographers, geographers and GIS professionals">Geographic Information Systems</a></li>
+                        <li><a href="http://electronics.stackexchange.com" title="electronics and electrical engineering professionals, students, and enthusiasts">Electrical Engineering</a></li>
+                        <li><a href="http://android.stackexchange.com" title="enthusiasts and power users of the Android operating system">Android Enthusiasts</a></li>
+                        <li><a href="http://security.stackexchange.com" title="IT security professionals">IT Security</a></li>
+                            </ol></td><td><ol>
+                        <li><a href="http://dba.stackexchange.com" title="database professionals who wish to improve their database skills and learn from others in the community">Database Administrators</a></li>
+                        <li><a href="http://drupal.stackexchange.com" title="Drupal developers and administrators">Drupal Answers</a></li>
+                        <li><a href="http://sharepoint.stackexchange.com" title="SharePoint enthusiasts">SharePoint</a></li>
+                        <li><a href="http://ux.stackexchange.com" title="user experience researchers and experts">User Experience</a></li>
+                        <li><a href="http://mathematica.stackexchange.com" title="users of Mathematica">Mathematica</a></li>
+                    
+                        <li>
+                            <a href="http://stackexchange.com/sites#technology" class="more">
+                                more (14)
+                            </a>
+                        </li>
+                </ol>
+            </td>
+            <td>
+                <ol>
+                        <li><a href="http://photo.stackexchange.com" title="professional, enthusiast and amateur photographers">Photography</a></li>
+                        <li><a href="http://scifi.stackexchange.com" title="science fiction and fantasy enthusiasts">Science Fiction &amp; Fantasy</a></li>
+                        <li><a href="http://cooking.stackexchange.com" title="professional and amateur chefs">Seasoned Advice (cooking)</a></li>
+                        <li><a href="http://diy.stackexchange.com" title="contractors and serious DIYers">Home Improvement</a></li>
+                    
+                        <li>
+                            <a href="http://stackexchange.com/sites#lifearts" class="more">
+                                more (13)
+                            </a>
+                        </li>
+                </ol>
+            </td>
+            <td>
+                <ol>
+                        <li><a href="http://english.stackexchange.com" title="linguists, etymologists, and serious English language enthusiasts">English Language &amp; Usage</a></li>
+                        <li><a href="http://skeptics.stackexchange.com" title="scientific skepticism">Skeptics</a></li>
+                        <li><a href="http://judaism.stackexchange.com" title="those who base their lives on Jewish law and tradition and anyone interested in learning more">Mi Yodeya (Judaism)</a></li>
+                        <li><a href="http://travel.stackexchange.com" title="road warriors and seasoned travelers">Travel</a></li>
+                        <li><a href="http://christianity.stackexchange.com" title="committed Christians, experts in Christianity and those interested in learning more">Christianity</a></li>
+                        <li><a href="http://gaming.stackexchange.com" title="passionate videogamers on all platforms">Arqade (gaming)</a></li>
+                        <li><a href="http://bicycles.stackexchange.com" title="people who build and repair bicycles, people who train cycling, or commute on bicycles">Bicycles</a></li>
+                        <li><a href="http://rpg.stackexchange.com" title="gamemasters and players of tabletop, paper-and-pencil role-playing games">Role-playing Games</a></li>
+                    
+                        <li>
+                            <a href="http://stackexchange.com/sites#culturerecreation" class="more">
+                                more (21)
+                            </a>
+                        </li>
+                </ol>
+            </td>
+            <td>
+                <ol>
+                        <li><a href="http://math.stackexchange.com" title="people studying math at any level and professionals in related fields">Mathematics</a></li>
+                        <li><a href="http://stats.stackexchange.com" title="statisticians, data analysts, data miners and data visualization experts">Cross Validated (stats)</a></li>
+                        <li><a href="http://cstheory.stackexchange.com" title="theoretical computer scientists and researchers in related fields">Theoretical Computer Science</a></li>
+                        <li><a href="http://physics.stackexchange.com" title="active researchers, academics and students of physics">Physics</a></li>
+                    
+                        <li>
+                            <a href="http://stackexchange.com/sites#science" class="more">
+                                more (7)
+                            </a>
+                        </li>
+                </ol>
+            </td>
+            <td>
+                <ol>
+                        <li><a href="http://stackapps.com" title="apps, scripts, and development with the Stack Exchange API">Stack Apps</a></li>
+                        <li><a href="http://meta.stackoverflow.com" title="meta-discussion of the Stack Exchange family of Q&amp;A websites">Meta Stack Overflow</a></li>
+                        <li><a href="http://area51.stackexchange.com" title="proposing new sites in the Stack Exchange network">Area 51</a></li>
+                        <li><a href="http://careers.stackoverflow.com">Stack Overflow Careers</a></li>
+                    
+                </ol>
+            </td>
+    </tr>
+</table>
+                </div>
+            </div>
+
+            <div id="copyright">
+                site design / logo &copy; 2013 stack exchange inc; 
+                user contributions licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license">cc-wiki</a> 
+                with <a href="http://blog.stackoverflow.com/2009/06/attribution-required/" rel="license">attribution required</a>
+            </div>
+            <div id="footer-flair">
+                <a href="http://creativecommons.org/licenses/by-sa/3.0/" class="cc-wiki-link"></a>
+            </div>
+            <div id="svnrev">
+                rev 2013.6.14.738
+            </div>
+            
+        </div>
+    </div>
+    <noscript>
+        <div id="noscript-warning">Stack Overflow works best with JavaScript enabled<img src="http://pixel.quantserve.com/pixel/p-c1rF4kxgLUzNc.gif" alt="" class="dno"></div>
+    </noscript>
+    <script type="text/javascript">var _gaq=_gaq||[];_gaq.push(['_setAccount','UA-5620270-1']);
+        _gaq.push(['_setCustomVar', 1, 'tags', '|python|filenames|slug|sanitize|']); 
+        _gaq.push(['_setCustomVar', 2, 'accountid', '28416',2]); 
+_gaq.push(['_trackPageview']);
+    var _qevents = _qevents || [];
+    (function(){
+        var s=document.getElementsByTagName('script')[0];
+        var ga=document.createElement('script');
+        ga.type='text/javascript';
+        ga.async=true;
+        ga.src='http://www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(ga,s);
+        var sc=document.createElement('script');
+        sc.type='text/javascript';
+        sc.async=true;
+        sc.src='http://edge.quantserve.com/quant.js'; 
+        s.parentNode.insertBefore(sc,s);
+    })();
+    </script>
+    <script type="text/javascript">
+        _qevents.push({ qacct: "p-c1rF4kxgLUzNc" });
+    </script>        
+    
+</body>
+</html>

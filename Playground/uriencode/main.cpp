@@ -1,8 +1,4 @@
-#include <cstring>
-#include <iomanip>
 #include <iostream>
-#include <string>
-#include <sstream>
 #include <stdint.h>
 
 
@@ -38,32 +34,11 @@ void encode(std::ostream& os, char c)
 }
 
 
-void read()
+int main()
 {
     char c;
     while (std::cin.read(&c, 1))
     {
         encode(std::cout , c);
     }
-}
-
-
-void self_test()
-{
-    std::string result;
-    for (int i = 0; i != 50; ++i)
-    {
-        std::stringstream ss;
-        encode(ss, char(i));
-
-        ss >> result;
-    }
-    std::cout << result << std::endl;
-}
-
-
-int main()
-{
-    //self_test();
-    read();
 }

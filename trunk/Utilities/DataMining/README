@@ -1,0 +1,4 @@
+- Download the given URL.
+- Extract links from this URL.
+- Create working directories for each link.
+- Repeat above steps for each working directory.

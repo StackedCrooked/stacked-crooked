@@ -1,4 +1,55 @@
-- Download the given URL.
+USE CASES
+=========
+- Downloading all the pages of a manga.
+- Downloading all the songs of a cetain album.
+- Downloading a series of vidoes of an online course.
+- Fun.
+
+
+ALGORITHM
+=========
+
+
+Rough outline
+-------------
+- Uses initiates a scrape for a single URL
+- The page is downloaded.
+- The page is scanned for URLs.
+- Recurse above steps for each URL.
+
+
+Details
+-------
+- Recursion limit.
+    - We don't need to download the entire Internet.
+    - Avoid cycles.
+- URL filter.
+    - Only download images of this resolution or videos of that quality etc..
+- Avoid decection.
+    - Put delays of varying length between each request.
+    - Don't download urls that are not visible when rendered.
+- A sense of direction
+    - Aimlessly downloading is of no use.
+
+
+
+
+TO BE DECIDED
+=============
+- The main application is a sintatra-based web application.
+    - This gives us Ruby power. (Bash is too limited.)
+    - A server can be controlled remotely.
+
+
+- Procedure:
+    GET /capture with URL as post data
+        - return list of URLs
+        - the server may use caching
+
+
+        
+
+    
 - Extract links from this URL.
 - Create working directories for each link.
 - Repeat above steps for each working directory.

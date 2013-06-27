@@ -8,6 +8,7 @@
 #include <boost/msm/front/euml/common.hpp>
 // for And_ operator
 #include <boost/msm/front/euml/operator.hpp>
+#include <boost/msm/event_traits.hpp>
 
 using namespace std;
 namespace msm = boost::msm;
@@ -16,14 +17,21 @@ namespace mpl = boost::mpl;
 // for And_ operator
 using namespace msm::front::euml;
 
-namespace
-{
+
+
+
 // events
 struct play {};
 struct end_pause {};
 struct stop {};
 struct pause {};
 struct open_close {};
+
+namespace boost { namespace msm{
+    template<> struct is_kleene_event< open_close > {
+      typedef boost::mpl::true_ type;
+    };
+}}
 
 // A "complicated" event type that carries some data.
 enum DiskTypeEnum
@@ -205,28 +213,41 @@ struct always_true
     }
 };
 
+struct say_monitor
+{
+    template <class EVT,class FSM,class SourceState,class TargetState>
+    void operator()(EVT const& ,FSM& ,SourceState& ,TargetState& )
+    {
+        std::cout << "say monitor" << std::endl;
+    }
+};
+struct say_stopped
+{
+    template <class EVT,class FSM,class SourceState,class TargetState>
+    void operator()(EVT const& ,FSM& ,SourceState& ,TargetState& )
+    {
+        std::cout << "say stopped" << std::endl;
+    }
+};
+
 // front-end: define the FSM structure
 struct Player_ : public msm::front::state_machine_def<Player_>
 {
     struct Stopped;
 
+    struct Monitor : public msm::front::state<>
+    {
+        template<class E, class FSM> void on_entry(E, FSM&) { }
+        template<class E, class FSM> void on_exit(E, FSM&) { }
+    };
+
     using transition_table = mpl::vector<
-        Row < Stopped , play        , Playing >,
         Row < Stopped , open_close  , Open    >,
         Row < Stopped , stop        , Stopped >,
-        Row < Open    , open_close  , Empty   >,
-        Row < Empty   , open_close  , Open    >,
-        Row < Empty   , cd_detected , Stopped >,
-        Row < Empty   , cd_detected , none    >,
-        Row < Playing , stop        , Stopped >,
-        Row < Playing , pause       , Paused  >,
-        Row < Playing , open_close  , Open    >,
-        Row < Paused  , end_pause   , Playing >,
-        Row < Paused  , stop        , Stopped >,
-        Row < Paused  , open_close  , Open    >
+        Row < Open    , open_close  , Empty   >
     >;
 
-    using initial_state = Stopped;
+    using initial_state = mpl::vector<Stopped>;
 
     template <class FSM, class Event>
     void no_transition(const Event& e, FSM&, int state)
@@ -234,7 +255,6 @@ struct Player_ : public msm::front::state_machine_def<Player_>
         std::cout << "no transition from state " << state << " on event " << typeid(e).name() << std::endl;
     }
 };
-
 typedef msm::back::state_machine<Player_> Player;
 
 
@@ -245,7 +265,6 @@ struct Player_::Stopped : public msm::front::state<>
 
     void on_entry(stop, Player& p)
     {
-        std::cout << "enter stop stop" << std::endl;
     }
 
     void on_entry(cd_detected, Player& p)
@@ -262,7 +281,6 @@ struct Player_::Stopped : public msm::front::state<>
 
     void on_exit(stop, Player&)
     {
-        std::cout << "exit stop stop" << std::endl;
     }
 };
 
@@ -280,10 +298,10 @@ void test()
 {
     Player p;
     p.start();
-    p.process_event(stop{});
+    p.process_event(open_close{});
     p.process_event(stop{});
 
-}}
+}
 
 int main()
 {

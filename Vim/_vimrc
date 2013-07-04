@@ -57,9 +57,10 @@ set smartcase
 
 " Enable syntax coloring
 syntax enable
+syntax on
 
-" Set colorscheme
-colorscheme default
+" Set the color scheme
+colorscheme torte
 
 
 " -----------------------------------------------------------------------------
@@ -89,6 +90,23 @@ fun! OpenFileBrowser()
     :Ve
     exec ":normal 1G/^" . file . "\n"
 endf
+
+
+" Toggle between absolute and relative line numbers
+function! NumberToggle()
+  if(&relativenumber == 1)
+    set number
+  else
+    set relativenumber
+  endif
+endfunc
+
+nnoremap <C-n> :call NumberToggle()<cr>
+au FocusLost * :set number
+au FocusGained * :set relativenumber
+autocmd InsertEnter * :set number
+autocmd InsertLeave * :set relativenumber
+
 
 
 :map <F1> :NERDTreeToggle<CR>
@@ -124,6 +142,8 @@ set rtp+=~/.vim/bundle/vundle
 call vundle#rc()
 
 Bundle 'gmarik/vundle'
+Bundle 'NerdTree'
 Bundle 'Align'
+Bundle 'CSApprox'
 
 filetype plugin indent on

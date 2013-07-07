@@ -27,20 +27,14 @@ void SetPromise(std::promise<void>& p, F f)
 }
 
 
-template<typename F>
-auto MakePackagedTask(F f) -> std::packaged_task<decltype(f())()>
+template<typename F, typename ...Args>
+auto Async(F f, Args&& ...args) -> std::future<decltype(f(std::declval<Args>()...))>
 {
-    return std::packaged_task<decltype(f())()>(f);
-}
-
-
-template<typename F>
-auto Async(F f) -> std::future<decltype(f())>
-{
-    auto task = MakePackagedTask(f);
-    auto future_result = task.get_future();
-    std::thread(std::move(task)).detach();
-    return future_result;
+    typedef decltype(f(std::declval<Args>()...)) R;
+    auto task = std::packaged_task<R(Args...)>(f);
+    auto future = task.get_future();
+    std::thread(std::move(task), std::forward<Args>(args)...).detach();
+    return future;
 }
 
 

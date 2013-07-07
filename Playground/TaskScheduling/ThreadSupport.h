@@ -42,10 +42,33 @@ auto Async(F f, Args&& ...args) -> std::future<decltype(f(std::declval<Args>()..
 
 struct Scheduler
 {
-    Scheduler() : mLifetime(nullptr, [](void*){}) {}
+    Scheduler() : mLifetime(nullptr, [](void*){})
+    {
+        auto checker = get_checker();
+        Async([=]{
+            try {
+                while (!checker.expired()) {
+                    std::function<void()> f;
+                    q.pop(f);
+                    f();
+                }
+            }
+            catch (QuitException) {
+                // exit the thread.
+            }
+        });
+    }
 
     Scheduler(const Scheduler&) = delete;
     Scheduler& operator=(const Scheduler&) = delete;
+
+
+    ~Scheduler()
+    {
+        dispatch([=]{
+            throw QuitException{};
+        }).get();
+    }
 
     template<typename F>
     auto dispatch(F f) -> std::future<decltype(f())>
@@ -65,6 +88,7 @@ struct Scheduler
     }
 
 private:
+    struct QuitException {};
     template<typename F>
     auto do_schedule(F f, int timeout, std::weak_ptr<void> lifetime_checker) -> decltype(Async(f))
     {

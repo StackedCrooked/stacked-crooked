@@ -7,6 +7,9 @@
 namespace ThreadSupport {
 
 
+//
+// Helper functions
+//
 template<typename F>
 auto MakeSharedPromise(F f) -> std::shared_ptr<std::promise<decltype(f())>>
 {
@@ -40,6 +43,9 @@ auto Async(F f, Args&& ...args) -> std::future<decltype(f(std::declval<Args>()..
 }
 
 
+//
+// Scheduler
+//
 struct Scheduler
 {
     Scheduler() : mLifetime(nullptr, [](void*){})

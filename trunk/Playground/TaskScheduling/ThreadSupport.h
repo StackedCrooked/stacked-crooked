@@ -2,7 +2,7 @@
 #include <thread>
 
 
-namespace TreadSupport {
+namespace ThreadSupport {
 
 
 template<typename F>
@@ -27,32 +27,21 @@ void SetPromise(std::promise<void>& p, F f)
 }
 
 
-template<typename SinkFunction>
-struct Dispatcher
+template<typename F>
+auto MakePackagedTask(F f) -> std::packaged_task<decltype(f())()>
 {
-    Dispatcher(SinkFunction sink_function) :
-        sink_function_(sink_function)
-    {
-    }
-
-    template<typename F>
-    auto operator()(F f) const -> std::future<decltype(f())>
-    {
-        auto p = MakeSharedPromise(f);
-        sink_function_([=]{ SetPromise(*p, f); });
-        return p->get_future();
-    }
-
-    SinkFunction sink_function_;
-};
-
-
-
-template<typename SinkFunction>
-Dispatcher<SinkFunction> MakeSink(SinkFunction sink)
-{
-    return Dispatcher<SinkFunction>(sink);
+    return std::packaged_task<decltype(f())()>(f);
 }
 
 
-} // namespace ThreadSupport
+template<typename F>
+auto Async(F f) -> std::future<decltype(f())>
+{
+    auto task = MakePackagedTask(f);
+    auto future_result = task.get_future();
+    std::thread(std::move(task)).detach();
+    return future_result;
+}
+
+
+} // namespace TreadSupport

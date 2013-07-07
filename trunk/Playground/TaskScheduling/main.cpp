@@ -1,31 +1,23 @@
 #include "ThreadSupport.h"
 #include <iostream>
 
-std::atomic<bool> quit{false};
-
-auto is_quit = []{ return !quit; };
-
 
 int main()
 {
-    using namespace ThreadSupport;
+    using ThreadSupport::Scheduler;
 
-    Async([]{ std::cout << "ABC" << std::endl; }).get();
-    auto sum = [](int a, int b){ return a + b; };
-    std::cout << Async(sum, 3, 4).get() << std::endl;
-
-
-    int n = 42;
-    auto increment = [](int& n) { n++; };
-
-    Async(increment, std::ref(n)).get();
-    std::cout << n << std::endl;
-
+    // create scheduler on the stack
     Scheduler s;
+    
+    // schedule a number of taskes with timeouts
     for (int i = 1; i < 1024 * 1024; i = 2 * i)
     {
         s.schedule([=]{ std::cout << "i: " << i << std::endl; }, i);
     }
+    
+    // sleep for one second to allow some of the tasks to run
     sleep(1);
+    
+    // End of scope => Scheduler will be destroyed => scheduled threads are cancelled!
     std::cout << "End of scope!" << std::endl;
 }

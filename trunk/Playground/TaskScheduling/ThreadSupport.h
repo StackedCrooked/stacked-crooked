@@ -96,7 +96,9 @@ struct Scheduler
 
 private:
     typedef std::chrono::system_clock Clock;
+    
     struct QuitException {};
+    
     template<typename F>
     auto do_schedule(F f, Clock::time_point absolute_time, std::weak_ptr<void> lifetime_checker) -> decltype(Async(f))
     {
@@ -118,5 +120,6 @@ private:
     tbb::concurrent_bounded_queue<std::function<void()>> concurrent_queue;
     std::shared_ptr<void> mLifetime;
 };
+
 
 } // namespace TreadSupport

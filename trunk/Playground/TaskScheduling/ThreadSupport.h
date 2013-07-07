@@ -51,7 +51,9 @@ struct Scheduler
     auto dispatch(F f) -> std::future<decltype(f())>
     {
         auto p = MakeSharedPromise(f);
-        q.push(f);
+        q.push([=]{
+            SetPromise(*p, f);
+        });
         return p->get_future();
     }
 

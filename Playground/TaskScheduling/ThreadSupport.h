@@ -67,7 +67,7 @@ struct Scheduler
     {
         dispatch([=]{
             throw QuitException{};
-        }).get();
+        }).wait();
     }
 
     template<typename F>
@@ -84,23 +84,24 @@ struct Scheduler
     auto schedule(F f, int timeout) -> decltype(Async(f))
     {
         auto checker = get_checker();
-        return Async([=] { this->do_schedule(f, timeout, checker); });
+        auto absolute_time = Clock::now() + std::chrono::milliseconds(timeout);
+        return Async([=] { this->do_schedule(f, absolute_time, checker); });
     }
 
 private:
+    typedef std::chrono::system_clock Clock;
     struct QuitException {};
     template<typename F>
-    auto do_schedule(F f, int timeout, std::weak_ptr<void> lifetime_checker) -> decltype(Async(f))
+    auto do_schedule(F f, Clock::time_point absolute_time, std::weak_ptr<void> lifetime_checker) -> decltype(Async(f))
     {
         typedef std::chrono::system_clock Clock;
-        auto absolute_time = Clock::now() + std::chrono::milliseconds(timeout);
         while (Clock::now() < absolute_time) {
-            usleep(500);
+            usleep(500000);
             if (lifetime_checker.expired()) {
                 throw std::runtime_error("cancelled");
             }
         }
-        dispatch(f);
+        return dispatch(f);
     }
 
     std::weak_ptr<void> get_checker() const

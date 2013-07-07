@@ -22,5 +22,10 @@ int main()
     std::cout << n << std::endl;
 
     Scheduler s;
-    std::cout << s.dispatch([]{ return 1; }).get() << std::endl;
+    for (int i = 1; i < 1024 * 1024; i = 2 * i)
+    {
+        s.schedule([=]{ std::cout << "i: " << i << std::endl; }, i);
+    }
+    sleep(1);
+    std::cout << "End of scope!" << std::endl;
 }

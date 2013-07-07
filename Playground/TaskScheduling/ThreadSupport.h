@@ -32,7 +32,7 @@ auto Async(F f, Args&& ...args) -> std::future<decltype(f(std::declval<Args>()..
 {
     typedef decltype(f(std::declval<Args>()...)) R;
     auto task = std::packaged_task<R(Args...)>(f);
-    auto future = task.get_future();
+    std::future<R> future = task.get_future();
     std::thread(std::move(task), std::forward<Args>(args)...).detach();
     return future;
 }

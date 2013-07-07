@@ -1,5 +1,7 @@
+#include "tbb/concurrent_queue.h"
 #include <future>
 #include <thread>
+#include <unistd.h>
 
 
 namespace ThreadSupport {
@@ -37,5 +39,51 @@ auto Async(F f, Args&& ...args) -> std::future<decltype(f(std::declval<Args>()..
     return future;
 }
 
+
+struct Scheduler
+{
+    Scheduler() : mLifetime(nullptr, [](void*){}) {}
+
+    Scheduler(const Scheduler&) = delete;
+    Scheduler& operator=(const Scheduler&) = delete;
+
+    template<typename F>
+    auto dispatch(F f) -> std::future<decltype(f())>
+    {
+        auto p = MakeSharedPromise(f);
+        q.push(f);
+        return p->get_future();
+    }
+
+    template<typename F>
+    auto schedule(F f, int timeout) -> decltype(Async(f))
+    {
+        auto checker = get_checker();
+        return Async([=] { this->do_schedule(f, timeout, checker); });
+    }
+
+private:
+    template<typename F>
+    auto do_schedule(F f, int timeout, std::weak_ptr<void> lifetime_checker) -> decltype(Async(f))
+    {
+        typedef std::chrono::system_clock Clock;
+        auto absolute_time = Clock::now() + std::chrono::milliseconds(timeout);
+        while (Clock::now() < absolute_time) {
+            usleep(500);
+            if (lifetime_checker.expired()) {
+                throw std::runtime_error("cancelled");
+            }
+        }
+        dispatch(f);
+    }
+
+    std::weak_ptr<void> get_checker() const
+    {
+        return mLifetime;
+    }
+
+    tbb::concurrent_bounded_queue<std::function<void()>> q;
+    std::shared_ptr<void> mLifetime;
+};
 
 } // namespace TreadSupport

@@ -55,7 +55,7 @@ struct Scheduler
             try {
                 while (!checker.expired()) {
                     std::function<void()> f;
-                    q.pop(f);
+                    concurrent_queue.pop(f);
                     f();
                 }
             }
@@ -80,7 +80,7 @@ struct Scheduler
     auto dispatch(F f) -> std::future<decltype(f())>
     {
         auto p = MakeSharedPromise(f);
-        q.push([=]{
+        concurrent_queue.push([=]{
             SetPromise(*p, f);
         });
         return p->get_future();
@@ -115,7 +115,7 @@ private:
         return mLifetime;
     }
 
-    tbb::concurrent_bounded_queue<std::function<void()>> q;
+    tbb::concurrent_bounded_queue<std::function<void()>> concurrent_queue;
     std::shared_ptr<void> mLifetime;
 };
 

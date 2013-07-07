@@ -1,47 +1,16 @@
 #include "tbb/concurrent_queue.h"
-#include <chrono>
 #include <future>
 #include <iostream>
-#include <mutex>
-#include <thread>
+#include <vector>
+#include <unordered_set>
 #include <unistd.h>
 
-namespace {
 
-using Clock = std::chrono::high_resolution_clock;
-
-template<typename T>
-using SharedPromise = std::shared_ptr<std::promise<T>>;
-
-template<typename F>
-auto make_shared_promise(F f) -> SharedPromise<decltype(f())>
-{
-    return std::make_shared<std::promise<decltype(f())>>();
-}
-
-
-struct Lifetime
-{
-    Lifetime() : mSharedPtr(nullptr, [](void*){}) {}
-
-    void reset()
-    {
-        mSharedPtr.reset();
-    }
-
-    std::weak_ptr<void> get_lifetime_checker() const
-    {
-        return mSharedPtr;
-    }
-
-    std::shared_ptr<void> mSharedPtr;
-};
-
+std::atomic<unsigned> exception_counter{0};
 
 struct Stack
 {
     Stack() :
-        mQuitFlag(false),
         mThread([=]{
             try {
                 for (;;) {
@@ -52,15 +21,15 @@ struct Stack
             } catch (int) {
                 std::cout << "Stopping the thread!" << std::endl;
             }
-        })
+        }),
+        mCheckLifetime(this, [](Stack*){})
     {
     }
 
     ~Stack()
     {
-        mQuitFlag = true;
+        mCheckLifetime.reset();
         q.push([]{throw 1;});
-        mCondition.notify_all();
         mThread.join();
     }
 
@@ -78,44 +47,43 @@ struct Stack
     }
 
     template<typename F>
-    auto schedule(F f, unsigned us) -> std::future<decltype(f())>
+    auto schedule(F f, unsigned ms) -> std::future<decltype(f())>
     {
-        using namespace std::chrono;
+        return do_schedule(f, ms, 0);
+    }
 
-        //auto lifetime_checker = mLifetime.get_lifetime_checker();
-        auto absolute_time = Clock::now() + microseconds(us);
-
-        std::packaged_task<void()> task([=]() mutable -> decltype(f()) {
-            if (mQuitFlag) {
-                throw std::runtime_error("QuitFlag is set.");
-            }
-            std::unique_lock<std::mutex> lock(mMutex);
-            while (Clock::now() < absolute_time) {
-                mCondition.wait_until(lock, absolute_time);
-                if (mQuitFlag) {
-                    throw std::runtime_error("QuitFlag is set.");
-                }
-            }
-            return dispatch(f).get();
-        });
-
-        auto future = task.get_future();
-
-        for (;;)
+private:
+    template<typename F>
+    auto do_schedule(F f, unsigned ms, unsigned wait) -> std::future<decltype(f())>
+    {
+        if (wait > 0)
         {
-            try
-            {
-                std::thread(std::move(task)).detach();
-                return future;
-            }
-            catch (std::system_error& e)
-            {
-                std::cout << e.what() << std::endl;
-                std::unique_lock<std::mutex> lock(mMutex);
-                mCondition.wait(lock);
-            }
+            std::this_thread::sleep_for(std::chrono::microseconds(wait));
+        }
+        else
+        {
+            wait = 2;
         }
 
+        try
+        {
+            // start thread
+            auto p = make_shared_promise(f);
+            std::weak_ptr<Stack> checklifetime = mCheckLifetime;
+            std::thread([=]{
+                usleep(1000 * ms);
+                if (checklifetime.expired()) {
+                    return;
+                }
+                this->set_promise(*p, [=]{ return dispatch(f).get(); });
+            }).detach();
+            return p->get_future();
+        }
+        catch (std::system_error& e)
+        {
+            exception_counter++;
+            return do_schedule(f, ms, wait * 2);
+        }
     }
 
     template<typename R, typename F>
@@ -131,39 +99,59 @@ struct Stack
         p.set_value();
     }
 
-    tbb::concurrent_bounded_queue<std::function<void()>> q;
-    std::atomic<bool> mQuitFlag;
-    std::condition_variable mCondition;
-    mutable std::mutex mMutex;
-    std::thread mThread;
-};
+    template<typename T>
+    using SharedPromise = std::shared_ptr<std::promise<T>>;
 
-}
+    template<typename F>
+    auto make_shared_promise(F f) -> SharedPromise<decltype(f())>
+    {
+        return std::make_shared<std::promise<decltype(f())>>();
+    }
+
+    tbb::concurrent_bounded_queue<std::function<void()>> q;
+    std::thread mThread;
+    std::shared_ptr<Stack> mCheckLifetime;
+};
 
 
 int main()
 {
-    std::cout << __VERSION__ << std::endl;
-    std::thread([]{ sleep(2); std::cout << "Timeout!" << std::endl; std::abort(); }).detach();
     Stack s;
     s.dispatch([]{});
 
     std::cout << s.dispatch([] { return "Hello dispatch!"; }).get() << std::endl;
 
-    for (uint64_t i = 1; i != 1024*1024 ; i = std::max((3 * i) / 2, i + 1))
-    {
 
-        using namespace std::chrono;
-        auto scheduled_time = Clock::now();
-        s.schedule([=] {
-            auto actual_executed_time = Clock::now() - scheduled_time;
-            std::cout
-                    << "intended_executed_time: " << i
-                    << "\tactual_executed_time: " << duration_cast<microseconds>(actual_executed_time).count()
-                    << "\toverhead: " << (actual_executed_time.count() - i)
-                    << std::endl;
-        }, i);
+    std::vector<std::future<int>> futures;
+    futures.reserve(500);
+    for (auto i = 0UL; i != futures.capacity(); ++i)
+    {
+        auto t = rand()%1000;
+        futures.emplace_back(
+                    s.schedule([=]() -> int { return t; }, t)
+        );
     }
-    usleep(1000000);
+
+
+    [&]{
+        std::unordered_set<void*> ok;
+        for (;;)
+        {
+            for (auto& f : futures)
+            {
+                if (0u == ok.count(&f) && std::future_status::ready == f.wait_for(std::chrono::microseconds(0)))
+                {
+                    std::cout << (&f - &*futures.begin()) << '\t' << f.get() << std::endl;
+                    ok.insert(&f);
+                    if (ok.size() == futures.size())
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+    }();
+
+    std::cout << std::endl << "exception_counter: " << exception_counter << std::endl;
 }
 

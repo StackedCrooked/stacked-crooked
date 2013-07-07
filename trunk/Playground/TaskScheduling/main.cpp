@@ -1,6 +1,11 @@
 #include "ThreadSupport.h"
 #include <iostream>
 
+std::atomic<bool> quit{false};
+
+auto is_quit = []{ return !quit; };
+
+
 int main()
 {
     using namespace ThreadSupport;
@@ -16,4 +21,6 @@ int main()
     Async(increment, std::ref(n)).get();
     std::cout << n << std::endl;
 
+    Scheduler s;
+    std::cout << s.dispatch([]{ return 1; }).get() << std::endl;
 }

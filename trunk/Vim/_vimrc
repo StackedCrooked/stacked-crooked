@@ -142,8 +142,8 @@ set rtp+=~/.vim/bundle/vundle
 call vundle#rc()
 
 Bundle 'gmarik/vundle'
-Bundle 'NerdTree'
+"Bundle 'NerdTree'
 Bundle 'Align'
-Bundle 'CSApprox'
+"Bundle 'CSApprox'
 
 filetype plugin indent on

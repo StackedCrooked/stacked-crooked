@@ -64,7 +64,6 @@ private:
     void import_dir(const std::string& dir)
     {
         import_dir_impl(dir, 0);
-        std::cout << "FINISHED IMPORTING" << std::endl;
     }
     void import_file(const std::string& file)
     {
@@ -103,7 +102,7 @@ void test()
         auto status = fut.wait_for(std::chrono::milliseconds(10));
         if (status == std::future_status::ready)
         {
-            std::cout << "Got: " << fut.get() << std::endl;
+            std::cout << "Imported: " << fut.get() << std::endl;
         }
         else if (status == std::future_status::timeout)
         {

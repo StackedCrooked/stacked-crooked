@@ -2,6 +2,7 @@
 #include <deque>
 #include <future>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -21,25 +22,20 @@ std::string get_extension(const std::string& file)
 
 struct Importer
 {
-    Importer(const std::string& dir) :
-        fut(std::async(std::launch::async, [=]{ 
-            this->import(dir);
-        }))
+    Importer(const std::string& dir)
     {   
+        std::thread([=]{ this->import(dir); }).detach();
     }
 
-    ~Importer()
-    {
-        
-    }
-    
     std::future<std::string> pop()
     {
-        return std::async(std::launch::async, [=]() -> std::string {
+        auto prom = std::make_shared<std::promise<std::string>>();
+        std::thread([=] {
             std::string file;
             queue.pop(file);
-            return file;
-        });
+            prom->set_value(file);
+        }).detach();
+        return prom->get_future();
     }
     
 private:
@@ -68,6 +64,7 @@ private:
     void import_dir(const std::string& dir)
     {
         import_dir_impl(dir, 0);
+        std::cout << "FINISHED IMPORTING" << std::endl;
     }
     void import_file(const std::string& file)
     {
@@ -111,12 +108,12 @@ void test()
         else if (status == std::future_status::timeout)
         {
             std::cerr << "TIMOUT!" << std::endl;
-            std::abort();
+            return;
         }
         else
         {
             std::cerr << "UNEXPECTED FUTURE_STATUS" << std::endl;
-            std::abort();
+            return;
         }
     }
 }

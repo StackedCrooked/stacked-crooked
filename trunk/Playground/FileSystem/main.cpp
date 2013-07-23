@@ -3,6 +3,7 @@
 #include <future>
 #include <iostream>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -28,28 +29,39 @@ struct Importer
     {   
         std::cout << __LINE__ << std::endl;
     }
-    
-    std::string pop()
+
+    ~Importer()
     {
-        std::string file;
-        queue.pop(file);
-        return file;
+    }
+    
+    std::future<std::string> pop()
+    {
+        return std::async(std::launch::async, [=]() -> std::string {
+            std::string file;
+            queue.pop(file);
+            return file;
+        });
     }
     
 private:
-    void import_dir(const std::string& dir)
+    void import_dir_impl(const std::string& dir, int depth)
     {
+        std::cout << "depth: " << depth << std::endl;
         using namespace boost::filesystem;
         for (auto it = directory_iterator(dir), end = directory_iterator(); it != end; ++it)
         {
             auto entry = *it;
-            if (is_directory(entry))
+            auto str = entry.path().string();
+            std::cout << "Got entry: " << str << std::endl;
+            if (is_regular_file(entry))
             {
-                import_dir(entry.path().string());
-            }
-            else if (is_regular_file(entry))
-            {
+                std::cout << str << " is a file" << std::endl;
                 import_file(entry.path().string());
+            }
+            else if (is_directory(entry))
+            {
+                std::cout << str << " is a directory" << std::endl;
+                import_dir_impl(entry.path().string(), depth + 1);
             }
             else
             {
@@ -58,6 +70,10 @@ private:
         }
     }
     
+    void import_dir(const std::string& dir)
+    {
+        import_dir_impl(dir, 0);
+    }
     void import_file(const std::string& file)
     {
         // check extension
@@ -86,14 +102,40 @@ private:
     tbb::concurrent_bounded_queue<std::string> queue;
 };
 
-int main()
+void test()
 {
     std::cout << __LINE__ << std::endl;
     Importer importer(".");
     for (int i = 0; i != 10; ++i)
     {
         std::cout << __LINE__ << std::endl;
-        std::cout << importer.pop() << std::endl;
+        std::future<std::string> fut = importer.pop();
+        auto status = fut.wait_for(std::chrono::milliseconds(10));
+        if (status == std::future_status::ready)
+        {
+            std::cout << "POPPED: " << fut.get() << std::endl;
+        }
+        else if (status == std::future_status::timeout)
+        {
+            throw std::runtime_error("Timeout");
+        }
+        else
+        {
+            throw std::runtime_error("Not started yet!");
+        }
     }
     std::cout << __LINE__ << std::endl;
 }
+
+int main()
+{
+    try
+    {
+        test();
+    }
+    catch (const std::exception& exc)
+    {
+        std::cerr << exc.what() << std::endl;
+    }
+}
+

@@ -1,4 +1,3 @@
-#define BOOST_FILESYSTEM_DYN_LINK 1
 #include <deque>
 #include <future>
 #include <iostream>
@@ -93,9 +92,8 @@ private:
     tbb::concurrent_bounded_queue<std::string> queue;
 };
 
-void test()
+void test(Importer& importer)
 {
-    Importer importer(".");
     for (;;)
     {
         std::future<std::string> fut = importer.pop();
@@ -106,26 +104,24 @@ void test()
         }
         else if (status == std::future_status::timeout)
         {
-            std::cerr << "TIMOUT!" << std::endl;
-            return;
+            throw std::runtime_error("Timeout!");
         }
         else
         {
-            std::cerr << "UNEXPECTED FUTURE_STATUS" << std::endl;
-            return;
+            throw std::runtime_error("Unexpected status!");
         }
     }
 }
 
 int main()
 {
+    Importer importer(".");
     try
     {
-        test();
+        test(importer);
     }
     catch (const std::exception& exc)
     {
         std::cerr << exc.what() << std::endl;
     }
 }
-

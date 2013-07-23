@@ -1,3 +1,3 @@
 all:
-	g++ -std=c++11 -O2 -Wall -Wextra -Werror -pedantic -isystem /opt/local/include -pthread main.cpp -ltbb /root/boost_1_54_0/stage/lib/libboost_filesystem.a /root/boost_1_54_0/stage/lib/libboost_system.a
+	g++-4.8 -std=c++11 -O2 -Wall -Wextra -Werror -pedantic -isystem /opt/local/include -L/opt/local/lib -pthread main.cpp -ltbb /Volumes/Users/francis/Development/programming/projects/ps_backup/ps/lib/boost/Darwin/x86_64/libboost_filesystem.a /Volumes/Users/francis/Development/programming/projects/ps_backup/ps/lib/boost/Darwin/x86_64/libboost_system.a
 	./a.out

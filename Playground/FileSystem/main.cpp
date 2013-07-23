@@ -32,6 +32,7 @@ struct Importer
 
     ~Importer()
     {
+        
     }
     
     std::future<std::string> pop()
@@ -106,11 +107,13 @@ void test()
 {
     std::cout << __LINE__ << std::endl;
     Importer importer(".");
-    for (int i = 0; i != 10; ++i)
+    for (;;)
     {
-        std::cout << __LINE__ << std::endl;
+        std::cout << "popping the future" << std::endl;
         std::future<std::string> fut = importer.pop();
+        std::cout << "wait_for 10 ms" << std::endl;
         auto status = fut.wait_for(std::chrono::milliseconds(10));
+        std::cout << "finished waiting, getting result" << std::endl;
         if (status == std::future_status::ready)
         {
             std::cout << "POPPED: " << fut.get() << std::endl;

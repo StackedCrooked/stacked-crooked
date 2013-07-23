@@ -23,11 +23,9 @@ struct Importer
 {
     Importer(const std::string& dir) :
         fut(std::async(std::launch::async, [=]{ 
-            std::cout << __LINE__ << std::endl;
             this->import(dir);
         }))
     {   
-        std::cout << __LINE__ << std::endl;
     }
 
     ~Importer()
@@ -47,21 +45,17 @@ struct Importer
 private:
     void import_dir_impl(const std::string& dir, int depth)
     {
-        std::cout << "depth: " << depth << std::endl;
         using namespace boost::filesystem;
         for (auto it = directory_iterator(dir), end = directory_iterator(); it != end; ++it)
         {
             auto entry = *it;
             auto str = entry.path().string();
-            std::cout << "Got entry: " << str << std::endl;
             if (is_regular_file(entry))
             {
-                std::cout << str << " is a file" << std::endl;
                 import_file(entry.path().string());
             }
             else if (is_directory(entry))
             {
-                std::cout << str << " is a directory" << std::endl;
                 import_dir_impl(entry.path().string(), depth + 1);
             }
             else
@@ -105,29 +99,26 @@ private:
 
 void test()
 {
-    std::cout << __LINE__ << std::endl;
     Importer importer(".");
     for (;;)
     {
-        std::cout << "popping the future" << std::endl;
         std::future<std::string> fut = importer.pop();
-        std::cout << "wait_for 10 ms" << std::endl;
         auto status = fut.wait_for(std::chrono::milliseconds(10));
-        std::cout << "finished waiting, getting result" << std::endl;
         if (status == std::future_status::ready)
         {
-            std::cout << "POPPED: " << fut.get() << std::endl;
+            std::cout << "Got: " << fut.get() << std::endl;
         }
         else if (status == std::future_status::timeout)
         {
-            throw std::runtime_error("Timeout");
+            std::cerr << "TIMOUT!" << std::endl;
+            std::abort();
         }
         else
         {
-            throw std::runtime_error("Not started yet!");
+            std::cerr << "UNEXPECTED FUTURE_STATUS" << std::endl;
+            std::abort();
         }
     }
-    std::cout << __LINE__ << std::endl;
 }
 
 int main()

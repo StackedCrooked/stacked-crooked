@@ -37,3 +37,4 @@ menu Bookmarks._vimrc :tabnew ~/.vimrc<CR>
 menu Bookmarks._gvimrc :tabnew ~/.gvimrc<CR>
 menu Bookmarks._vim :tabnew ~/.vim<CR>
 endif
+

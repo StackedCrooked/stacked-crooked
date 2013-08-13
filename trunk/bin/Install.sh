@@ -4,10 +4,9 @@
     exit 1
 }
 
-DIR="$(dirname $0)"
-for dir in "$DIR/Common $DIR/$(uname)" ; do 
-    for file in $(find $dir -type f) ; do
-        ln -s $file $HOME/bin
+for dir in "Common $(uname)" ; do
+    for file in $(find $(dirname $0)/$dir -type f -name '*.sh') ; do
+        echo ln -fs $file $HOME/bin/$(basename $file)
     done
 done
 

@@ -5,6 +5,4 @@
     exit 1
 }
 
-COLUMN="$1"
-COMMAND="awk '{print \$$1}'"
-eval "$COMMAND"
+eval "awk '{print \$$1}'"

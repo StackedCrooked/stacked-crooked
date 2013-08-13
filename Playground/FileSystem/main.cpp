@@ -1,4 +1,5 @@
 #include <deque>
+#include <functional>
 #include <future>
 #include <iostream>
 #include <memory>
@@ -18,10 +19,12 @@ std::string get_extension(const std::string& file)
     return file.substr(file.rfind('.') + 1);
 }
 
+typedef std::function<bool(const std::string&)> Matcher;
 
 struct Importer
 {
-    Importer(const std::string& dir)
+    Importer(const std::string& dir, const Matcher& inMatcher) :
+        mMatcher(inMatcher)
     {   
         std::thread([=]{ this->import(dir); }).detach();
     }
@@ -87,6 +90,7 @@ private:
     }
     
     
+    Matcher mMatcher;
     std::deque<std::string> imported;
     std::future<void> fut;
     tbb::concurrent_bounded_queue<std::string> queue;
@@ -113,9 +117,11 @@ void test(Importer& importer)
     }
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    Importer importer(".");
+    if (argc != 3) throw argc;
+    std::string match = argv[2];
+    Importer importer(argv[1], [=](const std::string& file) { return file == match; });
     try
     {
         test(importer);

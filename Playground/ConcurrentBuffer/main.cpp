@@ -92,7 +92,7 @@ struct ConcurrentBuffer
 
         assert(numWritten >= mNumRead);
 
-        auto numUnread = std::min(len, numWritten - mNumRead);
+        auto numUnread = std::min(len, mBuffer.size() - (numWritten - mNumRead));
         if (numUnread == 0)
         {
             return 0;
@@ -118,7 +118,7 @@ struct ConcurrentBuffer
 
         assert(mNumWritten <= numRead);
 
-        auto availableSpace = std::min(len, mBuffer.size() - (mNumWritten - numRead));
+        auto availableSpace = std::min(len, mNumWritten - numRead);
         if (availableSpace == 0)
         {
             return 0;
@@ -160,14 +160,18 @@ int main()
         std::vector<uint8_t> receiveData(testData.size());
         auto numReceived = 0UL;
         while (numReceived != testData.size()) {
-            if (!buf.empty()) {
+            if (buf.empty()) {
                 print("READER: buffer is empty vOv");
+                sleep(1);
                 continue;
             }
+
             numReceived += buf.read(
                 &receiveData[0] + numReceived,
                 receiveData.size() - numReceived);
-            print(MakeString() << "READER: numReceived=" << numReceived);
+            if (numReceived != 0) {
+                print(MakeString() << "READER: numReceived=" << numReceived);
+            }
         }
         print(MakeString() << "testData=" << testData);
         print(MakeString() << "receiveData=" << receiveData);
@@ -188,8 +192,8 @@ int main()
                 break;
             }
         } else {
-            //print(MakeString() << "writer: write() returned 0, numWritten=" << numWritten);
-            //usleep(1000);
+            print(MakeString() << "writer: write() returned 0, numWritten=" << numWritten);
+            sleep(1);
         }
     }
 }

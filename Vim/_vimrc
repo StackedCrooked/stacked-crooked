@@ -92,26 +92,10 @@ fun! OpenFileBrowser()
 endf
 
 
-" Toggle between absolute and relative line numbers
-function! NumberToggle()
-  if(&relativenumber == 1)
-    set number
-  else
-    set relativenumber
-  endif
-endfunc
-
-nnoremap <C-n> :call NumberToggle()<cr>
-"au FocusLost * :set number
-"au FocusGained * :set relativenumber
-"autocmd InsertEnter * :set number
-"autocmd InsertLeave * :set relativenumber
 
 
-
-:map <F1> :NERDTreeToggle<CR>
-:map <F2> :tab split<CR>
-:map <F3> :NERDTreeFind<CR>
+:map <F2> :split<CR>
+:map <F3> :vsplit<CR>
 
 
 " -----------------------------------------------------------------------------
@@ -129,21 +113,4 @@ fun! OpenFile()
 endf
 
 " Map CTRL-G to the OpenFile function
-:map <C-G> :call OpenFile()<CR>
-
-
-" -----------------------------------------------------------------------------
-" Vundle settings
-" -----------------------------------------------------------------------------
-set nocompatible               " be iMproved
-filetype off                   " required!
-
-set rtp+=~/.vim/bundle/vundle
-call vundle#rc()
-
-Bundle 'gmarik/vundle'
-Bundle 'Align'
-Bundle 'NERD_tree-Project'
-
-filetype plugin indent on
-
+":map <C-G> :call OpenFile()<CR>

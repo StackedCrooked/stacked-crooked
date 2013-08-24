@@ -92,24 +92,28 @@ struct ConcurrentBuffer
 
         assert(numWritten >= mNumRead);
 
-        auto numUnread = std::min(len, mBuffer.size() - (numWritten - mNumRead));
-        if (numUnread == 0)
+        // number of bytes availalbe for reading is equal to the total number of
+        // written bytes subtracted with the number of already read bytes
+        // with the input length as an upper bound
+        auto available = std::min(len, numWritten - mNumRead);
+
+
+        if (available == 0)
         {
             return 0;
         }
 
-        mBuffer.resize(mBuffer.size() + numUnread);
         auto begin = mBuffer.begin() + mNumRead;
+        auto end = begin + available;
 
-        for (auto i = 0UL; i != numUnread; ++i)
+        for (; begin != end;)
         {
             *buf++ = *begin++;
         }
 
-
         // this enables writer thread to start writing again
-        mNumRead += numUnread;
-        return numUnread;
+        mNumRead += available;
+        return available;
     }
 
     std::size_t write(uint8_t* buf, std::size_t len)
@@ -118,21 +122,22 @@ struct ConcurrentBuffer
 
         assert(mNumWritten <= numRead);
 
-        auto availableSpace = std::min(len, mNumWritten - numRead);
+        // the number of bytes available for writing is equal to the the size
+        // of the buffer plus the  of bytes written in the past mins the number
+        // of read bytes in the  past
+        // the given length is an upper limit
+        auto availableSpace = std::min(len, mBuffer.size() + mNumWritten - numRead);
         if (availableSpace == 0)
         {
             return 0;
         }
 
-        mBuffer.resize(mBuffer.size() + availableSpace);
+
         auto begin = mBuffer.begin() + mNumWritten;
         auto end = begin + availableSpace;
-        print(MakeString() << "Writing: " << std::vector<uint8_t>(begin, end));
-
-        for (auto it = begin; it != end; ++it)
+        for (; begin != end; )
         {
-            print(MakeString() << "Writing byte: " << int(*buf));
-            *it++ = *buf++;
+            *begin++ = *buf++;
         }
 
         mNumWritten += availableSpace;

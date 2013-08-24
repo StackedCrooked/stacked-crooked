@@ -6,7 +6,7 @@
 set number
 
 " Paste doesn't indent or do funny stuff
-set paste
+set paste!
 
 " Add common search paths
 set path+=/usr/local/include,/opt/local/include
@@ -60,7 +60,7 @@ syntax enable
 syntax on
 
 " Set the color scheme
-colorscheme torte
+colorscheme koehler
 
 
 " -----------------------------------------------------------------------------

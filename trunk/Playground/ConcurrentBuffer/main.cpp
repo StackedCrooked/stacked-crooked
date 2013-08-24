@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 
-std::vector<uint8_t> generateTestData()
+std::vector<uint8_t> generateTestData(unsigned n)
 {
     std::vector<uint8_t> data;
-    data.reserve(1000);
+    data.reserve(n);
     while (data.size() != data.capacity())
     {
         data.push_back(data.size());
@@ -75,9 +75,9 @@ struct ConcurrentBuffer
     {
     }
 
-    std::size_t size() const
+    std::size_t capacity() const
     {
-        return mBuffer.size();
+        return mBuffer.capacity();
     }
 
     bool empty() const
@@ -92,23 +92,23 @@ struct ConcurrentBuffer
 
         assert(numWritten >= mNumRead);
 
-        // number of bytes availalbe for reading is equal to the total number of
-        // written bytes subtracted with the number of already read bytes
+        // number of bytes available for reading is equal to the total number of
+        // written bytes subtracted with the number of read bytes
         // with the input length as an upper bound
-        auto available = std::min(len, numWritten - mNumRead);
-
+        auto available = numWritten - mNumRead;
+        if (available > len)
+        {
+            available = len;
+        }
 
         if (available == 0)
         {
             return 0;
         }
 
-        auto begin = mBuffer.begin() + mNumRead;
-        auto end = begin + available;
-
-        for (; begin != end;)
+        for (auto i = 0UL; i != available; ++i)
         {
-            *buf++ = *begin++;
+            *buf++ = mBuffer.at((mNumRead + i) % capacity());
         }
 
         // this enables writer thread to start writing again
@@ -120,24 +120,24 @@ struct ConcurrentBuffer
     {
         std::size_t numRead = mNumRead;
 
-        assert(mNumWritten <= numRead);
+        assert(mNumWritten >= numRead);
 
         // the number of bytes available for writing is equal to the the size
         // of the buffer plus the  of bytes written in the past mins the number
         // of read bytes in the  past
-        // the given length is an upper limit
-        auto availableSpace = std::min(len, mBuffer.size() + mNumWritten - numRead);
+        auto availableSpace = capacity() - (mNumWritten - numRead);
+        if (availableSpace > len)
+        {
+            availableSpace = len;
+        }
         if (availableSpace == 0)
         {
             return 0;
         }
 
-
-        auto begin = mBuffer.begin() + mNumWritten;
-        auto end = begin + availableSpace;
-        for (; begin != end; )
+        for (unsigned i = 0; i != availableSpace; ++i)
         {
-            *begin++ = *buf++;
+            mBuffer.push_back(*buf++);
         }
 
         mNumWritten += availableSpace;
@@ -153,52 +153,43 @@ struct ConcurrentBuffer
 
 int main()
 {
-    print("Creating the ConcurrentBuffer");
-    ConcurrentBuffer buf(100);
+    // Our buffer has 50 bytes capacity;
+    ConcurrentBuffer buf(50);
 
-    print("Generate the test data");
-    auto testData = generateTestData();
+    // We will send 100000 bytes
+    auto testData = generateTestData(100000);
 
-    print("Start the reader thread");
+
+    //
+    // READER thread
+    //
     std::thread([&] {
-        print("Inside the reader thread");
-        std::vector<uint8_t> receiveData(testData.size());
+        std::vector<uint8_t> readBuffer(testData.size());
         auto numReceived = 0UL;
         while (numReceived != testData.size()) {
-            if (buf.empty()) {
-                print("READER: buffer is empty vOv");
-                sleep(1);
-                continue;
-            }
-
-            numReceived += buf.read(
-                &receiveData[0] + numReceived,
-                receiveData.size() - numReceived);
-            if (numReceived != 0) {
-                print(MakeString() << "READER: numReceived=" << numReceived);
+            if (auto n = buf.read(&readBuffer[0] + numReceived, readBuffer.size() - numReceived)) {
+                numReceived += n;
+            } else {
+                // avoid spinnig
+                usleep(1);
             }
         }
-        print(MakeString() << "testData=" << testData);
-        print(MakeString() << "receiveData=" << receiveData);
-        assert(testData == receiveData);
+        assert(testData == readBuffer);
 
     }).detach();
 
-    print("Start writing in the main thread.");
     auto numWritten = 0UL;
     while (numWritten != testData.size()) {
-        if (auto n = buf.write(
-                testData.data() + numWritten,
-                testData.size() - numWritten)) {
-
-            print(MakeString() << "n=" << n << " numWritten" << numWritten << " size=" << testData.size());
+        if (auto n = buf.write(testData.data() + numWritten, testData.size() - numWritten)) {
+            numWritten += n;
+            print(MakeString() << " last_read=" << n << " total_read=" << numWritten);
             if (numWritten == testData.size()) {
-                print("write buffer is complete.");
+                print("WRITER buffer is complete.");
                 break;
             }
         } else {
-            print(MakeString() << "writer: write() returned 0, numWritten=" << numWritten);
-            sleep(1);
+            // avoid spinning
+            usleep(1);
         }
     }
 }

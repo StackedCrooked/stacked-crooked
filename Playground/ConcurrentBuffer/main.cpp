@@ -9,59 +9,22 @@
 #include <stdint.h>
 
 
-std::vector<uint8_t> generateTestData(unsigned n)
+std::vector<uint8_t> generateTestData(unsigned n);
+
+
+void print(std::string str);
+
+
+inline std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec);
+
+
+struct MakeString
 {
-    std::vector<uint8_t> data;
-    data.reserve(n);
-    while (data.size() != data.capacity())
-    {
-        data.push_back(data.size());
-    }
-    return data;
-}
-
-
-void print(std::string str)
-{
-    static std::mutex fMutex;
-    std::lock_guard<std::mutex> lock(fMutex);
-    std::cout << str << '\n';
-}
-
-
-inline std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec)
-{
-    for (auto& el : vec)
-    {
-        os << std::setw(2) << std::setfill('0') << static_cast<int>(el) << ' ';
-    }
-    return os;
-}
-
-
-class MakeString
-{
-public:
     template <typename T>
-    MakeString & operator<<(const T & datum)
-    {
-        mBuffer << datum;
-        return *this;
-    }
-
-    MakeString & operator<<(uint8_t n)
-    {
-        mBuffer << std::setw(2) << std::setfill('0') << static_cast<int>(n) << ' ';
-        return *this;
-    }
-
-    operator std::string() const
-    { return mBuffer.str(); }
-
-    std::string str() const
-    { return mBuffer.str(); }
-
-private:
+    MakeString & operator<<(const T & datum);
+    MakeString & operator<<(uint8_t n);
+    operator std::string() const;
+    std::string str() const;
     std::ostringstream mBuffer;
 };
 
@@ -193,3 +156,58 @@ int main()
         }
     }
 }
+
+
+
+std::vector<uint8_t> generateTestData(unsigned n)
+{
+    std::vector<uint8_t> data;
+    data.reserve(n);
+    while (data.size() != data.capacity())
+    {
+        data.push_back(data.size());
+    }
+    return data;
+}
+
+
+void print(std::string str)
+{
+    static std::mutex fMutex;
+    std::lock_guard<std::mutex> lock(fMutex);
+    std::cout << str << '\n';
+}
+
+
+inline std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec)
+{
+    for (auto& el : vec)
+    {
+        os << std::setw(2) << std::setfill('0') << static_cast<int>(el) << ' ';
+    }
+    return os;
+}
+
+
+
+template <typename T>
+MakeString& MakeString::operator<<(const T & datum)
+{
+    mBuffer << datum;
+    return *this;
+}
+
+
+MakeString& MakeString::operator<<(uint8_t n)
+{
+    mBuffer << std::setw(2) << std::setfill('0') << static_cast<int>(n) << ' ';
+    return *this;
+}
+
+
+MakeString::operator std::string() const
+{ return mBuffer.str(); }
+
+
+std::string MakeString::str() const
+{ return mBuffer.str(); }

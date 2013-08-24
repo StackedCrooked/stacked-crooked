@@ -87,14 +87,12 @@ struct ConcurrentBuffer
 
     std::size_t read(uint8_t* buf, std::size_t len)
     {
-        // first make a copy of the number of written bytes and use it as
-        // an upper bound for the amount of data that we can read.
+        // first make a copy of the number of written bytes.
         std::size_t numWritten = mNumWritten;
-        std::size_t numRead = mNumRead;
 
-        assert(numWritten >= numRead);
+        assert(numWritten >= mNumRead);
 
-        auto numUnread = std::min(len, numWritten - numRead);
+        auto numUnread = std::min(len, numWritten - mNumRead);
         if (numUnread == 0)
         {
             return 0;
@@ -107,18 +105,20 @@ struct ConcurrentBuffer
         {
             *buf++ = *begin++;
         }
+
+
+        // this enables writer thread to start writing again
         mNumRead += numUnread;
         return numUnread;
     }
 
     std::size_t write(uint8_t* buf, std::size_t len)
     {
-        std::size_t numWritten = mNumWritten;
         std::size_t numRead = mNumRead;
 
-        assert(numWritten <= numRead);
+        assert(mNumWritten <= numRead);
 
-        auto availableSpace = std::min(len, mBuffer.size() - (numWritten - numRead));
+        auto availableSpace = std::min(len, mBuffer.size() - (mNumWritten - numRead));
         if (availableSpace == 0)
         {
             return 0;
@@ -135,7 +135,7 @@ struct ConcurrentBuffer
             *it++ = *buf++;
         }
 
-        mNumWritten = availableSpace;
+        mNumWritten += availableSpace;
         return availableSpace;
     }
 

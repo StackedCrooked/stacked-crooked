@@ -2,8 +2,8 @@
 set -x
 set -e
 
-unlink $HOME/.gvimrc
-unlink $HOME/.vimrc
+[ -f  $HOME/.gvimrc ] && unlink $HOME/.gvimrc
+[ -f  $HOME/.vimrc ] && unlink $HOME/.vimrc
 rm -rf $HOME/.viminfo
 rm -rf $HOME/.vim
 

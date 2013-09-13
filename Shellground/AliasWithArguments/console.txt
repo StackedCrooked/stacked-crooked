@@ -1,0 +1,4 @@
+increment() { echo $(($1 ++ 1)) ; }
+alias ++=increment
+++ 1
+++ 42

@@ -4,15 +4,13 @@ multiply() {
 
 
 bind() {
-  part="$1 $2" 
-  fun() {
-    eval "$part $1"
-  }
-  echo fun
+  program="$1"
+  arg="$2"
+  echo "$program $arg \$1"
 }
 
 alias x2="$(bind multiply 2)"
-alias x3="$(bind multiply 3)"
+x2 2
 
-x2 3
-x3 4
+alias x3="$(bind multiply 3)"
+x3 3

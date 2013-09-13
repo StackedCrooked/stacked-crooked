@@ -12,7 +12,7 @@ bind() {
 }
 
 alias x2="$(bind multiply 2)"
-alias x3="$(bind multiply 2)"
+alias x3="$(bind multiply 3)"
 
 x2 3
 x3 4

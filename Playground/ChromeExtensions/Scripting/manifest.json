@@ -1,0 +1,14 @@
+{
+    "manifest_version": 2,
+    "name": "Scripting",
+    "description": "Scripting",
+    "version": "1.0",
+    "permissions": [
+      "<all_urls>",
+      "unlimitedStorage"
+    ],
+    "browser_action": {
+      "default_icon": "icon.png",
+      "default_popup": "popup.html"
+    }
+}

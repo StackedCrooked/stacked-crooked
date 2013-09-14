@@ -60,7 +60,7 @@ syntax enable
 syntax on
 
 " Set the color scheme
-colorscheme koehler
+colorscheme desert
 
 
 " -----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ endf
 
 
 
-:map <F2> :split<CR>
+:map <F2> :tab split<CR>
 :map <F3> :vsplit<CR>
 
 
@@ -114,3 +114,4 @@ endf
 
 " Map CTRL-G to the OpenFile function
 ":map <C-G> :call OpenFile()<CR>
+

@@ -29,31 +29,39 @@ template<ContentType>
 struct ContentTypeString;
 
 
+template<>
 struct ContentTypeString<ContentType_TextHTML>
 {
-    static const char * content_type = "text/html";
+    static constexpr const char* content_type = "text/html";
 };
 
-struct ContentTypeString<ContentType_TextHTML>
+template<>
+struct ContentTypeString<ContentType_TextPlain>
 {
-    static const char * content_type = "text/html";
+    static constexpr const char* content_type = "text/plain";
 };
+
+
 template<Method>
 struct MethodValue;
 
-
-struct MethodValue<MethodType_Get>
+template<>
+struct MethodValue<Method_Get>
 {
-    static const char * http_method = "GET";
+    static constexpr const char * http_method = "GET";
 };
-    static const char * http_method = "GET";
-struct HighscorePostForm : ContentTypeString<ContentType_TextHTML>,
 
+template<>
+struct MethodValue<Method_Post>
 {
-    static const char * location = "hs/post";
-    static const char * http_method = "GET";
+    static constexpr const char * http_method = "POST";
+};
 
 
+
+struct HighscorePostForm : ContentTypeString<ContentType_TextHTML>,
+                           MethodValue<Method_Post>
+{
 };
 
 
@@ -67,7 +75,7 @@ protected:
 };
 
 
-struct GetHighScoreDeleteForm : GenericRequestHandler<GetHighScoreDeleteForm, Method::GET, ContentType::TextHTML>,
+struct GetHighScoreDeleteForm : GenericRequestHandler<GetHighScoreDeleteForm, Method_Get, ContentType_TextHTML>,
                                 FileServer
 {
     GetHighScoreDeleteForm() : FileServer("html/add.body")

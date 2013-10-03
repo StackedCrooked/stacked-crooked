@@ -1,5 +1,5 @@
-CPP_DEFINES = -ggdb3
-INCLUDE_DIRS = -Iinclude -I/opt/local/include
+CPP_DEFINES=-std=c++11 -ggdb3
+INCLUDE_DIRS=-Iinclude -I/opt/local/include
 LIBS = \
     -L/opt/local/lib \
     -lPocoFoundation \

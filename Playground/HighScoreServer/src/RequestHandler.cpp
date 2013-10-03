@@ -41,16 +41,15 @@ namespace HSServer
         mContentType(inContentType)
     {
         // Create the table if it doesn't already exist
-        static bool fFirstTime(true);
-        if (fFirstTime)
-        {
+        static bool fFirstTime = [&]() -> bool {
             mSession << "CREATE TABLE IF NOT EXISTS HighScores("
                      << "Id INTEGER PRIMARY KEY, "
                      << "Timestamp INTEGER, "
                      << "Name VARCHAR(20), "
                      << "Score INTEGER(5))", now;
-            fFirstTime = false;
-        }
+            return true;
+        }();
+        (void)fFirstTime;
     }
 
 

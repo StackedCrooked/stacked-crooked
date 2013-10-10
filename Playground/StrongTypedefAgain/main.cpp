@@ -122,12 +122,22 @@ int main()
     Server server {
         ServerId("s1"),
         Interfaces {
-            Interface { InterfaceId("i1"),
-                        Ports { Port { PortId("p11"), PortName("Jolly") },
-                                Port { PortId("p12"), PortName("Billy") } } },
-            Interface { InterfaceId("i2"),
-                        Ports { Port { PortId("p21"), PortName("Bimbo") },
-                                Port { PortId("p22"), PortName("Luffy") } } } } };
+            {
+                InterfaceId("i1"),
+                Ports {
+                    { PortId("p11"), PortName("Jolly") },
+                    { PortId("p12"), PortName("Billy") }
+                }
+            },
+            {
+                InterfaceId("i2"),
+                Ports {
+                    { PortId("p21"), PortName("Bimbo") },
+                    { PortId("p22"), PortName("Luffy") }
+                }
+            }
+        }
+    };
 
     auto interfaces = server.get<Interfaces>();
     std::cout << "InterfaceId: " << interfaces.at(0).get<InterfaceId>() << std::endl;
@@ -149,3 +159,22 @@ int main()
     handy.get(PortId()) = PortId("Port2");
     std::cout << handy.get(PortId {}) << std::endl;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

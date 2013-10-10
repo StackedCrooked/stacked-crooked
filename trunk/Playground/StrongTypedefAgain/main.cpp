@@ -119,21 +119,16 @@ typedef std::vector<Server> Servers;
 
 int main()
 {
-    Server server
-    {
+    Server server {
         ServerId("s1"),
-        Interfaces
-        {
-            {
-                InterfaceId("i1"),
-                Ports
-                {
-                    { PortId("p1"), PortName("Jolly") },
-                    { PortId("p2"), PortName("Billy") }
-                }
-            }
-        }
-    };
+        Interfaces {
+            Interface { InterfaceId("i1"),
+                        Ports { Port { PortId("p11"), PortName("Jolly") },
+                                Port { PortId("p12"), PortName("Billy") } } },
+            Interface { InterfaceId("i2"),
+                        Ports { Port { PortId("p21"), PortName("Bimbo") },
+                                Port { PortId("p22"), PortName("Luffy") } } } } };
+
     auto interfaces = server.get<Interfaces>();
     auto ports = interfaces.at(0).get<Ports>();
     std::cout << "Port name: " << ports.at(0).get<PortName>() << std::endl;

@@ -84,7 +84,7 @@ template<typename ...Args>
 struct Handy : std::tuple<Args...>
 {
     template<typename ...A>
-    Handy(A&& ...a) : std::tuple<Args...>(std::forward<A>(a)...) { }
+    Handy(A&& ...a) : std::tuple<Args...>(std::forward<A>(a)...) {}
 
     template<typename El>
     El & get() { return Get<El>(*this); }
@@ -99,12 +99,44 @@ struct Handy : std::tuple<Args...>
     T & get(T) { return get<T>(); }
 };
 
+
+using ServerId = StrongTypedef<std::string, struct ServerId_>;
+using InterfaceId = StrongTypedef<std::string, struct InterfaceId_>;
+using PortId = StrongTypedef<std::string, struct PortId_>;
+using PortName = StrongTypedef<std::string, struct PortName_>;
+
+
+#include <vector>
+
+typedef Handy<PortId, PortName> Port;
+typedef std::vector<Port> Ports;
+
+typedef Handy<InterfaceId, Ports> Interface;
+typedef std::vector<Interface> Interfaces;
+
+typedef Handy<ServerId, Interfaces> Server;
+typedef std::vector<Server> Servers;
+
 int main()
 {
-    using ServerId = StrongTypedef<std::string, struct ServerId_>;
-    using InterfaceId = StrongTypedef<std::string, struct InterfaceId_>;
-    using PortId = StrongTypedef<std::string, struct PortId_>;
-
+    Server server
+    {
+        ServerId("s1"),
+        Interfaces
+        {
+            {
+                InterfaceId("i1"),
+                Ports
+                {
+                    { PortId("p1"), PortName("Jolly") },
+                    { PortId("p2"), PortName("Billy") }
+                }
+            }
+        }
+    };
+    auto interfaces = server.get<Interfaces>();
+    auto ports = interfaces.at(0).get<Ports>();
+    std::cout << "Port name: " << ports.at(0).get<PortName>() << std::endl;
     Handy<ServerId, InterfaceId, PortId> handy(ServerId("s1"), InterfaceId("i1"), PortId("p1"));
     handy.get<ServerId>() = ServerId{"s2"};
     handy.get<PortId>() = PortId {"p2"};

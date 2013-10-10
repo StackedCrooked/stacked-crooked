@@ -122,14 +122,14 @@ int main()
     Server server {
         ServerId("s1"),
         Interfaces {
-            {
+            Interface {
                 InterfaceId("i1"),
                 Ports {
                     { PortId("p11"), PortName("Jolly") },
                     { PortId("p12"), PortName("Billy") }
                 }
             },
-            {
+            Interface {
                 InterfaceId("i2"),
                 Ports {
                     { PortId("p21"), PortName("Bimbo") },

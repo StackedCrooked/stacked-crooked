@@ -130,6 +130,8 @@ int main()
                                 Port { PortId("p22"), PortName("Luffy") } } } } };
 
     auto interfaces = server.get<Interfaces>();
+    std::cout << "InterfaceId: " << interfaces.at(0).get<InterfaceId>() << std::endl;
+
     auto ports = interfaces.at(0).get<Ports>();
     std::cout << "Port name: " << ports.at(0).get<PortName>() << std::endl;
     Handy<ServerId, InterfaceId, PortId> handy(ServerId("s1"), InterfaceId("i1"), PortId("p1"));

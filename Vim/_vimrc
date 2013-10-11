@@ -5,9 +5,6 @@
 " Show line numbers
 set number
 
-" Paste doesn't indent or do funny stuff
-set paste!
-
 " Add common search paths
 set path+=/usr/local/include,/opt/local/include
 
@@ -59,32 +56,35 @@ set smartcase
 syntax enable
 syntax on
 
-" Set the color scheme
-colorscheme desert
-
-
-" -----------------------------------------------------------------------------
-"  File types
-" -----------------------------------------------------------------------------
-
-
-" -----------------------------------------------------------------------------
-" Key mappings
-" -----------------------------------------------------------------------------
-nnoremap <C-J> <C-W><C-J>
-nnoremap <C-K> <C-W><C-K>
-nnoremap <C-L> <C-W><C-L>
-nnoremap <C-H> <C-W><C-H>
-set splitbelow
-set splitright
-
 " Disable Ex mode (bastard!)
 :map Q <Nop>
 
 " Yank until end of line
 map Y y$
 
+" Set the color scheme
+colorscheme desert
 
+
+"
+" Easy panel switching
+" - ctrl-j jumps to left
+" - ctrl-l jumps to right
+" - ctrl-k jumpt to top
+" - ctrl-j jumps to bottom
+"
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+
+" Split behavior.
+set splitbelow
+set splitright
+
+
+" I don't know what this is.
 fun! OpenFileBrowser()
     let file = expand("%:t")
     :Ve
@@ -92,15 +92,15 @@ fun! OpenFileBrowser()
 endf
 
 
-
-
 :map <F2> :tab split<CR>
 :map <F3> :vsplit<CR>
 
 
-" -----------------------------------------------------------------------------
-" OpenFile. Modelled after the Firefox "Open Link in New Tab"-command.
-" -----------------------------------------------------------------------------
+
+"
+" OpenFile function.
+" Modelled after the Firefox "Open Link in New Tab"-command.
+"
 fun! OpenFile()
   let tab_id = expand("%")
   tab split
@@ -112,6 +112,45 @@ fun! OpenFile()
   normal j
 endf
 
+
 " Map CTRL-G to the OpenFile function
-":map <C-G> :call OpenFile()<CR>
+:map <C-G> :call OpenFile()<CR>
+
+
+
+"
+" Vundle
+"
+set nocompatible               " be iMproved
+filetype off                   " required!
+
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+
+" let Vundle manage Vundle
+" required! 
+Bundle 'gmarik/vundle'
+
+" My Bundles here:
+"
+" original repos on github
+Bundle 'scrooloose/nerdtree'
+
+" vim-scripts repos
+Bundle 'Align'
+
+" non github repos
+Bundle 'git://git.wincent.com/command-t.git'
+
+filetype plugin indent on     " required!
+"
+" Brief help
+" :BundleList          - list configured bundles
+" :BundleInstall(!)    - install(update) bundles
+" :BundleSearch(!) foo - search(or refresh cache first) for foo
+" :BundleClean(!)      - confirm(or auto-approve) removal of unused bundles
+"
+" see :h vundle for more details or wiki for FAQ
+" NOTE: comments after Bundle command are not allowed..
+
 

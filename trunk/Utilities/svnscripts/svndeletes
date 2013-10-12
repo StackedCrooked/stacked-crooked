@@ -1,0 +1,1 @@
+svn st * | grep -e ^D | sed 's_^D[+ ]*__'

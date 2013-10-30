@@ -22,6 +22,7 @@ check_installed curl
 LinkRCFiles_Darwin() {
   ln -fs `pwd`/_vimrc $HOME/.vimrc
   ln -fs `pwd`/_gvimrc $HOME/.gvimrc
+  mkdir -p $HOME/bin
   echo "mvim $@" > $HOME/bin/gvim
   chmod +x $HOME/bin/gvim
 }

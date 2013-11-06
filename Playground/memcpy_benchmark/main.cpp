@@ -11,8 +11,8 @@ using Clock = std::chrono::high_resolution_clock;
 
 int main()
 {
-    long size = 10000;
-    long iterations = 10000;
+    long size = 1500;
+    long iterations = 1000 * 1000;
     
     auto src = malloc(size);
     auto dst = malloc(size);

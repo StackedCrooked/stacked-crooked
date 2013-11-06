@@ -14,9 +14,18 @@ using Clock = std::chrono::high_resolution_clock;
 
 int main(int argc, char** argv)
 {
-	if (argc != 2) throw std::runtime_error("Invalid argument count.");
+	if (argc != 2)
+    {
+        throw std::runtime_error("Invalid argument count.");
+    }
+
 	int thread_count = atoi(argv[1]);
-	if (thread_count < 1 && thread_count > 20) throw std::runtime_error(std::string("Invalid thread count: ") + argv[1]);
+
+	if (thread_count < 1 && thread_count > 20)
+    {
+        throw std::runtime_error(std::string("Invalid thread count: ") + argv[1]);
+    }
+
 
 	std::cout << "Number of threads: " << thread_count << ' ' << std::flush;
     long size = 2048;

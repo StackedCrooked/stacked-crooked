@@ -1,5 +1,6 @@
 #include <boost/circular_buffer.hpp>
 #include <atomic>
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -7,6 +8,11 @@
 #include <thread>
 #include <vector>
 #include <stdint.h>
+#include "tbb/concurrent_queue.h"
+
+
+using namespace std::chrono;
+typedef high_resolution_clock Clock;
 
 
 std::vector<uint8_t> generateTestData(unsigned n);
@@ -25,150 +31,86 @@ struct MakeString
 };
 
 
-template<unsigned Capacity>
+typedef std::vector<uint8_t> Segment;
+
 struct ConcurrentBuffer
 {
-    ConcurrentBuffer() :
-        buffer_(),
-        read_count_(0),
-        write_count_(0)
+    ConcurrentBuffer()
     {
     }
 
-    std::size_t capacity() const
+    Segment* read()
     {
-        return Capacity;
-    }
-
-    std::size_t size() const
-    {
-        return write_count_ - read_count_;
-    }
-
-    bool empty() const
-    {
-        return read_count_ == write_count_;
-    }
-
-    std::size_t read(uint8_t* buf, std::size_t len)
-    {
-        auto max = std::min(len, size());
-        for (auto i = 0UL; i != max; ++i)
+        Segment* segment;
+        while (!segments.try_pop(segment))
         {
-            *buf++ = buffer_[(read_count_++) % Capacity];
+            std::this_thread::yield();
         }
-        return max;
+        return segment;
     }
 
-    std::size_t write(uint8_t* buf, std::size_t len)
+    void write(Segment* segment)
     {
-        auto max = std::min(len, Capacity - size());
-        for (unsigned i = 0; i != max; ++i)
-        {
-            buffer_[(write_count_++) % Capacity] = *buf++;
-        }
-        return max;
+        segments.push(std::move(segment));
     }
 
 
-    std::array<uint8_t, Capacity> buffer_;
-    std::atomic<std::size_t> read_count_;
-    std::atomic<std::size_t> write_count_;
+    tbb::concurrent_bounded_queue<Segment*> segments;
 };
 
 
 int main()
 {
-    ConcurrentBuffer<1514> buf;
+    ConcurrentBuffer buf;
 
     // The writer will write this to the buffer until all data has been sent.
     // The reader will read from this buffer until all test data has been received.
-    auto testData = generateTestData(2000000);
+
+    const auto total_size = 10 * 1000 * 1000 * 1536UL;
+    tbb::concurrent_bounded_queue<Segment*> pool;;
+    for (int i = 0; i != 300; ++i)
+    {
+        pool.push(new Segment(1536));
+        //std::cout << "Pushed segment to pool" << std::endl;
+    }
 
 
     //
     // Reader thread
     //
-    std::thread([&] {
-        std::vector<uint8_t> readBuffer(testData.size());
-        auto numReceived = 0UL;
-        while (numReceived != testData.size()) {
-            if (auto n = buf.read(&readBuffer[0] + numReceived, readBuffer.size() - numReceived)) {
-                numReceived += n;
-                print(MakeString() << " +" << n);
-            }
+    std::thread t([&] {
+        auto total_read = 0UL;
+        while (total_read != total_size) {
+            Segment* segment = buf.read();
+            total_read += segment->size();
+            pool.push(segment);
+            //std::cout << "Pushed segment back to pool" << std::endl;
         }
-        assert(testData == readBuffer);
-    }).detach();
+    });
+
+
+	auto start = Clock::now();
 
 
     //
     // Write thread (main thread)
     //
-    auto numWritten = 0UL;
-    while (numWritten != testData.size()) {
-        if (auto n = buf.write(testData.data() + numWritten, testData.size() - numWritten)) {
-            numWritten += n;
-            print(MakeString() << " -" << n);
-            if (numWritten == testData.size()) {
-                print("WRITER buffer is complete.");
-                break;
-            }
+    std::atomic<uint64_t> total_written{0};
+    while (total_written != total_size)
+    {
+        Segment* segment;
+        while (!pool.try_pop(segment))
+        {
+            std::this_thread::yield();
         }
+        auto n = segment->size();
+        //std::cout << "Popped segment from pool." << std::endl;
+        buf.write(segment);
+        total_written += n;
     }
+
+	t.join();
+
+	auto us = duration_cast<microseconds>(Clock::now() - start).count();
+	std::cout << static_cast<int>(8.0 * total_written / (1000.0 * us)) << "Gbps" << std::endl;
 }
-
-
-
-std::vector<uint8_t> generateTestData(unsigned n)
-{
-    std::vector<uint8_t> data;
-    data.reserve(n);
-    while (data.size() != data.capacity())
-    {
-        data.push_back(data.size());
-    }
-    return data;
-}
-
-
-void print(std::string str)
-{
-    static std::mutex fMutex;
-    std::lock_guard<std::mutex> lock(fMutex);
-    std::cout << str << '\n';
-}
-
-
-inline std::ostream& operator<<(std::ostream& os, const std::vector<uint8_t>& vec)
-{
-    for (auto& el : vec)
-    {
-        os << std::setw(2) << std::setfill('0') << static_cast<int>(el) << ' ';
-    }
-    return os;
-}
-
-
-
-template <typename T>
-MakeString& MakeString::operator<<(const T & datum)
-{
-    mBuffer << datum;
-    return *this;
-}
-
-
-MakeString& MakeString::operator<<(uint8_t n)
-{
-    mBuffer << std::setw(2) << std::setfill('0') << static_cast<int>(n) << ' ';
-    return *this;
-}
-
-
-MakeString::operator std::string() const
-{ return mBuffer.str(); }
-
-
-std::string MakeString::str() const
-{ return mBuffer.str(); }

@@ -10,9 +10,9 @@ namespace Detail {
 struct NonOwningRange
 {
     NonOwningRange(const char* b, const char* e) : b(b), e(e) {}
-    NonOwningRange(char* b, unsigned size) : b(b), e(b + size) {}
+    NonOwningRange(char* b, std::size_t size) : b(b), e(b + size) {}
     
-    unsigned size() const { return e - b; }
+    std::size_t size() const { return e - b; }
     
     const char* b;
     const char* e;
@@ -21,7 +21,7 @@ struct NonOwningRange
 
 struct OwningRange : NonOwningRange
 {  
-    OwningRange(const char* b, unsigned length) : NonOwningRange(static_cast<char*>(malloc(length)), length)
+    OwningRange(const char* b, std::size_t length) : NonOwningRange(static_cast<char*>(malloc(length)), length)
     {
         memcpy(const_cast<char*>(this->b), b, size());
     }
@@ -58,11 +58,14 @@ struct OwningRange : NonOwningRange
 };
 
 
+} // namespace Detail
+
+
 
 struct Range
 {
-    struct Refer {};
-    struct Copy {};
+    struct Refer{};
+    struct Copy{};
     
     Range(const char* b, const char* e, Refer) : impl(NonOwningRange(b, e)) {}    
     Range(const char* b, const char* e, Copy) : impl(OwningRange(b, e)) {}
@@ -70,98 +73,41 @@ struct Range
 
     const char* begin() const
     {
-        //boost::apply_visitor([](NonOwningRange& r) { return r.b; }, impl);
-        visit([](NonOwningRange& r) { return r.b; });
+        return obj().b;
     }
     
     const char* end() const
     {
-        boost::apply_visitor([](NonOwningRange& r) { return r.e; }, impl);
+        return obj().e;
     }
     
-    unsigned long size() const
+    std::size_t long size() const
     {
-        boost::apply_visitor([](NonOwningRange& r) { return r.size(); }, impl);
+        return obj().size();
     }
     
 private:
-    typedef boost::variant<OwningRange, NonOwningRange> Impl;
-    
-    template<typename F>
-    struct Visitor
+    using OwningRange = Detail::OwningRange;
+    using NonOwningRange = Detail::NonOwningRange;
+
+    const NonOwningRange& obj() const
     {
-        Visitor(F f) : f(f) {}
-        
-        void operator()(OwningRange& r) const { NonOwningRange& nor = r; f(nor); }
-        void operator()(NonOwningRange& r) const {  f(r); }
-        
-        F f;        
-    };
-    
-    template<typename F>
-    static void make_visitor(F f) { return Visitor<F>(f); }
-    
-    template<typename F>
-    void visit(F f) const { boost::apply_visitor(make_visitor(f), impl); }
-    
-    Impl  impl;
+        if (auto p = boost::get<const NonOwningRange*>(impl)) return *p;
+        return boost::get<const OwningRange&>(impl);
+    }
+    NonOwningRange& obj()
+    {
+        if (auto p = boost::get<NonOwningRange*>(impl)) return *p;
+        return boost::get<OwningRange&>(impl);
+    }
+    boost::variant<OwningRange, NonOwningRange> impl;
 };
 
-
-//
-//
-//
-//
-//struct Segment
-//{    
-//    struct Copy {};
-//    struct Refer {};
-//    
-//    Segment(ByteRange range, Copy) : data(range) {}
-//    Segment(ByteRange range, Refer) : data(std::string(range.b, range.e)) {}
-//    
-//    Segment(std::string str) : data(str) {}
-//    
-//    const char* begin() const
-//    {        
-//        if (auto range = data.get<ByteRange*>())
-//        {
-//            return range.b; 
-//        }
-//        else
-//        {
-//            return data.get<std::string*>()->data();
-//        }
-//    }
-//    
-//    const char* end() const
-//    {      
-//        if (auto range = data.get<ByteRange*>())
-//        {
-//            return range.e; 
-//        }
-//        else
-//        {
-//            std::string* s = data.get<std::string*>();
-//            return s->data() + s->size();
-//        }
-//    }
-//    
-//    unsigned size() const
-//    {
-//        if (auto range = data.get<ByteRange*>())
-//        {
-//            return range.size(); 
-//        }
-//        else
-//        {
-//            std::string* s = data.get<std::string*>();
-//            return s->size();
-//        }
-//    }
-//    
-//private:
-//    typedef boost::variant<ByteRange, std::string> Data;
-//    Data data;
-//};
-
+int main()
+{
+    std::string test = "abc";
+    Range range1(test.data(), test.data() + test.size(), Range::Refer{});
+    Range range2(test.data(), test.data() + test.size(), Range::Copy{});
+    range1 = range2;
+    range2 = range1;
+}

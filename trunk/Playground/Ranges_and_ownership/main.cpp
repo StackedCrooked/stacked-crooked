@@ -13,6 +13,7 @@ struct NonOwningRange
     NonOwningRange(char* b, std::size_t size) : b(b), e(b + size) {}
     
     std::size_t size() const { return e - b; }
+
     
     const char* b;
     const char* e;
@@ -71,9 +72,14 @@ struct Range
     Range(const char* b, const char* e, Copy) : impl(OwningRange(b, e)) {}
     
 
-    const char* begin() const
+    const char* data() const
     {
         return obj().b;
+    }
+
+    const char* begin() const
+    {
+        return data();
     }
     
     const char* end() const
@@ -81,10 +87,11 @@ struct Range
         return obj().e;
     }
     
-    std::size_t long size() const
+    std::size_t size() const
     {
         return obj().size();
     }
+
     
 private:
     using OwningRange = Detail::OwningRange;
@@ -92,22 +99,30 @@ private:
 
     const NonOwningRange& obj() const
     {
-        if (auto p = boost::get<const NonOwningRange*>(impl)) return *p;
-        return boost::get<const OwningRange&>(impl);
+        if (auto p = boost::get<NonOwningRange>(&impl)) return *p;
+        if (auto p = boost::get<OwningRange>(&impl)) return *p;
+        assert(!"Object is neither an OwningRange nor an NonOwningRange.");
+        throw 1;
     }
-    NonOwningRange& obj()
-    {
-        if (auto p = boost::get<NonOwningRange*>(impl)) return *p;
-        return boost::get<OwningRange&>(impl);
-    }
+
     boost::variant<OwningRange, NonOwningRange> impl;
 };
+
 
 int main()
 {
     std::string test = "abc";
-    Range range1(test.data(), test.data() + test.size(), Range::Refer{});
-    Range range2(test.data(), test.data() + test.size(), Range::Copy{});
-    range1 = range2;
-    range2 = range1;
+    Range alias(test.data(), test.data() + test.size(), Range::Refer{});
+    assert(std::string(alias.begin(), alias.end()) == test);
+    assert(alias.data() == test.data());
+    assert(alias.begin() == &*test.begin());
+    assert(alias.end() == &*test.end());
+
+    Range copy(test.data(), test.data() + test.size(), Range::Copy{});
+    assert(std::string(copy.begin(), copy.end()) == test);
+    assert(copy.data() != test.data());
+    assert(copy.begin() != &*test.begin());
+    assert(copy.end() != &*test.end());
+    alias = copy;
+    copy = alias;
 }

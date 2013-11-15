@@ -90,7 +90,7 @@ bool PutQueen(ChessBoard & board, int rowOffset = 0, int colOffset = 0, int rema
                 else
                 {
                     // Revert
-                    board = backup;
+                    board = std::move(backup);
                 }
             }
         }

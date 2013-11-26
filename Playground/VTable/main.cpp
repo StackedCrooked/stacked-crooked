@@ -77,7 +77,7 @@ struct SendCounter : Object<SendCounter, 0>
 };
 
 
-struct ReceiveCounter : Object<ReceiveCounter, 0>
+struct ReceiveCounter : Object<ReceiveCounter, 1>
 {
     ReceiveCounter() : n_() {}
     

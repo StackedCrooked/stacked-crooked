@@ -1,4 +1,0 @@
-Graphics example
-Add a timer
-Print a grid
-..

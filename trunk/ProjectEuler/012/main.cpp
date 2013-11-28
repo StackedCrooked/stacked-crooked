@@ -212,10 +212,10 @@ public:
     }
 
     //! Returns elapsed number of seconds in decimal form.
-    double elapsed()
-    {
-        return 1.0 * (Clock::now() - mStart).count() / Clock::period::den;
-    }
+    long s() { return std::chrono::duration_cast<std::chrono::seconds>(Clock::now() - mStart).count(); }
+    long ms() { return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - mStart).count(); }
+    long us() { return std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - mStart).count(); }
+    long ns() { return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - mStart).count(); }
 
     Clock::time_point mStart;
 };
@@ -233,5 +233,5 @@ int main()
             break;
         }
     }
-    std::cout << (1000 * sw.elapsed()) << "ms" << std::endl;
+    std::cout << sw.ms() << "ms\n";
 }

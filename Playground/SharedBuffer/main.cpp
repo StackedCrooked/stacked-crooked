@@ -6,9 +6,10 @@
 #include <string.h>
 
 
+template<typename T>
 struct SharedSegment
 {
-    typedef int value_type;
+    typedef T value_type;
 
 
     SharedSegment() : mData()
@@ -24,7 +25,7 @@ struct SharedSegment
     }
 
     // Creates a SharedSegment which contains a copy of the data.
-    SharedSegment(const int* inData, uint16_t inSize) :
+    SharedSegment(const T* inData, uint16_t inSize) :
         mData(CreateImpl(inSize, 0)->data_ptr())
     {
         assert(size() == inSize);
@@ -33,7 +34,7 @@ struct SharedSegment
     }
 
     // Creates a SharedSegment which contains a copy of the data.
-    SharedSegment(const int* inData, uint16_t inSize, uint16_t inCapacity) :
+    SharedSegment(const T* inData, uint16_t inSize, uint16_t inCapacity) :
         mData(CreateImpl(inSize, inCapacity)->data_ptr())
     {
         assert(size() == inSize);
@@ -78,7 +79,7 @@ struct SharedSegment
         return *this;
     }
 
-    void insert(int* b, int* e)
+    void insert(T* b, T* e)
     {
         auto len = e - b;
         auto new_len = size() + len;
@@ -98,7 +99,7 @@ struct SharedSegment
         print("insert complete");
     }
 
-    void push_back(int t)
+    void push_back(T t)
     {
         if (size() == capacity())
         {
@@ -108,7 +109,7 @@ struct SharedSegment
         assert(impl());
         assert(size() < capacity());
 
-        new (end()) int(std::move(t));
+        new (end()) T(std::move(t));
         impl()->grow(1);
         print("SharedSegment push_back results in regular growth.");
     }
@@ -121,22 +122,22 @@ struct SharedSegment
         }
     }
 
-    int* begin()
+    T* begin()
     {
         return mData;
     }
 
-    const int* begin() const
+    const T* begin() const
     {
         return mData;
     }
 
-    int* end()
+    T* end()
     {
         return mData + size();
     }
 
-    const int* end() const
+    const T* end() const
     {
         return mData + size();
     }
@@ -156,12 +157,12 @@ struct SharedSegment
         return !size();
     }
 
-    int* data()
+    T* data()
     {
         return mData;
     }
 
-    const int* data() const
+    const T* data() const
     {
         return mData;
     }
@@ -195,9 +196,9 @@ private:
             }
         }
 
-        int* data_ptr() const
+        T* data_ptr() const
         {
-            return const_cast<int*>(reinterpret_cast<const int*>(this + 1));
+            return const_cast<T*>(reinterpret_cast<const T*>(this + 1));
         }
 
         uint16_t size() const
@@ -210,7 +211,7 @@ private:
             return mCapacity;
         }
 
-        void grow(int n)
+        void grow(T n)
         {
             mSize += n;
             assert(mSize <= mCapacity);
@@ -233,22 +234,20 @@ private:
         return mData ? const_cast<Impl*>(reinterpret_cast<const Impl*>(mData) - 1) : nullptr;
     }
 
-    int* mData;
+    T* mData;
 };
 
 
 
 int main()
 {
-    SharedSegment a;
-    for (int i = 0; i != 10; ++i)
+    SharedSegment<int> a;
+    for (int i = 0; i != 5; ++i)
     {
         a.push_back(i);
     }
 
     auto d = a;
     d.insert(a.begin(), a.end());
-    d.insert(d.begin(), d.end());
-
-
+    a = d;
 }

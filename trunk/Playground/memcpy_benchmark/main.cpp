@@ -10,20 +10,24 @@ using Clock = std::chrono::high_resolution_clock;
 
 
 long size = 1500;
-long iterations = 1000 * 1000;
+long iterations = 10 * 1000 * 1000;
+long cache_size  = 2;
 
 
 
+static std::vector<void*> buf = []{
+    std::vector<void*> buf;
+    buf.reserve(cache_size);
+    while (buf.size() < cache_size)
+    {
+        buf.push_back(malloc(size));
+    }
+    return buf;
+}();
 
 
 void* get(long size)
 {
-	static std::vector<void*> buf;
-	if (buf.size() < 1000)
-	{
-		buf.push_back(malloc(size));
-		return buf.back();
-	}
 	static unsigned i = 0;
 	return buf[i++ % buf.size()];
 }
@@ -48,7 +52,16 @@ int main()
     }
 
     auto us = duration_cast<microseconds>(Clock::now() - start).count();
-    auto megabyte_per_second = iterations * size / us;
 
-    std::cout << megabyte_per_second << "MB/s" << std::endl;
+
+    auto mbps = 8.0 * iterations * size / us;
+    if (mbps < 10000)
+    {
+        std::cout << mbps << " Mbps" << std::endl;
+    }
+    else
+    {
+        auto gbps = static_cast<int>(0.5 + mbps / 10.0) / 100.0;
+        std::cout << gbps << " Gbps" << std::endl;
+    }
 }

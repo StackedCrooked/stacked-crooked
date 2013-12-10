@@ -27,7 +27,7 @@ struct SharedSegment
     }
 
     SharedSegment(const SharedSegment& rhs) :
-        mCharPtr(rhs.mCharPtr ? rhs.impl().increment() : nullptr)
+        mCharPtr(rhs.impl_copy())
     {
         std::cout << "SharedSegment copied with size " << size() << "." << std::endl;
     }
@@ -157,9 +157,9 @@ private:
         return const_cast<Impl&>(*(reinterpret_cast<const Impl*>(mCharPtr) - 1));
     }
 
-    T* impl_copy()
+    T* impl_copy() const
     {
-        return impl().increment();
+        return mCharPtr ? impl().increment() : nullptr;
     }
 
     T* mCharPtr;

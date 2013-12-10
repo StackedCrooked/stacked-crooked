@@ -207,13 +207,6 @@ private:
         // 16-bits padding which may later be used for some purpose
     };
 
-    void make_unique()
-    {
-        Impl* new_impl = CreateImpl(size(), capacity());
-        memcpy(new_impl->data_ptr(), data(), size());
-        this->mData = new_impl->data_ptr();
-    }
-
     static Impl* CreateImpl(uint16_t size, uint16_t capacity)
     {
         return new (malloc(capacity + sizeof(Impl))) Impl(size, capacity);
@@ -242,26 +235,13 @@ private:
 int main()
 {
     SharedSegment a;
-    for (int i = 0; i != 20; ++i)
+    for (int i = 0; i != 200; ++i)
     {
         a.push_back(i);
     }
 
     SharedSegment b = a;
-    b.push_back(4);
-    b.push_back(5);
-    b.push_back(6);
-    auto c = b;
-    b = c;
+    SharedSegment c = b;
     a = c;
-    c = a = b;
-    b = c;
-    a = c;
-    c = a = b;
-    b = c;
-    a = c;
-    c = a = b;
-    b = c;
-    a = c;
-    c = a = b;
+
 }

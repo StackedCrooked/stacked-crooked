@@ -26,8 +26,18 @@ struct SharedSegment
         memcpy(data(), inData, size());
     }
 
+    // Creates a SharedSegment which contains a copy of the data.
+    SharedSegment(char* inData, uint16_t inSize, uint16_t inCapacity) :
+        mCharPtr(CreateImpl(inSize, inCapacity)->data_ptr())
+    {
+        std::cout << "SharedSegment created with size " << size() << "." << std::endl;
+        assert(size() == inSize);
+        memcpy(data(), inData, size());
+        memset(end(), 0, capacity() - size());
+    }
+
     SharedSegment(const SharedSegment& rhs) :
-        mCharPtr(rhs.impl_copy())
+        mCharPtr(rhs.impl() ? rhs.impl()->copy() : nullptr)
     {
         std::cout << "SharedSegment copied with size " << size() << "." << std::endl;
     }
@@ -42,14 +52,25 @@ struct SharedSegment
     ~SharedSegment()
     {
         std::cout << "SharedSegment destroyed with size " << size() << "." << std::endl;
-        if (mCharPtr)
+        if (impl())
         {
-            impl().decrement();
+            impl()->discard();
         }
     }
 
     void push_back(T t)
     {
+        if (size() == 0)
+        {
+            if (capacity() == 0)
+            {
+                mCharPtr = CreateImpl(1, 64)->data_ptr();
+            }
+            else
+            {
+                swap(SharedSegment<T>(data(), size(), 2 * capacity()));
+            }
+        }
         if (size() < capacity())
         {
             new (data() + size()) T(std::move(t));
@@ -70,12 +91,12 @@ struct SharedSegment
 
     int size() const
     {
-        return data() ? impl().mSize : 0;
+        return impl() ? impl()->mSize : 0;
     }
 
     int capacity() const
     {
-        return data() ? impl().mCapacity : 0;
+        return impl() ? impl()->capacity() : 0;
     }
 
     bool empty() const
@@ -99,13 +120,13 @@ private:
             assert(mSize <= mCapacity);
         }
 
-        T* increment()
+        T* copy()
         {
             mRefCount++;
             return data_ptr();
         }
 
-        void decrement()
+        void discard()
         {
             if (--mRefCount == 0)
             {
@@ -152,14 +173,22 @@ private:
         return reinterpret_cast<T*>(&impl + 1);
     }
 
-    Impl& impl() const
+    Impl* impl() const
     {
-        return const_cast<Impl&>(*(reinterpret_cast<const Impl*>(mCharPtr) - 1));
+        return mCharPtr ? const_cast<Impl*>(reinterpret_cast<const Impl*>(mCharPtr) - 1) : nullptr;
     }
 
     T* impl_copy() const
     {
-        return mCharPtr ? impl().increment() : nullptr;
+        return impl() ? impl()->copy() : nullptr;
+    }
+
+    void impl_dispose() const
+    {
+        if (mCharPtr)
+        {
+            impl().decrement();
+        }
     }
 
     T* mCharPtr;

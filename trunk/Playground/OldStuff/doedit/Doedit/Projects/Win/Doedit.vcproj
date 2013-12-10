@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="8,00"
+	Name="Doedit"
+	ProjectGUID="{53560DEB-6E01-48C4-BC0C-DD3F9606B1B0}"
+	RootNamespace="Doedit"
+	Keyword="MakeFileProj"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="$(ProjectDir)..\.."
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="cd ..\..\..\&#x0D;&#x0A;qmake Doedit\Projects\Qt\Doedit.pro&#x0D;&#x0A;nmake debug"
+				ReBuildCommandLine="cd ..\..\..\&#x0D;&#x0A;qmake Doedit\Projects\Qt\Doedit.pro&#x0D;&#x0A;nmake clean&#x0D;&#x0A;nmake debug"
+				CleanCommandLine="nmake clean"
+				Output="..\..\..\debug\Doedit.exe"
+				PreprocessorDefinitions="WIN32;_DEBUG"
+				IncludeSearchPath="E:\Development\Projects\Docode\Doedit\trunk"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="mingw32-make debug"
+				ReBuildCommandLine=""
+				CleanCommandLine="mingw32-make clean"
+				Output="Doedit.exe"
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath="..\..\Sources\CPP\main.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+		</Filter>
+		<Filter
+			Name="Qt"
+			>
+			<File
+				RelativePath="..\..\..\BuildSystem\BuildSystem.pro"
+				>
+			</File>
+			<File
+				RelativePath="..\Qt\Doedit.pro"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\BuildSystem\UserSettings.pro"
+				>
+			</File>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

@@ -1,0 +1,47 @@
+
+bnd_1() 
+{ 
+    p="$1";
+    a="$2";
+    sig="$p \$1 $a";
+    name="$(echo $sig | base64 | sed -e 's,=,,g')";
+    eval "$name() { $sig ; }";
+    echo $sig
+}
+
+bnd_2 () 
+{ 
+    p="$1";
+    a="$2";
+    sig="$p $a \$1 ";
+    name="$(echo $sig | base64 | sed -e 's,=,,g')";
+    eval "$name() { $sig ; }";
+    echo $sig
+}
+
+
+bnd() {
+  # one of the two does not exist
+  echo $({ bnd${2} $1 $3 || bnd${3} $1 $2 ; } 2>/dev/null)
+}
+
+
+# example
+
+
+# power x ** y
+pow() {
+  echo $(($1 ** $2))
+}
+
+# like C++: bind(&pow, 3, _1)
+eval "pow_3x() { $(bnd pow 3 _2) ; }"
+
+# like C++: bind(&pow, _1, 3)
+eval "pow_x3() { $(bnd pow _1 3) ; }"
+
+
+for i in $(echo pow_3x pow_x3) ; do
+  echo "$i 2 => $($i 2)"
+done 
+

@@ -6,99 +6,116 @@
 #include <string.h>
 
 
-template<typename T>
 struct SharedSegment
 {
-    typedef T value_type;
+    typedef int value_type;
 
 
     SharedSegment() : mData()
     {
-        std::cout << "SharedSegment default constructed." << std::endl;
+        print("SharedSegment default constructed.");
     }
 
-    // Creates a SharedSegment which contains a copy of the data.
-    SharedSegment(const T* inData, uint16_t inSize) :
-        mData(CreateImpl(inSize)->data_ptr())
+
+    SharedSegment(uint16_t inSize) : mData(CreateImpl(inSize, 2 * inSize)->data_ptr())
     {
-        std::cout << "SharedSegment created with size " << size() << "." << std::endl;
-        assert(size() == inSize);
-        memcpy(data(), inData, size());
+        memset(data(), 0, inSize);
+        print("SharedSegment default constructed.");
     }
 
     // Creates a SharedSegment which contains a copy of the data.
-    SharedSegment(const T* inData, uint16_t inSize, uint16_t inCapacity) :
+    SharedSegment(const int* inData, uint16_t inSize) :
+        mData(CreateImpl(inSize, 0)->data_ptr())
+    {
+        assert(size() == inSize);
+        memcpy(mData, inData, size());
+        print("SharedSegment created with size ");
+    }
+
+    // Creates a SharedSegment which contains a copy of the data.
+    SharedSegment(const int* inData, uint16_t inSize, uint16_t inCapacity) :
         mData(CreateImpl(inSize, inCapacity)->data_ptr())
     {
-        std::cout << "SharedSegment created with size " << size() << "." << std::endl;
         assert(size() == inSize);
-        memcpy(data(), inData, size());
-        memset(end(), 0, capacity() - size());
+        assert(inSize <= inCapacity);
+        memcpy(mData, inData, inSize);
+        memset(mData + inSize, 0, inCapacity - inSize);
+        print("SharedSegment created with size ");
     }
 
     SharedSegment(const SharedSegment& rhs) :
-        mData(rhs.impl() ? rhs.impl()->copy() : nullptr)
+        mData(rhs.mData)
     {
-        std::cout << "SharedSegment copied with size " << size() << "." << std::endl;
+        assert(impl() == rhs.impl());
+        if (rhs.impl())
+        {
+            rhs.impl()->copy();
+        }
+        print("SharedSegment incremented");
     }
 
     SharedSegment& operator=(SharedSegment rhs)
     {
-        std::cout << "SharedSegment copy-assinged with size " << size() << "." << std::endl;
-        this->swap(rhs);
-        return *this;
+        auto& result = rhs.swap(*this);
+        print("SharedSegment copy-assigned with size ");
+        return result;
     }
 
     ~SharedSegment()
     {
-        std::cout << "SharedSegment destroyed with size " << size() << "." << std::endl;
         if (impl())
         {
             impl()->discard();
+            print("SharedSegment--");
         }
+        print("SharedSegment destroyed with size ");
     }
 
-    void swap(SharedSegment<T>& rhs)
+    SharedSegment& swap(SharedSegment& rhs)
     {
         std::swap(mData, rhs.mData);
+        print("SharedSegment swapped.");
+        return *this;
     }
 
-    void push_back(T t)
+    void push_back(int t)
     {
-        if (size() == 0)
+        if (capacity() == 0)
         {
-            if (capacity() == 0)
-            {
-                mData = CreateImpl(1, 64)->data_ptr();
-            }
-            else
-            {
-                SharedSegment<T>(data(), size(), 2 * capacity()).swap(*this);
-            }
+            assert(size() == 0);
+            mData = CreateImpl(1, 1)->data_ptr();
+            print("SharedSegment first push_back results in first allocation.");
         }
-        if (size() < capacity())
+        else if (size() < capacity())
         {
-            new (static_cast<void*>(data() + size())) T(std::move(t));
+            new (static_cast<void*>(data() + size())) int(std::move(t));
             impl()->grow(1);
+            print("SharedSegment push_back results in regular growth.");
+        }
+        else
+        {
+            assert(size() == capacity());
+            SharedSegment(data(), size(), 2 * capacity()).swap(*this);
+            print("SharedSegment realloc.");
         }
     }
 
-    T* begin()
+    int* begin()
     {
         return mData;
     }
 
-    const T* begin() const
+    const int* begin() const
     {
         return mData;
     }
 
-    T* end()
+    int* end()
     {
         return mData + size();
     }
 
-    const T* end() const
+    const int* end() const
     {
         return mData + size();
     }
@@ -118,17 +135,22 @@ struct SharedSegment
         return !size();
     }
 
-    T* data()
+    int* data()
     {
         return mData;
     }
 
-    const T* data() const
+    const int* data() const
     {
         return mData;
     }
 
 private:
+    void print(const char* text)
+    {
+        std::cout << text << " size=" << size() << " capacity=" << capacity() << std::endl;
+    }
+
     struct Impl
     {
         Impl(uint16_t inSize, int16_t inCapacity, uint16_t inRefCount = 1) :
@@ -139,10 +161,9 @@ private:
             assert(mSize <= mCapacity);
         }
 
-        T* copy()
+        void copy()
         {
             mRefCount++;
-            return data_ptr();
         }
 
         void discard()
@@ -153,14 +174,14 @@ private:
             }
         }
 
-        const T* data_ptr() const
+        const int* data_ptr() const
         {
-            return reinterpret_cast<const T*>(this + 1);
+            return reinterpret_cast<const int*>(this + 1);
         }
 
-        T* data_ptr()
+        int* data_ptr()
         {
-            return reinterpret_cast<T*>(this + 1);
+            return reinterpret_cast<int*>(this + 1);
         }
 
         uint16_t size() const
@@ -189,9 +210,8 @@ private:
     void make_unique()
     {
         Impl* new_impl = CreateImpl(size(), capacity());
-        memcpy(new_impl.data_ptr(), data(), size());
-        this->mData = new_impl.data_ptr();
-
+        memcpy(new_impl->data_ptr(), data(), size());
+        this->mData = new_impl->data_ptr();
     }
 
     static Impl* CreateImpl(uint16_t size, uint16_t capacity)
@@ -199,14 +219,14 @@ private:
         return new (malloc(capacity + sizeof(Impl))) Impl(size, capacity);
     }
 
-    static Impl& GetImpl(T* str)
+    static Impl& GetImpl(int* str)
     {
         return *(reinterpret_cast<Impl*>(str) - 1);
     }
 
-    static T* GetData(Impl& impl)
+    static int* GetData(Impl& impl)
     {
-        return reinterpret_cast<T*>(&impl + 1);
+        return reinterpret_cast<int*>(&impl + 1);
     }
 
     Impl* impl() const
@@ -214,22 +234,34 @@ private:
         return mData ? const_cast<Impl*>(reinterpret_cast<const Impl*>(mData) - 1) : nullptr;
     }
 
-    T* mData;
+    int* mData;
 };
 
 
 
 int main()
 {
-    SharedSegment<int> a;
-    a.push_back(1);
-    a.push_back(2);
-    a.push_back(3);
-    SharedSegment<int> b = a;
+    SharedSegment a;
+    for (int i = 0; i != 20; ++i)
+    {
+        a.push_back(i);
+    }
+
+    SharedSegment b = a;
     b.push_back(4);
     b.push_back(5);
     b.push_back(6);
     auto c = b;
+    b = c;
+    a = c;
+    c = a = b;
+    b = c;
+    a = c;
+    c = a = b;
+    b = c;
+    a = c;
+    c = a = b;
+    b = c;
     a = c;
     c = a = b;
 }

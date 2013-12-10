@@ -1,0 +1,9 @@
+sum() {
+  [ "$#" == "0" ] && echo 0
+  [ "$#" == "1" ] && echo $1 && exit
+  head="$1"
+  shift
+  echo $(($head + $(sum $@)))
+}
+
+sum 1 2 3

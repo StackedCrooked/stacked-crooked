@@ -49,7 +49,7 @@ struct SharedSegment
         assert(impl() == rhs.impl());
         if (rhs.impl())
         {
-            rhs.impl()->copy();
+            rhs.impl()->acquire();
         }
         print("SharedSegment incremented");
     }
@@ -65,7 +65,7 @@ struct SharedSegment
     {
         if (impl())
         {
-            impl()->discard();
+            impl()->release();
             print("SharedSegment--");
         }
         print("SharedSegment destroyed with size ");
@@ -161,12 +161,12 @@ private:
             assert(mSize <= mCapacity);
         }
 
-        void copy()
+        void acquire()
         {
             mRefCount++;
         }
 
-        void discard()
+        void release()
         {
             if (--mRefCount == 0)
             {
@@ -174,14 +174,9 @@ private:
             }
         }
 
-        const int* data_ptr() const
+        int* data_ptr() const
         {
-            return reinterpret_cast<const int*>(this + 1);
-        }
-
-        int* data_ptr()
-        {
-            return reinterpret_cast<int*>(this + 1);
+            return const_cast<int*>(reinterpret_cast<const int*>(this + 1));
         }
 
         uint16_t size() const
@@ -210,16 +205,6 @@ private:
     static Impl* CreateImpl(uint16_t size, uint16_t capacity)
     {
         return new (malloc(capacity + sizeof(Impl))) Impl(size, capacity);
-    }
-
-    static Impl& GetImpl(int* str)
-    {
-        return *(reinterpret_cast<Impl*>(str) - 1);
-    }
-
-    static int* GetData(Impl& impl)
-    {
-        return reinterpret_cast<int*>(&impl + 1);
     }
 
     Impl* impl() const

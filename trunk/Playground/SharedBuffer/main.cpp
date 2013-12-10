@@ -100,9 +100,7 @@ struct SharedSegment
         }
 
         print("insert begin");
-        auto out_it = end();
-        impl()->grow(len);
-        std::copy(b, e, out_it);
+        std::copy(b, e, std::back_inserter(*this));
         print("insert complete");
     }
 

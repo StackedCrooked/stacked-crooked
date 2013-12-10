@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <new>
 #include <assert.h>
 #include <stdint.h>
@@ -11,12 +12,16 @@ struct SharedSegment
     typedef const T* const_iterator;
 
 
-    SharedSegment() : mCharPtr() {}
+    SharedSegment() : mCharPtr() 
+    {
+        std::cout << "SharedSegment default constructed." << std::endl;
+    }
 
     // Creates a SharedSegment which contains a copy of the data.
     SharedSegment(char* inData, uint16_t inSize) :
         mCharPtr(CreateImpl(inSize)->data_ptr())
     {
+        std::cout << "SharedSegment created with size " << size() << "." << std::endl;
         assert(size() == inSize);
         memcpy(data(), inData, size());
     }
@@ -24,15 +29,19 @@ struct SharedSegment
     SharedSegment(const SharedSegment& rhs) :
         mCharPtr(rhs.mCharPtr ? rhs.impl().increment() : nullptr)
     {
+        std::cout << "SharedSegment copied with size " << size() << "." << std::endl;
     }
 
     SharedSegment& operator=(SharedSegment rhs)
     {
+        std::cout << "SharedSegment copy-assinged with size " << size() << "." << std::endl;
         std::swap(mCharPtr, rhs.mCharPtr);
+        return *this;
     }
 
     ~SharedSegment()
     {
+        std::cout << "SharedSegment destroyed with size " << size() << "." << std::endl;
         if (mCharPtr)
         {
             impl().decrement();
@@ -61,12 +70,12 @@ struct SharedSegment
 
     int size() const
     {
-        return impl().mSize;
+        return data() ? impl().mSize : 0;
     }
 
     int capacity() const
     {
-        return impl().mCapacity;
+        return data() ? impl().mCapacity : 0;
     }
 
     bool empty() const
@@ -143,14 +152,9 @@ private:
         return reinterpret_cast<T*>(&impl + 1);
     }
 
-    const Impl& impl() const
+    Impl& impl() const
     {
-        return *(reinterpret_cast<const Impl*>(mCharPtr) - 1);
-    }
-
-    Impl& impl()
-    {
-        return *(reinterpret_cast<Impl*>(mCharPtr) - 1);
+        return const_cast<Impl&>(*(reinterpret_cast<const Impl*>(mCharPtr) - 1));
     }
 
     T* impl_copy()
@@ -165,5 +169,9 @@ private:
 
 int main()
 {
-    SharedSegment<char> data;
+    SharedSegment<char> a;
+    SharedSegment<char> b = a;
+    auto c = b;
+    a = c;
+    c = a = b;
 }

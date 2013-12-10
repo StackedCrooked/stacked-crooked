@@ -6,6 +6,10 @@
 #include <string.h>
 
 
+#define Assert_impl(obj, cmd, str) { obj->report(str + std::string((cmd) ? " => PASS" : " => FAIL")); if (!(cmd)) std::abort(); }
+#define Assert(cmd) Assert_impl(this, cmd, (__FILE__ + std::string(":") + std::to_string(__LINE__) + ": " + std::string(#cmd)))
+
+
 template<typename T>
 struct SharedSegment
 {
@@ -20,7 +24,6 @@ struct SharedSegment
 
     SharedSegment(uint16_t inSize) : mData(CreateImpl(inSize, 2 * inSize)->data_ptr())
     {
-        memset(data(), 0, inSize);
         print("SharedSegment default constructed.");
     }
 
@@ -28,8 +31,8 @@ struct SharedSegment
     SharedSegment(const T* inData, uint16_t inSize) :
         mData(CreateImpl(inSize, 0)->data_ptr())
     {
-        assert(size() == inSize);
-        memcpy(mData, inData, size());
+        Assert(size() == inSize);
+        insert(inData, inData + inSize);
         print("SharedSegment created with size ");
     }
 
@@ -37,17 +40,17 @@ struct SharedSegment
     SharedSegment(const T* inData, uint16_t inSize, uint16_t inCapacity) :
         mData(CreateImpl(inSize, inCapacity)->data_ptr())
     {
-        assert(size() == inSize);
-        assert(inSize <= inCapacity);
-        memcpy(mData, inData, inSize);
-        memset(mData + inSize, 0, inCapacity - inSize);
+        Assert(size() == inSize);
+        Assert(capacity() == inCapacity);
+        Assert(inSize <= inCapacity);
+        std::copy(inData, inData + inSize, data());
         print("SharedSegment created with size ");
     }
 
     SharedSegment(const SharedSegment& rhs) :
         mData(rhs.mData)
     {
-        assert(impl() == rhs.impl());
+        Assert(impl() == rhs.impl());
         if (rhs.impl())
         {
             rhs.impl()->acquire();
@@ -79,7 +82,7 @@ struct SharedSegment
         return *this;
     }
 
-    void insert(T* b, T* e)
+    void insert(const T* b, const T* e)
     {
         auto len = e - b;
         auto new_len = size() + len;
@@ -90,12 +93,16 @@ struct SharedSegment
             {
                 new_capacity *= 2;
             }
-            SharedSegment(data(), new_len, new_capacity).swap(*this);
+            SharedSegment segment;
+            segment.reserve(new_capacity);
+            this->swap(segment);
             print("insert results in realloc");
         }
 
         print("insert begin");
-        std::copy(b, e, std::back_inserter(*this));
+        auto out_it = end();
+        impl()->grow(len);
+        std::copy(b, e, out_it);
         print("insert complete");
     }
 
@@ -103,11 +110,22 @@ struct SharedSegment
     {
         if (size() == capacity())
         {
-            reserve(std::max(1, 2 * capacity()));
+            if (capacity() == 0)
+            {
+                reserve(1);
+                Assert(size() < capacity());
+            }
+            else
+            {
+                this->report("*** OLD");
+                reserve(capacity() * 2);
+                this->report("*** NEW");
+                Assert(size() < capacity());
+            }
         }
 
-        assert(impl());
-        assert(size() < capacity());
+        Assert(impl());
+        Assert(size() < capacity());
 
         new (end()) T(std::move(t));
         impl()->grow(1);
@@ -168,7 +186,11 @@ struct SharedSegment
     }
 
 private:
-    void print(const char* text)
+    void print(const std::string&)
+    {
+    }
+
+    void report(const std::string& text)
     {
         std::cout << text << " size=" << size() << " capacity=" << capacity() << std::endl;
     }
@@ -180,7 +202,16 @@ private:
             mCapacity(inCapacity),
             mRefCount(inRefCount)
         {
-            assert(mSize <= mCapacity);
+            Assert(mSize <= mCapacity);
+        }
+
+        void print(const std::string& )
+        {
+        }
+
+        void report(const std::string& text)
+        {
+            std::cout << text << " size=" << size() << " capacity=" << capacity() << std::endl;
         }
 
         void acquire()
@@ -213,8 +244,9 @@ private:
 
         void grow(T n)
         {
+            Assert(mSize + n <= mCapacity);
             mSize += n;
-            assert(mSize <= mCapacity);
+            Assert(mSize <= mCapacity);
         }
 
     private:

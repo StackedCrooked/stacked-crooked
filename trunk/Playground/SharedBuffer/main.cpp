@@ -78,25 +78,46 @@ struct SharedSegment
         return *this;
     }
 
+    void insert(int* b, int* e)
+    {
+        auto len = e - b;
+        auto new_len = size() + len;
+        if (new_len > capacity())
+        {
+            auto new_capacity = 2;
+            while (new_capacity < new_len)
+            {
+                new_capacity *= 2;
+            }
+            SharedSegment(data(), new_len, new_capacity).swap(*this);
+            print("insert results in realloc");
+        }
+
+        print("insert begin");
+        std::copy(b, e, std::back_inserter(*this));
+        print("insert complete");
+    }
+
     void push_back(int t)
     {
-        if (capacity() == 0)
+        if (size() == capacity())
         {
-            assert(size() == 0);
-            mData = CreateImpl(1, 1)->data_ptr();
-            print("SharedSegment first push_back results in first allocation.");
+            reserve(std::max(1, 2 * capacity()));
         }
-        else if (size() < capacity())
+
+        assert(impl());
+        assert(size() < capacity());
+
+        new (end()) int(std::move(t));
+        impl()->grow(1);
+        print("SharedSegment push_back results in regular growth.");
+    }
+
+    void reserve(uint16_t new_capacity)
+    {
+        if (new_capacity > capacity())
         {
-            new (static_cast<void*>(data() + size())) int(std::move(t));
-            impl()->grow(1);
-            print("SharedSegment push_back results in regular growth.");
-        }
-        else
-        {
-            assert(size() == capacity());
-            SharedSegment(data(), size(), 2 * capacity()).swap(*this);
-            print("SharedSegment realloc.");
+            SharedSegment(data(), size(), new_capacity).swap(*this);
         }
     }
 
@@ -220,13 +241,14 @@ private:
 int main()
 {
     SharedSegment a;
-    for (int i = 0; i != 200; ++i)
+    for (int i = 0; i != 10; ++i)
     {
         a.push_back(i);
     }
 
-    SharedSegment b = a;
-    SharedSegment c = b;
-    a = c;
+    auto d = a;
+    d.insert(a.begin(), a.end());
+    d.insert(d.begin(), d.end());
+
 
 }

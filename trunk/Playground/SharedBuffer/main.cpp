@@ -3,23 +3,23 @@
 #include <new>
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 
 template<typename T>
 struct SharedSegment
 {
     typedef T value_type;
-    typedef const T* const_iterator;
 
 
-    SharedSegment() : mCharPtr() 
+    SharedSegment() : mData()
     {
         std::cout << "SharedSegment default constructed." << std::endl;
     }
 
     // Creates a SharedSegment which contains a copy of the data.
-    SharedSegment(char* inData, uint16_t inSize) :
-        mCharPtr(CreateImpl(inSize)->data_ptr())
+    SharedSegment(const T* inData, uint16_t inSize) :
+        mData(CreateImpl(inSize)->data_ptr())
     {
         std::cout << "SharedSegment created with size " << size() << "." << std::endl;
         assert(size() == inSize);
@@ -27,8 +27,8 @@ struct SharedSegment
     }
 
     // Creates a SharedSegment which contains a copy of the data.
-    SharedSegment(char* inData, uint16_t inSize, uint16_t inCapacity) :
-        mCharPtr(CreateImpl(inSize, inCapacity)->data_ptr())
+    SharedSegment(const T* inData, uint16_t inSize, uint16_t inCapacity) :
+        mData(CreateImpl(inSize, inCapacity)->data_ptr())
     {
         std::cout << "SharedSegment created with size " << size() << "." << std::endl;
         assert(size() == inSize);
@@ -37,7 +37,7 @@ struct SharedSegment
     }
 
     SharedSegment(const SharedSegment& rhs) :
-        mCharPtr(rhs.impl() ? rhs.impl()->copy() : nullptr)
+        mData(rhs.impl() ? rhs.impl()->copy() : nullptr)
     {
         std::cout << "SharedSegment copied with size " << size() << "." << std::endl;
     }
@@ -45,7 +45,7 @@ struct SharedSegment
     SharedSegment& operator=(SharedSegment rhs)
     {
         std::cout << "SharedSegment copy-assinged with size " << size() << "." << std::endl;
-        std::swap(mCharPtr, rhs.mCharPtr);
+        this->swap(rhs);
         return *this;
     }
 
@@ -58,43 +58,57 @@ struct SharedSegment
         }
     }
 
+    void swap(SharedSegment<T>& rhs)
+    {
+        std::swap(mData, rhs.mData);
+    }
+
     void push_back(T t)
     {
         if (size() == 0)
         {
             if (capacity() == 0)
             {
-                mCharPtr = CreateImpl(1, 64)->data_ptr();
+                mData = CreateImpl(1, 64)->data_ptr();
             }
             else
             {
-                swap(SharedSegment<T>(data(), size(), 2 * capacity()));
+                SharedSegment<T>(data(), size(), 2 * capacity()).swap(*this);
             }
         }
         if (size() < capacity())
         {
-            new (data() + size()) T(std::move(t));
-            impl().mSize++;
+            new (static_cast<void*>(data() + size())) T(std::move(t));
+            impl()->grow(1);
         }
-        assert(!"Capacity exceeded.");  // TODO: grow
     }
 
-    const_iterator begin() const
+    T* begin()
     {
-        return mCharPtr;
+        return mData;
     }
 
-    const_iterator end() const
+    const T* begin() const
     {
-        return mCharPtr + size();
+        return mData;
     }
 
-    int size() const
+    T* end()
     {
-        return impl() ? impl()->mSize : 0;
+        return mData + size();
     }
 
-    int capacity() const
+    const T* end() const
+    {
+        return mData + size();
+    }
+
+    uint16_t size() const
+    {
+        return impl() ? impl()->size() : 0;
+    }
+
+    uint16_t capacity() const
     {
         return impl() ? impl()->capacity() : 0;
     }
@@ -104,9 +118,14 @@ struct SharedSegment
         return !size();
     }
 
-    const_iterator data() const
+    T* data()
     {
-        return mCharPtr;
+        return mData;
+    }
+
+    const T* data() const
+    {
+        return mData;
     }
 
 private:
@@ -144,6 +163,23 @@ private:
             return reinterpret_cast<T*>(this + 1);
         }
 
+        uint16_t size() const
+        {
+            return mSize;
+        }
+
+        uint16_t capacity() const
+        {
+            return mCapacity;
+        }
+
+        void grow(int n)
+        {
+            mSize += n;
+            assert(mSize <= mCapacity);
+        }
+
+    private:
         uint16_t mSize;
         uint16_t mCapacity;
         uint16_t mRefCount;
@@ -154,7 +190,7 @@ private:
     {
         Impl* new_impl = CreateImpl(size(), capacity());
         memcpy(new_impl.data_ptr(), data(), size());
-        this->mCharPtr = new_impl.data_ptr();
+        this->mData = new_impl.data_ptr();
 
     }
 
@@ -175,31 +211,24 @@ private:
 
     Impl* impl() const
     {
-        return mCharPtr ? const_cast<Impl*>(reinterpret_cast<const Impl*>(mCharPtr) - 1) : nullptr;
+        return mData ? const_cast<Impl*>(reinterpret_cast<const Impl*>(mData) - 1) : nullptr;
     }
 
-    T* impl_copy() const
-    {
-        return impl() ? impl()->copy() : nullptr;
-    }
-
-    void impl_dispose() const
-    {
-        if (mCharPtr)
-        {
-            impl().decrement();
-        }
-    }
-
-    T* mCharPtr;
+    T* mData;
 };
 
 
 
 int main()
 {
-    SharedSegment<char> a;
-    SharedSegment<char> b = a;
+    SharedSegment<int> a;
+    a.push_back(1);
+    a.push_back(2);
+    a.push_back(3);
+    SharedSegment<int> b = a;
+    b.push_back(4);
+    b.push_back(5);
+    b.push_back(6);
     auto c = b;
     a = c;
     c = a = b;

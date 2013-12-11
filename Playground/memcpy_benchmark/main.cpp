@@ -6,7 +6,7 @@
 
 
 using namespace std::chrono;
-using Clock = std::chrono::high_resolution_clock;
+typedef std::chrono::high_resolution_clock Clock;
 
 
 long size = 1500;
@@ -15,7 +15,7 @@ long cache_size  = 100;
 
 
 
-static std::vector<void*> buf = []{
+static std::vector<void*> buf = []() -> std::vector<void*> {
     std::vector<void*> buf;
     buf.reserve(cache_size);
     while (static_cast<long>(buf.size()) < cache_size)
@@ -56,5 +56,5 @@ int main()
 
     auto mbps = 8.0 * iterations * size / us;
     auto gbps = static_cast<int>(0.5 + mbps / 10.0) / 100.0;
-    std::cout << gbps << std::endl;
+    std::cout << gbps << "Gbps" << std::endl;
 }

@@ -1,1 +1,1 @@
-svn st * | grep -e '^M\|^A' | sed 's_^[AM][+ ]*__'
+svn st * | grep -e '^M\|^A\|^D' | sed 's_^[AMD][+ ]*__'

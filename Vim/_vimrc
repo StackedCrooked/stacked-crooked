@@ -63,7 +63,7 @@ syntax on
 map Y y$
 
 " Set the color scheme
-colorscheme desert
+colorscheme morning
 
 
 "
@@ -78,6 +78,8 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
+nnoremap <S-H> gT
+nnoremap <S-L> gt
 
 " Split behavior.
 set splitbelow

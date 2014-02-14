@@ -24,6 +24,16 @@ public:
         return length;
     }
 
+    std::size_t readable() const
+    {
+        return mBuffer.size();
+    }
+
+    std::size_t writable() const
+    {
+        return mBuffer.reserve();
+    }
+
 private:
     boost::circular_buffer<uint8_t> mBuffer;
 };
@@ -31,32 +41,46 @@ private:
 
 int main()
 {
-    SlidingWindow buf(100);
+    SlidingWindow buf(80);
 
     std::vector<uint8_t> v10(10);
     std::vector<uint8_t> v30(30);
     std::vector<uint8_t> v50(50);
 
-    std::size_t written = 0;
+    auto w = buf.write(v30.data(), v30.size());
+    std::cout << "+" << w;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
 
-    auto n = buf.write(v50.data(), v50.size());
-    written += n;
-    std::cout << "n=" << n << " total=" << written << std::endl;
+    w = buf.write(v30.data(), v30.size());
+    std::cout << "+" << w;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
 
-    n = buf.write(v30.data(), v30.size());
-    written += n;
-    std::cout << "n=" << n << " total=" << written << std::endl;
+    w = buf.write(v30.data(), v30.size());
+    std::cout << "+" << w;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
 
-    n = buf.write(v30.data(), v30.size());
-    written += n;
-    std::cout << "n=" << n << " total=" << written << std::endl;
-
-    n = buf.write(v10.data(), v10.size());
-    written += n;
-    std::cout << "n=" << n << " total=" << written << std::endl;
+    w = buf.write(v10.data(), v10.size());
+    std::cout << "+" << w;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
 
 
-    // TODO: test reads
+    auto r = buf.read(v10.data(), v10.size());
+    std::cout << "-" << r;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
 
+    r = buf.read(v30.data(), v30.size());
+    std::cout << "-" << r;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
 
+    r = buf.read(v50.data(), v50.size());
+    std::cout << "-" << r;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
+
+    w = buf.write(v10.data(), v10.size());
+    std::cout << "+" << w;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
+
+    r = buf.read(v50.data(), v50.size());
+    std::cout << "-" << r;
+    std::cout << " readable=" << buf.readable() << " writable=" << buf.writable() << std::endl;
 }

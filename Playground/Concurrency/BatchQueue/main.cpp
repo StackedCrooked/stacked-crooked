@@ -2,131 +2,140 @@
 #include <atomic>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <assert.h>
+
+
+void print(const std::string& c)
+{
+    static std::mutex m;
+    std::unique_lock<std::mutex> lock(m);
+    std::cout << c << ' ' << std::endl;
+}
+
+
+#define print(c) print(c);
 
 
 template<typename T>
 struct Batch
 {
-    enum { Capacity = 10 };
+    enum { Capacity = 2 };
     
-    Batch() : items(), size() {}
+    Batch() : items(), size(), cap(Capacity) {}
     
-    bool push(T t)
+    bool batch_push(T t)
     {
-        items[size++] = std::move(t);
+        items[size] = std::move(t);
+        size++;
+        cap = size;
         return size == Capacity;
     }
+
+    bool consumer_empty() const { return size == 0; }
     
     
     bool pop(T& t)
     {
-        if (size == 0)
-        {
-            std::cout << "Batch::pop: empty" << std::endl;
-            return false;
+        if (size > 0) {
+            t = std::move(items[cap - size]);
+            size--;
+            return true;
         }
-        auto index = Capacity - size;
-        std::cout << "Batch::pop: size=" << size << " => index=" << index << std::endl;
-        if (index == Capacity)
-        {
-            return false;
-        }
-        
-        t = std::move(items[index]);
-        size++;
-        return true;
+        return false;
     }
     
     T items[Capacity];
     uint16_t size;
+    uint16_t cap;
 };
 
 
 template<typename T>
 struct ConcurrentBatchQueue
 {
-    ConcurrentBatchQueue(std::size_t capacity) :
-        mQueue(),
-        mBatchPool(new Batch<T>[capacity]),
-        mIndex(),
-        mPoppedBatch()
+    ConcurrentBatchQueue(std::size_t capacity = 3) :
+        mQueue()
     {
-        mQueue.set_capacity(capacity - 1);
+        mQueue.set_capacity(capacity);
+    }
+
+    ~ConcurrentBatchQueue()
+    {
+        if (!mProducer.consumer_empty())
+        {
+            std::abort();
+        }
     }
     
     void push(T t)
     {
-        auto& batch = mBatchPool.get()[mIndex];
-        if (batch.push(std::move(t)))
+        if (mProducer.batch_push(t))
         {
             flush();
         }
     }
-    
+
     void flush()
     {
-        auto& current_batch = mBatchPool[mIndex];
-        mQueue.push(&current_batch);
-        current_batch = Batch<T>();
-        mIndex = (mIndex + 1) % mQueue.capacity();
+        if (!mProducer.consumer_empty()) {
+            mQueue.push(mProducer);
+            mProducer = Batch<T>();
+        } else {
+            print("FAILEDFLUSH");
+        }
     }
     
-    bool pop(T& t)
+    void pop(T& t)
     {
-		if (!mPoppedBatch)
-		{
-			mQueue.pop(mPoppedBatch);
-            return mPoppedBatch->pop(t);
-		}
-
-        if (!mPoppedBatch->pop(t))
+        if (mConsumer.pop(t))
         {
-            mQueue.pop(mPoppedBatch);
-            return mPoppedBatch->pop(t);
+            return;
         }
 
-        return true;
+        mQueue.pop(mConsumer);
+        if (!mConsumer.pop(t))
+        {
+            throw std::runtime_error("Empty Batch was popped.");
+        }
     }
-    
-    tbb::concurrent_bounded_queue<Batch<T>*> mQueue;
-    std::unique_ptr<Batch<T>[]> mBatchPool;
-    std::size_t mIndex;
-    
-    char padding[128];
-    
-    Batch<T>* mPoppedBatch;
+
+    Batch<T> mProducer;
+    char padding1[128];
+    tbb::concurrent_bounded_queue<Batch<T>> mQueue;
+    char padding2[128];
+    Batch<T> mConsumer;
     
 };
+
 
 
 int main()
 {
 
-	std::thread([]{ std::this_thread::sleep_for(std::chrono::seconds(1)); std::cerr << "TIMEOUT" << std::endl; std::abort(); }).detach();
-    ConcurrentBatchQueue<int> q(100);
-    
-    std::atomic<bool> quit(false);
+    std::thread([]{ std::this_thread::sleep_for(std::chrono::seconds(1000)); std::cerr << "TIMEOUT" << std::endl; std::abort(); }).detach();
+
+    ConcurrentBatchQueue<unsigned> q;
+
+    unsigned count = 5;
         
-    std::thread producer([&]{
-        int n = 0;
-        while (n < 200) {
-            q.push(n);
-            n++;
-        }
+    std::thread producer([&] {
+        for (unsigned i = 1; i <= count; ++i) q.push(i);
+        q.flush();
     });
     
     std::thread consumer([&]{
-        int n = 0;
-        while (n != 200) {
+        for (;;)
+        {
+            unsigned n = 0;
             q.pop(n);
-            std::cout << "Consumer popped: " << n << std::endl;
+            print("pop " + std::to_string(n));
+            if (n == count) return;
         }
     });
-    
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    quit = true;
     producer.join();
     consumer.join();
+
+    print("SUCCESS!");
 }

@@ -175,11 +175,10 @@ int main()
     std::thread consumer([&]{
         auto count = 0;
         for (;;) {
-            auto result = queue.pop();
+            auto result = queue.pop(std::chrono::microseconds(100));
             if (!result.empty()) {
                 count += result.size();
                 std::cout << result.size() << ": " << count << "/" << max << std::endl;
-
             }
 
             if (queue.stoppped()) {

@@ -1,141 +1,204 @@
-#include <tbb/concurrent_queue.h>
 #include <atomic>
+#include <chrono>
+#include <list>
 #include <iostream>
-#include <memory>
+#include <vector>
 #include <mutex>
 #include <thread>
-#include <assert.h>
+#include <condition_variable>
 
 
-void print(const std::string& c)
+typedef std::chrono::high_resolution_clock Clock;
+
+std::mutex gMutex;
+
+
+struct BufferedQueue
 {
-    static std::mutex m;
-    std::unique_lock<std::mutex> lock(m);
-    std::cout << c << ' ' << std::endl;
-}
+    enum { Capacity = 100 };
 
-
-#define print(c) print(c);
-
-
-template<typename T>
-struct Batch
-{
-    enum { Capacity = 2 };
-    
-    Batch() : items(), size(), cap(Capacity) {}
-    
-    bool batch_push(T t)
+    BufferedQueue() : mQuit(false)
     {
-        items[size] = std::move(t);
-        size++;
-        cap = size;
-        return size == Capacity;
+        (void)mPadding;
+        mBuffer.reserve(Capacity);
     }
 
-    bool consumer_empty() const { return size == 0; }
-    
-    
-    bool pop(T& t)
+    ~BufferedQueue()
     {
-        if (size > 0) {
-            t = std::move(items[cap - size]);
-            size--;
-            return true;
+        stop();
+    }
+
+    bool stoppped() const
+    {
+        return mQuit;
+    }
+
+    void stop()
+    {
+        if (!mQuit)
+        {
+            Lock lock(mMutex);
+            mQuit = true;
+            mCondition.notify_all();
         }
-        return false;
     }
-    
-    T items[Capacity];
-    uint16_t size;
-    uint16_t cap;
+
+    void push(int n)
+    {
+        Lock lock(mMutex);
+        mBuffer.push_back(n);
+        if (mBuffer.size() == mBuffer.capacity())
+        {
+            mQueue.push_back(std::move(mBuffer));
+            mBuffer.clear();
+            mBuffer.reserve(Capacity);
+            mCondition.notify_all();
+        }
+    }
+
+    std::vector<int> pop(std::chrono::nanoseconds timeout)
+    {
+        Buffer swap_buffer;
+        swap_buffer.reserve(Capacity);
+        auto start_time = Clock::now();
+
+        for (;;)
+        {
+
+            // first check the queue
+            {
+                Lock lock(mMutex);
+                mCondition.wait_until(lock, start_time + timeout);
+
+                // we have a result
+                if (!mQueue.empty())
+                {
+                    swap_buffer.swap(mQueue.front());
+                    mQueue.pop_front();
+                    return swap_buffer;
+                }
+
+            }
+
+            // check if this was an early wakeup (spurious wakeup)
+            // if yes, then we can resume waiting
+            if (Clock::now() - start_time < timeout)
+            {
+                continue;
+            }
+
+            // timeout has occurred.
+            // queue was empty, but perhaps we have some data in the buffer
+            // that we can return
+            {
+                Lock lock(mMutex);
+
+
+                if (!mBuffer.empty())
+                {
+                    // yes! we got some data
+                    // swap the buffer with our local one
+                    // and return
+                    swap_buffer.swap(mBuffer);
+                    return swap_buffer;
+                }
+            }
+
+            // we got nothing but timeout has occured.
+            // return empty result to user
+            return Buffer();
+        }
+    }
+
+    std::vector<int> pop()
+    {
+        Buffer swap_buffer;
+        swap_buffer.reserve(Capacity);
+
+        for (;;)
+        {
+            Lock lock(mMutex);
+            mCondition.wait(lock);
+
+            // we have a result
+            if (!mQueue.empty())
+            {
+                swap_buffer.swap(mQueue.front());
+                mQueue.pop_front();
+                return swap_buffer;
+            }
+
+            if (!mBuffer.empty())
+            {
+                // yes! we got some data
+                // swap the buffer with our local one
+                // and return
+                swap_buffer.swap(mBuffer);
+                return swap_buffer;
+            }
+
+            if (mQuit)
+            {
+                return Buffer();
+            }
+        }
+    }
+
+private:
+    typedef std::unique_lock<std::mutex> Lock;
+    typedef std::vector<int> Buffer;
+
+    std::atomic<bool> mQuit;
+    Buffer mBuffer;
+    std::list<Buffer> mQueue;
+    char mPadding[64];
+    std::condition_variable mCondition;
+    std::mutex mMutex;
 };
 
 
-template<typename T>
-struct ConcurrentBatchQueue
-{
-    ConcurrentBatchQueue(std::size_t capacity = 3) :
-        mQueue()
-    {
-        mQueue.set_capacity(capacity);
-    }
-
-    ~ConcurrentBatchQueue()
-    {
-        if (!mProducer.consumer_empty())
-        {
-            std::abort();
-        }
-    }
-    
-    void push(T t)
-    {
-        if (mProducer.batch_push(t))
-        {
-            flush();
-        }
-    }
-
-    void flush()
-    {
-        if (!mProducer.consumer_empty()) {
-            mQueue.push(mProducer);
-            mProducer = Batch<T>();
-        } else {
-            print("FAILEDFLUSH");
-        }
-    }
-    
-    void pop(T& t)
-    {
-        if (mConsumer.pop(t))
-        {
-            return;
-        }
-
-        mQueue.pop(mConsumer);
-        if (!mConsumer.pop(t))
-        {
-            throw std::runtime_error("Empty Batch was popped.");
-        }
-    }
-
-    Batch<T> mProducer;
-    char padding1[128];
-    tbb::concurrent_bounded_queue<Batch<T>> mQueue;
-    char padding2[128];
-    Batch<T> mConsumer;
-    
-};
-
+using namespace std::chrono;
 
 
 int main()
 {
+    BufferedQueue queue;
 
-    std::thread([]{ std::this_thread::sleep_for(std::chrono::seconds(1000)); std::cerr << "TIMEOUT" << std::endl; std::abort(); }).detach();
+    const auto max = 12345;
 
-    ConcurrentBatchQueue<unsigned> q;
-
-    unsigned count = 5;
-        
-    std::thread producer([&] {
-        for (unsigned i = 1; i <= count; ++i) q.push(i);
-        q.flush();
-    });
-    
-    std::thread consumer([&]{
-        for (;;)
-        {
-            unsigned n = 0;
-            q.pop(n);
-            print("pop " + std::to_string(n));
-            if (n == count) return;
+    std::thread producer([&]{
+        for (int i = 0; i != max; ++i) {
+            queue.push(i);
         }
     });
+
+    std::thread consumer([&]{
+        auto count = 0;
+        for (;;) {
+            auto result = queue.pop();
+            if (!result.empty()) {
+                count += result.size();
+                std::cout << result.size() << ": " << count << "/" << max << std::endl;
+
+            }
+
+            if (queue.stoppped()) {
+                return;
+            }
+
+            if (count == max) {
+                std::cout << "\nDone!" << std::endl;
+                return;
+            }
+        }
+    });
+
+    std::thread([&]{
+        std::this_thread::sleep_for(seconds(2));
+        std::cout << "Stopping the queue" << std::endl;
+        queue.stop();
+    }).detach();
+
     producer.join();
     consumer.join();
-
-    print("SUCCESS!");
 }

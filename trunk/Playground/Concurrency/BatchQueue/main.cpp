@@ -35,9 +35,9 @@ struct BufferedQueue
 
     void stop()
     {
+        Lock lock(mMutex);
         if (!mQuit)
         {
-            Lock lock(mMutex);
             mQuit = true;
             mCondition.notify_all();
         }
@@ -148,7 +148,7 @@ private:
     typedef std::unique_lock<std::mutex> Lock;
     typedef std::vector<int> Buffer;
 
-    std::atomic<bool> mQuit;
+    bool mQuit;
     Buffer mBuffer;
     std::list<Buffer> mQueue;
     char mPadding[64];
@@ -166,13 +166,13 @@ int main()
 
     const auto max = 12345;
 
-    std::thread producer([&]{
+    std::thread producer([=, &queue]{
         for (int i = 0; i != max; ++i) {
             queue.push(i);
         }
     });
 
-    std::thread consumer([&]{
+    std::thread consumer([=, &queue]{
         auto count = 0;
         for (;;) {
             auto result = queue.pop(std::chrono::microseconds(100));

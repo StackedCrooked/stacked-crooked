@@ -1,1 +1,2 @@
-./update-clang.sh && cd build && make
+#!/bin/bash
+./update-clang.sh && cd build && make "$@"

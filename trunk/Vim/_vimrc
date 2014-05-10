@@ -2,6 +2,25 @@
 "  General Settings
 " -----------------------------------------------------------------------------
 
+" colorscheme blue
+" colorscheme default
+" colorscheme desert
+" colorscheme evening
+colorscheme morning
+" colorscheme pablo
+" colorscheme ron
+" colorscheme slate
+" colorscheme zellner
+" colorscheme darkblue
+" colorscheme delek
+" colorscheme elflord
+" colorscheme koehler
+" colorscheme murphy
+" colorscheme peachpuff
+" colorscheme shine
+" colorscheme torte
+
+
 " Show line numbers
 set number
 
@@ -63,7 +82,6 @@ syntax on
 map Y y$
 
 " Set the color scheme
-colorscheme morning
 
 
 "
@@ -155,4 +173,5 @@ filetype plugin indent on     " required!
 " see :h vundle for more details or wiki for FAQ
 " NOTE: comments after Bundle command are not allowed..
 
+let NERDTreeIgnore = ['\.o$']
 

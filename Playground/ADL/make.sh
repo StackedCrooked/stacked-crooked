@@ -1,2 +1,2 @@
 #!/bin/bash
-g++ -std=c++11 -Wall -Wextra -Werror -pedantic-errors main.cpp
+clang++ -std=c++1y -Wall -Wextra -Werror -pedantic-errors -isystem /opt/local/include main.cpp

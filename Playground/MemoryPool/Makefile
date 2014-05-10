@@ -3,4 +3,4 @@ CXXFLAGS=-Wall -Werror -O3
 LFLAGS=-L/opt/local/lib -lPocoFoundation
 
 all:
-	g++ -o test $(INCLUDE) $(CXXFLAGS) $(LFLAGS) *.cpp
+	g++ -std=c++11 $(INCLUDE) $(CXXFLAGS) $(LFLAGS) *.cpp

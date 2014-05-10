@@ -1,13 +1,12 @@
-#!/bin/sh
-USERFILE="$HOME/.mal/user"
-[ -f $USERFILE ] || { echo "$USERFILE not found. Exiting" 1>&2 ; exit ; }
-USER=$(cat $USERFILE)
+#!/bin/bash
+user_file="$HOME/.mal/user"
+[ -f $user_file ] || { echo "$user_file not found. Exiting" 1>&2 ; exit ; }
+user="$(cat $user_file)"
 
-PASSWORDFILE="$HOME/.mal/password"
-[ -f $PASSWORDFILE ] || { echo "$PASSWORDFILE not found. Exiting" 1>&2 ; exit ; }
-PASSWORD=$(cat $PASSWORDFILE)
+password_file="$HOME/.mal/password"
+[ -f $password_file ] || { echo "$password_file not found. Exiting" 1>&2 ; exit ; }
+password="$(cat $password_file)"
 
-URL=http://myanimelist.net/api/anime/search.xml
-wget -nv --output-document=result.xml --user=$USER --password=$PASSWORD "$URL?q=$1" 
-cat result.xml | grep \<title\> | sed 's/^.*\<title\>//' | sed 's/\<\/title\>//'
-cat result.xml | grep \<score\> | sed 's/^.*\<score\>//' | sed 's/\<\/score\>//'
+url='http://myanimelist.net/api/anime/search.xml'
+wget -nv --output-document=result.xml --user=$user --password=$password "$url?q=$1" 
+cat result.xml 

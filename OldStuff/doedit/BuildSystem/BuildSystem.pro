@@ -1,1 +1,0 @@
-include(BuildSystem/UserSettings.pro)

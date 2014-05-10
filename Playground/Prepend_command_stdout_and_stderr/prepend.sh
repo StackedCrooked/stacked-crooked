@@ -20,16 +20,16 @@ while read command; do (
     trap 'rm -f "$stdout" "$stderr"' EXIT
 
     # Read from the FIFOs in the background, adding the desired prefixes.
-    prefix 'stdout=' < "$stdout" >&1 &
-    prefix 'stderr=' < "$stderr" >&2 &
+    prefix 'O:' < "$stdout" >&1 &
+    prefix 'E:' < "$stderr" >&2 &
 
     # Now execute the command, sending its stdout and stderr to the FIFOs.
-    echo "command=$command"
+    echo "C:$command"
     eval "$command" 1> "$stdout" 2> "$stderr"
     exitcode=$?
 
     # Wait for the `prefix' processes to finish, then print the exit code.
     wait
-    echo "result=$exitcode"
+    echo "R:$exitcode"
     exit $exitcode
 ) done

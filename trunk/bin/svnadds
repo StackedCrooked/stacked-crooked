@@ -1,0 +1,1 @@
+svn st | grep -e ^A | sed 's_^A[ ]*__'

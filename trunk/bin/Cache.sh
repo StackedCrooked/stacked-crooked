@@ -1,3 +1,11 @@
+# Cache.sh caches the results of commands
+#
+# Usage:
+#   Cache.sh svn up
+#
+# Example:
+#   Cache.sh svn up # much quicker now!
+#
 encoded_command="$(echo $@ | base64)"
 cache_dir="${HOME}/.Cache.sh"
 mkdir -p ${cache_dir}

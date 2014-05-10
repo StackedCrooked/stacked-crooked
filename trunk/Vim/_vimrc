@@ -69,7 +69,7 @@ set title
 
 " Set ignore case when searching using only lower case characters
 set ignorecase
-set smartcase
+"set smartcase
 
 " Enable syntax coloring
 syntax enable

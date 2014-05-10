@@ -1,1 +1,0 @@
-xsd cxx-tree --namespace-map http://api.facebook.com/1.0/=FacebookCpp::XSD --generate-intellisense facebook.xsd

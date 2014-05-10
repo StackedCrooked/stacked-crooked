@@ -1,0 +1,1 @@
+svn st | grep -v "^\?" | grep -v "^X" | grep -v "^Performing" | grep -v ^$

@@ -1,0 +1,8 @@
+#!/bin/bash
+set -x
+set -e
+name="$(date +%s)"
+dir="$HOME/tmp/${name}"
+cp -r $HOME/programming/projects/stacked-crooked/Playground/cppgen_template "${dir}"
+cd "$dir"
+open -n "cppgen_template.creator"

@@ -36,6 +36,10 @@ set expandtab
 " Don't replace tabs with spaces in makefiles
 autocmd FileType make set noexpandtab
 
+" Set scroll to 2 lines (default is 32)
+" Use with CTRL+D and CTRL+U
+set scroll=2
+
 " Set tabs to 4 spaces
 set softtabstop=4 
 set tabstop=4 

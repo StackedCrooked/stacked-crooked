@@ -4,9 +4,9 @@
 
 " colorscheme blue
 " colorscheme default
-" colorscheme desert
+colorscheme desert
 " colorscheme evening
-colorscheme morning
+" colorscheme morning
 " colorscheme pablo
 " colorscheme ron
 " colorscheme slate
@@ -35,6 +35,7 @@ set expandtab
 
 " Don't replace tabs with spaces in makefiles
 autocmd FileType make set noexpandtab
+autocmd FileType * :set paste
 
 " Set scroll to 2 lines (default is 32)
 " Use with CTRL+D and CTRL+U

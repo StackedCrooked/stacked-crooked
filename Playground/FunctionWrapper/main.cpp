@@ -37,13 +37,19 @@ struct Function<R(Args...)>
     Function(Function&& rhs) noexcept :
         storage(rhs.storage)
     {
-        rhs.move_to(*this);
+        if (rhs.valid())
+        {
+            rhs.move_to(*this);
+        }
     }
 
     Function& operator=(Function rhs) noexcept
     {
-        unset();
-        rhs.move_to(*this);
+        if (rhs.valid())
+        {
+            unset();
+            rhs.move_to(*this);
+        }
         return *this;
     }
 
@@ -96,11 +102,7 @@ private:
 
     void move_to(Function& dst)
     {
-        if (!valid())
-        {
-            return;
-        }
-
+        assert(valid());
         dst.~Function();
 
         base().move_to(dst.data());
@@ -204,7 +206,8 @@ int main()
 
 
     // calling the moved-from decrement
-    try { decrement(3); assert(false); } catch (std::bad_function_call& e) {  }
+    try { decrement(3); assert(false); } catch (std::bad_function_call& ) { std::cout << "OK: got bad_function_call as exptected." << std::endl; }
 
 
 }
+

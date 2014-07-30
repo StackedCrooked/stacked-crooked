@@ -19,13 +19,13 @@ struct Function<R(Args...)>
     {}
 
     template<typename F>
-    Function(const F& f) // todo: use F&& and disambiguate from copy/move constructor
+    Function(F f) // todo: use F&& and disambiguate from copy/move constructor
     {
         //std::cout << __PRETTY_FUNCTION__ << std::endl;
         static_assert(alignof(F) <= alignof(Function), "");
         static_assert(sizeof(f) <= sizeof(storage), "");
 
-        new (storage.data()) Impl<F>(f);
+        new (storage.data()) Impl<F>(std::move(f));
     }
 
     Function(const Function& rhs) : storage()
@@ -87,7 +87,7 @@ private:
     template<typename F>
     struct Impl : Base
     {
-        Impl(const F& f) : f(f) {}
+        Impl(F f) : f(std::move(f)) {}
 
         R call(Args&& ...args) const override final
         { return f(std::forward<Args>(args)...); }

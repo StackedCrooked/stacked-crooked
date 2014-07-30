@@ -30,7 +30,7 @@ struct Function<R(Args...)>
     {
         if (rhs.valid())
         {
-            rhs.base().clone(data());
+            rhs.base().copy_to(data());
         }
     }
 
@@ -77,7 +77,7 @@ private:
     {
         virtual ~Base() {}
         virtual R call(Args&& ...args) const = 0;
-        virtual void clone(void* where) const = 0;
+        virtual void copy_to(void* where) const = 0;
         virtual void move_to(void* where) = 0;
     };
 
@@ -90,7 +90,7 @@ private:
         R call(Args&& ...args) const override final
         { return f(std::forward<Args>(args)...); }
 
-        void clone(void* where) const override final
+        void copy_to(void* where) const override final
         { new (where) Impl<F>(*this); }
 
         virtual void move_to(void* where)

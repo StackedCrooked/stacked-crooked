@@ -18,7 +18,7 @@ struct Function<R(Args...)>
     {}
 
     template<typename F>
-    Function(const F& f) // todo: use F&& and disambiguate from Function
+    Function(const F& f) // todo: use F&& and disambiguate from copy/move constructor
     {
         static_assert(alignof(F) <= alignof(Function), "");
         static_assert(sizeof(f) <= sizeof(storage), "");

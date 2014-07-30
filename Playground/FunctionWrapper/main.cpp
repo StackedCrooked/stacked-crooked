@@ -102,7 +102,7 @@ private:
     void move_to(Function& dst)
     {
         assert(valid());
-        dst.~Function();
+        dst.unset();
 
         base().move_to(dst.data());
         unset();

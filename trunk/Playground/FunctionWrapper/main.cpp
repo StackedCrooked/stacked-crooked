@@ -19,9 +19,8 @@ struct Function<R(Args...)>
     {}
 
     template<typename F>
-    Function(F f) // todo: use F&& and disambiguate from copy/move constructor
+    Function(F f)
     {
-        //std::cout << __PRETTY_FUNCTION__ << std::endl;
         static_assert(alignof(F) <= alignof(Function), "");
         static_assert(sizeof(f) <= sizeof(storage), "");
 
@@ -142,22 +141,12 @@ private:
 };
 
 
-struct Person
-{
-    Person(const std::string& name, int age) : name_(name), age_(age) {}
-
-    std::string name() const { return name_; } 
-    int age() const { return age_; }
-
-    std::string name_;
-    int age_;
-};
-
 int main()
 {
     Function<int(int)> increment = [](int n) {
         return n + 1;
     };
+    
     Function<int(int)> decrement = [](int n) {
         return n - 1;
     };

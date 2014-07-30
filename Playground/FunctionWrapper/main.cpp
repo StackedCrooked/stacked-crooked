@@ -134,7 +134,7 @@ private:
     Base& base()
     { assert(valid()); return *static_cast<Base*>(data()); }
 
-    typedef std::array<char, 32> Storage; // long is probably max-align
+    typedef std::array<char, 32> Storage;
     alignas(alignof(std::max_align_t)) Storage storage;
 };
 

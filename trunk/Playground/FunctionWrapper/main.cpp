@@ -18,12 +18,12 @@ struct Function<R(Args...)>
     {}
 
     template<typename F>
-    Function(F&& f, typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_const<F>::type>::type, Function<R(Args...)>>::value>::type* = 0)
+    Function(const F& f) // todo: use F&& and disambiguate from Function
     {
         static_assert(alignof(F) <= alignof(Function), "");
         static_assert(sizeof(f) <= sizeof(storage), "");
 
-        new (storage.data()) Impl<F>(std::forward<F>(f));
+        new (storage.data()) Impl<F>(f);
     }
 
     Function(const Function& rhs) : storage()
@@ -85,8 +85,7 @@ private:
     template<typename F>
     struct Impl : Base
     {
-        template<typename FF>
-        Impl(FF&& ff) : f(std::forward<FF>(ff)) {}
+        Impl(const F& f) : f(f) {}
 
         R call(Args&& ...args) const override final
         { return f(std::forward<Args>(args)...); }
@@ -210,4 +209,3 @@ int main()
 
 
 }
-

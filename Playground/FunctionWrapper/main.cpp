@@ -45,9 +45,9 @@ struct Function<R(Args...)>
 
     Function& operator=(Function rhs) noexcept
     {
+        unset();
         if (rhs.valid())
         {
-            unset();
             rhs.move_to(*this);
         }
         return *this;

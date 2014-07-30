@@ -28,7 +28,8 @@ struct Function<R(Args...)>
         new (storage.data()) Impl<F>(std::move(f));
     }
 
-    Function(const Function& rhs) : storage()
+    Function(const Function& rhs) :
+        storage()
     {
         if (rhs.valid())
         {

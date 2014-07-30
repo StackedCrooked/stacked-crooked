@@ -134,10 +134,21 @@ private:
     Base& base()
     { assert(valid()); return *static_cast<Base*>(data()); }
 
-    typedef std::array<char, 32> Storage;
+    typedef std::array<char, 48> Storage;
     alignas(alignof(std::max_align_t)) Storage storage;
 };
 
+
+struct Person
+{
+    Person(const std::string& name, int age) : name_(name), age_(age) {}
+
+    std::string name() const { return name_; } 
+    int age() const { return age_; }
+
+    std::string name_;
+    int age_;
+};
 
 int main()
 {
@@ -206,6 +217,19 @@ int main()
 
     // calling the moved-from decrement
     try { decrement(3); assert(false); } catch (std::bad_function_call& ) { std::cout << "OK: got bad_function_call as exptected." << std::endl; }
+
+
+    Person p("John", 99);
+
+    Function<std::string()> get_name(std::bind(&Person::name, p));
+    std::cout << get_name() << std::endl;
+
+
+
+    Function<int()> get_age([&]{ return p.age(); });
+    std::cout << get_age() << std::endl;
+
+
 
 
 }

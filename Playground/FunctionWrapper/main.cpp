@@ -93,7 +93,7 @@ private:
         void copy_to(void* where) const override final
         { new (where) Impl<F>(*this); }
 
-        void move_to(void* where)
+        void move_to(void* where) override final
         { new (where) Impl<F>(std::move(*this)); }
 
         F f;

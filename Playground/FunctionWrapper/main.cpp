@@ -1,3 +1,4 @@
+#include <boost/bind.hpp>
 #include <cassert>
 #include <cstddef>
 #include <functional>
@@ -20,6 +21,7 @@ struct Function<R(Args...)>
     template<typename F>
     Function(const F& f) // todo: use F&& and disambiguate from copy/move constructor
     {
+        //std::cout << __PRETTY_FUNCTION__ << std::endl;
         static_assert(alignof(F) <= alignof(Function), "");
         static_assert(sizeof(f) <= sizeof(storage), "");
 
@@ -221,7 +223,7 @@ int main()
 
     Person p("John", 99);
 
-    Function<std::string()> get_name(std::bind(&Person::name, p));
+    Function<std::string()> get_name(boost::bind(&Person::name, p));
     std::cout << get_name() << std::endl;
 
 
@@ -230,6 +232,9 @@ int main()
     std::cout << get_age() << std::endl;
 
 
+    std::function<int()> get_age_fun(std::bind(&Person::age, p));
+    Function<int()> get_age2(get_age_fun);
+    std::cout << get_age2() << std::endl;
 
 
 }

@@ -16,10 +16,7 @@ struct SharedPromise
         }
     };
 
-    SharedPromise() :
-        mImpl(std::make_shared<Impl>())
-    {
-    }
+    SharedPromise() : mImpl(std::make_shared<Impl>()) { }
 
     explicit operator bool() const
     {
@@ -36,17 +33,14 @@ struct SharedPromise
     {
         assert_valid();
 
-        std::shared_ptr<void> scope_guard(nullptr, [&](void*){
-            mImpl.reset();
-        });
+        std::shared_ptr<void> scope_guard(nullptr, [&](void*){ mImpl.reset(); });
 
         mImpl->mPromise.set_value(t);
+
         for (auto& callback : mImpl->mCallbacks)
         {
-            try {
-                callback(mImpl->mSharedFuture);
-            } catch (...) {
-            }
+            try { callback(mImpl->mSharedFuture); }
+            catch (...) { }
         }
     }
 
@@ -54,9 +48,7 @@ struct SharedPromise
     {
         assert_valid();
 
-        std::shared_ptr<void> scope_guard(nullptr, [&](void*){
-            mImpl.reset();
-        });
+        std::shared_ptr<void> scope_guard(nullptr, [&](void*){ mImpl.reset(); });
 
         mImpl->mPromise.set_exception(ptr);
     }
@@ -79,12 +71,7 @@ private:
 
     struct Impl
     {
-        Impl() :
-            mPromise(),
-            mSharedFuture(mPromise.get_future().share())
-        {
-        }
-
+        Impl() : mPromise(), mSharedFuture(mPromise.get_future().share()) { }
         std::promise<T> mPromise;
         std::shared_future<T> mSharedFuture;
         std::vector<std::function<void(std::shared_future<T>&)>> mCallbacks;

@@ -208,23 +208,13 @@ int main()
 
 
     // calling the moved-from decrement
-    try { decrement(3); assert(false); } catch (std::bad_function_call& ) { std::cout << "OK: got bad_function_call as exptected." << std::endl; }
+    try {
+        decrement(3);
+        assert(false);
+    } catch (std::bad_function_call& ) {
+        std::cout << "OK: got bad_function_call as exptected." << std::endl;
+    }
 
-
-    Person p("John", 99);
-
-    Function<std::string()> get_name(boost::bind(&Person::name, p));
-    std::cout << get_name() << std::endl;
-
-
-
-    Function<int()> get_age([&]{ return p.age(); });
-    std::cout << get_age() << std::endl;
-
-
-    std::function<int()> get_age_fun(std::bind(&Person::age, p));
-    Function<int()> get_age2(get_age_fun);
-    std::cout << get_age2() << std::endl;
 
 
 }

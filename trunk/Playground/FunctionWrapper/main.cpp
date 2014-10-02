@@ -119,7 +119,7 @@ void test_fast()
     for (long i = 0; i != num_iterations; ++i)
     {
         s.back() = char(i);
-        queue.emplace_back([&s]{ return s.size() + total_sum; });
+        queue.emplace_back([&s]() noexcept { return s.size() + total_sum; });
     }
 
     auto t2 = now();

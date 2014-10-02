@@ -41,23 +41,20 @@ struct Function<R(Args...)>
 {
     typedef Function<R(Args...)> this_type;
 
-    Function() = delete;
+    Function() noexcept = delete;
 
     template<typename F>
-    Function(const F& f) noexcept
-    {
-        new (&storage) Impl<F>(f);
-    }
+    Function(const F& f) noexcept { new (&storage) Impl<F>(f); }
 
-    Function(Function&& rhs) = delete;
-    Function& operator=(Function&& rhs) = delete;
+    Function(Function&& rhs) noexcept = delete;
+    Function& operator=(Function&& rhs) noexcept = delete;
 
-    Function(const Function& rhs) = delete;
-    Function& operator=(const Function& rhs) = delete;
+    Function(const Function& rhs) noexcept = delete;
+    Function& operator=(const Function& rhs) noexcept = delete;
 
     ~Function() noexcept { base().~Base(); }
 
-    R operator()(Args&& ...args) const
+    R operator()(Args&& ...args) const noexcept
     {
         return base().call(std::forward<Args>(args)...);
     }
@@ -65,25 +62,25 @@ struct Function<R(Args...)>
 private:
     struct Base
     {
-        virtual ~Base() {}
-        virtual R call(const Args& ...args) const= 0;
+        virtual ~Base() noexcept {}
+        virtual R call(const Args& ...args) const noexcept = 0;
     };
 
     template<typename F>
     struct Impl : Base
     {
-        Impl(const F& f) : f(f) {}
+        Impl(const F& f) noexcept  : f(f) {}
 
-        virtual R call(const Args& ...args) const override final
+        virtual R call(const Args& ...args) const noexcept override final
         { return f(args...); }
 
         F f;
     };
 
-    const void* data() const
+    const void* data() const noexcept
     { return static_cast<const void*>(&storage); }
 
-    const Base& base() const
+    const Base& base() const noexcept
     { return *static_cast<const Base*>(data()); }
 
     typedef std::array<uint64_t, 2> Storage;
@@ -96,7 +93,7 @@ private:
 #include <thread>
 
 
-const int64_t num_iterations = 10000000;
+const int64_t num_iterations = 100000;
 
 using namespace std::chrono;
 
@@ -133,11 +130,6 @@ void test_fast()
 
     std::cout << (t2 - t1) << "+" << (t3 - t2) << "=" << (t3 - t1) << '\t';
     total_sum += sum;
-
-
-
-
-
 }
 
 

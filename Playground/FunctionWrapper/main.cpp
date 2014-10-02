@@ -46,30 +46,16 @@ struct Function<R(Args...)>
     template<typename F>
     Function(const F& f) noexcept
     {
-        static_assert(!std::is_same<F, this_type>::value, "");
-        static_assert(sizeof(Impl<F>) <= sizeof(storage), "");
-
-        static_assert(!std::is_reference<F>::value, "");
-        static_assert(alignof(F) <= alignof(this_type), "");
-
         new (&storage) Impl<F>(f);
     }
 
     Function(Function&& rhs) = delete;
-    Function(const Function& rhs)  = delete;
-
-    Function& operator=(const Function& rhs) = delete;
     Function& operator=(Function&& rhs) = delete;
 
-    ~Function()
-    {
-        base().~Base();
-    }
+    Function(const Function& rhs) = delete;
+    Function& operator=(const Function& rhs) = delete;
 
-    explicit operator bool() const
-    {
-        return valid();
-    }
+    ~Function() noexcept { base().~Base(); }
 
     R operator()(Args&& ...args) const
     {
@@ -83,7 +69,6 @@ private:
         virtual R call(const Args& ...args) const= 0;
     };
 
-
     template<typename F>
     struct Impl : Base
     {
@@ -95,52 +80,11 @@ private:
         F f;
     };
 
-    void unset()
-    {
-        if (!valid())
-        {
-            return;
-        }
-        base().~Base();
-        storage = Storage();
-    }
-
-    // convenience methods
-    bool valid() const
-    { return storage != Storage(); }
-
-//    void mark_deleted()
-//    {
-//        for (auto&& i : storage)
-//        {
-//            static_assert(std::is_unsigned<Storage::value_type>::value, "");
-//            i = Storage::value_type(-1);
-//        }
-//    }
-
-//    bool is_deleted() const
-//    {
-//        for (auto&& i : storage)
-//        {
-//            if (i != Storage::value_type(-1))
-//            {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-
     const void* data() const
     { return static_cast<const void*>(&storage); }
 
-    void* data()
-    { return static_cast<void*>(&storage); }
-
     const Base& base() const
-    { assert(valid()); return *static_cast<const Base*>(data()); }
-
-    Base& base()
-    { assert(valid()); return *static_cast<Base*>(data()); }
+    { return *static_cast<const Base*>(data()); }
 
     typedef std::array<uint64_t, 2> Storage;
     alignas(alignof(max_align_t)) Storage storage;
@@ -217,9 +161,9 @@ void run()
 
 int main()
 {
+    run();
+    run();
+    run();
     std::thread([]{ sleep(1); for (int i = 0; i != 10; ++i) { std::cout << '[' << i << ']'; } }).detach();
-    run();
-    run();
-    run();
     std::cout << std::endl << " total_sum=" << total_sum << std::endl;
 }

@@ -15,7 +15,7 @@ struct Function<R(Args...)>
     Function() noexcept = delete;
 
     template<typename F>
-    Function(const F& f) noexcept
+    explicit Function(const F& f) noexcept
     {
         static_assert(sizeof(Impl<F>) <= sizeof(storage), "");
         new (&storage) Impl<F>(f);

@@ -1,34 +1,7 @@
-﻿#include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
-#include <atomic>
-#include <deque>
-#include <vector>
-#include <cassert>
-#include <cstddef>
-#include <functional>
-#include <iostream>
-#include "tbb/concurrent_queue.h"
-#include <new>
+﻿#include <cstddef>
 #include <utility>
 #include <array>
 
-
-#include <cxxabi.h>
-
-
-std::string Demangle(char const * name)
-{
-    int st;
-    char * const p = abi::__cxa_demangle(name, 0, 0, &st);
-    switch (st)
-    {
-        case 0: { return std::unique_ptr<char, decltype(&std::free)>(p, &std::free).get(); }
-        case -1: throw std::runtime_error("A memory allocation failure occurred.");
-        case -2: throw std::runtime_error("Not a valid name under the GCC C++ ABI mangling rules.");
-        case -3: throw std::runtime_error("One of the arguments is invalid.");
-        default: throw std::runtime_error("unexpected demangle status");
-    }
-}
 
 template<typename Signature>
 struct Function;
@@ -89,17 +62,12 @@ private:
 
 
 
-#include "tbb/concurrent_queue.h"
-#include <thread>
+#include <deque>
+#include <iostream>
+#include <chrono>
 
 
-const int64_t num_iterations = 100000;
-
-using namespace std::chrono;
-
-typedef steady_clock Clock;
-
-
+const int64_t num_iterations = 2000000;
 int64_t total_sum = 0;
 
 
@@ -107,7 +75,7 @@ int64_t total_sum = 0;
 template<typename Task>
 void test_fast()
 {
-    auto now = []() -> int64_t { return duration_cast<microseconds>(Clock::now().time_since_epoch()).count(); };
+    auto now = []() -> int64_t { return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); };
 
     int64_t sum = 0;
     std::deque<Task> queue;
@@ -133,6 +101,9 @@ void test_fast()
 }
 
 
+#include <functional>
+
+
 void run()
 {
     typedef Function<int()> MyFunction;
@@ -146,8 +117,6 @@ void run()
     test_fast<StdFunction>();
     test_fast<StdFunction>();
     std::cout << std::endl;
-
-
 }
 
 
@@ -156,6 +125,5 @@ int main()
     run();
     run();
     run();
-    std::thread([]{ sleep(1); for (int i = 0; i != 10; ++i) { std::cout << '[' << i << ']'; } }).detach();
     std::cout << std::endl << " total_sum=" << total_sum << std::endl;
 }

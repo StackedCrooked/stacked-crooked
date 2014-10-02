@@ -7,8 +7,6 @@ template<typename Signature>
 struct Function;
 
 
-template<int> struct Size;
-
 template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {

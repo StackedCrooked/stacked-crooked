@@ -17,7 +17,11 @@ struct Function<R(Args...)>
     Function() noexcept = delete;
 
     template<typename F>
-    Function(const F& f) noexcept { new (&storage) Impl<F>(f); }
+    Function(const F& f) noexcept
+    {
+        static_assert(sizeof(Impl<F>) <= sizeof(storage), "");
+        new (&storage) Impl<F>(f);
+    }
 
     Function(Function&& rhs) noexcept = delete;
     Function& operator=(Function&& rhs) noexcept = delete;
@@ -56,8 +60,8 @@ private:
     const Base& base() const noexcept
     { return *static_cast<const Base*>(data()); }
 
-    typedef std::array<uint64_t, 2> Storage;
-    alignas(alignof(max_align_t)) Storage storage;
+    typedef std::array<uint64_t, 3> Storage;
+    alignas(alignof(uint64_t)) Storage storage;
 };
 
 
@@ -106,6 +110,11 @@ void test_fast()
 
 void run()
 {
+    // We can capture 16 bytes.
+    uint64_t a = 1;
+    uint64_t b = 2;
+    std::cout << Function<int()>([=]{ return a + b; })() << std::endl;
+
     typedef Function<int()> MyFunction;
     std::cout << "MyFunction:  ";
     test_fast<MyFunction>();

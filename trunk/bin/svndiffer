@@ -1,10 +1,8 @@
 #!/bin/bash
-# Subversion passes $6 as HEAD file and $7 as modified file.
-LEFT=$6
-RIGHT=$7
+# Subversion passes "$6" as HEAD file and "$7" as modified file.
 if [[ "`uname`" == 'Darwin' ]]; then
-    opendiff $LEFT $RIGHT ; read </dev/tty
+    opendiff "$6" "$7" ; read </dev/tty
 else
-    meld $LEFT $RIGHT & disown
+    meld "$6" "$7" & disown
 fi
 

@@ -1,0 +1,50 @@
+#!/bin/bash
+if [ $# -ne 1 ] ; then
+  echo "Usage: `basename $0` {arg}"
+  exit 65
+fi
+
+format_cpp() {
+  astyle  \
+    --style=allman \
+    --attach-namespaces \
+    --attach-inline \
+    --close-templates \
+    --indent=spaces=4 \
+    --indent-switches \
+    --indent-labels \
+    --indent-preproc-define \
+    --indent-col1-comments \
+    --max-instatement-indent=80 \
+    --pad-header \
+    --unpad-paren \
+    --convert-tabs \
+    --align-pointer=type \
+    --suffix=none \
+    --lineend=windows $file
+}
+
+format_h() {
+  astyle  \
+    --style=allman \
+    --attach-namespaces \
+    --attach-inline \
+    --close-templates \
+    --indent=spaces=4 \
+    --indent-switches \
+    --indent-labels \
+    --indent-preproc-define \
+    --indent-col1-comments \
+    --max-instatement-indent=80 \
+    --pad-header \
+    --unpad-paren \
+    --convert-tabs \
+    --align-pointer=type \
+    --suffix=none \
+    --lineend=windows $file
+}
+
+for file in "$@" ; do
+  extension="$(echo "$file" | sed 's/^.*\.//')"
+  format_$extension || echo "No formatter found for extension: $extension"
+done

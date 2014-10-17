@@ -100,6 +100,6 @@ end
 if ARGV.length == 2
     copy_dependencies(ARGV[0], ARGV[1])
 else
-    $stderr.puts "Usage: ruby localize_dependencies.rb input_file output_directory"
+    $stderr.puts "Usage: ruby localize_dependencies.rb input_file output_directory\nlocalize_dependencies.rb Contents/MacOS/Mesmerize Contents"
 end
 

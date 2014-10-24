@@ -15,9 +15,9 @@ int main()
         else
         {
             std::cout << count << c;
-			c = next;
-			count = 1;
+            c = next;
+            count = 1;
         }
     }
-	std::cout << next;
+    std::cout << next;
 }

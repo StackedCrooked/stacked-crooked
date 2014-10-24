@@ -5,7 +5,7 @@
 " Unix-specific settings
 if has("unix")
 set gfn=Courier\ 10\ Pitch\ 10
-winp 120 24
+winp 600 122
 set lines=52
 set columns=120
 endif
@@ -38,3 +38,4 @@ menu Bookmarks._gvimrc :tabnew ~/.gvimrc<CR>
 menu Bookmarks._vim :tabnew ~/.vim<CR>
 endif
 
+colorscheme torte

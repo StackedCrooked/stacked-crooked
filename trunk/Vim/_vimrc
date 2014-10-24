@@ -2,24 +2,7 @@
 "  General Settings
 " -----------------------------------------------------------------------------
 
-" colorscheme blue
-" colorscheme default
-colorscheme desert
-" colorscheme evening
-" colorscheme morning
-" colorscheme pablo
-" colorscheme ron
-" colorscheme slate
-" colorscheme zellner
-" colorscheme darkblue
-" colorscheme delek
-" colorscheme elflord
-" colorscheme koehler
-" colorscheme murphy
-" colorscheme peachpuff
-" colorscheme shine
-" colorscheme torte
-
+colorscheme torte
 
 " Show line numbers
 set number
@@ -86,23 +69,22 @@ syntax on
 " Yank until end of line
 map Y y$
 
-" Set the color scheme
-
-
-"
 " Easy panel switching
 " - ctrl-j jumps to left
 " - ctrl-l jumps to right
 " - ctrl-k jumpt to top
 " - ctrl-j jumps to bottom
-"
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
-nnoremap <S-H> gT
-nnoremap <S-L> gt
+
+" Easy buffer switching
+" Shift-K jumps to previous buffer
+" Shift-J jumps to next buffer
+nnoremap <S-K> :bp<CR>
+nnoremap <S-J> :bn<CR>
 
 " Split behavior.
 set splitbelow

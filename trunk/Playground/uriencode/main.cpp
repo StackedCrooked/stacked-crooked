@@ -6,6 +6,7 @@ void encode(std::ostream& os, char c)
 {
     switch (c)
     {
+        case '%' : os.write("%25", 3u); return;
         case '!' : os.write("%21", 3u); return;
         case '#' : os.write("%23", 3u); return;
         case '$' : os.write("%24", 3u); return;

@@ -1,4 +1,9 @@
-﻿#include <cstddef>
+#include <boost/bind.hpp>
+#include <cassert>
+#include <cstddef>
+#include <functional>
+#include <iostream>
+#include <new>
 #include <utility>
 #include <array>
 
@@ -10,127 +15,210 @@ struct Function;
 template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {
-    typedef Function<R(Args...)> this_type;
-
-    Function() noexcept = delete;
+    Function() : storage()
+    {}
 
     template<typename F>
-    explicit Function(const F& f) noexcept
+    Function(const F& f)
     {
-        static_assert(sizeof(Impl<F>) <= sizeof(storage), "");
-        new (&storage) Impl<F>(f);
+        static_assert(alignof(F) <= alignof(Function), "");
+        static_assert(sizeof(f) <= sizeof(storage), "");
+
+        new (storage.data()) Impl<F>(f); 
     }
 
-    Function(Function&& rhs) noexcept = delete;
-    Function& operator=(Function&& rhs) noexcept = delete;
-
-    Function(const Function& rhs) noexcept = delete;
-    Function& operator=(const Function& rhs) noexcept = delete;
-
-    ~Function() noexcept { base().~Base(); }
-
-    R operator()(Args&& ...args) const noexcept
+    Function(const Function& rhs) :
+        storage()
     {
+        if (rhs.valid())
+        {
+            rhs.base().copy_to(data());
+        }
+    }
+
+    Function(Function&& rhs) noexcept :
+        storage(rhs.storage)
+    {
+        if (rhs.valid())
+        {
+            rhs.move_to(*this);
+        }
+    }
+
+    Function& operator=(Function rhs) noexcept
+    {
+        if (valid())
+        {
+            base().~Base();
+        }
+        
+        if (rhs.valid())
+        {
+            rhs.move_to(*this);
+        }
+        return *this;
+    }
+
+    ~Function()
+    {
+        if (valid())
+        {
+            base().~Base();
+        }
+    }
+
+    explicit operator bool() const
+    {
+        return valid();
+    }
+
+    R operator()(Args&& ...args) const
+    {
+        if (!valid())
+        {
+            throw std::bad_function_call();
+        }
         return base().call(std::forward<Args>(args)...);
     }
 
 private:
     struct Base
     {
-        virtual ~Base() noexcept {}
-        virtual R call(const Args& ...args) const noexcept = 0;
+        virtual ~Base() {}
+        virtual R call(Args&& ...args) const = 0;
+        virtual void copy_to(void* where) const = 0;
+        virtual void move_to(void* where) = 0;
     };
+
 
     template<typename F>
     struct Impl : Base
     {
-        Impl(const F& f) noexcept  : f(f) {}
+        Impl(const F& f) : f(f) {}
 
-        virtual R call(const Args& ...args) const noexcept override final
-        { return f(args...); }
+        R call(Args&& ...args) const override final
+        { return f(std::forward<Args>(args)...); }
+
+        void copy_to(void* where) const override final
+        { new (where) Impl<F>(*this); }
+
+        void move_to(void* where) override final
+        { new (where) Impl<F>(std::move(*this)); }
 
         F f;
     };
 
-    const void* data() const noexcept
-    { return static_cast<const void*>(&storage); }
-
-    const Base& base() const noexcept
-    { return *static_cast<const Base*>(data()); }
-
-    typedef std::array<uint64_t, 3> Storage;
-    alignas(alignof(uint64_t)) Storage storage;
-};
-
-
-
-#include <deque>
-#include <iostream>
-#include <chrono>
-
-
-const int64_t num_iterations = 2000000;
-int64_t total_sum = 0;
-
-
-
-template<typename Task>
-void test_fast()
-{
-    auto now = []() -> int64_t { return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); };
-
-    int64_t sum = 0;
-    std::deque<Task> queue;
-
-    auto t1 = now();
-
-    std::string s = "asdfasdfasdfasd";
-
-    for (long i = 0; i != num_iterations; ++i)
+    void move_to(Function& dst)
     {
-        s.back() = char(i);
-        queue.emplace_back([&s]() noexcept { return s.size() + total_sum; });
+        assert(valid());
+        if (dst.valid()) dst.base().~Base();
+        base().move_to(dst.data());
+        storage = Storage();
     }
 
-    auto t2 = now();
+    // convenience methods
+    bool valid() const
+    { return storage != Storage(); }
 
-    for (auto&& task : queue) sum += task();
+    const void* data() const
+    { return static_cast<const void*>(storage.data()); }
 
-    auto t3 = now();
+    void* data()
+    { return static_cast<void*>(storage.data()); }
 
-    std::cout << (t2 - t1) << "+" << (t3 - t2) << "=" << (t3 - t1) << '\t';
-    total_sum += sum;
-}
+    const Base& base() const
+    { assert(valid()); return *static_cast<const Base*>(data()); }
 
+    Base& base()
+    { assert(valid()); return *static_cast<Base*>(data()); }
 
-#include <functional>
-
-
-void run()
-{
-    // We can capture 16 bytes.
-    uint64_t a = 1;
-    uint64_t b = 2;
-    std::cout << Function<int()>([=]{ return a + b; })() << std::endl;
-
-    typedef Function<int()> MyFunction;
-    std::cout << "MyFunction:  ";
-    test_fast<MyFunction>();
-    test_fast<MyFunction>();
-    std::cout << std::endl;
-
-    typedef std::function<int()> StdFunction;
-    std::cout << "StdFunction: ";
-    test_fast<StdFunction>();
-    test_fast<StdFunction>();
-    std::cout << std::endl;
-}
+    typedef std::array<long, 3> Storage;
+    Storage storage;
+};
 
 
 int main()
 {
-    run();
-    run();
-    run();
-    std::cout << std::endl << " total_sum=" << total_sum << std::endl;
+    std::string t = "t";
+    Function<void(std::string&)> test([&](std::string& s) { s += t += "t"; });
+    
+    std::string s = "s"; t = "1"; test(s); std::cout << s << std::endl;
+    auto copy = test; t = "3"; copy(s); std::cout << s << std::endl;
+    t = "4"; copy(s); std::cout << s << std::endl;
+    
+    
+    Function<int(int)> increment = [](int n) {
+        return n + 1;
+    };
+    
+    Function<int(int)> decrement = [](int n) {
+        return n - 1;
+    };
+
+
+#undef assert
+    #define assert(cmd) std::cout << #cmd << std::flush << ": " << ((cmd) ? "OK" : (std::abort(), "FAIL")) << std::endl;
+
+
+    assert(increment(3) == 4);
+    assert(decrement(3) == 2);
+
+    auto a = increment;
+    auto b = decrement;
+
+    assert(a(3) == 4);
+    assert(b(3) == 2);
+
+    std::swap(a, b);
+
+    assert(a(3) == 2);
+    assert(b(3) == 4);
+
+    a = b;
+
+    assert(a(3) == 4);
+    assert(b(3) == 4);
+
+    b = a;
+
+    assert(a(3) == 4);
+    assert(b(3) == 4);
+
+
+    b = std::move(a);
+
+    assert(!a);
+    assert(b(3) == 4);
+
+    a = b;
+
+    assert(a(3) == 4);
+    assert(b(3) == 4);
+
+    b = std::move(a);
+    a = std::move(b);
+    b = a;
+
+    assert(a(3) == 4);
+    assert(b(3) == 4);
+
+    std::swap(increment, decrement);
+
+    assert(increment(3) == 2);
+    assert(decrement(3) == 4);
+
+    increment = std::move(decrement);
+    std::cout << increment(3) << std::endl;
+
+
+    // calling the moved-from decrement
+    try {
+        decrement(3);
+        assert(false);
+    } catch (std::bad_function_call& ) {
+        std::cout << "OK: got bad_function_call as exptected." << std::endl;
+    }
+
+
+
 }

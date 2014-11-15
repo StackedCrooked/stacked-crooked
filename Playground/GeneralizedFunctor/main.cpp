@@ -89,20 +89,23 @@ Function<R(Args...)>::Function(std::allocator_arg_t, Alloc alloc, F&& f)
 {
     typedef typename Alloc::template rebind<Impl<F>>::other Other;
     Other other(alloc);
-
-    struct Deallocator : private Other
-    {
-        Deallocator(Other& other) : Other(other) {}
-        void operator()(Impl<F>* impl)
-        {
-            std::cout << "Deallocator::operator(Impl<F>*)" << std::endl;
-            static_cast<Other&>(*this).deallocate(impl, 1);
-        }
-    };
-    std::cout << "sizeof(Other) = " << sizeof(Other) << std::endl;
-    std::cout << "sizeof(Deallocator) = " << sizeof(Deallocator) << std::endl;
-    mImpl.reset(new (other.allocate(1)) Impl<F>(std::forward<F>(f)), Deallocator{other});
+    mImpl = std::allocate_shared<Impl<F>>(other, std::forward<F>(f));
 }
+
+
+#if 0
+template <class _Alloc>
+std::promise<void>::promise(allocator_arg_t, const _Alloc& __a0)
+{
+    typedef typename _Alloc::template rebind<__assoc_sub_state_alloc<_Alloc> >::other _A2;
+    typedef __allocator_destructor<_A2> _D2;
+    _A2 __a(__a0);
+    unique_ptr<__assoc_sub_state_alloc<_Alloc>, _D2> __hold(__a.allocate(1), _D2(__a, 1));
+    ::new(__hold.get()) __assoc_sub_state_alloc<_Alloc>(__a0);
+    __state_ = __hold.release();
+}
+#endif
+
 
 
 int main()

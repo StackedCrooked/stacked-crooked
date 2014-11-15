@@ -36,14 +36,17 @@ struct Function;
 template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {
-    // this constructor accepts lambda, function pointer or functor
     template<typename F, DisableIf<IsRelated<F, Function>>...>
-    Function(F&& f) : mImpl(new Impl<F>(std::forward<F>(f)))
-    {
-    }
+    Function(F&& f) : mImpl(std::make_shared<Impl<F>>(std::forward<F>(f)))
+    { }
 
     template<typename Alloc, typename F, DisableIf<IsRelated<F, Function>>...>
-    Function(std::allocator_arg_t, Alloc alloc, F&& f);
+    Function(std::allocator_arg_t, Alloc alloc, F&& f)
+    {
+        typedef typename Alloc::template rebind<Impl<F>>::other Other;
+        Other other(alloc);
+        mImpl = std::allocate_shared<Impl<F>>(other, std::forward<F>(f));
+    }
 
     Function(Function&&) noexcept = default;
     Function& operator=(Function&&) noexcept = default;
@@ -56,23 +59,23 @@ struct Function<R(Args...)>
         return (*mImpl)(args...);
     }
 
+private:
     struct ImplBase
     {
         virtual ~ImplBase() {}
-
         virtual R operator()(Args ...args) = 0;
-
     };
 
     template<typename F>
     struct Impl : ImplBase
     {
         Impl(F&& f) : f(std::forward<F>(f)) { std::cout << "Impl::Impl()" << std::endl; }
+
         ~Impl() { std::cout << "Impl::~Impl" << std::endl; }
 
         virtual R operator()(Args ...args)
         {
-            std::cout << "Impl::operator(...)" << std::endl;
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
             return f(args...);
         }
 
@@ -82,15 +85,6 @@ struct Function<R(Args...)>
     std::shared_ptr<ImplBase> mImpl;
 };
 
-
-template<typename R, typename ...Args>
-template<typename Alloc, typename F, DisableIf<IsRelated<F, Function<R(Args...)>>>...>
-Function<R(Args...)>::Function(std::allocator_arg_t, Alloc alloc, F&& f)
-{
-    typedef typename Alloc::template rebind<Impl<F>>::other Other;
-    Other other(alloc);
-    mImpl = std::allocate_shared<Impl<F>>(other, std::forward<F>(f));
-}
 
 
 #if 0
@@ -107,13 +101,18 @@ std::promise<void>::promise(allocator_arg_t, const _Alloc& __a0)
 #endif
 
 
+std::string concat(std::string a, std::string b)
+{
+    return a + b;
+}
+
 
 int main()
 {
     Function<int(int)> increment([=](int n) { return n + 1; });
     assert(increment(3) == 4);
 
-    Function<std::string(std::string, std::string)> concat(std::allocator_arg, std::allocator<int>(), [](std::string a, std::string b) { return a + b; });
-    std::cout << concat("abc", "def") << std::endl;
+    Function<std::string(std::string, std::string)> cc(std::allocator_arg, std::allocator<int>(), concat);
+    std::cout << cc("abc", "def") << std::endl;
 }
 

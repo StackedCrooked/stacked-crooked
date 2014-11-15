@@ -159,11 +159,6 @@ private:
         {
         }
 
-        bool isQuitSignal() const
-        {
-            return mFutureTime == Clock::time_point();
-        }
-
         bool ready_to_run(Clock::time_point current_time) const
         {
             return mFutureTime <= current_time;

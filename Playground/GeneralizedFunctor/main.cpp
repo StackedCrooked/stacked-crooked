@@ -56,28 +56,24 @@ struct Function<R(Args...)>
     template<typename Alloc, typename F, DisableIf<IsRelated<Function, F>>...>
     Function(std::allocator_arg_t, Alloc alloc, F&& f)
     {
-        typedef typename Alloc::template rebind<Impl<F>>::other Other;
-        Other other(alloc);
-
-        struct Destroyer
+        struct ImplPlus : public Impl<F>, private Alloc
         {
-            Destroyer(Other other) : other(other) {}
+            ImplPlus(F&& f, Alloc& alloc) : Impl<F>(std::forward<F>(f)), Alloc(alloc) {}
 
-            void operator()(Impl<F>* f)
+            using Impl<F>::operator ();
+
+            void destroy()
             {
-                f->~Impl<F>();
-                return other.deallocate(f, 1);
-            }
+                Impl<F>& impl = *this;
+                impl.~Impl<F>();
 
-            Other other;
+                Alloc& alloc = *this;
+                typename Alloc::template rebind<ImplPlus>::other real_alloc(alloc);
+                real_alloc.deallocate(this, 1);
+            }
         };
 
-        Destroyer destroyer(other);
-
-        mImpl.reset(new (other.allocate(1)) Impl<F>(std::forward<F>(f)), [=](Impl<F>* impl) mutable {
-            impl->~Impl<F>();
-            destroyer(impl);
-        });
+        mImpl.reset(new (typename Alloc::template rebind<ImplPlus>::other(alloc).allocate(1)) ImplPlus(std::forward<F>(f), alloc), [](ImplPlus* impl) { impl->destroy(); });
     }
 
     Function(Function&&) noexcept = default;

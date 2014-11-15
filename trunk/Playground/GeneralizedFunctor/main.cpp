@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
+#include <future>
 #include <iostream>
 #include <new>
 #include <utility>
@@ -24,7 +25,18 @@ template <typename T, typename U>
 struct IsRelated : std::is_same<RemoveCV<T>, RemoveCV<U>> {};
 
 
-
+#if 0
+template <class _Alloc>
+promise<void>::promise(allocator_arg_t, const _Alloc& __a0)
+{
+    typedef typename _Alloc::template rebind<__assoc_sub_state_alloc<_Alloc> >::other _A2;
+    typedef __allocator_destructor<_A2> _D2;
+    _A2 __a(__a0);
+    unique_ptr<__assoc_sub_state_alloc<_Alloc>, _D2> __hold(__a.allocate(1), _D2(__a, 1));
+    ::new(__hold.get()) __assoc_sub_state_alloc<_Alloc>(__a0);
+    __state_ = __hold.release();
+}
+#endif
 
 template<typename Signature>
 struct Function;
@@ -42,11 +54,30 @@ struct Function<R(Args...)>
 
     // this constructor accepts lambda, function pointer or functor
     template<typename Alloc, typename F, DisableIf<IsRelated<Function, F>>...>
-    Function(std::allocator_arg_t, Alloc alloc, F&& f) :
-        mImpl(new (typename Alloc::template rebind<Impl<F>>::other(alloc).allocate(1)) Impl<F>(std::forward<F>(f)), [=](Impl<F>* impl) {
-            impl->~Impl<F>();
-        })
+    Function(std::allocator_arg_t, Alloc alloc, F&& f)
     {
+        typedef typename Alloc::template rebind<Impl<F>>::other Other;
+        Other other(alloc);
+
+        struct Destroyer
+        {
+            Destroyer(Other other) : other(other) {}
+
+            void operator()(Impl<F>* f)
+            {
+                f->~Impl<F>();
+                return other.deallocate(f, 1);
+            }
+
+            Other other;
+        };
+
+        Destroyer destroyer(other);
+
+        mImpl.reset(new (other.allocate(1)) Impl<F>(std::forward<F>(f)), [=](Impl<F>* impl) mutable {
+            impl->~Impl<F>();
+            destroyer(impl);
+        });
     }
 
     Function(Function&&) noexcept = default;
@@ -84,7 +115,6 @@ struct Function<R(Args...)>
 };
 
 
-
 int main()
 {
     Function<int(int)> increment([=](int n) { return n + 1; });
@@ -93,8 +123,10 @@ int main()
     auto copy = increment;
     std::cout << copy(3) << std::endl;
 
-    Function<int(int)> inc(std::allocator_arg, std::allocator<Function<int(int)>>(), [=](int n) { return n + 1; });
-    std::cout << inc(5) << std::endl;
+    Function<std::string(std::string)> append(std::allocator_arg, std::allocator<char>(), [=](std::string s) { return s + "a"; });
+    std::cout << append("abc") << std::endl;
+
 
 
 }
+

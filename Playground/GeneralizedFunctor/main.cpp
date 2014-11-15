@@ -43,7 +43,9 @@ struct Function<R(Args...)>
     // this constructor accepts lambda, function pointer or functor
     template<typename Alloc, typename F, DisableIf<IsRelated<Function, F>>...>
     Function(std::allocator_arg_t, Alloc alloc, F&& f) :
-        mImpl(new (typename Alloc::template rebind<Impl<F>>::other(alloc).allocate(1)) Impl<F>(std::forward<F>(f)))
+        mImpl(new (typename Alloc::template rebind<Impl<F>>::other(alloc).allocate(1)) Impl<F>(std::forward<F>(f)), [=](Impl<F>* impl) {
+            impl->~Impl<F>();
+        })
     {
     }
 

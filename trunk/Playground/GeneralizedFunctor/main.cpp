@@ -34,19 +34,16 @@ template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {
     // this constructor accepts lambda, function pointer or functor
-    template<typename F,
-             DisableIf<IsRelated<Function, F>>...>
+    template<typename F, DisableIf<IsRelated<Function, F>>...>
     Function(F&& f) :
         mImpl(new Impl<F>(std::forward<F>(f)))
     {
     }
 
     // this constructor accepts lambda, function pointer or functor
-    template<typename Alloc,
-             typename F,
-             DisableIf<IsRelated<Function, F>>...>
+    template<typename Alloc, typename F, DisableIf<IsRelated<Function, F>>...>
     Function(std::allocator_arg_t, Alloc alloc, F&& f) :
-        mImpl(new (GetAlloc<F>(alloc).allocate(1)) Impl<F>(std::forward<F>(f)))
+        mImpl(new (typename Alloc::template rebind<Impl<F>>::other(alloc).allocate(1)) Impl<F>(std::forward<F>(f)))
     {
     }
 
@@ -81,12 +78,6 @@ struct Function<R(Args...)>
         F f;
     };
 
-    template<typename F, typename Alloc>
-    auto GetAlloc(Alloc alloc) -> typename Alloc::template rebind<Impl<F>>::other
-    {
-        return typename Alloc::template rebind<Impl<F>>::other(alloc);
-    }
-
     std::shared_ptr<ImplBase> mImpl;
 };
 
@@ -100,7 +91,7 @@ int main()
     auto copy = increment;
     std::cout << copy(3) << std::endl;
 
-    Function<int(int)> inc(std::allocator_arg, std::allocator<int>(), [=](int n) { return n + 1; });
+    Function<int(int)> inc(std::allocator_arg, std::allocator<Function<int(int)>>(), [=](int n) { return n + 1; });
     std::cout << inc(5) << std::endl;
 
 

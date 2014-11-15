@@ -37,14 +37,12 @@ template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {
     // this constructor accepts lambda, function pointer or functor
-    template<typename F, typename Enabler = DisableIf<IsRelated<F, Function>>>
-    Function(F&& f) :
-        mImpl(new Impl<F>(std::forward<F>(f)))
+    template<typename F, DisableIf<IsRelated<F, Function>>...>
+    Function(F&& f) : mImpl(new Impl<F>(std::forward<F>(f)))
     {
     }
 
-    // this constructor accepts lambda, function pointer or functor
-    template<typename Alloc, typename F, typename Enabler = DisableIf<IsRelated<F, Function>>>
+    template<typename Alloc, typename F, DisableIf<IsRelated<F, Function>>...>
     Function(std::allocator_arg_t, Alloc alloc, F&& f);
 
     Function(Function&&) noexcept = default;
@@ -53,7 +51,7 @@ struct Function<R(Args...)>
     Function(const Function&) noexcept = default;
     Function& operator=(const Function&) noexcept = default;
 
-    R operator()(Args ...args)
+    R operator()(Args ...args) const
     {
         return (*mImpl)(args...);
     }
@@ -85,39 +83,34 @@ struct Function<R(Args...)>
 };
 
 
-    // this constructor accepts lambda, function pointer or functor
-    template<typename R, typename ...Args>
-    template<typename Alloc, typename F, typename>
-    Function<R(Args...)>::Function(std::allocator_arg_t, Alloc alloc, F&& f)
-    {
-        typedef typename Alloc::template rebind<Impl<F>>::other Other;
-        Other other(alloc);
+template<typename R, typename ...Args>
+template<typename Alloc, typename F, DisableIf<IsRelated<F, Function<R(Args...)>>>...>
+Function<R(Args...)>::Function(std::allocator_arg_t, Alloc alloc, F&& f)
+{
+    typedef typename Alloc::template rebind<Impl<F>>::other Other;
+    Other other(alloc);
 
-        struct Deallocator : private Other
+    struct Deallocator : private Other
+    {
+        Deallocator(Other& other) : Other(other) {}
+        void operator()(Impl<F>* impl)
         {
-            Deallocator(Other& other) : Other(other) {}
-            void operator()(Impl<F>* impl)
-            {
-                std::cout << "Deallocator::operator(Impl<F>*)" << std::endl;
-                static_cast<Other&>(*this).deallocate(impl, 1);
-            }
-        };
-        mImpl.reset(new (other.allocate(1)) Impl<F>(std::forward<F>(f)), Deallocator{other});
-    }
+            std::cout << "Deallocator::operator(Impl<F>*)" << std::endl;
+            static_cast<Other&>(*this).deallocate(impl, 1);
+        }
+    };
+    std::cout << "sizeof(Other) = " << sizeof(Other) << std::endl;
+    std::cout << "sizeof(Deallocator) = " << sizeof(Deallocator) << std::endl;
+    mImpl.reset(new (other.allocate(1)) Impl<F>(std::forward<F>(f)), Deallocator{other});
+}
+
 
 int main()
 {
     Function<int(int)> increment([=](int n) { return n + 1; });
-    std::cout << increment(3) << std::endl;
+    assert(increment(3) == 4);
 
-    auto copy = increment;
-    std::cout << copy(3) << std::endl;
-
-
-    Function<std::string(std::string)> aa(std::allocator_arg, std::allocator<char>(), [=](std::string s) { return s + "a"; });
-    auto bb = aa;
-
-
-
+    Function<std::string(std::string, std::string)> concat(std::allocator_arg, std::allocator<int>(), [](std::string a, std::string b) { return a + b; });
+    std::cout << concat("abc", "def") << std::endl;
 }
 

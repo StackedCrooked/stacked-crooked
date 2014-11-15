@@ -1,4 +1,4 @@
-#include <boost/bind.hpp>
+﻿#include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <cassert>
 #include <cstddef>
@@ -10,6 +10,22 @@
 
 
 
+
+template<typename T>
+using Invoke = typename T::type;
+
+template <typename Condition, typename T = void>
+using DisableIf = Invoke<std::enable_if<!Condition::value, T>>;
+
+template <typename T>
+using RemoveCV = Invoke<std::remove_const<Invoke<std::remove_reference<T>>>>;
+
+template <typename T, typename U>
+struct IsRelated : std::is_same<RemoveCV<T>, RemoveCV<U>> {};
+
+
+
+
 template<typename Signature>
 struct Function;
 
@@ -17,8 +33,19 @@ struct Function;
 template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {
-    template<typename F>
-    Function(F&& f) : mImpl(new Impl<F>(std::forward<F>(f))) { }
+    // this constructor accepts lambda, function pointer or functor
+    template<typename F,
+             DisableIf<IsRelated<Function, F>>...>
+    Function(F&& f) :
+        mImpl(new Impl<F>(std::forward<F>(f)))
+    {
+    }
+
+    Function(Function&&) noexcept = default;
+    Function& operator=(Function&&) noexcept = default;
+
+    Function(const Function&) noexcept = default;
+    Function& operator=(const Function&) noexcept = default;
 
     R operator()(Args ...args)
     {
@@ -54,4 +81,9 @@ int main()
 {
     Function<int(int)> increment([=](int n) { return n + 1; });
     std::cout << increment(3) << std::endl;
+
+    auto copy = increment;
+    std::cout << copy(3) << std::endl;
+
+
 }

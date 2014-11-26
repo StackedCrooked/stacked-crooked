@@ -1,5 +1,6 @@
 ﻿#include <boost/bind.hpp>
 #include <cassert>
+#include <type_traits>
 #include <cstddef>
 #include <cstring>
 #include <functional>
@@ -13,9 +14,26 @@
 namespace Detail {
 
 
+template<typename T>
+using Invoke = typename T::type;
 
+template <typename Condition, typename T = void>
+using EnableIf = Invoke<std::enable_if<Condition::value, T>>;
+
+template <typename Condition, typename T = void>
+using DisableIf = Invoke<std::enable_if<!Condition::value, T>>;
+
+template <typename T>
+using Decay = Invoke<std::remove_const<Invoke<std::remove_reference<T>>>>;
+
+template <typename T, typename U>
+struct IsRelated : std::is_same<Decay<T>, Decay<U>> {};
+
+
+// restriction: only allow alignment up to alignment of pointer types. (so "long double" won't work)
 typedef void* max_align_t;
 enum { max_align = sizeof(max_align_t) };
+
 
 template<int Size>
 struct WithSize
@@ -32,18 +50,12 @@ struct WithSize
             setInvalid();
         }
 
-        template<int N>
-        struct Resize
+        template<typename F, DisableIf<IsRelated<F, Function>>...>
+        Function(F&& f)
         {
-            using type = typename WithSize<N>::template Function<R(Args...)>;
-        };
-
-        template<typename F>
-        Function(F f)
-        {
-            static_assert(alignof(Impl<F>) <= alignof(Storage), "");
-            static_assert(sizeof(Impl<F>) <= sizeof(Storage), "");
-            new (static_cast<void*>(&mStorage)) Impl<F>(f);
+            static_assert(alignof(Impl<Decay<F>>) <= alignof(Storage), "");
+            static_assert(sizeof(Impl<Decay<F>>) <= sizeof(Storage), "");
+            new (mStorage.data()) Impl<Decay<F>>(std::forward<F>(f));
         }
 
         Function(const Function& rhs)
@@ -284,8 +296,6 @@ int main()
         << std::endl;
 
     auto steal_mix3 = std::move(mix3);
-
-
     std::cout << "MIX1: " << mix1() << std::endl;
     std::cout << "MIX2: " << mix2() << std::endl;
     std::cout << "STEAL_MIX3: " << steal_mix3() << std::endl;

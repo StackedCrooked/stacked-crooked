@@ -293,7 +293,4 @@ int main()
     try { mix3(); std::abort(); } catch (std::bad_function_call&) {}
 
     std::cout << "End of program." << std::endl;
-
-
-
 }

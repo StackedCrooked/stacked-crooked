@@ -283,24 +283,16 @@ int main()
         << "\nsizeof(mix3)=" << sizeof(mix3)
         << std::endl;
 
-    increment = std::move(decrement);
-    std::cout << increment(3) << std::endl;
-
-
-    // calling the moved-from decrement
-    try {
-        decrement(3);
-        assert(false);
-    } catch (std::bad_function_call& ) {
-        std::cout << "OK: got bad_function_call as exptected." << std::endl;
-    }
-
     auto steal_mix3 = std::move(mix3);
 
 
     std::cout << "MIX1: " << mix1() << std::endl;
     std::cout << "MIX2: " << mix2() << std::endl;
     std::cout << "STEAL_MIX3: " << steal_mix3() << std::endl;
+
+    try { mix3(); std::abort(); } catch (std::bad_function_call&) {}
+
+    std::cout << "End of program." << std::endl;
 
 
 

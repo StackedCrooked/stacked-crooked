@@ -131,11 +131,6 @@ struct WithSize
 
         struct Storage
         {
-            Storage()
-            {
-                memset(data(), 0, sizeof(Storage));
-            }
-
             const void* data() const
             { return static_cast<const void*>(&mStorage); }
 

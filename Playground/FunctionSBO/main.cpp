@@ -27,8 +27,10 @@ struct WithSize
     template<typename R, typename ...Args>
     struct Function<R(Args...)>
     {
-        Function() : mStorage()
-        {}
+        Function()
+        {
+            setInvalid();
+        }
 
         template<typename F>
         Function(F f)
@@ -38,66 +40,45 @@ struct WithSize
             new (static_cast<void*>(&mStorage)) Impl<F>(f);
         }
 
-        Function(const Function& rhs) :
-            mStorage()
+        Function(const Function& rhs)
         {
-            if (rhs.valid())
-            {
-                rhs.base().copy_to(data());
-            }
+            rhs.base().copy_to(data());
         }
 
-        Function(Function& rhs) :
-            mStorage()
+        Function& operator=(const Function& rhs)
         {
-            if (rhs.valid())
-            {
-                rhs.base().copy_to(data());
-            }
-        }
-
-        Function(Function&& rhs) noexcept :
-            mStorage(rhs.mStorage)
-        {
-            if (rhs.valid())
-            {
-                rhs.move_to(*this);
-            }
-        }
-
-        Function& operator=(Function rhs) noexcept
-        {
-            if (valid())
+            if (this != &rhs)
             {
                 base().~Base();
+                rhs.base().copy_to(data());
             }
+            return *this;
+        }
 
-            if (rhs.valid())
+        Function(Function&& rhs) noexcept
+        {
+            rhs.base().move_to(mStorage.data());
+            rhs.setInvalid();
+        }
+
+        Function& operator=(Function&& rhs) noexcept
+        {
+            if (this != &rhs)
             {
-                rhs.move_to(*this);
+                base().~Base();
+                rhs.base().move_to(mStorage.data());
+                rhs.setInvalid();
             }
             return *this;
         }
 
         ~Function()
         {
-            if (valid())
-            {
-                base().~Base();
-            }
-        }
-
-        explicit operator bool() const
-        {
-            return valid();
+            base().~Base();
         }
 
         R operator()(Args&& ...args) const
         {
-            if (!valid())
-            {
-                throw std::bad_function_call();
-            }
             return base().call(std::forward<Args>(args)...);
         }
 
@@ -129,17 +110,11 @@ struct WithSize
             F f;
         };
 
-        void move_to(Function& dst)
+        void setInvalid()
         {
-            assert(valid());
-            if (dst.valid()) dst.base().~Base();
-            base().move_to(dst.data());
-            mStorage = Storage();
+            auto f = [](Args...) -> R { throw std::bad_function_call(); };
+            new (mStorage.data()) Impl<decltype(f)>(std::move(f));
         }
-
-        // convenience methods
-        bool valid() const
-        { return mStorage != Storage(); }
 
         const void* data() const
         { return static_cast<const void*>(mStorage.data()); }
@@ -148,10 +123,10 @@ struct WithSize
         { return static_cast<void*>(mStorage.data()); }
 
         const Base& base() const
-        { assert(valid()); return *static_cast<const Base*>(data()); }
+        { return *static_cast<const Base*>(data()); }
 
         Base& base()
-        { assert(valid()); return *static_cast<Base*>(data()); }
+        { return *static_cast<Base*>(data()); }
 
 
         struct Storage
@@ -268,7 +243,6 @@ int main()
 
     b = std::move(a);
 
-    assert(!a);
     assert(b(3) == 4);
 
     a = b;

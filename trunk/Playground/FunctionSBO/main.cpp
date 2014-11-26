@@ -10,177 +10,182 @@
 
 
 
+namespace Detail {
+
+
+
+typedef void* max_align_t;
+enum { max_align = sizeof(max_align_t) };
 
 template<int Size>
 struct WithSize
 {
+    // forward declaration
     template<typename Signature>
     struct Function;
-};
 
-
-
-template<int Size>
-template<typename R, typename ...Args>
-struct WithSize<Size>::Function<R(Args...)>
-{
-    Function() : mStorage()
-    {}
-
-    template<typename F>
-    Function(F f)
+    template<typename R, typename ...Args>
+    struct Function<R(Args...)>
     {
-        static_assert(alignof(Impl<F>) <= alignof(Storage), "");
-        static_assert(sizeof(Impl<F>) <= sizeof(Storage), "");
-        new (static_cast<void*>(&mStorage)) Impl<F>(f);
-    }
+        Function() : mStorage()
+        {}
 
-    Function(const Function& rhs) :
-        mStorage()
-    {
-        if (rhs.valid())
+        template<typename F>
+        Function(F f)
         {
-            rhs.base().copy_to(data());
+            static_assert(alignof(Impl<F>) <= alignof(Storage), "");
+            static_assert(sizeof(Impl<F>) <= sizeof(Storage), "");
+            new (static_cast<void*>(&mStorage)) Impl<F>(f);
         }
-    }
 
-    Function(Function& rhs) :
-        mStorage()
-    {
-        if (rhs.valid())
+        Function(const Function& rhs) :
+            mStorage()
         {
-            rhs.base().copy_to(data());
+            if (rhs.valid())
+            {
+                rhs.base().copy_to(data());
+            }
         }
-    }
 
-    Function(Function&& rhs) noexcept :
-        mStorage(rhs.mStorage)
-    {
-        if (rhs.valid())
+        Function(Function& rhs) :
+            mStorage()
         {
-            rhs.move_to(*this);
+            if (rhs.valid())
+            {
+                rhs.base().copy_to(data());
+            }
         }
-    }
 
-    Function& operator=(Function rhs) noexcept
-    {
-        if (valid())
+        Function(Function&& rhs) noexcept :
+            mStorage(rhs.mStorage)
         {
-            base().~Base();
+            if (rhs.valid())
+            {
+                rhs.move_to(*this);
+            }
         }
-        
-        if (rhs.valid())
+
+        Function& operator=(Function rhs) noexcept
         {
-            rhs.move_to(*this);
-        }
-        return *this;
-    }
+            if (valid())
+            {
+                base().~Base();
+            }
 
-    ~Function()
-    {
-        if (valid())
+            if (rhs.valid())
+            {
+                rhs.move_to(*this);
+            }
+            return *this;
+        }
+
+        ~Function()
         {
-            base().~Base();
+            if (valid())
+            {
+                base().~Base();
+            }
         }
-    }
 
-    explicit operator bool() const
-    {
-        return valid();
-    }
-
-    R operator()(Args&& ...args) const
-    {
-        if (!valid())
+        explicit operator bool() const
         {
-            throw std::bad_function_call();
+            return valid();
         }
-        return base().call(std::forward<Args>(args)...);
-    }
 
-private:
-    struct Base
-    {
-        virtual ~Base() {}
-        virtual R call(Args&& ...args) const = 0;
-        virtual void copy_to(void* where) const = 0;
-        virtual void move_to(void* where) = 0;
-    };
-
-
-    template<typename F>
-    struct Impl : Base
-    {
-        Impl(const F& f) : f(f) {}
-
-        R call(Args&& ...args) const override final
-        { return f(std::forward<Args>(args)...); }
-
-        void copy_to(void* where) const override final
-        { new (where) Impl<F>(*this); }
-
-
-        void move_to(void* where) override final
-        { new (where) Impl<F>(std::move(*this)); }
-
-        F f;
-    };
-
-    void move_to(Function& dst)
-    {
-        assert(valid());
-        if (dst.valid()) dst.base().~Base();
-        base().move_to(dst.data());
-        mStorage = Storage();
-    }
-
-    // convenience methods
-    bool valid() const
-    { return mStorage != Storage(); }
-
-    const void* data() const
-    { return static_cast<const void*>(mStorage.data()); }
-
-    void* data()
-    { return static_cast<void*>(mStorage.data()); }
-
-    const Base& base() const
-    { assert(valid()); return *static_cast<const Base*>(data()); }
-
-    Base& base()
-    { assert(valid()); return *static_cast<Base*>(data()); }
-
-
-    struct Storage
-    {
-        Storage()
+        R operator()(Args&& ...args) const
         {
-            memset(data(), 0, sizeof(Storage));
+            if (!valid())
+            {
+                throw std::bad_function_call();
+            }
+            return base().call(std::forward<Args>(args)...);
         }
+
+    private:
+        struct Base
+        {
+            virtual ~Base() {}
+            virtual R call(Args&& ...args) const = 0;
+            virtual void copy_to(void* where) const = 0;
+            virtual void move_to(void* where) = 0;
+        };
+
+
+        template<typename F>
+        struct Impl : Base
+        {
+            Impl(const F& f) : f(f) {}
+
+            R call(Args&& ...args) const override final
+            { return f(std::forward<Args>(args)...); }
+
+            void copy_to(void* where) const override final
+            { new (where) Impl<F>(*this); }
+
+
+            void move_to(void* where) override final
+            { new (where) Impl<F>(std::move(*this)); }
+
+            F f;
+        };
+
+        void move_to(Function& dst)
+        {
+            assert(valid());
+            if (dst.valid()) dst.base().~Base();
+            base().move_to(dst.data());
+            mStorage = Storage();
+        }
+
+        // convenience methods
+        bool valid() const
+        { return mStorage != Storage(); }
 
         const void* data() const
-        { return static_cast<const void*>(&mStorage); }
+        { return static_cast<const void*>(mStorage.data()); }
 
         void* data()
-        { return static_cast<void*>(&mStorage); }
+        { return static_cast<void*>(mStorage.data()); }
 
-        friend bool operator==(const Storage& lhs, const Storage& rhs)
-        { return !std::memcmp(lhs.data(), rhs.data(), sizeof(Storage)); }
+        const Base& base() const
+        { assert(valid()); return *static_cast<const Base*>(data()); }
 
-        friend bool operator!=(const Storage& lhs, const Storage& rhs)
-        { return !!std::memcmp(lhs.data(), rhs.data(), sizeof(Storage)); }
+        Base& base()
+        { assert(valid()); return *static_cast<Base*>(data()); }
 
-        typedef void* max_align_t;
-        max_align_t mStorage[1 + Size / sizeof(max_align_t)];
+
+        struct Storage
+        {
+            Storage()
+            {
+                memset(data(), 0, sizeof(Storage));
+            }
+
+            const void* data() const
+            { return static_cast<const void*>(&mStorage); }
+
+            void* data()
+            { return static_cast<void*>(&mStorage); }
+
+            friend bool operator==(const Storage& lhs, const Storage& rhs)
+            { return !std::memcmp(lhs.data(), rhs.data(), sizeof(Storage)); }
+
+            friend bool operator!=(const Storage& lhs, const Storage& rhs)
+            { return !!std::memcmp(lhs.data(), rhs.data(), sizeof(Storage)); }
+
+            max_align_t mStorage[1 + Size / max_align];
+        };
+
+        Storage mStorage;
     };
 
-    Storage mStorage;
 };
+
+
+} // Detail
 
 
 template<typename Signature> struct FunctionFactory;
-
-
 
 
 template<typename R, typename ...Args>
@@ -188,13 +193,13 @@ struct FunctionFactory<R(Args...)>
 {
 private:
     template<typename F>
-    struct Size
+    struct Helper
     {
         enum
         {
-            max_align_value = alignof(void*),
+            max_align = Detail::max_align,
             N = sizeof(F),
-            align = alignof(F) > max_align_value ? alignof(F) : max_align_value,
+            align = alignof(F) > max_align ? alignof(F) : max_align,
             value = N % align == 0 ? N : align * (1 + N / align)
         };
     };
@@ -202,7 +207,7 @@ private:
 
 public:
     template<typename F>
-    using function_type = typename WithSize<Size<F>::value>::template Function<R(Args...)>;
+    using function_type = typename Detail::WithSize<Helper<F>::value>::template Function<R(Args...)>;
 
     template<typename F>
     static function_type<F> create_from(F f)
@@ -288,7 +293,7 @@ int main()
 
 
     auto mix = FunctionFactory<void()>::create_from([=]{
-        std::cout << increment(3) + decrement(4) << std::endl;
+        std::cout << "MIX RESULT: " << increment(3) + decrement(4) << std::endl;
     });
 
     mix();

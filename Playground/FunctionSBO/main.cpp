@@ -32,6 +32,12 @@ struct WithSize
             setInvalid();
         }
 
+        template<int N>
+        struct Resize
+        {
+            using type = typename WithSize<N>::template Function<R(Args...)>;
+        };
+
         template<typename F>
         Function(F f)
         {
@@ -187,7 +193,6 @@ public:
 };
 
 
-
 int main()
 {
     std::string t = "t";
@@ -261,15 +266,20 @@ int main()
     std::cout << "increment_copy=" << increment_copy(3) << std::endl;
 
 
-    auto mix = FunctionFactory<void()>::create_from([=]{
-        std::cout << "MIX RESULT: " << increment(3) + decrement(4) << std::endl;
-    });
+    auto mix1 = FunctionFactory<int()>::create_from([=]{ return increment(3) + decrement(4); });
+    auto mix2 = FunctionFactory<int()>::create_from([=] { return mix1() + increment(3) + decrement(4); });
+    auto mix3 = FunctionFactory<int()>::create_from([=] { return mix2() + mix1() + increment(3) + decrement(4); });
 
-    mix();
+    std::cout << "MIX1: " << mix1() << std::endl;
+    std::cout << "MIX2: " << mix2() << std::endl;
+    std::cout << "MIX3: " << mix3() << std::endl;
 
-    std::cout << "sizeof(mix)= " << sizeof(mix)
-        << " sizeof(increment)=" << sizeof(increment)
-        << " sizeof(decrement)=" << sizeof(decrement)
+    std::cout
+        << "sizeof(increment)=" << sizeof(increment)
+        << "\nsizeof(decrement)=" << sizeof(decrement)
+        << "\nsizeof(mix1)=" << sizeof(mix1)
+        << "\nsizeof(mix2)=" << sizeof(mix2)
+        << "\nsizeof(mix3)=" << sizeof(mix3)
         << std::endl;
 
     increment = std::move(decrement);

@@ -265,17 +265,18 @@ int main()
     auto increment_copy = increment;
     std::cout << "increment_copy=" << increment_copy(3) << std::endl;
 
-
-    auto mix1 = FunctionFactory<int()>::create_from([=]{ return increment(3) + decrement(4); });
-    auto mix2 = FunctionFactory<int()>::create_from([=] { return mix1() + increment(3) + decrement(4); });
-    auto mix3 = FunctionFactory<int()>::create_from([=] { return mix2() + mix1() + increment(3) + decrement(4); });
+    std::string s123 = "123";
+    auto mix1 = FunctionFactory<int()>::create_from([=]{ return increment(3) + decrement(4) + s123.size(); });
+    auto mix2 = FunctionFactory<int()>::create_from([=] { return mix1() + increment(3) + decrement(4) + s123.size(); });
+    auto mix3 = FunctionFactory<int()>::create_from([=] { return mix2() + mix1() + increment(3) + decrement(4) + s123.size(); });
 
     std::cout << "MIX1: " << mix1() << std::endl;
     std::cout << "MIX2: " << mix2() << std::endl;
     std::cout << "MIX3: " << mix3() << std::endl;
 
     std::cout
-        << "sizeof(increment)=" << sizeof(increment)
+        << "sizeof(s123)=" << sizeof(s123)
+        << "\nsizeof(increment)=" << sizeof(increment)
         << "\nsizeof(decrement)=" << sizeof(decrement)
         << "\nsizeof(mix1)=" << sizeof(mix1)
         << "\nsizeof(mix2)=" << sizeof(mix2)
@@ -294,6 +295,12 @@ int main()
         std::cout << "OK: got bad_function_call as exptected." << std::endl;
     }
 
+    auto steal_mix3 = std::move(mix3);
+
+
+    std::cout << "MIX1: " << mix1() << std::endl;
+    std::cout << "MIX2: " << mix2() << std::endl;
+    std::cout << "STEAL_MIX3: " << steal_mix3() << std::endl;
 
 
 

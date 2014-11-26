@@ -60,22 +60,22 @@ struct WithSize
 
         Function(const Function& rhs)
         {
-            rhs.base().copy_to(data());
+            rhs.mStorage->copy_to(mStorage.data());
         }
 
         Function& operator=(const Function& rhs)
         {
             if (this != &rhs)
             {
-                base().~Base();
-                rhs.base().copy_to(data());
+                mStorage->~Base();
+                rhs.mStorage->copy_to(mStorage.data());
             }
             return *this;
         }
 
         Function(Function&& rhs) noexcept
         {
-            rhs.base().move_to(mStorage.data());
+            rhs.mStorage->move_to(mStorage.data());
             rhs.setInvalid();
         }
 
@@ -83,8 +83,8 @@ struct WithSize
         {
             if (this != &rhs)
             {
-                base().~Base();
-                rhs.base().move_to(mStorage.data());
+                mStorage->~Base();
+                rhs.mStorage->move_to(mStorage.data());
                 rhs.setInvalid();
             }
             return *this;
@@ -92,12 +92,12 @@ struct WithSize
 
         ~Function()
         {
-            base().~Base();
+            mStorage->~Base();
         }
 
         R operator()(Args&& ...args) const
         {
-            return base().call(std::forward<Args>(args)...);
+            return mStorage->call(std::forward<Args>(args)...);
         }
 
     private:
@@ -134,26 +134,13 @@ struct WithSize
             new (mStorage.data()) Impl<decltype(f)>(std::move(f));
         }
 
-        const void* data() const
-        { return static_cast<const void*>(mStorage.data()); }
-
-        void* data()
-        { return static_cast<void*>(mStorage.data()); }
-
-        const Base& base() const
-        { return *static_cast<const Base*>(data()); }
-
-        Base& base()
-        { return *static_cast<Base*>(data()); }
-
-
         struct Storage
         {
-            const void* data() const
-            { return static_cast<const void*>(&mStorage); }
+            const void* data() const { return static_cast<const void*>(&mStorage); }
+            void* data() { return static_cast<void*>(&mStorage); }
 
-            void* data()
-            { return static_cast<void*>(&mStorage); }
+            const Base* operator->() const { return static_cast<const Base*>(data()); }
+            Base* operator->() { return static_cast<Base*>(data()); }
 
             friend bool operator==(const Storage& lhs, const Storage& rhs)
             { return !std::memcmp(lhs.data(), rhs.data(), sizeof(Storage)); }

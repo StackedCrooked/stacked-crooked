@@ -1,6 +1,7 @@
-#include <boost/bind.hpp>
+﻿#include <boost/bind.hpp>
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <functional>
 #include <iostream>
 #include <new>
@@ -8,27 +9,43 @@
 #include <array>
 
 
-template<typename Signature>
-struct Function;
 
 
-template<typename R, typename ...Args>
-struct Function<R(Args...)>
+template<int Size>
+struct WithSize
 {
-    Function() : storage()
+    template<typename Signature>
+    struct Function;
+};
+
+
+
+template<int Size>
+template<typename R, typename ...Args>
+struct WithSize<Size>::Function<R(Args...)>
+{
+    Function() : mStorage()
     {}
 
     template<typename F>
-    Function(const F& f)
+    Function(F f)
     {
-        static_assert(alignof(F) <= alignof(Function), "");
-        static_assert(sizeof(f) <= sizeof(storage), "");
-
-        new (storage.data()) Impl<F>(f); 
+        static_assert(alignof(Impl<F>) <= alignof(Storage), "");
+        static_assert(sizeof(Impl<F>) <= sizeof(Storage), "");
+        new (static_cast<void*>(&mStorage)) Impl<F>(f);
     }
 
     Function(const Function& rhs) :
-        storage()
+        mStorage()
+    {
+        if (rhs.valid())
+        {
+            rhs.base().copy_to(data());
+        }
+    }
+
+    Function(Function& rhs) :
+        mStorage()
     {
         if (rhs.valid())
         {
@@ -37,7 +54,7 @@ struct Function<R(Args...)>
     }
 
     Function(Function&& rhs) noexcept :
-        storage(rhs.storage)
+        mStorage(rhs.mStorage)
     {
         if (rhs.valid())
         {
@@ -102,6 +119,7 @@ private:
         void copy_to(void* where) const override final
         { new (where) Impl<F>(*this); }
 
+
         void move_to(void* where) override final
         { new (where) Impl<F>(std::move(*this)); }
 
@@ -113,18 +131,18 @@ private:
         assert(valid());
         if (dst.valid()) dst.base().~Base();
         base().move_to(dst.data());
-        storage = Storage();
+        mStorage = Storage();
     }
 
     // convenience methods
     bool valid() const
-    { return storage != Storage(); }
+    { return mStorage != Storage(); }
 
     const void* data() const
-    { return static_cast<const void*>(storage.data()); }
+    { return static_cast<const void*>(mStorage.data()); }
 
     void* data()
-    { return static_cast<void*>(storage.data()); }
+    { return static_cast<void*>(mStorage.data()); }
 
     const Base& base() const
     { assert(valid()); return *static_cast<const Base*>(data()); }
@@ -132,28 +150,86 @@ private:
     Base& base()
     { assert(valid()); return *static_cast<Base*>(data()); }
 
-    typedef std::array<long, 3> Storage;
-    Storage storage;
+
+    struct Storage
+    {
+        Storage()
+        {
+            memset(data(), 0, sizeof(Storage));
+        }
+
+        const void* data() const
+        { return static_cast<const void*>(&mStorage); }
+
+        void* data()
+        { return static_cast<void*>(&mStorage); }
+
+        friend bool operator==(const Storage& lhs, const Storage& rhs)
+        { return !std::memcmp(lhs.data(), rhs.data(), sizeof(Storage)); }
+
+        friend bool operator!=(const Storage& lhs, const Storage& rhs)
+        { return !!std::memcmp(lhs.data(), rhs.data(), sizeof(Storage)); }
+
+        typedef void* max_align_t;
+        max_align_t mStorage[1 + Size / sizeof(max_align_t)];
+    };
+
+    Storage mStorage;
 };
+
+
+template<typename Signature> struct FunctionFactory;
+
+
+
+
+template<typename R, typename ...Args>
+struct FunctionFactory<R(Args...)>
+{
+private:
+    template<typename F>
+    struct Size
+    {
+        enum
+        {
+            max_align_value = alignof(void*),
+            N = sizeof(F),
+            align = alignof(F) > max_align_value ? alignof(F) : max_align_value,
+            value = N % align == 0 ? N : align * (1 + N / align)
+        };
+    };
+
+
+public:
+    template<typename F>
+    using function_type = typename WithSize<Size<F>::value>::template Function<R(Args...)>;
+
+    template<typename F>
+    static function_type<F> create_from(F f)
+    {
+        return function_type<F>(std::move(f));
+    }
+};
+
 
 
 int main()
 {
     std::string t = "t";
-    Function<void(std::string&)> test([&](std::string& s) { s += t += "t"; });
+    auto test = FunctionFactory<void(std::string&)>::create_from([&](std::string& s) { s += t += "t"; });
     
     std::string s = "s"; t = "1"; test(s); std::cout << s << std::endl;
     auto copy = test; t = "3"; copy(s); std::cout << s << std::endl;
     t = "4"; copy(s); std::cout << s << std::endl;
     
     
-    Function<int(int)> increment = [](int n) {
+    auto increment = FunctionFactory<int(int)>::create_from([](int n) {
         return n + 1;
-    };
+    });
     
-    Function<int(int)> decrement = [](int n) {
+    auto decrement = FunctionFactory<int(int)>::create_from([](int n) {
         return n - 1;
-    };
+    });
 
 
 #undef assert
@@ -207,6 +283,21 @@ int main()
     assert(increment(3) == 2);
     assert(decrement(3) == 4);
 
+    auto increment_copy = increment;
+    std::cout << "increment_copy=" << increment_copy(3) << std::endl;
+
+
+    auto mix = FunctionFactory<void()>::create_from([=]{
+        std::cout << increment(3) + decrement(4) << std::endl;
+    });
+
+    mix();
+
+    std::cout << "sizeof(mix)= " << sizeof(mix)
+        << " sizeof(increment)=" << sizeof(increment)
+        << " sizeof(decrement)=" << sizeof(decrement)
+        << std::endl;
+
     increment = std::move(decrement);
     std::cout << increment(3) << std::endl;
 
@@ -218,6 +309,7 @@ int main()
     } catch (std::bad_function_call& ) {
         std::cout << "OK: got bad_function_call as exptected." << std::endl;
     }
+
 
 
 

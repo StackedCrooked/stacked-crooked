@@ -10,7 +10,7 @@
 #include <array>
 
 
-#define TRACE() std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << std::endl
+#define TRACE() std:: << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << std::endl
 
 
 // Helper traits
@@ -83,67 +83,48 @@ public:
 
     char* allocate(std::size_t n)
     {
-        assert(pointer_in_buffer(ptr_) &&
-               "StackAllocator has outlived stack_store");
-
         n = align(n);
 
         if (buf_ + N >= ptr_ + n)
         {
-            auto r(ptr_);
-
+            auto result = ptr_;
             ptr_ += n;
-
-            return r;
+            return result;
         }
-        else
-        {
-            return static_cast<char*>(::operator new(n));
-        }
+        return static_cast<char*>(::operator new(n));
     }
+
 
     void deallocate(char* const p, std::size_t n) noexcept
     {
-        assert(pointer_in_buffer(ptr_)&&
-        "StackAllocator has outlived stack_store");
-
-        if (pointer_in_buffer(p))
-        {
-            n = align(n);
-
-            if (p + n == ptr_)
-            {
-                ptr_ = p;
-            }
-            // else do nothing
-        }
-        else
+        if (!pointer_in_buffer(p))
         {
             ::operator delete(p);
+            return;
         }
+
+        if (p + align(n) == ptr_)
+        {
+            ptr_ = p;
+        }
+        // else: do nothing
     }
 
     void reset() noexcept { ptr_ = buf_; }
 
-    static constexpr ::std::size_t size() noexcept { return N; }
+    static size_t size() { return N; }
 
-    ::std::size_t used() const {
-        return ::std::size_t(ptr_ - buf_);
-    }
+    size_t used() const { return size_t(ptr_ - buf_); }
 
 private:
-    static constexpr ::std::size_t align(::std::size_t const n) noexcept
-    {
-        return (n + (alignment - 1)) & -alignment;
-    }
+    static size_t align(::size_t const n)
+    { return (n + (alignment - 1)) & -alignment; }
 
-    bool pointer_in_buffer(char* const p) noexcept
-    {
-        return (buf_ <= p) && (p <= buf_ + N);
-    }
+    bool pointer_in_buffer(char* const p)
+    { return (buf_ <= p) && (p <= buf_ + N); }
 
 private:
-    static constexpr auto const alignment = alignof(std::max_align_t);
+    static auto const alignment = alignof(std::max_align_t);
 
     char* ptr_ {buf_};
 
@@ -154,61 +135,48 @@ private:
 template <class T, std::size_t N>
 class StackAllocator
 {
-public:
+public:    
+    using value_type = T;
     using store_type = StackStorage<N>;
-    using size_type = ::std::size_t;
-    using difference_type = ::std::ptrdiff_t;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
     using pointer = T* ;
     using const_pointer = T const* ;
     using reference = T& ;
     using const_reference = T const& ;
-    using value_type = T;
+
     template <class U> struct rebind { using other = StackAllocator<U, N>; };
 
     StackAllocator() = default;
+
     StackAllocator(StackStorage<N>& s) noexcept : store_(&s) { }
+
     template <class U>
     StackAllocator(StackAllocator<U, N> const& other) noexcept : store_(other.store_) { }
 
     StackAllocator& operator=(StackAllocator const&) = delete;
 
-    T* allocate(::std::size_t const n)
-    {
-        std::cout << "allocate " << n << " " << typeid(T).name() <<  " size=" << sizeof(T) << std::endl;
-        return static_cast<T*>(static_cast<void*>(
-                                   store_->allocate(n * sizeof(T))));
-    }
+    T* allocate(::size_t const n)
+    { return static_cast<T*>(static_cast<void*>(store_->allocate(n * sizeof(T)))); }
 
-    void deallocate(T* const p, ::std::size_t const n) noexcept
-    {
-        std::cout << "Deallocate " << n << " " << typeid(T).name() <<  " size=" << sizeof(T) << std::endl;
-        store_->deallocate(static_cast<char*>(static_cast<void*>(p)),
-        n * sizeof(T));
-    }
+    void deallocate(T* const p, size_t const n) noexcept
+    { store_->deallocate(static_cast<char*>(static_cast<void*>(p)), n * sizeof(T)); }
 
     template <class U, class ...A>
     void construct(U* const p, A&& ...args)
-    {
-        new(p) U(::std::forward<A>(args)...);
-    }
+    { new(p) U(std::forward<A>(args)...); }
 
     template <class U>
     void destroy(U* const p)
-    {
-        p->~U();
-    }
+    { p->~U(); }
 
     template <class U, std::size_t M>
     inline bool operator==(StackAllocator<U, M> const& rhs) const noexcept
-    {
-        return store_ == rhs.store_;
-    }
+    { return store_ == rhs.store_; }
 
     template <class U, std::size_t M>
     inline bool operator!=(StackAllocator<U, M> const& rhs) const noexcept
-    {
-        return !(*this == rhs);
-    }
+    { return !(*this == rhs); }
 
 private:
     template <class U, std::size_t M> friend class StackAllocator;
@@ -223,14 +191,14 @@ StackAllocator<T, N> MakeStackAllocator(StackStorage<N>& store)
 }
 
 
+
+
+
 int main()
 {
     StackStorage<1024> storage;
     auto stack_allocator = MakeStackAllocator(storage);
 
     Function<int(int)> inc(std::allocator_arg, stack_allocator, [=](int n) { return n + 1; });
-    auto inc2 = inc;
-    inc = inc2;
-
     std::cout << inc(3) << std::endl;
 }

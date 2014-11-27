@@ -92,8 +92,7 @@ public:
 
     char* allocate(std::size_t n)
     {
-        assert(pointer_in_buffer(ptr_) &&
-               "StackAllocator has outlived stack_store");
+        assert(pointer_in_buffer(ptr_) && "StackAllocator has outlived stack_store");
 
         n = align(n);
 
@@ -113,8 +112,7 @@ public:
 
     void deallocate(char* const p, std::size_t n) noexcept
     {
-        assert(pointer_in_buffer(ptr_)&&
-        "StackAllocator has outlived stack_store");
+        assert(pointer_in_buffer(ptr_)&& "StackAllocator has outlived stack_store");
 
         if (pointer_in_buffer(p))
         {
@@ -225,6 +223,9 @@ struct Scheduler
     Scheduler() :
         mStorage(),
         mAllocator(mStorage),
+        mQueueStorage(),
+        mQueueAllocator(mQueueStorage),
+        mTasks(mQueueAllocator),
         mThread([=]{ this->dispatcher_thread(); })
     {
     }
@@ -272,7 +273,11 @@ private:
 
     StackStorage<1024> mStorage;
     StackAllocator<char, 1024> mAllocator;
-    tbb::concurrent_bounded_queue<Task> mTasks;
+
+    StackStorage<1024> mQueueStorage;
+    StackAllocator<char, 1024> mQueueAllocator;
+
+    tbb::concurrent_bounded_queue<Task, StackAllocator<char, 1024>> mTasks;
     std::thread mThread;
 };
 

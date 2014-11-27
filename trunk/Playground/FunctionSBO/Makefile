@@ -1,2 +1,2 @@
 ﻿all:
-	/usr/local/bin/g++-4.8 -std=c++11 main.cpp -O0 -ggdb3
+	g++ -std=c++11 -Wall -Wextra -Werror -O2 -g main.cpp

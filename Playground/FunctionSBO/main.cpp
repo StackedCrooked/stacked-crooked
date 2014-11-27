@@ -3,6 +3,7 @@
 #include <tbb/concurrent_queue.h>
 #include <cassert>
 #include <cstddef>
+#include <fstream>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -11,7 +12,7 @@
 #include <array>
 
 
-#define TRACE() std:: << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << std::endl
+#define TRACE() std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ << " : "
 
 
 // Helper traits
@@ -157,9 +158,17 @@ private:
     alignas(std::max_align_t) char buf_[N];
 };
 
+struct LIL
+{
+    LIL()
+    {
+        //std::cout << "LIL" << std::endl;
+    }
 
+};
+        std::mutex cout_mutex;
 template <class T, std::size_t N>
-class StackAllocator
+class StackAllocator : LIL
 {
 public:    
     using value_type = T;
@@ -175,18 +184,35 @@ public:
 
     StackAllocator() = default;
 
-    StackAllocator(StackStorage<N>& s) noexcept : store_(&s) { }
+    StackAllocator(StackStorage<N>& s) noexcept : store_(&s)
+    {
+    }
 
     template <class U>
-    StackAllocator(StackAllocator<U, N> const& other) noexcept : store_(other.store_) { }
+    StackAllocator(StackAllocator<U, N> const& other) noexcept : store_(other.store_)
+    {
+    }
 
     StackAllocator& operator=(StackAllocator const&) = delete;
 
     T* allocate(::size_t const n)
-    { return static_cast<T*>(static_cast<void*>(store_->allocate(n * sizeof(T)))); }
+    {
+        log("-", n);
+        return static_cast<T*>(static_cast<void*>(store_->allocate(n * sizeof(T))));
+    }
 
     void deallocate(T* const p, size_t const n) noexcept
-    { store_->deallocate(static_cast<char*>(static_cast<void*>(p)), n * sizeof(T)); }
+    {
+
+        log("+", n);
+        store_->deallocate(static_cast<char*>(static_cast<void*>(p)), n * sizeof(T));
+    }
+
+    void log(const char* function, int n)
+    {
+        std::lock_guard<std::mutex> lock(cout_mutex);
+        std::cout << function << (n * sizeof(T)) << " " << store_->used() << "/" << store_->size() << std::endl;
+    }
 
     template <class U, class ...A>
     void construct(U* const p, A&& ...args)
@@ -223,9 +249,7 @@ struct Scheduler
     Scheduler() :
         mStorage(),
         mAllocator(mStorage),
-        mQueueStorage(),
-        mQueueAllocator(mQueueStorage),
-        mTasks(mQueueAllocator),
+        mTasks(),
         mThread([=]{ this->dispatcher_thread(); })
     {
     }
@@ -241,7 +265,6 @@ struct Scheduler
     template<typename F>
     void dispatch(F&& f)
     {
-
         mTasks.push(Task(std::allocator_arg, mAllocator, std::forward<F>(f)));
     }
 
@@ -270,33 +293,109 @@ private:
         }
     }
 
+    enum { alloc_size = 10 * 1024 };
+    StackStorage<alloc_size> mStorage;
+    StackAllocator<char, alloc_size> mAllocator;
 
-    StackStorage<1024> mStorage;
-    StackAllocator<char, 1024> mAllocator;
-
-    StackStorage<1024> mQueueStorage;
-    StackAllocator<char, 1024> mQueueAllocator;
-
-    tbb::concurrent_bounded_queue<Task, StackAllocator<char, 1024>> mTasks;
+    // concurrent_queue with StackAllocator is just a test (not thread-safe)
+    tbb::concurrent_bounded_queue<Task> mTasks;
     std::thread mThread;
 };
 
 
+std::atomic<int> a{0};
+std::atomic<int> b{0};
+std::atomic<int> c{0};
+std::atomic<int> d{0};
+
 int main()
 {
-    StackStorage<1024> storage;
-    auto stack_allocator = MakeStackAllocator(storage);
-
-    Function<int(int)> inc(std::allocator_arg, stack_allocator, [=](int n) { return n + 1; });
-    std::cout << inc(3) << std::endl;
-
-
-    Scheduler::Task task([=]{ std::cout << " HELLO " << std::endl; });
-    task();
-
     Scheduler scheduler;
-    scheduler.dispatch([=]{ std::cout << "  FROM " << std::endl; });
-    scheduler.dispatch([=]{ std::cout << " HELL!!" << std::endl; });
-    scheduler.dispatch([=]{ std::cout << "   † " << std::endl; });
+
+    scheduler.dispatch([&]{ a++; });
+    scheduler.dispatch([&]{ a++; });
+    scheduler.dispatch([&]{ a++; b++; });
+    scheduler.dispatch([&]{ a++; b++; });
+    scheduler.dispatch([&]{ a++; b++; c++; });
+    scheduler.dispatch([&]{ a++; b++; c++; });
+    scheduler.dispatch([&]{ a++; b++; c++; d++; });
+    scheduler.dispatch([&]{ a++; b++; c++; d++; });
+    scheduler.dispatch([&]{ a++; b++; c++; });
+    scheduler.dispatch([&]{ a++; b++; c++; });
+    scheduler.dispatch([&]{ a++; b++; });
+    scheduler.dispatch([&]{ a++; b++; });
+    scheduler.dispatch([&]{ a++; });
+    scheduler.dispatch([&]{ a++; });
+
+    scheduler.dispatch([&]
+    {
+        scheduler.dispatch([&]{ a++; });
+        scheduler.dispatch([&]{ a++; });
+        scheduler.dispatch([&]{ a++; b++; });
+        scheduler.dispatch([&]{ a++; b++; });
+        scheduler.dispatch([&]{ a++; b++; c++; });
+        scheduler.dispatch([&]{ a++; b++; c++; });
+        scheduler.dispatch([&]{ a++; b++; c++; d++; });
+        scheduler.dispatch([&]{ a++; b++; c++; d++; });
+        scheduler.dispatch([&]{ a++; b++; c++; });
+        scheduler.dispatch([&]{ a++; b++; c++; });
+        scheduler.dispatch([&]{ a++; b++; });
+        scheduler.dispatch([&]{ a++; b++; });
+        scheduler.dispatch([&]{ a++; });
+        scheduler.dispatch([&]{ a++; });
+    });
+
+    scheduler.dispatch([&]
+    {
+        scheduler.dispatch([&]
+        {
+            scheduler.dispatch([&]{ a++; });
+            scheduler.dispatch([&]{ a++; });
+            scheduler.dispatch([&]{ a++; b++; });
+            scheduler.dispatch([&]{ a++; b++; });
+            scheduler.dispatch([&]{ a++; b++; c++; });
+            scheduler.dispatch([&]{ a++; b++; c++; });
+            scheduler.dispatch([&]{ a++; b++; c++; d++; });
+            scheduler.dispatch([&]{ a++; b++; c++; d++; });
+            scheduler.dispatch([&]{ a++; b++; c++; });
+            scheduler.dispatch([&]{ a++; b++; c++; });
+            scheduler.dispatch([&]{ a++; b++; });
+            scheduler.dispatch([&]{ a++; b++; });
+            scheduler.dispatch([&]{ a++; });
+            scheduler.dispatch([&]{ a++; });
+        });
+    });
+
+    scheduler.dispatch([&]
+    {
+        scheduler.dispatch([&]
+        {
+            scheduler.dispatch([&]
+            {
+                scheduler.dispatch([&]
+                {
+                    scheduler.dispatch([&]
+                    {
+                        scheduler.dispatch([&]{ a++; });
+                        scheduler.dispatch([&]{ a++; });
+                        scheduler.dispatch([&]{ a++; b++; });
+                        scheduler.dispatch([&]{ a++; b++; });
+                        scheduler.dispatch([&]{ a++; b++; c++; });
+                        scheduler.dispatch([&]{ a++; b++; c++; });
+                        scheduler.dispatch([&]{ a++; b++; c++; d++; });
+                        scheduler.dispatch([&]{ a++; b++; c++; d++; });
+                        scheduler.dispatch([&]{ a++; b++; c++; });
+                        scheduler.dispatch([&]{ a++; b++; c++; });
+                        scheduler.dispatch([&]{ a++; b++; });
+                        scheduler.dispatch([&]{ a++; b++; });
+                        scheduler.dispatch([&]{ a++; });
+                        scheduler.dispatch([&]{ a++; });
+                    });
+                });
+            });
+        });
+    });
+
+    std::cout << std::endl << " *** SUM: a=" << a << " b=" << b << " c=" << c << " d=" << d << std::endl;
 
 }

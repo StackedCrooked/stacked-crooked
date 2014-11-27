@@ -1,5 +1,6 @@
 ﻿#include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <tbb/concurrent_queue.h>
 #include <cassert>
 #include <cstddef>
 #include <functional>
@@ -28,6 +29,7 @@ struct Function;
 template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {
+    Function() : mImpl() {}
     template<typename F, typename = DisableIf<IsRelated<F, Function>>>
     Function(F f) : mImpl(std::make_shared<Impl<F>>(std::move(f))) {}
 
@@ -45,13 +47,19 @@ struct Function<R(Args...)>
     Function& operator=(const Function&) noexcept = default;
 
     R operator()(Args ...args) const
-    { return (*mImpl)(args...); }
+    {
+        if (!mImpl)
+        {
+            throw std::bad_function_call();
+        }
+        return mImpl->call(args...);
+    }
 
 private:
     struct ImplBase
     {
         virtual ~ImplBase() {}
-        virtual R operator()(Args ...args) = 0;
+        virtual R call(Args ...args) = 0;
     };
 
     template<typename F>
@@ -62,7 +70,7 @@ private:
 
         ~Impl() {}
 
-        virtual R operator()(Args ...args)
+        virtual R call(Args ...args)
         { return f(args...); }
 
         F f;
@@ -70,6 +78,7 @@ private:
 
     std::shared_ptr<ImplBase> mImpl;
 };
+
 
 template <std::size_t N>
 class StackStorage
@@ -83,48 +92,67 @@ public:
 
     char* allocate(std::size_t n)
     {
+        assert(pointer_in_buffer(ptr_) &&
+               "StackAllocator has outlived stack_store");
+
         n = align(n);
 
         if (buf_ + N >= ptr_ + n)
         {
-            auto result = ptr_;
-            ptr_ += n;
-            return result;
-        }
-        return static_cast<char*>(::operator new(n));
-    }
+            auto r(ptr_);
 
+            ptr_ += n;
+
+            return r;
+        }
+        else
+        {
+            return static_cast<char*>(::operator new(n));
+        }
+    }
 
     void deallocate(char* const p, std::size_t n) noexcept
     {
-        if (!pointer_in_buffer(p))
+        assert(pointer_in_buffer(ptr_)&&
+        "StackAllocator has outlived stack_store");
+
+        if (pointer_in_buffer(p))
+        {
+            n = align(n);
+
+            if (p + n == ptr_)
+            {
+                ptr_ = p;
+            }
+            // else do nothing
+        }
+        else
         {
             ::operator delete(p);
-            return;
         }
-
-        if (p + align(n) == ptr_)
-        {
-            ptr_ = p;
-        }
-        // else: do nothing
     }
 
     void reset() noexcept { ptr_ = buf_; }
 
-    static size_t size() { return N; }
+    static constexpr ::std::size_t size() noexcept { return N; }
 
-    size_t used() const { return size_t(ptr_ - buf_); }
-
-private:
-    static size_t align(::size_t const n)
-    { return (n + (alignment - 1)) & -alignment; }
-
-    bool pointer_in_buffer(char* const p)
-    { return (buf_ <= p) && (p <= buf_ + N); }
+    ::std::size_t used() const {
+        return ::std::size_t(ptr_ - buf_);
+    }
 
 private:
-    static auto const alignment = alignof(std::max_align_t);
+    static constexpr ::std::size_t align(::std::size_t const n) noexcept
+    {
+        return (n + (alignment - 1)) & -alignment;
+    }
+
+    bool pointer_in_buffer(char* const p) noexcept
+    {
+        return (buf_ <= p) && (p <= buf_ + N);
+    }
+
+private:
+    static constexpr auto const alignment = alignof(std::max_align_t);
 
     char* ptr_ {buf_};
 
@@ -192,6 +220,61 @@ StackAllocator<T, N> MakeStackAllocator(StackStorage<N>& store)
 
 
 
+struct Scheduler
+{
+    Scheduler() :
+        mStorage(),
+        mAllocator(mStorage),
+        mThread([=]{ this->dispatcher_thread(); })
+    {
+    }
+
+    ~Scheduler()
+    {
+        dispatch([]{ throw Quit{}; });
+        mThread.join();
+    }
+
+    using Task = Function<void()>;
+
+    template<typename F>
+    void dispatch(F&& f)
+    {
+
+        mTasks.push(Task(std::allocator_arg, mAllocator, std::forward<F>(f)));
+    }
+
+private:
+    struct Quit {};
+
+    void dispatcher_thread()
+    {
+        Task task;
+        for (;;)
+        {
+            mTasks.pop(task);
+
+            try
+            {
+                task();
+                while (mTasks.try_pop(task))
+                {
+                    task();
+                }
+            }
+            catch (Quit)
+            {
+                return;
+            }
+        }
+    }
+
+
+    StackStorage<1024> mStorage;
+    StackAllocator<char, 1024> mAllocator;
+    tbb::concurrent_bounded_queue<Task> mTasks;
+    std::thread mThread;
+};
 
 
 int main()
@@ -201,4 +284,14 @@ int main()
 
     Function<int(int)> inc(std::allocator_arg, stack_allocator, [=](int n) { return n + 1; });
     std::cout << inc(3) << std::endl;
+
+
+    Scheduler::Task task([=]{ std::cout << " HELLO " << std::endl; });
+    task();
+
+    Scheduler scheduler;
+    scheduler.dispatch([=]{ std::cout << "  FROM " << std::endl; });
+    scheduler.dispatch([=]{ std::cout << " HELL!!" << std::endl; });
+    scheduler.dispatch([=]{ std::cout << "   † " << std::endl; });
+
 }

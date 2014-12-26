@@ -1,7 +1,7 @@
 #ifndef IPv6_H
 #define IPv6_H
 
-#include <cstdio>
+#include <stdio.h>
 
 struct IPv6
 {

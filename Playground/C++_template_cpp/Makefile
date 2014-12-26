@@ -1,8 +1,9 @@
 all:
-	g++ -c IPv4.cpp
-	g++ -c IPv6.cpp
-	g++ -c main.cpp
-	g++ *.o
+	clang++ -c IPv4.cpp
+	clang++ -c IPv6.cpp
+	clang++ -c Port.cpp
+	clang++ -c main.cpp
+	clang++ *.o
 
 clean:
 	rm *.o

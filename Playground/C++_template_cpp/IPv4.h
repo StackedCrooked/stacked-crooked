@@ -1,6 +1,6 @@
 #ifndef IPv4_H
 #define IPv4_H
-#include <cstdio>
+#include <stdio.h>
 
 struct IPv4
 {

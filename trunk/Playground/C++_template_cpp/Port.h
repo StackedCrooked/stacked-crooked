@@ -6,6 +6,9 @@ struct Port
     Port();
     template<typename T>
     T& test();
+
+private:
+    int n;
 };
 
 

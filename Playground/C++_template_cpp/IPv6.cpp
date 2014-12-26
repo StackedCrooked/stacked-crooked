@@ -5,5 +5,6 @@
 template<>
 IPv6& Port::test<IPv6>()
 {
+    printf("private int n=%d\n", n);
     return *new IPv6;
 }

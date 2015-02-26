@@ -1,0 +1,4 @@
+
+
+
+./configure --prefix=/root --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j2

@@ -21,6 +21,6 @@ map                         152ms
 string                      146ms
 set                         133ms
 vector                      109ms
-boost/noncopyable.hpp       065ms
+boost/noncopyable.hpp       65ms
 iosfwd                      43ms
 type_traits                 30ms

@@ -1,0 +1,12 @@
+
+Total=377299585 time/packet=359.821 time/packet/filter=1.7991
+Total=378463482 time/packet=360.931 time/packet/filter=1.80465
+Total=381511538 time/packet=363.838 time/packet/filter=1.81919
+Total=379532280 time/packet=361.95 time/packet/filter=1.80975
+Total=379550554 time/packet=361.968 time/packet/filter=1.80984
+Total=380699732 time/packet=363.064 time/packet/filter=1.81532
+Total=381016572 time/packet=363.366 time/packet/filter=1.81683
+Total=381221892 time/packet=363.562 time/packet/filter=1.81781
+Total=381246758 time/packet=363.585 time/packet/filter=1.81793
+Total=384386881 time/packet=366.58 time/packet/filter=1.8329
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 275940 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 

@@ -75,13 +75,16 @@ struct Processor
 
     bool match(const uint8_t* bytes)
     {
-    
         auto start = bytes + sizeof(EthernetHeader) + sizeof(IPv4Header) - sizeof(IP) - sizeof(IP);
+    #if 1
         Filter filter;
         memcpy(&filter, start, sizeof(filter));
         return (filter[0] == mFilter[0])
              & (filter[1] == mFilter[1])
              & (filter[2] == mFilter[2]);
+    #else
+        return !memcmp(start, mFilter.data(), mFilter.size());
+    #endif
     }
 
     using Filter = std::array<uint32_t, 3>;

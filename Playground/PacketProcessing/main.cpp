@@ -34,7 +34,17 @@ struct NetworkHeader
 
 struct PacketHeader
 {
+    PacketHeader()
+    {
+        for (auto& byte : *this) byte = (rand() % 10) > 1;
+    }
+	uint8_t* data() { return static_cast<uint8_t*>(static_cast<void*>(this)); }
+	uint8_t* begin() { return data(); }
+	uint8_t* end() { return data() + sizeof(*this); }
+
 	const uint8_t* data() const { return static_cast<const uint8_t*>(static_cast<const void*>(this)); }
+	const uint8_t* begin() const { return data(); }
+	const uint8_t* end() const { return data() + sizeof(*this); }
 
     EthernetHeader mEthernetHeader;
     IPv4Header mIPv4Header;
@@ -64,24 +74,26 @@ struct Segment
 
 struct Processor
 {
-	Processor() : mCounter(0) {}
-    void process(const uint8_t* bytes)
+	Processor() : mCounter(0)
     {
-        if (match(bytes))
+        for (auto& field : mFilter)
         {
-            mCounter++;
+            field = (rand() % 10) > 1;
         }
+    }
+    void process()
+    {
+        mCounter++;
     }
 
     bool match(const uint8_t* bytes)
     {
         auto start = bytes + sizeof(EthernetHeader) + sizeof(IPv4Header) - sizeof(IP) - sizeof(IP);
     #if 1
-        Filter filter;
-        memcpy(&filter, start, sizeof(filter));
+        auto filter = (uint32_t*)start;
         return (filter[0] == mFilter[0])
-             & (filter[1] == mFilter[1])
-             & (filter[2] == mFilter[2]);
+             && (filter[1] == mFilter[1])
+             && (filter[2] == mFilter[2]);
     #else
         return !memcmp(start, mFilter.data(), mFilter.size());
     #endif
@@ -94,7 +106,6 @@ struct Processor
 
 
 
-std::array<PacketHeader, 4> headers;
 
 
 volatile const unsigned volatile_zero = 0;
@@ -118,40 +129,38 @@ using Clock = rdtsc_clock;
 
 int main()
 {
+    std::srand(time(0));
+    std::vector<PacketHeader> headers(1024 * 1024);
+    std::vector<Processor> processors(200);
+
 	// Make sure the compiler cannot make any assumptions aobut the
 	// contents of the headers.
-	memset(&headers, volatile_zero, sizeof(headers));
+	memset(headers.data(), volatile_zero, headers.size());
 	
-	Processor p;
-	p.mFilter[0] = volatile_zero;
-	p.mFilter[1] = volatile_zero;
-	p.mFilter[2] = volatile_zero;
 
+    for (auto i = 0; i != 10; ++i)
+    {
+        auto start_time = Clock::now();
+        for (auto i = 0u; i != headers.size(); ++i)
+        {
+			for (auto& p : processors)
+			{
+				if (p.match(headers[i].data()))
+                {
+                    p.process();
+                    continue;
+                }
+			}
+        }
+        auto elapsed_time = Clock::now() - start_time;
+        std::cout << "Total=" << elapsed_time
+            << " time/packet=" << (1.0 * elapsed_time / headers.size())
+            << " time/packet/filter=" << (1.0 * elapsed_time / headers.size() / processors.size()) << '\n';
 
-	assert(p.mCounter == 0);
+    }
 
-	for (auto i = 0; i != headers.size(); ++i)
+	for (auto& p : processors)
 	{
-		p.process(headers[i].data()); // warmup
+		std::cout << p.mCounter << ' ';
 	}
-
-	auto start_time = Clock::now();
-	for (auto i = 0; i != headers.size(); ++i)
-	{
-		p.process(headers[i].data()); // warmup
-	}
-	auto elapsed_time = Clock::now() - start_time;
-	std::cout << "Total=" << elapsed_time << " time/packet=" << (1.0 * elapsed_time / headers.size()) << '\n';
-
-
-	for (auto i = 0; i != headers.size(); ++i)
-	{
-		auto start_time = Clock::now();
-		p.process(headers[i].data()); // warmup
-		auto elapsed_time = Clock::now() - start_time;
-		std::cout << "i=" << i << " cycles=" << elapsed_time << '\n';
-	}
-
-	std::cout << "p.mCounter=" << p.mCounter << '\n';
-
 }

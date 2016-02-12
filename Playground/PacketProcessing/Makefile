@@ -1,2 +1,2 @@
 all:
-	g++ main.cpp -Wall -Wextra -O2 -pthread 
+	g++ main.cpp -std=c++11 -Wall -Wextra -Werror -O2 -pthread 

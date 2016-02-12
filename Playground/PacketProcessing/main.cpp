@@ -91,7 +91,7 @@ struct Processor
         auto start = bytes + sizeof(EthernetHeader) + sizeof(IPv4Header) - sizeof(IP) - sizeof(IP);
     #if 1
         auto filter = (uint32_t*)start;
-        return (filter[0] == mFilter[0])
+        return  (filter[0] == mFilter[0])
              && (filter[1] == mFilter[1])
              && (filter[2] == mFilter[2]);
     #else
@@ -131,7 +131,7 @@ int main()
 {
     std::srand(time(0));
     std::vector<PacketHeader> headers(1024 * 1024);
-    std::vector<Processor> processors(200);
+    std::vector<Processor> processors(100);
 
 	// Make sure the compiler cannot make any assumptions aobut the
 	// contents of the headers.

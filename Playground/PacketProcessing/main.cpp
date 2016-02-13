@@ -96,8 +96,6 @@ void test_one_processor()
 
 
     auto total_counter = 0ul;
-    for (auto i = 0; i != 1; ++i)
-    {
         auto start_time = Clock::now();
         for (const Header& header : headers)
         {
@@ -109,23 +107,23 @@ void test_one_processor()
             }
         }
         auto elapsed_time = Clock::now() - start_time;
-        std::cout << "Total=" << elapsed_time
-            << " cycles/packet=" << (1.0 * elapsed_time / headers.size())
-            << " ns/packet=" << (1.0 * elapsed_time / get_frequency_ghz() / headers.size())
-            << " time/packet/filter=" << (1.0 * elapsed_time / headers.size() / processors.size())
-            << " ns=" << (1.0 * elapsed_time / headers.size() / processors.size()) / get_frequency_ghz()
-            << '\n';
 
-    }
 
     for (Processor& p : processors)
     {
+        auto expected_count = headers.size() / processors.size();
         std::cout
-            << " TotalOk=" << p.getOkCounted() << '/' << total_counter << " (" << int(0.5 + 100.0 * p.getOkCounted() / total_counter)  << "%)"
-            << " HashMatched=" << p.getOkHashedOnly() << " (" << int(0.5 + 100.0 * p.getOkHashedOnly() / p.getOkCounted()) << "%) "
-            << " ProcessedOnly=" << p.getOkProcessedOnly()
+            << "Processor-index=" << (&p - processors.data())
+            << " Hash_Ok=" << int(0.5 + 100.0 * p.getHashMatches() / expected_count) << "%"
+            << " Matched=" << int(0.5 + 100.0 * p.getMatches() / expected_count) << "%"
             << std::endl;
     }
+
+        std::cout << "packets=" << total_counter << " cycles=" << elapsed_time << " ns=" << elapsed_time / get_frequency_ghz()
+            << "\n cycles/packet=" << (1.0 * elapsed_time / headers.size()) << " (" << (1.0 * elapsed_time / get_frequency_ghz() / headers.size()) << "ns)"
+            << "\n cycles/packet/filter=" << (1.0 * elapsed_time / headers.size() / processors.size()) << " (" << (1.0 * elapsed_time / headers.size() / processors.size()) / get_frequency_ghz() << "ns)"
+            << '\n';
+
 }
 
 int main()

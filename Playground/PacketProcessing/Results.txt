@@ -1,23 +1,25 @@
 
 DETECTED FREQ=3493Mhz
-Total=1636510 cycles/packet=163.651 ns/packet=46.8511 time/packet/filter=8.18255 ns=2.34256
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
- TotalOk=500/10000 (5%) HashMatched=500 (100%)  ProcessedOnly=0
+Processor-index=0 Hash_Ok=100% Matched=100%
+Processor-index=1 Hash_Ok=100% Matched=100%
+Processor-index=2 Hash_Ok=100% Matched=100%
+Processor-index=3 Hash_Ok=100% Matched=100%
+Processor-index=4 Hash_Ok=100% Matched=100%
+Processor-index=5 Hash_Ok=100% Matched=100%
+Processor-index=6 Hash_Ok=100% Matched=100%
+Processor-index=7 Hash_Ok=100% Matched=100%
+Processor-index=8 Hash_Ok=100% Matched=100%
+Processor-index=9 Hash_Ok=100% Matched=100%
+Processor-index=10 Hash_Ok=100% Matched=100%
+Processor-index=11 Hash_Ok=100% Matched=100%
+Processor-index=12 Hash_Ok=100% Matched=100%
+Processor-index=13 Hash_Ok=100% Matched=100%
+Processor-index=14 Hash_Ok=100% Matched=100%
+Processor-index=15 Hash_Ok=100% Matched=100%
+Processor-index=16 Hash_Ok=100% Matched=100%
+Processor-index=17 Hash_Ok=100% Matched=100%
+Processor-index=18 Hash_Ok=100% Matched=100%
+Processor-index=19 Hash_Ok=100% Matched=100%
+packets=10000 cycles=1266198 ns=362496
+ cycles/packet=126.62 (36.2496ns)
+ cycles/packet/filter=6.33099 (1.81248ns)

@@ -165,24 +165,24 @@ struct Processor
 
     bool process(std::size_t hash, const uint8_t* frame_bytes, int len)
     {
-        if (mHash == hash)
+        if (mHash != hash)
         {
-            mHashesOk++;
-            return true;
+            return false;
         }
 
-        if (do_process(frame_bytes, len))
+        mHashesOk++;
+
+        if (!do_process(frame_bytes, len))
         {
-            mProcessed++;
-            return true;
+            return false;
         }
 
-        return false;
+        mProcessed++;
+        return true;
     }
 
-    std::size_t getOkCounted() const { return mProcessed + mHashesOk; }
-    std::size_t getOkProcessedOnly() const { return mProcessed; }
-    std::size_t getOkHashedOnly() const { return mHashesOk; }
+    std::size_t getMatches() const { return mProcessed; }
+    std::size_t getHashMatches() const { return mHashesOk; }
 
     bool do_process(const uint8_t* frame_bytes, int len)
     {

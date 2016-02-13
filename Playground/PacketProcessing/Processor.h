@@ -54,11 +54,11 @@ struct UDPHeader
 };
 
 
-struct PacketHeader
+struct Header
 {
-    PacketHeader() = default;
+    Header() = default;
 
-    PacketHeader(IPv4Address src, IPv4Address dst, uint16_t src_port, uint16_t dst_port)
+    Header(IPv4Address src, IPv4Address dst, uint16_t src_port, uint16_t dst_port)
     {
         mIPv4Header.mSource = src;
         mIPv4Header.mDestination = dst;
@@ -66,13 +66,13 @@ struct PacketHeader
         mNetworkHeader.mDestinationPort = dst_port;
     }
 
-    PacketHeader(uint16_t src_port, uint16_t dst_port)
+    Header(uint16_t src_port, uint16_t dst_port)
     {
         mNetworkHeader.mSourcePort = src_port;
         mNetworkHeader.mDestinationPort = dst_port;
     }
 
-    std::size_t hash() const
+    std::size_t calculate_hash() const
     {
         std::size_t result = 0;
         boost::hash_combine(result, mIPv4Header.mSource.toInteger());
@@ -89,6 +89,8 @@ struct PacketHeader
     const uint8_t* data() const { return static_cast<const uint8_t*>(static_cast<const void*>(this)); }
     const uint8_t* begin() const { return data(); }
     const uint8_t* end() const { return data() + sizeof(*this); }
+
+    std::size_t size() const { return sizeof(*this); }
 
     EthernetHeader mEthernetHeader = EthernetHeader();
     IPv4Header mIPv4Header = IPv4Header();
@@ -122,51 +124,51 @@ struct Processor
 
     Processor(IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
     {
-        mFilter[0] = source_ip.toInteger();
-        mFilter[1] = target_ip.toInteger();
+        enum : unsigned
+        {
+            tuple_offset = sizeof(EthernetHeader) + sizeof(IPv4Header) - 2 * sizeof(IPv4Address)
+        };
 
-        auto u16 = reinterpret_cast<uint16_t*>(&mFilter[2]);
-        u16[0] = src_port;
-        u16[1] = dst_port;
+        unsigned offset = tuple_offset;
+
+        mFilter.add(source_ip.toInteger(), offset);
+        offset += sizeof(source_ip);
+
+        mFilter.add(target_ip.toInteger(), offset);
+        offset += sizeof(target_ip);
+
+        mFilter.add(src_port, offset);
+        offset += sizeof(src_port);
+
+        mFilter.add(dst_port, offset);
     }
-
 
     std::size_t hash() const
     {
-        std::size_t result = 0;
-        boost::hash_combine(result, mFilter[0]);
-        boost::hash_combine(result, mFilter[1]);
-        boost::hash_combine(result, mFilter[2]);
-        return result;
+        return mFilter.getHash();
     }
 
-
-    void process()
+    bool process(std::size_t hash, const uint8_t* frame_bytes, int len)
     {
-        mProcessed++;
-    }
-
-    bool match(const uint8_t* frame_bytes)
-    {
-        enum
+        mHashesOk += hash == mFilter.getHash();
+        if (true)
         {
-            tuple_offset = sizeof(EthernetHeader) + sizeof(IPv4Header) - sizeof(IPv4Address) - sizeof(IPv4Address)
-        };
-
-        mChecked++;
-        auto tuple_bytes = frame_bytes + tuple_offset;
-
-        auto filter = (uint32_t*)tuple_bytes;
-        return (filter[2] == mFilter[2])
-             & (filter[1] == mFilter[1])
-             & (filter[0] == mFilter[0]);
+            if (do_process(frame_bytes, len))
+            {
+                mProcessed++;
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
+    bool do_process(const uint8_t* frame_bytes, int len)
+    {
+        return mFilter.match(frame_bytes, len);
+    }
 
-    // src_ip, dst_ip, src_and_dst_ports
-    using Filter = std::array<uint32_t, 3>;
-
-    Filter mFilter = Filter();
+    Filter mFilter;
+    uint64_t mHashesOk = 0;
     uint64_t mProcessed = 0;
-    uint64_t mChecked = 0;
 };

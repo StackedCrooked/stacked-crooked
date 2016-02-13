@@ -1,22 +1,19 @@
 
-Total=103998497 time/packet=10.3998 time/packet/filter=10.3998
-Total=98324891 time/packet=9.83249 time/packet/filter=9.83249
-20000000/20000000 100%
-Total=218689494 time/packet=21.8689 time/packet/filter=1.36681
-Total=218986950 time/packet=21.8987 time/packet/filter=1.36867
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
+Total=45869 time/packet=521.239 time/packet/filter=65.1548
+Total=12713 time/packet=144.466 time/packet/filter=18.0582
+Total=12665 time/packet=143.92 time/packet/filter=17.9901
+Total=12368 time/packet=140.545 time/packet/filter=17.5682
+Total=12284 time/packet=139.591 time/packet/filter=17.4489
+Total=12305 time/packet=139.83 time/packet/filter=17.4787
+Total=12397 time/packet=140.875 time/packet/filter=17.6094
+Total=12368 time/packet=140.545 time/packet/filter=17.5682
+Total=12406 time/packet=140.977 time/packet/filter=17.6222
+Total=12332 time/packet=140.136 time/packet/filter=17.517
+110/88 HashesOk=0/88 125%
+220/88 HashesOk=0/88 250%
+220/88 HashesOk=0/88 250%
+220/88 HashesOk=0/88 250%
+220/88 HashesOk=0/88 250%
+220/88 HashesOk=0/88 250%
+220/88 HashesOk=0/88 250%
+110/88 HashesOk=0/88 125%

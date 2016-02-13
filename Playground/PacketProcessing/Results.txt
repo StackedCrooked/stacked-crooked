@@ -1,22 +1,26 @@
 
-Total=72218654 time/packet=7.22187 time/packet/filter=7.22187
-Total=71982271 time/packet=7.19823 time/packet/filter=7.19823
-20000000/20000000 100%
-Total=193701424 time/packet=19.3701 time/packet/filter=1.21063
-Total=194403332 time/packet=19.4403 time/packet/filter=1.21502
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
-1250002/1250002 100%
+MALLOC DURATION: 262 cycles or 74.8571 nanoseconds
+MALLOC DURATION: 149 cycles or 42.5714 nanoseconds
+MALLOC DURATION: 18 cycles or 5.14286 nanoseconds
+MALLOC DURATION: 18 cycles or 5.14286 nanoseconds
+AFTER SLEEP
+MALLOC DURATION: 286 cycles or 81.7143 nanoseconds
+MALLOC DURATION: 31 cycles or 8.85714 nanoseconds
+MALLOC DURATION: 18 cycles or 5.14286 nanoseconds
+MALLOC DURATION: 18 cycles or 5.14286 nanoseconds
+AFTER SLEEP
+MALLOC DURATION: 21 cycles or 6 nanoseconds
+MALLOC DURATION: 18 cycles or 5.14286 nanoseconds
+MALLOC DURATION: 31 cycles or 8.85714 nanoseconds
+MALLOC DURATION: 18 cycles or 5.14286 nanoseconds
+Total=258194154 time/packet=246.233 time/packet/filter=2.46233
+Total=245274733 time/packet=233.912 time/packet/filter=2.33912
+Total=242188712 time/packet=230.969 time/packet/filter=2.30969
+Total=238396348 time/packet=227.352 time/packet/filter=2.27352
+Total=240787650 time/packet=229.633 time/packet/filter=2.29633
+Total=240868532 time/packet=229.71 time/packet/filter=2.2971
+Total=243126909 time/packet=231.864 time/packet/filter=2.31864
+Total=240139053 time/packet=229.014 time/packet/filter=2.29014
+Total=240802170 time/packet=229.647 time/packet/filter=2.29647
+Total=239956294 time/packet=228.84 time/packet/filter=2.2884
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 

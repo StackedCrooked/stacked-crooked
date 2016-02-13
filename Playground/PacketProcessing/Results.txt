@@ -20,6 +20,6 @@ Processor-index=16 Hash_Ok=100% Matched=100%
 Processor-index=17 Hash_Ok=100% Matched=100%
 Processor-index=18 Hash_Ok=100% Matched=100%
 Processor-index=19 Hash_Ok=100% Matched=100%
-packets=10000 cycles=1118109 ns=320100
- cycles/packet=111.811 (32.01ns)
- cycles/packet/filter=5.59055 (1.6005ns)
+packets=10000 cycles=1115907 ns=319470
+ cycles/packet=111.591 (31.947ns)
+ cycles/packet/filter=5.57953 (1.59735ns)

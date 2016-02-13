@@ -98,26 +98,6 @@ struct Header
 };
 
 
-struct Packet
-{
-    const uint8_t* mData;
-    uint16_t mSize;
-};
-
-
-struct Segment
-{
-    enum
-    {
-        max_packets = 65536,
-        max_bytes   = max_packets * 64
-    };
-
-    std::array<uint16_t, max_packets> mPacketOffsets;
-    std::array<uint8_t, max_bytes> mPacketData;
-};
-
-
 struct Processor
 {
     Processor() = default;
@@ -130,30 +110,16 @@ struct Processor
         };
 
 
-        //std::cout << "mHash=" << mHash;
-
         boost::hash_combine(mHash, source_ip.toInteger());
-        //std::cout << " " << mHash;
-
         boost::hash_combine(mHash, target_ip.toInteger());
-        //std::cout << " " << mHash;
-
         boost::hash_combine(mHash, src_port);
-        //std::cout << " " << mHash;
-
         boost::hash_combine(mHash, dst_port);
-        //std::cout << " " << mHash << std::endl;
 
         unsigned offset = tuple_offset;
 
-        mFilter.add(source_ip.toInteger(), offset);
-        offset += sizeof(source_ip);
-
-        mFilter.add(target_ip.toInteger(), offset);
-        offset += sizeof(target_ip);
-
-        mFilter.add(src_port, offset);
-        offset += sizeof(src_port);
+        mFilter.add(source_ip.toInteger(), offset); offset += sizeof(source_ip); 
+        mFilter.add(target_ip.toInteger(), offset); offset += sizeof(target_ip); 
+        mFilter.add(src_port, offset); offset += sizeof(src_port);
 
         mFilter.add(dst_port, offset);
     }
@@ -169,7 +135,6 @@ struct Processor
         {
             return false;
         }
-
         mHashesOk++;
 
         if (!do_process(frame_bytes, len))

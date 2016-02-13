@@ -82,7 +82,7 @@ void test_one_processor()
         processors.push_back(proc);
     }
 
-    for (auto i = 1ul; i <= 10000u; ++i)
+    for (auto i = 1ul; i <= headers.capacity(); ++i)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i % processors.size());
         IPv4Address dst_ip(1, 1, 2, 1 + i % processors.size());
@@ -96,17 +96,18 @@ void test_one_processor()
 
 
     auto total_counter = 0ul;
-        auto start_time = Clock::now();
-        for (const Header& header : headers)
+
+    auto start_time = Clock::now();
+    for (const Header& header : headers)
+    {
+        total_counter++;
+        auto hash = header.calculate_hash();
+        for (Processor& processor : processors)
         {
-            total_counter++;
-            auto hash = header.calculate_hash();
-            for (Processor& processor : processors)
-            {
-                processor.process(hash, header.data(), header.size());
-            }
+            processor.process(hash, header.data(), header.size());
         }
-        auto elapsed_time = Clock::now() - start_time;
+    }
+    auto elapsed_time = Clock::now() - start_time;
 
 
     for (Processor& p : processors)

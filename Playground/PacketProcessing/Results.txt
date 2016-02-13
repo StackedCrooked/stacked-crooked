@@ -1,19 +1,27 @@
 
-Total=45869 time/packet=521.239 time/packet/filter=65.1548
-Total=12713 time/packet=144.466 time/packet/filter=18.0582
-Total=12665 time/packet=143.92 time/packet/filter=17.9901
-Total=12368 time/packet=140.545 time/packet/filter=17.5682
-Total=12284 time/packet=139.591 time/packet/filter=17.4489
-Total=12305 time/packet=139.83 time/packet/filter=17.4787
-Total=12397 time/packet=140.875 time/packet/filter=17.6094
-Total=12368 time/packet=140.545 time/packet/filter=17.5682
-Total=12406 time/packet=140.977 time/packet/filter=17.6222
-Total=12332 time/packet=140.136 time/packet/filter=17.517
-110/88 HashesOk=0/88 125%
-220/88 HashesOk=0/88 250%
-220/88 HashesOk=0/88 250%
-220/88 HashesOk=0/88 250%
-220/88 HashesOk=0/88 250%
-220/88 HashesOk=0/88 250%
-220/88 HashesOk=0/88 250%
-110/88 HashesOk=0/88 125%
+Total=4597727 time/packet=287.071 time/packet/filter=17.9419
+Total=4803445 time/packet=299.915 time/packet/filter=18.7447
+Total=5143751 time/packet=321.163 time/packet/filter=20.0727
+Total=4945284 time/packet=308.771 time/packet/filter=19.2982
+Total=4824272 time/packet=301.216 time/packet/filter=18.826
+Total=4601735 time/packet=287.321 time/packet/filter=17.9576
+Total=5035622 time/packet=314.412 time/packet/filter=19.6507
+Total=4746742 time/packet=296.375 time/packet/filter=18.5234
+Total=4522679 time/packet=282.385 time/packet/filter=17.6491
+Total=4539619 time/packet=283.443 time/packet/filter=17.7152
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+ Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0

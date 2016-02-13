@@ -17,35 +17,35 @@ struct Filter
     void add(uint8_t value, int offset)
     {
         mItems.push_back(Item(value, offset));
-        recalculate_hash();
+//        recalculate_hash();
     }
 
     void add(uint16_t value, int offset)
     {
         mItems.push_back(Item(value, offset));
-        recalculate_hash();
+        //recalculate_hash();
     }
 
     void add(uint32_t value, int offset)
     {
         mItems.push_back(Item(value, offset));
-        recalculate_hash();
+        //recalculate_hash();
     }
 
-    std::size_t getHash() const
-    {
-        return mHash;
-    }
+//    std::size_t getHash() const
+//    {
+//        return mHash;
+//    }
 
-    void recalculate_hash()
-    {
-        std::size_t result = 0;
-        for (const Item& item : mItems)
-        {
-            boost::hash_combine(result, item.calculate_hash());
-        }
-        mHash = result;
-    }
+//    void recalculate_hash()
+//    {
+//        std::size_t result = 0;
+//        for (const Item& item : mItems)
+//        {
+//            boost::hash_combine(result, item.getHash());
+//        }
+//        mHash = result;
+//    }
 
     bool match(const uint8_t* bytes, int len) const
     {
@@ -70,6 +70,7 @@ private:
             field_offset_(offset),
             field_length_(sizeof(value))
         {
+            //boost::hash_combine(hash_, value);
         }
 
         Item(uint16_t value, int offset) :
@@ -77,6 +78,7 @@ private:
             field_offset_(offset),
             field_length_(sizeof(value))
         {
+            //boost::hash_combine(hash_, value);
         }
 
         Item(uint8_t value, int offset) :
@@ -84,6 +86,7 @@ private:
             field_offset_(offset),
             field_length_(sizeof(value))
         {
+            //boost::hash_combine(hash_, value);
         }
 
         bool match(const uint8_t* frame, unsigned size) const
@@ -125,6 +128,10 @@ private:
             //return !memcmp(input, &storage_, field_length_);
         }
 
+        //std::size_t getHash() const { return hash_; }
+
+
+        #if 0
         std::size_t calculate_hash() const
         {
             std::size_t result = 0;
@@ -137,6 +144,7 @@ private:
 
             return result;
         }
+        #endif
 
         const uint8_t* get_field() const { return static_cast<const uint8_t*>(static_cast<const void*>(&storage_)); }
         uint16_t get_field_8() const { return *static_cast<const uint8_t*>(static_cast<const void*>(&storage_)); }
@@ -144,13 +152,13 @@ private:
         uint16_t get_field_16(std::size_t i) const { return static_cast<const uint16_t*>(static_cast<const void*>(&storage_))[i]; }
         uint32_t get_field_32() const { return storage_; }
 
+        //std::size_t hash_ = 0;
         uint32_t storage_;
         uint16_t field_offset_;
         uint16_t field_length_;
-        //std::size_t hash_ = 0;
     };
 
-    std::size_t mHash = 0;
+    //std::size_t mHash = 0;
     std::vector<Item> mItems;
 };
 

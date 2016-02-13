@@ -77,8 +77,8 @@ struct Header
         std::size_t result = 0;
         boost::hash_combine(result, mIPv4Header.mSource.toInteger());
         boost::hash_combine(result, mIPv4Header.mDestination.toInteger());
-        const void* p = &mNetworkHeader;
-        boost::hash_combine(result, static_cast<const uint32_t*>(p)[0]);
+        boost::hash_combine(result, mNetworkHeader.mSourcePort);
+        boost::hash_combine(result, mNetworkHeader.mDestinationPort);
         return result;
     }
 
@@ -129,6 +129,21 @@ struct Processor
             tuple_offset = sizeof(EthernetHeader) + sizeof(IPv4Header) - 2 * sizeof(IPv4Address)
         };
 
+
+        //std::cout << "mHash=" << mHash;
+
+        boost::hash_combine(mHash, source_ip.toInteger());
+        //std::cout << " " << mHash;
+
+        boost::hash_combine(mHash, target_ip.toInteger());
+        //std::cout << " " << mHash;
+
+        boost::hash_combine(mHash, src_port);
+        //std::cout << " " << mHash;
+
+        boost::hash_combine(mHash, dst_port);
+        //std::cout << " " << mHash << std::endl;
+
         unsigned offset = tuple_offset;
 
         mFilter.add(source_ip.toInteger(), offset);
@@ -145,30 +160,39 @@ struct Processor
 
     std::size_t hash() const
     {
-        return mFilter.getHash();
+        return mHash;
     }
 
     bool process(std::size_t hash, const uint8_t* frame_bytes, int len)
     {
-        mHashesOk += hash == mFilter.getHash();
-        if (true)
+        if (mHash == hash)
         {
-            if (do_process(frame_bytes, len))
-            {
-                mProcessed++;
-                return true;
-            }
-            return false;
+            mHashesOk++;
+            return true;
         }
+
+        if (do_process(frame_bytes, len))
+        {
+            mProcessed++;
+            return true;
+        }
+
         return false;
     }
+
+    std::size_t getOkCounted() const { return mProcessed + mHashesOk; }
+    std::size_t getOkProcessedOnly() const { return mProcessed; }
+    std::size_t getOkHashedOnly() const { return mHashesOk; }
 
     bool do_process(const uint8_t* frame_bytes, int len)
     {
         return mFilter.match(frame_bytes, len);
     }
 
-    Filter mFilter;
+
+private:
+    std::size_t mHash = 0 ;
     uint64_t mHashesOk = 0;
+    Filter mFilter;
     uint64_t mProcessed = 0;
 };

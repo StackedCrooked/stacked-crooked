@@ -42,28 +42,31 @@ void test_one_processor()
     uint16_t dst_port = 1024;
 
 
-    for (auto i = 1ul; i <= 8u; ++i)
+    for (auto i = 1ul; i <= 16u; ++i)
     {
-        Header  header(src_ip, dst_ip, src_port + (i / 2), dst_port);
-        Processor proc(src_ip, dst_ip, src_port + (i / 2), dst_port);
-        //assert(header.calculate_hash() == proc.hash());
+        Header  header(src_ip, dst_ip, src_port + i, dst_port);
+        Processor proc(src_ip, dst_ip, src_port + i, dst_port);
+        assert(header.calculate_hash() == proc.hash());
         headers.push_back(header);
         processors.push_back(proc);
     }
 
     auto copy = headers;
 
-    for (auto i = 0; i != 10; ++i)
+    for (auto i = 0; i != 1000; ++i)
     {
         headers.insert(headers.end(), copy.begin(), copy.end());
     }
 
 
+
+    auto total_counter = 0ul;
     for (auto i = 0; i != 10; ++i)
     {
         auto start_time = Clock::now();
         for (const Header& header : headers)
         {
+            total_counter++;
             auto hash = header.calculate_hash();
             for (Processor& processor : processors)
             {
@@ -80,9 +83,10 @@ void test_one_processor()
     for (Processor& p : processors)
     {
         std::cout
-            << p.mProcessed << '/' << headers.size()
-            << " HashesOk=" << p.mHashesOk << '/' << headers.size()
-            << " " << int(0.5 + 100.0 * p.mProcessed / headers.size()) << "%\n";
+            << " Processed/Total=" << p.getOkCounted() << '/' << total_counter
+            << " HashesOk=" << p.getOkHashedOnly() << '/' << p.getOkCounted()
+            << " HashesNok=" << p.getOkProcessedOnly()
+            << std::endl;
     }
 }
 

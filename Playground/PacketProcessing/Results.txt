@@ -1,27 +1,27 @@
 
-Total=4597727 time/packet=287.071 time/packet/filter=17.9419
-Total=4803445 time/packet=299.915 time/packet/filter=18.7447
-Total=5143751 time/packet=321.163 time/packet/filter=20.0727
-Total=4945284 time/packet=308.771 time/packet/filter=19.2982
-Total=4824272 time/packet=301.216 time/packet/filter=18.826
-Total=4601735 time/packet=287.321 time/packet/filter=17.9576
-Total=5035622 time/packet=314.412 time/packet/filter=19.6507
-Total=4746742 time/packet=296.375 time/packet/filter=18.5234
-Total=4522679 time/packet=282.385 time/packet/filter=17.6491
-Total=4539619 time/packet=283.443 time/packet/filter=17.7152
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
- Processed/Total=10010/160160 HashesOk=10010/10010 HashesNok=0
+Total=271845 time/packet=271.845 time/packet/filter=16.9903
+Total=269351 time/packet=269.351 time/packet/filter=16.8344
+Total=262587 time/packet=262.587 time/packet/filter=16.4117
+Total=262667 time/packet=262.667 time/packet/filter=16.4167
+Total=262607 time/packet=262.607 time/packet/filter=16.4129
+Total=335368 time/packet=335.368 time/packet/filter=20.9605
+Total=335205 time/packet=335.205 time/packet/filter=20.9503
+Total=262571 time/packet=262.571 time/packet/filter=16.4107
+Total=262518 time/packet=262.518 time/packet/filter=16.4074
+Total=262819 time/packet=262.819 time/packet/filter=16.4262
+ TotalOk=630/10000 HashedOnly=630 ProcessedOnly=0
+ TotalOk=630/10000 HashedOnly=630 ProcessedOnly=0
+ TotalOk=630/10000 HashedOnly=630 ProcessedOnly=0
+ TotalOk=630/10000 HashedOnly=630 ProcessedOnly=0
+ TotalOk=630/10000 HashedOnly=630 ProcessedOnly=0
+ TotalOk=630/10000 HashedOnly=630 ProcessedOnly=0
+ TotalOk=630/10000 HashedOnly=630 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=620/10000 HashedOnly=620 ProcessedOnly=0
+ TotalOk=0/10000 HashedOnly=0 ProcessedOnly=0

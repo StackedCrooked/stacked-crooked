@@ -44,18 +44,17 @@ void test_one_processor()
 
     for (auto i = 1ul; i <= 16u; ++i)
     {
-        Header  header(src_ip, dst_ip, src_port + i, dst_port);
-        Processor proc(src_ip, dst_ip, src_port + i, dst_port);
-        assert(header.calculate_hash() == proc.hash());
-        headers.push_back(header);
+        auto r = 0;//rand() % 2;
+        Processor proc(src_ip, dst_ip, src_port + i, dst_port + i + r);
         processors.push_back(proc);
     }
 
-    auto copy = headers;
-
     for (auto i = 0; i != 1000; ++i)
     {
-        headers.insert(headers.end(), copy.begin(), copy.end());
+        auto r1 = 0;//rand() % 2;
+        auto r2 = 0;//rand() % 2;
+        Header  header(src_ip, dst_ip, src_port + (i % processors.size()) + r1, dst_port + (i % processors.size()) + r2);
+        headers.push_back(header);
     }
 
 
@@ -83,9 +82,9 @@ void test_one_processor()
     for (Processor& p : processors)
     {
         std::cout
-            << " Processed/Total=" << p.getOkCounted() << '/' << total_counter
-            << " HashesOk=" << p.getOkHashedOnly() << '/' << p.getOkCounted()
-            << " HashesNok=" << p.getOkProcessedOnly()
+            << " TotalOk=" << p.getOkCounted() << '/' << total_counter
+            << " HashedOnly=" << p.getOkHashedOnly()
+            << " ProcessedOnly=" << p.getOkProcessedOnly()
             << std::endl;
     }
 }

@@ -1,9 +1,9 @@
 
-Total=93061824 time/packet=9.30618 time/packet/filter=9.30618
-Total=91964827 time/packet=9.19648 time/packet/filter=9.19648
+Total=103998497 time/packet=10.3998 time/packet/filter=10.3998
+Total=98324891 time/packet=9.83249 time/packet/filter=9.83249
 20000000/20000000 100%
-Total=220601027 time/packet=22.0601 time/packet/filter=1.37875
-Total=219148614 time/packet=21.9148 time/packet/filter=1.36968
+Total=218689494 time/packet=21.8689 time/packet/filter=1.36681
+Total=218986950 time/packet=21.8987 time/packet/filter=1.36867
 1250002/1250002 100%
 1250002/1250002 100%
 1250002/1250002 100%

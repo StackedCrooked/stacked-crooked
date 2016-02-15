@@ -45,7 +45,6 @@ struct Filter
 private:
     struct Item
     {
-        __attribute__((noinline))
         Item(uint32_t value, int offset) :
             storage_(value),
             field_offset_(offset),
@@ -53,7 +52,6 @@ private:
         {
         }
 
-        __attribute__((noinline))
         Item(uint16_t value, int offset) :
             storage_(value),
             field_offset_(offset),
@@ -61,7 +59,6 @@ private:
         {
         }
 
-        __attribute__((noinline))
         Item(uint8_t value, int offset) :
             storage_(value),
             field_offset_(offset),

@@ -1,25 +1,7 @@
 
 DETECTED FREQ=3493Mhz
-Processor-index=0 Hash_Ok=100% Matched=100%
-Processor-index=1 Hash_Ok=100% Matched=100%
-Processor-index=2 Hash_Ok=100% Matched=100%
-Processor-index=3 Hash_Ok=100% Matched=100%
-Processor-index=4 Hash_Ok=100% Matched=100%
-Processor-index=5 Hash_Ok=100% Matched=100%
-Processor-index=6 Hash_Ok=100% Matched=100%
-Processor-index=7 Hash_Ok=100% Matched=100%
-Processor-index=8 Hash_Ok=100% Matched=100%
-Processor-index=9 Hash_Ok=100% Matched=100%
-Processor-index=10 Hash_Ok=100% Matched=100%
-Processor-index=11 Hash_Ok=100% Matched=100%
-Processor-index=12 Hash_Ok=100% Matched=100%
-Processor-index=13 Hash_Ok=100% Matched=100%
-Processor-index=14 Hash_Ok=100% Matched=100%
-Processor-index=15 Hash_Ok=100% Matched=100%
-Processor-index=16 Hash_Ok=100% Matched=100%
-Processor-index=17 Hash_Ok=100% Matched=100%
-Processor-index=18 Hash_Ok=100% Matched=100%
-Processor-index=19 Hash_Ok=100% Matched=100%
-packets=10000 cycles=1115907 ns=319470
- cycles/packet=111.591 (31.947ns)
- cycles/packet/filter=5.57953 (1.59735ns)
+Processor-index=0 Matched=100%
+Processor-index=1 Matched=100%
+packets=1000000 cycles=47685490 ns=1.36517e+07
+ cycles/packet=47.6855 (13.6517ns)
+ cycles/packet/filter=23.8427 (6.82586ns)

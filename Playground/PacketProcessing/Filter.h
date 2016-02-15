@@ -5,8 +5,8 @@
 #define UNLIKELY(x) (__builtin_expect((x), 0))
 
 
-#include <boost/functional/hash.hpp>
 #include <boost/strong_typedef.hpp>
+#include <cassert>
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -45,6 +45,7 @@ struct Filter
 private:
     struct Item
     {
+        __attribute__((noinline))
         Item(uint32_t value, int offset) :
             storage_(value),
             field_offset_(offset),
@@ -52,6 +53,7 @@ private:
         {
         }
 
+        __attribute__((noinline))
         Item(uint16_t value, int offset) :
             storage_(value),
             field_offset_(offset),
@@ -59,6 +61,7 @@ private:
         {
         }
 
+        __attribute__((noinline))
         Item(uint8_t value, int offset) :
             storage_(value),
             field_offset_(offset),
@@ -68,20 +71,15 @@ private:
 
         bool match(const uint8_t* frame, unsigned size) const
         {
-            auto field_length = field_length_;
-            auto field_offset = field_offset_;
-
-            if (UNLIKELY(field_length + field_offset > size))
+            if (UNLIKELY(field_length_ + field_offset_ > size))
             {
                return false;
             }
 
-            auto input = frame + field_offset;
+            auto input = frame + field_offset_;
 
-            assert(field_length == 4 || field_length == 2 || field_length == 1);
-
-            if (field_length == 4) return get_field_32() == *(uint32_t*)input;
-            if (field_length == 2) return get_field_16() == *(uint16_t*)input;
+            if (field_length_ == 4) return get_field_32() == *(uint32_t*)(input);
+            if (field_length_ == 2) return get_field_16() == *(uint16_t*)(input);
             return get_field_8() == *input;
         }
 

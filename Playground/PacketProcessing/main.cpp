@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <boost/container/static_vector.hpp>
 #include <unordered_map>
-#include <boost/functional/hash.hpp>
 #include <cassert>
 #include <cstring>
 #include <iostream>
@@ -65,10 +64,10 @@ void test_one_processor()
 {
     std::cout << "DETECTED FREQ=" << get_frequency_mhz() << "Mhz\n";
     std::vector<Header> headers;
-    headers.reserve(10000);
+    headers.reserve(1000000);
 
     std::vector<Processor> processors;
-    processors.reserve(20);
+    processors.reserve(2);
 
     uint16_t src_port = 1024;
     uint16_t dst_port = 1024;
@@ -101,10 +100,9 @@ void test_one_processor()
     for (const Header& header : headers)
     {
         total_counter++;
-        auto hash = header.calculate_hash();
         for (Processor& processor : processors)
         {
-            processor.process(hash, header.data(), header.size());
+            processor.process(header.data(), header.size());
         }
     }
     auto elapsed_time = Clock::now() - start_time;
@@ -115,7 +113,6 @@ void test_one_processor()
         auto expected_count = headers.size() / processors.size();
         std::cout
             << "Processor-index=" << (&p - processors.data())
-            << " Hash_Ok=" << int(0.5 + 100.0 * p.getHashMatches() / expected_count) << "%"
             << " Matched=" << int(0.5 + 100.0 * p.getMatches() / expected_count) << "%"
             << std::endl;
     }

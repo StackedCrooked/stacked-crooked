@@ -72,16 +72,6 @@ struct Header
         mNetworkHeader.mDestinationPort = dst_port;
     }
 
-    std::size_t calculate_hash() const
-    {
-        std::size_t result = 0;
-        boost::hash_combine(result, mIPv4Header.mSource.toInteger());
-        boost::hash_combine(result, mIPv4Header.mDestination.toInteger());
-        boost::hash_combine(result, mNetworkHeader.mSourcePort);
-        boost::hash_combine(result, mNetworkHeader.mDestinationPort);
-        return result;
-    }
-
     uint8_t* data() { return static_cast<uint8_t*>(static_cast<void*>(this)); }
     uint8_t* begin() { return data(); }
     uint8_t* end() { return data() + sizeof(*this); }
@@ -109,34 +99,17 @@ struct Processor
             tuple_offset = sizeof(EthernetHeader) + sizeof(IPv4Header) - 2 * sizeof(IPv4Address)
         };
 
-
-        boost::hash_combine(mHash, source_ip.toInteger());
-        boost::hash_combine(mHash, target_ip.toInteger());
-        boost::hash_combine(mHash, src_port);
-        boost::hash_combine(mHash, dst_port);
-
         unsigned offset = tuple_offset;
 
-        mFilter.add(source_ip.toInteger(), offset); offset += sizeof(source_ip); 
-        mFilter.add(target_ip.toInteger(), offset); offset += sizeof(target_ip); 
+        mFilter.add(source_ip.toInteger(), offset); offset += sizeof(source_ip);
+        mFilter.add(target_ip.toInteger(), offset); offset += sizeof(target_ip);
         mFilter.add(src_port, offset); offset += sizeof(src_port);
 
         mFilter.add(dst_port, offset);
     }
 
-    std::size_t hash() const
+    bool process(const uint8_t* frame_bytes, int len)
     {
-        return mHash;
-    }
-
-    bool process(std::size_t hash, const uint8_t* frame_bytes, int len)
-    {
-        if (mHash != hash)
-        {
-            return false;
-        }
-        mHashesOk++;
-
         if (!do_process(frame_bytes, len))
         {
             return false;
@@ -147,7 +120,6 @@ struct Processor
     }
 
     std::size_t getMatches() const { return mProcessed; }
-    std::size_t getHashMatches() const { return mHashesOk; }
 
     bool do_process(const uint8_t* frame_bytes, int len)
     {
@@ -156,8 +128,6 @@ struct Processor
 
 
 private:
-    std::size_t mHash = 0 ;
-    uint64_t mHashesOk = 0;
     Filter mFilter;
     uint64_t mProcessed = 0;
 };

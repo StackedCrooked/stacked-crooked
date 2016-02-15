@@ -5,7 +5,6 @@
 #define UNLIKELY(x) (__builtin_expect((x), 0))
 
 
-#include <boost/strong_typedef.hpp>
 #include <cassert>
 #include <cstdint>
 #include <iostream>

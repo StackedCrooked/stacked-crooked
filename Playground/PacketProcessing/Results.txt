@@ -1,5 +1,5 @@
 
-DETECTED FREQ=2691Mhz
+DETECTED FREQ=3493Mhz
 Proc: 1.1.1.1 1.1.2.1 1024 1024
 Proc: 1.1.1.1 1.1.2.1 1025 1025
 1.1.1.1 1.1.2.1 1024 1024
@@ -8,6 +8,6 @@ Proc: 1.1.1.1 1.1.2.1 1025 1025
 1.1.1.2 1.1.2.2 1027 1027
 Processor-index=0 Matched=0%
 Processor-index=1 Matched=0%
-packets=1000000 cycles=55380189 ns=2.05798e+07
- cycles/packet=55.3802 (20.5798ns)
- cycles/packet/filter=27.6901 (10.2899ns)
+packets=1000000 cycles=40439065 ns=1.15772e+07
+ cycles/packet=40.4391 (11.5772ns)
+ cycles/packet/filter=20.2195 (5.78859ns)

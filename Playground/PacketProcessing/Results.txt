@@ -1,7 +1,7 @@
 
-DETECTED FREQ=3495Mhz
+DETECTED FREQ=2691Mhz
 Processor-index=0 Matched=100%
 Processor-index=1 Matched=100%
-packets=1000000 cycles=52423746 ns=1.49996e+07
- cycles/packet=52.4237 (14.9996ns)
- cycles/packet/filter=26.2119 (7.49982ns)
+packets=1000000 cycles=47827272 ns=1.7773e+07
+ cycles/packet=47.8273 (17.773ns)
+ cycles/packet/filter=23.9136 (8.88652ns)

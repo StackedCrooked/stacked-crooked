@@ -4,6 +4,7 @@
 #include "Filter.h"
 #include <array>
 #include <cstdint>
+#include <cstring>
 
 
 struct MAC : std::array<uint8_t, 6>

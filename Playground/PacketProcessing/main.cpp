@@ -1,5 +1,7 @@
 ﻿#include "Processor.h"
+#include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cstring>
 #include <iostream>
 #include <vector>

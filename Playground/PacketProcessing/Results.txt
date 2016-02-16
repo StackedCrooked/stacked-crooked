@@ -1,7 +1,13 @@
 
 DETECTED FREQ=2691Mhz
-Processor-index=0 Matched=100%
-Processor-index=1 Matched=100%
-packets=1000000 cycles=47827272 ns=1.7773e+07
- cycles/packet=47.8273 (17.773ns)
- cycles/packet/filter=23.9136 (8.88652ns)
+Proc: 1.1.1.1 1.1.2.1 1024 1024
+Proc: 1.1.1.1 1.1.2.1 1025 1025
+1.1.1.1 1.1.2.1 1024 1024
+1.1.1.2 1.1.2.2 1025 1025
+1.1.1.1 1.1.2.1 1026 1026
+1.1.1.2 1.1.2.2 1027 1027
+Processor-index=0 Matched=0%
+Processor-index=1 Matched=0%
+packets=1000000 cycles=55380189 ns=2.05798e+07
+ cycles/packet=55.3802 (20.5798ns)
+ cycles/packet/filter=27.6901 (10.2899ns)

@@ -62,7 +62,7 @@ void test_one_processor()
 {
     std::cout << "DETECTED FREQ=" << get_frequency_mhz() << "Mhz\n";
     std::vector<Header> headers;
-    headers.reserve(1000000);
+    headers.reserve(1000 * 1000);
 
     std::vector<Processor> processors;
     processors.reserve(2);
@@ -71,25 +71,33 @@ void test_one_processor()
     uint16_t dst_port = 1024;
 
 
-    for (auto i = 1ul; i <= processors.capacity(); ++i)
+    for (auto i = 0ul; i < processors.capacity(); ++i)
     {
-        IPv4Address src_ip(1, 1, 1, i);
-        IPv4Address dst_ip(1, 1, 2, i);
-        Processor proc(src_ip, dst_ip, src_port, dst_port);
+        IPv4Address src_ip(1, 1, 1, 1 + i / 2);
+        IPv4Address dst_ip(1, 1, 2, 1 + i / 2);
+        auto sp = src_port + i % 4;
+        auto dp = dst_port + i % 4;
+        Processor proc(src_ip, dst_ip, sp, dp);
+		std::cout << "Proc: " << src_ip << ' ' << dst_ip << ' ' << sp << ' ' << dp << '\n';
         processors.push_back(proc);
     }
 
-    for (auto i = 1ul; i <= headers.capacity(); ++i)
+    for (auto i = 0ul; i < headers.capacity(); ++i)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i % processors.size());
         IPv4Address dst_ip(1, 1, 2, 1 + i % processors.size());
-        Header  header(src_ip, dst_ip, src_port, dst_port);
+		auto sp = src_port + i % 4;
+		auto dp = dst_port + i % 4;
+        if (i < 2 * processors.capacity())
+        {
+            std::cout << src_ip << ' ' << dst_ip << ' ' << sp << ' ' << dp << '\n';
+        }
+        Header header(src_ip, dst_ip, sp, dp);
         headers.push_back(header);
     }
 
 
     std::random_shuffle(headers.begin(), headers.end());
-
 
 
     auto total_counter = 0ul;

@@ -5,15 +5,10 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
-#include <iostream>
 
 
 struct MAC : std::array<uint8_t, 6>
 {
-    friend std::ostream& operator<<(std::ostream& os, MAC mac)
-    {
-        return os << int(mac[0]) << ':' << int(mac[1]) << ':' << int(mac[2]) << ':' << int(mac[3]) << ':' << int(mac[4]) << ':' << int(mac[5]);
-    }
 };
 
 
@@ -34,19 +29,14 @@ struct IPv4Address : std::array<uint8_t, 4>
         memcpy(&result, data(), size());
         return result;
     }
-
-    friend std::ostream& operator<<(std::ostream& os, IPv4Address ip)
-    {
-        return os << int(ip[0]) << '.' << int(ip[1]) << '.' << int(ip[2]) << '.' << int(ip[3]);
-    }
 };
 
 
 struct EthernetHeader
 {
-    //MAC mDestination;
-    //MAC mSource;
-    //uint16_t mEtherType;
+    MAC mDestination;
+    MAC mSource;
+    uint16_t mEtherType;
 };
 
 

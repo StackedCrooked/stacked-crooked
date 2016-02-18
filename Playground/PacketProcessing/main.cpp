@@ -329,7 +329,7 @@ std::vector<Packet> packets;
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
         std::cout
-                << "\nprocessors_per_packet=" << processors.size()
+                << "\nPROCESSOR COUNT: " << processors.size()
                 << "\ncycles_per_packet=" << int(0.5 + cycles_per_packet)
                 << "\ncycles_per_packet_per_processor=" << int(0.5 + cycles_per_packet / processors.size())
                 << "\nns_per_packet=" << int(0.5 + ns_per_packet)

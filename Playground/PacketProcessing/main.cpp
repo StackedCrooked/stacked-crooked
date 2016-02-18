@@ -58,23 +58,27 @@ int64_t get_frequency_hz()
 
 
 
-void test_one_processor()
+void test(int num_packets, int num_processors)
 {
-    std::cout << "DETECTED FREQ=" << get_frequency_mhz() << "Mhz\n";
+    struct Header : ::Header
+    {
+        using ::Header::Header;
+        char bytes[2000];
+    };
     std::vector<Header> headers;
-    headers.reserve(1000000);
+    headers.reserve(num_packets);
 
     std::vector<Processor> processors;
-    processors.reserve(2);
+    processors.reserve(num_processors);
 
     uint16_t src_port = 1024;
     uint16_t dst_port = 1024;
 
 
-    for (auto i = 1ul; i <= processors.capacity(); ++i)
+    for (auto i = 0ul; i < processors.capacity(); ++i)
     {
-        IPv4Address src_ip(1, 1, 1, i);
-        IPv4Address dst_ip(1, 1, 2, i);
+        IPv4Address src_ip(1, 1, 1, 1 + i);
+        IPv4Address dst_ip(1, 1, 2, 1 + i);
         Processor proc(src_ip, dst_ip, src_port, dst_port);
         processors.push_back(proc);
     }
@@ -105,24 +109,34 @@ void test_one_processor()
     }
     auto elapsed_time = Clock::now() - start_time;
 
+    auto cycles_per_packet = 1.0 * elapsed_time / headers.size();
+    auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
+    auto packet_rate = 1e9 / ns_per_packet / 1000000;
+
+        std::cout
+                << "\nprocessors_per_packet=" << processors.size()
+                << "\ncycles_per_packet=" << int(0.5 + cycles_per_packet)
+                << "\nns_per_packet=" << int(0.5 + ns_per_packet)
+                << "\nns_per_packet_per_processor=" << int(0.5 + ns_per_packet / processors.size())
+                << "\npacket_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
+                << std::endl;
 
     for (Processor& p : processors)
     {
-        auto expected_count = headers.size() / processors.size();
         std::cout
-            << "Processor-index=" << (&p - processors.data())
-            << " Matched=" << int(0.5 + 100.0 * p.getMatches() / expected_count) << "%"
+            << "Processor[" << (&p - processors.data()) << "].matches "
+            << int(0.5 + 100.0 * p.getMatches() / headers.size()) << "%"
             << std::endl;
     }
 
-        std::cout << "packets=" << total_counter << " cycles=" << elapsed_time << " ns=" << elapsed_time / get_frequency_ghz()
-            << "\n cycles/packet=" << (1.0 * elapsed_time / headers.size()) << " (" << (1.0 * elapsed_time / get_frequency_ghz() / headers.size()) << "ns)"
-            << "\n cycles/packet/filter=" << (1.0 * elapsed_time / headers.size() / processors.size()) << " (" << (1.0 * elapsed_time / headers.size() / processors.size()) / get_frequency_ghz() << "ns)"
-            << '\n';
 
 }
 
 int main()
 {
-    test_one_processor();
+    auto num_packets = 1000 * 1000;
+    test(num_packets, 1);
+    test(num_packets, 2);
+    test(num_packets, 4);
+    test(num_packets, 8);
 }

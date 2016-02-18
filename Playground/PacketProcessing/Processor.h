@@ -109,15 +109,9 @@ struct Processor
         mFilter.add(dst_port, offset);
     }
 
-    bool process(const uint8_t* frame_bytes, int len)
+    void process(const uint8_t* frame_bytes, int len)
     {
-        if (!do_process(frame_bytes, len))
-        {
-            return false;
-        }
-
-        mProcessed++;
-        return true;
+        mProcessed += do_process(frame_bytes, len);
     }
 
     std::size_t getMatches() const { return mProcessed; }

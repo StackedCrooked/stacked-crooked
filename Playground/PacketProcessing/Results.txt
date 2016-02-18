@@ -1,7 +1,40 @@
 
-DETECTED FREQ=3493Mhz
-Processor-index=0 Matched=100%
-Processor-index=1 Matched=100%
-packets=1000000 cycles=46981007 ns=1.345e+07
- cycles/packet=46.981 (13.45ns)
- cycles/packet/filter=23.4905 (6.72502ns)
+
+processors_per_packet=1
+cycles_per_packet=85
+ns_per_packet=32
+ns_per_packet_per_processor=32
+packet_rate=31.6M/s
+Processor[0].matches 100%
+
+processors_per_packet=2
+cycles_per_packet=112
+ns_per_packet=41
+ns_per_packet_per_processor=21
+packet_rate=24.1M/s
+Processor[0].matches 50%
+Processor[1].matches 50%
+
+processors_per_packet=4
+cycles_per_packet=136
+ns_per_packet=51
+ns_per_packet_per_processor=13
+packet_rate=19.8M/s
+Processor[0].matches 25%
+Processor[1].matches 25%
+Processor[2].matches 25%
+Processor[3].matches 25%
+
+processors_per_packet=8
+cycles_per_packet=221
+ns_per_packet=82
+ns_per_packet_per_processor=10
+packet_rate=12.2M/s
+Processor[0].matches 13%
+Processor[1].matches 13%
+Processor[2].matches 13%
+Processor[3].matches 13%
+Processor[4].matches 13%
+Processor[5].matches 13%
+Processor[6].matches 13%
+Processor[7].matches 13%

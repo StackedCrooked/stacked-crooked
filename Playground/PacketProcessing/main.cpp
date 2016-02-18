@@ -63,7 +63,7 @@ void test(int num_packets, int num_processors)
     struct Packet : ::Header
     {
         using ::Header::Header;
-        //char bytes[1460];
+        char bytes[1460];
     };
 
 std::vector<Packet> packets;
@@ -101,6 +101,7 @@ std::vector<Packet> packets;
     auto start_time = Clock::now();
     for (auto& packet : packets)
     {
+        __builtin_prefetch(packet.data() + 14 + 18 + 1 * sizeof(Packet), 0, 0);
         total_counter++;
         for (Processor& processor : processors)
         {
@@ -121,6 +122,7 @@ std::vector<Packet> packets;
                 << "\nns_per_packet_per_processor=" << int(0.5 + ns_per_packet / processors.size())
                 << std::endl;
 
+    #if 0
     for (Processor& p : processors)
     {
         std::cout
@@ -128,6 +130,7 @@ std::vector<Packet> packets;
             << int(0.5 + 100.0 * p.getMatches() / packets.size()) << "%"
             << std::endl;
     }
+    #endif
 
 
 }

@@ -60,13 +60,14 @@ int64_t get_frequency_hz()
 
 void test(int num_packets, int num_processors)
 {
-    struct Header : ::Header
+    struct Packet : ::Header
     {
         using ::Header::Header;
-        char bytes[2000];
+        char bytes[1460];
     };
-    std::vector<Header> headers;
-    headers.reserve(num_packets);
+
+std::vector<Packet> packets;
+    packets.reserve(num_packets);
 
     std::vector<Processor> processors;
     processors.reserve(num_processors);
@@ -83,33 +84,33 @@ void test(int num_packets, int num_processors)
         processors.push_back(proc);
     }
 
-    for (auto i = 1ul; i <= headers.capacity(); ++i)
+    for (auto i = 1ul; i <= packets.capacity(); ++i)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i % processors.size());
         IPv4Address dst_ip(1, 1, 2, 1 + i % processors.size());
-        Header  header(src_ip, dst_ip, src_port, dst_port);
-        headers.push_back(header);
+        Packet  packet(src_ip, dst_ip, src_port, dst_port);
+        packets.push_back(packet);
     }
 
 
-    std::random_shuffle(headers.begin(), headers.end());
+    std::random_shuffle(packets.begin(), packets.end());
 
 
 
     auto total_counter = 0ul;
 
     auto start_time = Clock::now();
-    for (const Header& header : headers)
+    for (const Packet& packet : packets)
     {
         total_counter++;
         for (Processor& processor : processors)
         {
-            processor.process(header.data(), header.size());
+            processor.process(packet.data(), packet.size());
         }
     }
     auto elapsed_time = Clock::now() - start_time;
 
-    auto cycles_per_packet = 1.0 * elapsed_time / headers.size();
+    auto cycles_per_packet = 1.0 * elapsed_time / packets.size();
     auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
@@ -125,7 +126,7 @@ void test(int num_packets, int num_processors)
     {
         std::cout
             << "Processor[" << (&p - processors.data()) << "].matches "
-            << int(0.5 + 100.0 * p.getMatches() / headers.size()) << "%"
+            << int(0.5 + 100.0 * p.getMatches() / packets.size()) << "%"
             << std::endl;
     }
 
@@ -134,9 +135,9 @@ void test(int num_packets, int num_processors)
 
 int main()
 {
-    auto num_packets = 1000 * 1000;
-    test(num_packets, 1);
-    test(num_packets, 2);
-    test(num_packets, 4);
-    test(num_packets, 8);
+    auto num_packets = 20 * 1000;
+    for (auto num_processors = 1; num_processors <= 128; num_processors *= 2)
+    {
+        test(num_packets, num_processors);
+    }
 }

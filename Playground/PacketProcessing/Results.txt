@@ -1,35 +1,35 @@
 
 
 processors_per_packet=1
-cycles_per_packet=85
-ns_per_packet=32
-ns_per_packet_per_processor=32
-packet_rate=31.6M/s
+cycles_per_packet=228
+ns_per_packet=85
+ns_per_packet_per_processor=85
+packet_rate=11.8M/s
 Processor[0].matches 100%
 
 processors_per_packet=2
-cycles_per_packet=112
-ns_per_packet=41
-ns_per_packet_per_processor=21
-packet_rate=24.1M/s
+cycles_per_packet=262
+ns_per_packet=97
+ns_per_packet_per_processor=49
+packet_rate=10.3M/s
 Processor[0].matches 50%
 Processor[1].matches 50%
 
 processors_per_packet=4
-cycles_per_packet=136
-ns_per_packet=51
-ns_per_packet_per_processor=13
-packet_rate=19.8M/s
+cycles_per_packet=232
+ns_per_packet=86
+ns_per_packet_per_processor=22
+packet_rate=11.6M/s
 Processor[0].matches 25%
 Processor[1].matches 25%
 Processor[2].matches 25%
 Processor[3].matches 25%
 
 processors_per_packet=8
-cycles_per_packet=221
-ns_per_packet=82
-ns_per_packet_per_processor=10
-packet_rate=12.2M/s
+cycles_per_packet=395
+ns_per_packet=147
+ns_per_packet_per_processor=18
+packet_rate=6.8M/s
 Processor[0].matches 13%
 Processor[1].matches 13%
 Processor[2].matches 13%
@@ -38,3 +38,267 @@ Processor[4].matches 13%
 Processor[5].matches 13%
 Processor[6].matches 13%
 Processor[7].matches 13%
+
+processors_per_packet=16
+cycles_per_packet=442
+ns_per_packet=164
+ns_per_packet_per_processor=10
+packet_rate=6.1M/s
+Processor[0].matches 6%
+Processor[1].matches 6%
+Processor[2].matches 6%
+Processor[3].matches 6%
+Processor[4].matches 6%
+Processor[5].matches 6%
+Processor[6].matches 6%
+Processor[7].matches 6%
+Processor[8].matches 6%
+Processor[9].matches 6%
+Processor[10].matches 6%
+Processor[11].matches 6%
+Processor[12].matches 6%
+Processor[13].matches 6%
+Processor[14].matches 6%
+Processor[15].matches 6%
+
+processors_per_packet=32
+cycles_per_packet=690
+ns_per_packet=256
+ns_per_packet_per_processor=8
+packet_rate=3.9M/s
+Processor[0].matches 3%
+Processor[1].matches 3%
+Processor[2].matches 3%
+Processor[3].matches 3%
+Processor[4].matches 3%
+Processor[5].matches 3%
+Processor[6].matches 3%
+Processor[7].matches 3%
+Processor[8].matches 3%
+Processor[9].matches 3%
+Processor[10].matches 3%
+Processor[11].matches 3%
+Processor[12].matches 3%
+Processor[13].matches 3%
+Processor[14].matches 3%
+Processor[15].matches 3%
+Processor[16].matches 3%
+Processor[17].matches 3%
+Processor[18].matches 3%
+Processor[19].matches 3%
+Processor[20].matches 3%
+Processor[21].matches 3%
+Processor[22].matches 3%
+Processor[23].matches 3%
+Processor[24].matches 3%
+Processor[25].matches 3%
+Processor[26].matches 3%
+Processor[27].matches 3%
+Processor[28].matches 3%
+Processor[29].matches 3%
+Processor[30].matches 3%
+Processor[31].matches 3%
+
+processors_per_packet=64
+cycles_per_packet=738
+ns_per_packet=274
+ns_per_packet_per_processor=4
+packet_rate=3.6M/s
+Processor[0].matches 2%
+Processor[1].matches 2%
+Processor[2].matches 2%
+Processor[3].matches 2%
+Processor[4].matches 2%
+Processor[5].matches 2%
+Processor[6].matches 2%
+Processor[7].matches 2%
+Processor[8].matches 2%
+Processor[9].matches 2%
+Processor[10].matches 2%
+Processor[11].matches 2%
+Processor[12].matches 2%
+Processor[13].matches 2%
+Processor[14].matches 2%
+Processor[15].matches 2%
+Processor[16].matches 2%
+Processor[17].matches 2%
+Processor[18].matches 2%
+Processor[19].matches 2%
+Processor[20].matches 2%
+Processor[21].matches 2%
+Processor[22].matches 2%
+Processor[23].matches 2%
+Processor[24].matches 2%
+Processor[25].matches 2%
+Processor[26].matches 2%
+Processor[27].matches 2%
+Processor[28].matches 2%
+Processor[29].matches 2%
+Processor[30].matches 2%
+Processor[31].matches 2%
+Processor[32].matches 2%
+Processor[33].matches 2%
+Processor[34].matches 2%
+Processor[35].matches 2%
+Processor[36].matches 2%
+Processor[37].matches 2%
+Processor[38].matches 2%
+Processor[39].matches 2%
+Processor[40].matches 2%
+Processor[41].matches 2%
+Processor[42].matches 2%
+Processor[43].matches 2%
+Processor[44].matches 2%
+Processor[45].matches 2%
+Processor[46].matches 2%
+Processor[47].matches 2%
+Processor[48].matches 2%
+Processor[49].matches 2%
+Processor[50].matches 2%
+Processor[51].matches 2%
+Processor[52].matches 2%
+Processor[53].matches 2%
+Processor[54].matches 2%
+Processor[55].matches 2%
+Processor[56].matches 2%
+Processor[57].matches 2%
+Processor[58].matches 2%
+Processor[59].matches 2%
+Processor[60].matches 2%
+Processor[61].matches 2%
+Processor[62].matches 2%
+Processor[63].matches 2%
+
+processors_per_packet=128
+cycles_per_packet=1251
+ns_per_packet=465
+ns_per_packet_per_processor=4
+packet_rate=2.2M/s
+Processor[0].matches 1%
+Processor[1].matches 1%
+Processor[2].matches 1%
+Processor[3].matches 1%
+Processor[4].matches 1%
+Processor[5].matches 1%
+Processor[6].matches 1%
+Processor[7].matches 1%
+Processor[8].matches 1%
+Processor[9].matches 1%
+Processor[10].matches 1%
+Processor[11].matches 1%
+Processor[12].matches 1%
+Processor[13].matches 1%
+Processor[14].matches 1%
+Processor[15].matches 1%
+Processor[16].matches 1%
+Processor[17].matches 1%
+Processor[18].matches 1%
+Processor[19].matches 1%
+Processor[20].matches 1%
+Processor[21].matches 1%
+Processor[22].matches 1%
+Processor[23].matches 1%
+Processor[24].matches 1%
+Processor[25].matches 1%
+Processor[26].matches 1%
+Processor[27].matches 1%
+Processor[28].matches 1%
+Processor[29].matches 1%
+Processor[30].matches 1%
+Processor[31].matches 1%
+Processor[32].matches 1%
+Processor[33].matches 1%
+Processor[34].matches 1%
+Processor[35].matches 1%
+Processor[36].matches 1%
+Processor[37].matches 1%
+Processor[38].matches 1%
+Processor[39].matches 1%
+Processor[40].matches 1%
+Processor[41].matches 1%
+Processor[42].matches 1%
+Processor[43].matches 1%
+Processor[44].matches 1%
+Processor[45].matches 1%
+Processor[46].matches 1%
+Processor[47].matches 1%
+Processor[48].matches 1%
+Processor[49].matches 1%
+Processor[50].matches 1%
+Processor[51].matches 1%
+Processor[52].matches 1%
+Processor[53].matches 1%
+Processor[54].matches 1%
+Processor[55].matches 1%
+Processor[56].matches 1%
+Processor[57].matches 1%
+Processor[58].matches 1%
+Processor[59].matches 1%
+Processor[60].matches 1%
+Processor[61].matches 1%
+Processor[62].matches 1%
+Processor[63].matches 1%
+Processor[64].matches 1%
+Processor[65].matches 1%
+Processor[66].matches 1%
+Processor[67].matches 1%
+Processor[68].matches 1%
+Processor[69].matches 1%
+Processor[70].matches 1%
+Processor[71].matches 1%
+Processor[72].matches 1%
+Processor[73].matches 1%
+Processor[74].matches 1%
+Processor[75].matches 1%
+Processor[76].matches 1%
+Processor[77].matches 1%
+Processor[78].matches 1%
+Processor[79].matches 1%
+Processor[80].matches 1%
+Processor[81].matches 1%
+Processor[82].matches 1%
+Processor[83].matches 1%
+Processor[84].matches 1%
+Processor[85].matches 1%
+Processor[86].matches 1%
+Processor[87].matches 1%
+Processor[88].matches 1%
+Processor[89].matches 1%
+Processor[90].matches 1%
+Processor[91].matches 1%
+Processor[92].matches 1%
+Processor[93].matches 1%
+Processor[94].matches 1%
+Processor[95].matches 1%
+Processor[96].matches 1%
+Processor[97].matches 1%
+Processor[98].matches 1%
+Processor[99].matches 1%
+Processor[100].matches 1%
+Processor[101].matches 1%
+Processor[102].matches 1%
+Processor[103].matches 1%
+Processor[104].matches 1%
+Processor[105].matches 1%
+Processor[106].matches 1%
+Processor[107].matches 1%
+Processor[108].matches 1%
+Processor[109].matches 1%
+Processor[110].matches 1%
+Processor[111].matches 1%
+Processor[112].matches 1%
+Processor[113].matches 1%
+Processor[114].matches 1%
+Processor[115].matches 1%
+Processor[116].matches 1%
+Processor[117].matches 1%
+Processor[118].matches 1%
+Processor[119].matches 1%
+Processor[120].matches 1%
+Processor[121].matches 1%
+Processor[122].matches 1%
+Processor[123].matches 1%
+Processor[124].matches 1%
+Processor[125].matches 1%
+Processor[126].matches 1%
+Processor[127].matches 1%

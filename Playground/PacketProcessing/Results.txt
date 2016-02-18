@@ -1,35 +1,35 @@
 
 
 processors_per_packet=1
-cycles_per_packet=228
-ns_per_packet=85
-ns_per_packet_per_processor=85
-packet_rate=11.8M/s
+cycles_per_packet=77
+ns_per_packet=29
+packet_rate=35M/s
+ns_per_packet_per_processor=29
 Processor[0].matches 100%
 
 processors_per_packet=2
-cycles_per_packet=262
-ns_per_packet=97
-ns_per_packet_per_processor=49
-packet_rate=10.3M/s
+cycles_per_packet=101
+ns_per_packet=38
+packet_rate=26.6M/s
+ns_per_packet_per_processor=19
 Processor[0].matches 50%
 Processor[1].matches 50%
 
 processors_per_packet=4
-cycles_per_packet=232
-ns_per_packet=86
-ns_per_packet_per_processor=22
-packet_rate=11.6M/s
+cycles_per_packet=147
+ns_per_packet=55
+packet_rate=18.3M/s
+ns_per_packet_per_processor=14
 Processor[0].matches 25%
 Processor[1].matches 25%
 Processor[2].matches 25%
 Processor[3].matches 25%
 
 processors_per_packet=8
-cycles_per_packet=395
-ns_per_packet=147
-ns_per_packet_per_processor=18
-packet_rate=6.8M/s
+cycles_per_packet=210
+ns_per_packet=78
+packet_rate=12.8M/s
+ns_per_packet_per_processor=10
 Processor[0].matches 13%
 Processor[1].matches 13%
 Processor[2].matches 13%
@@ -40,10 +40,10 @@ Processor[6].matches 13%
 Processor[7].matches 13%
 
 processors_per_packet=16
-cycles_per_packet=442
-ns_per_packet=164
-ns_per_packet_per_processor=10
-packet_rate=6.1M/s
+cycles_per_packet=331
+ns_per_packet=123
+packet_rate=8.1M/s
+ns_per_packet_per_processor=8
 Processor[0].matches 6%
 Processor[1].matches 6%
 Processor[2].matches 6%
@@ -62,10 +62,10 @@ Processor[14].matches 6%
 Processor[15].matches 6%
 
 processors_per_packet=32
-cycles_per_packet=690
-ns_per_packet=256
-ns_per_packet_per_processor=8
-packet_rate=3.9M/s
+cycles_per_packet=514
+ns_per_packet=191
+packet_rate=5.2M/s
+ns_per_packet_per_processor=6
 Processor[0].matches 3%
 Processor[1].matches 3%
 Processor[2].matches 3%
@@ -100,10 +100,10 @@ Processor[30].matches 3%
 Processor[31].matches 3%
 
 processors_per_packet=64
-cycles_per_packet=738
-ns_per_packet=274
-ns_per_packet_per_processor=4
-packet_rate=3.6M/s
+cycles_per_packet=808
+ns_per_packet=300
+packet_rate=3.3M/s
+ns_per_packet_per_processor=5
 Processor[0].matches 2%
 Processor[1].matches 2%
 Processor[2].matches 2%
@@ -170,10 +170,10 @@ Processor[62].matches 2%
 Processor[63].matches 2%
 
 processors_per_packet=128
-cycles_per_packet=1251
-ns_per_packet=465
+cycles_per_packet=1373
+ns_per_packet=510
+packet_rate=2M/s
 ns_per_packet_per_processor=4
-packet_rate=2.2M/s
 Processor[0].matches 1%
 Processor[1].matches 1%
 Processor[2].matches 1%

@@ -63,7 +63,7 @@ void test(int num_packets, int num_processors)
     struct Packet : ::Header
     {
         using ::Header::Header;
-        char bytes[1460];
+        //char bytes[1460];
     };
 
 std::vector<Packet> packets;
@@ -88,8 +88,7 @@ std::vector<Packet> packets;
     {
         IPv4Address src_ip(1, 1, 1, 1 + i % processors.size());
         IPv4Address dst_ip(1, 1, 2, 1 + i % processors.size());
-        Packet  packet(src_ip, dst_ip, src_port, dst_port);
-        packets.push_back(packet);
+        packets.emplace_back(src_ip, dst_ip, src_port, dst_port);
     }
 
 
@@ -100,7 +99,7 @@ std::vector<Packet> packets;
     auto total_counter = 0ul;
 
     auto start_time = Clock::now();
-    for (const Packet& packet : packets)
+    for (auto& packet : packets)
     {
         total_counter++;
         for (Processor& processor : processors)
@@ -118,8 +117,8 @@ std::vector<Packet> packets;
                 << "\nprocessors_per_packet=" << processors.size()
                 << "\ncycles_per_packet=" << int(0.5 + cycles_per_packet)
                 << "\nns_per_packet=" << int(0.5 + ns_per_packet)
-                << "\nns_per_packet_per_processor=" << int(0.5 + ns_per_packet / processors.size())
                 << "\npacket_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
+                << "\nns_per_packet_per_processor=" << int(0.5 + ns_per_packet / processors.size())
                 << std::endl;
 
     for (Processor& p : processors)

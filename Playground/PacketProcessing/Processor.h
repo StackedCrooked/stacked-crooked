@@ -111,7 +111,10 @@ struct Processor
 
     void process(const uint8_t* frame_bytes, int len)
     {
-        mProcessed += do_process(frame_bytes, len);
+        if (do_process(frame_bytes, len))
+        {
+            mProcessed++;
+        }
     }
 
     std::size_t getMatches() const { return mProcessed; }

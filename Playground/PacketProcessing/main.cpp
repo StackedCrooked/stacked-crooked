@@ -1,12 +1,226 @@
-﻿#include "Processor.h"
+﻿
+#define LIKELY(x)   (__builtin_expect((x), 1))
+#define UNLIKELY(x) (__builtin_expect((x), 0))
+
+
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <chrono>
+#include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <vector>
 
 
+struct Filter
+{
+    void add(uint8_t value, int offset)
+    {
+        mItems.push_back(Item(value, offset));
+    }
+
+    void add(uint16_t value, int offset)
+    {
+        mItems.push_back(Item(value, offset));
+    }
+
+    void add(uint32_t value, int offset)
+    {
+        mItems.push_back(Item(value, offset));
+    }
+
+    bool match(const uint8_t* bytes, int len) const
+    {
+        for (const Item& item : mItems)
+        {
+            auto i = &item - mItems.data(); (void)i;
+            if (!item.match(bytes, len))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+private:
+    struct Item
+    {
+        Item(uint32_t value, int offset) :
+            storage_(value),
+            field_offset_(offset),
+            field_length_(sizeof(value))
+        {
+        }
+
+        Item(uint16_t value, int offset) :
+            storage_(value),
+            field_offset_(offset),
+            field_length_(sizeof(value))
+        {
+        }
+
+        Item(uint8_t value, int offset) :
+            storage_(value),
+            field_offset_(offset),
+            field_length_(sizeof(value))
+        {
+        }
+
+        bool match(const uint8_t* frame, unsigned size) const
+        {
+            if (UNLIKELY(field_length_ + field_offset_ > size))
+            {
+               return false;
+            }
+
+            auto input = frame + field_offset_;
+
+            if (field_length_ == 4) return get_field_32() == *(uint32_t*)(input);
+            if (field_length_ == 2) return get_field_16() == *(uint16_t*)(input);
+            return get_field_8() == *input;
+        }
+
+        const uint8_t* get_field() const { return static_cast<const uint8_t*>(static_cast<const void*>(&storage_)); }
+        uint16_t get_field_8() const { return *static_cast<const uint8_t*>(static_cast<const void*>(&storage_)); }
+        uint16_t get_field_16() const { const void* ptr = &storage_; return *static_cast<const uint16_t*>(ptr); }
+        uint16_t get_field_16(std::size_t i) const { return static_cast<const uint16_t*>(static_cast<const void*>(&storage_))[i]; }
+        uint32_t get_field_32() const { return storage_; }
+
+        uint32_t storage_;
+        uint16_t field_offset_;
+        uint16_t field_length_;
+    };
+
+    std::vector<Item> mItems;
+};
+
+
+
+struct MAC : std::array<uint8_t, 6>
+{
+};
+
+
+struct IPv4Address : std::array<uint8_t, 4>
+{
+    IPv4Address() = default;
+    IPv4Address(int a, int b, int c, int d)
+    {
+        (*this)[0] = a;
+        (*this)[1] = b;
+        (*this)[2] = c;
+        (*this)[3] = d;
+    }
+
+    uint32_t toInteger() const
+    {
+        uint32_t result;
+        memcpy(&result, data(), size());
+        return result;
+    }
+};
+
+
+struct EthernetHeader
+{
+    MAC mDestination;
+    MAC mSource;
+    uint16_t mEtherType;
+};
+
+
+struct IPv4Header
+{
+    std::array<uint8_t, 12> mStuff;
+    IPv4Address mSource;
+    IPv4Address mDestination;
+};
+
+
+struct UDPHeader
+{
+    uint16_t mSourcePort;
+    uint16_t mDestinationPort;
+    uint16_t mSize;
+    uint16_t mChecksum;
+};
+
+
+struct Header
+{
+    Header() = default;
+
+    Header(IPv4Address src, IPv4Address dst, uint16_t src_port, uint16_t dst_port)
+    {
+        mIPv4Header.mSource = src;
+        mIPv4Header.mDestination = dst;
+        mNetworkHeader.mSourcePort = src_port;
+        mNetworkHeader.mDestinationPort = dst_port;
+    }
+
+    Header(uint16_t src_port, uint16_t dst_port)
+    {
+        mNetworkHeader.mSourcePort = src_port;
+        mNetworkHeader.mDestinationPort = dst_port;
+    }
+
+    uint8_t* data() { return static_cast<uint8_t*>(static_cast<void*>(this)); }
+    uint8_t* begin() { return data(); }
+    uint8_t* end() { return data() + sizeof(*this); }
+
+    const uint8_t* data() const { return static_cast<const uint8_t*>(static_cast<const void*>(this)); }
+    const uint8_t* begin() const { return data(); }
+    const uint8_t* end() const { return data() + sizeof(*this); }
+
+    std::size_t size() const { return sizeof(*this); }
+
+    EthernetHeader mEthernetHeader = EthernetHeader();
+    IPv4Header mIPv4Header = IPv4Header();
+    UDPHeader mNetworkHeader = UDPHeader();
+};
+
+
+struct Processor
+{
+    Processor() = default;
+
+    Processor(IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
+    {
+        enum : unsigned
+        {
+            tuple_offset = sizeof(EthernetHeader) + sizeof(IPv4Header) - 2 * sizeof(IPv4Address)
+        };
+
+        unsigned offset = tuple_offset;
+
+        mFilter.add(source_ip.toInteger(), offset); offset += sizeof(source_ip);
+        mFilter.add(target_ip.toInteger(), offset); offset += sizeof(target_ip);
+        mFilter.add(src_port, offset); offset += sizeof(src_port);
+
+        mFilter.add(dst_port, offset);
+    }
+
+    void process(const uint8_t* frame_bytes, int len)
+    {
+        if (do_process(frame_bytes, len))
+        {
+            mProcessed++;
+        }
+    }
+
+    std::size_t getMatches() const { return mProcessed; }
+
+    bool do_process(const uint8_t* frame_bytes, int len)
+    {
+        return mFilter.match(frame_bytes, len);
+    }
+
+
+private:
+    Filter mFilter;
+    uint64_t mProcessed = 0;
+};
 
 volatile const unsigned volatile_zero = 0;
 

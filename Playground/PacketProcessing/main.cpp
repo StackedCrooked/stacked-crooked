@@ -60,10 +60,10 @@ int64_t get_frequency_hz()
 
 void test(int num_packets, int num_processors)
 {
-    struct Packet : ::Header
+    struct Packet : Header
     {
-        using ::Header::Header;
-        char bytes[1460];
+        using Header::Header;
+        char bytes[1536 - sizeof(Header)];
     };
 
 std::vector<Packet> packets;
@@ -117,20 +117,21 @@ std::vector<Packet> packets;
         std::cout
                 << "\nprocessors_per_packet=" << processors.size()
                 << "\ncycles_per_packet=" << int(0.5 + cycles_per_packet)
+                << "\ncycles_per_packet_per_processor=" << int(0.5 + cycles_per_packet / processors.size())
                 << "\nns_per_packet=" << int(0.5 + ns_per_packet)
-                << "\npacket_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
                 << "\nns_per_packet_per_processor=" << int(0.5 + ns_per_packet / processors.size())
+                << "\npacket_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
                 << std::endl;
 
-    #if 0
     for (Processor& p : processors)
     {
         std::cout
-            << "Processor[" << (&p - processors.data()) << "].matches "
+            << "processors[" << (&p - processors.data()) << "].matches="
             << int(0.5 + 100.0 * p.getMatches() / packets.size()) << "%"
-            << std::endl;
+            << '\n';
     }
-    #endif
+
+    std::cout << std::endl;
 
 
 }
@@ -138,7 +139,7 @@ std::vector<Packet> packets;
 int main()
 {
     auto num_packets = 20 * 1000;
-    for (auto num_processors = 1; num_processors <= 128; num_processors *= 2)
+    for (auto num_processors = 1; num_processors <= 16; num_processors *= 2)
     {
         test(num_packets, num_processors);
     }

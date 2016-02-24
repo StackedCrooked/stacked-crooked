@@ -25,6 +25,10 @@ alias epoch_hours='echo $(($(epoch_minutes) / 60))'
 alias epoch_days='echo $(($(epoch_hours) / 24))'
 alias epoch_weeks='echo $(($(epoch_days) / 7))'
 
+alias pbcopy='xclip -selection clipboard'
+alias pbpaste='xclip -selection clipboard -o'
+
+
 
 # In case "current directory on new tab" is broken:
 # Override the cd command to store the current directory 

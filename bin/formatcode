@@ -8,7 +8,6 @@ format_cpp() {
   astyle  \
     --style=allman \
     --attach-namespaces \
-    --attach-inline \
     --close-templates \
     --indent=spaces=4 \
     --indent-switches \
@@ -28,7 +27,6 @@ format_h() {
   astyle  \
     --style=allman \
     --attach-namespaces \
-    --attach-inline \
     --close-templates \
     --indent=spaces=4 \
     --indent-switches \

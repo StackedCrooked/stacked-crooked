@@ -24,10 +24,13 @@ EipcConnection::Finalize()
 }
 
 EipcConnection::EipcConnection()
-: mTcpServer( new QTcpServer( this ) )
+: Base()
+, mTcpServer( new QTcpServer( this ) )
+, mAlpha( 1 )
+, mBeta( 2 )
 {
-	mTcpServer->listen( QHostAddress("Localhost"), 8080 );
-    connect(mTcpServer, SIGNAL(newConnection()), this, SLOT(handleNewConnection()));
+	mTcpServer->listen( QHostAddress( "Localhost" ), 8080 );
+    connect(mTcpServer, SIGNAL( newConnection() ), this, SLOT( handleNewConnection() ) );
 }
 
 EipcConnection::~EipcConnection()

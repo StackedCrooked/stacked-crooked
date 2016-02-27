@@ -32,15 +32,11 @@ EvTabbedDocumentBrowser::EvTabbedDocumentBrowser()
 	connect( mTabBar, SIGNAL( currentChanged ( int ) ), this, SLOT( receiveCurrentChanged( int ) ) );
 	connect( mCloseButton, SIGNAL( clicked() ), this, SLOT( receiveClicked() ) );
 }
+
 EvTabbedDocumentBrowser::~EvTabbedDocumentBrowser()
 {
 
 }
-
-/*void
-EvTabbedDocumentBrowser::mousePressEvent ( QMouseEvent * inMouseEvent )
-{
-}*/
 
 void
 EvTabbedDocumentBrowser::receiveClicked()
@@ -71,7 +67,7 @@ EvTabbedDocumentBrowser::GetSelectedDocument() const
 {
 	int theCurrentIndex = mTabBar->GetCurrentIndex();
 	QTextDocument* theTextDocument = 0;
-	if( theCurrentIndex != -1 )
+	if ( theCurrentIndex != -1 )
 	{
 		theTextDocument = mTabBar->GetDocument( theCurrentIndex );
 	}
@@ -83,7 +79,7 @@ EvTabbedDocumentBrowser::SetSelectedDocument( QTextDocument* inDocument )
 {
 	// Find if the document is already in the tab
 	int theIndex = GetIndexOf( inDocument );
-	if( theIndex != -1 )
+	if ( theIndex != -1 )
 	{
 		mTabBar->SetCurrentIndex( theIndex );
 	}
@@ -131,7 +127,7 @@ void
 EvTabbedDocumentBrowser::RemoveDocument( QTextDocument* inDocument )
 {
 	int theIndex = GetIndexOf( inDocument );
-	if( theIndex != -1 )
+	if ( theIndex != -1 )
 	{
 		mTabBar->RemoveTab( theIndex );
 	}

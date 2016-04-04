@@ -18,6 +18,30 @@ using LocalIP = IPv4Address;
 using RemoteIP = IPv4Address;
 
 
+struct EthernetHeader
+{
+    MACAddress mDestination;
+    MACAddress mSource;
+    uint16_t mEtherType;
+};
+
+
+struct EthernetDecoder
+{
+
+};
+
+
+struct IPv4Header
+{
+};
+
+
+struct IPv4Decoder
+{
+};
+
+
 struct IPv4Stack
 {
     void send_raw(Packet& packet);

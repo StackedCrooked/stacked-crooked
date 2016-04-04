@@ -26,19 +26,156 @@ struct EthernetHeader
 };
 
 
+struct IPv4Header
+{
+};
+
+
+struct ARPHeader
+{
+};
+
+
+struct ARPDecoder
+{
+
+};
+
+
+struct ReceivedData
+{
+    ReceivedData(const uint8_t* data, uint32_t size) :
+        mData_(data),
+        mSize_(size)
+    {
+    }
+
+    const uint8_t* begin() const
+    {
+        return mData_;
+    }
+
+    const uint8_t* end() const
+    {
+        return mData_ + mSize_;
+    }
+
+    uint32_t size() const
+    {
+        return mSize_;
+    }
+
+    const uint8_t* mData_;
+    uint32_t mSize_;
+};
+
+
 struct EthernetDecoder
 {
 
 };
 
 
-struct IPv4Header
+struct IPv4Decoder
 {
 };
 
 
-struct IPv4Decoder
+struct IPv6Decoder
 {
+
+};
+
+
+
+struct TCPHeader
+{
+
+};
+
+
+struct TCPDecoder
+{
+    int getFlags() const;
+};
+
+
+
+struct TCPHandler
+{
+    void handle(TCPDecoder tcpdec, IPv4Decoder ipv4dec)
+    {
+        if (!validate(tcpdec, ipv4dec)) return;
+        do_handle(tcpdec);
+    }
+
+    void handle(TCPDecoder tcpdec, IPv6Decoder ipdec)
+    {
+        if (!validate(tcpdec, ipdec)) return;
+        do_handle(tcpdec);
+    }
+
+private:
+    bool validate(TCPDecoder tcpdec, IPv4Decoder ipdec);
+    bool validate(TCPDecoder tcpdec, IPv6Decoder ipdec);
+
+    void do_handle(TCPDecoder tcpdec)
+    {
+        switch (tcpdec.getFlags() & (SYN|ACK|FIN|RST))
+        {
+            case ACK:
+            {
+                // Dispatch to an existing connection.
+                break;
+            }
+            case SYN:
+            {
+                // If there is an existing connection in syn_received state.
+                    // Retransmit our syn_ack.
+                    // Don't allow this to repeat infinitely.
+
+                // Otherwise create a new connection in syn_received state.
+                break;
+            }
+            case SYN|ACK:
+            {
+                // If we have an existing connection in syn_sent state
+                    // Change state to established.
+                    // Let the TCP begin.
+                break;
+            }
+            case FIN:
+            {
+                // FIN without ACK is not allowed.
+                // RFC does not say if we should send RST.
+                // Sending an RST in response to incorrect packet seems wrong.
+                // We should discard which is the default thing to do with invalid packet.
+                return;
+            }
+            case FIN|ACK:
+            {
+                // If no matching connection found then check RFC if we need to send RST.
+                break;
+            }
+            case RST:
+            {
+                // RST without ACK is less common but valid.
+                break;
+            }
+            case RST|ACK:
+            {
+                // We receive this because we tried to connect to invalid port.
+                // If we have a connection in syn_sent state and the incoming ack
+                // matches the sent sequence number then we destroy this sesssion.
+                break;
+            }
+            default:
+            {
+                // Invalid combination.
+                break;
+            }
+        }
+    }
 };
 
 
@@ -108,11 +245,11 @@ private:
         }
         else if (dec.is_udp())
         {
-            mUDPHandler.handle_unicast(dec);
+            //mUDPHandler.handle_unicast(dec);
         }
         else if (dec.is_icmp())
         {
-            mICMPHandler.handle_unicast(dec);
+            //mICMPHandler.handle_unicast(dec);
         }
     }
 
@@ -134,7 +271,7 @@ private:
         }
     }
 
-    void handle_ip_unicast(const EthernetDecoder& dec);
+    void handle_ip_unicast(const EthernetDecoder& dec)
     {
         // Should be ARP REPLY
     }
@@ -151,13 +288,13 @@ private:
 
     LocalMAC mLocalMAC;
     LocalIP  mLocalIP;
-    Gateway  mGateway;
-    Netmask  mNetmask;
+    IPv4Address  mGateway;
+    IPv4Address  mNetmask;
 
     TCPHandler mTCPHandler;
-    UDPHandler mUDPHandler;
-    ICMPHandler mICMPHandler;
-    IGMPHandler mIGMPHandler;
+//    UDPHandler mUDPHandler;
+//    ICMPHandler mICMPHandler;
+//    IGMPHandler mIGMPHandler;
 };
 
 
@@ -210,84 +347,4 @@ private:
     TCPHandler mTCPHandler;
     UDPHandler mUDPHandler;
     // etc..
-};
-
-
-
-
-struct TCPHandler
-{
-    void handle(TCPDecoder tcpdec, IPv4Decoder ipv4dec)
-    {
-        if (!validate(tcpdec, ipv4dec)) return;
-        do_handle(tcpdec);
-    }
-
-    void handle(TCPDecoder tcpdec, IPv6Decoder ipdec)
-    {
-        if (!validate(tcpdec, ipv6dec)) return;
-        do_handle(tcpdec);
-    }
-
-private:
-    bool validate(TCPDecoder tcpdec, IPv4Decoder ipdec);
-    bool validate(TCPDecoder tcpdec, IPv6Decoder ipdec);
-
-    void do_handle(TCPDecoder tcpdec)
-    {
-        switch (tcpdec.getFlags() & (SYN|ACK|FIN|RST))
-        {
-            case ACK:
-            {
-                // Dispatch to an existing connection.
-                break;
-            }
-            case SYN:
-            {
-                // If there is an existing connection in syn_received state.
-                    // Retransmit our syn_ack.
-                    // Don't allow this to repeat infinitely.
-
-                // Otherwise create a new connection in syn_received state.
-                break;
-            }
-            case SYN|ACK:
-            {
-                // If we have an existing connection in syn_sent state
-                    // Change state to established.
-                    // Let the TCP begin.
-                break;
-            }
-            case FIN:
-            {
-                // FIN without ACK is not allowed.
-                // RFC does not say if we should send RST.
-                // Sending an RST in response to incorrect packet seems wrong.
-                // We should discard which is the default thing to do with invalid packet.
-                return;
-            }
-            case FIN|ACK:
-            {
-                // If no matching connection found then check RFC if we need to send RST.
-                break;
-            }
-            case RST:
-            {
-                // RST without ACK is less common but valid.
-                break;
-            }
-            case RST|ACK:
-            {
-                // We receive this because we tried to connect to invalid port.
-                // If we have a connection in syn_sent state and the incoming ack
-                // matches the sent sequence number then we destroy this sesssion.
-                break;
-            }
-            default:
-            {
-                // Invalid combination.
-                break;
-            }
-        }
-    }
 };

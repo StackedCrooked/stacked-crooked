@@ -313,10 +313,29 @@ std::vector<Packet> packets;
     auto total_counter = 0ul;
 
     auto start_time = Clock::now();
+
+#if PREFETCH == 4
+    for (auto i = 0ul; i != packets.size(); i += 4)
+    {
+        __builtin_prefetch(packets[i+4].data(), 0, 0);
+        __builtin_prefetch(packets[i+5].data(), 0, 0);
+        __builtin_prefetch(packets[i+6].data(), 0, 0);
+        __builtin_prefetch(packets[i+7].data(), 0, 0);
+        total_counter += 4;
+        for (Processor& processor : processors)
+        {
+            processor.process(packets[i+0].data(), packets[i+0].size());
+            processor.process(packets[i+1].data(), packets[i+1].size());
+            processor.process(packets[i+2].data(), packets[i+2].size());
+            processor.process(packets[i+3].data(), packets[i+3].size());
+        }
+    }
+
+#elif PREFETCH == 2
     for (auto i = 0ul; i != packets.size(); i += 2)
     {
-        __builtin_prefetch(packets[i+2].data(), 0, 0);
         __builtin_prefetch(packets[i+3].data(), 0, 0);
+        __builtin_prefetch(packets[i+4].data(), 0, 0);
         total_counter += 2;
         for (Processor& processor : processors)
         {
@@ -324,6 +343,28 @@ std::vector<Packet> packets;
             processor.process(packets[i+1].data(), packets[i+1].size());
         }
     }
+#elif PREFETCH == 1
+    for (auto i = 0ul; i != packets.size(); i += 1)
+    {
+        total_counter += 1;
+        for (Processor& processor : processors)
+        {
+            __builtin_prefetch(packets[i+1].data(), 0, 0);
+            processor.process(packets[i+0].data(), packets[i+0].size());
+        }
+    }
+ #elif PREFETCH == 0
+    for (auto i = 0ul; i != packets.size(); i += 1)
+    {
+        total_counter += 1;
+        for (Processor& processor : processors)
+        {
+            processor.process(packets[i+0].data(), packets[i+0].size());
+        }
+    }
+#endif
+
+
     auto elapsed_time = Clock::now() - start_time;
 
     auto cycles_per_packet = 1.0 * elapsed_time / packets.size();
@@ -331,7 +372,7 @@ std::vector<Packet> packets;
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
         std::cout
-                << "\nPROCESSOR COUNT: " << processors.size()
+                << "\nPACKET PROCESSOR COUNT: " << processors.size() << " PREFETCH=" << PREFETCH
                 << "\ncycles_per_packet=" << int(0.5 + cycles_per_packet)
                 << "\ncycles_per_packet_per_processor=" << int(0.5 + cycles_per_packet / processors.size())
                 << "\nns_per_packet=" << int(0.5 + ns_per_packet)
@@ -354,7 +395,7 @@ std::vector<Packet> packets;
 
 int main()
 {
-    auto num_packets = 20 * 1000;
+    auto num_packets = 200 * 1000;
     for (auto num_processors = 1; num_processors <= 16; num_processors *= 2)
     {
         test(num_packets, num_processors);

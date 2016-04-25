@@ -313,13 +313,15 @@ std::vector<Packet> packets;
     auto total_counter = 0ul;
 
     auto start_time = Clock::now();
-    for (auto& packet : packets)
+    for (auto i = 0ul; i != packets.size(); i += 2)
     {
-        __builtin_prefetch(packet.data() + 14 + 18 + 1 * sizeof(Packet), 0, 0);
-        total_counter++;
+        __builtin_prefetch(packets[i+2].data(), 0, 0);
+        __builtin_prefetch(packets[i+3].data(), 0, 0);
+        total_counter += 2;
         for (Processor& processor : processors)
         {
-            processor.process(packet.data(), packet.size());
+            processor.process(packets[i+0].data(), packets[i+0].size());
+            processor.process(packets[i+1].data(), packets[i+1].size());
         }
     }
     auto elapsed_time = Clock::now() - start_time;

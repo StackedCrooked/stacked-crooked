@@ -322,10 +322,10 @@ std::vector<Packet> packets;
         __builtin_prefetch(packets[i+10].data(), 0, 0);
         __builtin_prefetch(packets[i+11].data(), 0, 0);
 
-        __builtin_prefetch(packets[i+12].data(), 0, 1);
-        __builtin_prefetch(packets[i+13].data(), 0, 1);
-        __builtin_prefetch(packets[i+14].data(), 0, 1);
-        __builtin_prefetch(packets[i+15].data(), 0, 1);
+        __builtin_prefetch(packets[i+12].data(), 0, 0);
+        __builtin_prefetch(packets[i+13].data(), 0, 0);
+        __builtin_prefetch(packets[i+14].data(), 0, 0);
+        __builtin_prefetch(packets[i+15].data(), 0, 0);
         total_counter += 8;
         for (Processor& processor : processors)
         {

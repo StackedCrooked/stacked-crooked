@@ -280,7 +280,7 @@ void test(int num_packets, int num_processors)
         char bytes[1536 - sizeof(Header)];
     };
 
-std::vector<Packet> packets;
+    std::vector<Packet> packets;
     packets.reserve(num_packets);
 
     std::vector<Processor> processors;
@@ -314,7 +314,47 @@ std::vector<Packet> packets;
 
     auto start_time = Clock::now();
 
-#if PREFETCH == 8
+#if PREFETCH == 16
+    for (auto i = 0ul; i != packets.size(); i += 16)
+    {
+        __builtin_prefetch(packets[i+16].data(), 0, 0);
+        __builtin_prefetch(packets[i+17].data(), 0, 0);
+        __builtin_prefetch(packets[i+18].data(), 0, 0);
+        __builtin_prefetch(packets[i+19].data(), 0, 0);
+        __builtin_prefetch(packets[i+20].data(), 0, 0);
+        __builtin_prefetch(packets[i+21].data(), 0, 0);
+        __builtin_prefetch(packets[i+22].data(), 0, 0);
+        __builtin_prefetch(packets[i+23].data(), 0, 0);
+        __builtin_prefetch(packets[i+24].data(), 0, 0);
+        __builtin_prefetch(packets[i+25].data(), 0, 0);
+        __builtin_prefetch(packets[i+26].data(), 0, 0);
+        __builtin_prefetch(packets[i+27].data(), 0, 0);
+        __builtin_prefetch(packets[i+28].data(), 0, 0);
+        __builtin_prefetch(packets[i+29].data(), 0, 0);
+        __builtin_prefetch(packets[i+30].data(), 0, 0);
+        __builtin_prefetch(packets[i+31].data(), 0, 0);
+        total_counter += 16;
+        for (Processor& processor : processors)
+        {
+            processor.process(packets[i+0].data(), packets[i+0].size());
+            processor.process(packets[i+1].data(), packets[i+1].size());
+            processor.process(packets[i+2].data(), packets[i+2].size());
+            processor.process(packets[i+3].data(), packets[i+3].size());
+            processor.process(packets[i+4].data(), packets[i+4].size());
+            processor.process(packets[i+5].data(), packets[i+5].size());
+            processor.process(packets[i+6].data(), packets[i+6].size());
+            processor.process(packets[i+7].data(), packets[i+7].size());
+            processor.process(packets[i+8].data(), packets[i+8].size());
+            processor.process(packets[i+9].data(), packets[i+9].size());
+            processor.process(packets[i+10].data(), packets[i+10].size());
+            processor.process(packets[i+11].data(), packets[i+11].size());
+            processor.process(packets[i+12].data(), packets[i+12].size());
+            processor.process(packets[i+13].data(), packets[i+13].size());
+            processor.process(packets[i+14].data(), packets[i+14].size());
+            processor.process(packets[i+15].data(), packets[i+15].size());
+        }
+    }
+#elif PREFETCH == 8
     for (auto i = 0ul; i != packets.size(); i += 8)
     {
         __builtin_prefetch(packets[i+ 8].data(), 0, 0);
@@ -420,7 +460,7 @@ std::vector<Packet> packets;
 
 int main()
 {
-    auto num_packets = 200 * 1000;
+    auto num_packets = 200 * 1024;
     for (auto num_processors = 1; num_processors <= 16; num_processors *= 2)
     {
         test(num_packets, num_processors);

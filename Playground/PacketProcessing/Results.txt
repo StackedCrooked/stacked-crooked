@@ -1,42 +1,42 @@
 
 
-PACKET PROCESSOR COUNT: 1 PREFETCH=4
-cycles_per_packet=57
-cycles_per_packet_per_processor=57
-ns_per_packet=16
-ns_per_packet_per_processor=16
-packet_rate=61.1M/s
+PACKET PROCESSOR COUNT: 1 PREFETCH=8
+cycles_per_packet=42
+cycles_per_packet_per_processor=42
+ns_per_packet=12
+ns_per_packet_per_processor=12
+packet_rate=82.7M/s
 processors[0].matches=100%
 
 
-PACKET PROCESSOR COUNT: 2 PREFETCH=4
-cycles_per_packet=69
-cycles_per_packet_per_processor=34
-ns_per_packet=20
-ns_per_packet_per_processor=10
-packet_rate=51M/s
+PACKET PROCESSOR COUNT: 2 PREFETCH=8
+cycles_per_packet=79
+cycles_per_packet_per_processor=40
+ns_per_packet=23
+ns_per_packet_per_processor=11
+packet_rate=44.2M/s
 processors[0].matches=50%
 processors[1].matches=50%
 
 
-PACKET PROCESSOR COUNT: 4 PREFETCH=4
-cycles_per_packet=97
-cycles_per_packet_per_processor=24
-ns_per_packet=28
-ns_per_packet_per_processor=7
-packet_rate=36.2M/s
+PACKET PROCESSOR COUNT: 4 PREFETCH=8
+cycles_per_packet=80
+cycles_per_packet_per_processor=20
+ns_per_packet=23
+ns_per_packet_per_processor=6
+packet_rate=43.6M/s
 processors[0].matches=25%
 processors[1].matches=25%
 processors[2].matches=25%
 processors[3].matches=25%
 
 
-PACKET PROCESSOR COUNT: 8 PREFETCH=4
-cycles_per_packet=116
-cycles_per_packet_per_processor=14
-ns_per_packet=33
+PACKET PROCESSOR COUNT: 8 PREFETCH=8
+cycles_per_packet=102
+cycles_per_packet_per_processor=13
+ns_per_packet=29
 ns_per_packet_per_processor=4
-packet_rate=30.1M/s
+packet_rate=34.4M/s
 processors[0].matches=13%
 processors[1].matches=13%
 processors[2].matches=13%
@@ -47,12 +47,12 @@ processors[6].matches=13%
 processors[7].matches=13%
 
 
-PACKET PROCESSOR COUNT: 16 PREFETCH=4
-cycles_per_packet=154
-cycles_per_packet_per_processor=10
-ns_per_packet=44
-ns_per_packet_per_processor=3
-packet_rate=22.7M/s
+PACKET PROCESSOR COUNT: 16 PREFETCH=8
+cycles_per_packet=127
+cycles_per_packet_per_processor=8
+ns_per_packet=36
+ns_per_packet_per_processor=2
+packet_rate=27.6M/s
 processors[0].matches=6%
 processors[1].matches=6%
 processors[2].matches=6%

@@ -1,42 +1,42 @@
 
 
-PACKET PROCESSOR COUNT: 1 PREFETCH=8
-cycles_per_packet=42
-cycles_per_packet_per_processor=42
-ns_per_packet=12
-ns_per_packet_per_processor=12
-packet_rate=82.7M/s
+PACKET PROCESSOR COUNT: 1 PREFETCH=4
+cycles_per_packet=34
+cycles_per_packet_per_processor=34
+ns_per_packet=13
+ns_per_packet_per_processor=13
+packet_rate=79.8M/s
 processors[0].matches=100%
 
 
-PACKET PROCESSOR COUNT: 2 PREFETCH=8
-cycles_per_packet=79
-cycles_per_packet_per_processor=40
-ns_per_packet=23
-ns_per_packet_per_processor=11
-packet_rate=44.2M/s
+PACKET PROCESSOR COUNT: 2 PREFETCH=4
+cycles_per_packet=42
+cycles_per_packet_per_processor=21
+ns_per_packet=15
+ns_per_packet_per_processor=8
+packet_rate=64.8M/s
 processors[0].matches=50%
 processors[1].matches=50%
 
 
-PACKET PROCESSOR COUNT: 4 PREFETCH=8
-cycles_per_packet=80
-cycles_per_packet_per_processor=20
-ns_per_packet=23
-ns_per_packet_per_processor=6
-packet_rate=43.6M/s
+PACKET PROCESSOR COUNT: 4 PREFETCH=4
+cycles_per_packet=56
+cycles_per_packet_per_processor=14
+ns_per_packet=21
+ns_per_packet_per_processor=5
+packet_rate=48M/s
 processors[0].matches=25%
 processors[1].matches=25%
 processors[2].matches=25%
 processors[3].matches=25%
 
 
-PACKET PROCESSOR COUNT: 8 PREFETCH=8
-cycles_per_packet=102
-cycles_per_packet_per_processor=13
-ns_per_packet=29
-ns_per_packet_per_processor=4
-packet_rate=34.4M/s
+PACKET PROCESSOR COUNT: 8 PREFETCH=4
+cycles_per_packet=69
+cycles_per_packet_per_processor=9
+ns_per_packet=26
+ns_per_packet_per_processor=3
+packet_rate=38.9M/s
 processors[0].matches=13%
 processors[1].matches=13%
 processors[2].matches=13%
@@ -47,12 +47,12 @@ processors[6].matches=13%
 processors[7].matches=13%
 
 
-PACKET PROCESSOR COUNT: 16 PREFETCH=8
-cycles_per_packet=127
-cycles_per_packet_per_processor=8
-ns_per_packet=36
+PACKET PROCESSOR COUNT: 16 PREFETCH=4
+cycles_per_packet=94
+cycles_per_packet_per_processor=6
+ns_per_packet=35
 ns_per_packet_per_processor=2
-packet_rate=27.6M/s
+packet_rate=28.7M/s
 processors[0].matches=6%
 processors[1].matches=6%
 processors[2].matches=6%

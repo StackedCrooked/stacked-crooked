@@ -314,7 +314,32 @@ std::vector<Packet> packets;
 
     auto start_time = Clock::now();
 
-#if PREFETCH == 4
+#if PREFETCH == 8
+    for (auto i = 0ul; i != packets.size(); i += 8)
+    {
+        __builtin_prefetch(packets[i+ 8].data(), 0, 0);
+        __builtin_prefetch(packets[i+ 9].data(), 0, 0);
+        __builtin_prefetch(packets[i+10].data(), 0, 0);
+        __builtin_prefetch(packets[i+11].data(), 0, 0);
+
+        __builtin_prefetch(packets[i+12].data(), 0, 1);
+        __builtin_prefetch(packets[i+13].data(), 0, 1);
+        __builtin_prefetch(packets[i+14].data(), 0, 1);
+        __builtin_prefetch(packets[i+15].data(), 0, 1);
+        total_counter += 8;
+        for (Processor& processor : processors)
+        {
+            processor.process(packets[i+0].data(), packets[i+0].size());
+            processor.process(packets[i+1].data(), packets[i+1].size());
+            processor.process(packets[i+2].data(), packets[i+2].size());
+            processor.process(packets[i+3].data(), packets[i+3].size());
+            processor.process(packets[i+4].data(), packets[i+4].size());
+            processor.process(packets[i+5].data(), packets[i+5].size());
+            processor.process(packets[i+6].data(), packets[i+6].size());
+            processor.process(packets[i+7].data(), packets[i+7].size());
+        }
+    }
+#elif PREFETCH == 4
     for (auto i = 0ul; i != packets.size(); i += 4)
     {
         __builtin_prefetch(packets[i+4].data(), 0, 0);

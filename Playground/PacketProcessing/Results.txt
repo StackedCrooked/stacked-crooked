@@ -1,42 +1,42 @@
 
 
-PACKET PROCESSOR COUNT: 1 PREFETCH=1
-cycles_per_packet=108
-cycles_per_packet_per_processor=108
-ns_per_packet=31
-ns_per_packet_per_processor=31
-packet_rate=32.2M/s
+PACKET PROCESSOR COUNT: 1 PREFETCH=4
+cycles_per_packet=57
+cycles_per_packet_per_processor=57
+ns_per_packet=16
+ns_per_packet_per_processor=16
+packet_rate=61.1M/s
 processors[0].matches=100%
 
 
-PACKET PROCESSOR COUNT: 2 PREFETCH=1
-cycles_per_packet=129
-cycles_per_packet_per_processor=65
-ns_per_packet=37
-ns_per_packet_per_processor=19
-packet_rate=27M/s
+PACKET PROCESSOR COUNT: 2 PREFETCH=4
+cycles_per_packet=69
+cycles_per_packet_per_processor=34
+ns_per_packet=20
+ns_per_packet_per_processor=10
+packet_rate=51M/s
 processors[0].matches=50%
 processors[1].matches=50%
 
 
-PACKET PROCESSOR COUNT: 4 PREFETCH=1
-cycles_per_packet=148
-cycles_per_packet_per_processor=37
-ns_per_packet=42
-ns_per_packet_per_processor=11
-packet_rate=23.7M/s
+PACKET PROCESSOR COUNT: 4 PREFETCH=4
+cycles_per_packet=97
+cycles_per_packet_per_processor=24
+ns_per_packet=28
+ns_per_packet_per_processor=7
+packet_rate=36.2M/s
 processors[0].matches=25%
 processors[1].matches=25%
 processors[2].matches=25%
 processors[3].matches=25%
 
 
-PACKET PROCESSOR COUNT: 8 PREFETCH=1
-cycles_per_packet=176
-cycles_per_packet_per_processor=22
-ns_per_packet=50
-ns_per_packet_per_processor=6
-packet_rate=19.8M/s
+PACKET PROCESSOR COUNT: 8 PREFETCH=4
+cycles_per_packet=116
+cycles_per_packet_per_processor=14
+ns_per_packet=33
+ns_per_packet_per_processor=4
+packet_rate=30.1M/s
 processors[0].matches=13%
 processors[1].matches=13%
 processors[2].matches=13%
@@ -47,12 +47,12 @@ processors[6].matches=13%
 processors[7].matches=13%
 
 
-PACKET PROCESSOR COUNT: 16 PREFETCH=1
-cycles_per_packet=237
-cycles_per_packet_per_processor=15
-ns_per_packet=68
-ns_per_packet_per_processor=4
-packet_rate=14.8M/s
+PACKET PROCESSOR COUNT: 16 PREFETCH=4
+cycles_per_packet=154
+cycles_per_packet_per_processor=10
+ns_per_packet=44
+ns_per_packet_per_processor=3
+packet_rate=22.7M/s
 processors[0].matches=6%
 processors[1].matches=6%
 processors[2].matches=6%

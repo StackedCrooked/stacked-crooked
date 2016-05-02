@@ -1,4 +1,5 @@
 #include "example.h"
+#include <algorithm>
 
 int fact(int n) {
     if (n < 0){ /* This should probably return an error, but this is simpler */
@@ -13,3 +14,7 @@ int fact(int n) {
     }
 }
 
+int sum(const std::vector<int>& vec)
+{
+    return std::accumulate(vec.begin(), vec.end(), 0);
+}

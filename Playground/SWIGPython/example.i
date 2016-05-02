@@ -1,9 +1,11 @@
 /* File: example.i */
 %module example
 
+%include <std_vector.i>
+
 %{
-#define SWIG_FILE_WITH_INIT
 #include "example.h"
 %}
 
-int fact(int n);
+%include "example.h"
+

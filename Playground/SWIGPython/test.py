@@ -3,4 +3,12 @@ import example
 
 print example.fact(4)
 print example.accumulate
-#print example.sum([1,2,3])
+
+
+v = example.IntVector()
+v.push_back(1)
+v.push_back(2)
+v.push_back(3)
+
+print example.accumulate(v)
+

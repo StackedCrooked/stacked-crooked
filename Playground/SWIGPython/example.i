@@ -9,3 +9,6 @@
 
 %include "example.h"
 
+%include "std_vector.i"
+
+%template(IntVector)    std::vector<int>;

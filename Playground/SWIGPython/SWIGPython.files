@@ -2,4 +2,4 @@ build.sh
 example.cpp
 example.h
 example.i
-test.py
+run.py

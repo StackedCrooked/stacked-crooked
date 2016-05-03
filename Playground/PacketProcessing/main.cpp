@@ -15,15 +15,11 @@
 
 struct Filter
 {
-    void add(uint8_t value, int offset)
-    {
-        mItems.push_back(Item(value, offset));
-    }
-
-    void add(uint16_t value, int offset)
-    {
-        mItems.push_back(Item(value, offset));
-    }
+    void add(int8_t value, int offset) = delete;
+    void add(int16_t value, int offset) = delete;
+    void add(int32_t value, int offset) = delete;
+    void add(uint8_t value, int offset) = delete;
+    void add(uint16_t value, int offset) = delete;
 
     void add(uint32_t value, int offset)
     {
@@ -53,19 +49,11 @@ private:
         {
         }
 
-        Item(uint16_t value, int offset) :
-            storage_(value),
-            field_offset_(offset),
-            field_length_(sizeof(value))
-        {
-        }
-
-        Item(uint8_t value, int offset) :
-            storage_(value),
-            field_offset_(offset),
-            field_length_(sizeof(value))
-        {
-        }
+        Item(int32_t value, int offset) = delete;
+        Item(int16_t value, int offset) = delete;
+        Item(int8_t value, int offset) = delete;
+        Item(uint16_t value, int offset) = delete;
+        Item(uint8_t value, int offset) = delete;
 
         bool match(const uint8_t* frame, unsigned size) const
         {
@@ -194,11 +182,24 @@ struct Processor
 
         unsigned offset = tuple_offset;
 
-        mFilter.add(source_ip.toInteger(), offset); offset += sizeof(source_ip);
-        mFilter.add(target_ip.toInteger(), offset); offset += sizeof(target_ip);
-        mFilter.add(src_port, offset); offset += sizeof(src_port);
+        mFilter.add(source_ip.toInteger(), offset);
+        offset += sizeof(source_ip);
 
-        mFilter.add(dst_port, offset);
+        mFilter.add(target_ip.toInteger(), offset);
+        offset += sizeof(target_ip);
+
+        union
+        {
+            uint32_t src_dst_port;
+            uint16_t ports[2];
+        };
+
+        ports[0] = src_port;
+        ports[1] = dst_port;
+
+        mFilter.add(src_dst_port, offset);
+        offset += sizeof(src_dst_port);
+
     }
 
     void process(const uint8_t* frame_bytes, int len)

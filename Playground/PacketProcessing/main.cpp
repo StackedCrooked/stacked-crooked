@@ -57,16 +57,9 @@ private:
 
         bool match(const uint8_t* frame, unsigned size) const
         {
-            if (UNLIKELY(field_length_ + field_offset_ > size))
-            {
-               return false;
-            }
-
-            auto input = frame + field_offset_;
-
-            if (field_length_ == 4) return get_field_32() == *(uint32_t*)(input);
-            if (field_length_ == 2) return get_field_16() == *(uint16_t*)(input);
-            return get_field_8() == *input;
+            if (size < field_offset_ + field_length_) return false;
+        
+            return get_field_32() == *reinterpret_cast<const uint32_t*>(frame + field_offset_);
         }
 
         const uint8_t* get_field() const { return static_cast<const uint8_t*>(static_cast<const void*>(&storage_)); }

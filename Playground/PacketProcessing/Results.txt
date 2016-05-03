@@ -1,58 +1,32 @@
 
 
 PACKET PROCESSOR COUNT: 1 PREFETCH=4
-cycles_per_packet=44
-cycles_per_packet_per_processor=44
+cycles_per_packet=42
+cycles_per_packet_per_processor=42
 ns_per_packet=16
 ns_per_packet_per_processor=16
-packet_rate=61.3M/s
+packet_rate=63.8M/s
 processors[0].matches=100%
 
 
-PACKET PROCESSOR COUNT: 2 PREFETCH=4
-cycles_per_packet=58
-cycles_per_packet_per_processor=29
-ns_per_packet=21
-ns_per_packet_per_processor=11
-packet_rate=46.6M/s
-processors[0].matches=50%
-processors[1].matches=50%
-
-
 PACKET PROCESSOR COUNT: 4 PREFETCH=4
-cycles_per_packet=77
-cycles_per_packet_per_processor=19
-ns_per_packet=29
-ns_per_packet_per_processor=7
-packet_rate=35M/s
+cycles_per_packet=62
+cycles_per_packet_per_processor=16
+ns_per_packet=23
+ns_per_packet_per_processor=6
+packet_rate=43.3M/s
 processors[0].matches=25%
 processors[1].matches=25%
 processors[2].matches=25%
 processors[3].matches=25%
 
 
-PACKET PROCESSOR COUNT: 8 PREFETCH=4
-cycles_per_packet=103
-cycles_per_packet_per_processor=13
-ns_per_packet=38
-ns_per_packet_per_processor=5
-packet_rate=26M/s
-processors[0].matches=13%
-processors[1].matches=13%
-processors[2].matches=13%
-processors[3].matches=13%
-processors[4].matches=13%
-processors[5].matches=13%
-processors[6].matches=13%
-processors[7].matches=13%
-
-
 PACKET PROCESSOR COUNT: 16 PREFETCH=4
-cycles_per_packet=169
-cycles_per_packet_per_processor=11
-ns_per_packet=63
-ns_per_packet_per_processor=4
-packet_rate=16M/s
+cycles_per_packet=139
+cycles_per_packet_per_processor=9
+ns_per_packet=52
+ns_per_packet_per_processor=3
+packet_rate=19.3M/s
 processors[0].matches=6%
 processors[1].matches=6%
 processors[2].matches=6%

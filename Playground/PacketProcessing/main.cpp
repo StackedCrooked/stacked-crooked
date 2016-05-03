@@ -315,7 +315,9 @@ void test(int num_packets, int num_processors)
     for (auto i = 0ul; i != packets.size(); i += 1)
     {
         total_counter += 1;
-        __builtin_prefetch(packets[i+4].data(), 0, 0);
+        #if PREFETCH
+        __builtin_prefetch(packets[i+PREFETCH].data(), 0, 0);
+        #endif
         for (Processor& processor : processors)
         {
             processor.process(packets[i+0].data(), packets[i+0].size());
@@ -353,7 +355,7 @@ void test(int num_packets, int num_processors)
 int main()
 {
     auto num_packets = 200 * 1024;
-    for (auto num_processors = 1; num_processors <= 16; num_processors *= 2)
+    for (auto num_processors = 1; num_processors <= 4; num_processors *= 2)
     {
         test(num_packets, num_processors);
     }

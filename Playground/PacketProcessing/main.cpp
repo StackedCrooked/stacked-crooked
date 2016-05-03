@@ -59,14 +59,8 @@ private:
         {
             if (size < field_offset_ + field_length_) return false;
         
-            return get_field_32() == *reinterpret_cast<const uint32_t*>(frame + field_offset_);
+            return storage_ == *reinterpret_cast<const uint32_t*>(frame + field_offset_);
         }
-
-        const uint8_t* get_field() const { return static_cast<const uint8_t*>(static_cast<const void*>(&storage_)); }
-        uint16_t get_field_8() const { return *static_cast<const uint8_t*>(static_cast<const void*>(&storage_)); }
-        uint16_t get_field_16() const { const void* ptr = &storage_; return *static_cast<const uint16_t*>(ptr); }
-        uint16_t get_field_16(std::size_t i) const { return static_cast<const uint16_t*>(static_cast<const void*>(&storage_))[i]; }
-        uint32_t get_field_32() const { return storage_; }
 
         uint32_t storage_;
         uint16_t field_offset_;

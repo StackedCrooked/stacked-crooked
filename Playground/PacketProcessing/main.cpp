@@ -255,13 +255,10 @@ void test(int num_packets, int num_flows, int prefetch)
 
     //std::random_shuffle(packets.begin(), packets.end());
 
-    auto total_counter = 0ul;
-
     auto start_time = Clock::now();
 
     for (auto i = 0ul; i != packets.size(); i += 1)
     {
-        total_counter += 1;
         __builtin_prefetch(packets[i+prefetch].data(), 0, 0);
         for (Flow& flow : flows)
         {

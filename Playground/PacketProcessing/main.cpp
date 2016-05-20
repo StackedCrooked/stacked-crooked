@@ -224,7 +224,7 @@ void test(int num_packets, int num_flows, int prefetch)
     struct Packet : Header
     {
         using Header::Header;
-        char bytes[1536 - sizeof(Header)];
+        char bytes[512 * 3 - sizeof(Header)];
     };
 
     std::vector<Packet> packets;
@@ -241,8 +241,8 @@ void test(int num_packets, int num_flows, int prefetch)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i);
         IPv4Address dst_ip(1, 1, 2, 1 + i);
-        Flow proc(src_ip, dst_ip, src_port, dst_port);
-        flows.push_back(proc);
+        Flow flow(src_ip, dst_ip, src_port, dst_port);
+        flows.push_back(flow);
     }
 
     for (auto i = 1ul; i <= packets.capacity(); ++i)
@@ -263,9 +263,9 @@ void test(int num_packets, int num_flows, int prefetch)
     {
         total_counter += 1;
         __builtin_prefetch(packets[i+prefetch].data(), 0, 0);
-        for (Flow& processor : flows)
+        for (Flow& flow : flows)
         {
-            processor.match(packets[i].data(), packets[i].size());
+            flow.match(packets[i].data(), packets[i].size());
         }
     }
 
@@ -278,7 +278,7 @@ void test(int num_packets, int num_flows, int prefetch)
     std::cout
             << "num_flows: " << flows.size()
             << " prefetch=" << prefetch
-            << " cycles_per_packet_per_processor=" << int(0.5 + cycles_per_packet / flows.size())
+            << " cycles_per_packet_per_flow=" << int(0.5 + cycles_per_packet / flows.size())
             << " packet_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
             ;
 

@@ -156,11 +156,11 @@ struct Header
 };
 
 
-struct Processor
+struct Flow
 {
-    Processor() = default;
+    Flow() = default;
 
-    Processor(IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
+    Flow(IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
     {
         enum : unsigned
         {
@@ -189,9 +189,9 @@ struct Processor
 
     }
 
-    void process(const uint8_t* frame_bytes, int len)
+    void match(const uint8_t* frame_bytes, int len)
     {
-        if (do_process(frame_bytes, len))
+        if (do_match(frame_bytes, len))
         {
             mProcessed++;
         }
@@ -199,7 +199,7 @@ struct Processor
 
     std::size_t getMatches() const { return mProcessed; }
 
-    bool do_process(const uint8_t* frame_bytes, int len)
+    bool do_match(const uint8_t* frame_bytes, int len)
     {
         return mFilter.match(frame_bytes, len);
     }
@@ -260,7 +260,7 @@ int64_t get_frequency_hz()
 
 
 
-void test(int num_packets, int num_processors)
+void test(int num_packets, int num_flows)
 {
     struct Packet : Header
     {
@@ -271,25 +271,25 @@ void test(int num_packets, int num_processors)
     std::vector<Packet> packets;
     packets.reserve(num_packets);
 
-    std::vector<Processor> processors;
-    processors.reserve(num_processors);
+    std::vector<Flow> flows;
+    flows.reserve(num_flows);
 
     uint16_t src_port = 1024;
     uint16_t dst_port = 1024;
 
 
-    for (auto i = 0ul; i < processors.capacity(); ++i)
+    for (auto i = 0ul; i < flows.capacity(); ++i)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i);
         IPv4Address dst_ip(1, 1, 2, 1 + i);
-        Processor proc(src_ip, dst_ip, src_port, dst_port);
-        processors.push_back(proc);
+        Flow proc(src_ip, dst_ip, src_port, dst_port);
+        flows.push_back(proc);
     }
 
     for (auto i = 1ul; i <= packets.capacity(); ++i)
     {
-        IPv4Address src_ip(1, 1, 1, 1 + i % processors.size());
-        IPv4Address dst_ip(1, 1, 2, 1 + i % processors.size());
+        IPv4Address src_ip(1, 1, 1, 1 + i % flows.size());
+        IPv4Address dst_ip(1, 1, 2, 1 + i % flows.size());
         packets.emplace_back(src_ip, dst_ip, src_port, dst_port);
     }
 
@@ -306,9 +306,9 @@ void test(int num_packets, int num_processors)
         #if PREFETCH
         __builtin_prefetch(packets[i+PREFETCH].data(), 0, 0);
         #endif
-        for (Processor& processor : processors)
+        for (Flow& processor : flows)
         {
-            processor.process(packets[i+0].data(), packets[i+0].size());
+            processor.match(packets[i+0].data(), packets[i+0].size());
         }
     }
 
@@ -318,33 +318,31 @@ void test(int num_packets, int num_processors)
     auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
-        std::cout
-                << "\nPACKET PROCESSOR COUNT: " << processors.size() << " PREFETCH=" << PREFETCH
-                << "\ncycles_per_packet=" << int(0.5 + cycles_per_packet)
-                << "\ncycles_per_packet_per_processor=" << int(0.5 + cycles_per_packet / processors.size())
-                << "\nns_per_packet=" << int(0.5 + ns_per_packet)
-                << "\nns_per_packet_per_processor=" << int(0.5 + ns_per_packet / processors.size())
-                << "\npacket_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
-                << std::endl;
+    std::cout
+            << "num_flows: " << flows.size()
+            << " prefetch=" << PREFETCH
+            << " cycles_per_packet_per_processor=" << int(0.5 + cycles_per_packet / flows.size())
+            << " packet_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
+            << std::endl;
 
-    for (Processor& p : processors)
+    #if 0
+    for (Flow& p : flows)
     {
         std::cout
-            << "processors[" << (&p - processors.data()) << "].matches="
+            << "flows[" << (&p - flows.data()) << "].matches="
             << int(0.5 + 100.0 * p.getMatches() / packets.size()) << "%"
             << '\n';
     }
-
-    std::cout << std::endl;
-
+    #endif
 
 }
 
 int main()
 {
     auto num_packets = 200 * 1024;
-    for (auto num_processors = 1; num_processors <= 4; num_processors *= 2)
+    for (auto num_flows = 1; num_flows <= 4; num_flows *= 2)
     {
-        test(num_packets, num_processors);
+        test(num_packets, num_flows);
     }
+    std::cout << std::endl;
 }

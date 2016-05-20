@@ -1,75 +1,13 @@
-﻿
-#define LIKELY(x)   (__builtin_expect((x), 1))
-#define UNLIKELY(x) (__builtin_expect((x), 0))
-
-
-#include <algorithm>
+﻿#include <algorithm>
 #include <array>
 #include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 #include <vector>
-
-
-struct Filter
-{
-    void add(int8_t value, int offset) = delete;
-    void add(int16_t value, int offset) = delete;
-    void add(int32_t value, int offset) = delete;
-    void add(uint8_t value, int offset) = delete;
-    void add(uint16_t value, int offset) = delete;
-
-    void add(uint32_t value, int offset)
-    {
-        mItems.push_back(Item(value, offset));
-    }
-
-    bool match(const uint8_t* bytes, int len) const
-    {
-        for (const Item& item : mItems)
-        {
-            auto i = &item - mItems.data(); (void)i;
-            if (!item.match(bytes, len))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-private:
-    struct Item
-    {
-        Item(uint32_t value, int offset) :
-            storage_(value),
-            field_offset_(offset),
-            field_length_(sizeof(value))
-        {
-        }
-
-        Item(int32_t value, int offset) = delete;
-        Item(int16_t value, int offset) = delete;
-        Item(int8_t value, int offset) = delete;
-        Item(uint16_t value, int offset) = delete;
-        Item(uint8_t value, int offset) = delete;
-
-        bool match(const uint8_t* frame, unsigned size) const
-        {
-            if (size < field_offset_ + field_length_) return false;
-        
-            return storage_ == *reinterpret_cast<const uint32_t*>(frame + field_offset_);
-        }
-
-        uint32_t storage_;
-        uint16_t field_offset_;
-        uint16_t field_length_;
-    };
-
-    std::vector<Item> mItems;
-};
-
+#include <x86intrin.h>
 
 
 struct MAC : std::array<uint8_t, 6>
@@ -122,6 +60,56 @@ struct UDPHeader
 };
 
 
+
+
+
+struct Filter
+{
+    void set(IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    {
+        struct H
+        {
+            uint8_t unused[3] = { 0, 0, 0 };
+            uint8_t protocol = 0;
+            IPv4Address src_ip = IPv4Address();
+            IPv4Address dst_ip = IPv4Address();
+            uint16_t src_port = 0;
+            uint16_t dst_port = 0;
+        };
+
+        auto h = H();
+        h.src_ip = src_ip;
+        h.dst_ip = dst_ip;
+        h.src_port = src_port;
+        h.dst_port = dst_port;
+
+
+        field_ = _mm_loadu_si128((__m128i*)&h.unused[0]);
+
+        uint32_t mask[4] = { 0x00000000, 0xffffffff, 0xffffffff, 0xffffffff };
+        mask_ = _mm_loadu_si128((__m128i*)&mask[0]);
+    }
+
+    bool match(const uint8_t* packet_data) const
+    {
+        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mask_) };
+
+        __m128i mask_result = _mm_cmpeq_epi32(
+            field_,
+            _mm_and_si128(
+                mask_,
+                _mm_loadu_si128((__m128i*)(packet_data + offset)))
+        );
+
+        __m128i compare_result = _mm_cmpeq_epi8(mask_result, _mm_setzero_si128());
+        return _mm_testz_si128(compare_result, compare_result);
+    }
+
+    __m128i field_;
+    __m128i mask_;
+};
+
+
 struct Header
 {
     Header() = default;
@@ -162,47 +150,18 @@ struct Flow
 
     Flow(IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
     {
-        enum : unsigned
-        {
-            tuple_offset = sizeof(EthernetHeader) + sizeof(IPv4Header) - 2 * sizeof(IPv4Address)
-        };
-
-        unsigned offset = tuple_offset;
-
-        mFilter.add(source_ip.toInteger(), offset);
-        offset += sizeof(source_ip);
-
-        mFilter.add(target_ip.toInteger(), offset);
-        offset += sizeof(target_ip);
-
-        union
-        {
-            uint32_t src_dst_port;
-            uint16_t ports[2];
-        };
-
-        ports[0] = src_port;
-        ports[1] = dst_port;
-
-        mFilter.add(src_dst_port, offset);
-        offset += sizeof(src_dst_port);
-
+        mFilter.set(source_ip, target_ip, src_port, dst_port);
     }
 
-    void match(const uint8_t* frame_bytes, int len)
+    void match(const uint8_t* frame_bytes, int /*len*/)
     {
-        if (do_match(frame_bytes, len))
+        if (mFilter.match(frame_bytes))
         {
             mProcessed++;
         }
     }
 
     std::size_t getMatches() const { return mProcessed; }
-
-    bool do_match(const uint8_t* frame_bytes, int len)
-    {
-        return mFilter.match(frame_bytes, len);
-    }
 
 
 private:
@@ -260,7 +219,7 @@ int64_t get_frequency_hz()
 
 
 
-void test(int num_packets, int num_flows)
+void test(int num_packets, int num_flows, int prefetch)
 {
     struct Packet : Header
     {
@@ -294,7 +253,7 @@ void test(int num_packets, int num_flows)
     }
 
 
-    std::random_shuffle(packets.begin(), packets.end());
+    //std::random_shuffle(packets.begin(), packets.end());
 
     auto total_counter = 0ul;
 
@@ -303,12 +262,10 @@ void test(int num_packets, int num_flows)
     for (auto i = 0ul; i != packets.size(); i += 1)
     {
         total_counter += 1;
-        #if PREFETCH
-        __builtin_prefetch(packets[i+PREFETCH].data(), 0, 0);
-        #endif
+        __builtin_prefetch(packets[i+prefetch].data(), 0, 0);
         for (Flow& processor : flows)
         {
-            processor.match(packets[i+0].data(), packets[i+0].size());
+            processor.match(packets[i].data(), packets[i].size());
         }
     }
 
@@ -320,29 +277,36 @@ void test(int num_packets, int num_flows)
 
     std::cout
             << "num_flows: " << flows.size()
-            << " prefetch=" << PREFETCH
+            << " prefetch=" << prefetch
             << " cycles_per_packet_per_processor=" << int(0.5 + cycles_per_packet / flows.size())
             << " packet_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
-            << std::endl;
+            ;
 
-    #if 0
+    #if 1
+    std::cout << " (matches:";
     for (Flow& p : flows)
     {
         std::cout
-            << "flows[" << (&p - flows.data()) << "].matches="
-            << int(0.5 + 100.0 * p.getMatches() / packets.size()) << "%"
-            << '\n';
+            << " " << int(0.5 + 100.0 * p.getMatches() / packets.size())
+            ;
     }
+    std::cout << ")";
     #endif
+    std::cout << std::endl;
 
 }
 
+
 int main()
 {
-    auto num_packets = 200 * 1024;
-    for (auto num_flows = 1; num_flows <= 4; num_flows *= 2)
+    auto num_packets = 1200 * 1024;
+    for (auto num_flows = 1; num_flows <= 16; num_flows *= 2)
     {
-        test(num_packets, num_flows);
+        for (auto prefetch = 0; prefetch <= 16; prefetch += 2)
+        {
+            test(num_packets, num_flows, prefetch);
+        }
+            std::cout << std::endl;
     }
     std::cout << std::endl;
 }

@@ -65,7 +65,7 @@ struct UDPHeader
 
 struct Filter
 {
-    void set(IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    void set(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
         struct H
         {
@@ -78,6 +78,7 @@ struct Filter
         };
 
         auto h = H();
+        h.protocol = protocol;
         h.src_ip = src_ip;
         h.dst_ip = dst_ip;
         h.src_port = src_port;
@@ -86,7 +87,7 @@ struct Filter
 
         field_ = _mm_loadu_si128((__m128i*)&h.unused[0]);
 
-        uint32_t mask[4] = { 0x00000000, 0xffffffff, 0xffffffff, 0xffffffff };
+        uint32_t mask[4] = { 0x000000ff, 0xffffffff, 0xffffffff, 0xffffffff };
         mask_ = _mm_loadu_si128((__m128i*)&mask[0]);
     }
 
@@ -148,17 +149,15 @@ struct Flow
 {
     Flow() = default;
 
-    Flow(IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
+    Flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
     {
-        mFilter.set(source_ip, target_ip, src_port, dst_port);
+        mFilter.set(protocol, source_ip, target_ip, src_port, dst_port);
     }
 
     void match(const uint8_t* frame_bytes, int /*len*/)
     {
-        if (mFilter.match(frame_bytes))
-        {
-            mProcessed++;
-        }
+        // avoid unpredictable branch here.
+        mProcessed += mFilter.match(frame_bytes);
     }
 
     std::size_t getMatches() const { return mProcessed; }
@@ -224,7 +223,7 @@ void test(int num_packets, int num_flows, int prefetch)
     struct Packet : Header
     {
         using Header::Header;
-        char bytes[512 * 3 - sizeof(Header)];
+        char bytes[32 + 64 - sizeof(Header)];
     };
 
     std::vector<Packet> packets;
@@ -241,7 +240,7 @@ void test(int num_packets, int num_flows, int prefetch)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i);
         IPv4Address dst_ip(1, 1, 2, 1 + i);
-        Flow flow(src_ip, dst_ip, src_port, dst_port);
+        Flow flow(0, src_ip, dst_ip, src_port, dst_port);
         flows.push_back(flow);
     }
 
@@ -253,7 +252,7 @@ void test(int num_packets, int num_flows, int prefetch)
     }
 
 
-    //std::random_shuffle(packets.begin(), packets.end());
+    std::random_shuffle(packets.begin(), packets.end());
 
     auto start_time = Clock::now();
 
@@ -296,7 +295,7 @@ void test(int num_packets, int num_flows, int prefetch)
 
 int main()
 {
-    auto num_packets = 1200 * 1024;
+    auto num_packets = 1 * 1200 * 1024;
     for (auto num_flows = 1; num_flows <= 16; num_flows *= 2)
     {
         for (auto prefetch = 0; prefetch <= 16; prefetch += 2)

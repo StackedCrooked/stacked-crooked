@@ -271,20 +271,21 @@ void test(int num_packets, int num_flows, int prefetch)
     auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
+    auto packet_rate_rounded = int(0.5 + 10 * packet_rate) / 10.0;
+
     std::cout
-            << "num_flows: " << flows.size()
-            << " prefetch=" << prefetch
-            << " cycles_per_packet_per_flow=" << int(0.5 + cycles_per_packet / flows.size())
-            << " packet_rate=" << int(0.5 + 10 * packet_rate) / 10.0 << "M/s"
+            << " prefetch="        << prefetch
+            << " rx-flows="        << flows.size()
+            << " packet-rate="     << packet_rate_rounded << "M/s"
+            << " checks/packet/s=" << flows.size() * packet_rate_rounded << "M/s"
             ;
 
     #if 1
-    std::cout << " (matches:";
+    std::cout << "  (verify-matches:";
     for (Flow& p : flows)
     {
-        std::cout
-            << " " << int(0.5 + 100.0 * p.getMatches() / packets.size())
-            ;
+        if (&p != &flows.front()) std::cout << ',';
+        std::cout << int(0.5 + 100.0 * p.getMatches() / packets.size());
     }
     std::cout << ")";
     #endif
@@ -295,14 +296,11 @@ void test(int num_packets, int num_flows, int prefetch)
 
 int main()
 {
-    auto num_packets = 1 * 1200 * 1024;
+    auto num_packets = 1 * 1000 * 1000;
+    auto prefetch = 2;
     for (auto num_flows = 1; num_flows <= 16; num_flows *= 2)
     {
-        for (auto prefetch = 0; prefetch <= 16; prefetch += 2)
-        {
-            test(num_packets, num_flows, prefetch);
-        }
-            std::cout << std::endl;
+        test(num_packets, num_flows, prefetch);
     }
     std::cout << std::endl;
 }

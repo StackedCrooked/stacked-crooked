@@ -271,13 +271,13 @@ void test(int num_packets, int num_flows, int prefetch)
     auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
-    auto packet_rate_rounded = int(0.5 + 10 * packet_rate) / 10.0;
+    auto packet_rate_rounded = int(0.5 + packet_rate);
 
     std::cout
             << " prefetch="        << prefetch
-            << " rx-flows="        << flows.size()
-            << " packet-rate="     << packet_rate_rounded << "M/s"
-            << " checks/packet/s=" << flows.size() * packet_rate_rounded << "M/s"
+            << " rx-flows="        << std::setw(2) << std::left << flows.size()
+            << " packet-rate="     << std::setw(6) << std::left << (std::to_string(packet_rate_rounded) + "M/s")
+            << " checks/packet/s=" << std::setw(6) << (std::to_string(flows.size() * packet_rate_rounded) + "M/s")
             ;
 
     #if 1

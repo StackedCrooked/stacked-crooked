@@ -1,0 +1,96 @@
+" -----------------------------------------------------------------------------
+"  General Settings
+" -----------------------------------------------------------------------------
+
+colorscheme desert
+
+" Show line numbers
+set number
+
+" Add common search paths
+set path+=/usr/local/include,/opt/local/include
+
+" Enable most intuitive backspace behavior
+set bs=2
+
+" Expand tabs to spaces
+set expandtab
+
+" Don't replace tabs with spaces in makefiles
+autocmd FileType make set noexpandtab
+autocmd FileType * :set paste
+
+" Set scroll to 2 lines (default is 32)
+" Use with CTRL+D and CTRL+U
+set scroll=2
+
+" Set tabs to 4 spaces
+set softtabstop=4 
+set tabstop=4 
+set shiftwidth=4
+
+" Colorize search results
+set hlsearch 
+
+" Show search results while typing
+set incsearch
+
+" Set auto-indent rules
+set autoindent
+
+" Set filetype dependent indention rules
+filetype plugin indent on
+
+" Disable annoying backup/swap files
+set nobackup
+set noswapfile
+set nowritebackup 
+
+" Turn off vi compatibility
+set nocompatible
+
+" Show the ruler at the bottom
+set ruler
+
+" Show nice title in xterm
+set title
+
+" Set ignore case when searching using only lower case characters
+set ignorecase
+"set smartcase
+
+" Enable syntax coloring
+syntax enable
+syntax on
+
+" Disable Ex mode (bastard!)
+:map Q <Nop>
+
+" Yank until end of line
+map Y y$
+
+" Easy panel switching
+" - ctrl-j jumps to left
+" - ctrl-l jumps to right
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+
+" Split behavior.
+set splitbelow
+set splitright
+
+
+" I don't know what this is.
+fun! OpenFileBrowser()
+    let file = expand("%:t")
+    :Ve
+    exec ":normal 1G/^" . file . "\n"
+endf
+
+
+:map <F2> :tab split<CR>
+:map <F3> :vsplit<CR>
+
+
+

@@ -1,3 +1,4 @@
+#!/bin/bash
 [ -d ~/stacked-crooked ] && {
 	echo "Basic setup seems to be already done."
 	exit 

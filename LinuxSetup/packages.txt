@@ -7,3 +7,4 @@ automake
 libtool-bin
 htop
 ccache
+openssh-server

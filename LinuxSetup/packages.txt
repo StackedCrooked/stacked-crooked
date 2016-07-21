@@ -1,3 +1,7 @@
+subversion
+git
+vim
+xclip
 autoconf
 automake
 libtool-bin

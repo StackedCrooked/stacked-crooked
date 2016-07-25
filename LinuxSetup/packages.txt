@@ -8,3 +8,4 @@ libtool-bin
 htop
 ccache
 openssh-server
+iwyu

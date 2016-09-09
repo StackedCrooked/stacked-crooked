@@ -1,4 +1,6 @@
 #include <atomic>
+#include <chrono>
+#include <iostream>
 #include <algorithm>
 #include <thread>
 #include <cstdint>
@@ -8,11 +10,10 @@
 
 
 using Packet = std::string;
-using Timestamp = int64_t;
-using Duration  = int64_t;
 
-
-Timestamp GetTimestamp() { return 0; }
+using Clock = std::chrono::steady_clock;
+using Timestamp = Clock::time_point;
+using Duration  = std::chrono::nanoseconds;
 
 
 struct Flow
@@ -34,7 +35,17 @@ struct Flow
 
 struct Socket
 {
-    void send_batch(const std::vector<Packet*>&) {}
+    void send_batch(Timestamp ts, const std::vector<Packet*>& packets)
+    {
+        auto us = std::chrono::duration_cast<std::chrono::microseconds>(ts - mStartTime);
+        std::cout << us.count() << ' ';
+        for (Packet* p : packets)
+        {
+            std::cout << *p << " ";
+        }
+        std::cout << std::endl;
+    }
+    Clock::time_point mStartTime = Clock::now();
 };
 
 
@@ -78,7 +89,7 @@ private:
         {
             std::lock_guard<std::mutex> lock(mMutex);
             
-            auto now = GetTimestamp();
+            auto now = Clock::now();
             
             for (Flow* flow : mFlows)
             {
@@ -87,7 +98,7 @@ private:
 
             if (!packets.empty())
             {
-                mSocket.send_batch(packets);
+                mSocket.send_batch(now, packets);
                 packets.clear();
             }
         }
@@ -101,6 +112,36 @@ private:
 };
 
 
+enum
+{
+    num_flows = 4
+};
+
+
+
+
+
+
 int main()
 {
+    Transmitter tx;
+
+    std::vector<Flow> flows(num_flows);
+
+    
+    auto now = Clock::now();
+    for (auto i = 0; i != num_flows; ++i)
+    {
+        Flow& flow = flows[i];
+        flow.mPacket.push_back('A' + i);
+        flow.mInterframeGap = std::chrono::microseconds(200 + 100 * i);
+        flow.mNextTransmission = now + flows[i].mInterframeGap;
+        tx.add_flow(flow);
+    }
+
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    
+
 }
+

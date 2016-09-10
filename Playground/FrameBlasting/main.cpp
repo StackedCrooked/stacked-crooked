@@ -41,13 +41,13 @@ struct Flow
     }
 
     void consume(std::deque<Packet*>& packets, Timestamp current_time)
-    {   
-        if (mPacketCount == 0)
+    {
+        for (auto i = 0; i != 1; ++i)
         {
-            return;
-        }
-        for (auto i = 0; i != 4; ++i)
-        {
+            if (mPacketCount == 0)
+            {
+                return;
+            }
             if (current_time >= mNextTransmission)
             {   
                 packets.push_back(&mPacket);
@@ -62,7 +62,7 @@ struct Flow
     Timestamp mNextTransmission;
     Duration mInterval;
     int64_t mTxBytes = 0;
-    int64_t mPacketCount = 40;
+    int64_t mPacketCount = 400;
 };
 
 
@@ -83,7 +83,7 @@ struct BBInterface
         mFlows.erase(&flow);
     }
 
-    void consume(std::deque<Packet*>& packets, Timestamp current_time, int max_packets = 2)
+    void consume(std::deque<Packet*>& packets, Timestamp current_time, int max_packets = 1)
     {
         for (auto i = 0; i != max_packets; ++i)
         {
@@ -100,7 +100,7 @@ struct BBInterface
             }
 
             Packet* front_packet = mPackets.front();
-            auto full_size = front_packet->size() + 24;
+            auto packet_size = front_packet->size();
 
             if (mBytesPerMs && mBucket < 0)
             {
@@ -111,8 +111,8 @@ struct BBInterface
                 std::chrono::milliseconds elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - mLastTime);
 
                 auto bucket_increment = elapsed_ms.count() * mBytesPerMs;
-                auto new_bucket = mBucket + bucket_increment;
-                if (new_bucket < 0)
+                auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
+                if (new_bucket < packet_size)
                 {
                     return;
                 }
@@ -123,14 +123,14 @@ struct BBInterface
 
 
             packets.push_back(front_packet);
-            mTransmittedPackets.emplace_back(std::chrono::duration_cast<std::chrono::milliseconds>(current_time - gStartTime), full_size);
-            mTxBytes += full_size;
+            mTransmittedPackets.emplace_back(std::chrono::duration_cast<std::chrono::milliseconds>(current_time - gStartTime), packet_size);
+            mTxBytes += packet_size;
             mPackets.pop_front();
 
             if (mBytesPerMs)
             {
-                mBucket -= full_size;
-             }
+                mBucket -= packet_size;
+            }
         }
     }
 
@@ -142,8 +142,9 @@ struct BBInterface
         }
     }
 
-    double mBytesPerMs = 50;
-    double mBucket = 4000;
+    double mBytesPerMs = 10;
+    double mMaxBucketSize = 4 * 1024;
+    double mBucket = mMaxBucketSize;
     Timestamp mLastTime = Timestamp();
     boost::container::flat_set<Flow*> mFlows;
     std::deque<Packet*> mPackets;
@@ -255,7 +256,7 @@ int main()
     PhysicalInterface physicalInterface(48);
     BBInterface* bbInterfaces = physicalInterface.getBBInterfaces().data();
 
-    enum { num_flows = 5 };
+    enum { num_flows = 1514 / 64 };
     Flow flows[num_flows];
 
     auto now = Clock::now();
@@ -264,7 +265,7 @@ int main()
     {
         Flow& flow = flows[i];
         flow.mPacket.mData.resize((i + 1) * 64);
-        flow.mInterval = std::chrono::milliseconds(1);
+        flow.mInterval = std::chrono::milliseconds(10);
         flow.mNextTransmission = now + flow.mInterval;
         bbInterfaces[0].add_flow(flow);
     }

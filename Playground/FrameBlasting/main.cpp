@@ -40,29 +40,30 @@ struct Flow
     {
     }
 
+    void set_mbps(int64_t mbps)
+    {
+        mBytesPerSecond = 1e6 * mbps / 8;
+    }
+
     void consume(std::deque<Packet*>& packets, Timestamp current_time)
     {
-        for (auto i = 0; i != 1; ++i)
+        if (mNextTransmission == Timestamp())
         {
-            if (mPacketCount == 0)
-            {
-                return;
-            }
-            if (current_time >= mNextTransmission)
-            {   
-                packets.push_back(&mPacket);
-                mTxBytes += mPacket.size();
-                mPacketCount--;
-                mNextTransmission += mInterval;
-            }
+            mNextTransmission = current_time;
+        }
+
+        while (current_time >= mNextTransmission)
+        {
+            packets.push_back(&mPacket);
+            mTxBytes += mPacket.size();
+            mNextTransmission += std::chrono::nanoseconds(1000ul * 1000ul * 1000ul * mPacket.size() / mBytesPerSecond);
         }
     }
     
     Packet mPacket;
-    Timestamp mNextTransmission;
-    Duration mInterval;
+    Timestamp mNextTransmission = Timestamp();
+    int64_t mBytesPerSecond = 1e9 / 8;
     int64_t mTxBytes = 0;
-    int64_t mPacketCount = 400;
 };
 
 
@@ -70,7 +71,7 @@ struct BBInterface
 {
     void set_rate_limit(double bytes_per_ns)
     {
-        mBytesPerMs = bytes_per_ns;
+        mBytesPerNs = bytes_per_ns;
     }
 
     void add_flow(Flow& flow)
@@ -102,15 +103,15 @@ struct BBInterface
             Packet* front_packet = mPackets.front();
             auto packet_size = front_packet->size();
 
-            if (mBytesPerMs && mBucket < 0)
+            if (mBytesPerNs && mBucket < 0)
             {
                 if (mLastTime == Timestamp())
                 {
                     mLastTime = current_time;
                 }
-                std::chrono::milliseconds elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - mLastTime);
+                std::chrono::nanoseconds elapsed_ns = current_time - mLastTime;
 
-                auto bucket_increment = elapsed_ms.count() * mBytesPerMs;
+                auto bucket_increment = elapsed_ns.count() * mBytesPerNs / 1e9;
                 auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
                 if (new_bucket < packet_size)
                 {
@@ -127,22 +128,14 @@ struct BBInterface
             mTxBytes += packet_size;
             mPackets.pop_front();
 
-            if (mBytesPerMs)
+            if (mBytesPerNs)
             {
                 mBucket -= packet_size;
             }
         }
     }
 
-    void print(int index)
-    {
-        for (auto& el : mTransmittedPackets)
-        {
-            std::cout << "BB" << index << ' ' << std::get<0>(el).count() << ' ' << std::get<1>(el) << '\n';
-        }
-    }
-
-    double mBytesPerMs = 10;
+    double mBytesPerNs = 1e9 / 8;
     double mMaxBucketSize = 4 * 1024;
     double mBucket = mMaxBucketSize;
     Timestamp mLastTime = Timestamp();
@@ -153,35 +146,41 @@ struct BBInterface
 };
 
 
-
-
 struct Socket
 {
     void send_batch(Timestamp ts, const std::deque<Packet*>& packets)
     {
-        assert(!packets.empty());
-        if (!mDirty)
+        auto total_size = 0ul;
+        for (auto p : packets)
         {
-            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(ts - gStartTime);
-            std::cout << std::setw(5) << ms.count() << "ms: ";
+            total_size += p->size();
         }
-        for (Packet* p : packets)
+
+        mTxBytes += total_size;
+
+        if (mTimestamp == Timestamp())
         {
-            std::cout << p->size() << ' ';
+            mTimestamp = Clock::now();
         }
-        mDirty = true;
+
+
+        std::chrono::nanoseconds elapsed_ns = ts - mTimestamp;
+
+        if (elapsed_ns > std::chrono::seconds(1))
+        {
+            std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " ByteRate=" << int(10 * 8 * 1e3 * mTxBytes / elapsed_ns.count())/10.0 << "Mbps" << std::endl;
+            mTxBytes = 0;
+            mTimestamp = ts;
+        }
+
     }
 
     void flush()
     {
-        if (mDirty)
-        {
-            std::cout << std::endl;
-            mDirty = false;
-        }
     }
 
-    bool mDirty = false;
+    uint64_t mTxBytes = 0;
+    Timestamp mTimestamp = Timestamp();
 };
 
 
@@ -219,11 +218,10 @@ private:
     {
         std::deque<Packet*> packets;
         
-        auto now = Clock::now();
         while (!mQuit)
         {
             std::lock_guard<std::mutex> lock(mMutex);
-            
+            auto now = Clock::now();
 
             for (BBInterface& bbinterface : mBBInterfaces)
             {
@@ -237,7 +235,6 @@ private:
             }
             else
             {
-                now += std::chrono::milliseconds(10);
                 mSocket.flush();
             }
         }
@@ -256,22 +253,19 @@ int main()
     PhysicalInterface physicalInterface(48);
     BBInterface* bbInterfaces = physicalInterface.getBBInterfaces().data();
 
-    enum { num_flows = 1514 / 64 };
+    enum { num_flows = 1 };
     Flow flows[num_flows];
-
-    auto now = Clock::now();
 
     for (auto i = 0; i != num_flows; ++i)
     {
         Flow& flow = flows[i];
-        flow.mPacket.mData.resize((i + 1) * 64);
-        flow.mInterval = std::chrono::milliseconds(10);
-        flow.mNextTransmission = now + flow.mInterval;
+        flow.mPacket.mData.resize(1514);
+        flow.set_mbps(500);
         bbInterfaces[0].add_flow(flow);
     }
 
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
     physicalInterface.stop();
 

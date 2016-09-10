@@ -108,7 +108,7 @@ struct BBInterface
         Packet* front_packet = mPackets.front();
         auto packet_size = front_packet->size();
 
-        if (mBytesPerNs && mBucket < 0)
+        if (mBytesPerNs && mBucket < packet_size)
         {
             if (mLastTime == Timestamp())
             {
@@ -138,8 +138,8 @@ struct BBInterface
         }
     }
 
-    double mBytesPerNs = 1e9 / 8;
-    double mMaxBucketSize = 4 * 1024;
+    double mBytesPerNs = 2 * 1e9 / 8;
+    double mMaxBucketSize = 8 * 1024;
     double mBucket = mMaxBucketSize;
     Timestamp mLastTime = Timestamp();
     boost::container::flat_set<Flow*> mFlows;
@@ -172,7 +172,7 @@ struct Socket
 
         if (elapsed_ns > std::chrono::seconds(1))
         {
-            std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " ByteRate=" << int(10 * 8 * 1e3 * mTxBytes / elapsed_ns.count())/10.0 << "Mbps" << std::endl;
+            std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " ByteRate=" << int(10 * 8000 * mTxBytes / elapsed_ns.count())/10.0 << "Mbps" << std::endl;
             mTxBytes = 0;
             mTimestamp = ts;
             for (auto& el : mSizes)
@@ -254,18 +254,25 @@ int main()
     PhysicalInterface physicalInterface(48);
     BBInterface* bbInterfaces = physicalInterface.getBBInterfaces().data();
 
-    enum { num_flows = 3 };
-    Flow flows[num_flows];
+    enum { num_interfaces = 2 };
 
-    int sizes[num_flows] = { 64, 512, 2048 };
-    int mbps[num_flows] = { 333, 333, 334 };
+    physicalInterface.getBBInterfaces().resize(num_interfaces);
+    enum { num_flows = 4 };
+    Flow flows[num_interfaces][num_flows];
 
-    for (auto i = 0; i != num_flows; ++i)
+    int sizes[num_flows] = { 64, 128, 512, 1024 };
+    int mbps[num_flows] = { 250, 250, 250, 250 };
+
+
+    for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)
     {
-        Flow& flow = flows[i];
-        flow.mPacket.mData.resize(sizes[i]);
-        flow.set_mbps(mbps[i]);
-        bbInterfaces[0].add_flow(flow);
+        for (auto flow_id = 0; flow_id != num_flows; ++flow_id)
+        {
+            Flow& flow = flows[interface_id][flow_id];
+            flow.mPacket.mData.resize(sizes[flow_id]);
+            flow.set_mbps(mbps[flow_id]);
+            bbInterfaces[interface_id].add_flow(flow);
+        }
     }
 
 

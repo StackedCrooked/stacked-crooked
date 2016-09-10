@@ -1,3 +1,4 @@
+#include <boost/container/flat_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include <atomic>
 #include <unordered_map>
@@ -12,6 +13,9 @@
 #include <mutex>
 #include <string>
 #include <vector>
+
+
+namespace {
 
 
 struct Packet
@@ -47,7 +51,7 @@ struct Flow
         mBytesPerSecond = 1e6 * mbps / 8;
     }
 
-    void consume(std::deque<Packet*>& packets, Timestamp current_time)
+    void pull(std::deque<Packet*>& packets, Timestamp current_time)
     {
         if (mNextTransmission == Timestamp())
         {
@@ -66,7 +70,7 @@ struct Flow
             mNextTransmission += next;
         }
     }
-    
+
     Packet mPacket;
     Timestamp mNextTransmission = Timestamp();
     double mBytesPerSecond = 1e9 / 8;
@@ -91,13 +95,13 @@ struct BBInterface
         mFlows.erase(&flow);
     }
 
-    void consume(std::deque<Packet*>& packets, Timestamp current_time)
+    void pull(std::deque<Packet*>& packets, Timestamp current_time)
     {
         if (mPackets.empty())
         {
             for (Flow* flow : mFlows)
             {
-                flow->consume(mPackets, current_time);
+                flow->pull(mPackets, current_time);
             }
             if (mPackets.empty())
             {
@@ -138,7 +142,7 @@ struct BBInterface
         }
     }
 
-    double mBytesPerNs = 2 * 1e9 / 8;
+    double mBytesPerNs = 1e9 / 8;
     double mMaxBucketSize = 8 * 1024;
     double mBucket = mMaxBucketSize;
     Timestamp mLastTime = Timestamp();
@@ -170,22 +174,22 @@ struct Socket
 
         std::chrono::nanoseconds elapsed_ns = ts - mTimestamp;
 
-        if (elapsed_ns > std::chrono::seconds(1))
+        if (elapsed_ns >= std::chrono::seconds(1))
         {
             std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " ByteRate=" << int(10 * 8000 * mTxBytes / elapsed_ns.count())/10.0 << "Mbps" << std::endl;
             mTxBytes = 0;
             mTimestamp = ts;
             for (auto& el : mSizes)
             {
-                std::cout << ' ' << el.first << ": " << el.second << std::endl;
+                std::cout << ' ' << std::setw(5) << el.first << ": " << el.second << std::endl;
             }
+            mSizes.clear();
         }
-
     }
 
     uint64_t mTxBytes = 0;
     Timestamp mTimestamp = Timestamp();
-    std::map<int, int> mSizes;
+    boost::container::flat_map<int, int> mSizes;
 };
 
 
@@ -230,7 +234,7 @@ private:
 
             for (BBInterface& bbinterface : mBBInterfaces)
             {
-                bbinterface.consume(packets, now);
+                bbinterface.pull(packets, now);
             }
 
             if (!packets.empty())
@@ -249,39 +253,34 @@ private:
 };
 
 
+}
+
+
 int main()
 {
     PhysicalInterface physicalInterface(48);
-    BBInterface* bbInterfaces = physicalInterface.getBBInterfaces().data();
 
-    enum { num_interfaces = 2 };
+    enum { num_interfaces = 100 };
 
     physicalInterface.getBBInterfaces().resize(num_interfaces);
     enum { num_flows = 4 };
-    Flow flows[num_interfaces][num_flows];
 
-    int sizes[num_flows] = { 64, 128, 512, 1024 };
+    int sizes[num_flows] = { 128, 256, 512, 1024 };
     int mbps[num_flows] = { 250, 250, 250, 250 };
 
 
     for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)
     {
+        BBInterface& bbInterface = physicalInterface.getBBInterfaces().at(interface_id);
         for (auto flow_id = 0; flow_id != num_flows; ++flow_id)
         {
-            Flow& flow = flows[interface_id][flow_id];
+            auto& flow = *new Flow;
             flow.mPacket.mData.resize(sizes[flow_id]);
             flow.set_mbps(mbps[flow_id]);
-            bbInterfaces[interface_id].add_flow(flow);
+            bbInterface.add_flow(flow);
         }
     }
 
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-
-    physicalInterface.stop();
-
-//    for (BBInterface& b : physicalInterface.getBBInterfaces())
-//    {
-//        b.print(&b - &physicalInterface.getBBInterfaces()[0]);
-//    }
+    std::this_thread::sleep_for(std::chrono::seconds(20));
 }

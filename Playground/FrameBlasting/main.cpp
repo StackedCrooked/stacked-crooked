@@ -13,22 +13,30 @@
 #include <thread>
 
 
+// BASIC ALGORITHM
+// ---------------
+// The idea is to work "pull"-based rather than "push"-based: the PhysicalInterface gets current
+// timestamp and "pulls" the ready-to-transmit packets from its BBInterfaces. Each BBInterface pulls
+// ready-to-transmit packets from each of its flows.
 //
-// SETUP (imaginary)
-// -----
-// A single PhysicalInterface with 100 BBInterfaces connected.
-// The PhysicalInterface can do 100Gbit/s.
-// Each BBInterface is rate limited to 1Gbit/s.
-// Each BBInterface has 5 flows that each send one fixed-size packet at a fixed rate.
-// So there are 500 flows in total.
+// See:
+//  - PhysicalInterface::run
+//  - BBBInterface::pull
+//  - Flow::pull
 //
-// BASIC IDEA:
-// Pull-based rather than push-based:
-// - The PhysicalInterface "pulls" packets from its BBInterface
-// - Each BBInterface provides packets from its flows as follows:
-//     (1) if queue is empty then we pull one packet from each flow into the queue (fairness)
-//     (2) pop packets from the queue using token bucket (rate limiting)
-//     (3) if queue becomes empty then step (1) is repeated
+//
+// NOTE:
+// The concept of "out-of-resources" is ignored here. It is to be implemented in higher layer
+// application logic. If needed, it can also be implemented in PhysicalInterface or BBInterface.
+//
+//
+// TEST SETUP
+// ----------
+// - A single PhysicalInterface with 100 BBInterfaces connected (trunking, 1Gbit/s).
+// - The PhysicalInterface can do 100Gbit/s.
+// - Each BBInterface is rate limited to 1Gbit/s.
+// - Each BBInterface has 5 flows that each send one fixed-size packet at a fixed rate.
+//  -> So there are 500 flows in total.
 
 
 using Clock = std::chrono::steady_clock;
@@ -45,6 +53,7 @@ struct Packet
 struct BBInterface;
 
 
+// Simplified implementation for a BB flow.
 struct Flow
 {
     void set_bitrate(int64_t mbps)
@@ -53,11 +62,9 @@ struct Flow
         update_frame_interval();
     }
 
-    void set_packet_size(std::size_t n)
+    void set_packet_size(std::size_t packet_size)
     {
-        mPacket.mData.resize(n);
-        assert(mPacket.size() > 0);
-
+        mPacket.mData.resize(packet_size);
         update_frame_interval();
     }
 
@@ -71,20 +78,20 @@ struct Flow
         if (current_time >= mNextTransmission)
         {
             packets.push_back(&mPacket);
-            mNextTransmission += mInterval;
+            mNextTransmission += mFrameInterval;
         }
     }
 
 private:
     void update_frame_interval()
     {
-        mInterval = std::chrono::nanoseconds(int64_t(1e9 * mPacket.size() / mBytesPerSecond));
+        mFrameInterval = std::chrono::nanoseconds(int64_t(1e9 * mPacket.size() / mBytesPerSecond));
     }
 
     Packet mPacket;
     double mBytesPerSecond = 1e9 / 8;
     Clock::time_point mNextTransmission{};
-    std::chrono::nanoseconds mInterval{};
+    std::chrono::nanoseconds mFrameInterval{};
 };
 
 

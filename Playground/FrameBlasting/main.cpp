@@ -123,12 +123,8 @@ struct BBInterface
             }
         }
 
-        Packet* front_packet = mQueue.front();
-        assert(front_packet->size() > 0);
-        auto packet_size = front_packet->size();
-
         // Apply rate limit.
-        if (mBytesPerSecond && mBucket < packet_size)
+        if (mBytesPerSecond && mBucket < 0)
         {
             if (mLastTime == Clock::time_point())
             {
@@ -138,7 +134,7 @@ struct BBInterface
 
             auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
             auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
-            if (new_bucket < packet_size)
+            if (new_bucket < 0)
             {
                 return;
             }
@@ -147,6 +143,9 @@ struct BBInterface
             mLastTime = current_time;
         }
 
+
+        Packet* front_packet = mQueue.front();
+        auto packet_size = front_packet->size();
 
         packets.push_back(front_packet);
         mTxBytes += packet_size;
@@ -159,7 +158,7 @@ struct BBInterface
     }
 
     double mBytesPerSecond = 1e9 / 8;
-    double mMaxBucketSize = 8 * 1024;
+    double mMaxBucketSize = 10000;
     double mBucket = mMaxBucketSize;
     Clock::time_point mLastTime = Clock::time_point();
     std::deque<Packet*> mQueue;

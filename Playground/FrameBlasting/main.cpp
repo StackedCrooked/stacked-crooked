@@ -25,9 +25,9 @@
 // BASIC IDEA:
 // Pull-based rather than push-based:
 // - The PhysicalInterface "pulls" packets from its BBInterface
-// - Each BBInterface
+// - Each BBInterface provides packets from its flows as follows:
 //     (1) if queue is empty then we pull one packet from each flow into the queue (fairness)
-//     (2) pop packets from the queue using token bucket to implement the rate limiting
+//     (2) pop packets from the queue using token bucket (rate limiting)
 //     (3) if queue becomes empty then step (1) is repeated
 
 

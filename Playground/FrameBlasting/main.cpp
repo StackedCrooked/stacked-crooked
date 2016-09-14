@@ -283,10 +283,10 @@ int main()
     enum { num_flows_per_interface = 5 };
 
     int sizes[num_flows_per_interface] = {   64, 128, 256, 512, 1024 };
-    int mbps[num_flows_per_interface]  = {  200, 200, 200, 200,  200 };
+    int rates[num_flows_per_interface] = {  200, 200, 200, 200,  200 };
 
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows_per_interface, "");
-    static_assert(sizeof(mbps) == sizeof(mbps[0]) * num_flows_per_interface, "");
+    static_assert(sizeof(rates) == sizeof(mbps[0]) * num_flows_per_interface, "");
 
 
     for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)
@@ -296,7 +296,7 @@ int main()
         {
             Flow& flow = bbInterface.add_flow();
             flow.set_packet_size(sizes[flow_id]);
-            flow.set_bitrate(mbps[flow_id]);
+            flow.set_bitrate(rates[flow_id]);
         }
     }
 

@@ -154,7 +154,7 @@ struct BBInterface
     }
 
     double mBytesPerSecond = 1e9 / 8;
-    double mMaxBucketSize = 10000;
+    double mMaxBucketSize = 16 * 1024;
     double mBucket = mMaxBucketSize;
     Clock::time_point mLastTime = Clock::time_point();
     std::deque<Packet*> mQueue;
@@ -275,7 +275,6 @@ private:
 
 int main()
 {
-
     enum { num_interfaces = 100 };
 
     PhysicalInterface physicalInterface(num_interfaces);

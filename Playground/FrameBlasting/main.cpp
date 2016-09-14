@@ -59,7 +59,6 @@ struct Flow
             }
 
             packets.push_back(&mPacket);
-            mTxBytes += mPacket.size();
 
             assert(mPacket.size() > 0);
             mNextTransmission += mInterval;
@@ -74,7 +73,6 @@ private:
 
     Packet mPacket;
     double mBytesPerSecond = 1e9 / 8;
-    int64_t mTxBytes = 0;
     Clock::time_point mNextTransmission{};
     std::chrono::nanoseconds mInterval{};
 };

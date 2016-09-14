@@ -26,8 +26,8 @@
 // Pull-based rather than push-based:
 // - The PhysicalInterface "pulls" packets from its BBInterface.
 // - Each BBInterface
-//     (1) first pulls packets from all its flows into a single queue
-//     (2) pops packet from the queue according to the rate limit
+//     (1) first pulls one packet from each flow and stores them into a single queue (fairness)
+//     (2) pops packet from the queue if allows by token bucket (rate limiting)
 //     (3) if queue becomes empty then step (1) is repeated.
 
 
@@ -182,7 +182,6 @@ struct Socket
         {
             mTimestamp = Clock::now();
         }
-
 
         std::chrono::nanoseconds elapsed_ns = ts - mTimestamp;
 

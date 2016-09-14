@@ -26,9 +26,9 @@
 // Pull-based rather than push-based:
 // - The PhysicalInterface "pulls" packets from its BBInterface.
 // - Each BBInterface
-//     (1) pulls packets from its flows into a queue (rate limit is not applied here)
+//     (1) first pulls packets from all its flows into a single queue
 //     (2) pops packet from the queue according to the rate limit
-//     (3) if queue is empty then step (1) is return.
+//     (3) if queue becomes empty then step (1) is repeated.
 
 
 using Clock = std::chrono::steady_clock;
@@ -63,23 +63,19 @@ struct Flow
 
     void pull(std::deque<Packet*>& packets, Clock::time_point current_time)
     {
-        if (mNextTransmission == Clock::time_point{})
+        if (mNextTransmission == Clock::time_point{}) // first iteration
         {
             mNextTransmission = current_time;
         }
 
-        for (auto i = 0; i != 2; ++i)
+        if (current_time < mNextTransmission)
         {
-            if (current_time < mNextTransmission)
-            {
-                break;
-            }
-
-            packets.push_back(&mPacket);
-
-            assert(mPacket.size() > 0);
-            mNextTransmission += mInterval;
+            return;
         }
+
+        packets.push_back(&mPacket);
+
+        mNextTransmission += mInterval;
     }
 
 private:

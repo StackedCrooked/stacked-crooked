@@ -18,10 +18,8 @@ namespace {
 
 struct Packet
 {
-    explicit Packet(int flowId) : mFlowId(flowId) {}
     std::size_t size() const { return mData.size(); }
     std::string mData;
-    int mFlowId = 0;
 };
 
 using Duration  = std::chrono::milliseconds;
@@ -38,11 +36,6 @@ struct BBInterface;
 
 struct Flow
 {
-    Flow() :
-        mPacket([]{ static int flowId; return flowId++; }())
-    {
-    }
-
     void set_mbps(int64_t mbps)
     {
         mBytesPerSecond = (1e6 * mbps) / 8.0;
@@ -159,9 +152,9 @@ struct BBInterface
     double mMaxBucketSize = 8 * 1024;
     double mBucket = mMaxBucketSize;
     Timestamp mLastTime = Timestamp();
-    std::vector<Flow> mFlows;
     std::deque<Packet*> mPackets;
     int64_t mTxBytes = 0;
+    std::vector<Flow> mFlows;
 };
 
 
@@ -286,10 +279,10 @@ int main()
 
 
     physicalInterface.getBBInterfaces().resize(num_interfaces);
-    enum { num_flows = 4 };
+    enum { num_flows = 5 };
 
-    int sizes[num_flows] = {   64, 128, 256, 512 };
-    int mbps[num_flows]  = {  100, 100, 400, 400 };
+    int sizes[num_flows] = {   64, 128, 256, 512, 1024 };
+    int mbps[num_flows]  = {  200, 200, 200, 200,  200 };
 
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
     static_assert(sizeof(mbps) == sizeof(mbps[0]) * num_flows, "");

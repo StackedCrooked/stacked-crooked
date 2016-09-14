@@ -175,7 +175,7 @@ struct Socket
 
         if (elapsed_ns >= std::chrono::seconds(1))
         {
-            std::cout << "=== Socket Stats ===\n";
+            std::cout << "=== Stats ===\n";
             std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " ByteRate=" << int(10 * 8000 * mTxBytes / elapsed_ns.count())/10.0 << "Mbps\n";
             mTxBytes = 0;
             mTimestamp = ts;

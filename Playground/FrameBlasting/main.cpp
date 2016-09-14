@@ -30,7 +30,7 @@ struct BBInterface;
 
 struct Flow
 {
-    void set_mbps(int64_t mbps)
+    void set_bitrate(int64_t mbps)
     {
         mBytesPerSecond = (1e6 * mbps) / 8.0;
         update_frame_interval();
@@ -175,13 +175,15 @@ struct Socket
 
         if (elapsed_ns >= std::chrono::seconds(1))
         {
-            std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " ByteRate=" << int(10 * 8000 * mTxBytes / elapsed_ns.count())/10.0 << "Mbps" << std::endl;
+            std::cout << "=== Socket Stats ===\n";
+            std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " ByteRate=" << int(10 * 8000 * mTxBytes / elapsed_ns.count())/10.0 << "Mbps\n";
             mTxBytes = 0;
             mTimestamp = ts;
             for (auto& el : mSizes)
             {
-                std::cout << ' ' << std::setw(5) << el.first << ": " << el.second << std::endl;
+                std::cout << ' ' << std::setw(5) << el.first << ": " << el.second << '\n';
             }
+            std::cout << std::endl;
             mSizes.clear();
         }
     }
@@ -284,7 +286,7 @@ int main()
         {
             Flow& flow = bbInterface.add_flow();
             flow.set_packet_size(sizes[flow_id]);
-            flow.set_mbps(mbps[flow_id]);
+            flow.set_bitrate(mbps[flow_id]);
         }
     }
 
@@ -293,5 +295,5 @@ int main()
 
 
     physicalInterface.start();
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 }

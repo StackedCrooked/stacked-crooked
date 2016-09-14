@@ -13,6 +13,23 @@
 #include <thread>
 
 
+//
+// SETUP (imaginary)
+// -----
+// A single PhysicalInterface with 100 BBInterfaces connected.
+// The PhysicalInterface can do 100Gbit/s.
+// Each BBInterface is rate limited to 1Gbit/s.
+// Each BBInterface has 5 flows that each send one packet at a fixed rate. The packet is fixed size.
+// So there are 500 flows in total.
+//
+// BASIC IDEA:
+// Pull-based rather than push-based:
+// - The PhysicalInterface "pulls" packets from its BBInterface.
+// - Each BBInterface
+//     (1) pulls packets from its flows into a queue (rate limit is not applied here)
+//     (2) pops packet from the queue according to the rate limit
+//     (3) if queue is empty then step (1) is return.
+
 
 using Clock = std::chrono::steady_clock;
 
@@ -93,23 +110,24 @@ struct BBInterface
 
     void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
-        if (mPackets.empty())
+        if (mQueue.empty())
         {
             for (Flow& flow : mFlows)
             {
-                flow.pull(mPackets, current_time);
+                flow.pull(mQueue, current_time);
             }
 
-            if (mPackets.empty())
+            if (mQueue.empty())
             {
                 return;
             }
         }
 
-        Packet* front_packet = mPackets.front();
+        Packet* front_packet = mQueue.front();
         assert(front_packet->size() > 0);
         auto packet_size = front_packet->size();
 
+        // Apply rate limit.
         if (mBytesPerSecond && mBucket < packet_size)
         {
             if (mLastTime == Clock::time_point())
@@ -132,7 +150,7 @@ struct BBInterface
 
         packets.push_back(front_packet);
         mTxBytes += packet_size;
-        mPackets.pop_front();
+        mQueue.pop_front();
 
         if (mBytesPerSecond)
         {
@@ -144,7 +162,7 @@ struct BBInterface
     double mMaxBucketSize = 8 * 1024;
     double mBucket = mMaxBucketSize;
     Clock::time_point mLastTime = Clock::time_point();
-    std::deque<Packet*> mPackets;
+    std::deque<Packet*> mQueue;
     int64_t mTxBytes = 0;
     std::vector<Flow> mFlows;
 };

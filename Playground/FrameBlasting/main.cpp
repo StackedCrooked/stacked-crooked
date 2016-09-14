@@ -1,19 +1,20 @@
+#include <algorithm>
 #include <atomic>
-#include <cassert>
-#include <map>
 #include <chrono>
+#include <cassert>
+#include <cstdint>
+#include <deque>
+#include <map>
+#include <mutex>
 #include <iomanip>
 #include <iostream>
-#include <algorithm>
-#include <deque>
-#include <thread>
-#include <cstdint>
-#include <mutex>
 #include <string>
 #include <vector>
+#include <thread>
 
 
-namespace {
+
+using Clock = std::chrono::steady_clock;
 
 
 struct Packet
@@ -21,13 +22,6 @@ struct Packet
     std::size_t size() const { return mData.size(); }
     std::string mData;
 };
-
-using Duration  = std::chrono::milliseconds;
-using Clock = std::chrono::steady_clock;
-using Timestamp = Clock::time_point;
-
-
-Timestamp gStartTime = Clock::now();
 
 
 
@@ -50,9 +44,9 @@ struct Flow
         update_frame_interval();
     }
 
-    void pull(std::deque<Packet*>& packets, Timestamp current_time)
+    void pull(std::deque<Packet*>& packets, Clock::time_point current_time)
     {
-        if (mNextTransmission == Timestamp{})
+        if (mNextTransmission == Clock::time_point{})
         {
             mNextTransmission = current_time;
         }
@@ -81,7 +75,7 @@ private:
     Packet mPacket;
     double mBytesPerSecond = 1e9 / 8;
     int64_t mTxBytes = 0;
-    Timestamp mNextTransmission{};
+    Clock::time_point mNextTransmission{};
     std::chrono::nanoseconds mInterval{};
 };
 
@@ -99,7 +93,7 @@ struct BBInterface
         return mFlows.back();
     }
 
-    void pull(std::vector<Packet*>& packets, Timestamp current_time)
+    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
         if (mPackets.empty())
         {
@@ -120,7 +114,7 @@ struct BBInterface
 
         if (mBytesPerSecond && mBucket < packet_size)
         {
-            if (mLastTime == Timestamp())
+            if (mLastTime == Clock::time_point())
             {
                 mLastTime = current_time;
             }
@@ -151,7 +145,7 @@ struct BBInterface
     double mBytesPerSecond = 1e9 / 8;
     double mMaxBucketSize = 8 * 1024;
     double mBucket = mMaxBucketSize;
-    Timestamp mLastTime = Timestamp();
+    Clock::time_point mLastTime = Clock::time_point();
     std::deque<Packet*> mPackets;
     int64_t mTxBytes = 0;
     std::vector<Flow> mFlows;
@@ -160,7 +154,7 @@ struct BBInterface
 
 struct Socket
 {
-    void send_batch(Timestamp ts, const std::vector<Packet*>& packets)
+    void send_batch(Clock::time_point ts, const std::vector<Packet*>& packets)
     {
         auto total_size = 0ul;
         for (auto& p : packets)
@@ -173,7 +167,7 @@ struct Socket
 
         mTxBytes += total_size;
 
-        if (mTimestamp == Timestamp())
+        if (mTimestamp == Clock::time_point())
         {
             mTimestamp = Clock::now();
         }
@@ -195,7 +189,7 @@ struct Socket
     }
 
     uint64_t mTxBytes = 0;
-    Timestamp mTimestamp = Timestamp();
+    Clock::time_point mTimestamp = Clock::time_point();
     std::map<int, int> mSizes;
 };
 
@@ -265,9 +259,6 @@ private:
     std::mutex mMutex;
     std::thread mThread;
 };
-
-
-}
 
 
 int main()

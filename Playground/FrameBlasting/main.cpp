@@ -283,7 +283,7 @@ int main()
     enum { num_flows_per_interface = 5 };
 
     int sizes[num_flows_per_interface] = {   64, 128, 256, 512, 1024 };
-    int rates[num_flows_per_interface] = {  200, 200, 200, 200,  200 };
+    int rates[num_flows_per_interface] = {  200, 200, 200, 200,  200 }; // Mbit/s
 
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows_per_interface, "");
     static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows_per_interface, "");

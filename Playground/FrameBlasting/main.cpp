@@ -45,12 +45,21 @@ struct Flow
 
     void set_mbps(int64_t mbps)
     {
-        mBytesPerSecond = 1e6 * mbps / 8;
+        mBytesPerSecond = (1e6 * mbps) / 8.0;
+        update_frame_interval();
+    }
+
+    void set_packet_size(std::size_t n)
+    {
+        mPacket.mData.resize(n);
+        assert(mPacket.size() > 0);
+
+        update_frame_interval();
     }
 
     void pull(std::deque<Packet*>& packets, Timestamp current_time)
     {
-        if (mNextTransmission == Timestamp())
+        if (mNextTransmission == Timestamp{})
         {
             mNextTransmission = current_time;
         }
@@ -61,25 +70,34 @@ struct Flow
             {
                 break;
             }
+
             packets.push_back(&mPacket);
             mTxBytes += mPacket.size();
-            auto next = std::chrono::nanoseconds(long(1e9 * mPacket.size() / mBytesPerSecond));
-            mNextTransmission += next;
+
+            assert(mPacket.size() > 0);
+            mNextTransmission += mInterval;
         }
     }
 
+private:
+    void update_frame_interval()
+    {
+        mInterval = std::chrono::nanoseconds(int64_t((1e9 * mPacket.size()) / mBytesPerSecond));
+    }
+
     Packet mPacket;
-    Timestamp mNextTransmission = Timestamp();
     double mBytesPerSecond = 1e9 / 8;
     int64_t mTxBytes = 0;
+    Timestamp mNextTransmission{};
+    std::chrono::nanoseconds mInterval{};
 };
 
 
 struct BBInterface
 {
-    void set_rate_limit(double bytes_per_ns)
+    void set_rate_limit(double bytes_per_s)
     {
-        mBytesPerNs = bytes_per_ns;
+        mBytesPerSecond = bytes_per_s;
     }
 
     Flow& add_flow()
@@ -107,7 +125,7 @@ struct BBInterface
         assert(front_packet->size() > 0);
         auto packet_size = front_packet->size();
 
-        if (mBytesPerNs && mBucket < packet_size)
+        if (mBytesPerSecond && mBucket < packet_size)
         {
             if (mLastTime == Timestamp())
             {
@@ -115,7 +133,7 @@ struct BBInterface
             }
             std::chrono::nanoseconds elapsed_ns = current_time - mLastTime;
 
-            auto bucket_increment = elapsed_ns.count() * mBytesPerNs / 1e9;
+            auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
             auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
             if (new_bucket < packet_size)
             {
@@ -131,13 +149,13 @@ struct BBInterface
         mTxBytes += packet_size;
         mPackets.pop_front();
 
-        if (mBytesPerNs)
+        if (mBytesPerSecond)
         {
             mBucket -= packet_size;
         }
     }
 
-    double mBytesPerNs = 1e9 / 8;
+    double mBytesPerSecond = 1e9 / 8;
     double mMaxBucketSize = 8 * 1024;
     double mBucket = mMaxBucketSize;
     Timestamp mLastTime = Timestamp();
@@ -152,7 +170,7 @@ struct Socket
     void send_batch(Timestamp ts, const std::vector<Packet*>& packets)
     {
         auto total_size = 0ul;
-        for (auto p : packets)
+        for (auto& p : packets)
         {
             auto size = p->size();
             assert(size > 0);
@@ -228,10 +246,10 @@ private:
     {
         std::vector<Packet*> packets;
 
+        auto now = Clock::now();
         while (!mQuit)
         {
             std::lock_guard<std::mutex> lock(mMutex);
-            auto now = Clock::now();
 
             for (BBInterface& bbinterface : mBBInterfaces)
             {
@@ -243,6 +261,8 @@ private:
                 mSocket.send_batch(now, packets);
                 packets.clear();
             }
+
+            now = Clock::now();
         }
     }
 
@@ -259,15 +279,20 @@ private:
 
 int main()
 {
-    PhysicalInterface physicalInterface(48);
 
     enum { num_interfaces = 100 };
+
+    PhysicalInterface physicalInterface(num_interfaces);
+
 
     physicalInterface.getBBInterfaces().resize(num_interfaces);
     enum { num_flows = 4 };
 
-    int sizes[num_flows] = { 128, 256, 512, 1024 };
-    int mbps[num_flows] = { 250, 250, 250, 250 };
+    int sizes[num_flows] = {   64, 128, 256, 512 };
+    int mbps[num_flows]  = {  100, 100, 400, 400 };
+
+    static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
+    static_assert(sizeof(mbps) == sizeof(mbps[0]) * num_flows, "");
 
 
     for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)
@@ -276,9 +301,8 @@ int main()
         for (auto flow_id = 0; flow_id != num_flows; ++flow_id)
         {
             Flow& flow = bbInterface.add_flow();
-            flow.mPacket.mData.resize(sizes[flow_id]);
+            flow.set_packet_size(sizes[flow_id]);
             flow.set_mbps(mbps[flow_id]);
-            assert(flow.mPacket.size() > 0);
         }
     }
 

@@ -280,7 +280,6 @@ int main()
     PhysicalInterface physicalInterface(num_interfaces);
 
 
-    physicalInterface.getBBInterfaces().resize(num_interfaces);
     enum { num_flows_per_interface = 5 };
 
     int sizes[num_flows_per_interface] = {   64, 128, 256, 512, 1024 };

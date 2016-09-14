@@ -1,5 +1,3 @@
-#include <boost/container/flat_map.hpp>
-#include <boost/container/flat_set.hpp>
 #include <atomic>
 #include <unordered_map>
 #include <map>
@@ -36,7 +34,6 @@ Timestamp gStartTime = Clock::now();
 
 
 struct BBInterface;
-
 
 
 struct Flow
@@ -85,23 +82,19 @@ struct BBInterface
         mBytesPerNs = bytes_per_ns;
     }
 
-    void add_flow(Flow& flow)
+    Flow& add_flow()
     {
-        mFlows.insert(&flow);
+        mFlows.resize(mFlows.size() + 1);
+        return mFlows.back();
     }
 
-    void remove_flow(Flow& flow)
-    {
-        mFlows.erase(&flow);
-    }
-
-    void pull(std::deque<Packet*>& packets, Timestamp current_time)
+    void pull(std::vector<Packet*>& packets, Timestamp current_time)
     {
         if (mPackets.empty())
         {
-            for (Flow* flow : mFlows)
+            for (Flow& flow : mFlows)
             {
-                flow->pull(mPackets, current_time);
+                flow.pull(mPackets, current_time);
             }
             if (mPackets.empty())
             {
@@ -146,7 +139,7 @@ struct BBInterface
     double mMaxBucketSize = 8 * 1024;
     double mBucket = mMaxBucketSize;
     Timestamp mLastTime = Timestamp();
-    boost::container::flat_set<Flow*> mFlows;
+    std::vector<Flow> mFlows;
     std::deque<Packet*> mPackets;
     int64_t mTxBytes = 0;
 };
@@ -154,7 +147,7 @@ struct BBInterface
 
 struct Socket
 {
-    void send_batch(Timestamp ts, const std::deque<Packet*>& packets)
+    void send_batch(Timestamp ts, const std::vector<Packet*>& packets)
     {
         auto total_size = 0ul;
         for (auto p : packets)
@@ -189,7 +182,7 @@ struct Socket
 
     uint64_t mTxBytes = 0;
     Timestamp mTimestamp = Timestamp();
-    boost::container::flat_map<int, int> mSizes;
+    std::map<int, int> mSizes;
 };
 
 
@@ -200,10 +193,10 @@ struct PhysicalInterface
         mThread(&PhysicalInterface::run_thread, this)
     {
     }
-    
+
     PhysicalInterface(const PhysicalInterface&) = delete;
     PhysicalInterface& operator=(const PhysicalInterface&) = delete;
-    
+
     ~PhysicalInterface()
     {
         stop();
@@ -225,8 +218,8 @@ struct PhysicalInterface
 private:
     void run_thread()
     {
-        std::deque<Packet*> packets;
-        
+        std::vector<Packet*> packets;
+
         while (!mQuit)
         {
             std::lock_guard<std::mutex> lock(mMutex);
@@ -244,7 +237,7 @@ private:
             }
         }
     }
-    
+
     std::atomic<bool> mQuit{false};
     std::vector<BBInterface> mBBInterfaces;
     Socket mSocket;
@@ -274,10 +267,9 @@ int main()
         BBInterface& bbInterface = physicalInterface.getBBInterfaces().at(interface_id);
         for (auto flow_id = 0; flow_id != num_flows; ++flow_id)
         {
-            auto& flow = *new Flow;
+            Flow& flow = bbInterface.add_flow();
             flow.mPacket.mData.resize(sizes[flow_id]);
             flow.set_mbps(mbps[flow_id]);
-            bbInterface.add_flow(flow);
         }
     }
 

@@ -1,5 +1,5 @@
 #include <atomic>
-#include <unordered_map>
+#include <cassert>
 #include <map>
 #include <chrono>
 #include <iomanip>
@@ -96,6 +96,7 @@ struct BBInterface
             {
                 flow.pull(mPackets, current_time);
             }
+
             if (mPackets.empty())
             {
                 return;
@@ -103,6 +104,7 @@ struct BBInterface
         }
 
         Packet* front_packet = mPackets.front();
+        assert(front_packet->size() > 0);
         auto packet_size = front_packet->size();
 
         if (mBytesPerNs && mBucket < packet_size)
@@ -153,6 +155,7 @@ struct Socket
         for (auto p : packets)
         {
             auto size = p->size();
+            assert(size > 0);
             total_size += size;
             mSizes[size]++;
         }
@@ -190,7 +193,7 @@ struct PhysicalInterface
 {
     PhysicalInterface(std::size_t num_interfaces) :
         mBBInterfaces(num_interfaces),
-        mThread(&PhysicalInterface::run_thread, this)
+        mThread()
     {
     }
 
@@ -200,6 +203,11 @@ struct PhysicalInterface
     ~PhysicalInterface()
     {
         stop();
+    }
+
+    void start()
+    {
+        mThread = std::thread(&PhysicalInterface::run_thread, this);
     }
 
     void stop()
@@ -270,9 +278,11 @@ int main()
             Flow& flow = bbInterface.add_flow();
             flow.mPacket.mData.resize(sizes[flow_id]);
             flow.set_mbps(mbps[flow_id]);
+            assert(flow.mPacket.size() > 0);
         }
     }
 
 
+    physicalInterface.start();
     std::this_thread::sleep_for(std::chrono::seconds(20));
 }

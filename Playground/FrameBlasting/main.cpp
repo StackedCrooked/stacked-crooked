@@ -19,7 +19,7 @@
 // A single PhysicalInterface with 100 BBInterfaces connected.
 // The PhysicalInterface can do 100Gbit/s.
 // Each BBInterface is rate limited to 1Gbit/s.
-// Each BBInterface has 5 flows that each send one packet at a fixed rate. The packet is fixed size.
+// Each BBInterface has 5 flows that each send one fixed-size packet at a fixed rate.
 // So there are 500 flows in total.
 //
 // BASIC IDEA:

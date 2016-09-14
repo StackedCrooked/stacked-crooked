@@ -270,25 +270,28 @@ int main()
 
 
     physicalInterface.getBBInterfaces().resize(num_interfaces);
-    enum { num_flows = 5 };
+    enum { num_flows_per_interface = 5 };
 
-    int sizes[num_flows] = {   64, 128, 256, 512, 1024 };
-    int mbps[num_flows]  = {  200, 200, 200, 200,  200 };
+    int sizes[num_flows_per_interface] = {   64, 128, 256, 512, 1024 };
+    int mbps[num_flows_per_interface]  = {  200, 200, 200, 200,  200 };
 
-    static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
-    static_assert(sizeof(mbps) == sizeof(mbps[0]) * num_flows, "");
+    static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows_per_interface, "");
+    static_assert(sizeof(mbps) == sizeof(mbps[0]) * num_flows_per_interface, "");
 
 
     for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)
     {
         BBInterface& bbInterface = physicalInterface.getBBInterfaces().at(interface_id);
-        for (auto flow_id = 0; flow_id != num_flows; ++flow_id)
+        for (auto flow_id = 0; flow_id != num_flows_per_interface; ++flow_id)
         {
             Flow& flow = bbInterface.add_flow();
             flow.set_packet_size(sizes[flow_id]);
             flow.set_mbps(mbps[flow_id]);
         }
     }
+
+    std::cout << "Number of interfaces: " << num_interfaces << std::endl;
+    std::cout << "Total number of flows: " << num_interfaces * num_flows_per_interface << std::endl;
 
 
     physicalInterface.start();

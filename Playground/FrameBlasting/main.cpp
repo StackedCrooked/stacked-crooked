@@ -68,14 +68,11 @@ struct Flow
             mNextTransmission = current_time;
         }
 
-        if (current_time < mNextTransmission)
+        if (current_time >= mNextTransmission)
         {
-            return;
+            packets.push_back(&mPacket);
+            mNextTransmission += mInterval;
         }
-
-        packets.push_back(&mPacket);
-
-        mNextTransmission += mInterval;
     }
 
 private:

@@ -24,11 +24,11 @@
 //
 // BASIC IDEA:
 // Pull-based rather than push-based:
-// - The PhysicalInterface "pulls" packets from its BBInterface.
+// - The PhysicalInterface "pulls" packets from its BBInterface
 // - Each BBInterface
-//     (1) first pulls one packet from each flow and stores them into a single queue (fairness)
-//     (2) pops packet from the queue if allows by token bucket (rate limiting)
-//     (3) if queue becomes empty then step (1) is repeated.
+//     (1) if queue is empty then we pull one packet from each flow into the queue (fairness)
+//     (2) pop packets from the queue using token bucket to implement the rate limiting
+//     (3) if queue becomes empty then step (1) is repeated
 
 
 using Clock = std::chrono::steady_clock;

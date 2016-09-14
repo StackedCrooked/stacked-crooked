@@ -286,7 +286,7 @@ int main()
     int rates[num_flows_per_interface] = {  200, 200, 200, 200,  200 };
 
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows_per_interface, "");
-    static_assert(sizeof(rates) == sizeof(mbps[0]) * num_flows_per_interface, "");
+    static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows_per_interface, "");
 
 
     for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)

@@ -69,7 +69,7 @@ struct Flow
 private:
     void update_frame_interval()
     {
-        mInterval = std::chrono::nanoseconds(int64_t((1e9 * mPacket.size()) / mBytesPerSecond));
+        mInterval = std::chrono::nanoseconds(int64_t(1e9 * mPacket.size() / mBytesPerSecond));
     }
 
     Packet mPacket;
@@ -295,5 +295,5 @@ int main()
 
 
     physicalInterface.start();
-    std::this_thread::sleep_for(std::chrono::seconds(20));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 }

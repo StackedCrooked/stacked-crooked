@@ -45,7 +45,16 @@ using Clock = std::chrono::steady_clock;
 
 struct Packet
 {
-    std::size_t size() const { return mData.size(); }
+    std::size_t size() const { return mSize; }
+
+    void set_size(std::size_t n)
+    {
+        mSize = n;
+        mData.resize(n);
+    }
+
+private:
+    std::size_t mSize = 0;
     std::string mData;
 };
 
@@ -65,7 +74,7 @@ struct Flow
 
     void set_packet_size(std::size_t packet_size)
     {
-        mPacket.mData.resize(packet_size);
+        mPacket.set_size(packet_size);
         update_frame_interval();
     }
 

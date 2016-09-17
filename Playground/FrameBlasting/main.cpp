@@ -11,9 +11,6 @@
 #include <vector>
 #include <thread>
 
-std::atomic<bool> setup{false};
-
-
 // BASIC ALGORITHM
 // ---------------
 // The idea is to work "pull"-based rather than "push"-based: the PhysicalInterface gets current
@@ -85,10 +82,13 @@ struct Flow
             mNextTransmission = current_time;
         }
 
-        if (current_time >= mNextTransmission)
+        for (auto i = 0; i != 2; ++i)
         {
-            packets.push_back(&mPacket);
-            mNextTransmission += mFrameInterval;
+            if (current_time >= mNextTransmission)
+            {
+                packets.push_back(&mPacket);
+                mNextTransmission += mFrameInterval;
+            }
         }
     }
 
@@ -127,9 +127,12 @@ struct BBInterface
     {
         if (mQueue.empty())
         {
-            for (Flow& flow : mFlows)
+            for (auto i = 0; i != 2; ++i)
             {
-                flow.pull(mQueue, current_time);
+                for (Flow& flow : mFlows)
+                {
+                    flow.pull(mQueue, current_time);
+                }
             }
 
             if (mQueue.empty())
@@ -137,8 +140,8 @@ struct BBInterface
                 return;
             }
 
-			std::reverse(mQueue.begin(), mQueue.end());
-			//printf("== %d\n", (int)mQueue.size());
+            std::reverse(mQueue.begin(), mQueue.end());
+            //printf("== %d\n", (int)mQueue.size());
         }
 
         // Apply rate limit.
@@ -270,15 +273,18 @@ private:
 
         auto now = Clock::now();
 
-        setup = false;
-
         while (!mQuit)
         {
-            std::lock_guard<std::mutex> lock(mMutex);
-
-            for (BBInterface& bbinterface : mBBInterfaces)
             {
-                bbinterface.pull(packets, now);
+                std::lock_guard<std::mutex> lock(mMutex);
+            
+                for (auto i = 0; i != 2; ++i)
+                {
+                    for (BBInterface& bbinterface : mBBInterfaces)
+                    {
+                        bbinterface.pull(packets, now);
+                    }
+                }
             }
 
             if (!packets.empty())
@@ -301,7 +307,6 @@ private:
 
 int main()
 {
-    setup = true;
     enum { num_interfaces = 100 };
 
     PhysicalInterface physicalInterface(num_interfaces);
@@ -333,32 +338,5 @@ int main()
 
     physicalInterface.start();
     std::this_thread::sleep_for(std::chrono::seconds(10));
-    setup = true;
 }
 
-
-#if 0
-void* operator new(std::size_t n)
-{
-    if (!setup) printf("+%d\n", (int)n);
-    return malloc(n);
-}
-
-void* operator new[](std::size_t n)
-{
-    if (!setup) printf("+[%d]\n", (int)n);
-    return malloc(n);
-}
-
-void operator delete(void* ptr) noexcept
-{
-    if (!setup)  printf("-%p\n", ptr);
-    free(ptr);
-}
-
-void operator delete[](void* ptr) noexcept
-{
-    if (!setup) printf("-[%p]\n", ptr);
-    free(ptr);
-}
-#endif

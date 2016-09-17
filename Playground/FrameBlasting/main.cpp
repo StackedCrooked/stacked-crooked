@@ -78,7 +78,7 @@ struct Flow
         update_frame_interval();
     }
 
-    void pull(std::deque<Packet*>& packets, Clock::time_point current_time)
+    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
         if (mNextTransmission == Clock::time_point{}) // first iteration
         {
@@ -136,6 +136,9 @@ struct BBInterface
             {
                 return;
             }
+
+			std::reverse(mQueue.begin(), mQueue.end());
+			//printf("== %d\n", (int)mQueue.size());
         }
 
         // Apply rate limit.
@@ -159,12 +162,12 @@ struct BBInterface
         }
 
 
-        Packet* front_packet = mQueue.front();
-        auto packet_size = front_packet->size();
+        Packet* next_packet = mQueue.back();
+        auto packet_size = next_packet->size();
 
-        packets.push_back(front_packet);
+        packets.push_back(next_packet);
         mTxBytes += packet_size;
-        mQueue.pop_front();
+        mQueue.pop_back();
 
         if (mBytesPerSecond)
         {
@@ -176,7 +179,7 @@ struct BBInterface
     double mMaxBucketSize = 16 * 1024;
     double mBucket = mMaxBucketSize;
     Clock::time_point mLastTime = Clock::time_point();
-    std::deque<Packet*> mQueue;
+    std::vector<Packet*> mQueue;
     int64_t mTxBytes = 0;
     std::vector<Flow> mFlows;
 };
@@ -334,6 +337,7 @@ int main()
 }
 
 
+#if 0
 void* operator new(std::size_t n)
 {
     if (!setup) printf("+%d\n", (int)n);
@@ -357,3 +361,4 @@ void operator delete[](void* ptr) noexcept
     if (!setup) printf("-[%p]\n", ptr);
     free(ptr);
 }
+#endif

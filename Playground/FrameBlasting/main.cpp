@@ -1,3 +1,4 @@
+#include <boost/container/flat_map.hpp>
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -191,22 +192,23 @@ struct Socket
 
         if (elapsed_ns >= std::chrono::seconds(1))
         {
-            std::cout << "=== Stats ===\n";
-            std::cout << "elapsed_ns=" << elapsed_ns.count() << " TxBytes=" << mTxBytes << " AvgRate=" << int(10 * 8 * mTxBytes / elapsed_ns.count())/10.0 << "Gbps\nCounters:\n";
+            printf("=== Stats ===\n");
+            printf("elapsed_ns=%d TxBytes=%d AvgRage=%d Gbps\nCounters:\n", (int)elapsed_ns.count(), (int)mTxBytes, int(int(10 * 8 * mTxBytes / elapsed_ns.count())/10.0));
+
             mTxBytes = 0;
             mTimestamp = ts;
             for (auto& el : mSizes)
             {
-                std::cout << ' ' << std::setw(5) << el.first << ": " << el.second << '\n';
+                printf("  %d: %d\n", (int)el.first, (int)el.second);
             }
-            std::cout << std::endl;
+            printf("\n");
             mSizes.clear();
         }
     }
 
     uint64_t mTxBytes = 0;
     Clock::time_point mTimestamp = Clock::time_point();
-    std::map<int, int> mSizes;
+    boost::container::flat_map<int, int> mSizes;
 };
 
 
@@ -310,4 +312,29 @@ int main()
 
     physicalInterface.start();
     std::this_thread::sleep_for(std::chrono::seconds(10));
+}
+
+
+void* operator new(std::size_t n)
+{
+    printf("+%d\n", (int)n);
+    return malloc(n);
+}
+
+void* operator new[](std::size_t n)
+{
+    printf("+[%d]\n", (int)n);
+    return malloc(n);
+}
+
+void operator delete(void* ptr) noexcept
+{
+    printf("-%p\n", ptr);
+    free(ptr);
+}
+
+void operator delete[](void* ptr) noexcept
+{
+    printf("-[%p]\n", ptr);
+    free(ptr);
 }

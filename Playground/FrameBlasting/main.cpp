@@ -7,11 +7,11 @@
 #include <deque>
 #include <map>
 #include <mutex>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 #include <thread>
+
+std::atomic<bool> setup{false};
 
 
 // BASIC ALGORITHM
@@ -98,6 +98,11 @@ private:
 
 struct BBInterface
 {
+    BBInterface()
+    {
+        mFlows.reserve(32);
+    }
+
     void set_rate_limit(double bytes_per_s)
     {
         mBytesPerSecond = bytes_per_s;
@@ -252,6 +257,9 @@ private:
         std::vector<Packet*> packets;
 
         auto now = Clock::now();
+
+        setup = false;
+
         while (!mQuit)
         {
             std::lock_guard<std::mutex> lock(mMutex);
@@ -281,6 +289,7 @@ private:
 
 int main()
 {
+    setup = true;
     enum { num_interfaces = 100 };
 
     PhysicalInterface physicalInterface(num_interfaces);
@@ -312,29 +321,30 @@ int main()
 
     physicalInterface.start();
     std::this_thread::sleep_for(std::chrono::seconds(10));
+    setup = true;
 }
 
 
 void* operator new(std::size_t n)
 {
-    printf("+%d\n", (int)n);
+    if (!setup) printf("+%d\n", (int)n);
     return malloc(n);
 }
 
 void* operator new[](std::size_t n)
 {
-    printf("+[%d]\n", (int)n);
+    if (!setup) printf("+[%d]\n", (int)n);
     return malloc(n);
 }
 
 void operator delete(void* ptr) noexcept
 {
-    printf("-%p\n", ptr);
+    if (!setup)  printf("-%p\n", ptr);
     free(ptr);
 }
 
 void operator delete[](void* ptr) noexcept
 {
-    printf("-[%p]\n", ptr);
+    if (!setup) printf("-[%p]\n", ptr);
     free(ptr);
 }

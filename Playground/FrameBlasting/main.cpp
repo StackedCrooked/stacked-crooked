@@ -306,8 +306,8 @@ int main()
         }
     }
 
-    std::cout << "Number of interfaces: " << num_interfaces << std::endl;
-    std::cout << "Total number of flows: " << num_interfaces * num_flows_per_interface << std::endl;
+    printf("Number of interfaces: %d\n", int(num_interfaces));
+    printf("Total number of flows: %d\n", int(num_interfaces * num_flows_per_interface));
 
 
     physicalInterface.start();

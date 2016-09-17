@@ -60,14 +60,12 @@ struct UDPHeader
 };
 
 
-
-
-
 struct Filter
 {
-    void set(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    void set(uint8_t protnum, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
-        struct H
+        // Imagine
+        struct TransportHeader
         {
             uint8_t unused[3] = { 0, 0, 0 };
             uint8_t protocol = 0;
@@ -77,8 +75,8 @@ struct Filter
             uint16_t dst_port = 0;
         };
 
-        auto h = H();
-        h.protocol = protocol;
+        auto h = TransportHeader();
+        h.protocol = protnum;
         h.src_ip = src_ip;
         h.dst_ip = dst_ip;
         h.src_port = src_port;
@@ -276,8 +274,8 @@ void test(int num_packets, int num_flows, int prefetch)
     std::cout
             << " prefetch="        << prefetch
             << " rx-flows="        << std::setw(2) << std::left << flows.size()
-            << " packet-rate="     << std::setw(6) << std::left << (std::to_string(packet_rate_rounded) + "M/s")
-            << " checks/packet/s=" << std::setw(6) << (std::to_string(flows.size() * packet_rate_rounded) + "M/s")
+            << " packet-rate="     << std::setw(6) << std::left << int(10 * packet_rate)/10.0 << "Mpps"
+            << " checks/packet/s=" << std::setw(6) << (std::to_string(flows.size() * packet_rate_rounded) + "Mpps")
             ;
 
     #if 1

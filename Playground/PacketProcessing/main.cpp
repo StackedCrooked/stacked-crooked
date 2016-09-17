@@ -254,12 +254,13 @@ void test(int num_packets, int num_flows, int prefetch)
 
     auto start_time = Clock::now();
 
-    for (auto i = 0ul; i != packets.size(); i += 1)
+    //for (auto i = 0ul; i != packets.size(); i += 1)
+    for (const Packet& packet : packets)
     {
-        __builtin_prefetch(packets[i+prefetch].data(), 0, 0);
+        __builtin_prefetch(packet.data(), 0, 0);
         for (Flow& flow : flows)
         {
-            flow.match(packets[i].data(), packets[i].size());
+            flow.match(packet.data(), packet.size());
         }
     }
 
@@ -272,10 +273,10 @@ void test(int num_packets, int num_flows, int prefetch)
     auto packet_rate_rounded = int(0.5 + packet_rate);
 
     std::cout
-            << " prefetch="        << prefetch
-            << " rx-flows="        << std::setw(2) << std::left << flows.size()
-            << " packet-rate="     << std::setw(6) << std::left << int(10 * packet_rate)/10.0 << "Mpps"
-            << " checks/packet/s=" << std::setw(6) << (std::to_string(flows.size() * packet_rate_rounded) + "Mpps")
+            << " #FLOWS="        << std::setw(2) << std::left << flows.size()
+            << " PREFETCH="        << prefetch
+            << " MPPS="     << std::setw(6) << std::left << packet_rate_rounded
+            << " (" << flows.size() * packet_rate_rounded << " million filter comparisons per second)"
             ;
 
     #if 1
@@ -294,11 +295,16 @@ void test(int num_packets, int num_flows, int prefetch)
 
 int main()
 {
-    auto num_packets = 1 * 1000 * 1000;
-    auto prefetch = 2;
-    for (auto num_flows = 1; num_flows <= 16; num_flows *= 2)
+    auto num_packets = 4 * 1000 * 1000;
+    std::array<int, 8> flow_counts = {{ 1, 2, 3, 4, 6, 8, 16, 32 }};
+    for (int num_flows : flow_counts)
     {
-        test(num_packets, num_flows, prefetch);
+        test(num_packets, num_flows, 0);
+        test(num_packets, num_flows, 1);
+        test(num_packets, num_flows, 2);
+        test(num_packets, num_flows, 4);
+        test(num_packets, num_flows, 8);
+        std::cout << std::endl;
     }
     std::cout << std::endl;
 }

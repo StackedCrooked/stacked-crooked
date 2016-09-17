@@ -82,12 +82,16 @@ struct Flow
             mNextTransmission = current_time;
         }
 
-        for (auto i = 0; i != 2; ++i)
+        for (auto i = 0; i != 4; ++i)
         {
             if (current_time >= mNextTransmission)
             {
                 packets.push_back(&mPacket);
                 mNextTransmission += mFrameInterval;
+            }
+            else
+            {
+                break;
             }
         }
     }
@@ -127,12 +131,9 @@ struct BBInterface
     {
         if (mQueue.empty())
         {
-            for (auto i = 0; i != 2; ++i)
+            for (Flow& flow : mFlows)
             {
-                for (Flow& flow : mFlows)
-                {
-                    flow.pull(mQueue, current_time);
-                }
+                flow.pull(mQueue, current_time);
             }
 
             if (mQueue.empty())
@@ -213,7 +214,7 @@ struct Socket
         if (elapsed_ns >= std::chrono::seconds(1))
         {
             printf("=== Stats ===\n");
-            printf("elapsed_ns=%d TxBytes=%d AvgRage=%d Gbps\nCounters:\n", (int)elapsed_ns.count(), (int)mTxBytes, int(int(10 * 8 * mTxBytes / elapsed_ns.count())/10.0));
+            printf("elapsed_ns=%d TxBytes=%lu AvgRage=%d Gbps\nCounters:\n", (int)elapsed_ns.count(), mTxBytes, int(int(10 * 8 * mTxBytes / elapsed_ns.count())/10.0));
 
             mTxBytes = 0;
             mTimestamp = ts;
@@ -278,12 +279,9 @@ private:
             {
                 std::lock_guard<std::mutex> lock(mMutex);
             
-                for (auto i = 0; i != 2; ++i)
+                for (BBInterface& bbinterface : mBBInterfaces)
                 {
-                    for (BBInterface& bbinterface : mBBInterfaces)
-                    {
-                        bbinterface.pull(packets, now);
-                    }
+                    bbinterface.pull(packets, now);
                 }
             }
 

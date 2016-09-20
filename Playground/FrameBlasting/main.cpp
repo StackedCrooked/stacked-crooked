@@ -82,17 +82,20 @@ struct Flow
             mNextTransmission = current_time;
         }
 
-        for (auto i = 0; i != 4; ++i)
+        if (current_time >= mNextTransmission + 3 * mFrameInterval)
         {
-            if (current_time >= mNextTransmission)
-            {
-                packets.push_back(&mPacket);
-                mNextTransmission += mFrameInterval;
-            }
-            else
-            {
-                break;
-            }
+            packets.resize(packets.size() + 4, &mPacket);
+            mNextTransmission += 4 * mFrameInterval;
+        }
+        else if (current_time >= mNextTransmission + 1 * mFrameInterval)
+        {
+            packets.resize(packets.size() + 2, &mPacket);
+            mNextTransmission += 2 * mFrameInterval;
+        }
+        else
+        {
+            packets.push_back(&mPacket);
+            mNextTransmission += mFrameInterval;
         }
     }
 
@@ -214,7 +217,7 @@ struct Socket
         if (elapsed_ns >= std::chrono::seconds(1))
         {
             printf("=== Stats ===\n");
-            printf("elapsed_ns=%d TxBytes=%lu AvgRage=%d Gbps\nCounters:\n", (int)elapsed_ns.count(), mTxBytes, int(int(10 * 8 * mTxBytes / elapsed_ns.count())/10.0));
+            printf("elapsed_ns=%lld TxBytes=%llu AvgRage=%f Gbps\nCounters:\n", elapsed_ns.count(), mTxBytes, 8.0 * mTxBytes / elapsed_ns.count());
 
             mTxBytes = 0;
             mTimestamp = ts;

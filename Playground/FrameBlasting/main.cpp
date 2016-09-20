@@ -82,15 +82,12 @@ struct Flow
             mNextTransmission = current_time;
         }
 
-        if (current_time >= mNextTransmission + 3 * mFrameInterval)
+        for (auto i = 0; i != 8; ++i)
         {
-            packets.resize(packets.size() + 4, &mPacket);
-            mNextTransmission += 4 * mFrameInterval;
-            return;
-        }
-
-        if (current_time >= mNextTransmission)
-        {
+            if (current_time < mNextTransmission)
+            {
+                break;
+            }
             packets.push_back(&mPacket);
             mNextTransmission += mFrameInterval;
         }
@@ -113,7 +110,7 @@ struct BBInterface
 {
     BBInterface()
     {
-        mFlows.reserve(32);
+        mFlows.reserve(8);
     }
 
     void set_rate_limit(double bytes_per_s)
@@ -127,9 +124,10 @@ struct BBInterface
         return mFlows.back();
     }
 
-    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
+    uint32_t pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
-        for (auto i = 0; i != 4; ++i)
+        auto result = 0;
+        for (auto i = 0; i != 8; ++i)
         {
             if (mQueue.empty())
             {
@@ -140,7 +138,7 @@ struct BBInterface
 
                 if (mQueue.empty())
                 {
-                    return;
+                    return result;
                 }
 
                 std::reverse(mQueue.begin(), mQueue.end());
@@ -161,7 +159,7 @@ struct BBInterface
                 auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
                 if (new_bucket < 0)
                 {
-                    return;
+                    return result;
                 }
 
                 mBucket = new_bucket;
@@ -180,7 +178,9 @@ struct BBInterface
             {
                 mBucket -= packet_size;
             }
+            result++;
         }
+        return result;
     }
 
     double mBytesPerSecond = 1e9 / 8;
@@ -283,14 +283,19 @@ private:
             {
                 std::lock_guard<std::mutex> lock(mMutex);
             
-                for (BBInterface& bbinterface : mBBInterfaces)
+                for (auto i = 0; i != 4; ++i)
                 {
-                    bbinterface.pull(packets, now);
-                }
+                    auto total_result = 0;
 
-                for (BBInterface& bbinterface : mBBInterfaces)
-                {
-                    bbinterface.pull(packets, now);
+                    for (BBInterface& bbinterface : mBBInterfaces)
+                    {
+                        total_result += bbinterface.pull(packets, now);
+                    }
+
+                    if (total_result == 0)
+                    {
+                        break;
+                    }
                 }
             }
 

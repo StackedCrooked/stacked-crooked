@@ -86,13 +86,10 @@ struct Flow
         {
             packets.resize(packets.size() + 4, &mPacket);
             mNextTransmission += 4 * mFrameInterval;
+            return;
         }
-        else if (current_time >= mNextTransmission + 1 * mFrameInterval)
-        {
-            packets.resize(packets.size() + 2, &mPacket);
-            mNextTransmission += 2 * mFrameInterval;
-        }
-        else
+
+        if (current_time >= mNextTransmission)
         {
             packets.push_back(&mPacket);
             mNextTransmission += mFrameInterval;

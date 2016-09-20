@@ -129,53 +129,57 @@ struct BBInterface
 
     void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
-        if (mQueue.empty())
+        for (auto i = 0; i != 4; ++i)
         {
-            for (Flow& flow : mFlows)
-            {
-                flow.pull(mQueue, current_time);
-            }
-
             if (mQueue.empty())
             {
-                return;
+                for (Flow& flow : mFlows)
+                {
+                    flow.pull(mQueue, current_time);
+                }
+
+                if (mQueue.empty())
+                {
+                    return;
+                }
+
+                std::reverse(mQueue.begin(), mQueue.end());
+                //printf("== %d\n", (int)mQueue.size());
             }
 
-            std::reverse(mQueue.begin(), mQueue.end());
-            //printf("== %d\n", (int)mQueue.size());
-        }
 
-        // Apply rate limit.
-        if (mBytesPerSecond && mBucket < 0)
-        {
-            if (mLastTime == Clock::time_point())
+            // Apply rate limit.
+            if (mBytesPerSecond && mBucket < 0)
             {
+                if (mLastTime == Clock::time_point())
+                {
+                    mLastTime = current_time;
+                }
+                std::chrono::nanoseconds elapsed_ns = current_time - mLastTime;
+
+                auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
+                auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
+                if (new_bucket < 0)
+                {
+                    return;
+                }
+
+                mBucket = new_bucket;
                 mLastTime = current_time;
             }
-            std::chrono::nanoseconds elapsed_ns = current_time - mLastTime;
 
-            auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
-            auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
-            if (new_bucket < 0)
+
+            Packet* next_packet = mQueue.back();
+            auto packet_size = next_packet->size();
+
+            packets.push_back(next_packet);
+            mTxBytes += packet_size;
+            mQueue.pop_back();
+
+            if (mBytesPerSecond)
             {
-                return;
+                mBucket -= packet_size;
             }
-
-            mBucket = new_bucket;
-            mLastTime = current_time;
-        }
-
-
-        Packet* next_packet = mQueue.back();
-        auto packet_size = next_packet->size();
-
-        packets.push_back(next_packet);
-        mTxBytes += packet_size;
-        mQueue.pop_back();
-
-        if (mBytesPerSecond)
-        {
-            mBucket -= packet_size;
         }
     }
 
@@ -279,6 +283,11 @@ private:
             {
                 std::lock_guard<std::mutex> lock(mMutex);
             
+                for (BBInterface& bbinterface : mBBInterfaces)
+                {
+                    bbinterface.pull(packets, now);
+                }
+
                 for (BBInterface& bbinterface : mBBInterfaces)
                 {
                     bbinterface.pull(packets, now);

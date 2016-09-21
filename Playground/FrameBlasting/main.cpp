@@ -3,7 +3,6 @@
 #include <cassert>
 #include <chrono>
 #include <cstdint>
-#include <deque>
 #include <map>
 #include <string>
 #include <thread>
@@ -100,7 +99,7 @@ struct Flow
         mNextTransmission = start_time;
     }
 
-    void pull(std::deque<Packet*>& packets, Clock::time_point current_time)
+    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
         if (current_time >= mNextTransmission)
         {
@@ -138,6 +137,8 @@ struct BBInterface
             {
                 return;
             }
+
+            std::reverse(mAvailablePackets.begin(), mAvailablePackets.end());
         }
 
         if (!check_token_bucket(current_time))
@@ -146,8 +147,8 @@ struct BBInterface
             return;
         }
 
-        Packet* next_packet = mAvailablePackets.front();
-        mAvailablePackets.pop_front();
+        Packet* next_packet = mAvailablePackets.back();
+        mAvailablePackets.pop_back();
 
         packets.push_back(next_packet);
 
@@ -206,7 +207,7 @@ private:
     double mMaxBucketSize = 8 * 1024;
     double mBucketSize = 0;
     Clock::time_point mLastUpdate = Clock::time_point();
-    std::deque<Packet*> mAvailablePackets;
+    std::vector<Packet*> mAvailablePackets;
     std::vector<Flow> mFlows;
 };
 
@@ -308,5 +309,5 @@ int main()
 
 
     physicalInterface.start();
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(20));
 }

@@ -79,13 +79,14 @@ struct Socket
         if (elapsed_ns >= std::chrono::seconds(1))
         {
             printf("=== Stats ===\n");
-            printf("elapsed_ns=%ld TxBytes=%ld AvgRage=%f Gbps\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
+            printf("elapsed_ns=%ld TxBytes=%ld Rate=%f Gbps\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
 
             mTxBytes = 0;
             mTimestamp = ts;
             for (auto& el : mSizes)
             {
-                printf("  %d: %d\n", (int)el.first, (int)el.second);
+                auto bitrate = el.first * el.second * 8;
+                printf("  %4ld bytes * %8ld => %10ld bps\n", (long)el.first, (long)el.second, (long)bitrate);
             }
             printf("\n");
             mSizes.clear();
@@ -94,7 +95,7 @@ struct Socket
 
     uint64_t mTxBytes = 0;
     Clock::time_point mTimestamp = Clock::time_point();
-    boost::container::flat_map<int, int> mSizes;
+    boost::container::flat_map<int64_t, int64_t> mSizes;
 };
 
 
@@ -118,17 +119,13 @@ struct Flow
 
     void pull(std::deque<Packet*>& packets, Clock::time_point current_time)
     {
-        if (mNextTransmission == Clock::time_point{}) // first iteration
+        if (mNextTransmission == Clock::time_point{}) // first iteration (TODO: set start time)
         {
             mNextTransmission = current_time;
         }
 
-        for (auto i = 0; i != 4; ++i)
+        if (current_time >= mNextTransmission)
         {
-            if (current_time < mNextTransmission)
-            {
-                break;
-            }
             packets.push_back(&mPacket);
             mNextTransmission += mFrameInterval;
         }
@@ -149,6 +146,57 @@ private:
 
 struct BBInterface
 {
+    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
+    {
+        if (mQueue.empty())
+        {
+            for (Flow& flow : mFlows)
+            {
+                flow.pull(mQueue, current_time);
+            }
+
+            if (mQueue.empty())
+            {
+                return;
+            }
+        }
+
+
+        // Apply rate limit.
+        if (is_rate_limited() && mBucketSize < 0)
+        {
+            if (mLastUpdate == Clock::time_point())
+            {
+                mLastUpdate = current_time;
+            }
+
+            std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
+
+            auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
+            auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
+            if (new_bucket < 0)
+            {
+                return;
+            }
+
+            mBucketSize = new_bucket;
+            mLastUpdate = current_time;
+        }
+
+        Packet* next_packet = mQueue.front();
+        mQueue.pop_front();
+
+        packets.push_back(next_packet);
+        mTxBytes += next_packet->size();
+
+        if (is_rate_limited())
+        {
+            mBucketSize -= next_packet->size();
+        }
+    }
+
+    bool is_rate_limited() const { return mBytesPerSecond != 0; }
+
     void set_rate_limit(double bytes_per_s)
     {
         mBytesPerSecond = bytes_per_s;
@@ -160,70 +208,10 @@ struct BBInterface
         return mFlows.back();
     }
 
-    uint32_t pull(std::vector<Packet*>& packets, Clock::time_point current_time)
-    {
-        auto result = 0;
-
-        for (auto i = 0; i != 4; ++i)
-        {
-            if (mQueue.empty())
-            {
-                for (Flow& flow : mFlows)
-                {
-                    flow.pull(mQueue, current_time);
-                }
-
-                if (mQueue.empty())
-                {
-                    return result;
-                }
-            }
-
-
-            // Apply rate limit.
-            if (is_rate_limited() && mBucketSize < 0)
-            {
-                if (mLastTime == Clock::time_point())
-                {
-                    mLastTime = current_time;
-                }
-
-                std::chrono::nanoseconds elapsed_ns = current_time - mLastTime;
-
-                auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
-                auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
-                if (new_bucket < 0)
-                {
-                    return result;
-                }
-
-                mBucketSize = new_bucket;
-                mLastTime = current_time;
-            }
-
-
-            Packet* next_packet = mQueue.front();
-            mQueue.pop_front();
-
-            packets.push_back(next_packet);
-            mTxBytes += next_packet->size();
-
-            if (is_rate_limited())
-            {
-                mBucketSize -= next_packet->size();
-            }
-
-            result++;
-        }
-        return result;
-    }
-
-    bool is_rate_limited() const { return mBytesPerSecond != 0; }
-
     double mBytesPerSecond = 1e9 / 8;
     double mMaxBucketSize = 16 * 1024;
-    double mBucketSize = mMaxBucketSize;
-    Clock::time_point mLastTime = Clock::time_point();
+    double mBucketSize = 0;
+    Clock::time_point mLastUpdate = Clock::time_point();
     std::deque<Packet*> mQueue;
     int64_t mTxBytes = 0;
     std::vector<Flow> mFlows;
@@ -273,24 +261,11 @@ private:
 
         while (!mQuit)
         {
+            std::lock_guard<std::mutex> lock(mMutex);
+
+            for (BBInterface& bbinterface : mBBInterfaces)
             {
-                std::lock_guard<std::mutex> lock(mMutex);
-
-                // Iterate 4 times.
-                for (auto i = 0; i != 4; ++i)
-                {
-                    auto total_result = 0;
-
-                    for (BBInterface& bbinterface : mBBInterfaces)
-                    {
-                        total_result += bbinterface.pull(packets, now);
-                    }
-
-                    if (total_result == 0)
-                    {
-                        break;
-                    }
-                }
+                bbinterface.pull(packets, now);
             }
 
             if (!packets.empty())

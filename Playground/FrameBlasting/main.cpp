@@ -117,13 +117,13 @@ struct Flow
         update_frame_interval();
     }
 
+    void set_start_time(Clock::time_point start_time)
+    {
+        mNextTransmission = start_time;
+    }
+
     void pull(std::deque<Packet*>& packets, Clock::time_point current_time)
     {
-        if (mNextTransmission == Clock::time_point{}) // first iteration (TODO: set start time)
-        {
-            mNextTransmission = current_time;
-        }
-
         if (current_time >= mNextTransmission)
         {
             packets.push_back(&mPacket);
@@ -148,28 +148,23 @@ struct BBInterface
 {
     void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
-        if (mQueue.empty())
+        if (mAvailablePackets.empty())
         {
+            // Pull a packet from each flow.
             for (Flow& flow : mFlows)
             {
-                flow.pull(mQueue, current_time);
+                flow.pull(mAvailablePackets, current_time);
             }
 
-            if (mQueue.empty())
+            if (mAvailablePackets.empty())
             {
                 return;
             }
         }
 
-
         // Apply rate limit.
         if (is_rate_limited() && mBucketSize < 0)
         {
-            if (mLastUpdate == Clock::time_point())
-            {
-                mLastUpdate = current_time;
-            }
-
             std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
 
             auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
@@ -183,10 +178,11 @@ struct BBInterface
             mLastUpdate = current_time;
         }
 
-        Packet* next_packet = mQueue.front();
-        mQueue.pop_front();
+        Packet* next_packet = mAvailablePackets.front();
+        mAvailablePackets.pop_front();
 
         packets.push_back(next_packet);
+
         mTxBytes += next_packet->size();
 
         if (is_rate_limited())
@@ -195,7 +191,10 @@ struct BBInterface
         }
     }
 
-    bool is_rate_limited() const { return mBytesPerSecond != 0; }
+    bool is_rate_limited() const
+    {
+        return mBytesPerSecond != 0;
+    }
 
     void set_rate_limit(double bytes_per_s)
     {
@@ -209,10 +208,10 @@ struct BBInterface
     }
 
     double mBytesPerSecond = 1e9 / 8;
-    double mMaxBucketSize = 32 * 1024;
+    double mMaxBucketSize = 8 * 1024;
     double mBucketSize = 0;
     Clock::time_point mLastUpdate = Clock::time_point();
-    std::deque<Packet*> mQueue;
+    std::deque<Packet*> mAvailablePackets;
     int64_t mTxBytes = 0;
     std::vector<Flow> mFlows;
 };
@@ -301,6 +300,8 @@ int main()
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows_per_interface, "");
     static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows_per_interface, "");
 
+    auto start_time = Clock::now() + std::chrono::seconds(1);
+
 
     for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)
     {
@@ -310,6 +311,7 @@ int main()
             Flow& flow = bbInterface.add_flow();
             flow.set_packet_size(sizes[flow_id]);
             flow.set_bitrate(rates[flow_id]);
+            flow.set_start_time(start_time);
         }
     }
 

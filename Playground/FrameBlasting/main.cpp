@@ -47,12 +47,10 @@ struct Packet
     void set_size(std::size_t n)
     {
         mSize = n;
-        mData.resize(n);
     }
 
 private:
     std::size_t mSize = 0;
-    std::string mData;
 };
 
 
@@ -218,7 +216,7 @@ struct Socket
         if (elapsed_ns >= std::chrono::seconds(1))
         {
             printf("=== Stats ===\n");
-            printf("elapsed_ns=%lld TxBytes=%llu AvgRage=%f Gbps\nCounters:\n", elapsed_ns.count(), mTxBytes, 8.0 * mTxBytes / elapsed_ns.count());
+            printf("elapsed_ns=%ld TxBytes=%ld AvgRage=%f Gbps\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
 
             mTxBytes = 0;
             mTimestamp = ts;
@@ -282,7 +280,7 @@ private:
         {
             {
                 std::lock_guard<std::mutex> lock(mMutex);
-            
+
                 for (auto i = 0; i != 4; ++i)
                 {
                     auto total_result = 0;

@@ -1,4 +1,3 @@
-#include <boost/container/flat_map.hpp>
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -113,7 +112,7 @@ struct Socket
 
     uint64_t mTxBytes = 0;
     Clock::time_point mTimestamp = Clock::time_point();
-    boost::container::flat_map<int64_t, int64_t> mCounters;
+    std::map<int64_t, int64_t> mCounters;
 };
 
 

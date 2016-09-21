@@ -150,7 +150,7 @@ struct BBInterface
     {
         if (mAvailablePackets.empty())
         {
-            // Pull a packet from each flow.
+            // Pull a packet from each flow that wants to transmit.
             for (Flow& flow : mFlows)
             {
                 flow.pull(mAvailablePackets, current_time);

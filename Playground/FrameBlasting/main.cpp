@@ -153,18 +153,11 @@ struct BBInterface
 
         if (is_rate_limited() && mBucketSize < 0)
         {
-            std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
-
-            auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
-            auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
-            if (new_bucket < 0)
+            if (!update_bucket(current_time))
             {
-                // We must wait a little longer.
+                // We are not allowed to transmit yet.
                 return;
             }
-
-            mBucketSize = new_bucket;
-            mLastUpdate = current_time;
         }
 
         Packet* next_packet = mAvailablePackets.front();
@@ -196,6 +189,23 @@ struct BBInterface
     }
 
 private:
+    bool update_bucket(Clock::time_point current_time)
+    {
+        std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
+
+        auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
+        auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
+        if (new_bucket < 0)
+        {
+            // We must wait a little longer.
+            return false;
+        }
+
+        mBucketSize = new_bucket;
+        mLastUpdate = current_time;
+        return true;
+    }
+
     double mBytesPerSecond = 1e9 / 8;
     double mMaxBucketSize = 8 * 1024;
     double mBucketSize = 0;

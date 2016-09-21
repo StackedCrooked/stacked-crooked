@@ -124,10 +124,13 @@ struct Flow
             mNextTransmission = current_time;
         }
 
-        if (current_time >= mNextTransmission)
+        for (auto i = 0; i != 2; ++i)
         {
-            packets.push_back(&mPacket);
-            mNextTransmission += mFrameInterval;
+            if (current_time >= mNextTransmission)
+            {
+                packets.push_back(&mPacket);
+                mNextTransmission += mFrameInterval;
+            }
         }
     }
 
@@ -161,37 +164,39 @@ struct BBInterface
             }
         }
 
-
-        // Apply rate limit.
-        if (is_rate_limited() && mBucketSize < 0)
+        for (auto i = 0; i != 2; ++i)
         {
-            if (mLastUpdate == Clock::time_point())
+            // Apply rate limit.
+            if (is_rate_limited() && mBucketSize < 0)
             {
+                if (mLastUpdate == Clock::time_point())
+                {
+                    mLastUpdate = current_time;
+                }
+
+                std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
+
+                auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
+                auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
+                if (new_bucket < 0)
+                {
+                    return;
+                }
+
+                mBucketSize = new_bucket;
                 mLastUpdate = current_time;
             }
 
-            std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
+            Packet* next_packet = mQueue.front();
+            mQueue.pop_front();
 
-            auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
-            auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
-            if (new_bucket < 0)
+            packets.push_back(next_packet);
+            mTxBytes += next_packet->size();
+
+            if (is_rate_limited())
             {
-                return;
+                mBucketSize -= next_packet->size();
             }
-
-            mBucketSize = new_bucket;
-            mLastUpdate = current_time;
-        }
-
-        Packet* next_packet = mQueue.front();
-        mQueue.pop_front();
-
-        packets.push_back(next_packet);
-        mTxBytes += next_packet->size();
-
-        if (is_rate_limited())
-        {
-            mBucketSize -= next_packet->size();
         }
     }
 
@@ -209,7 +214,7 @@ struct BBInterface
     }
 
     double mBytesPerSecond = 1e9 / 8;
-    double mMaxBucketSize = 16 * 1024;
+    double mMaxBucketSize = 32 * 1024;
     double mBucketSize = 0;
     Clock::time_point mLastUpdate = Clock::time_point();
     std::deque<Packet*> mQueue;
@@ -320,4 +325,3 @@ int main()
     physicalInterface.start();
     std::this_thread::sleep_for(std::chrono::seconds(10));
 }
-

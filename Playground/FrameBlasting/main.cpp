@@ -42,43 +42,36 @@ struct Socket
 {
     void send_batch(Clock::time_point ts, const std::vector<Packet*>& packets)
     {
-        auto total_size = 0ul;
         for (auto& p : packets)
         {
-            auto size = p->size();
-            assert(size > 0);
-            total_size += size;
-            mCounters[size]++;
+            mTxBytes += p->size();
+            mCounters[p->size()]++;
         }
 
-        mTxBytes += total_size;
-
-        if (mTimestamp == Clock::time_point())
+        if (mStartTime == Clock::time_point())
         {
-            mTimestamp = Clock::now();
+            mStartTime = Clock::now();
         }
 
-        std::chrono::nanoseconds elapsed_ns = ts - mTimestamp;
+        std::chrono::nanoseconds elapsed_ns = ts - mStartTime;
 
         if (elapsed_ns >= std::chrono::seconds(1))
         {
-            printf("=== Stats ===\n");
-            printf("elapsed_ns=%ld TxBytes=%ld Rate=%f Gbps\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
+            printf("\n=== Stats ===\nelapsed_ns=%ld TxBytes=%ld Rate=%f Gbps\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
 
             mTxBytes = 0;
-            mTimestamp = ts;
+            mStartTime = ts;
             for (auto& el : mCounters)
             {
                 auto bitrate = el.first * el.second * 8;
                 printf("  %4ld bytes * %8ld => %4f Gbit/s\n", (long)el.first, (long)el.second, (double)bitrate/1e9);
             }
-            printf("\n");
             mCounters.clear();
         }
     }
 
     uint64_t mTxBytes = 0;
-    Clock::time_point mTimestamp = Clock::time_point();
+    Clock::time_point mStartTime = Clock::time_point();
     std::map<int64_t, int64_t> mCounters;
 };
 

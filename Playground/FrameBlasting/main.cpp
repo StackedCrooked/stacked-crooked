@@ -124,13 +124,10 @@ struct Flow
             mNextTransmission = current_time;
         }
 
-        for (auto i = 0; i != 2; ++i)
+        if (current_time >= mNextTransmission)
         {
-            if (current_time >= mNextTransmission)
-            {
-                packets.push_back(&mPacket);
-                mNextTransmission += mFrameInterval;
-            }
+            packets.push_back(&mPacket);
+            mNextTransmission += mFrameInterval;
         }
     }
 
@@ -164,39 +161,37 @@ struct BBInterface
             }
         }
 
-        for (auto i = 0; i != 2; ++i)
+
+        // Apply rate limit.
+        if (is_rate_limited() && mBucketSize < 0)
         {
-            // Apply rate limit.
-            if (is_rate_limited() && mBucketSize < 0)
+            if (mLastUpdate == Clock::time_point())
             {
-                if (mLastUpdate == Clock::time_point())
-                {
-                    mLastUpdate = current_time;
-                }
-
-                std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
-
-                auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
-                auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
-                if (new_bucket < 0)
-                {
-                    return;
-                }
-
-                mBucketSize = new_bucket;
                 mLastUpdate = current_time;
             }
 
-            Packet* next_packet = mQueue.front();
-            mQueue.pop_front();
+            std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
 
-            packets.push_back(next_packet);
-            mTxBytes += next_packet->size();
-
-            if (is_rate_limited())
+            auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
+            auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
+            if (new_bucket < 0)
             {
-                mBucketSize -= next_packet->size();
+                return;
             }
+
+            mBucketSize = new_bucket;
+            mLastUpdate = current_time;
+        }
+
+        Packet* next_packet = mQueue.front();
+        mQueue.pop_front();
+
+        packets.push_back(next_packet);
+        mTxBytes += next_packet->size();
+
+        if (is_rate_limited())
+        {
+            mBucketSize -= next_packet->size();
         }
     }
 

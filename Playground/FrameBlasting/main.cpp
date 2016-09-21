@@ -136,7 +136,6 @@ struct BBInterface
         // (1) pop a packet from each ready-to-transmit flow (fairness)
         // (2) transmit packets according to rate limit
         // (3) repeat 1
-
         if (mAvailablePackets.empty())
         {
             // Pull a packet from each flow that wants to transmit.
@@ -151,13 +150,10 @@ struct BBInterface
             }
         }
 
-        if (is_rate_limited() && mBucketSize < 0)
+        if (!check_bucket(current_time))
         {
-            if (!update_bucket(current_time))
-            {
-                // We are not allowed to transmit yet.
-                return;
-            }
+            // We are not allowed to transmit yet.
+            return;
         }
 
         Packet* next_packet = mAvailablePackets.front();
@@ -189,6 +185,16 @@ struct BBInterface
     }
 
 private:
+    bool check_bucket(Clock::time_point current_time)
+    {
+        if (mBytesPerSecond != 0 && mBucketSize >= 0)
+        {
+            return true;
+        }
+
+        return update_bucket(current_time);
+    }
+
     bool update_bucket(Clock::time_point current_time)
     {
         std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;

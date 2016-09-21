@@ -132,13 +132,9 @@ struct BBInterface
 {
     void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
-        // Two phases:
-        // (1) pop a packet from each ready-to-transmit flow (fairness)
-        // (2) transmit packets according to rate limit
-        // (3) repeat 1
         if (mAvailablePackets.empty())
         {
-            // Pull a packet from each flow that wants to transmit.
+            // Pull a packet from each ready-to-transmit flow.
             for (Flow& flow : mFlows)
             {
                 flow.pull(mAvailablePackets, current_time);

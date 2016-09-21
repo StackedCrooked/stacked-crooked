@@ -208,6 +208,7 @@ struct BBInterface
         return mFlows.back();
     }
 
+private:
     double mBytesPerSecond = 1e9 / 8;
     double mMaxBucketSize = 8 * 1024;
     double mBucketSize = 0;

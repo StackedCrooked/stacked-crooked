@@ -11,6 +11,24 @@
 #include <vector>
 #include <thread>
 
+
+// 40/100 Gbit/s
+// - enable batching (eth_dev_tx_burst)
+// - allow small bursts but avoid cubro loss
+// - ensure fairness
+// - push vs pull
+// - avoid overhead of callback-based approach (HRTimer)
+// - amortise overhead of mutex locking and getting system time
+
+
+// Sample program is very simplified:
+// - no stream or frame modifiers
+// - one frame per flow
+// - single thread
+// - fake packet
+// - fake socket
+
+
 // BASIC ALGORITHM
 // ---------------
 // The idea is to work "pull"-based rather than "push"-based: the PhysicalInterface gets current

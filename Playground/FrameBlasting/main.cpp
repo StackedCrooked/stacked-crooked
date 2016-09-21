@@ -302,38 +302,38 @@ private:
 
 int main()
 {
-    enum { num_interfaces = 100 };
+    enum
+    {
+        num_interfaces = 100,
+        num_flows = 5
+    };
 
-    PhysicalInterface physicalInterface(num_interfaces);
+    int sizes[num_flows] = {   64, 128, 256, 512, 1024 };
+    int rates[num_flows] = {  200, 200, 200, 200,  200 }; // Mbit/s
 
-
-    enum { num_flows_per_interface = 5 };
-
-    int sizes[num_flows_per_interface] = {   64, 128, 256, 512, 1024 };
-    int rates[num_flows_per_interface] = {  200, 200, 200, 200,  200 }; // Mbit/s
-
-    static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows_per_interface, "");
-    static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows_per_interface, "");
+    static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
+    static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows, "");
 
     auto start_time = Clock::now() + std::chrono::seconds(1);
 
+    PhysicalInterface physicalInterface(num_interfaces);
 
-    for (auto interface_id = 0; interface_id != num_interfaces; ++interface_id)
+    for (BBInterface& bbInterface : physicalInterface.getBBInterfaces())
     {
-        BBInterface& bbInterface = physicalInterface.getBBInterfaces().at(interface_id);
-        for (auto flow_id = 0; flow_id != num_flows_per_interface; ++flow_id)
+        for (auto i = 0; i != num_flows; ++i)
         {
             Flow& flow = bbInterface.add_flow();
-            flow.set_packet_size(sizes[flow_id]);
-            flow.set_bitrate(rates[flow_id]);
+            flow.set_packet_size(sizes[i]);
+            flow.set_bitrate(rates[i]);
             flow.set_start_time(start_time);
         }
     }
 
     printf("Number of interfaces: %d\n", int(num_interfaces));
-    printf("Total number of flows: %d\n", int(num_interfaces * num_flows_per_interface));
+    printf("Total number of flows: %d\n", int(num_interfaces * num_flows));
 
 
     physicalInterface.start();
     std::this_thread::sleep_for(std::chrono::seconds(10));
 }
+

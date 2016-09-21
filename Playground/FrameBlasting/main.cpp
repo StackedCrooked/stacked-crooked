@@ -280,8 +280,6 @@ private:
 
         while (!mQuit)
         {
-            std::lock_guard<std::mutex> lock(mMutex);
-
             for (BBInterface& bbinterface : mBBInterfaces)
             {
                 bbinterface.pull(packets, now);
@@ -300,7 +298,6 @@ private:
     std::atomic<bool> mQuit{false};
     std::vector<BBInterface> mBBInterfaces;
     Socket mSocket;
-    std::mutex mMutex;
     std::thread mThread;
 };
 

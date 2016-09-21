@@ -204,6 +204,7 @@ struct BBInterface
     Flow& add_flow()
     {
         mFlows.resize(mFlows.size() + 1);
+        mFlows.shrink_to_fit();
         return mFlows.back();
     }
 

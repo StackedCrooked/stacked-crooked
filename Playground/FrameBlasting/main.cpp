@@ -132,6 +132,11 @@ struct BBInterface
 {
     void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
+        // Two phases:
+        // (1) pop a packet from each ready-to-transmit flow (fairness)
+        // (2) transmit packets according to rate limit
+        // (3) repeat 1
+
         if (mAvailablePackets.empty())
         {
             // Pull a packet from each flow that wants to transmit.
@@ -146,7 +151,6 @@ struct BBInterface
             }
         }
 
-        // Apply rate limit.
         if (is_rate_limited() && mBucketSize < 0)
         {
             std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
@@ -155,6 +159,7 @@ struct BBInterface
             auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
             if (new_bucket < 0)
             {
+                // We must wait a little longer.
                 return;
             }
 
@@ -166,8 +171,6 @@ struct BBInterface
         mAvailablePackets.pop_front();
 
         packets.push_back(next_packet);
-
-        mTxBytes += next_packet->size();
 
         if (is_rate_limited())
         {
@@ -198,7 +201,6 @@ private:
     double mBucketSize = 0;
     Clock::time_point mLastUpdate = Clock::time_point();
     std::deque<Packet*> mAvailablePackets;
-    int64_t mTxBytes = 0;
     std::vector<Flow> mFlows;
 };
 

@@ -150,7 +150,7 @@ struct BBInterface
             }
         }
 
-        if (!check_bucket(current_time))
+        if (!check_token_bucket(current_time))
         {
             // We are not allowed to transmit yet.
             return;
@@ -185,7 +185,7 @@ struct BBInterface
     }
 
 private:
-    bool check_bucket(Clock::time_point current_time)
+    bool check_token_bucket(Clock::time_point current_time)
     {
         if (mBytesPerSecond != 0 && mBucketSize >= 0)
         {

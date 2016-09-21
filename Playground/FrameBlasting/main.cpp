@@ -1,19 +1,20 @@
 #include <algorithm>
 #include <atomic>
-#include <chrono>
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <deque>
 #include <map>
 #include <string>
-#include <vector>
 #include <thread>
+#include <vector>
 
 
 // - 40/100 Gbit/s
 // - enable batching (dpdk api: eth_dev_tx_burst)
 // - ensure fairness
 // - avoid packet loss (cubro)
+// - push vs pull
 
 
 // Sample program is very simplified:

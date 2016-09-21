@@ -274,12 +274,12 @@ struct PhysicalInterface
 private:
     void run_thread()
     {
-        std::vector<Packet*> packets;
-
-        auto now = Clock::now();
+        std::vector<Packet*> packets; // memory is reused every time
 
         while (!mQuit)
         {
+            auto now = Clock::now();
+
             for (BBInterface& bbinterface : mBBInterfaces)
             {
                 bbinterface.pull(packets, now);
@@ -290,8 +290,6 @@ private:
                 mSocket.send_batch(now, packets);
                 packets.clear();
             }
-
-            now = Clock::now();
         }
     }
 

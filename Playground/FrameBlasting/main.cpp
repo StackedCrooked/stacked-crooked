@@ -64,7 +64,7 @@ struct Socket
             auto size = p->size();
             assert(size > 0);
             total_size += size;
-            mSizes[size]++;
+            mCounters[size]++;
         }
 
         mTxBytes += total_size;
@@ -83,19 +83,19 @@ struct Socket
 
             mTxBytes = 0;
             mTimestamp = ts;
-            for (auto& el : mSizes)
+            for (auto& el : mCounters)
             {
                 auto bitrate = el.first * el.second * 8;
                 printf("  %4ld bytes * %8ld => %10ld bps\n", (long)el.first, (long)el.second, (long)bitrate);
             }
             printf("\n");
-            mSizes.clear();
+            mCounters.clear();
         }
     }
 
     uint64_t mTxBytes = 0;
     Clock::time_point mTimestamp = Clock::time_point();
-    boost::container::flat_map<int64_t, int64_t> mSizes;
+    boost::container::flat_map<int64_t, int64_t> mCounters;
 };
 
 

@@ -5,53 +5,23 @@
 #include <cstdint>
 #include <deque>
 #include <map>
-#include <mutex>
 #include <string>
 #include <vector>
 #include <thread>
 
 
-// 40/100 Gbit/s
-// - enable batching (eth_dev_tx_burst)
-// - allow small bursts but avoid cubro loss
+// - 40/100 Gbit/s
+// - enable batching (dpdk api: eth_dev_tx_burst)
 // - ensure fairness
-// - push vs pull
-// - avoid overhead of callback-based approach (HRTimer)
-// - amortise overhead of mutex locking and getting system time
+// - avoid packet loss (cubro)
 
 
 // Sample program is very simplified:
 // - no stream or frame modifiers
 // - one frame per flow
-// - single thread
 // - fake packet
 // - fake socket
-
-
-// BASIC ALGORITHM
-// ---------------
-// The idea is to work "pull"-based rather than "push"-based: the PhysicalInterface gets current
-// timestamp and "pulls" the ready-to-transmit packets from its BBInterfaces. Each BBInterface pulls
-// ready-to-transmit packets from each of its flows.
-//
-// See:
-//  - PhysicalInterface::run
-//  - BBBInterface::pull
-//  - Flow::pull
-//
-//
-// NOTE:
-// The concept of "out-of-resources" is ignored here. It is to be implemented in higher layer
-// application logic. If needed, it can also be implemented in PhysicalInterface or BBInterface.
-//
-//
-// TEST SETUP
-// ----------
-// - A single PhysicalInterface with 100 BBInterfaces connected (trunking, 1Gbit/s).
-// - The PhysicalInterface can do 100Gbit/s.
-// - Each BBInterface is rate limited to 1Gbit/s.
-// - Each BBInterface has 5 flows that each send one fixed-size packet at a fixed rate.
-//  -> So there are 500 flows in total.
+// - single thread
 
 
 using Clock = std::chrono::steady_clock;
@@ -61,10 +31,7 @@ struct Packet
 {
     std::size_t size() const { return mSize; }
 
-    void set_size(std::size_t n)
-    {
-        mSize = n;
-    }
+    void set_size(std::size_t n) { mSize = n; }
 
 private:
     std::size_t mSize = 0;

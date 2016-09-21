@@ -280,7 +280,7 @@ int main()
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
     static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows, "");
 
-    auto start_time = Clock::now() + std::chrono::seconds(1);
+    auto start_time = Clock::now() + std::chrono::milliseconds(100);
 
     PhysicalInterface physicalInterface(num_interfaces);
 

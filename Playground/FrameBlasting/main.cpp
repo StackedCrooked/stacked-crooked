@@ -103,7 +103,7 @@ struct Socket
             for (auto& el : mCounters)
             {
                 auto bitrate = el.first * el.second * 8;
-                printf("  %4ld bytes * %8ld => %10ld bps\n", (long)el.first, (long)el.second, (long)bitrate);
+                printf("  %4ld bytes * %8ld => %4f Gbit/s\n", (long)el.first, (long)el.second, (double)bitrate/1e9);
             }
             printf("\n");
             mCounters.clear();

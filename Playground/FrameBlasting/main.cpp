@@ -54,143 +54,6 @@ private:
 };
 
 
-
-struct BBInterface;
-
-
-// Simplified implementation for a BB flow.
-struct Flow
-{
-    void set_bitrate(int64_t mbps)
-    {
-        mBytesPerSecond = (1e6 * mbps) / 8.0;
-        update_frame_interval();
-    }
-
-    void set_packet_size(std::size_t packet_size)
-    {
-        mPacket.set_size(packet_size);
-        update_frame_interval();
-    }
-
-    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
-    {
-        if (mNextTransmission == Clock::time_point{}) // first iteration
-        {
-            mNextTransmission = current_time;
-        }
-
-        for (auto i = 0; i != 8; ++i)
-        {
-            if (current_time < mNextTransmission)
-            {
-                break;
-            }
-            packets.push_back(&mPacket);
-            mNextTransmission += mFrameInterval;
-        }
-    }
-
-private:
-    void update_frame_interval()
-    {
-        mFrameInterval = std::chrono::nanoseconds(int64_t(1e9 * mPacket.size() / mBytesPerSecond));
-    }
-
-    Packet mPacket;
-    double mBytesPerSecond = 1e9 / 8;
-    Clock::time_point mNextTransmission{};
-    std::chrono::nanoseconds mFrameInterval{};
-};
-
-
-struct BBInterface
-{
-    BBInterface()
-    {
-        mFlows.reserve(8);
-    }
-
-    void set_rate_limit(double bytes_per_s)
-    {
-        mBytesPerSecond = bytes_per_s;
-    }
-
-    Flow& add_flow()
-    {
-        mFlows.resize(mFlows.size() + 1);
-        return mFlows.back();
-    }
-
-    uint32_t pull(std::vector<Packet*>& packets, Clock::time_point current_time)
-    {
-        auto result = 0;
-        for (auto i = 0; i != 8; ++i)
-        {
-            if (mQueue.empty())
-            {
-                for (Flow& flow : mFlows)
-                {
-                    flow.pull(mQueue, current_time);
-                }
-
-                if (mQueue.empty())
-                {
-                    return result;
-                }
-
-                std::reverse(mQueue.begin(), mQueue.end());
-                //printf("== %d\n", (int)mQueue.size());
-            }
-
-
-            // Apply rate limit.
-            if (mBytesPerSecond && mBucket < 0)
-            {
-                if (mLastTime == Clock::time_point())
-                {
-                    mLastTime = current_time;
-                }
-                std::chrono::nanoseconds elapsed_ns = current_time - mLastTime;
-
-                auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
-                auto new_bucket = std::min(mBucket + bucket_increment, mMaxBucketSize);
-                if (new_bucket < 0)
-                {
-                    return result;
-                }
-
-                mBucket = new_bucket;
-                mLastTime = current_time;
-            }
-
-
-            Packet* next_packet = mQueue.back();
-            auto packet_size = next_packet->size();
-
-            packets.push_back(next_packet);
-            mTxBytes += packet_size;
-            mQueue.pop_back();
-
-            if (mBytesPerSecond)
-            {
-                mBucket -= packet_size;
-            }
-            result++;
-        }
-        return result;
-    }
-
-    double mBytesPerSecond = 1e9 / 8;
-    double mMaxBucketSize = 16 * 1024;
-    double mBucket = mMaxBucketSize;
-    Clock::time_point mLastTime = Clock::time_point();
-    std::vector<Packet*> mQueue;
-    int64_t mTxBytes = 0;
-    std::vector<Flow> mFlows;
-};
-
-
 struct Socket
 {
     void send_batch(Clock::time_point ts, const std::vector<Packet*>& packets)
@@ -232,6 +95,138 @@ struct Socket
     uint64_t mTxBytes = 0;
     Clock::time_point mTimestamp = Clock::time_point();
     boost::container::flat_map<int, int> mSizes;
+};
+
+
+struct BBInterface;
+
+
+// Simplified implementation for a BB flow.
+struct Flow
+{
+    void set_bitrate(int64_t mbps)
+    {
+        mBytesPerSecond = (1e6 * mbps) / 8.0;
+        update_frame_interval();
+    }
+
+    void set_packet_size(std::size_t packet_size)
+    {
+        mPacket.set_size(packet_size);
+        update_frame_interval();
+    }
+
+    void pull(std::deque<Packet*>& packets, Clock::time_point current_time)
+    {
+        if (mNextTransmission == Clock::time_point{}) // first iteration
+        {
+            mNextTransmission = current_time;
+        }
+
+        for (auto i = 0; i != 4; ++i)
+        {
+            if (current_time < mNextTransmission)
+            {
+                break;
+            }
+            packets.push_back(&mPacket);
+            mNextTransmission += mFrameInterval;
+        }
+    }
+
+private:
+    void update_frame_interval()
+    {
+        mFrameInterval = std::chrono::nanoseconds(int64_t(1e9 * mPacket.size() / mBytesPerSecond));
+    }
+
+    Packet mPacket;
+    double mBytesPerSecond = 1e9 / 8;
+    Clock::time_point mNextTransmission{};
+    std::chrono::nanoseconds mFrameInterval{};
+};
+
+
+struct BBInterface
+{
+    void set_rate_limit(double bytes_per_s)
+    {
+        mBytesPerSecond = bytes_per_s;
+    }
+
+    Flow& add_flow()
+    {
+        mFlows.resize(mFlows.size() + 1);
+        return mFlows.back();
+    }
+
+    uint32_t pull(std::vector<Packet*>& packets, Clock::time_point current_time)
+    {
+        auto result = 0;
+
+        for (auto i = 0; i != 4; ++i)
+        {
+            if (mQueue.empty())
+            {
+                for (Flow& flow : mFlows)
+                {
+                    flow.pull(mQueue, current_time);
+                }
+
+                if (mQueue.empty())
+                {
+                    return result;
+                }
+            }
+
+
+            // Apply rate limit.
+            if (is_rate_limited() && mBucketSize < 0)
+            {
+                if (mLastTime == Clock::time_point())
+                {
+                    mLastTime = current_time;
+                }
+
+                std::chrono::nanoseconds elapsed_ns = current_time - mLastTime;
+
+                auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
+                auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
+                if (new_bucket < 0)
+                {
+                    return result;
+                }
+
+                mBucketSize = new_bucket;
+                mLastTime = current_time;
+            }
+
+
+            Packet* next_packet = mQueue.front();
+            mQueue.pop_front();
+
+            packets.push_back(next_packet);
+            mTxBytes += next_packet->size();
+
+            if (is_rate_limited())
+            {
+                mBucketSize -= next_packet->size();
+            }
+
+            result++;
+        }
+        return result;
+    }
+
+    bool is_rate_limited() const { return mBytesPerSecond != 0; }
+
+    double mBytesPerSecond = 1e9 / 8;
+    double mMaxBucketSize = 16 * 1024;
+    double mBucketSize = mMaxBucketSize;
+    Clock::time_point mLastTime = Clock::time_point();
+    std::deque<Packet*> mQueue;
+    int64_t mTxBytes = 0;
+    std::vector<Flow> mFlows;
 };
 
 
@@ -281,6 +276,7 @@ private:
             {
                 std::lock_guard<std::mutex> lock(mMutex);
 
+                // Iterate 4 times.
                 for (auto i = 0; i != 4; ++i)
                 {
                     auto total_result = 0;

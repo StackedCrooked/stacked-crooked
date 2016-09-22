@@ -15,14 +15,6 @@
 #define TRACE() std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ << " : "
 
 
-// Helper traits
-template<typename T> using Invoke = typename T::type;
-template <typename Condition, typename T = void> using EnableIf = Invoke<std::enable_if<Condition::value, T>>;
-template <typename Condition, typename T = void> using DisableIf = Invoke<std::enable_if<!Condition::value, T>>;
-template <typename T> using Decay = Invoke<std::remove_const<Invoke<std::remove_reference<T>>>>;
-template <typename T, typename U> struct IsRelated : std::is_same<Decay<T>, Decay<U>> {};
-
-
 template<typename Signature>
 struct Function;
 
@@ -30,11 +22,12 @@ struct Function;
 template<typename R, typename ...Args>
 struct Function<R(Args...)>
 {
-    Function() : mImpl() {}
-    template<typename F, typename = DisableIf<IsRelated<F, Function>>>
+    Function() = default;
+
+    template<typename F>
     Function(F f) : mImpl(std::make_shared<Impl<F>>(std::move(f))) {}
 
-    template<typename Alloc, typename F, typename = DisableIf<IsRelated<F, Function>>>
+    template<typename Alloc, typename F>
     Function(std::allocator_arg_t, Alloc alloc, F f)
     {
         typedef typename Alloc::template rebind<Impl<F>>::other Other;
@@ -44,8 +37,8 @@ struct Function<R(Args...)>
     Function(Function&&) noexcept = default;
     Function& operator=(Function&&) noexcept = default;
 
-    Function(const Function&) noexcept = default;
-    Function& operator=(const Function&) noexcept = default;
+    Function(const Function&) = default;
+    Function& operator=(const Function&) = default;
 
     R operator()(Args ...args) const
     {
@@ -53,14 +46,13 @@ struct Function<R(Args...)>
         {
             throw std::bad_function_call();
         }
-        return mImpl->call(args...);
+        return mImpl->call(std::move(args)...);
     }
 
 private:
     struct ImplBase
     {
-        virtual ~ImplBase() {}
-        virtual R call(Args ...args) = 0;
+        virtual R call(Args ...args) const = 0;
     };
 
     template<typename F>
@@ -69,15 +61,13 @@ private:
         template<typename FArg>
         Impl(FArg&& f) : f(std::forward<FArg>(f)) {  }
 
-        ~Impl() {}
-
-        virtual R call(Args ...args)
+        virtual R call(Args ...args) const
         { return f(args...); }
 
         F f;
     };
 
-    std::shared_ptr<ImplBase> mImpl;
+    std::shared_ptr<const ImplBase> mImpl;
 };
 
 

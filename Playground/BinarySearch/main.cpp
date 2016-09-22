@@ -1,39 +1,78 @@
+#include <cassert>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <windows.h>
-#include <assert.h>
 
 
-int * binary_search(int * first, int * last, int x)
+int* binary_search_impl(int* b, int* e, int x, int* end_of_input_range)
 {
-    if (x < *first)
+    if (b == e)
     {
-        return 0;
+        return end_of_input_range;
     }
-    else if (x > *last)
+    if (x < *b)
     {
-        return 0;
+        return end_of_input_range;
+    }
+    
+    if (x == *b)
+    {
+        return b;
+    }
+
+    auto len = e - b;
+
+    int* m = b + len / 2;
+
+    if (x < *m)
+    {
+        return binary_search_impl(b, m, x, end_of_input_range);
+    }
+    else if (x > *m)
+    {
+        return binary_search_impl(m + 1, e, x, end_of_input_range);
     }
     else
     {
-        int * middle = first + (last-first)/2;
-        if (x < *middle)
-        {
-            return binary_search(first, middle - 1, x);
-        }
-        else if (x > *middle)
-        {
-            return binary_search(middle + 1, last, x);
-        }
-        else
-        {
-            return middle;
-        }
+        return m;
     }
 }
 
+int* binary_search(int* b, int* e, int x)
+{
+    return binary_search_impl(b, e, x, e);
+}
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+#define ASSERT_EQ(x, y) check_eq(__FILE__, __LINE__, x, y)
+#define ASSERT_NE(x, y) check_ne(__FILE__, __LINE__, x, y)
+
+template<typename T, typename U>
+void check_eq(const char* file, int line, T&& x, U&& y)
+{
+    if (x == y)
+    {
+        std::cout << "PASS: " << x << " == " << y << std::endl;
+    }
+    else
+    {
+        std::cout << file << ":" << line << ": FAIL: " << x << " != " << y << std::endl;
+    }
+}
+
+template<typename T, typename U>
+void check_ne(const char* file, int line, T&& x, U&& y)
+{
+    if (x != y)
+    {
+        std::cout << "PASS: " << x << " != " << y << std::endl;
+    }
+    else
+    {
+        std::cout << file << ":" << line << ": FAIL: " << x << " == " << y << std::endl;
+    }
+}
+
+int main()
 {
     std::vector<int> numbers;
     numbers.push_back(1);
@@ -42,19 +81,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     numbers.push_back(8);
     numbers.push_back(16);
 
+    auto b = numbers.data();
+    auto e = b + numbers.size();
+
     // found
-    assert(1 == *binary_search(&numbers[0], &numbers[numbers.size()-1], 1));
-    assert(2 == *binary_search(&numbers[0], &numbers[numbers.size()-1], 2));
-    assert(4 == *binary_search(&numbers[0], &numbers[numbers.size()-1], 4));
-    assert(8 == *binary_search(&numbers[0], &numbers[numbers.size()-1], 8));
-    assert(16 == *binary_search(&numbers[0], &numbers[numbers.size()-1], 16));
+    ASSERT_NE(binary_search(b, e, 1), e);
+    ASSERT_NE(binary_search(b, e, 2), e);
+    ASSERT_NE(binary_search(b, e, 4), e);
+    ASSERT_NE(binary_search(b, e, 8), e);
+    ASSERT_NE(binary_search(b, e, 16), e);
+
+    ASSERT_EQ(*binary_search(b, e, 1), 1);
+    ASSERT_EQ(*binary_search(b, e, 2), 2);
+    ASSERT_EQ(*binary_search(b, e, 4), 4);
+    ASSERT_EQ(*binary_search(b, e, 8), 8);
+    ASSERT_EQ(*binary_search(b, e, 16), 16);
 
     // not found should return 0
-    assert(!binary_search(&numbers[0], &numbers[numbers.size()-1], 0));
-    assert(!binary_search(&numbers[0], &numbers[numbers.size()-1], 3));
-    assert(!binary_search(&numbers[0], &numbers[numbers.size()-1], 7));
-    assert(!binary_search(&numbers[0], &numbers[numbers.size()-1], 11));
-    assert(!binary_search(&numbers[0], &numbers[numbers.size()-1], 17));
+    ASSERT_EQ(binary_search(b, e, 0), e);
+    ASSERT_EQ(binary_search(b, e, 3), e);
+    ASSERT_EQ(binary_search(b, e, 7), e);
+    ASSERT_EQ(binary_search(b, e, 11), e);
+    ASSERT_EQ(binary_search(b, e, 17), e);
+
+    std::cout << "All tests succeeded." << std::endl;
 
     return 0;
 }

@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,6 +9,7 @@ int* binary_search_impl(int* b, int* e, int x, int* end_of_input_range)
     {
         return end_of_input_range;
     }
+
     if (x < *b)
     {
         return end_of_input_range;

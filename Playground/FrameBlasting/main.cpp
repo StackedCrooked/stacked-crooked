@@ -57,7 +57,7 @@ struct Socket
 
         if (elapsed_ns >= std::chrono::seconds(1))
         {
-            printf("\n=== Stats ===\nelapsed_ns=%ld TxBytes=%ld Rate=%f Gbps\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
+            printf("\n=== Stats ===\nelapsed_ns=%ld TxBytes=%ld Rate=%f Gbit/s\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
 
             mTxBytes = 0;
             mStartTime = ts;

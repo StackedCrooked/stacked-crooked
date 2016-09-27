@@ -9,19 +9,29 @@
 #include <vector>
 
 
-// - 40/100 Gbit/s
-// - enable batching (dpdk api: eth_dev_tx_burst)
-// - ensure fairness
+// How can we do Frame Blasting at 100Gbit/s?
+// - need very low overhead
+// - need batching (but Frame Blasting is packet-based)
+
+// Frame Blasting Requirements:
+// - accurate timing
+// - fairness
 // - avoid packet loss (cubro)
+
+// Key concept
 // - push vs pull
 
 
 // Sample program is very simplified:
+// - assume 100 trunking interfaces connected to single 100Gbit/s physical interface
 // - no stream or frame modifiers
-// - one frame per flow
+// - one frame per stream/flow
 // - fake packet
 // - fake socket
 // - single thread
+
+// TODO:
+// - avoid 100% CPU
 
 
 using Clock = std::chrono::steady_clock;
@@ -101,10 +111,17 @@ struct Flow
 
     void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
     {
-        if (current_time >= mNextTransmission)
+        for (auto i = 0; i != 2; ++i) // allow getting 2 packets at once (catch-up)
         {
-            packets.push_back(&mPacket);
-            mNextTransmission += mFrameInterval;
+            if (current_time >= mNextTransmission)
+            {
+                packets.push_back(&mPacket);
+                mNextTransmission += mFrameInterval;
+            }
+            else
+            {
+                break;
+            }
         }
     }
 

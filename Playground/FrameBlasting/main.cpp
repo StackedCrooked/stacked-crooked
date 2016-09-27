@@ -26,12 +26,8 @@
 // - assume 100 trunking interfaces connected to single 100Gbit/s physical interface
 // - no stream or frame modifiers
 // - one frame per stream/flow
-// - fake packet
-// - fake socket
-// - single thread
-
-// TODO:
-// - avoid 100% CPU
+// - fake packet, fake socket
+// - no Rx
 
 
 using Clock = std::chrono::steady_clock;
@@ -50,35 +46,7 @@ private:
 
 struct Socket
 {
-    void send_batch(Clock::time_point ts, const std::vector<Packet*>& packets)
-    {
-        for (auto& p : packets)
-        {
-            mTxBytes += p->size();
-            mCounters[p->size()]++;
-        }
-
-        if (mStartTime == Clock::time_point())
-        {
-            mStartTime = Clock::now();
-        }
-
-        std::chrono::nanoseconds elapsed_ns = ts - mStartTime;
-
-        if (elapsed_ns >= std::chrono::seconds(1))
-        {
-            printf("\n=== Stats ===\nelapsed_ns=%ld TxBytes=%ld Rate=%f Gbit/s\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
-
-            mTxBytes = 0;
-            mStartTime = ts;
-            for (auto& el : mCounters)
-            {
-                auto bitrate = el.first * el.second * 8;
-                printf("  %4ld bytes * %8ld => %4f Gbit/s\n", (long)el.first, (long)el.second, (double)bitrate/1e9);
-            }
-            mCounters.clear();
-        }
-    }
+    void send_batch(Clock::time_point ts, const std::vector<Packet*>& packets);
 
     uint64_t mTxBytes = 0;
     Clock::time_point mStartTime = Clock::time_point();
@@ -290,6 +258,37 @@ private:
     Socket mSocket;
     std::thread mThread;
 };
+
+
+void Socket::send_batch(std::chrono::_V2::steady_clock::time_point ts, const std::vector<Packet*>& packets)
+{
+    for (auto& p : packets)
+    {
+        mTxBytes += p->size();
+        mCounters[p->size()]++;
+    }
+
+    if (mStartTime == Clock::time_point())
+    {
+        mStartTime = Clock::now();
+    }
+
+    std::chrono::nanoseconds elapsed_ns = ts - mStartTime;
+
+    if (elapsed_ns >= std::chrono::seconds(1))
+    {
+        printf("\n=== Stats ===\nelapsed_ns=%ld TxBytes=%ld Rate=%f Gbit/s\nCounters:\n", long(elapsed_ns.count()), long(mTxBytes), 8.0 * mTxBytes / elapsed_ns.count());
+
+        mTxBytes = 0;
+        mStartTime = ts;
+        for (auto& el : mCounters)
+        {
+            auto bitrate = el.first * el.second * 8;
+            printf("  %4ld bytes * %8ld => %4f Gbit/s\n", (long)el.first, (long)el.second, (double)bitrate/1e9);
+        }
+        mCounters.clear();
+    }
+}
 
 
 int main()

@@ -9,23 +9,28 @@
 #include <vector>
 
 
-// How can we do Frame Blasting at 100Gbit/s?
+// How can we do Frame Blasting at 100 Gbit/s?
 // - need very low overhead
-// - need batching (but Frame Blasting is packet-based)
+// - need batching (but Frame Blasting is packet-based!)
 
 // Frame Blasting Requirements:
 // - accurate timing
 // - fairness
-// - avoid packet loss (cubro)
+// - no big bursts in order to avoid packet loss on Cubro
 
-// Key concept
-// - push vs pull
+// Sample program:
+// - Assume 100 trunking interfaces connected to single 100 Gbit/s physical interface.
+// - We configure 5 flows on each trunking interface:
+//     . Flow 1: 200 Mbit/s using 64-byte packets
+//     . Flow 2: 200 Mbit/s using 128-byte packets
+//     . Flow 3: 200 Mbit/s using 256-byte packets
+//     . Flow 4: 200 Mbit/s using 512-byte packets
+//     . Flow 5: 200 Mbit/s using 1024-byte packets
+// - So we have 500 flows with total bitrate of 100 Gbit/s.
 
-
-// Sample program is very simplified:
-// - assume 100 trunking interfaces connected to single 100Gbit/s physical interface
-// - no stream or frame modifiers
-// - one frame per stream/flow
+// Simplifications:
+// - no size or timing modifiers
+// - only have one frame per stream/flow
 // - fake packet, fake socket
 // - no Rx
 

@@ -42,6 +42,11 @@ format_h() {
     --lineend=windows $file
 }
 
+
+format_hpp() { 
+    format_h "$@"
+}
+
 for file in "$@" ; do
   extension="$(echo "$file" | sed 's/^.*\.//')"
   format_$extension || echo "No formatter found for extension: $extension"

@@ -138,7 +138,7 @@ inline void u64_generate_random_data(uint64_t* dst, uint64_t len)
 
 enum : uint64_t
 {
-    num_ymm = 128UL * 1024UL * 1024UL / sizeof(ymm_t),
+    num_ymm = 1024UL * 1024UL * 1024UL / sizeof(ymm_t),
     num_xmm = 2 * num_ymm,
     num_u64 = 2 * num_xmm
 };
@@ -186,8 +186,7 @@ int main()
         for (auto& result : u64_results)
         {
             result = benchmark([&]{ u64_generate_random_data(buffer.u64.data(), buffer.u64.size()); });
-            //std::ofstream of("u64");
-            //of.write((char*)buffer.u64.data(), sizeof(buffer));
+            //std::ofstream of("u64"); of.write((char*)buffer.u64.data(), sizeof(buffer));
         }
 
         std::cout << "u64_results: ";
@@ -203,8 +202,7 @@ int main()
         for (auto& result : xmm_results)
         {
             result = benchmark([&]{ xmm_generate_random_data(buffer.xmm.data(), buffer.xmm.size()); });
-            //std::ofstream of("xmm");
-            //of.write((char*)buffer.xmm.data(), sizeof(buffer));
+            //std::ofstream of("xmm"); of.write((char*)buffer.xmm.data(), sizeof(buffer));
         }
         std::cout << "xmm_results: ";
         for (auto& result : xmm_results)
@@ -219,8 +217,7 @@ int main()
         for (auto& result : ymm_results)
         {
             result = benchmark([&]{ ymm_generate_random_data(buffer.ymm.data(), buffer.ymm.size()); });
-            //std::ofstream of("ymm");
-            //of.write((char*)buffer.ymm.data(), sizeof(buffer));
+            //std::ofstream of("ymm"); of.write((char*)buffer.ymm.data(), sizeof(buffer));
         }
 
         std::cout << "ymm_results: ";

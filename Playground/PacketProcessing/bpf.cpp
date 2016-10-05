@@ -4,6 +4,12 @@
 #include "pcap.h"
 
 
+struct BPFProgram
+{
+
+};
+
+
 struct BPFFilter
 {
     BPFFilter(const std::string& bpf_filter)
@@ -44,7 +50,6 @@ struct BPFFilter
 };
 
 
-
 const uint8_t tcp_syn[] = {
     0x00, 0x00, 0x00, 0x00,   0x00, 0x22, 0x00, 0x01,
     0x5c, 0x6c, 0xc2, 0x02,   0x08, 0x00, 0x45, 0x00,
@@ -65,23 +70,22 @@ int main()
 {
     // src 10.10.1.2 dst 10.10.1.1
     // 60614 57481
-    BPFFilter filter1("len == 66 && ether src 00:01:5c:6c:c2:02 && ether dst 00:00:00:00:00:22 && ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614");
-    BPFFilter filter2("len == 66 && ether src 00:01:5c:6c:c2:02 && ether dst 00:00:00:00:00:22 && ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614");
+    BPFFilter filter("len == 66 && (ether src 00:01:5c:6c:c2:02 and ether dst 00:00:00:00:00:22) && ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614");
+    //BPFFilter filter("ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614");
 
-    enum { num_iterations = 1000 };
+    enum { num_iterations = 10000 };
 
         auto start_time = Clock::now();
         for (auto i = 0; i != num_iterations / 2; ++i)
         {
-            filter1.check(tcp_syn, sizeof(tcp_syn));
-            filter2.check(tcp_syn, sizeof(tcp_syn));
+            filter.check(tcp_syn, sizeof(tcp_syn));
         }
 
         std::chrono::nanoseconds elapsed_ns = Clock::now() - start_time;
         std::cout
             << "elapsed_ns=" << elapsed_ns.count()
             << " ns/check=" << elapsed_ns.count()/num_iterations
-            << " result=" << filter1.check(tcp_syn, sizeof(tcp_syn))
+            << " result=" << filter.check(tcp_syn, sizeof(tcp_syn))
             << " size=" << sizeof(tcp_syn)
             << '\n';
 

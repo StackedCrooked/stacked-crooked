@@ -152,7 +152,7 @@ struct Flow
         mFilter.set(protocol, source_ip, target_ip, src_port, dst_port);
     }
 
-    bool match(const uint8_t* frame_bytes, int /*len*/)
+    bool match(const uint8_t* frame_bytes, int /*len*/) const
     {
         // avoid unpredictable branch here.
         return mFilter.match(frame_bytes);
@@ -252,249 +252,26 @@ void test(uint32_t num_packets, uint32_t num_flows)
 
     auto start_time = Clock::now();
 
-    switch (prefetch)
-    {
-        case 0:
-        {
-            break;
-        }
-        case 1:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            break;
-        }
-        case 2:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            break;
-        }
-        case 3:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            break;
-        }
-        case 4:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            __builtin_prefetch(packets[3].data(), 0, 0);
-            break;
-        }
-        case 6:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            __builtin_prefetch(packets[3].data(), 0, 0);
-            __builtin_prefetch(packets[4].data(), 0, 0);
-            __builtin_prefetch(packets[5].data(), 0, 0);
-            break;
-        }
-        case 8:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            __builtin_prefetch(packets[3].data(), 0, 0);
-            __builtin_prefetch(packets[4].data(), 0, 0);
-            __builtin_prefetch(packets[5].data(), 0, 0);
-            __builtin_prefetch(packets[6].data(), 0, 0);
-            __builtin_prefetch(packets[7].data(), 0, 0);
-            break;
-        }
-        case 12:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            __builtin_prefetch(packets[3].data(), 0, 0);
-            __builtin_prefetch(packets[4].data(), 0, 0);
-            __builtin_prefetch(packets[5].data(), 0, 0);
-            __builtin_prefetch(packets[6].data(), 0, 0);
-            __builtin_prefetch(packets[7].data(), 0, 0);
-            __builtin_prefetch(packets[8].data(), 0, 0);
-            __builtin_prefetch(packets[9].data(), 0, 0);
-            __builtin_prefetch(packets[10].data(), 0, 0);
-            __builtin_prefetch(packets[11].data(), 0, 0);
-            break;
-        }
-        case 16:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            __builtin_prefetch(packets[3].data(), 0, 0);
-            __builtin_prefetch(packets[4].data(), 0, 0);
-            __builtin_prefetch(packets[5].data(), 0, 0);
-            __builtin_prefetch(packets[6].data(), 0, 0);
-            __builtin_prefetch(packets[7].data(), 0, 0);
-            __builtin_prefetch(packets[8].data(), 0, 0);
-            __builtin_prefetch(packets[9].data(), 0, 0);
-            __builtin_prefetch(packets[10].data(), 0, 0);
-            __builtin_prefetch(packets[11].data(), 0, 0);
-            __builtin_prefetch(packets[12].data(), 0, 0);
-            __builtin_prefetch(packets[13].data(), 0, 0);
-            __builtin_prefetch(packets[14].data(), 0, 0);
-            __builtin_prefetch(packets[15].data(), 0, 0);
-            break;
-        }
-        case 32:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            __builtin_prefetch(packets[3].data(), 0, 0);
-            __builtin_prefetch(packets[4].data(), 0, 0);
-            __builtin_prefetch(packets[5].data(), 0, 0);
-            __builtin_prefetch(packets[6].data(), 0, 0);
-            __builtin_prefetch(packets[7].data(), 0, 0);
-            __builtin_prefetch(packets[8].data(), 0, 0);
-            __builtin_prefetch(packets[9].data(), 0, 0);
-            __builtin_prefetch(packets[10].data(), 0, 0);
-            __builtin_prefetch(packets[11].data(), 0, 0);
-            __builtin_prefetch(packets[12].data(), 0, 0);
-            __builtin_prefetch(packets[13].data(), 0, 0);
-            __builtin_prefetch(packets[14].data(), 0, 0);
-            __builtin_prefetch(packets[15].data(), 0, 0);
-
-
-            __builtin_prefetch(packets[16 +  0].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  1].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  2].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  3].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  4].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  5].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  6].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  7].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  8].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  9].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 10].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 11].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 12].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 13].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 14].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 15].data(), 0, 0);
-            break;
-        }
-        case 64:
-        {
-            __builtin_prefetch(packets[0].data(), 0, 0);
-            __builtin_prefetch(packets[1].data(), 0, 0);
-            __builtin_prefetch(packets[2].data(), 0, 0);
-            __builtin_prefetch(packets[3].data(), 0, 0);
-            __builtin_prefetch(packets[4].data(), 0, 0);
-            __builtin_prefetch(packets[5].data(), 0, 0);
-            __builtin_prefetch(packets[6].data(), 0, 0);
-            __builtin_prefetch(packets[7].data(), 0, 0);
-            __builtin_prefetch(packets[8].data(), 0, 0);
-            __builtin_prefetch(packets[9].data(), 0, 0);
-            __builtin_prefetch(packets[10].data(), 0, 0);
-            __builtin_prefetch(packets[11].data(), 0, 0);
-            __builtin_prefetch(packets[12].data(), 0, 0);
-            __builtin_prefetch(packets[13].data(), 0, 0);
-            __builtin_prefetch(packets[14].data(), 0, 0);
-            __builtin_prefetch(packets[15].data(), 0, 0);
-
-
-            __builtin_prefetch(packets[16 +  0].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  1].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  2].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  3].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  4].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  5].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  6].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  7].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  8].data(), 0, 0);
-            __builtin_prefetch(packets[16 +  9].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 10].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 11].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 12].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 13].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 14].data(), 0, 0);
-            __builtin_prefetch(packets[16 + 15].data(), 0, 0);
-
-
-            __builtin_prefetch(packets[32 +  0].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  1].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  2].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  3].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  4].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  5].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  6].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  7].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  8].data(), 0, 0);
-            __builtin_prefetch(packets[32 +  9].data(), 0, 0);
-            __builtin_prefetch(packets[32 + 10].data(), 0, 0);
-            __builtin_prefetch(packets[32 + 11].data(), 0, 0);
-            __builtin_prefetch(packets[32 + 12].data(), 0, 0);
-            __builtin_prefetch(packets[32 + 13].data(), 0, 0);
-            __builtin_prefetch(packets[32 + 14].data(), 0, 0);
-            __builtin_prefetch(packets[32 + 15].data(), 0, 0);
-
-
-            __builtin_prefetch(packets[48 +  0].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  1].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  2].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  3].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  4].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  5].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  6].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  7].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  8].data(), 0, 0);
-            __builtin_prefetch(packets[48 +  9].data(), 0, 0);
-            __builtin_prefetch(packets[48 + 10].data(), 0, 0);
-            __builtin_prefetch(packets[48 + 11].data(), 0, 0);
-            __builtin_prefetch(packets[48 + 12].data(), 0, 0);
-            __builtin_prefetch(packets[48 + 13].data(), 0, 0);
-            __builtin_prefetch(packets[48 + 14].data(), 0, 0);
-            __builtin_prefetch(packets[48 + 15].data(), 0, 0);
-            break;
-        }
-    }
 
     std::vector<uint64_t> matches(flows.size());
 
-    for (const Packet& packet : packets)
+    for (auto i = 0; i != prefetch; ++i)
     {
-        if (prefetch > 0)
+        __builtin_prefetch(packets[i].data(), 0, 0);
+    }
+
+    for (auto i = 0ul; i != packets.size(); ++i)
+    {
+        Packet& packet = packets[i];
+
+        if (prefetch > 0 && i + prefetch < packets.size())
         {
-            __builtin_prefetch(packet.data() + prefetch * sizeof(Packet), 0, 0);
+            __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
         }
 
-        auto len = flows.size();
-        auto flow_ptr = flows.data();
-        auto match_ptr = matches.data();
-
-
-
-        while (len >= 4)
+        for (auto flow_index = 0ul; flow_index != flows.size(); ++flow_index)
         {
-            match_ptr[0] += flow_ptr[0].match(packet.data(), packet.size());
-            match_ptr[1] += flow_ptr[1].match(packet.data(), packet.size());
-            match_ptr[2] += flow_ptr[2].match(packet.data(), packet.size());
-            match_ptr[3] += flow_ptr[3].match(packet.data(), packet.size());
-
-            len -= 4;
-            flow_ptr += 4;
-            match_ptr += 4;
-        }
-
-        if (len >= 2)
-        {
-            match_ptr[0] += flow_ptr[0].match(packet.data(), packet.size());
-            match_ptr[1] += flow_ptr[1].match(packet.data(), packet.size());
-            len -= 2;
-            flow_ptr += 2;
-            match_ptr += 2;
-        }
-
-        if (len == 1)
-        {
-            match_ptr[0] += flow_ptr[0].match(packet.data(), packet.size());
+            matches[flow_index] += flows[flow_index].match(packet.data(), packet.size());
         }
     }
 
@@ -507,7 +284,7 @@ void test(uint32_t num_packets, uint32_t num_flows)
     auto packet_rate_rounded = int(0.5 + packet_rate);
 
     std::cout
-            << " #FLOWS="        << std::setw(2) << std::left << flows.size()
+            << " #FLOWS="        << std::setw(3) << std::left << flows.size()
             << " PREFETCH="        << prefetch
             << " MPPS="     << std::setw(6) << std::left << packet_rate_rounded
             << " (" << flows.size() * packet_rate_rounded << " million filter comparisons per second)"
@@ -527,19 +304,28 @@ void test(uint32_t num_packets, uint32_t num_flows)
 }
 
 
-int main()
+template<int prefetch>
+void run()
 {
-    auto num_packets = 8 * 1000 * 1000;
-    std::array<int, 8> flow_counts = {{ 64, 128, 512, 1024, 2048 }};
+    auto num_packets = 1 * 1000 * 1000;
+    std::array<int, 8> flow_counts = {{ 1, 2, 4, 8, 16, 32, 64, 128 }};
+
     for (int num_flows : flow_counts)
     {
-        test<0>(num_packets, num_flows);
-        test<1>(num_packets, num_flows);
-        test<2>(num_packets, num_flows);
-        test<4>(num_packets, num_flows);
-        test<8>(num_packets, num_flows);
-        test<16>(num_packets, num_flows);
-        std::cout << std::endl;
+        test<prefetch>(num_packets, num_flows);
     }
     std::cout << std::endl;
+
+}
+
+
+int main()
+{
+    run<0>();
+    run<1>();
+    run<2>();
+    run<3>();
+    run<4>();
+    run<6>();
+    run<8>();
 }

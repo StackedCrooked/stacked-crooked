@@ -502,8 +502,6 @@ void run(uint32_t num_packets = 400 * 1000)
     run2<prefetch>(num_packets, 1);
     run2<prefetch>(num_packets, 10);
     run2<prefetch>(num_packets, 20);
-    run2<prefetch>(num_packets, 50);
-    run2<prefetch>(num_packets, 80);
     std::cout << std::endl;
 }
 
@@ -514,4 +512,5 @@ int main()
     run<0>();
     run<2>();
     run<4>();
+    run<8>();
 }

@@ -255,35 +255,14 @@ void test(uint32_t num_packets, uint32_t num_flows)
 
     std::vector<uint64_t> matches(flows.size());
 
-    for (auto i = 0; i != prefetch; ++i)
+    for (auto i = 0ul; i != packets.size(); ++i)
     {
-        __builtin_prefetch(packets[i].data(), 0, 0);
-    }
+        Packet& packet = packets[i];
 
-    for (auto i = 0ul; i < prefetch; ++i)
-    {
-        __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
-    }
-
-    for (auto i = 0ul; i + prefetch < packets.size(); ++i)
-    {
-        if (prefetch > 0)
+        if (prefetch > 0 && i + prefetch < packets.size())
         {
             __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
         }
-
-        Packet& packet = packets[i];
-
-        for (auto flow_index = 0ul; flow_index != flows.size(); ++flow_index)
-        {
-            matches[flow_index] += flows[flow_index].match(packet.data(), packet.size());
-        }
-    }
-
-    // Remaining packets
-    for (auto i = 0ul; i + prefetch < packets.size(); ++i)
-    {
-        Packet& packet = packets[i];
 
         for (auto flow_index = 0ul; flow_index != flows.size(); ++flow_index)
         {

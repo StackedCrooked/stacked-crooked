@@ -72,6 +72,25 @@ struct IPv4Header
         memcpy(this, &example[0], sizeof(*this));
     }
 
+    static void mask(uint64_t& a, uint64_t& b)
+    {
+        union Mask
+        {
+            std::array<uint8_t, 16> u8;
+            uint64_t u64[2];
+        };
+
+        Mask mask{};
+        mask.u8 =  {{
+            0x00, 0xff, 0x00, 0x00, // (ttl) protocol, (checksum)
+            0xff, 0xff, 0xff, 0xff,  // source ip
+            0xff, 0xff, 0xff, 0xff,  // destination ip
+            0xff, 0xff, 0xff, 0xff  // L4Header: source port and destination port
+        }};
+        a = mask.u64[0];
+        b = mask.u64[1];
+    }
+
     uint8_t mVersionAndIHL = (4u << 4) | 5u;
     uint8_t mTypeOfService = 0;
     uint16_t mTotalLength = 1514;
@@ -113,8 +132,24 @@ struct TCPHeader
 };
 
 
+#ifndef FILTER_BPF
+#define FILTER_BPF 0
+#endif
 
-#if BPF_FILTER
+
+#ifndef FILTER_NATIVE
+#define FILTER_NATIVE 0
+#endif
+
+
+#ifndef FILTER_VECTOR
+#define FILTER_VECTOR 0
+#endif
+
+
+static_assert(FILTER_BPF ^ FILTER_NATIVE ^ FILTER_VECTOR, "");
+
+#if FILTER_BPF
 #include "pcap.h"
 
 struct Filter
@@ -166,7 +201,7 @@ struct Filter
     }
     bpf_program mProgram;
 };
-#else
+#elif FILTER_NATIVE
 struct Filter
 {
     Filter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
@@ -202,6 +237,61 @@ struct Filter
     uint16_t mSourcePort;
     uint16_t mDestinationPort;
 };
+#elif FILTER_VECTOR
+struct Filter
+{
+    Filter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    {
+        // Imagine
+        struct TransportHeader
+        {
+            uint8_t ttl;
+            uint8_t protocol;
+            uint16_t checksum;
+            IPv4Address src_ip = IPv4Address();
+            IPv4Address dst_ip = IPv4Address();
+            uint16_t src_port = 0;
+            uint16_t dst_port = 0;
+        };
+
+        auto h = TransportHeader();
+        h.protocol = protocol;
+        h.src_ip = src_ip;
+        h.dst_ip = dst_ip;
+        h.src_port = src_port;
+        h.dst_port = dst_port;
+
+
+        field_ = _mm_loadu_si128((__m128i*)&h);
+
+        uint8_t mask_bytes[16] = {
+            0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
+            0xff, 0xff, 0xff, 0xff, // source ip
+            0xff, 0xff, 0xff, 0xff, // destination ip
+            0xff, 0xff, 0xff, 0xff  // source and destination ports
+        };
+        mask_ = _mm_loadu_si128((__m128i*)&mask_bytes[0]);
+    }
+
+    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
+    {
+        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mask_) };
+
+        __m128i mask_result = _mm_cmpeq_epi32(
+            field_,
+            _mm_and_si128(
+                mask_,
+                _mm_loadu_si128((__m128i*)(packet_data + offset)))
+        );
+
+        __m128i compare_result = _mm_cmpeq_epi8(mask_result, _mm_setzero_si128());
+        return _mm_testz_si128(compare_result, compare_result);
+    }
+
+    __m128i field_;
+    __m128i mask_;
+};
+
 #endif
 
 
@@ -355,11 +445,11 @@ void test(std::vector<Packet>& packets, std::vector<Flow>& flows, uint64_t* matc
             ;
 
     #if 1
-    std::cout << "  (verify-matches:";
+    std::cout << " (verify-matches:";
     for (auto i = 0ul; i != num_flows; ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << int(0.5 + 100.0 * matches[i]  / packets.size());
+        std::cout << int(0.5 + 100.0 * matches[i] / packets.size()) << '%';
     }
     std::cout << ")";
     #endif
@@ -407,10 +497,13 @@ void run2(uint32_t num_packets, uint32_t num_flows)
 
 
 template<int prefetch>
-void run(uint32_t num_packets = 1000 * 1000)
+void run(uint32_t num_packets = 400 * 1000)
 {
     run2<prefetch>(num_packets, 1);
     run2<prefetch>(num_packets, 10);
+    run2<prefetch>(num_packets, 20);
+    run2<prefetch>(num_packets, 50);
+    run2<prefetch>(num_packets, 80);
     std::cout << std::endl;
 }
 
@@ -419,8 +512,6 @@ int main()
 {
 
     run<0>();
-    run<1>();
     run<2>();
-    run<3>();
     run<4>();
 }

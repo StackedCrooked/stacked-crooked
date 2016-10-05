@@ -407,13 +407,10 @@ void run2(uint32_t num_packets, uint32_t num_flows)
 
 
 template<int prefetch>
-void run(uint32_t num_packets = 100 * 1000)
+void run(uint32_t num_packets = 1000 * 1000)
 {
     run2<prefetch>(num_packets, 1);
-    run2<prefetch>(num_packets, 2);
-    run2<prefetch>(num_packets, 4);
-    run2<prefetch>(num_packets, 8);
-    run2<prefetch>(num_packets, 16);
+    run2<prefetch>(num_packets, 10);
     std::cout << std::endl;
 }
 
@@ -424,4 +421,6 @@ int main()
     run<0>();
     run<1>();
     run<2>();
+    run<3>();
+    run<4>();
 }

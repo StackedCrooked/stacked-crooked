@@ -303,7 +303,7 @@ template<int prefetch>
 void run()
 {
     auto num_packets = 1 * 1000 * 1000;
-    std::array<int, 8> flow_counts = {{ 1, 2, 4, 8, 16, 32, 64, 128 }};
+    std::array<int, 8> flow_counts = {{ 1, 2, 4, 8, 10, 16, 32, 64 }};
 
     for (int num_flows : flow_counts)
     {

@@ -280,11 +280,14 @@ void test(uint32_t num_packets, uint32_t num_flows)
         }
     }
 
-    for (auto i = packets.size() - prefetch; i != packets.size(); ++i)
+    // Remaining packets
+    for (auto i = 0ul; i + prefetch < packets.size(); ++i)
     {
-        if (prefetch > 0)
+        Packet& packet = packets[i];
+
+        for (auto flow_index = 0ul; flow_index != flows.size(); ++flow_index)
         {
-            __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
+            matches[flow_index] += flows[flow_index].match(packet.data(), packet.size());
         }
     }
 

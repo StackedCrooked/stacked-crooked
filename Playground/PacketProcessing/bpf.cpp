@@ -4,15 +4,9 @@
 #include "pcap.h"
 
 
-struct BPFProgram
+struct Filter
 {
-
-};
-
-
-struct BPFFilter
-{
-    BPFFilter(const std::string& bpf_filter)
+    Filter(const std::string& bpf_filter)
     {
         using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
 
@@ -31,14 +25,14 @@ struct BPFFilter
         }
     }
 
-    ~BPFFilter()
+    ~Filter()
     {
         pcap_freecode(&mProgram);
     }
 
     static void check_slow(const char* filter, const uint8_t* data, uint32_t length)
     {
-        std::cout << filter << ": " << BPFFilter(filter).check(data, length) << std::endl;
+        std::cout << filter << ": " << Filter(filter).check(data, length) << std::endl;
     }
 
     bool check(const uint8_t* data, uint32_t length)
@@ -70,7 +64,7 @@ int main()
 {
     // src 10.10.1.2 dst 10.10.1.1
     // 60614 57481
-    BPFFilter filter("len == 66 && (ether src 00:01:5c:6c:c2:02 and ether dst 00:00:00:00:00:22) && ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614");
+    Filter filter("len == 66 && (ether src 00:01:5c:6c:c2:02 and ether dst 00:00:00:00:00:22) && ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614");
     //BPFFilter filter("ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614");
 
     enum { num_iterations = 10000 };

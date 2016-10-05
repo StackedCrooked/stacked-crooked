@@ -6,18 +6,25 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <x86intrin.h>
 
 
 struct MAC : std::array<uint8_t, 6>
 {
+    MAC()
+    {
+        std::array<uint8_t, 6>& self = *this;
+        self = {{ 0x00, 0xff, 0x23, 0x00, 0x00, 0x01 }};
+    }
 };
 
 
 struct IPv4Address : std::array<uint8_t, 4>
 {
     IPv4Address() = default;
+
     IPv4Address(int a, int b, int c, int d)
     {
         (*this)[0] = a;
@@ -32,6 +39,14 @@ struct IPv4Address : std::array<uint8_t, 4>
         memcpy(&result, data(), size());
         return result;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, IPv4Address ip)
+    {
+        return os << static_cast<int>(ip[0]) << '.'
+                  << static_cast<int>(ip[1]) << '.'
+                  << static_cast<int>(ip[2]) << '.'
+                  << static_cast<int>(ip[3]);
+    }
 };
 
 
@@ -39,93 +54,176 @@ struct EthernetHeader
 {
     MAC mDestination;
     MAC mSource;
-    uint16_t mEtherType;
+    uint16_t mEtherType = 0x0008;
 };
 
 
 struct IPv4Header
 {
-    std::array<uint8_t, 12> mStuff;
-    IPv4Address mSource;
-    IPv4Address mDestination;
+    IPv4Header()
+    {
+        uint8_t example[20] = {
+            0x45, 0x00, 0x05, 0xdc, 0x67, 0x4c, 0x00, 0x00, 0x3e, 0x06, 0x01, 0x01,
+            0x01, 0x01, 0x01, 0x01,
+            0x01, 0x01, 0x02, 0x01
+        };
+        static_assert(sizeof(*this) == 20, "");
+        static_assert(sizeof(example) == sizeof(*this), "");
+        memcpy(this, &example[0], sizeof(*this));
+    }
+
+    uint8_t mVersionAndIHL = (4u << 4) | 5u;
+    uint8_t mTypeOfService = 0;
+    uint16_t mTotalLength = 1514;
+    uint16_t mIdentification = 0;
+    uint16_t mFlagsAndFragmentOffset = 0;
+    uint8_t mTTL = 255;
+    uint8_t mProtocol;
+    uint16_t mChecksum =0;
+    IPv4Address mSourceIP;
+    IPv4Address mDestinationIP;
 };
 
 
-struct UDPHeader
+//struct UDPHeader
+//{
+    //uint16_t mSourcePort;
+    //uint16_t mDestinationPort;
+    //uint16_t mSize;
+    //uint16_t mChecksum;
+//};
+
+struct TCPHeader
 {
-    uint16_t mSourcePort;
-    uint16_t mDestinationPort;
-    uint16_t mSize;
-    uint16_t mChecksum;
+    TCPHeader()
+    {
+        uint8_t bytes[20] = { 0xec, 0xc6, 0xe0, 0x89, 0x0f, 0x67, 0x67, 0x60, 0x11, 0x51, 0xd9, 0xf9, 0x50, 0x10, 0xff, 0xff, 0xa0, 0x7b, 0x00, 0x00 };
+        static_assert(sizeof(*this) == 20, "");
+        static_assert(sizeof(*this) == sizeof(bytes), "");
+        memcpy(this, &bytes[0], sizeof(*this));
+    }
+    uint16_t mSourcePort = 0;
+    uint16_t mDestinationPort = 0;
+    uint16_t mSequenceNumber[2];
+    uint16_t mAcknowledgementNumber[2];
+    uint16_t mDataOffsetAndFlags = 0;
+    uint16_t mWindowSize;
+    uint16_t mChecksum = 0;
+    uint16_t mUrgentPointer = 0;
 };
 
+
+
+#if BPF_FILTER
+#include "pcap.h"
 
 struct Filter
 {
-    void set(uint8_t protnum, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    static std::string get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
-        // Imagine
-        struct TransportHeader
+        assert(protocol == 6); // assume TCP
+        // ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614
+        std::stringstream ss;
+        ss
+            << "ip src " << src_ip
+            << " && ip dst " << dst_ip
+            << " && src port " << src_port
+            << " && dst port " << dst_port
+            ;
+            (void)src_port;//<< " && tcp src port " << src_port
+            (void)dst_port;//<< " && tcp dst port " << dst_port
+        return ss.str();
+    }
+
+    Filter(std::string bpf_filter)
+    {
+        //std::cout << bpf_filter << std::endl;
+        using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
+
+        DummyInterface dummy_interface(pcap_open_dead(DLT_EN10MB, 1518), &pcap_close);
+
+        if (!dummy_interface)
         {
-            uint8_t unused[3] = { 0, 0, 0 };
-            uint8_t protocol = 0;
-            IPv4Address src_ip = IPv4Address();
-            IPv4Address dst_ip = IPv4Address();
-            uint16_t src_port = 0;
-            uint16_t dst_port = 0;
-        };
+            throw std::runtime_error("Failed to open pcap dummy interface");
+        }
 
-        auto h = TransportHeader();
-        h.protocol = protnum;
-        h.src_ip = src_ip;
-        h.dst_ip = dst_ip;
-        h.src_port = src_port;
-        h.dst_port = dst_port;
-
-
-        field_ = _mm_loadu_si128((__m128i*)&h.unused[0]);
-
-        uint32_t mask[4] = { 0x000000ff, 0xffffffff, 0xffffffff, 0xffffffff };
-        mask_ = _mm_loadu_si128((__m128i*)&mask[0]);
+        auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_filter.c_str(), 1, 0xff000000);
+        if (result != 0)
+        {
+            std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
+            throw std::runtime_error("pcap_compile failed. Filter=" + bpf_filter);
+        }
     }
 
-    bool match(const uint8_t* packet_data) const
+    Filter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+        Filter(get_bpffilter(protocol, src_ip, dst_ip, src_port, dst_port))
     {
-        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mask_) };
-
-        __m128i mask_result = _mm_cmpeq_epi32(
-            field_,
-            _mm_and_si128(
-                mask_,
-                _mm_loadu_si128((__m128i*)(packet_data + offset)))
-        );
-
-        __m128i compare_result = _mm_cmpeq_epi8(mask_result, _mm_setzero_si128());
-        return _mm_testz_si128(compare_result, compare_result);
     }
 
-    __m128i field_;
-    __m128i mask_;
+    bool match(const uint8_t* data, uint32_t length) const
+    {
+        return bpf_filter(mProgram.bf_insns, const_cast<uint8_t*>(data), length, length);
+    }
+    bpf_program mProgram;
 };
+#else
+struct Filter
+{
+    Filter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+        mProtocol(protocol),
+        mSourceIP(src_ip),
+        mDestinationIP(dst_ip),
+        mSourcePort(src_port),
+        mDestinationPort(dst_port)
+    {
+    }
+
+    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
+    {
+        const auto& ip_header = *reinterpret_cast<const IPv4Header*>(packet_data + sizeof(EthernetHeader));
+        const auto& tcp_header = *reinterpret_cast<const TCPHeader*>(packet_data + sizeof(EthernetHeader) + sizeof(IPv4Header));
+        #define TRACE(a, b) //std::cout << #a << "(" << (a) << ") == " << #b << "(" << (b) << "): " << (a == b) << std::endl;
+        TRACE(int(ip_header.mProtocol), int(mProtocol));
+        TRACE(ip_header.mSourceIP, mSourceIP);
+        TRACE(ip_header.mDestinationIP, mDestinationIP);
+        TRACE(tcp_header.mSourcePort, mSourcePort);
+        TRACE(tcp_header.mDestinationPort, mDestinationPort);
+
+        return ip_header.mProtocol == mProtocol
+                && ip_header.mSourceIP == mSourceIP
+                && ip_header.mDestinationIP == mDestinationIP
+                && tcp_header.mSourcePort == mSourcePort
+                && tcp_header.mDestinationPort == mDestinationPort;
+    }
+
+    uint8_t mProtocol;
+    IPv4Address mSourceIP;
+    IPv4Address mDestinationIP;
+    uint16_t mSourcePort;
+    uint16_t mDestinationPort;
+};
+#endif
 
 
 struct Header
 {
     Header() = default;
 
-    Header(IPv4Address src, IPv4Address dst, uint16_t src_port, uint16_t dst_port)
+    Header(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
-        mIPv4Header.mSource = src;
-        mIPv4Header.mDestination = dst;
+        mIPv4Header.mProtocol = protocol;
+        mIPv4Header.mSourceIP = src_ip;
+        mIPv4Header.mDestinationIP = dst_ip;
         mNetworkHeader.mSourcePort = src_port;
         mNetworkHeader.mDestinationPort = dst_port;
+        static_assert(sizeof(*this) == sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(TCPHeader), "");
     }
 
-    Header(uint16_t src_port, uint16_t dst_port)
-    {
-        mNetworkHeader.mSourcePort = src_port;
-        mNetworkHeader.mDestinationPort = dst_port;
-    }
+    //Header(uint16_t src_port, uint16_t dst_port)
+    //{
+        //mNetworkHeader.mSourcePort = src_port;
+        //mNetworkHeader.mDestinationPort = dst_port;
+    //}
 
     uint8_t* data() { return static_cast<uint8_t*>(static_cast<void*>(this)); }
     uint8_t* begin() { return data(); }
@@ -139,23 +237,21 @@ struct Header
 
     EthernetHeader mEthernetHeader = EthernetHeader();
     IPv4Header mIPv4Header = IPv4Header();
-    UDPHeader mNetworkHeader = UDPHeader();
+    TCPHeader mNetworkHeader = TCPHeader();
 };
 
 
 struct Flow
 {
-    Flow() = default;
-
-    Flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
+    Flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port) :
+        mFilter(protocol, source_ip, target_ip, src_port, dst_port)
     {
-        mFilter.set(protocol, source_ip, target_ip, src_port, dst_port);
     }
 
-    bool match(const uint8_t* frame_bytes, int /*len*/) const
+    bool match(const uint8_t* frame_bytes, int len) const
     {
         // avoid unpredictable branch here.
-        return mFilter.match(frame_bytes);
+        return mFilter.match(frame_bytes, len);
     }
 
 private:
@@ -218,42 +314,15 @@ struct Packet : Header
 }__attribute__((aligned(512)));
 
 
+
+
+
 template<uint32_t prefetch>
-void test(uint32_t num_packets, uint32_t num_flows)
+void test(std::vector<Packet>& packets, std::vector<Flow>& flows, uint64_t* matches)
 {
-
-    std::vector<Packet> packets;
-    packets.reserve(num_packets);
-
-    std::vector<Flow> flows;
-    flows.reserve(num_flows);
-
-    uint16_t src_port = 1024;
-    uint16_t dst_port = 1024;
-
-
-    for (auto i = 0ul; i < flows.capacity(); ++i)
-    {
-        IPv4Address src_ip(1, 1, 1, 1 + i);
-        IPv4Address dst_ip(1, 1, 2, 1 + i);
-        Flow flow(0, src_ip, dst_ip, src_port, dst_port);
-        flows.push_back(flow);
-    }
-
-    for (auto i = 1ul; i <= packets.capacity(); ++i)
-    {
-        IPv4Address src_ip(1, 1, 1, 1 + i % flows.size());
-        IPv4Address dst_ip(1, 1, 2, 1 + i % flows.size());
-        packets.emplace_back(src_ip, dst_ip, src_port, dst_port);
-    }
-
-
-    std::random_shuffle(packets.begin(), packets.end());
+    uint32_t num_flows = flows.size();
 
     auto start_time = Clock::now();
-
-
-    std::vector<uint64_t> matches(flows.size());
 
     for (auto i = 0ul; i != packets.size(); ++i)
     {
@@ -264,7 +333,7 @@ void test(uint32_t num_packets, uint32_t num_flows)
             __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
         }
 
-        for (auto flow_index = 0ul; flow_index != flows.size(); ++flow_index)
+        for (auto flow_index = 0ul; flow_index != num_flows; ++flow_index)
         {
             matches[flow_index] += flows[flow_index].match(packet.data(), packet.size());
         }
@@ -279,48 +348,80 @@ void test(uint32_t num_packets, uint32_t num_flows)
     auto packet_rate_rounded = int(0.5 + packet_rate);
 
     std::cout
-            << " #FLOWS="        << std::setw(3) << std::left << flows.size()
+            << " #FLOWS="        << std::setw(3) << std::left << num_flows
             << " PREFETCH="        << prefetch
             << " MPPS="     << std::setw(6) << std::left << packet_rate_rounded
-            << " (" << flows.size() * packet_rate_rounded << " million filter comparisons per second)"
+            << " (" << num_flows * packet_rate_rounded << " million filter comparisons per second)"
             ;
 
     #if 1
     std::cout << "  (verify-matches:";
-    for (auto i = 0ul; i != flows.size(); ++i)
+    for (auto i = 0ul; i != num_flows; ++i)
     {
         if (i > 0) std::cout << ',';
         std::cout << int(0.5 + 100.0 * matches[i]  / packets.size());
     }
     std::cout << ")";
     #endif
+
+}
+
+
+
+template<int prefetch>
+void run2(uint32_t num_packets, uint32_t num_flows)
+{
+    std::vector<Packet> packets;
+    packets.reserve(num_packets);
+
+    std::vector<Flow> flows;
+    flows.reserve(num_flows);
+
+    uint16_t src_port = 0xabab;
+    uint16_t dst_port = 0xcdcd;
+
+    for (auto i = 1ul; i <= num_packets; ++i)
+    {
+        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
+        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
+        packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+    }
+
+    std::random_shuffle(packets.begin(), packets.end());
+
+
+
+    for (auto i = 0ul; i < num_flows; ++i)
+    {
+        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
+        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
+        flows.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+    }
+
+    std::vector<uint64_t> matches(num_flows);
+    test<prefetch>(packets, flows, matches.data());
     std::cout << std::endl;
 
 }
 
 
+
 template<int prefetch>
-void run()
+void run(uint32_t num_packets = 100 * 1000)
 {
-    auto num_packets = 1 * 1000 * 1000;
-    std::array<int, 8> flow_counts = {{ 1, 2, 4, 8, 10, 16, 32, 64 }};
-
-    for (int num_flows : flow_counts)
-    {
-        test<prefetch>(num_packets, num_flows);
-    }
+    run2<prefetch>(num_packets, 1);
+    run2<prefetch>(num_packets, 2);
+    run2<prefetch>(num_packets, 4);
+    run2<prefetch>(num_packets, 8);
+    run2<prefetch>(num_packets, 16);
     std::cout << std::endl;
-
 }
 
 
 int main()
 {
+
     run<0>();
     run<1>();
     run<2>();
-    run<3>();
-    run<4>();
-    run<6>();
-    run<8>();
 }

@@ -476,17 +476,21 @@ void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, ui
 
     std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
             << " PREFETCH="        << prefetch
-            << " FLOWS=" << std::setw(3) << std::left << num_flows
+            << " FLOWS=" << std::setw(4) << std::left << num_flows
             << " MPPS="     << std::setw(9) << std::left << packet_rate_rounded
             << " (" << num_flows * packet_rate_rounded << " million filter comparisons per second)"
             ;
 
     #if 1
     std::cout << " (verify-matches:";
-    for (auto i = 0ul; i != num_flows; ++i)
+    for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
     {
         if (i > 0) std::cout << ',';
         std::cout << int(0.5 + 100.0 * matches[i] / packets.size()) << '%';
+    }
+    if (num_flows > 20)
+    {
+        std::cout << "...";
     }
     std::cout << ")";
     #endif
@@ -537,7 +541,7 @@ void run4(uint32_t num_packets, uint32_t num_flows)
 template<typename FilterType>
 void run2(uint32_t num_packets = 100 * 1000)
 {
-    int flow_counts[] = { 1, 10, 100 };
+    int flow_counts[] = { 1, 10, 100, 1000 };
 
     for (auto flow_count : flow_counts)
     {

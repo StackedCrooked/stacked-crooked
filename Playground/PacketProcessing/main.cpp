@@ -213,14 +213,8 @@ struct NativeFilter
     {
         const auto& ip_header = *reinterpret_cast<const IPv4Header*>(packet_data + sizeof(EthernetHeader));
         const auto& tcp_header = *reinterpret_cast<const TCPHeader*>(packet_data + sizeof(EthernetHeader) + sizeof(IPv4Header));
-        #define TRACE(a, b) //std::cout << #a << "(" << (a) << ") == " << #b << "(" << (b) << "): " << (a == b) << std::endl;
-        TRACE(int(ip_header.mProtocol), int(mProtocol));
-        TRACE(ip_header.mSourceIP, mSourceIP);
-        TRACE(ip_header.mDestinationIP, mDestinationIP);
-        TRACE(tcp_header.mSourcePort, mSourcePort);
-        TRACE(tcp_header.mDestinationPort, mDestinationPort);
 
-        return ip_header.mProtocol == mProtocol
+        return     ip_header.mProtocol == mProtocol
                 && ip_header.mSourceIP == mSourceIP
                 && ip_header.mDestinationIP == mDestinationIP
                 && tcp_header.mSourcePort == mSourcePort

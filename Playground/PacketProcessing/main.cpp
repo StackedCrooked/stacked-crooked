@@ -1,4 +1,5 @@
 ﻿#include <array>
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstdint>

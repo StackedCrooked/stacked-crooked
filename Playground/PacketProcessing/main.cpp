@@ -29,86 +29,58 @@ const char* GetTypeName()
 }
 
 
-struct MAC : std::array<uint8_t, 6>
+struct MACAddress
 {
-    MAC()
-    {
-        std::array<uint8_t, 6>& self = *this;
-        self = {{ 0x00, 0xff, 0x23, 0x00, 0x00, 0x01 }};
-    }
+    std::array<uint8_t, 6> mData;
 };
 
 
-struct IPv4Address : std::array<uint8_t, 4>
+struct IPv4Address
 {
-    IPv4Address() = default;
+    IPv4Address() : mData() {}
 
     IPv4Address(int a, int b, int c, int d)
     {
-        (*this)[0] = a;
-        (*this)[1] = b;
-        (*this)[2] = c;
-        (*this)[3] = d;
+        mData[0] = a;
+        mData[1] = b;
+        mData[2] = c;
+        mData[3] = d;
     }
 
     uint32_t toInteger() const
     {
         uint32_t result;
-        memcpy(&result, data(), size());
+        memcpy(&result, mData.data(), mData.size());
         return result;
+    }
+
+    friend bool operator==(IPv4Address lhs, IPv4Address rhs)
+    {
+        return lhs.toInteger() == rhs.toInteger();
     }
 
     friend std::ostream& operator<<(std::ostream& os, IPv4Address ip)
     {
-        return os << static_cast<int>(ip[0]) << '.'
-                  << static_cast<int>(ip[1]) << '.'
-                  << static_cast<int>(ip[2]) << '.'
-                  << static_cast<int>(ip[3]);
+        return os << static_cast<int>(ip.mData[0]) << '.'
+                  << static_cast<int>(ip.mData[1]) << '.'
+                  << static_cast<int>(ip.mData[2]) << '.'
+                  << static_cast<int>(ip.mData[3]);
     }
+
+    std::array<uint8_t, 4> mData;
 };
 
 
 struct EthernetHeader
 {
-    MAC mDestination;
-    MAC mSource;
+    MACAddress mDestination;
+    MACAddress mSource;
     uint16_t mEtherType = 0x0008;
 };
 
 
 struct IPv4Header
 {
-    IPv4Header()
-    {
-        uint8_t example[20] = {
-            0x45, 0x00, 0x05, 0xdc, 0x67, 0x4c, 0x00, 0x00, 0x3e, 0x06, 0x01, 0x01,
-            0x01, 0x01, 0x01, 0x01,
-            0x01, 0x01, 0x02, 0x01
-        };
-        static_assert(sizeof(*this) == 20, "");
-        static_assert(sizeof(example) == sizeof(*this), "");
-        memcpy(this, &example[0], sizeof(*this));
-    }
-
-    static void mask(uint64_t& a, uint64_t& b)
-    {
-        union Mask
-        {
-            std::array<uint8_t, 16> u8;
-            uint64_t u64[2];
-        };
-
-        Mask mask{};
-        mask.u8 =  {{
-            0x00, 0xff, 0x00, 0x00, // (ttl) protocol, (checksum)
-            0xff, 0xff, 0xff, 0xff,  // source ip
-            0xff, 0xff, 0xff, 0xff,  // destination ip
-            0xff, 0xff, 0xff, 0xff  // L4Header: source port and destination port
-        }};
-        a = mask.u64[0];
-        b = mask.u64[1];
-    }
-
     uint8_t mVersionAndIHL = (4u << 4) | 5u;
     uint8_t mTypeOfService = 0;
     uint16_t mTotalLength = 1514;
@@ -122,22 +94,10 @@ struct IPv4Header
 };
 
 
-//struct UDPHeader
-//{
-    //uint16_t mSourcePort;
-    //uint16_t mDestinationPort;
-    //uint16_t mSize;
-    //uint16_t mChecksum;
-//};
-
 struct TCPHeader
 {
     TCPHeader()
     {
-        uint8_t bytes[20] = { 0xec, 0xc6, 0xe0, 0x89, 0x0f, 0x67, 0x67, 0x60, 0x11, 0x51, 0xd9, 0xf9, 0x50, 0x10, 0xff, 0xff, 0xa0, 0x7b, 0x00, 0x00 };
-        static_assert(sizeof(*this) == 20, "");
-        static_assert(sizeof(*this) == sizeof(bytes), "");
-        memcpy(this, &bytes[0], sizeof(*this));
     }
     uint16_t mSourcePort = 0;
     uint16_t mDestinationPort = 0;
@@ -154,13 +114,14 @@ struct BPFFilter
 {
     static std::string get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
-        assert(protocol == 6); // assume TCP
+        const char* protocol_str = (protocol == 6) ? "tcp" : "(unknown)";
+
         // ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614
         std::stringstream ss;
         ss  << "ip src " << src_ip
             << " && ip dst " << dst_ip
-            << " && tcp src port " << src_port
-            << " && tcp dst port " << dst_port
+            << " && " << protocol_str << " src port " << src_port
+            << " && " << protocol_str << " dst port " << dst_port
             ;
         return ss.str();
     }
@@ -547,20 +508,29 @@ void run2(uint32_t num_packets = 100 * 1000)
     {
         run4<FilterType, 1>(num_packets, flow_count);
     }
+    std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
         run4<FilterType, 2>(num_packets, flow_count);
     }
+    std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
         run4<FilterType, 4>(num_packets, flow_count);
     }
+    std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
         run4<FilterType, 8>(num_packets, flow_count);
+    }
+    std::cout << std::endl;
+
+    for (auto flow_count : flow_counts)
+    {
+        run4<FilterType, 16>(num_packets, flow_count);
     }
     std::cout << std::endl;
 }
@@ -569,7 +539,14 @@ void run2(uint32_t num_packets = 100 * 1000)
 int main()
 {
     run2<BPFFilter>();
+    std::cout << std::endl;
+
     run2<NativeFilter>();
+    std::cout << std::endl;
+
     run2<MaskFilter>();
+    std::cout << std::endl;
+
     run2<VectorFilter>();
+    std::cout << std::endl;
 }

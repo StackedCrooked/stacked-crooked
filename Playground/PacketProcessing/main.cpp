@@ -1,5 +1,4 @@
-﻿#include <algorithm>
-#include <array>
+﻿#include <array>
 #include <cassert>
 #include <chrono>
 #include <cstdint>
@@ -9,9 +8,9 @@
 #include <sstream>
 #include <vector>
 #include <typeinfo>
+#include <cxxabi.h>
 #include <x86intrin.h>
 #include "pcap.h"
-#include <cxxabi.h>
 
 
 const char* Demangle(char const * mangled_name)
@@ -96,9 +95,6 @@ struct IPv4Header
 
 struct TCPHeader
 {
-    TCPHeader()
-    {
-    }
     uint16_t mSourcePort = 0;
     uint16_t mDestinationPort = 0;
     uint16_t mSequenceNumber[2];

@@ -159,14 +159,11 @@ struct Filter
         assert(protocol == 6); // assume TCP
         // ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614
         std::stringstream ss;
-        ss
-            << "ip src " << src_ip
+        ss  << "ip src " << src_ip
             << " && ip dst " << dst_ip
-            << " && src port " << src_port
-            << " && dst port " << dst_port
+            << " && tcp src port " << src_port
+            << " && tcp dst port " << dst_port
             ;
-            (void)src_port;//<< " && tcp src port " << src_port
-            (void)dst_port;//<< " && tcp dst port " << dst_port
         return ss.str();
     }
 
@@ -435,12 +432,12 @@ void test(std::vector<Packet>& packets, std::vector<Flow>& flows, uint64_t* matc
     auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
-    auto packet_rate_rounded = int(0.5 + packet_rate);
+    auto packet_rate_rounded = int(0.5 + 100 * packet_rate)/100.0;
 
     std::cout
-            << " #FLOWS="        << std::setw(3) << std::left << num_flows
+            << " #FLOWS="        << std::setw(8) << std::left << num_flows
             << " PREFETCH="        << prefetch
-            << " MPPS="     << std::setw(6) << std::left << packet_rate_rounded
+            << " MPPS="     << std::setw(9) << std::left << packet_rate_rounded
             << " (" << num_flows * packet_rate_rounded << " million filter comparisons per second)"
             ;
 
@@ -497,11 +494,13 @@ void run2(uint32_t num_packets, uint32_t num_flows)
 
 
 template<int prefetch>
-void run(uint32_t num_packets = 400 * 1000)
+void run(uint32_t num_packets = 1000 * 1000)
 {
     run2<prefetch>(num_packets, 1);
     run2<prefetch>(num_packets, 10);
-    run2<prefetch>(num_packets, 20);
+    run2<prefetch>(num_packets, 50);
+    run2<prefetch>(num_packets, 100);
+    run2<prefetch>(num_packets, 500);
     std::cout << std::endl;
 }
 
@@ -513,4 +512,5 @@ int main()
     run<2>();
     run<4>();
     run<8>();
+    run<16>();
 }

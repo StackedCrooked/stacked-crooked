@@ -8,7 +8,25 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <typeinfo>
 #include <x86intrin.h>
+#include "pcap.h"
+#include <cxxabi.h>
+
+
+const char* Demangle(char const * mangled_name)
+{
+    int st;
+    auto demangled = abi::__cxa_demangle(mangled_name, 0, 0, &st);
+    return st == 0 ? demangled : mangled_name;
+}
+
+
+template<typename T>
+const char* GetTypeName()
+{
+    return Demangle(typeid(T).name());
+}
 
 
 struct MAC : std::array<uint8_t, 6>
@@ -132,27 +150,7 @@ struct TCPHeader
 };
 
 
-#ifndef FILTER_BPF
-#define FILTER_BPF 0
-#endif
-
-
-#ifndef FILTER_NATIVE
-#define FILTER_NATIVE 0
-#endif
-
-
-#ifndef FILTER_VECTOR
-#define FILTER_VECTOR 0
-#endif
-
-
-static_assert(FILTER_BPF ^ FILTER_NATIVE ^ FILTER_VECTOR, "");
-
-#if FILTER_BPF
-#include "pcap.h"
-
-struct Filter
+struct BPFFilter
 {
     static std::string get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
@@ -167,7 +165,7 @@ struct Filter
         return ss.str();
     }
 
-    Filter(std::string bpf_filter)
+    BPFFilter(std::string bpf_filter)
     {
         //std::cout << bpf_filter << std::endl;
         using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
@@ -187,8 +185,8 @@ struct Filter
         }
     }
 
-    Filter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
-        Filter(get_bpffilter(protocol, src_ip, dst_ip, src_port, dst_port))
+    BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+        BPFFilter(get_bpffilter(protocol, src_ip, dst_ip, src_port, dst_port))
     {
     }
 
@@ -198,10 +196,11 @@ struct Filter
     }
     bpf_program mProgram;
 };
-#elif FILTER_NATIVE
-struct Filter
+
+
+struct NativeFilter
 {
-    Filter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+    NativeFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
         mProtocol(protocol),
         mSourceIP(src_ip),
         mDestinationIP(dst_ip),
@@ -234,10 +233,11 @@ struct Filter
     uint16_t mSourcePort;
     uint16_t mDestinationPort;
 };
-#elif FILTER_VECTOR
-struct Filter
+
+
+struct VectorFilter
 {
-    Filter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    VectorFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
         // Imagine
         struct TransportHeader
@@ -289,8 +289,59 @@ struct Filter
     __m128i mask_;
 };
 
-#endif
 
+struct MaskFilter
+{
+    MaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    {
+        // Imagine
+        struct TransportHeader
+        {
+            uint8_t ttl;
+            uint8_t protocol;
+            uint16_t checksum;
+            IPv4Address src_ip = IPv4Address();
+            IPv4Address dst_ip = IPv4Address();
+            uint16_t src_port = 0;
+            uint16_t dst_port = 0;
+        };
+
+        auto h = TransportHeader();
+        h.protocol = protocol;
+        h.src_ip = src_ip;
+        h.dst_ip = dst_ip;
+        h.src_port = src_port;
+        h.dst_port = dst_port;
+
+        static_assert(sizeof(mFields) == sizeof(h), "");
+
+        memcpy(&mFields[0], &h, sizeof(mFields));
+
+        uint8_t mask_bytes[16] = {
+            0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
+            0xff, 0xff, 0xff, 0xff, // source ip
+            0xff, 0xff, 0xff, 0xff, // destination ip
+            0xff, 0xff, 0xff, 0xff  // source and destination ports
+        };
+
+        static_assert(sizeof(mask_bytes) == sizeof(mMasks), "");
+
+        memcpy(&mMasks[0], &mask_bytes[0], sizeof(mMasks));
+    }
+
+    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
+    {
+        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mMasks) };
+
+        auto u64 = reinterpret_cast<const uint64_t*>(packet_data + offset);
+
+        return (mFields[0] == (mMasks[0] & u64[0]))
+             & (mFields[1] == (mMasks[1] & u64[1]));
+    }
+
+    uint64_t mFields[2];
+    uint64_t mMasks[2];
+};
 
 struct Header
 {
@@ -305,12 +356,6 @@ struct Header
         mNetworkHeader.mDestinationPort = dst_port;
         static_assert(sizeof(*this) == sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(TCPHeader), "");
     }
-
-    //Header(uint16_t src_port, uint16_t dst_port)
-    //{
-        //mNetworkHeader.mSourcePort = src_port;
-        //mNetworkHeader.mDestinationPort = dst_port;
-    //}
 
     uint8_t* data() { return static_cast<uint8_t*>(static_cast<void*>(this)); }
     uint8_t* begin() { return data(); }
@@ -328,6 +373,7 @@ struct Header
 };
 
 
+template<typename FilterType>
 struct Flow
 {
     Flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port) :
@@ -342,7 +388,7 @@ struct Flow
     }
 
 private:
-    Filter mFilter;
+    FilterType mFilter;
 };
 
 volatile const unsigned volatile_zero = 0;
@@ -404,10 +450,10 @@ struct Packet : Header
 
 
 
-template<uint32_t prefetch>
-void test(std::vector<Packet>& packets, std::vector<Flow>& flows, uint64_t* matches)
+template<typename FilterType, uint32_t prefetch>
+void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint64_t* const matches)
 {
-    uint32_t num_flows = flows.size();
+    const uint32_t num_flows = flows.size();
 
     auto start_time = Clock::now();
 
@@ -434,9 +480,9 @@ void test(std::vector<Packet>& packets, std::vector<Flow>& flows, uint64_t* matc
 
     auto packet_rate_rounded = int(0.5 + 100 * packet_rate)/100.0;
 
-    std::cout
-            << " #FLOWS="        << std::setw(8) << std::left << num_flows
+    std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
             << " PREFETCH="        << prefetch
+            << " FLOWS=" << std::setw(3) << std::left << num_flows
             << " MPPS="     << std::setw(9) << std::left << packet_rate_rounded
             << " (" << num_flows * packet_rate_rounded << " million filter comparisons per second)"
             ;
@@ -455,13 +501,13 @@ void test(std::vector<Packet>& packets, std::vector<Flow>& flows, uint64_t* matc
 
 
 
-template<int prefetch>
-void run2(uint32_t num_packets, uint32_t num_flows)
+template<typename FilterType, int prefetch>
+void run4(uint32_t num_packets, uint32_t num_flows)
 {
     std::vector<Packet> packets;
     packets.reserve(num_packets);
 
-    std::vector<Flow> flows;
+    std::vector<Flow<FilterType>> flows;
     flows.reserve(num_flows);
 
     uint16_t src_port = 0xabab;
@@ -486,31 +532,46 @@ void run2(uint32_t num_packets, uint32_t num_flows)
     }
 
     std::vector<uint64_t> matches(num_flows);
-    test<prefetch>(packets, flows, matches.data());
+    test<FilterType, prefetch>(packets, flows, matches.data());
     std::cout << std::endl;
 
 }
 
 
 
-template<int prefetch>
-void run(uint32_t num_packets = 1000 * 1000)
+
+template<typename FilterType>
+void run2(uint32_t num_packets = 100 * 1000)
 {
-    run2<prefetch>(num_packets, 1);
-    run2<prefetch>(num_packets, 10);
-    run2<prefetch>(num_packets, 50);
-    run2<prefetch>(num_packets, 100);
-    run2<prefetch>(num_packets, 500);
+    int flow_counts[] = { 1, 10, 100 };
+
+    for (auto flow_count : flow_counts)
+    {
+        run4<FilterType, 1>(num_packets, flow_count);
+    }
+
+    for (auto flow_count : flow_counts)
+    {
+        run4<FilterType, 2>(num_packets, flow_count);
+    }
+
+    for (auto flow_count : flow_counts)
+    {
+        run4<FilterType, 4>(num_packets, flow_count);
+    }
+
+    for (auto flow_count : flow_counts)
+    {
+        run4<FilterType, 8>(num_packets, flow_count);
+    }
     std::cout << std::endl;
 }
 
 
 int main()
 {
-
-    run<0>();
-    run<2>();
-    run<4>();
-    run<8>();
-    run<16>();
+    run2<BPFFilter>();
+    run2<NativeFilter>();
+    run2<MaskFilter>();
+    run2<VectorFilter>();
 }

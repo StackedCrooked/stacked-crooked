@@ -116,7 +116,6 @@ struct BPFFilter
     {
         const char* protocol_str = (protocol == 6) ? "tcp" : "(unknown)";
 
-        // ip src 10.10.1.2 && ip dst 10.10.1.1 && tcp src port 57481 && tcp dst port 60614
         std::stringstream ss;
         ss  << "ip src " << src_ip
             << " && ip dst " << dst_ip
@@ -128,7 +127,6 @@ struct BPFFilter
 
     BPFFilter(std::string bpf_filter)
     {
-        //std::cout << bpf_filter << std::endl;
         using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
 
         DummyInterface dummy_interface(pcap_open_dead(DLT_EN10MB, 1518), &pcap_close);
@@ -155,6 +153,8 @@ struct BPFFilter
     {
         return bpf_filter(mProgram.bf_insns, const_cast<uint8_t*>(data), length, length);
     }
+
+private:
     bpf_program mProgram;
 };
 
@@ -194,7 +194,7 @@ struct VectorFilter
 {
     VectorFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
-        // Imagine
+        // Composite of IPv4 + TCP/UDP header fields from TTL to DestinationPort.
         struct TransportHeader
         {
             uint8_t ttl;
@@ -212,7 +212,6 @@ struct VectorFilter
         h.dst_ip = dst_ip;
         h.src_port = src_port;
         h.dst_port = dst_port;
-
 
         field_ = _mm_loadu_si128((__m128i*)&h);
 
@@ -249,7 +248,7 @@ struct MaskFilter
 {
     MaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
-        // Imagine
+        // Composite of IPv4 + TCP/UDP header fields from TTL to DestinationPort.
         struct TransportHeader
         {
             uint8_t ttl;
@@ -298,11 +297,11 @@ struct MaskFilter
     uint64_t mMasks[2];
 };
 
-struct Header
+struct CombinedHeader
 {
-    Header() = default;
+    CombinedHeader() = default;
 
-    Header(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    CombinedHeader(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
         mIPv4Header.mProtocol = protocol;
         mIPv4Header.mSourceIP = src_ip;
@@ -395,14 +394,22 @@ int64_t get_frequency_hz()
 
 
 
-struct Packet : Header
+// Packet distance is 1536 (or 512 * 3) bytes.
+// This seems to be the default used by pfring in it's 
+// internal Rx buffer.
+struct Packet
 {
-    using Header::Header;
-    char bytes[3 * 512 - sizeof(Header)];
-}__attribute__((aligned(512)));
+    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port):
+		mFullPacketHeader(protocol, src_ip, dst_ip, src_port, dst_port)
+	{
+	}
 
-
-
+	const uint8_t* data() const { return mFullPacketHeader.data(); }
+	uint32_t size() const { return mFullPacketHeader.size(); }
+	
+    CombinedHeader mFullPacketHeader;
+    char padding[3 * 512 - sizeof(CombinedHeader)];
+};
 
 
 template<typename FilterType, uint32_t prefetch>
@@ -481,8 +488,6 @@ void run4(uint32_t num_packets, uint32_t num_flows)
 
     std::random_shuffle(packets.begin(), packets.end());
 
-
-
     for (auto i = 0ul; i < num_flows; ++i)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
@@ -550,3 +555,4 @@ int main()
     run2<VectorFilter>();
     std::cout << std::endl;
 }
+

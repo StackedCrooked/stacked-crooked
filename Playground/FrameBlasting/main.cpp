@@ -265,7 +265,7 @@ private:
 };
 
 
-void Socket::send_batch(std::chrono::_V2::steady_clock::time_point ts, const std::vector<Packet*>& packets)
+void Socket::send_batch(std::chrono::steady_clock::time_point ts, const std::vector<Packet*>& packets)
 {
     for (auto& p : packets)
     {

@@ -14,6 +14,15 @@
 #include "pcap.h"
 
 
+template<typename T>
+inline T Decode(const uint8_t* data)
+{
+    auto result = T();
+    memcpy(&result, data, sizeof(result));
+    return result;
+}
+
+
 const char* Demangle(char const * mangled_name)
 {
     int st;
@@ -284,15 +293,19 @@ struct MaskFilter
     {
         enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mMasks) };
 
-        auto u64 = reinterpret_cast<const uint64_t*>(packet_data + offset);
+        using U64 = std::array<uint64_t, 2>;
+        auto u64 = Decode<U64>(packet_data + offset);
 
         return (mFields[0] == (mMasks[0] & u64[0]))
-             & (mFields[1] == (mMasks[1] & u64[1]));
+           &&  (mFields[1] == (mMasks[1] & u64[1]));
     }
 
     uint64_t mFields[2];
-    uint64_t mMasks[2];
+    static uint64_t mMasks[2];
 };
+
+
+uint64_t MaskFilter::mMasks[2];
 
 struct CombinedHeader
 {
@@ -420,14 +433,25 @@ void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, ui
     {
         Packet& packet = packets[i];
 
-        if (prefetch > 0 && i + prefetch < packets.size())
+        if (prefetch > 0)
         {
             __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
         }
 
-        for (auto flow_index = 0ul; flow_index != num_flows; ++flow_index)
+        auto packet_data = packet.data();
+        auto packet_size = packet.size();
+        auto flow_index = 0ul;
+
+        while (flow_index + 2 <= num_flows)
         {
-            matches[flow_index] += flows[flow_index].match(packet.data(), packet.size());
+            matches[flow_index + 0] += flows[flow_index + 0].match(packet_data, packet_size);
+            matches[flow_index + 1] += flows[flow_index + 1].match(packet_data, packet_size);
+            flow_index += 2;
+        }
+
+        if (flow_index + 1 == num_flows)
+        {
+            matches[flow_index] += flows[flow_index].match(packet_data, packet_size);
         }
     }
 
@@ -465,7 +489,7 @@ void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, ui
 
 
 template<typename FilterType, int prefetch>
-void run4(uint32_t num_packets, uint32_t num_flows)
+void do_run(uint32_t num_packets, uint32_t num_flows)
 {
     std::vector<Packet> packets;
     packets.reserve(num_packets);
@@ -483,7 +507,7 @@ void run4(uint32_t num_packets, uint32_t num_flows)
         packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
-    std::random_shuffle(packets.begin(), packets.end());
+    //std::random_shuffle(packets.begin(), packets.end());
 
     for (auto i = 0ul; i < num_flows; ++i)
     {
@@ -502,37 +526,37 @@ void run4(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run2(uint32_t num_packets = 100 * 1000)
+void run(uint32_t num_packets = 100 * 1000)
 {
-    int flow_counts[] = { 1, 10, 100, 1000 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 };
 
     for (auto flow_count : flow_counts)
     {
-        run4<FilterType, 1>(num_packets, flow_count);
+        do_run<FilterType, 0>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        run4<FilterType, 2>(num_packets, flow_count);
+        do_run<FilterType, 1>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        run4<FilterType, 4>(num_packets, flow_count);
+        do_run<FilterType, 2>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        run4<FilterType, 8>(num_packets, flow_count);
+        do_run<FilterType, 4>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        run4<FilterType, 16>(num_packets, flow_count);
+        do_run<FilterType, 8>(num_packets, flow_count);
     }
     std::cout << std::endl;
 }
@@ -540,16 +564,18 @@ void run2(uint32_t num_packets = 100 * 1000)
 
 int main()
 {
-    run2<BPFFilter>();
+    srand(time(0));
+
+    run<NativeFilter>();
     std::cout << std::endl;
 
-    run2<NativeFilter>();
+    run<MaskFilter>();
     std::cout << std::endl;
 
-    run2<MaskFilter>();
+    run<VectorFilter>();
     std::cout << std::endl;
 
-    run2<VectorFilter>();
+    run<BPFFilter>();
     std::cout << std::endl;
 }
 

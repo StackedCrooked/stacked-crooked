@@ -396,10 +396,13 @@ struct Flows
 		auto hash = mFlows[flow_index].hash();
         auto bucket_index = hash % mHashTable.size();
         mHashTable[bucket_index].push_back(flow_index);
+
+        #if 0
         if (mHashTable[bucket_index].size() >= 2)
         {
             std::cout << "flow_index=" << flow_index << " hash=" << hash << " bucket_index=" << bucket_index << " bucket_entries=" << mHashTable[bucket_index].size() << std::endl;
         }
+        #endif
     }
 
 	void print()
@@ -437,7 +440,7 @@ struct Flows
 
     std::vector<Flow<FlowType>> mFlows;
 
-    std::array<std::vector<uint32_t>, 7841> mHashTable;
+    std::array<std::vector<uint32_t>, 7741> mHashTable;
 };
 
 volatile const unsigned volatile_zero = 0;
@@ -519,7 +522,6 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
             << " PREFETCH="        << prefetch
             << " FLOWS=" << std::setw(4) << std::left << num_flows
             << " MPPS="     << std::setw(9) << std::left << packet_rate_rounded
-            << " (" << num_flows * packet_rate_rounded << " million filter comparisons per second)"
             ;
 
     #if 1
@@ -527,7 +529,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << int(0.5 + 100000.0 * matches[i] / packets.size()) << '%';
+        std::cout << 0.5 + 100.0 * matches[i] / packets.size() << '%';
     }
     if (num_flows > 20)
     {
@@ -574,6 +576,7 @@ shuffle:
     {
         packets.insert(packets.end(), packets.begin(), packets.end());
     }
+    num_packets = packets.size();
 
     std::random_shuffle(packets.begin(), packets.end());
 

@@ -434,7 +434,7 @@ struct Flows
 
     std::vector<Flow<FlowType>> mFlows;
 
-    std::array<std::vector<uint32_t>, 131> mHashTable;
+    std::array<std::vector<uint32_t>, 7841> mHashTable;
 };
 
 volatile const unsigned volatile_zero = 0;
@@ -524,7 +524,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << int(0.5 + 100.0 * matches[i] / packets.size()) << '%';
+        std::cout << int(0.5 + 100000.0 * matches[i] / packets.size()) << '%';
     }
     if (num_flows > 20)
     {
@@ -549,23 +549,50 @@ void run2(uint32_t num_packets, uint32_t num_flows)
     uint16_t src_port = 0xabab;
     uint16_t dst_port = 0xcdcd;
 
-    for (auto i = 1ul; i <= num_packets; ++i)
+    for (auto i = 0ul; i < num_packets; ++i)
     {
-        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
-        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
-        packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+        for (auto a = 0; a != 8; ++a)
+        for (auto b = 0; b != 8; ++b)
+        for (auto c = 0; c != 8; ++c)
+        for (auto d = 0; d != 8; ++d)
+        {
+            IPv4Address src_ip(1, 1, a, b);
+            IPv4Address dst_ip(1, 2, c, d);
+            packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+            if (packets.size() == num_flows)
+            {
+                goto shuffle;
+            }
+        }
     }
 
-    //std::random_shuffle(packets.begin(), packets.end());
+shuffle:
+    while (packets.size() < num_packets)
+    {
+        packets.insert(packets.end(), packets.begin(), packets.end());
+    }
+
+    std::random_shuffle(packets.begin(), packets.end());
 
     for (auto i = 0ul; i < num_flows; ++i)
     {
-        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
-        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
-        flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
+        for (auto a = 0; a != 8; ++a)
+        for (auto b = 0; b != 8; ++b)
+        for (auto c = 0; c != 8; ++c)
+        for (auto d = 0; d != 8; ++d)
+        {
+            IPv4Address src_ip(1, 1, a, b);
+            IPv4Address dst_ip(1, 2, c, d);
+            flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
+            if (flows.size() == num_flows)
+            {
+                goto next;
+            }
+        }
     }
 
 	//flows.print();
+    next:
 
     std::vector<uint64_t> matches(num_flows);
     run3<FilterType, prefetch>(packets, flows, matches.data());
@@ -589,18 +616,6 @@ void run(uint32_t num_packets = 100 * 1000)
 
     for (auto flow_count : flow_counts)
     {
-        run2<FilterType, 1>(num_packets, flow_count);
-    }
-    std::cout << std::endl;
-
-    for (auto flow_count : flow_counts)
-    {
-        run2<FilterType, 2>(num_packets, flow_count);
-    }
-    std::cout << std::endl;
-
-    for (auto flow_count : flow_counts)
-    {
         run2<FilterType, 4>(num_packets, flow_count);
     }
     std::cout << std::endl;
@@ -609,8 +624,6 @@ void run(uint32_t num_packets = 100 * 1000)
 
 int main()
 {
-    run<BPFFilter>();
-    std::cout << std::endl;
 
     run<NativeFilter>();
     std::cout << std::endl;
@@ -619,6 +632,9 @@ int main()
     std::cout << std::endl;
 
     run<VectorFilter>();
+    std::cout << std::endl;
+
+    run<BPFFilter>();
     std::cout << std::endl;
 }
 

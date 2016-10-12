@@ -610,7 +610,7 @@ shuffle:
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 100 * 1000)
+void run(uint32_t num_packets = 128 * 1028)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1028 };
 

@@ -446,7 +446,7 @@ struct Flows
 
     std::vector<Flow<FlowType>> mFlows;
 
-    std::array<std::vector<uint32_t>, 7741> mHashTable;
+    std::array<std::vector<uint32_t>, 1021> mHashTable;
 };
 
 volatile const unsigned volatile_zero = 0;

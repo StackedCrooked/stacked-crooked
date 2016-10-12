@@ -396,7 +396,10 @@ struct Flows
 		auto hash = mFlows[flow_index].hash();
         auto bucket_index = hash % mHashTable.size();
         mHashTable[bucket_index].push_back(flow_index);
-		//std::cout << "flow_index=" << flow_index << " hash=" << hash << " bucket_index=" << bucket_index << std::endl;
+        if (mHashTable[bucket_index].size() >= 2)
+        {
+            std::cout << "flow_index=" << flow_index << " hash=" << hash << " bucket_index=" << bucket_index << " bucket_entries=" << mHashTable[bucket_index].size() << std::endl;
+        }
     }
 
 	void print()

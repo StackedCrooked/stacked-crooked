@@ -1,4 +1,5 @@
-﻿#include <array>
+﻿#include <boost/functional/hash.hpp>
+#include <array>
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -118,7 +119,7 @@ struct TCPHeader
 
 struct BPFFilter
 {
-    static std::string get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+    static std::string make_bpf_string(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
         const char* protocol_str = (protocol == 6) ? "tcp" : "(unknown)";
 
@@ -131,9 +132,9 @@ struct BPFFilter
         return ss.str();
     }
 
-    BPFFilter(std::string bpf_filter)
+    BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
     {
-        using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
+        std::string bpf_string = make_bpf_string(protocol, src_ip, dst_ip, src_port, dst_port);
 
         DummyInterface dummy_interface(pcap_open_dead(DLT_EN10MB, 1518), &pcap_close);
 
@@ -142,17 +143,12 @@ struct BPFFilter
             throw std::runtime_error("Failed to open pcap dummy interface");
         }
 
-        auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_filter.c_str(), 1, 0xff000000);
+        auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_string.c_str(), 1, 0xff000000);
         if (result != 0)
         {
             std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
-            throw std::runtime_error("pcap_compile failed. Filter=" + bpf_filter);
+            throw std::runtime_error("pcap_compile failed. Filter=" + bpf_string);
         }
-    }
-
-    BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
-        BPFFilter(get_bpffilter(protocol, src_ip, dst_ip, src_port, dst_port))
-    {
     }
 
     bool match(const uint8_t* data, uint32_t length) const
@@ -160,7 +156,9 @@ struct BPFFilter
         return bpf_filter(mProgram.bf_insns, const_cast<uint8_t*>(data), length, length);
     }
 
-private:
+    private:
+    using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
+    
     bpf_program mProgram;
 };
 
@@ -181,11 +179,11 @@ struct NativeFilter
         const auto& ip_header = *reinterpret_cast<const IPv4Header*>(packet_data + sizeof(EthernetHeader));
         const auto& tcp_header = *reinterpret_cast<const TCPHeader*>(packet_data + sizeof(EthernetHeader) + sizeof(IPv4Header));
 
-        return     ip_header.mProtocol == mProtocol
-                && ip_header.mSourceIP == mSourceIP
-                && ip_header.mDestinationIP == mDestinationIP
-                && tcp_header.mSourcePort == mSourcePort
-                && tcp_header.mDestinationPort == mDestinationPort;
+        return    (ip_header.mProtocol == mProtocol)
+               && (ip_header.mSourceIP == mSourceIP)
+               && (ip_header.mDestinationIP == mDestinationIP)
+               && (tcp_header.mSourcePort == mSourcePort)
+               && (tcp_header.mDestinationPort == mDestinationPort);
     }
 
     uint8_t mProtocol;
@@ -295,9 +293,9 @@ struct MaskFilter
 
         using U64 = std::array<uint64_t, 2>;
         auto u64 = Decode<U64>(packet_data + offset);
-
+    
         return (mFields[0] == (mMasks[0] & u64[0]))
-           &&  (mFields[1] == (mMasks[1] & u64[1]));
+            && (mFields[1] == (mMasks[1] & u64[1]));
     }
 
     uint64_t mFields[2];
@@ -341,8 +339,14 @@ template<typename FilterType>
 struct Flow
 {
     Flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port) :
-        mFilter(protocol, source_ip, target_ip, src_port, dst_port)
+        mFilter(protocol, source_ip, target_ip, src_port, dst_port),
+        mHash(0)
     {
+        boost::hash_combine(mHash, protocol);
+        boost::hash_combine(mHash, source_ip.toInteger());
+        boost::hash_combine(mHash, target_ip.toInteger());
+        boost::hash_combine(mHash, src_port);
+        boost::hash_combine(mHash, dst_port);
     }
 
     bool match(const uint8_t* frame_bytes, int len) const
@@ -351,8 +355,86 @@ struct Flow
         return mFilter.match(frame_bytes, len);
     }
 
+    std::size_t hash() const
+    {
+        return mHash;
+    }
+
 private:
     FilterType mFilter;
+    std::size_t mHash;
+};
+
+
+
+// Packet distance is 1536 (or 512 * 3) bytes.
+// This seems to be the default used by pfring in it's
+// internal Rx buffer.
+struct Packet
+{
+    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port):
+        mFullPacketHeader(protocol, src_ip, dst_ip, src_port, dst_port)
+    {
+    }
+
+    const uint8_t* data() const { return mFullPacketHeader.data(); }
+    uint32_t size() const { return mFullPacketHeader.size(); }
+
+    CombinedHeader mFullPacketHeader;
+    char padding[3 * 512 - sizeof(CombinedHeader)];
+};
+
+
+
+template<typename FlowType>
+struct Flows
+{
+    void add_flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
+    {
+        auto flow_index = mFlows.size();
+        mFlows.emplace_back(protocol, source_ip, target_ip, src_port, dst_port);
+		auto hash = mFlows[flow_index].hash();
+        auto bucket_index = hash % mHashTable.size();
+        mHashTable[bucket_index].push_back(flow_index);
+		//std::cout << "flow_index=" << flow_index << " hash=" << hash << " bucket_index=" << bucket_index << std::endl;
+    }
+
+	void print()
+	{
+		std::cout << "HashTable:" << std::endl;
+		for (auto i = 0u; i != mHashTable.size(); ++i)
+		{
+			std::cout << " i=" << i << " size=" << mHashTable[i].size() << std::endl;
+		}
+	}
+
+    std::size_t size() const
+    {
+        return mFlows.size();
+    }
+
+	void match(const Packet& packet, uint64_t* matches)
+    {
+        std::size_t packet_hash = 0;
+        boost::hash_combine(packet_hash, packet.mFullPacketHeader.mIPv4Header.mProtocol);
+        boost::hash_combine(packet_hash, packet.mFullPacketHeader.mIPv4Header.mSourceIP.toInteger());
+        boost::hash_combine(packet_hash, packet.mFullPacketHeader.mIPv4Header.mDestinationIP.toInteger());
+        boost::hash_combine(packet_hash, packet.mFullPacketHeader.mNetworkHeader.mSourcePort);
+        boost::hash_combine(packet_hash, packet.mFullPacketHeader.mNetworkHeader.mDestinationPort);
+
+        auto bucket_index = packet_hash % mHashTable.size();
+		//std::cout << "packet_hash=" << packet_hash << " bucket_index=" << bucket_index << std::endl;
+
+        std::vector<uint32_t>& flow_indexes = mHashTable[bucket_index];
+        for (const uint32_t& flow_index : flow_indexes)
+        {
+            matches[flow_index] += mFlows[flow_index].match(packet.data(), packet.size());
+        }
+    }
+
+    std::vector<Flow<FlowType>> mFlows;
+
+    std::array<std::vector<uint32_t>, 131> mHashTable;
 };
 
 volatile const unsigned volatile_zero = 0;
@@ -403,27 +485,8 @@ int64_t get_frequency_hz()
 }
 
 
-
-// Packet distance is 1536 (or 512 * 3) bytes.
-// This seems to be the default used by pfring in it's 
-// internal Rx buffer.
-struct Packet
-{
-    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port):
-		mFullPacketHeader(protocol, src_ip, dst_ip, src_port, dst_port)
-	{
-	}
-
-	const uint8_t* data() const { return mFullPacketHeader.data(); }
-	uint32_t size() const { return mFullPacketHeader.size(); }
-	
-    CombinedHeader mFullPacketHeader;
-    char padding[3 * 512 - sizeof(CombinedHeader)];
-};
-
-
 template<typename FilterType, uint32_t prefetch>
-void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint64_t* const matches)
+void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* const matches)
 {
     const uint32_t num_flows = flows.size();
 
@@ -438,21 +501,7 @@ void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, ui
             __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
         }
 
-        auto packet_data = packet.data();
-        auto packet_size = packet.size();
-        auto flow_index = 0ul;
-
-        while (flow_index + 2 <= num_flows)
-        {
-            matches[flow_index + 0] += flows[flow_index + 0].match(packet_data, packet_size);
-            matches[flow_index + 1] += flows[flow_index + 1].match(packet_data, packet_size);
-            flow_index += 2;
-        }
-
-        if (flow_index + 1 == num_flows)
-        {
-            matches[flow_index] += flows[flow_index].match(packet_data, packet_size);
-        }
+		flows.match(packet, matches);
     }
 
     auto elapsed_time = Clock::now() - start_time;
@@ -489,13 +538,13 @@ void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, ui
 
 
 template<typename FilterType, int prefetch>
-void do_run(uint32_t num_packets, uint32_t num_flows)
+void run2(uint32_t num_packets, uint32_t num_flows)
 {
     std::vector<Packet> packets;
     packets.reserve(num_packets);
 
-    std::vector<Flow<FilterType>> flows;
-    flows.reserve(num_flows);
+    Flows<FilterType> flows;
+    flows.mFlows.reserve(num_flows);
 
     uint16_t src_port = 0xabab;
     uint16_t dst_port = 0xcdcd;
@@ -513,11 +562,13 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
         IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
-        flows.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+        flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
     }
 
+	//flows.print();
+
     std::vector<uint64_t> matches(num_flows);
-    test<FilterType, prefetch>(packets, flows, matches.data());
+    run3<FilterType, prefetch>(packets, flows, matches.data());
     std::cout << std::endl;
 
 }
@@ -528,35 +579,29 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 template<typename FilterType>
 void run(uint32_t num_packets = 100 * 1000)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1028 };
 
     for (auto flow_count : flow_counts)
     {
-        do_run<FilterType, 0>(num_packets, flow_count);
+        run2<FilterType, 0>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        do_run<FilterType, 1>(num_packets, flow_count);
+        run2<FilterType, 1>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        do_run<FilterType, 2>(num_packets, flow_count);
+        run2<FilterType, 2>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        do_run<FilterType, 4>(num_packets, flow_count);
-    }
-    std::cout << std::endl;
-
-    for (auto flow_count : flow_counts)
-    {
-        do_run<FilterType, 8>(num_packets, flow_count);
+        run2<FilterType, 4>(num_packets, flow_count);
     }
     std::cout << std::endl;
 }
@@ -564,7 +609,8 @@ void run(uint32_t num_packets = 100 * 1000)
 
 int main()
 {
-    srand(time(0));
+    run<BPFFilter>();
+    std::cout << std::endl;
 
     run<NativeFilter>();
     std::cout << std::endl;
@@ -573,9 +619,6 @@ int main()
     std::cout << std::endl;
 
     run<VectorFilter>();
-    std::cout << std::endl;
-
-    run<BPFFilter>();
     std::cout << std::endl;
 }
 

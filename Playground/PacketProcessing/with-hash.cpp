@@ -652,10 +652,10 @@ int main()
     run<BPFFilter>();
     std::cout << std::endl;
 
-    run<MaskFilter>();
+    run<NativeFilter>();
     std::cout << std::endl;
 
-    run<NativeFilter>();
+    run<MaskFilter>();
     std::cout << std::endl;
 
     run<VectorFilter>();

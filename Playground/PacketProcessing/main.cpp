@@ -372,6 +372,12 @@ private:
 // internal Rx buffer.
 struct Packet
 {
+    Packet() :
+        mFullPacketHeader(),
+        padding()
+    {
+    }
+
     Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port):
         mFullPacketHeader(protocol, src_ip, dst_ip, src_port, dst_port)
     {
@@ -529,7 +535,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << 0.5 + 100.0 * matches[i] / packets.size() << '%';
+        std::cout << 100.0 * matches[i] / packets.size() << '%';
     }
     if (num_flows > 20)
     {
@@ -561,10 +567,15 @@ void run2(uint32_t num_packets, uint32_t num_flows)
         for (auto c = 0; c != 8; ++c)
         for (auto d = 0; d != 8; ++d)
         {
-            IPv4Address src_ip(1, 1, a, b);
-            IPv4Address dst_ip(1, 2, c, d);
+            IPv4Address src_ip(a, b, c, d);
+            IPv4Address dst_ip(d, c, b, a);
             packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
-            if (packets.size() == num_flows)
+            if (packets.size() >= num_flows)
+            {
+                goto shuffle;
+            }
+            packets.emplace_back(6, src_ip, dst_ip, dst_port, src_port);
+            if (packets.size() >= num_flows)
             {
                 goto shuffle;
             }
@@ -572,11 +583,12 @@ void run2(uint32_t num_packets, uint32_t num_flows)
     }
 
 shuffle:
+    auto copy = packets;
     while (packets.size() < num_packets)
     {
-        packets.insert(packets.end(), packets.begin(), packets.end());
+        packets.insert(packets.end(), copy.begin(), copy.end());
     }
-    num_packets = packets.size();
+    packets.resize(num_packets);
 
     std::random_shuffle(packets.begin(), packets.end());
 
@@ -587,11 +599,18 @@ shuffle:
         for (auto c = 0; c != 8; ++c)
         for (auto d = 0; d != 8; ++d)
         {
-            IPv4Address src_ip(1, 1, a, b);
-            IPv4Address dst_ip(1, 2, c, d);
+            IPv4Address src_ip(a, b, c, d);
+            IPv4Address dst_ip(d, c, b, a);
             flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
-            if (flows.size() == num_flows)
+            if (flows.size() >= num_flows)
             {
+                //flows.resize(num_flows);
+                goto next;
+            }
+            flows.add_flow(6, src_ip, dst_ip, dst_port, src_port);
+            if (flows.size() >= num_flows)
+            {
+                //flows.resize(num_flows);
                 goto next;
             }
         }
@@ -630,6 +649,8 @@ void run(uint32_t num_packets = 128 * 1028)
 
 int main()
 {
+    run<BPFFilter>();
+    std::cout << std::endl;
 
     run<NativeFilter>();
     std::cout << std::endl;
@@ -638,9 +659,6 @@ int main()
     std::cout << std::endl;
 
     run<VectorFilter>();
-    std::cout << std::endl;
-
-    run<BPFFilter>();
     std::cout << std::endl;
 }
 

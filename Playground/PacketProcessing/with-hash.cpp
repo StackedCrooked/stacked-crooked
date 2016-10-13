@@ -635,6 +635,12 @@ void run(uint32_t num_packets = 512 * 1024)
 
     for (auto flow_count : flow_counts)
     {
+        do_run<FilterType, 4>(num_packets, flow_count);
+    }
+    std::cout << std::endl;
+
+    for (auto flow_count : flow_counts)
+    {
         do_run<FilterType, 8>(num_packets, flow_count);
     }
     std::cout << std::endl;

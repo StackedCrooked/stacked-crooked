@@ -590,8 +590,6 @@ shuffle:
     }
     packets.resize(num_packets);
 
-    std::random_shuffle(packets.begin(), packets.end());
-
     for (auto i = 0ul; i < num_flows; ++i)
     {
         for (auto a = 0; a != 8; ++a)
@@ -604,21 +602,17 @@ shuffle:
             flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
             if (flows.size() >= num_flows)
             {
-                //flows.resize(num_flows);
                 goto next;
             }
             flows.add_flow(6, src_ip, dst_ip, dst_port, src_port);
             if (flows.size() >= num_flows)
             {
-                //flows.resize(num_flows);
                 goto next;
             }
         }
     }
 
-	//flows.print();
-    next:
-
+next:
     std::vector<uint64_t> matches(num_flows);
     run3<FilterType, prefetch>(packets, flows, matches.data());
     std::cout << std::endl;
@@ -629,9 +623,9 @@ shuffle:
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024)
+void run(uint32_t num_packets = 512 * 1024)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
     for (auto flow_count : flow_counts)
     {
@@ -652,13 +646,13 @@ int main()
     run<BPFFilter>();
     std::cout << std::endl;
 
-    run<NativeFilter>();
-    std::cout << std::endl;
+//    run<NativeFilter>();
+//    std::cout << std::endl;
 
     run<MaskFilter>();
     std::cout << std::endl;
 
-    run<VectorFilter>();
-    std::cout << std::endl;
+//    run<VectorFilter>();
+//    std::cout << std::endl;
 }
 

@@ -507,8 +507,6 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
         packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
-    //std::random_shuffle(packets.begin(), packets.end());
-
     for (auto i = 0ul; i < num_flows; ++i)
     {
         IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
@@ -526,9 +524,9 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024)
+void run(uint32_t num_packets = 512 * 1024)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
     for (auto flow_count : flow_counts)
     {
@@ -546,18 +544,16 @@ void run(uint32_t num_packets = 1024 * 1024)
 
 int main()
 {
-    srand(time(0));
-
     run<BPFFilter>();
     std::cout << std::endl;
 
-    run<NativeFilter>();
-    std::cout << std::endl;
+//    run<NativeFilter>();
+//    std::cout << std::endl;
 
     run<MaskFilter>();
     std::cout << std::endl;
 
-    run<VectorFilter>();
-    std::cout << std::endl;
+//    run<VectorFilter>();
+//    std::cout << std::endl;
 }
 

@@ -549,7 +549,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
 
 
 template<typename FilterType, int prefetch>
-void run2(uint32_t num_packets, uint32_t num_flows)
+void do_run(uint32_t num_packets, uint32_t num_flows)
 {
     std::vector<Packet> packets;
     packets.reserve(num_packets);
@@ -629,13 +629,13 @@ void run(uint32_t num_packets = 512 * 1024)
 
     for (auto flow_count : flow_counts)
     {
-        run2<FilterType, 0>(num_packets, flow_count);
+        do_run<FilterType, 0>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        run2<FilterType, 4>(num_packets, flow_count);
+        do_run<FilterType, 8>(num_packets, flow_count);
     }
     std::cout << std::endl;
 }

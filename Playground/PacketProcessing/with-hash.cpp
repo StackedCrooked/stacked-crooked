@@ -535,7 +535,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << 100.0 * matches[i] / packets.size() << '%';
+        std::cout << int(0.5 + 1000.0 * matches[i] / packets.size())/10.0 << '%';
     }
     if (num_flows > 20)
     {
@@ -557,8 +557,6 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     Flows<FilterType> flows;
     flows.mFlows.reserve(num_flows);
 
-    uint16_t src_port = 0xabab;
-    uint16_t dst_port = 0xcdcd;
 
     for (auto i = 0ul; i < num_packets; ++i)
     {
@@ -568,21 +566,18 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
         for (auto d = 0; d != 8; ++d)
         {
             IPv4Address src_ip(a, b, c, d);
-            IPv4Address dst_ip(d, c, b, a);
+            IPv4Address dst_ip(a, b, c, d);
+            uint16_t src_port = 0xabab;
+            uint16_t dst_port = 0xabab;
             packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
             if (packets.size() >= num_flows)
             {
-                goto shuffle;
-            }
-            packets.emplace_back(6, src_ip, dst_ip, dst_port, src_port);
-            if (packets.size() >= num_flows)
-            {
-                goto shuffle;
+                goto generate_packets;
             }
         }
     }
 
-shuffle:
+generate_packets:
     auto copy = packets;
     while (packets.size() < num_packets)
     {
@@ -598,13 +593,10 @@ shuffle:
         for (auto d = 0; d != 8; ++d)
         {
             IPv4Address src_ip(a, b, c, d);
-            IPv4Address dst_ip(d, c, b, a);
+            IPv4Address dst_ip(a, b, c, d);
+            uint16_t src_port = 0xabab;
+            uint16_t dst_port = 0xabab;
             flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
-            if (flows.size() >= num_flows)
-            {
-                goto next;
-            }
-            flows.add_flow(6, src_ip, dst_ip, dst_port, src_port);
             if (flows.size() >= num_flows)
             {
                 goto next;
@@ -616,26 +608,19 @@ next:
     std::vector<uint64_t> matches(num_flows);
     run3<FilterType, prefetch>(packets, flows, matches.data());
     std::cout << std::endl;
-
 }
 
 
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 512 * 1024)
+void run(uint32_t num_packets = 2 * 1024 * 1024)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    int flow_counts[] = { 1, 10, 100, 1000 };
 
     for (auto flow_count : flow_counts)
     {
         do_run<FilterType, 0>(num_packets, flow_count);
-    }
-    std::cout << std::endl;
-
-    for (auto flow_count : flow_counts)
-    {
-        do_run<FilterType, 4>(num_packets, flow_count);
     }
     std::cout << std::endl;
 

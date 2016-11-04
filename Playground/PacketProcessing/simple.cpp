@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <iomanip>
 #include <iostream>
 #include <sstream>

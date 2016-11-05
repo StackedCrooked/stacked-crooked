@@ -441,7 +441,10 @@ struct Flows
         auto& flow_indexes = mHashTable[bucket_index];
         for (const uint32_t& flow_index : flow_indexes)
         {
-            matches[flow_index] += mFlows[flow_index].match(packet.data(), packet.size());
+            if (mFlows[flow_index].match(packet.data(), packet.size()))
+            {
+                matches[flow_index]++;
+            }
         }
     }
 

@@ -113,16 +113,8 @@ struct IPv4Header
     {
         auto result = IPv4Header();
         result.mVersionAndIHL = (4u << 4) | 5u;
-        result.mTypeOfService = 0;
         result.mTotalLength = sizeof(IPv4Header);
-        result.mIdentification = 0;
-        result.mFlagsAndFragmentOffset = 0;
         result.mTTL = 64; // recommended initial value
-        result.mProtocol = 0; // whatever
-        result.mChecksum = 0;
-        result.mSourceIP = IPv4Address();
-        result.mDestinationIP = IPv4Address();
-        result.mChecksum = 0;
         return result;
     }
 };
@@ -454,7 +446,7 @@ struct CombinedHeader
     std::size_t size() const { return sizeof(*this); }
 
     EthernetHeader mEthernetHeader = EthernetHeader();
-    IPv4Header mIPv4Header = IPv4Header();
+    IPv4Header mIPv4Header = IPv4Header::CreateDefault();
     TCPHeader mNetworkHeader = TCPHeader();
 };
 

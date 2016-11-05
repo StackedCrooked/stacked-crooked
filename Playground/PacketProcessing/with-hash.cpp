@@ -58,6 +58,11 @@ struct IPv4Address
         mData[3] = d;
     }
 
+    uint8_t operator[](std::size_t i) const
+    {
+        return mData[i];
+    }
+
     uint32_t toInteger() const
     {
         uint32_t result;

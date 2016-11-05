@@ -445,15 +445,17 @@ struct Flows
 
     std::vector<Flow<FlowType>> mFlows;
 
-    struct Vector
+    struct Bucket
     {
         void push_back(uint16_t value)
         {
-            if (mSize < mBuffer.size())
+            auto index = mSize++;
+
+            if (index < mBuffer.size())
             {
-                mBuffer[mSize++] = value;
+                mBuffer[index] = value;
             }
-            else if (mSize == mBuffer.size())
+            else if (index == mBuffer.size())
             {
                 mVector.reset(new std::vector<uint16_t>);
                 mVector->reserve(mBuffer.size() + 1);
@@ -473,15 +475,16 @@ struct Flows
 
         uint16_t* begin() { return mVector ? mVector->data() : &mBuffer[0]; }
         uint16_t* end() { return mVector ? mVector->data() + mVector->size() : &mBuffer[0] + mSize; }
+        std::size_t size() const { return mSize; }
 
         std::array<uint16_t, 3> mBuffer;
         uint16_t mSize = 0;
         std::unique_ptr<std::vector<uint16_t>> mVector;
     };
 
-    static_assert(sizeof(Vector) == 16, "");
+    static_assert(sizeof(Bucket) == 16, "");
 
-    std::array<Vector, 1021> mHashTable;
+    std::array<Bucket, 1021> mHashTable;
 };
 
 volatile const unsigned volatile_zero = 0;
@@ -675,16 +678,16 @@ void run(uint32_t num_packets = 2 * 1024 * 1024)
 
 int main()
 {
-    run<BPFFilter>();
-    std::cout << std::endl;
+//    run<BPFFilter>();
+//    std::cout << std::endl;
 
-    run<NativeFilter>();
-    std::cout << std::endl;
+//    run<NativeFilter>();
+//    std::cout << std::endl;
 
     run<MaskFilter>();
     std::cout << std::endl;
 
-    run<VectorFilter>();
-    std::cout << std::endl;
+//    run<VectorFilter>();
+//    std::cout << std::endl;
 }
 

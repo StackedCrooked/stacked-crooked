@@ -700,16 +700,16 @@ void run(uint32_t num_packets = 2 * 1024 * 1024)
 
 int main()
 {
-//    run<BPFFilter>();
-//    std::cout << std::endl;
+    run<BPFFilter>();
+    std::cout << std::endl;
 
-//    run<NativeFilter>();
-//    std::cout << std::endl;
+    run<NativeFilter>();
+    std::cout << std::endl;
 
     run<MaskFilter>();
     std::cout << std::endl;
 
-//    run<VectorFilter>();
-//    std::cout << std::endl;
+    run<VectorFilter>();
+    std::cout << std::endl;
 }
 

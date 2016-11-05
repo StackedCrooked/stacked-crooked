@@ -85,7 +85,7 @@ struct EthernetHeader
 {
     MACAddress mDestination;
     MACAddress mSource;
-    uint16_t mEtherType = 0x0008;
+    uint16_t mEtherType;
 };
 
 
@@ -301,12 +301,110 @@ struct MaskFilter
            &&  (mFields[1] == (mMasks[1] & u64[1]));
     }
 
-    uint64_t mFields[2];
-    static uint64_t mMasks[2];
+    std::array<uint64_t, 2> mFields;
+    std::array<uint64_t, 2> mMasks;
+};
+
+struct EthernetFilter
+{
+    void config(MACAddress src, MACAddress dst, uint32_t frame_size)
+    {
+        auto helper_union = HelperUnion();
+        helper_union.mHeader_and_size.mHeader.mDestination = dst;
+        helper_union.mHeader_and_size.mHeader.mSource = src;
+        helper_union.mHeader_and_size.mSize = frame_size;
+
+        memcpy(mFields.data(), &helper_union, sizeof(helper_union));
+
+        auto mask_bytes = std::array<uint8_t, 16>{{
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // dst mac
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // src mac
+            0x00, 0x00, // ethertype (ignored)
+            0xff, 0xff  // 2 extra bytes to store the size field
+        }};
+
+        static_assert(sizeof(mask_bytes) == sizeof(std::array<uint64_t, 2>), "");
+
+        memcpy(mMasks.data(), mask_bytes.data(), mask_bytes.size());
+
+
+        // ===  === === HACK === === ===
+        mMasks = std::array<uint64_t, 2>();
+        mFields = std::array<uint64_t, 2>();
+    }
+
+    bool match(const uint8_t* packet_data, uint32_t len) const
+    {
+        HelperUnion helper;
+        helper.mHeader_and_size.mHeader = Decode<EthernetHeader>(packet_data);
+        helper.mHeader_and_size.mSize = len;
+
+#if 0
+        auto check1 = (mFields[0] == (mMasks[0] & helper.mFields[0]));
+        auto check2 = (mFields[1] == (mMasks[1] & helper.mFields[1]));
+
+        std::cout
+            << " mFields[0]=" << mFields[0]
+            << " mFields[1]=" << mFields[1]
+            << " mMasks[0]=" << mMasks[0]
+            << " mMasks[1]=" << mMasks[1]
+            << " helper.mFields[0]=" << helper.mFields[0]
+            << " helper.mFields[1]=" << helper.mFields[1]
+            << " helper.mHeader_and_size.mSize=" << helper.mHeader_and_size.mSize
+            << " check1=" << check1
+            << " check2=" << check2
+            << std::endl;
+#endif
+
+        return (mFields[0] == (mMasks[0] & helper.mFields[0]))
+            && (mFields[1] == (mMasks[1] & helper.mFields[1]));
+    }
+
+    struct Header_and_size
+    {
+        EthernetHeader mHeader;
+        uint16_t mSize; // Net16
+    };
+
+    union HelperUnion
+    {
+        Header_and_size mHeader_and_size;
+        std::array<uint64_t, 2> mFields;
+    };
+
+    static_assert(std::is_pod<HelperUnion>::value, "");
+
+    static_assert(sizeof(HelperUnion) == sizeof(std::array<uint64_t, 2>), "");
+    static_assert(sizeof(std::array<uint64_t, 2>) == sizeof(std::array<uint64_t, 2>), "");
+
+    std::array<uint64_t, 2> mFields;
+    std::array<uint64_t, 2> mMasks;
 };
 
 
-uint64_t MaskFilter::mMasks[2];
+struct BBMaskFilter
+{
+    BBMaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+        mMaskFilter(protocol, src_ip, dst_ip, src_port, dst_port)
+    {
+        mEthernetFilter.config(MACAddress(), MACAddress(), uint32_t()); // TODO TODO TODO TODO TODO TODO
+    }
+
+    void configureExtraParams(MACAddress src_mac, MACAddress dst_mac, uint32_t frame_size)
+    {
+        mEthernetFilter.config(src_mac, dst_mac, frame_size);
+    }
+
+    bool match(const uint8_t* packet_data, uint32_t len) const
+    {
+        return mEthernetFilter.match(packet_data, len)
+            && mMaskFilter.match(packet_data, len);
+    }
+
+    EthernetFilter mEthernetFilter;
+    MaskFilter mMaskFilter;
+};
+
 
 struct CombinedHeader
 {
@@ -525,7 +623,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 512 * 1024)
+void run(uint32_t num_packets = 1024 * 1024)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
@@ -551,14 +649,14 @@ void run(uint32_t num_packets = 512 * 1024)
 
 int main()
 {
-    run<BPFFilter>();
+    run<BBMaskFilter>();
+    std::cout << std::endl;
+
+    run<MaskFilter>();
     std::cout << std::endl;
 
 //    run<NativeFilter>();
 //    std::cout << std::endl;
-
-    run<MaskFilter>();
-    std::cout << std::endl;
 
 //    run<VectorFilter>();
 //    std::cout << std::endl;

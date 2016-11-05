@@ -324,76 +324,84 @@ struct EthernetFilter
 {
     void config(MACAddress src, MACAddress dst, uint32_t frame_size)
     {
+        mFrameLength = frame_size;
+
         auto helper_union = HelperUnion();
-        helper_union.mHeader_and_size.mHeader.mDestination = dst;
-        helper_union.mHeader_and_size.mHeader.mSource = src;
-        helper_union.mHeader_and_size.mSize = frame_size;
+        helper_union.mPaddedHeader.mDestinationMAC = dst;
+        helper_union.mPaddedHeader.mSourceMAC = src;
+        helper_union.mPaddedHeader.mPadding = 0;
 
-        memcpy(mFields.data(), &helper_union, sizeof(helper_union));
+        mFields = helper_union.mFields;
 
-        auto mask_bytes = std::array<uint8_t, 16>{{
-            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // dst mac
-            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // src mac
-            0x00, 0x00, // ethertype (ignored)
-            0xff, 0xff  // 2 extra bytes to store the size field
-        }};
+        union MaskUnion
+        {
+            std::array<uint32_t, 4> u32;
+            std::array<uint64_t, 2> u64;
+        };
 
-        static_assert(sizeof(mask_bytes) == sizeof(std::array<uint64_t, 2>), "");
+        MaskUnion mask_union;
+        mask_union.u32[0] = uint32_t(-1);
+        mask_union.u32[1] = uint32_t(-1);
+        mask_union.u32[2] = uint32_t(-1);
+        mask_union.u32[3] = uint32_t();
 
-        memcpy(mMasks.data(), mask_bytes.data(), mask_bytes.size());
-
-
+        mMasks = mask_union.u64;
         // ===  === === HACK === === ===
         mMasks = std::array<uint64_t, 2>();
         mFields = std::array<uint64_t, 2>();
+        mFrameLength = 0;
     }
 
     bool match(const uint8_t* packet_data, uint32_t len) const
     {
-        HelperUnion helper;
-        helper.mHeader_and_size.mHeader = Decode<EthernetHeader>(packet_data);
-        helper.mHeader_and_size.mSize = len;
+        auto fields = Decode<std::array<uint64_t, 2>>(packet_data);
 
 #if 0
-        auto check1 = (mFields[0] == (mMasks[0] & helper.mFields[0]));
-        auto check2 = (mFields[1] == (mMasks[1] & helper.mFields[1]));
+        auto check0 = (mFrameLength / 128 == len / 128);
+        auto check1 = (mFields[0] == (mMasks[0] & fields[0]));
+        auto check2 = (mFields[1] == (mMasks[1] & fields[1]));
 
         std::cout
             << " mFields[0]=" << mFields[0]
             << " mFields[1]=" << mFields[1]
             << " mMasks[0]=" << mMasks[0]
             << " mMasks[1]=" << mMasks[1]
-            << " helper.mFields[0]=" << helper.mFields[0]
-            << " helper.mFields[1]=" << helper.mFields[1]
-            << " helper.mHeader_and_size.mSize=" << helper.mHeader_and_size.mSize
+            << " fields[0]=" << fields[0]
+            << " fields[1]=" << fields[1]
+            << " mFrameLength=" << mFrameLength
+            << " len=" << len
+            << " check0=" << check0
             << " check1=" << check1
             << " check2=" << check2
             << std::endl;
 #endif
 
-        return (mFields[0] == (mMasks[0] & helper.mFields[0]))
-            && (mFields[1] == (mMasks[1] & helper.mFields[1]));
+        return (mFrameLength / 128 == len / 128) // HACK! HACK! HACK! HACK! HACK!
+            && (mFields[0] == (mMasks[0] & fields[0]))
+            && (mFields[1] == (mMasks[1] & fields[1]));
     }
 
-    struct Header_and_size
+    struct PaddedHeader
     {
-        EthernetHeader mHeader;
-        uint16_t mSize; // Net16
+        MACAddress mDestinationMAC;
+        MACAddress mSourceMAC;
+        uint32_t mPadding;
     };
 
     union HelperUnion
     {
-        Header_and_size mHeader_and_size;
+        PaddedHeader mPaddedHeader;
         std::array<uint64_t, 2> mFields;
     };
 
     static_assert(std::is_pod<HelperUnion>::value, "");
 
-    static_assert(sizeof(HelperUnion) == sizeof(std::array<uint64_t, 2>), "");
+    static_assert(sizeof(PaddedHeader) == sizeof(std::array<uint64_t, 2>), "");
     static_assert(sizeof(std::array<uint64_t, 2>) == sizeof(std::array<uint64_t, 2>), "");
 
     std::array<uint64_t, 2> mFields;
     std::array<uint64_t, 2> mMasks;
+    uint32_t mFrameLength = 0;
 };
 
 

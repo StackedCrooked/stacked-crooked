@@ -300,11 +300,9 @@ struct MaskFilter
     }
 
     uint64_t mFields[2];
-    static uint64_t mMasks[2];
+    uint64_t mMasks[2];
 };
 
-
-uint64_t MaskFilter::mMasks[2];
 
 struct CombinedHeader
 {
@@ -441,10 +439,7 @@ struct Flows
         auto& flow_indexes = mHashTable[bucket_index];
         for (const uint32_t& flow_index : flow_indexes)
         {
-            if (mFlows[flow_index].match(packet.data(), packet.size()))
-            {
-                matches[flow_index]++;
-            }
+            matches[flow_index] += mFlows[flow_index].match(packet.data(), packet.size());
         }
     }
 
@@ -654,7 +649,7 @@ next:
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024)
+void run(uint32_t num_packets = 2 * 1024 * 1024)
 {
     int flow_counts[] = { 1, 10, 100, 1000 };
 

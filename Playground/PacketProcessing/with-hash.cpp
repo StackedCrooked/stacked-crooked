@@ -97,6 +97,18 @@ struct EthernetHeader
 
 struct IPv4Header
 {
+    uint8_t mVersionAndIHL;
+    uint8_t mTypeOfService;
+    uint16_t mTotalLength;
+    uint16_t mIdentification;
+    uint16_t mFlagsAndFragmentOffset;
+    uint8_t mTTL;
+    uint8_t mProtocol;
+    uint16_t mChecksum;
+    IPv4Address mSourceIP;
+    IPv4Address mDestinationIP;
+
+
     static IPv4Header CreateDefault()
     {
         auto result = IPv4Header();
@@ -113,17 +125,6 @@ struct IPv4Header
         result.mChecksum = 0;
         return result;
     }
-
-    uint8_t mVersionAndIHL = (4u << 4) | 5u;
-    uint8_t mTypeOfService = 0;
-    uint16_t mTotalLength = 1514;
-    uint16_t mIdentification = 0;
-    uint16_t mFlagsAndFragmentOffset = 0;
-    uint8_t mTTL = 255;
-    uint8_t mProtocol;
-    uint16_t mChecksum =0;
-    IPv4Address mSourceIP;
-    IPv4Address mDestinationIP;
 };
 
 

@@ -1,4 +1,5 @@
 ﻿#include <boost/functional/hash.hpp>
+#include <boost/container/static_vector.hpp>
 #include <array>
 #include <algorithm>
 #include <cassert>
@@ -437,7 +438,7 @@ struct Flows
         auto bucket_index = packet_hash % mHashTable.size();
 		//std::cout << "packet_hash=" << packet_hash << " bucket_index=" << bucket_index << std::endl;
 
-        std::vector<uint32_t>& flow_indexes = mHashTable[bucket_index];
+        auto& flow_indexes = mHashTable[bucket_index];
         for (const uint32_t& flow_index : flow_indexes)
         {
             matches[flow_index] += mFlows[flow_index].match(packet.data(), packet.size());
@@ -446,7 +447,42 @@ struct Flows
 
     std::vector<Flow<FlowType>> mFlows;
 
-    std::array<std::vector<uint32_t>, 1021> mHashTable;
+    struct Vector
+    {
+        void push_back(uint16_t value)
+        {
+            if (mSize < 3)
+            {
+                mData[mSize++] = value;
+            }
+            else if (mSize == 3)
+            {
+                mVector.reserve(8);
+                mVector.assign(mData, mData + 3);
+                mVector.push_back(value);
+            }
+            else
+            {
+                mVector.push_back(value);
+            }
+        }
+
+        uint16_t operator[](std::size_t i) const
+        {
+            return i < 3 ? mData[i] : mVector[i];
+        }
+
+        uint16_t* begin() { return mVector.empty() ? &mData[0] : mVector.data(); }
+        uint16_t* end() { return mVector.empty() ? &mData[0] + mSize : mVector.data() + mVector.size(); }
+
+        uint16_t mData[3];
+        uint16_t mSize = 0;
+        std::vector<uint16_t> mVector;
+    };
+
+    static_assert(sizeof(Vector) == 32, "");
+
+    std::array<Vector, 1021> mHashTable;
 };
 
 volatile const unsigned volatile_zero = 0;
@@ -626,6 +662,12 @@ void run(uint32_t num_packets = 2 * 1024 * 1024)
 
     for (auto flow_count : flow_counts)
     {
+        do_run<FilterType, 4>(num_packets, flow_count);
+    }
+    std::cout << std::endl;
+
+    for (auto flow_count : flow_counts)
+    {
         do_run<FilterType, 8>(num_packets, flow_count);
     }
     std::cout << std::endl;
@@ -637,13 +679,13 @@ int main()
     run<BPFFilter>();
     std::cout << std::endl;
 
-//    run<NativeFilter>();
-//    std::cout << std::endl;
+    run<NativeFilter>();
+    std::cout << std::endl;
 
     run<MaskFilter>();
     std::cout << std::endl;
 
-//    run<VectorFilter>();
-//    std::cout << std::endl;
+    run<VectorFilter>();
+    std::cout << std::endl;
 }
 

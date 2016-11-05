@@ -452,43 +452,60 @@ struct Flows
 
     struct Bucket
     {
-        void push_back(uint16_t value)
-        {
-            auto index = mSize++;
+        using value_type = uint16_t; // number of flows shouldn't exceed 2**16
 
-            if (index < mBuffer.size())
-            {
-                mBuffer[index] = value;
-            }
-            else if (index == mBuffer.size())
-            {
-                mVector.reset(new std::vector<uint16_t>);
-                mVector->reserve(mBuffer.size() + 1);
-                mVector->assign(mBuffer.data(), mBuffer.data() + mBuffer.size());
-                mVector->push_back(value);
-            }
-            else
-            {
-                mVector->push_back(value);
-            }
+        Bucket() :
+            mBuffer(),
+            mBegin(&mBuffer[0]),
+            mEnd(mBegin),
+            mVector()
+        {
         }
 
-        uint16_t operator[](std::size_t i) const
+        void push_back(value_type value)
         {
-            return mVector ? (*mVector)[i] : mBuffer[i];
+            uint32_t length = mEnd - mBegin;
+
+            if (length < mBuffer.size())
+            {
+                *mEnd++ = value;
+                return;
+            }
+
+            if (mVector)
+            {
+                mVector->push_back(value);
+                mBegin = mVector->data();
+                mEnd = mBegin + mVector->size();
+                return;
+            }
+
+            mVector.reset(new std::vector<value_type>);
+            mVector->reserve(2 * mBuffer.size());
+            mVector->assign(mBuffer.begin(), mBuffer.end());
+            mVector->push_back(value);
+            mBegin = mVector->data();
+            mEnd = mBegin + mVector->size();
         }
 
-        uint16_t* begin() { return mVector ? mVector->data() : &mBuffer[0]; }
-        uint16_t* end() { return mVector ? mVector->data() + mVector->size() : &mBuffer[0] + mSize; }
-        std::size_t size() const { return mSize; }
+        value_type operator[](std::size_t i) const { return mBegin[i]; }
 
-        std::array<uint16_t, 3> mBuffer;
-        uint16_t mSize = 0;
-        std::unique_ptr<std::vector<uint16_t>> mVector;
+        const value_type* begin() const { return mBegin; }
+        const value_type* end() const { return mEnd; }
+
+        std::size_t size() const { return mEnd - mBegin; }
+
+
+    private:
+        std::array<value_type, 4> mBuffer;
+        value_type* mBegin;
+        value_type* mEnd;
+        std::unique_ptr<std::vector<value_type>> mVector;
     };
 
-    static_assert(sizeof(Bucket) == 16, "");
+    static_assert(sizeof(Bucket) == 32, "");
 
+    // Using a prime-number because it greatly reduces the number of hash collisions.
     std::array<Bucket, 1021> mHashTable;
 };
 

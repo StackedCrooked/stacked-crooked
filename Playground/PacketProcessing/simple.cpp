@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -297,7 +298,7 @@ struct MaskFilter
         auto u64 = Decode<U64>(packet_data + offset);
 
         return (mFields[0] == (mMasks[0] & u64[0]))
-             & (mFields[1] == (mMasks[1] & u64[1]));
+           &&  (mFields[1] == (mMasks[1] & u64[1]));
     }
 
     uint64_t mFields[2];
@@ -423,30 +424,36 @@ struct Packet
 
 
 template<typename FilterType, uint32_t prefetch>
-void test(std::vector<Packet>& packets, Flow<FilterType>* flows, uint32_t* matches, const uint32_t num_flows)
+void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint64_t* const matches)
 {
+    const uint32_t num_flows = flows.size();
+
     auto start_time = Clock::now();
 
     for (auto i = 0ul; i != packets.size(); ++i)
     {
         Packet& packet = packets[i];
 
-        if (prefetch)
+        if (prefetch > 0)
         {
             __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
         }
 
         auto packet_data = packet.data();
         auto packet_size = packet.size();
+        auto flow_index = 0ul;
 
-		for (auto flow_index = 0u; flow_index != num_flows; ++flow_index)
-		{
-			if (flows[flow_index].match(packet_data, packet_size))
-			{
-				matches[flow_index]++;
-			}
-		}
+        while (flow_index + 2 <= num_flows)
+        {
+            matches[flow_index + 0] += flows[flow_index + 0].match(packet_data, packet_size);
+            matches[flow_index + 1] += flows[flow_index + 1].match(packet_data, packet_size);
+            flow_index += 2;
+        }
 
+        if (flow_index + 1 == num_flows)
+        {
+            matches[flow_index] += flows[flow_index].match(packet_data, packet_size);
+        }
     }
 
     auto elapsed_time = Clock::now() - start_time;
@@ -455,21 +462,16 @@ void test(std::vector<Packet>& packets, Flow<FilterType>* flows, uint32_t* match
     auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
     auto packet_rate = 1e9 / ns_per_packet / 1000000;
 
-
     auto packet_rate_rounded = int(0.5 + 100 * packet_rate)/100.0;
 
-#if 1
     std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
             << " PREFETCH="        << prefetch
             << " FLOWS=" << std::setw(4) << std::left << num_flows
             << " MPPS="     << std::setw(9) << std::left << packet_rate_rounded
             << " (" << num_flows * packet_rate_rounded << " million filter comparisons per second)"
             ;
-#else
-	(void)packet_rate_rounded;
-#endif
 
-    #if 0
+    #if 1
     std::cout << " (verify-matches:";
     for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
     {
@@ -487,105 +489,78 @@ void test(std::vector<Packet>& packets, Flow<FilterType>* flows, uint32_t* match
 
 
 
-enum
+template<typename FilterType, int prefetch>
+void do_run(uint32_t num_packets, uint32_t num_flows)
 {
-	num_packets = 1024 * 1024,
-	max_num_flows = 512
-};
+    std::vector<Packet> packets;
+    packets.reserve(num_packets);
 
-
-std::vector<Packet> packets;
-std::vector<Flow<MaskFilter>> mask_flows;
-std::vector<Flow<BPFFilter>> bpf_flows;
-std::vector<uint32_t> matches;
-
-
-
-
-template<int prefetch, typename FilterType>
-void do_run(Flow<FilterType>* flows, uint32_t num_flows)
-{
-   test<FilterType, prefetch>(packets, flows, matches.data(), num_flows);
-}
-
-
-void init_packets_and_flows()
-{
-	packets.reserve(num_packets);
-	mask_flows.reserve(max_num_flows);
-	bpf_flows.reserve(max_num_flows);
-	matches.resize(max_num_flows);
+    std::vector<Flow<FilterType>> flows;
+    flows.reserve(num_flows);
 
     uint16_t src_port = 0xabab;
     uint16_t dst_port = 0xcdcd;
 
     for (auto i = 1ul; i <= num_packets; ++i)
     {
-        IPv4Address src_ip(1, 1, 1, 1 + i % max_num_flows);
-        IPv4Address dst_ip(1, 1, 2, 1 + i % max_num_flows);
+        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
+        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
         packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
-    for (auto i = 0ul; i < max_num_flows; ++i)
+    for (auto i = 0ul; i < num_flows; ++i)
     {
-        IPv4Address src_ip(1, 1, 1, 1 + i % max_num_flows);
-        IPv4Address dst_ip(1, 1, 2, 1 + i % max_num_flows);
-        mask_flows.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
-        bpf_flows.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
+        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
+        flows.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
+
+    std::vector<uint64_t> matches(num_flows);
+    test<FilterType, prefetch>(packets, flows, matches.data());
+    std::cout << std::endl;
+
 }
 
 
 
-template<typename  FilterType>
-void run(Flow<FilterType>* flows)
+
+template<typename FilterType>
+void run(uint32_t num_packets = 512 * 1024)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
-#if 1
     for (auto flow_count : flow_counts)
     {
-        do_run<0>(flows, flow_count);
-		std::cout << std::endl;
+        do_run<FilterType, 0>(num_packets, flow_count);
     }
     std::cout << std::endl;
 
     for (auto flow_count : flow_counts)
     {
-        do_run<4>(flows, flow_count);
-		std::cout << std::endl;
+        do_run<FilterType, 4>(num_packets, flow_count);
     }
     std::cout << std::endl;
-
-    for (auto flow_count : flow_counts)
-    {
-        do_run<8>(flows, flow_count);
-		std::cout << std::endl;
-    }
-    std::cout << std::endl;
-
-#else
 
     for (auto flow_count : flow_counts)
     {
         do_run<FilterType, 8>(num_packets, flow_count);
     }
     std::cout << std::endl;
-#endif
 }
 
 
 int main()
 {
-	init_packets_and_flows();
-
-    run(mask_flows.data());
+    run<BPFFilter>();
     std::cout << std::endl;
 
-    run(bpf_flows.data());
+//    run<NativeFilter>();
+//    std::cout << std::endl;
+
+    run<MaskFilter>();
     std::cout << std::endl;
 
-//    run();
+//    run<VectorFilter>();
 //    std::cout << std::endl;
 }
 

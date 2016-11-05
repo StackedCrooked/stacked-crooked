@@ -451,36 +451,37 @@ struct Flows
     {
         void push_back(uint16_t value)
         {
-            if (mSize < 3)
+            if (mSize < mBuffer.size())
             {
-                mData[mSize++] = value;
+                mBuffer[mSize++] = value;
             }
-            else if (mSize == 3)
+            else if (mSize == mBuffer.size())
             {
-                mVector.reserve(8);
-                mVector.assign(mData, mData + 3);
-                mVector.push_back(value);
+                mVector.reset(new std::vector<uint16_t>);
+                mVector->reserve(mBuffer.size() + 1);
+                mVector->assign(mBuffer.data(), mBuffer.data() + mBuffer.size());
+                mVector->push_back(value);
             }
             else
             {
-                mVector.push_back(value);
+                mVector->push_back(value);
             }
         }
 
         uint16_t operator[](std::size_t i) const
         {
-            return i < 3 ? mData[i] : mVector[i];
+            return mVector ? (*mVector)[i] : mBuffer[i];
         }
 
-        uint16_t* begin() { return mVector.empty() ? &mData[0] : mVector.data(); }
-        uint16_t* end() { return mVector.empty() ? &mData[0] + mSize : mVector.data() + mVector.size(); }
+        uint16_t* begin() { return mVector ? mVector->data() : &mBuffer[0]; }
+        uint16_t* end() { return mVector ? mVector->data() + mVector->size() : &mBuffer[0] + mSize; }
 
-        uint16_t mData[3];
+        std::array<uint16_t, 3> mBuffer;
         uint16_t mSize = 0;
-        std::vector<uint16_t> mVector;
+        std::unique_ptr<std::vector<uint16_t>> mVector;
     };
 
-    static_assert(sizeof(Vector) == 32, "");
+    static_assert(sizeof(Vector) == 16, "");
 
     std::array<Vector, 1021> mHashTable;
 };
@@ -650,7 +651,7 @@ next:
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 2 * 1024 * 1024)
+void run(uint32_t num_packets = 1024 * 1024)
 {
     int flow_counts[] = { 1, 10, 100, 1000 };
 

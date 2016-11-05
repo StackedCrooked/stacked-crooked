@@ -97,6 +97,23 @@ struct EthernetHeader
 
 struct IPv4Header
 {
+    static IPv4Header CreateDefault()
+    {
+        auto result = IPv4Header();
+        result.mVersionAndIHL = (4u << 4) | 5u;
+        result.mTypeOfService = 0;
+        result.mTotalLength = sizeof(IPv4Header);
+        result.mIdentification = 0;
+        result.mFlagsAndFragmentOffset = 0;
+        result.mTTL = 64; // recommended initial value
+        result.mProtocol = 0; // whatever
+        result.mChecksum = 0;
+        result.mSourceIP = IPv4Address();
+        result.mDestinationIP = IPv4Address();
+        result.mChecksum = 0;
+        return result;
+    }
+
     uint8_t mVersionAndIHL = (4u << 4) | 5u;
     uint8_t mTypeOfService = 0;
     uint16_t mTotalLength = 1514;
@@ -112,14 +129,14 @@ struct IPv4Header
 
 struct TCPHeader
 {
-    uint16_t mSourcePort = 0;
-    uint16_t mDestinationPort = 0;
-    uint16_t mSequenceNumber[2];
+    uint16_t mSourcePort;
+    uint16_t mDestinationPort;
+    uint16_t mSequenceNumber[2];            // Can't use uint32_t because the size of the Ethernet header is not a multiple of 4.
     uint16_t mAcknowledgementNumber[2];
-    uint16_t mDataOffsetAndFlags = 0;
+    uint16_t mDataOffsetAndFlags;
     uint16_t mWindowSize;
-    uint16_t mChecksum = 0;
-    uint16_t mUrgentPointer = 0;
+    uint16_t mChecksum;
+    uint16_t mUrgentPointer;
 };
 
 

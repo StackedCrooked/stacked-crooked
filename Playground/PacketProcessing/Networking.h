@@ -56,7 +56,7 @@ struct EthernetHeader
 {
     MACAddress mDestination;
     MACAddress mSource;
-    uint16_t mEtherType;
+    uint16_t mEtherType = 0x0008;
 };
 
 

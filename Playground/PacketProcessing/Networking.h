@@ -41,7 +41,11 @@ struct IPv4Address
         return result;
     }
 
-    friend bool operator==(IPv4Address lhs, IPv4Address rhs);
+    friend bool operator==(IPv4Address lhs, IPv4Address rhs)
+    {
+        return lhs.toInteger() == rhs.toInteger();
+    }
+
     friend std::ostream& operator<<(std::ostream& os, IPv4Address ip);
 
     std::array<uint8_t, 4> mData;

@@ -58,6 +58,15 @@ struct EthernetHeader
 
 struct IPv4Header
 {
+    static IPv4Header Create(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip)
+    {
+        auto result = IPv4Header();
+        result.mProtocol = protocol;
+        result.mSourceIP = src_ip;
+        result.mDestinationIP = dst_ip;
+        return result;
+    }
+
     uint8_t mVersionAndIHL = (4u << 4) | 5u;
     uint8_t mTypeOfService = 0;
     uint16_t mTotalLength = 1514;
@@ -73,6 +82,14 @@ struct IPv4Header
 
 struct TCPHeader
 {
+    static TCPHeader Create(uint16_t src_port, uint16_t dst_port)
+    {
+        auto result = TCPHeader();
+        result.mSourcePort = src_port;
+        result.mDestinationPort = dst_port;
+        return result;
+    }
+
     uint16_t mSourcePort = 0;
     uint16_t mDestinationPort = 0;
     uint16_t mSequenceNumber[2];

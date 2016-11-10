@@ -2,16 +2,8 @@
 #include "Networking.h"
 #include "BPFFilter.h"
 #include "MaskFilter.h"
-#include <array>
-#include <algorithm>
-#include <cassert>
-#include <chrono>
-#include <cstdint>
-#include <cstring>
-#include <memory>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <vector>
 
 
@@ -72,15 +64,22 @@ volatile const unsigned volatile_zero = 0;
 // internal Rx buffer.
 struct Packet
 {
-    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
-	{
-        auto headers = CombinedHeader(protocol, src_ip, dst_ip, src_port, dst_port);
-        memcpy(&mPayload[0], &headers, sizeof(headers));
+    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+        mPayload()
+    {
+        auto ip4_ptr = mPayload.data() + sizeof(EthernetHeader);
+        auto ip4_header = IPv4Header::Create(protocol, src_ip, dst_ip);
+        memcpy(ip4_ptr, &ip4_header, sizeof(ip4_header));
+
+        auto tcp_ptr = ip4_ptr + sizeof(IPv4Header);
+        auto tcp_header = TCPHeader::Create(src_port, dst_port);
+        memcpy(tcp_ptr, &tcp_header, sizeof(tcp_header));
 	}
 
     const uint8_t* data() const { return mPayload.data(); }
     uint32_t size() const { return mPayload.size(); }
 
+private:
     std::array<uint8_t, 3 * 512> mPayload;
 };
 
@@ -99,7 +98,7 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
         if (prefetch > 0)
         {
             auto prefetch_packet = &packet + prefetch;
-            auto prefetch_ptr = prefetch_packet->mPayload.data() + sizeof(EthernetHeader) + sizeof(IPv4Header) - offsetof(IPv4Header, mTTL);
+            auto prefetch_ptr = prefetch_packet->data() + sizeof(EthernetHeader) + sizeof(IPv4Header) - offsetof(IPv4Header, mTTL);
             __builtin_prefetch(prefetch_ptr, 0, 0);
         }
 
@@ -187,9 +186,9 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024 / 1)
+void run(uint32_t num_packets = 1024 * 1024)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256/*, 512, 1024*/ };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
 
     for (auto flow_count : flow_counts)
     {

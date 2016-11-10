@@ -1,4 +1,6 @@
-﻿#include <array>
+﻿#include "Utils.h"
+#include "Networking.h"
+#include <array>
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -9,112 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <typeinfo>
-#include <cxxabi.h>
 #include <x86intrin.h>
 #include "pcap.h"
-
-
-template<typename T>
-inline T Decode(const uint8_t* data)
-{
-    auto result = T();
-    memcpy(&result, data, sizeof(result));
-    return result;
-}
-
-
-const char* Demangle(char const * mangled_name)
-{
-    int st;
-    auto demangled = abi::__cxa_demangle(mangled_name, 0, 0, &st);
-    return st == 0 ? demangled : mangled_name;
-}
-
-
-template<typename T>
-const char* GetTypeName()
-{
-    return Demangle(typeid(T).name());
-}
-
-
-struct MACAddress
-{
-    std::array<uint8_t, 6> mData;
-};
-
-
-struct IPv4Address
-{
-    IPv4Address() : mData() {}
-
-    IPv4Address(int a, int b, int c, int d)
-    {
-        mData[0] = a;
-        mData[1] = b;
-        mData[2] = c;
-        mData[3] = d;
-    }
-
-    uint32_t toInteger() const
-    {
-        uint32_t result;
-        memcpy(&result, mData.data(), mData.size());
-        return result;
-    }
-
-    friend bool operator==(IPv4Address lhs, IPv4Address rhs)
-    {
-        return lhs.toInteger() == rhs.toInteger();
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, IPv4Address ip)
-    {
-        return os << static_cast<int>(ip.mData[0]) << '.'
-                  << static_cast<int>(ip.mData[1]) << '.'
-                  << static_cast<int>(ip.mData[2]) << '.'
-                  << static_cast<int>(ip.mData[3]);
-    }
-
-    std::array<uint8_t, 4> mData;
-};
-
-
-struct EthernetHeader
-{
-    MACAddress mDestination;
-    MACAddress mSource;
-    uint16_t mEtherType;
-};
-
-
-struct IPv4Header
-{
-    uint8_t mVersionAndIHL = (4u << 4) | 5u;
-    uint8_t mTypeOfService = 0;
-    uint16_t mTotalLength = 1514;
-    uint16_t mIdentification = 0;
-    uint16_t mFlagsAndFragmentOffset = 0;
-    uint8_t mTTL = 255;
-    uint8_t mProtocol;
-    uint16_t mChecksum =0;
-    IPv4Address mSourceIP;
-    IPv4Address mDestinationIP;
-};
-
-
-struct TCPHeader
-{
-    uint16_t mSourcePort = 0;
-    uint16_t mDestinationPort = 0;
-    uint16_t mSequenceNumber[2];
-    uint16_t mAcknowledgementNumber[2];
-    uint16_t mDataOffsetAndFlags = 0;
-    uint16_t mWindowSize;
-    uint16_t mChecksum = 0;
-    uint16_t mUrgentPointer = 0;
-};
 
 
 struct BPFFilter

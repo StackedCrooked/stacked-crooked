@@ -13,6 +13,7 @@ set(PacketProcessing_SOURCES
     NativeFilter.cpp
     VectorFilter.cpp
     Networking.cpp
+    Packet.cpp
     Utils.cpp
     PCAPWriter.cpp
 )
@@ -23,6 +24,6 @@ set_target_properties(simple  PROPERTIES COMPILE_FLAGS "-std=c++11 -g -O2 -march
 target_link_libraries(simple  -ltbb -lboost_system -lpcap)
 
 
-#add_executable(with-hash ${PacketProcessing_SOURCES} with-hash.cpp)
-#set_target_properties(with-hash  PROPERTIES COMPILE_FLAGS "-std=c++11 -g -O2 -march=native -Wall -Wextra -Wno-missing-braces -Wno-inconsistent-missing-override")
-#target_link_libraries(with-hash -ltbb -lboost_system)
+add_executable(with-hash ${PacketProcessing_SOURCES} with-hash.cpp)
+set_target_properties(with-hash  PROPERTIES COMPILE_FLAGS "-std=c++11 -g -O2 -march=native -Wall -Wextra -Wno-missing-braces -Wno-inconsistent-missing-override")
+target_link_libraries(with-hash -ltbb -lboost_system -lpcap)

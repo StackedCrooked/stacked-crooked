@@ -67,7 +67,7 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
         if (prefetch > 0)
         {
             auto prefetch_packet = &packet + prefetch;
-            auto prefetch_ptr = prefetch_packet->data() + sizeof(EthernetHeader) + sizeof(IPv4Header) - offsetof(IPv4Header, mTTL);
+            auto prefetch_ptr = prefetch_packet->data() + sizeof(EthernetHeader) + sizeof(IPv4Header) - 2 * sizeof(IPv4Address);
             __builtin_prefetch(prefetch_ptr, 0, 0);
         }
 

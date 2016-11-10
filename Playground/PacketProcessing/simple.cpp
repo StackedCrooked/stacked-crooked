@@ -1,40 +1,12 @@
 ﻿#include "Utils.h"
 #include "Networking.h"
+#include "NativeFilter.h"
+#include "VectorFilter.h"
 #include "BPFFilter.h"
 #include "MaskFilter.h"
 #include <iomanip>
 #include <iostream>
 #include <vector>
-
-
-struct CombinedHeader
-{
-    CombinedHeader() = default;
-
-    CombinedHeader(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
-    {
-        mIPv4Header.mProtocol = protocol;
-        mIPv4Header.mSourceIP = src_ip;
-        mIPv4Header.mDestinationIP = dst_ip;
-        mNetworkHeader.mSourcePort = src_port;
-        mNetworkHeader.mDestinationPort = dst_port;
-        static_assert(sizeof(*this) == sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(TCPHeader), "");
-    }
-
-    uint8_t* data() { return static_cast<uint8_t*>(static_cast<void*>(this)); }
-    uint8_t* begin() { return data(); }
-    uint8_t* end() { return data() + sizeof(*this); }
-
-    const uint8_t* data() const { return static_cast<const uint8_t*>(static_cast<const void*>(this)); }
-    const uint8_t* begin() const { return data(); }
-    const uint8_t* end() const { return data() + sizeof(*this); }
-
-    std::size_t size() const { return sizeof(*this); }
-
-    EthernetHeader mEthernetHeader = EthernetHeader();
-    IPv4Header mIPv4Header = IPv4Header();
-    TCPHeader mNetworkHeader = TCPHeader();
-};
 
 
 template<typename FilterType>
@@ -59,9 +31,6 @@ volatile const unsigned volatile_zero = 0;
 
 
 
-// Packet distance is 1536 (or 512 * 3) bytes.
-// This seems to be the default used by pfring in it's 
-// internal Rx buffer.
 struct Packet
 {
     Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
@@ -80,7 +49,7 @@ struct Packet
     uint32_t size() const { return mPayload.size(); }
 
 private:
-    std::array<uint8_t, 3 * 512> mPayload;
+    std::array<uint8_t, 64> mPayload;
 };
 
 
@@ -188,7 +157,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 template<typename FilterType>
 void run(uint32_t num_packets = 1024 * 1024)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256 };
 
     for (auto flow_count : flow_counts)
     {
@@ -211,17 +180,14 @@ void run(uint32_t num_packets = 1024 * 1024)
 
 
 int main()
-{
-    run<MaskFilter>();
-    std::cout << std::endl;
-
+{    
     run<BPFFilter>();
     std::cout << std::endl;
 
-//    run<NativeFilter>();
-//    std::cout << std::endl;
+    run<MaskFilter>();
+    std::cout << std::endl;
 
-//    run<VectorFilter>();
-//    std::cout << std::endl;
+    run<VectorFilter>();
+    std::cout << std::endl;
 }
 

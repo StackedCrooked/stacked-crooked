@@ -85,16 +85,8 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
 
         auto packet_data = packet.data();
         auto packet_size = packet.size();
-        auto flow_index = 0ul;
 
-        while (flow_index + 2 <= num_flows)
-        {
-            matches[flow_index + 0] += flows[flow_index + 0].match(packet_data, packet_size);
-            matches[flow_index + 1] += flows[flow_index + 1].match(packet_data, packet_size);
-            flow_index += 2;
-        }
-
-        if (flow_index + 1 == num_flows)
+        for (auto flow_index = 0ul; flow_index != num_flows; ++flow_index)
         {
             matches[flow_index] += flows[flow_index].match(packet_data, packet_size);
         }

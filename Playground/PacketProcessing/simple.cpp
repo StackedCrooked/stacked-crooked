@@ -72,33 +72,35 @@ volatile const unsigned volatile_zero = 0;
 // internal Rx buffer.
 struct Packet
 {
-    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port):
-		mFullPacketHeader(protocol, src_ip, dst_ip, src_port, dst_port)
+    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
 	{
+        auto headers = CombinedHeader(protocol, src_ip, dst_ip, src_port, dst_port);
+        memcpy(&mPayload[0], &headers, sizeof(headers));
 	}
 
-	const uint8_t* data() const { return mFullPacketHeader.data(); }
-	uint32_t size() const { return mFullPacketHeader.size(); }
-	
-    CombinedHeader mFullPacketHeader;
-    char padding[3 * 512 - sizeof(CombinedHeader)];
+    const uint8_t* data() const { return mPayload.data(); }
+    uint32_t size() const { return mPayload.size(); }
+
+    std::array<uint8_t, 3 * 512> mPayload;
 };
 
 
 template<typename FilterType, uint32_t prefetch>
-void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint64_t* const matches)
+void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint64_t* const matches)
 {
     const uint32_t num_flows = flows.size();
+    const auto start_time = Clock::now();
+    const auto num_packets = packets.size();
 
-    auto start_time = Clock::now();
-
-    for (auto i = 0ul; i != packets.size(); ++i)
+    for (auto i = 0ul; i != num_packets; ++i)
     {
-        Packet& packet = packets[i];
+        const Packet& packet = packets[i];
 
         if (prefetch > 0)
         {
-            __builtin_prefetch(packets[i + prefetch].data(), 0, 0);
+            auto prefetch_packet = &packet + prefetch;
+            auto prefetch_ptr = prefetch_packet->mPayload.data() + sizeof(EthernetHeader) + sizeof(IPv4Header) - offsetof(IPv4Header, mTTL);
+            __builtin_prefetch(prefetch_ptr, 0, 0);
         }
 
         auto packet_data = packet.data();
@@ -119,7 +121,7 @@ void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, ui
     }
 
     auto elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - start_time).count();
-    auto ns_per_packet = 1.0 * elapsed_ns / packets.size();
+    auto ns_per_packet = 1.0 * elapsed_ns / num_packets;
     auto mpps = 1e9 / ns_per_packet / 1000000;
     auto mpps_rounded = int(0.5 + 100 * mpps)/100.0;
 
@@ -187,7 +189,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 template<typename FilterType>
 void run(uint32_t num_packets = 1024 * 1024 / 1)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256/*, 512, 1024*/ };
 
     for (auto flow_count : flow_counts)
     {

@@ -12,3 +12,5 @@ Utils.h
 VectorFilter.cpp
 VectorFilter.h
 simple.cpp
+PCAPWriter.h
+PCAPWriter.cpp

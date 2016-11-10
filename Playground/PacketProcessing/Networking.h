@@ -54,9 +54,16 @@ struct IPv4Address
 
 struct EthernetHeader
 {
+    static EthernetHeader Create()
+    {
+        auto result = EthernetHeader();
+        result.mEtherType = 0x0008;
+        return result;
+    }
+
     MACAddress mDestination;
     MACAddress mSource;
-    uint16_t mEtherType = 0x0008;
+    uint16_t mEtherType;
 };
 
 

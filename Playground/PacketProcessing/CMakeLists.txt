@@ -14,6 +14,7 @@ set(PacketProcessing_SOURCES
     VectorFilter.cpp
     Networking.cpp
     Utils.cpp
+    PCAPWriter.cpp
 )
 
 

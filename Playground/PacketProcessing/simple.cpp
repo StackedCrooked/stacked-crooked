@@ -79,7 +79,7 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
         if (prefetch > 0)
         {
             auto prefetch_packet = &packet + prefetch;
-            auto prefetch_ptr = prefetch_packet->data() + sizeof(EthernetHeader) + sizeof(IPv4Header) - 2 * sizeof(IPv4Address);
+            auto prefetch_ptr = prefetch_packet->data() + sizeof(EthernetHeader) + sizeof(IPv4Header);
             __builtin_prefetch(prefetch_ptr, 0, 0);
         }
 
@@ -159,7 +159,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024 * 1024 / sizeof(Packet))
+void run(uint32_t num_packets = 1024 * 1024)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256 };
 

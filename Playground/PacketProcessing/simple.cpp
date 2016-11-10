@@ -61,7 +61,7 @@ struct Packet
     uint32_t size() const { return mPayload.size(); }
 
 private:
-    std::array<uint8_t, 512 * 3> mPayload;
+    std::array<uint8_t, 64> mPayload;
 };
 
 
@@ -167,7 +167,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024)
+void run(uint32_t num_packets = 256 * 1024 * 1024 / sizeof(Packet))
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256 };
 

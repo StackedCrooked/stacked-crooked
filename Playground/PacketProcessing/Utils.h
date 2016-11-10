@@ -2,17 +2,12 @@
 #define UTILS_H
 
 
-#include <cstring>
+#include <chrono>
 #include <typeinfo>
 
 
-template<typename T>
-inline T Decode(const uint8_t* data)
-{
-    auto result = T();
-    memcpy(&result, data, sizeof(result));
-    return result;
-}
+using Clock = std::chrono::steady_clock;
+
 
 const char* Demangle(char const * mangled_name);
 

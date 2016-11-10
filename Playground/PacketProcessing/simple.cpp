@@ -1,5 +1,7 @@
 ﻿#include "Utils.h"
 #include "Networking.h"
+#include "BPFFilter.h"
+#include "MaskFilter.h"
 #include <array>
 #include <algorithm>
 #include <cassert>
@@ -11,308 +13,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <x86intrin.h>
-#include "pcap.h"
-
-
-struct BPFFilter
-{
-    static std::string get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
-    {
-        const char* protocol_str = (protocol == 6) ? "tcp" : "(unknown)";
-
-        std::stringstream ss;
-        ss  << "ip src " << src_ip
-            << " && ip dst " << dst_ip
-            << " && " << protocol_str << " src port " << src_port
-            << " && " << protocol_str << " dst port " << dst_port
-            ;
-        return ss.str();
-    }
-
-    BPFFilter(std::string bpf_filter)
-    {
-        using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
-
-        DummyInterface dummy_interface(pcap_open_dead(DLT_EN10MB, 1518), &pcap_close);
-
-        if (!dummy_interface)
-        {
-            throw std::runtime_error("Failed to open pcap dummy interface");
-        }
-
-        auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_filter.c_str(), 1, 0xff000000);
-        if (result != 0)
-        {
-            std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
-            throw std::runtime_error("pcap_compile failed. Filter=" + bpf_filter);
-        }
-    }
-
-    BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
-        BPFFilter(get_bpffilter(protocol, src_ip, dst_ip, src_port, dst_port))
-    {
-    }
-
-    bool match(const uint8_t* data, uint32_t length) const
-    {
-        return bpf_filter(mProgram.bf_insns, const_cast<uint8_t*>(data), length, length);
-    }
-
-private:
-    bpf_program mProgram;
-};
-
-
-struct NativeFilter
-{
-    NativeFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
-        mProtocol(protocol),
-        mSourceIP(src_ip),
-        mDestinationIP(dst_ip),
-        mSourcePort(src_port),
-        mDestinationPort(dst_port)
-    {
-    }
-
-    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
-    {
-        const auto& ip_header = *reinterpret_cast<const IPv4Header*>(packet_data + sizeof(EthernetHeader));
-        const auto& tcp_header = *reinterpret_cast<const TCPHeader*>(packet_data + sizeof(EthernetHeader) + sizeof(IPv4Header));
-
-        return     ip_header.mProtocol == mProtocol
-                && ip_header.mSourceIP == mSourceIP
-                && ip_header.mDestinationIP == mDestinationIP
-                && tcp_header.mSourcePort == mSourcePort
-                && tcp_header.mDestinationPort == mDestinationPort;
-    }
-
-    uint8_t mProtocol;
-    IPv4Address mSourceIP;
-    IPv4Address mDestinationIP;
-    uint16_t mSourcePort;
-    uint16_t mDestinationPort;
-};
-
-
-struct VectorFilter
-{
-    VectorFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
-    {
-        // Composite of IPv4 + TCP/UDP header fields from TTL to DestinationPort.
-        struct TransportHeader
-        {
-            uint8_t ttl;
-            uint8_t protocol;
-            uint16_t checksum;
-            IPv4Address src_ip = IPv4Address();
-            IPv4Address dst_ip = IPv4Address();
-            uint16_t src_port = 0;
-            uint16_t dst_port = 0;
-        };
-
-        auto h = TransportHeader();
-        h.protocol = protocol;
-        h.src_ip = src_ip;
-        h.dst_ip = dst_ip;
-        h.src_port = src_port;
-        h.dst_port = dst_port;
-
-        field_ = _mm_loadu_si128((__m128i*)&h);
-
-        uint8_t mask_bytes[16] = {
-            0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
-            0xff, 0xff, 0xff, 0xff, // source ip
-            0xff, 0xff, 0xff, 0xff, // destination ip
-            0xff, 0xff, 0xff, 0xff  // source and destination ports
-        };
-        mask_ = _mm_loadu_si128((__m128i*)&mask_bytes[0]);
-    }
-
-    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
-    {
-        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mask_) };
-
-        __m128i mask_result = _mm_cmpeq_epi32(
-            field_,
-            _mm_and_si128(
-                mask_,
-                _mm_loadu_si128((__m128i*)(packet_data + offset)))
-        );
-
-        __m128i compare_result = _mm_cmpeq_epi8(mask_result, _mm_setzero_si128());
-        return _mm_testz_si128(compare_result, compare_result);
-    }
-
-    __m128i field_;
-    __m128i mask_;
-};
-
-
-struct MaskFilter
-{
-    MaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
-    {
-        // Composite of IPv4 + TCP/UDP header fields from TTL to DestinationPort.
-        struct TransportHeader
-        {
-            uint8_t ttl;
-            uint8_t protocol;
-            uint16_t checksum;
-            IPv4Address src_ip = IPv4Address();
-            IPv4Address dst_ip = IPv4Address();
-            uint16_t src_port = 0;
-            uint16_t dst_port = 0;
-        };
-
-        auto h = TransportHeader();
-        h.protocol = protocol;
-        h.src_ip = src_ip;
-        h.dst_ip = dst_ip;
-        h.src_port = src_port;
-        h.dst_port = dst_port;
-
-        static_assert(sizeof(mFields) == sizeof(h), "");
-
-        memcpy(&mFields[0], &h, sizeof(mFields));
-
-        uint8_t mask_bytes[16] = {
-            0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
-            0xff, 0xff, 0xff, 0xff, // source ip
-            0xff, 0xff, 0xff, 0xff, // destination ip
-            0xff, 0xff, 0xff, 0xff  // source and destination ports
-        };
-
-        static_assert(sizeof(mask_bytes) == sizeof(mMasks), "");
-
-        memcpy(&mMasks[0], &mask_bytes[0], sizeof(mMasks));
-    }
-
-    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
-    {
-        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mMasks) };
-
-        using U64 = std::array<uint64_t, 2>;
-        auto u64 = Decode<U64>(packet_data + offset);
-
-        return (mFields[0] == (mMasks[0] & u64[0]))
-           &&  (mFields[1] == (mMasks[1] & u64[1]));
-    }
-
-    std::array<uint64_t, 2> mFields;
-    std::array<uint64_t, 2> mMasks;
-};
-
-
-
-struct EthernetFilter
-{
-    void config(MACAddress src, MACAddress dst, uint32_t frame_size)
-    {
-        mFrameLength = frame_size;
-
-        auto helper_union = HelperUnion();
-        helper_union.mPaddedHeader.mDestinationMAC = dst;
-        helper_union.mPaddedHeader.mSourceMAC = src;
-        helper_union.mPaddedHeader.mPadding = 0;
-
-        mFields = helper_union.mFields;
-
-        union MaskUnion
-        {
-            std::array<uint32_t, 4> u32;
-            std::array<uint64_t, 2> u64;
-        };
-
-        MaskUnion mask_union;
-        mask_union.u32[0] = uint32_t(-1);
-        mask_union.u32[1] = uint32_t(-1);
-        mask_union.u32[2] = uint32_t(-1);
-        mask_union.u32[3] = uint32_t();
-
-        mMasks = mask_union.u64;
-        // ===  === === HACK === === ===
-        mMasks = std::array<uint64_t, 2>();
-        mFields = std::array<uint64_t, 2>();
-        mFrameLength = 0;
-    }
-
-    bool match(const uint8_t* packet_data, uint32_t len) const
-    {
-        auto fields = Decode<std::array<uint64_t, 2>>(packet_data);
-
-#if 0
-        auto check0 = (mFrameLength / 128 == len / 128);
-        auto check1 = (mFields[0] == (mMasks[0] & fields[0]));
-        auto check2 = (mFields[1] == (mMasks[1] & fields[1]));
-
-        std::cout
-            << " mFields[0]=" << mFields[0]
-            << " mFields[1]=" << mFields[1]
-            << " mMasks[0]=" << mMasks[0]
-            << " mMasks[1]=" << mMasks[1]
-            << " fields[0]=" << fields[0]
-            << " fields[1]=" << fields[1]
-            << " mFrameLength=" << mFrameLength
-            << " len=" << len
-            << " check0=" << check0
-            << " check1=" << check1
-            << " check2=" << check2
-            << std::endl;
-#endif
-
-        return (mFrameLength / 128 == len / 128) // HACK! HACK! HACK! HACK! HACK!
-            && (mFields[0] == (mMasks[0] & fields[0]))
-            && (mFields[1] == (mMasks[1] & fields[1]));
-    }
-
-    struct PaddedHeader
-    {
-        MACAddress mDestinationMAC;
-        MACAddress mSourceMAC;
-        uint32_t mPadding;
-    };
-
-    union HelperUnion
-    {
-        PaddedHeader mPaddedHeader;
-        std::array<uint64_t, 2> mFields;
-    };
-
-    static_assert(std::is_pod<HelperUnion>::value, "");
-
-    static_assert(sizeof(PaddedHeader) == sizeof(std::array<uint64_t, 2>), "");
-    static_assert(sizeof(std::array<uint64_t, 2>) == sizeof(std::array<uint64_t, 2>), "");
-
-    std::array<uint64_t, 2> mFields;
-    std::array<uint64_t, 2> mMasks;
-    uint32_t mFrameLength = 0;
-};
-
-
-
-struct BBMaskFilter
-{
-    BBMaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
-        mMaskFilter(protocol, src_ip, dst_ip, src_port, dst_port)
-    {
-        mEthernetFilter.config(MACAddress(), MACAddress(), uint32_t()); // TODO TODO TODO TODO TODO TODO
-    }
-
-    void configureExtraParams(MACAddress src_mac, MACAddress dst_mac, uint32_t frame_size)
-    {
-        mEthernetFilter.config(src_mac, dst_mac, frame_size);
-    }
-
-    bool match(const uint8_t* packet_data, uint32_t len) const
-    {
-        return mEthernetFilter.match(packet_data, len)
-            && mMaskFilter.match(packet_data, len);
-    }
-
-    EthernetFilter mEthernetFilter;
-    MaskFilter mMaskFilter;
-};
 
 
 struct CombinedHeader
@@ -367,51 +67,6 @@ volatile const unsigned volatile_zero = 0;
 
 
 
-struct rdtsc_clock
-{
-    using time_point = std::uint64_t;
-
-    static time_point now()
-    {
-        std::uint32_t hi, lo;
-        __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-        return (static_cast<time_point>(hi) << 32) | static_cast<time_point>(lo);
-    }
-};
-
-using Clock = rdtsc_clock;
-
-int64_t get_frequency_mhz()
-{
-    static auto frequency_mhz = []
-    {
-        using HRC_t = std::chrono::high_resolution_clock;
-        auto c1 = Clock::now();
-        auto t1 = HRC_t::now();
-        auto now = t1;
-        while (now < t1 + std::chrono::milliseconds(10))
-        {
-            now = HRC_t::now();
-        }
-        return 1000 * (Clock::now() - c1) / (now - t1).count();
-    }();
-    return frequency_mhz;
-}
-
-double get_frequency_ghz()
-{
-    static auto frequency_ghz = get_frequency_mhz() / 1000.0;
-    return frequency_ghz;
-}
-
-int64_t get_frequency_hz()
-{
-    static auto frequency_hz = get_frequency_mhz() * 1000000;
-    return frequency_hz;
-}
-
-
-
 // Packet distance is 1536 (or 512 * 3) bytes.
 // This seems to be the default used by pfring in it's 
 // internal Rx buffer.
@@ -463,27 +118,24 @@ void test(std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, ui
         }
     }
 
-    auto elapsed_time = Clock::now() - start_time;
-
-    auto cycles_per_packet = 1.0 * elapsed_time / packets.size();
-    auto ns_per_packet = cycles_per_packet / get_frequency_ghz();
-    auto packet_rate = 1e9 / ns_per_packet / 1000000;
-
-    auto packet_rate_rounded = int(0.5 + 100 * packet_rate)/100.0;
+    auto elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - start_time).count();
+    auto ns_per_packet = 1.0 * elapsed_ns / packets.size();
+    auto mpps = 1e9 / ns_per_packet / 1000000;
+    auto mpps_rounded = int(0.5 + 100 * mpps)/100.0;
 
     std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
-            << " PREFETCH="        << prefetch
+            << " PREFETCH=" << prefetch
             << " FLOWS=" << std::setw(4) << std::left << num_flows
-            << " MPPS="     << std::setw(9) << std::left << packet_rate_rounded
-            << " (" << num_flows * packet_rate_rounded << " million filter comparisons per second)"
+            << " MPPS=" << std::setw(9) << std::left << mpps_rounded
+            << " (" << num_flows * mpps_rounded << " million filter comparisons per second)"
             ;
 
     #if 1
     std::cout << " (verify-matches:";
-    for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
+    for (auto i = 0ul; i != std::min(num_flows, 10u); ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << int(0.5 + 100.0 * matches[i] / packets.size()) << '%';
+        std::cout << int(10000.0 * matches[i] / packets.size())/100.0 << '%';
     }
     if (num_flows > 20)
     {
@@ -505,20 +157,21 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     std::vector<Flow<FilterType>> flows;
     flows.reserve(num_flows);
 
-    uint16_t src_port = 0xabab;
-    uint16_t dst_port = 0xcdcd;
-
     for (auto i = 1ul; i <= num_packets; ++i)
     {
-        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
-        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
+        IPv4Address src_ip(1, 1, 1, 1);
+        IPv4Address dst_ip(1, 1, 1, 1);
+        uint16_t src_port = i % num_flows;
+        uint16_t dst_port = i % num_flows;
         packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
     for (auto i = 0ul; i < num_flows; ++i)
     {
-        IPv4Address src_ip(1, 1, 1, 1 + i % num_flows);
-        IPv4Address dst_ip(1, 1, 2, 1 + i % num_flows);
+        IPv4Address src_ip(1, 1, 1, 1);
+        IPv4Address dst_ip(1, 1, 1, 1);
+        uint16_t src_port = i % num_flows;
+        uint16_t dst_port = i % num_flows;
         flows.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
@@ -532,9 +185,9 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024)
+void run(uint32_t num_packets = 1024 * 1024 / 1)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
 
     for (auto flow_count : flow_counts)
     {
@@ -558,10 +211,10 @@ void run(uint32_t num_packets = 1024 * 1024)
 
 int main()
 {
-    run<BBMaskFilter>();
+    run<MaskFilter>();
     std::cout << std::endl;
 
-    run<MaskFilter>();
+    run<BPFFilter>();
     std::cout << std::endl;
 
 //    run<NativeFilter>();

@@ -3,7 +3,17 @@
 
 
 #include <cstdint>
+#include <cstring>
 #include <array>
+
+
+template<typename T>
+inline T Decode(const uint8_t* data)
+{
+    auto result = T();
+    memcpy(&result, data, sizeof(result));
+    return result;
+}
 
 
 struct MACAddress

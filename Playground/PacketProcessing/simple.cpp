@@ -61,7 +61,7 @@ struct Packet
     uint32_t size() const { return mPayload.size(); }
 
 private:
-    std::array<uint8_t, 64> mPayload;
+    std::array<uint8_t, 512 * 3> mPayload;
 };
 
 
@@ -148,7 +148,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
         packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
-    for (auto i = 0ul; i < num_flows; ++i)
+    for (auto i = 1ul; i <= num_flows; ++i)
     {
         IPv4Address src_ip(1, 1, 1, 1);
         IPv4Address dst_ip(1, 1, 1, 1);

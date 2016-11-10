@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstring>
 #include <array>
+#include <arpa/inet.h>
 
 
 template<typename T>
@@ -96,8 +97,8 @@ struct TCPHeader
     static TCPHeader Create(uint16_t src_port, uint16_t dst_port)
     {
         auto result = TCPHeader();
-        result.mSourcePort = src_port;
-        result.mDestinationPort = dst_port;
+        result.mSourcePort = htons(src_port);
+        result.mDestinationPort = htons(dst_port);
         return result;
     }
 

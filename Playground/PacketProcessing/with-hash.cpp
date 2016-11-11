@@ -46,6 +46,11 @@ private:
 template<typename FlowType>
 struct Flows
 {
+    bool empty()
+    {
+        return mFlows.empty();
+    }
+
     void add_flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
     {
         auto flow_index = mFlows.size();
@@ -91,7 +96,11 @@ struct Flows
         auto bucket_index = packet_hash % mHashTable.size();
 		//std::cout << "packet_hash=" << packet_hash << " bucket_index=" << bucket_index << std::endl;
 
-        auto& flow_indexes = mHashTable[bucket_index];
+        Bucket& flow_indexes = mHashTable[bucket_index];
+        if (flow_indexes.empty())
+        {
+            std::cout << "Packet does not match a flow index." << std::endl;
+        }
         for (const uint32_t& flow_index : flow_indexes)
         {
             matches[flow_index] += mFlows[flow_index].match(packet.data(), packet.size());
@@ -143,9 +152,9 @@ struct Flows
         const value_type* begin() const { return mBegin; }
         const value_type* end() const { return mEnd; }
 
+        bool empty() const { return mBegin == mEnd; }
+
         std::size_t size() const { return mEnd - mBegin; }
-
-
     private:
         std::array<value_type, 4> mBuffer;
         value_type* mBegin;
@@ -197,7 +206,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << int(0.5 + 1000.0 * matches[i] / num_packets)/10.0 << '%';
+        std::cout << 1.0 * matches[i] / packets.size();
     }
     if (num_flows > 20)
     {
@@ -219,47 +228,27 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     Flows<FilterType> flows;
     flows.mFlows.reserve(num_flows);
 
+    const IPv4Address src_ip(1, 1, 1, 1);
+    const IPv4Address dst_ip(1, 1, 1, 1);
 
-    for (auto i = 0ul; i < num_packets; ++i)
+
+    for (auto i = 1ul; i <= num_packets; ++i)
     {
-        for (auto a = 0; a != 255; ++a)
-        for (auto b = 0; b != 255; ++b)
-        for (auto c = 0; c != 255; ++c)
-        for (auto d = 0; d != 255; ++d)
-        {
-            IPv4Address src_ip(a, b, c, d);
-            IPv4Address dst_ip(a, b, c, d);
-            uint16_t src_port = 0xabab;
-            uint16_t dst_port = 0xabab;
-            packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
-            if (packets.size() >= num_packets)
-            {
-                goto generate_flows;
-            }
-        }
+        uint16_t src_port = i % num_flows;
+        uint16_t dst_port = i % num_flows;
+
+        //std::cout << "A i=" << i << " num_flows=" << num_flows << " i % num_flows=" << i%num_flows << std::endl;
+        packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
-generate_flows:
-    for (auto i = 0ul; i < num_flows; ++i)
+    for (auto i = 1ul; i <= num_flows; ++i)
     {
-        for (auto a = 0; a != 255; ++a)
-        for (auto b = 0; b != 255; ++b)
-        for (auto c = 0; c != 255; ++c)
-        for (auto d = 0; d != 255; ++d)
-        {
-            IPv4Address src_ip(a, b, c, d);
-            IPv4Address dst_ip(a, b, c, d);
-            uint16_t src_port = 0xabab;
-            uint16_t dst_port = 0xabab;
-            flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
-            if (flows.size() >= num_flows)
-            {
-                goto next;
-            }
-        }
+        uint16_t src_port = i % num_flows;
+        uint16_t dst_port = i % num_flows;
+        //std::cout << "B i=" << i << " num_flows=" << num_flows << " i % num_flows=" << i%num_flows << std::endl;
+        flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
     }
 
-next:
     std::vector<uint64_t> matches(num_flows);
     run3<FilterType, prefetch>(packets, flows, matches.data());
     std::cout << std::endl;
@@ -269,7 +258,7 @@ next:
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1024 * 1024)
+void run(uint32_t num_packets = 100 * 1000)
 {
     int flow_counts[] = { 1, 10, 100, 1000 };
 
@@ -295,13 +284,12 @@ void run(uint32_t num_packets = 1024 * 1024)
 
 int main()
 {
-    //run<BBMaskFilter>();
-    //std::cout << std::endl;
+//    run<BBMaskFilter>();
+//    std::cout << std::endl;
 
     run<MaskFilter>();
     std::cout << std::endl;
 
-    run<VectorFilter>();
+    run<BPFFilter>();
     std::cout << std::endl;
 }
-

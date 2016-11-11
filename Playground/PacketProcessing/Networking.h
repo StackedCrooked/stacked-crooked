@@ -81,12 +81,12 @@ struct IPv4Header
 
     uint8_t mVersionAndIHL = (4u << 4) | 5u;
     uint8_t mTypeOfService = 0;
-    uint16_t mTotalLength = 1514;
+    uint16_t mTotalLength = htons(1514);
     uint16_t mIdentification = 0;
     uint16_t mFlagsAndFragmentOffset = 0;
     uint8_t mTTL = 255;
-    uint8_t mProtocol;
-    uint16_t mChecksum =0;
+    uint8_t mProtocol = 0;
+    uint16_t mChecksum = 0;
     IPv4Address mSourceIP;
     IPv4Address mDestinationIP;
 };
@@ -97,8 +97,8 @@ struct TCPHeader
     static TCPHeader Create(uint16_t src_port, uint16_t dst_port)
     {
         auto result = TCPHeader();
-        result.mSourcePort = htons(src_port);
-        result.mDestinationPort = htons(dst_port);
+        result.mSourcePort = src_port;
+        result.mDestinationPort = dst_port;
         return result;
     }
 

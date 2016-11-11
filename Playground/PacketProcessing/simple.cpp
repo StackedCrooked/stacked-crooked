@@ -1,4 +1,11 @@
-﻿#define PREFETCH 0
+﻿#ifndef PREFETCH
+#error "PREFETCH is not defined."
+#endif
+
+
+#ifndef FILTERTYPE
+#error "FILTERTYPE is not defined."
+#endif
 
 #include "Utils.h"
 #include "Networking.h"
@@ -131,12 +138,6 @@ void run(uint32_t num_packets = 1000 * 1000)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256 };
 
-//    for (auto flow_count : flow_counts)
-//    {
-//        do_run<FilterType, 0>(num_packets, flow_count);
-//    }
-//    std::cout << std::endl;
-
     for (auto flow_count : flow_counts)
     {
         do_run<FilterType, PREFETCH>(num_packets, flow_count);
@@ -147,13 +148,6 @@ void run(uint32_t num_packets = 1000 * 1000)
 
 int main()
 {
-
-    run<BPFFilter>();
-    std::cout << std::endl;
-
-    run<MaskFilter>();
-    std::cout << std::endl;
-
-    run<VectorFilter>();
+    run<FILTERTYPE>();
     std::cout << std::endl;
 }

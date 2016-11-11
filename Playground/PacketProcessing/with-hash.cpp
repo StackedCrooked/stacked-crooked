@@ -1,4 +1,11 @@
-﻿#define PREFETCH 0
+﻿#ifndef PREFETCH
+#error "PREFETCH is not defined."
+#endif
+
+
+#ifndef FILTERTYPE
+#error "FILTERTYPE is not defined."
+#endif
 
 #include "Utils.h"
 #include "Networking.h"
@@ -99,7 +106,7 @@ struct Flows
 		//std::cout << "packet_hash=" << packet_hash << " bucket_index=" << bucket_index << std::endl;
 
         Bucket& flow_indexes = mHashTable[bucket_index];
-        if (flow_indexes.empty())
+        if (__builtin_expect(flow_indexes.empty(), 0))
         {
             std::cout << "Packet does not match a flow index." << std::endl;
         }
@@ -274,12 +281,6 @@ void run(uint32_t num_packets = 1000 * 1000)
 
 int main()
 {
-    run<BPFFilter>();
-    std::cout << std::endl;
-
-    run<MaskFilter>();
-    std::cout << std::endl;
-
-    run<VectorFilter>();
+    run<FILTERTYPE>();
     std::cout << std::endl;
 }

@@ -44,4 +44,5 @@ endmacro(add_target)
 
 add_target(BPFFilter)
 add_target(MaskFilter)
+add_target(NativeFilter)
 add_target(VectorFilter)

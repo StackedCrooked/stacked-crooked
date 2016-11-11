@@ -55,21 +55,16 @@ struct IPv4Address
 
 struct Net16
 {
-    Net16() = default;
+    Net16() : mValue() {}
 
-    Net16(uint16_t value) :
+    explicit Net16(uint16_t value) :
         mValue(htons(value))
     {
     }
 
-    void set(uint16_t value)
-    {
-        *this = Net16(value);
-    }
-
     void operator=(uint16_t value)
     {
-        set(value);
+        *this = Net16(value);
     }
 
     uint16_t hostValue() const { return ntohs(mValue); }
@@ -108,13 +103,13 @@ struct IPv4Header
     }
 
     uint8_t mVersionAndIHL = (4u << 4) | 5u;
-    uint8_t mTypeOfService = 0;
-    Net16 mTotalLength = 1514;
-    Net16 mIdentification = 0;
-    Net16 mFlagsAndFragmentOffset = 0;
+    uint8_t mTypeOfService;
+    Net16 mTotalLength{1514};
+    Net16 mIdentification;
+    Net16 mFlagsAndFragmentOffset;
     uint8_t mTTL = 255;
-    uint8_t mProtocol = 0;
-    uint16_t mChecksum = 0;
+    uint8_t mProtocol;
+    uint16_t mChecksum;
     IPv4Address mSourceIP;
     IPv4Address mDestinationIP;
 };
@@ -134,10 +129,10 @@ struct TCPHeader
     Net16 mDestinationPort{0};
     Net16 mSequenceNumber[2];
     Net16 mAcknowledgementNumber[2];
-    Net16 mDataOffsetAndFlags = 0;
+    Net16 mDataOffsetAndFlags;
     Net16 mWindowSize;
-    Net16 mChecksum = 0;
-    Net16 mUrgentPointer = 0;
+    Net16 mChecksum;
+    Net16 mUrgentPointer;
 };
 
 

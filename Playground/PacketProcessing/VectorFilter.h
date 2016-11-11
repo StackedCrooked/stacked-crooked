@@ -17,10 +17,10 @@ struct VectorFilter
             uint8_t ttl;
             uint8_t protocol;
             uint16_t checksum;
-            IPv4Address src_ip = IPv4Address();
-            IPv4Address dst_ip = IPv4Address();
-            uint16_t src_port = 0;
-            uint16_t dst_port = 0;
+            IPv4Address src_ip;
+            IPv4Address dst_ip;
+            Net16 src_port;
+            Net16 dst_port;
         };
 
         auto h = TransportHeader();

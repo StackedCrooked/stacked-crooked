@@ -20,16 +20,16 @@ struct MaskFilter
             uint16_t checksum;
             IPv4Address src_ip = IPv4Address();
             IPv4Address dst_ip = IPv4Address();
-            Net16 src_port = 0;
-            Net16 dst_port = 0;
+            Net16 src_port;
+            Net16 dst_port;
         };
 
         auto h = TransportHeader();
         h.protocol = protocol;
         h.src_ip = src_ip;
         h.dst_ip = dst_ip;
-        h.src_port = src_port;
-        h.dst_port = dst_port;
+        h.src_port = Net16(src_port);
+        h.dst_port = Net16(dst_port);
 
         static_assert(sizeof(mFields) == sizeof(h), "");
 

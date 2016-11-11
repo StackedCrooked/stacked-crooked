@@ -52,6 +52,36 @@ private:
 };
 
 
+struct Bucket
+{
+    using value_type = uint16_t; // number of flows shouldn't exceed 2**16
+
+    Bucket() :
+        mBuffer(),
+        mBegin(&mBuffer[0]),
+        mEnd(mBegin),
+        mVector()
+    {
+    }
+
+    void push_back(value_type value);
+
+    value_type operator[](std::size_t i) const { return mBegin[i]; }
+
+    const value_type* begin() const { return mBegin; }
+    const value_type* end() const { return mEnd; }
+
+    bool empty() const { return mBegin == mEnd; }
+
+    std::size_t size() const { return mEnd - mBegin; }
+private:
+    std::array<value_type, 4> mBuffer;
+    value_type* mBegin;
+    value_type* mEnd;
+    std::unique_ptr<std::vector<value_type>> mVector;
+};
+
+
 template<typename FlowType>
 struct Flows
 {
@@ -118,59 +148,6 @@ struct Flows
 
     std::vector<Flow<FlowType>> mFlows;
 
-    struct Bucket
-    {
-        using value_type = uint16_t; // number of flows shouldn't exceed 2**16
-
-        Bucket() :
-            mBuffer(),
-            mBegin(&mBuffer[0]),
-            mEnd(mBegin),
-            mVector()
-        {
-        }
-
-        void push_back(value_type value)
-        {
-            uint32_t length = mEnd - mBegin;
-
-            if (length < mBuffer.size())
-            {
-                *mEnd++ = value;
-                return;
-            }
-
-            if (mVector)
-            {
-                mVector->push_back(value);
-                mBegin = mVector->data();
-                mEnd = mBegin + mVector->size();
-                return;
-            }
-
-            mVector.reset(new std::vector<value_type>);
-            mVector->reserve(2 * mBuffer.size());
-            mVector->assign(mBuffer.begin(), mBuffer.end());
-            mVector->push_back(value);
-            mBegin = mVector->data();
-            mEnd = mBegin + mVector->size();
-        }
-
-        value_type operator[](std::size_t i) const { return mBegin[i]; }
-
-        const value_type* begin() const { return mBegin; }
-        const value_type* end() const { return mEnd; }
-
-        bool empty() const { return mBegin == mEnd; }
-
-        std::size_t size() const { return mEnd - mBegin; }
-    private:
-        std::array<value_type, 4> mBuffer;
-        value_type* mBegin;
-        value_type* mEnd;
-        std::unique_ptr<std::vector<value_type>> mVector;
-    };
-
     static_assert(sizeof(Bucket) == 32, "");
 
     // Using a prime-number because it greatly reduces the number of hash collisions.
@@ -215,7 +192,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     for (auto i = 0ul; i != std::min(num_flows, 30u); ++i)
     {
         if (i > 0) std::cout << ',';
-        std::cout << int(0.5 + 1000.0 * matches[i] / packets.size()) / 1000.0;
+        std::cout << int(100000.0 * matches[i] / packets.size()) / 100000.0;
     }
     if (num_flows > 20)
     {
@@ -266,7 +243,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 template<typename FilterType>
 void run(uint32_t num_packets = 400 * 1000)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048 };
 
     for (auto flow_count : flow_counts)
     {
@@ -280,4 +257,31 @@ int main()
 {
     run<FILTERTYPE>();
     std::cout << std::endl;
+}
+
+
+void Bucket::push_back(Bucket::value_type value)
+{
+    uint32_t length = mEnd - mBegin;
+
+    if (length < mBuffer.size())
+    {
+        *mEnd++ = value;
+        return;
+    }
+
+    if (mVector)
+    {
+        mVector->push_back(value);
+        mBegin = mVector->data();
+        mEnd = mBegin + mVector->size();
+        return;
+    }
+
+    mVector.reset(new std::vector<value_type>);
+    mVector->reserve(2 * mBuffer.size());
+    mVector->assign(mBuffer.begin(), mBuffer.end());
+    mVector->push_back(value);
+    mBegin = mVector->data();
+    mEnd = mBegin + mVector->size();
 }

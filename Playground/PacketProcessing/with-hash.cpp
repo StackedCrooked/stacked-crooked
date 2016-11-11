@@ -22,9 +22,9 @@
 
 
 template<typename FilterType>
-struct Flow
+struct FlowImpl
 {
-    Flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port) :
+    FlowImpl(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port) :
         mFilter(protocol, source_ip, target_ip, src_port, dst_port),
         mHash(0)
     {
@@ -50,6 +50,9 @@ private:
     FilterType mFilter;
     std::size_t mHash;
 };
+
+
+using Flow = FlowImpl<FILTERTYPE>;
 
 
 struct Bucket
@@ -82,7 +85,6 @@ private:
 };
 
 
-template<typename FlowType>
 struct Flows
 {
     bool empty()
@@ -133,20 +135,15 @@ struct Flows
         boost::hash_combine(packet_hash, tcp_header.mDestinationPort.hostValue());
 
         auto bucket_index = packet_hash % mHashTable.size();
-		//std::cout << "packet_hash=" << packet_hash << " bucket_index=" << bucket_index << std::endl;
 
         Bucket& flow_indexes = mHashTable[bucket_index];
-        if (__builtin_expect(flow_indexes.empty(), 0))
-        {
-            std::cout << "Packet does not match a flow index." << std::endl;
-        }
         for (const uint32_t& flow_index : flow_indexes)
         {
             matches[flow_index] += mFlows[flow_index].match(packet.data(), packet.size());
         }
     }
 
-    std::vector<Flow<FlowType>> mFlows;
+    std::vector<Flow> mFlows;
 
     static_assert(sizeof(Bucket) == 32, "");
 
@@ -155,8 +152,8 @@ struct Flows
 };
 
 
-template<typename FilterType, uint32_t prefetch>
-void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* const matches)
+template<uint32_t prefetch>
+void run3(std::vector<Packet>& packets, Flows& flows, uint64_t* const matches)
 {
     const uint32_t num_flows = flows.size();
     const uint32_t num_packets = packets.size();
@@ -180,7 +177,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     auto mpps = (1e9 / ns_per_packet) / 1e6;
     auto mpps_rounded = int(0.5 + 100 * mpps)/100.0;
 
-    std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
+    std::cout << std::setw(12) << std::left << GetTypeName<FILTERTYPE>()
             << " PREFETCH=" << prefetch
             << " FLOWS=" << std::setw(4) << std::left << num_flows
             //<< " ns_per_packet=" << ns_per_packet/
@@ -205,13 +202,13 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
 
 
 
-template<typename FilterType, int prefetch>
+template<int prefetch>
 void do_run(uint32_t num_packets, uint32_t num_flows)
 {
     std::vector<Packet> packets;
     packets.reserve(num_packets);
 
-    Flows<FilterType> flows;
+    Flows flows;
     flows.mFlows.reserve(num_flows);
 
     const IPv4Address src_ip(1, 1, 1, 1);
@@ -233,21 +230,20 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     }
 
     std::vector<uint64_t> matches(num_flows);
-    run3<FilterType, prefetch>(packets, flows, matches.data());
+    run3<prefetch>(packets, flows, matches.data());
     std::cout << std::endl;
 }
 
 
 
 
-template<typename FilterType>
 void run(uint32_t num_packets = 400 * 1000)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048 };
 
     for (auto flow_count : flow_counts)
     {
-        do_run<FilterType, PREFETCH>(num_packets, flow_count);
+        do_run<PREFETCH>(num_packets, flow_count);
     }
     std::cout << std::endl;
 }
@@ -255,7 +251,7 @@ void run(uint32_t num_packets = 400 * 1000)
 
 int main()
 {
-    run<FILTERTYPE>();
+    run();
     std::cout << std::endl;
 }
 

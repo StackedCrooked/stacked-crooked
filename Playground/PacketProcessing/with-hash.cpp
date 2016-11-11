@@ -212,7 +212,7 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
 
     #if 1
     std::cout << " (verify-matches:";
-    for (auto i = 0ul; i != std::min(num_flows, 20u); ++i)
+    for (auto i = 0ul; i != std::min(num_flows, 30u); ++i)
     {
         if (i > 0) std::cout << ',';
         std::cout << 1.0 * matches[i] / packets.size();
@@ -264,9 +264,9 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1000 * 1000)
+void run(uint32_t num_packets = 2 * 1000 * 1000)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256 };
 
     for (auto flow_count : flow_counts)
     {

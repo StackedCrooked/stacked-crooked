@@ -37,7 +37,7 @@ struct Packet
     uint32_t size() const { return mPayload.size(); }
 
 private:
-    std::array<uint8_t, PACKET_SIZE> mPayload;
+    std::array<uint8_t, 1536> mPayload;
 };
 
 

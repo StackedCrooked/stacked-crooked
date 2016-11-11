@@ -55,7 +55,7 @@ struct MaskFilter
         auto u64 = Decode<U64>(packet_data + offset);
 
         return (mFields[0] == (mMasks[0] & u64[0]))
-            &  (mFields[1] == (mMasks[1] & u64[1]));
+            && (mFields[1] == (mMasks[1] & u64[1]));
     }
 
     std::array<uint64_t, 2> mFields;

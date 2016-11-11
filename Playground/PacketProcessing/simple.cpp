@@ -29,9 +29,6 @@ private:
     FilterType mFilter;
 };
 
-volatile const unsigned volatile_zero = 0;
-
-
 
 template<typename FilterType, uint32_t prefetch>
 void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint64_t* const matches)
@@ -154,7 +151,6 @@ int main()
     run<MaskFilter>();
     std::cout << std::endl;
 
-    //run<VectorFilter>();
-    //std::cout << std::endl;
+    run<VectorFilter>();
+    std::cout << std::endl;
 }
-//

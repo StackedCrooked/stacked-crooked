@@ -284,6 +284,6 @@ int main()
     run<MaskFilter>();
     std::cout << std::endl;
 
-    //run<BPFFilter>();
-    //std::cout << std::endl;
+    run<VectorFilter>();
+    std::cout << std::endl;
 }

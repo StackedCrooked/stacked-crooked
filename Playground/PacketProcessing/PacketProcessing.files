@@ -1,4 +1,4 @@
-CMakeLists.txt
+﻿CMakeLists.txt
 BPFFilter.cpp
 BPFFilter.h
 MaskFilter.cpp
@@ -15,5 +15,3 @@ simple.cpp
 with-hash.cpp
 PCAPWriter.h
 PCAPWriter.cpp
-ProgramOptions.h
-ProgramOptions.cpp

@@ -1,7 +1,15 @@
-﻿#include "Utils.h"
+﻿#ifndef PREFETCH
+#error "PREFETCH is not defined."
+#endif
+
+
+#ifndef FILTERTYPE
+#error "FILTERTYPE is not defined."
+#endif
+
+#include "Utils.h"
 #include "Networking.h"
 #include "NativeFilter.h"
-#include "ProgramOptions.h"
 #include "Packet.h"
 #include "VectorFilter.h"
 #include "BPFFilter.h"
@@ -123,33 +131,23 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 }
 
 
-template<typename FilterType, int prefetch>
+
+
+template<typename FilterType>
 void run(uint32_t num_packets = 400 * 1000)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256 };
 
     for (auto flow_count : flow_counts)
     {
-        do_run<FilterType, prefetch>(num_packets, flow_count);
+        do_run<FilterType, PREFETCH>(num_packets, flow_count);
     }
     std::cout << std::endl;
 }
 
 
-int main(int argc, char** argv)
+int main()
 {
-    Options options;
-
-    if (auto error_code = initialize_program_options(argc, argv, options))
-    {
-        return error_code;
-    }
-
-    enum
-    {
-        prefetch = 0 // TODO: read prefetch
-    };
-
-    run<BPFFilter, prefetch>();
+    run<FILTERTYPE>();
     std::cout << std::endl;
 }

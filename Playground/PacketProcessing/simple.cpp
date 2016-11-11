@@ -1,4 +1,6 @@
-﻿#include "Utils.h"
+﻿#define PREFETCH 0
+
+#include "Utils.h"
 #include "Networking.h"
 #include "NativeFilter.h"
 #include "Packet.h"
@@ -137,7 +139,7 @@ void run(uint32_t num_packets = 1000 * 1000)
 
     for (auto flow_count : flow_counts)
     {
-        do_run<FilterType, 4>(num_packets, flow_count);
+        do_run<FilterType, PREFETCH>(num_packets, flow_count);
     }
     std::cout << std::endl;
 }

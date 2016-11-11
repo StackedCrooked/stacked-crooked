@@ -33,6 +33,7 @@ macro(add_target filtertype)
     _add_target_1(${filtertype} 0)
     _add_target_1(${filtertype} 4)
     _add_target_1(${filtertype} 8)
+    _add_target_1(${filtertype} 16)
 endmacro(add_target)
 
 add_target(BPFFilter)

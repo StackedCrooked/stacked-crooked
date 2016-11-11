@@ -245,8 +245,6 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     {
         uint16_t src_port = i % num_flows;
         uint16_t dst_port = i % num_flows;
-
-        //std::cout << "A i=" << i << " num_flows=" << num_flows << " i % num_flows=" << i%num_flows << std::endl;
         packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
     }
 
@@ -254,7 +252,6 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     {
         uint16_t src_port = i % num_flows;
         uint16_t dst_port = i % num_flows;
-        //std::cout << "B i=" << i << " num_flows=" << num_flows << " i % num_flows=" << i%num_flows << std::endl;
         flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
     }
 
@@ -269,7 +266,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 template<typename FilterType>
 void run(uint32_t num_packets = 1000 * 1000)
 {
-    int flow_counts[] = { 1, 10, 100, 1000 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256 };
 
     for (auto flow_count : flow_counts)
     {

@@ -18,23 +18,29 @@ set(PacketProcessing_SOURCES
     PCAPWriter.cpp
 )
 
+
+# Helper for _add_target_1
 macro(_add_target_2 program filtertype prefetch)
     add_executable(${program}_${filtertype}_${prefetch} ${PacketProcessing_SOURCES} ${program}.cpp)
     set_target_properties(${program}_${filtertype}_${prefetch} PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -DPREFETCH=${prefetch} -DFILTERTYPE=${filtertype} -march=native -Wall -Wextra -Werror -pedantic -Wno-missing-braces")
     target_link_libraries(${program}_${filtertype}_${prefetch} -ltbb -lboost_system -lpcap)
 endmacro(_add_target_2)
 
+
+# Helper for add_target
 macro(_add_target_1 filtertype prefetch)
     _add_target_2(simple ${filtertype} ${prefetch})
     _add_target_2(with-hash ${filtertype} ${prefetch})
 endmacro(_add_target_1)
 
+
+# Generates a target
 macro(add_target filtertype)
     _add_target_1(${filtertype} 0)
     _add_target_1(${filtertype} 4)
     _add_target_1(${filtertype} 8)
-    _add_target_1(${filtertype} 16)
 endmacro(add_target)
+
 
 add_target(BPFFilter)
 add_target(MaskFilter)

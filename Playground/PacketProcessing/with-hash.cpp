@@ -197,8 +197,8 @@ void run3(std::vector<Packet>& packets, Flows<FilterType>& flows, uint64_t* cons
     std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
             << " PREFETCH=" << prefetch
             << " FLOWS=" << std::setw(4) << std::left << num_flows
+            //<< " ns_per_packet=" << ns_per_packet/
             << " MPPS=" << std::setw(9) << std::left << mpps_rounded
-            << " ns_per_packet=" << ns_per_packet
             ;
 
     #if 1
@@ -258,7 +258,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 100 * 1000)
+void run(uint32_t num_packets = 1e6)
 {
     int flow_counts[] = { 1, 10, 100, 1000 };
 
@@ -273,12 +273,6 @@ void run(uint32_t num_packets = 100 * 1000)
         do_run<FilterType, 4>(num_packets, flow_count);
     }
     std::cout << std::endl;
-
-    for (auto flow_count : flow_counts)
-    {
-        do_run<FilterType, 8>(num_packets, flow_count);
-    }
-    std::cout << std::endl;
 }
 
 
@@ -290,6 +284,6 @@ int main()
     run<MaskFilter>();
     std::cout << std::endl;
 
-    run<BPFFilter>();
-    std::cout << std::endl;
+    //run<BPFFilter>();
+    //std::cout << std::endl;
 }

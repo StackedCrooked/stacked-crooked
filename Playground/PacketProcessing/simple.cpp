@@ -68,6 +68,7 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
     std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
             << " PREFETCH=" << prefetch
             << " FLOWS=" << std::setw(4) << std::left << num_flows
+            //<< " ns_per_packet=" << ns_per_packet
             << " MPPS=" << std::setw(9) << std::left << mpps_rounded
             << " (" << num_flows * mpps_rounded << " million filter comparisons per second)"
             ;
@@ -146,14 +147,14 @@ void run(uint32_t num_packets = 1024 * 1024)
 
 
 int main()
-{
+{    
+    //run<BPFFilter>();
+    //std::cout << std::endl;
+
     run<MaskFilter>();
     std::cout << std::endl;
 
-    run<VectorFilter>();
-    std::cout << std::endl;
-
-    run<BPFFilter>();
-    std::cout << std::endl;
+    //run<VectorFilter>();
+    //std::cout << std::endl;
 }
-
+//

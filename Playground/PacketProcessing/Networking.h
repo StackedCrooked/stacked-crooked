@@ -109,9 +109,9 @@ struct IPv4Header
 
     uint8_t mVersionAndIHL = (4u << 4) | 5u;
     uint8_t mTypeOfService = 0;
-    uint16_t mTotalLength = htons(1514);
-    uint16_t mIdentification = 0;
-    uint16_t mFlagsAndFragmentOffset = 0;
+    Net16 mTotalLength = 1514;
+    Net16 mIdentification = 0;
+    Net16 mFlagsAndFragmentOffset = 0;
     uint8_t mTTL = 255;
     uint8_t mProtocol = 0;
     uint16_t mChecksum = 0;
@@ -132,12 +132,12 @@ struct TCPHeader
 
     Net16 mSourcePort{0};
     Net16 mDestinationPort{0};
-    uint16_t mSequenceNumber[2];
-    uint16_t mAcknowledgementNumber[2];
-    uint16_t mDataOffsetAndFlags = 0;
-    uint16_t mWindowSize;
-    uint16_t mChecksum = 0;
-    uint16_t mUrgentPointer = 0;
+    Net16 mSequenceNumber[2];
+    Net16 mAcknowledgementNumber[2];
+    Net16 mDataOffsetAndFlags = 0;
+    Net16 mWindowSize;
+    Net16 mChecksum = 0;
+    Net16 mUrgentPointer = 0;
 };
 
 

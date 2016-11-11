@@ -20,8 +20,8 @@ struct MaskFilter
             uint16_t checksum;
             IPv4Address src_ip = IPv4Address();
             IPv4Address dst_ip = IPv4Address();
-            uint16_t src_port = 0;
-            uint16_t dst_port = 0;
+            Net16 src_port = 0;
+            Net16 dst_port = 0;
         };
 
         auto h = TransportHeader();

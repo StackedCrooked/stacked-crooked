@@ -68,7 +68,7 @@ struct Flows
     }
 
 	void print()
-	{
+    {
 		std::cout << "HashTable:" << std::endl;
 		for (auto i = 0u; i != mHashTable.size(); ++i)
 		{
@@ -90,8 +90,8 @@ struct Flows
         boost::hash_combine(packet_hash, ip4_header.mProtocol);
         boost::hash_combine(packet_hash, ip4_header.mSourceIP.toInteger());
         boost::hash_combine(packet_hash, ip4_header.mDestinationIP.toInteger());
-        boost::hash_combine(packet_hash, tcp_header.mSourcePort);
-        boost::hash_combine(packet_hash, tcp_header.mDestinationPort);
+        boost::hash_combine(packet_hash, tcp_header.mSourcePort.hostValue());
+        boost::hash_combine(packet_hash, tcp_header.mDestinationPort.hostValue());
 
         auto bucket_index = packet_hash % mHashTable.size();
 		//std::cout << "packet_hash=" << packet_hash << " bucket_index=" << bucket_index << std::endl;
@@ -258,7 +258,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 
 template<typename FilterType>
-void run(uint32_t num_packets = 1e6)
+void run(uint32_t num_packets = 200 * 1000)
 {
     int flow_counts[] = { 1, 10, 100, 1000 };
 
@@ -278,8 +278,8 @@ void run(uint32_t num_packets = 1e6)
 
 int main()
 {
-//    run<BBMaskFilter>();
-//    std::cout << std::endl;
+    run<BPFFilter>();
+    std::cout << std::endl;
 
     run<MaskFilter>();
     std::cout << std::endl;

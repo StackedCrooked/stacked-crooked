@@ -53,18 +53,46 @@ struct IPv4Address
 };
 
 
+struct Net16
+{
+    Net16() = default;
+
+    Net16(uint16_t value) :
+        mValue(htons(value))
+    {
+    }
+
+    void set(uint16_t value)
+    {
+        *this = Net16(value);
+    }
+
+    void operator=(uint16_t value)
+    {
+        set(value);
+    }
+
+    uint16_t hostValue() const { return ntohs(mValue); }
+
+    friend bool operator==(Net16 lhs, Net16 rhs) { return lhs.mValue == rhs.mValue; }
+    friend bool operator<(Net16 lhs, Net16 rhs) { return lhs.hostValue() < rhs.hostValue(); }
+
+    uint16_t mValue;
+};
+
+
 struct EthernetHeader
 {
     static EthernetHeader Create()
     {
         auto result = EthernetHeader();
-        result.mEtherType = 0x0008;
+        result.mEtherType = Net16(0x0800);
         return result;
     }
 
     MACAddress mDestination;
     MACAddress mSource;
-    uint16_t mEtherType;
+    Net16 mEtherType;
 };
 
 
@@ -102,8 +130,8 @@ struct TCPHeader
         return result;
     }
 
-    uint16_t mSourcePort = 0;
-    uint16_t mDestinationPort = 0;
+    Net16 mSourcePort{0};
+    Net16 mDestinationPort{0};
     uint16_t mSequenceNumber[2];
     uint16_t mAcknowledgementNumber[2];
     uint16_t mDataOffsetAndFlags = 0;

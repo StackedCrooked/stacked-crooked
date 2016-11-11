@@ -32,8 +32,8 @@ struct NativeFilter
     uint8_t mProtocol;
     IPv4Address mSourceIP;
     IPv4Address mDestinationIP;
-    uint16_t mSourcePort;
-    uint16_t mDestinationPort;
+    Net16 mSourcePort;
+    Net16 mDestinationPort;
 };
 
 

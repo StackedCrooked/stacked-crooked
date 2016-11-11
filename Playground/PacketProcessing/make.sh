@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+
 [ -d ./build ] || {
     mkdir build
 }

@@ -186,7 +186,7 @@ void run3(std::vector<Packet>& packets, Flows& flows, uint64_t* const matches)
 
     #if 1
     std::cout << " (verify-matches:";
-    for (auto i = 0ul; i != std::min(num_flows, 30u); ++i)
+    for (auto i = 0ul; i != std::min(num_flows, 10u); ++i)
     {
         if (i > 0) std::cout << ',';
         std::cout << int(100000.0 * matches[i] / packets.size()) / 100000.0;

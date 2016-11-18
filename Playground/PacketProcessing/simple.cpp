@@ -49,21 +49,16 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
     for (auto i = 0ul; i != num_packets; i += 4)
     {
         const Packet& packet = packets[i];
-        if (prefetch > 0)
-        {
-            auto prefetch_packet = &packet + prefetch;
-            auto prefetch_ptr = prefetch_packet->data() + sizeof(EthernetHeader) + sizeof(IPv4Header);
-            __builtin_prefetch(prefetch_ptr, 0, 0);
-        }
 
         for (auto flow_index = 0ul; flow_index != num_flows; ++flow_index)
         {
             const Packet* packet_ptr = &packet;
+			auto p = [&](int i) { if (prefetch) { __builtin_prefetch((packet_ptr + prefetch + i)->data() + sizeof(EthernetHeader) + sizeof(IPv4Header), 0, 0); } };
             auto result = 0ul;
-            result += flows[flow_index].match(packet_ptr[0].data(), packet_ptr[0].size());
-            result += flows[flow_index].match(packet_ptr[1].data(), packet_ptr[1].size());
-            result += flows[flow_index].match(packet_ptr[2].data(), packet_ptr[2].size());
-            result += flows[flow_index].match(packet_ptr[3].data(), packet_ptr[3].size());
+			p(0); result += flows[flow_index].match(packet_ptr[0].data(), packet_ptr[0].size());
+            p(1); result += flows[flow_index].match(packet_ptr[1].data(), packet_ptr[1].size());
+            p(1); result += flows[flow_index].match(packet_ptr[2].data(), packet_ptr[2].size());
+            p(1); result += flows[flow_index].match(packet_ptr[3].data(), packet_ptr[3].size());
             matches[flow_index] += result;
         }
     }
@@ -138,7 +133,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 template<typename FilterType>
 void run(uint32_t num_packets = 1000 * 1000)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
 
     for (auto flow_count : flow_counts)
     {

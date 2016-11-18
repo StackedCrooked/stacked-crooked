@@ -45,10 +45,9 @@ struct VectorFilter
     {
         enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(mask_) };
 
-		return _mm_testc_si128(
-			field_,
-            _mm_and_si128(mask_, _mm_loadu_si128((__m128i*)(packet_data + offset)))
-		);
+        auto mask_result = _mm_and_si128(mask_, _mm_loadu_si128((__m128i*)(packet_data + offset)));
+        auto compare_result = _mm_xor_si128(field_, mask_result);
+        return _mm_testz_si128(compare_result, compare_result);
     }
 
     __m128i field_;

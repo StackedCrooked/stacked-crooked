@@ -1,46 +1,79 @@
 
-
-PACKET PROCESSOR COUNT: 1 PREFETCH=4
-cycles_per_packet=42
-cycles_per_packet_per_processor=42
-ns_per_packet=16
-ns_per_packet_per_processor=16
-packet_rate=63.8M/s
-processors[0].matches=100%
-
-
-PACKET PROCESSOR COUNT: 4 PREFETCH=4
-cycles_per_packet=62
-cycles_per_packet_per_processor=16
-ns_per_packet=23
-ns_per_packet_per_processor=6
-packet_rate=43.3M/s
-processors[0].matches=25%
-processors[1].matches=25%
-processors[2].matches=25%
-processors[3].matches=25%
+VectorFilter PREFETCH=0 FLOWS=1    MPPS=73.45     (73.45 million filter comparisons per second) (verify-matches:100%)
+VectorFilter PREFETCH=0 FLOWS=2    MPPS=66.38     (132.76 million filter comparisons per second) (verify-matches:100%,50%)
+VectorFilter PREFETCH=0 FLOWS=4    MPPS=48.86     (195.44 million filter comparisons per second) (verify-matches:50%,50%,100%,25%)
+VectorFilter PREFETCH=0 FLOWS=8    MPPS=45.78     (366.24 million filter comparisons per second) (verify-matches:25%,25%,50%,25%,50%,50%,100%,12.5%)
+VectorFilter PREFETCH=0 FLOWS=16   MPPS=36.76     (588.16 million filter comparisons per second) (verify-matches:12.5%,12.5%,25%,12.5%,25%,25%,50%,12.5%,25%,25%)
+VectorFilter PREFETCH=0 FLOWS=32   MPPS=31.07     (994.24 million filter comparisons per second) (verify-matches:6.25%,6.25%,12.5%,6.25%,12.5%,12.5%,25%,6.25%,12.5%,12.5%...)
+VectorFilter PREFETCH=0 FLOWS=64   MPPS=20.94     (1340.16 million filter comparisons per second) (verify-matches:3.12%,3.12%,6.25%,3.12%,6.25%,6.25%,12.5%,3.12%,6.25%,6.25%...)
+VectorFilter PREFETCH=0 FLOWS=128  MPPS=13.43     (1719.04 million filter comparisons per second) (verify-matches:1.56%,1.56%,3.12%,1.56%,3.12%,3.12%,6.25%,1.56%,3.12%,3.12%...)
+VectorFilter PREFETCH=0 FLOWS=256  MPPS=7.93      (2030.08 million filter comparisons per second) (verify-matches:0.78%,0.78%,1.56%,0.78%,1.56%,1.56%,3.12%,0.78%,1.56%,1.56%...)
+VectorFilter PREFETCH=0 FLOWS=512  MPPS=4.2       (2150.4 million filter comparisons per second) (verify-matches:0.39%,0.39%,0.78%,0.39%,0.78%,0.78%,1.56%,0.39%,0.78%,0.78%...)
+VectorFilter PREFETCH=0 FLOWS=1024 MPPS=2.04      (2088.96 million filter comparisons per second) (verify-matches:0.19%,0.19%,0.39%,0.19%,0.39%,0.39%,0.78%,0.19%,0.39%,0.39%...)
 
 
-PACKET PROCESSOR COUNT: 16 PREFETCH=4
-cycles_per_packet=139
-cycles_per_packet_per_processor=9
-ns_per_packet=52
-ns_per_packet_per_processor=3
-packet_rate=19.3M/s
-processors[0].matches=6%
-processors[1].matches=6%
-processors[2].matches=6%
-processors[3].matches=6%
-processors[4].matches=6%
-processors[5].matches=6%
-processors[6].matches=6%
-processors[7].matches=6%
-processors[8].matches=6%
-processors[9].matches=6%
-processors[10].matches=6%
-processors[11].matches=6%
-processors[12].matches=6%
-processors[13].matches=6%
-processors[14].matches=6%
-processors[15].matches=6%
+VectorFilter PREFETCH=4 FLOWS=1    MPPS=84.24     (84.24 million filter comparisons per second) (verify-matches:100%)
+VectorFilter PREFETCH=4 FLOWS=2    MPPS=63.57     (127.14 million filter comparisons per second) (verify-matches:100%,50%)
+VectorFilter PREFETCH=4 FLOWS=4    MPPS=50.91     (203.64 million filter comparisons per second) (verify-matches:50%,50%,100%,25%)
+VectorFilter PREFETCH=4 FLOWS=8    MPPS=38.12     (304.96 million filter comparisons per second) (verify-matches:25%,25%,50%,25%,50%,50%,100%,12.5%)
+VectorFilter PREFETCH=4 FLOWS=16   MPPS=36.73     (587.68 million filter comparisons per second) (verify-matches:12.5%,12.5%,25%,12.5%,25%,25%,50%,12.5%,25%,25%)
+VectorFilter PREFETCH=4 FLOWS=32   MPPS=27.48     (879.36 million filter comparisons per second) (verify-matches:6.25%,6.25%,12.5%,6.25%,12.5%,12.5%,25%,6.25%,12.5%,12.5%...)
+VectorFilter PREFETCH=4 FLOWS=64   MPPS=17.62     (1127.68 million filter comparisons per second) (verify-matches:3.12%,3.12%,6.25%,3.12%,6.25%,6.25%,12.5%,3.12%,6.25%,6.25%...)
+VectorFilter PREFETCH=4 FLOWS=128  MPPS=11.24     (1438.72 million filter comparisons per second) (verify-matches:1.56%,1.56%,3.12%,1.56%,3.12%,3.12%,6.25%,1.56%,3.12%,3.12%...)
+VectorFilter PREFETCH=4 FLOWS=256  MPPS=6.4       (1638.4 million filter comparisons per second) (verify-matches:0.78%,0.78%,1.56%,0.78%,1.56%,1.56%,3.12%,0.78%,1.56%,1.56%...)
+VectorFilter PREFETCH=4 FLOWS=512  MPPS=3.42      (1751.04 million filter comparisons per second) (verify-matches:0.39%,0.39%,0.78%,0.39%,0.78%,0.78%,1.56%,0.39%,0.78%,0.78%...)
+VectorFilter PREFETCH=4 FLOWS=1024 MPPS=1.65      (1689.6 million filter comparisons per second) (verify-matches:0.19%,0.19%,0.39%,0.19%,0.39%,0.39%,0.78%,0.19%,0.39%,0.39%...)
+
+
+VectorFilter PREFETCH=8 FLOWS=1    MPPS=94.94     (94.94 million filter comparisons per second) (verify-matches:100%)
+VectorFilter PREFETCH=8 FLOWS=2    MPPS=84.91     (169.82 million filter comparisons per second) (verify-matches:100%,50%)
+VectorFilter PREFETCH=8 FLOWS=4    MPPS=78.01     (312.04 million filter comparisons per second) (verify-matches:50%,50%,100%,25%)
+VectorFilter PREFETCH=8 FLOWS=8    MPPS=65.21     (521.68 million filter comparisons per second) (verify-matches:25%,25%,50%,25%,50%,50%,100%,12.5%)
+VectorFilter PREFETCH=8 FLOWS=16   MPPS=50.05     (800.8 million filter comparisons per second) (verify-matches:12.5%,12.5%,25%,12.5%,25%,25%,50%,12.5%,25%,25%)
+VectorFilter PREFETCH=8 FLOWS=32   MPPS=31.57     (1010.24 million filter comparisons per second) (verify-matches:6.25%,6.25%,12.5%,6.25%,12.5%,12.5%,25%,6.25%,12.5%,12.5%...)
+VectorFilter PREFETCH=8 FLOWS=64   MPPS=17.52     (1121.28 million filter comparisons per second) (verify-matches:3.12%,3.12%,6.25%,3.12%,6.25%,6.25%,12.5%,3.12%,6.25%,6.25%...)
+VectorFilter PREFETCH=8 FLOWS=128  MPPS=9.25      (1184 million filter comparisons per second) (verify-matches:1.56%,1.56%,3.12%,1.56%,3.12%,3.12%,6.25%,1.56%,3.12%,3.12%...)
+VectorFilter PREFETCH=8 FLOWS=256  MPPS=4.76      (1218.56 million filter comparisons per second) (verify-matches:0.78%,0.78%,1.56%,0.78%,1.56%,1.56%,3.12%,0.78%,1.56%,1.56%...)
+VectorFilter PREFETCH=8 FLOWS=512  MPPS=2.42      (1239.04 million filter comparisons per second) (verify-matches:0.39%,0.39%,0.78%,0.39%,0.78%,0.78%,1.56%,0.39%,0.78%,0.78%...)
+VectorFilter PREFETCH=8 FLOWS=1024 MPPS=1.22      (1249.28 million filter comparisons per second) (verify-matches:0.19%,0.19%,0.39%,0.19%,0.39%,0.39%,0.78%,0.19%,0.39%,0.39%...)
+
+
+MaskFilter   PREFETCH=0 FLOWS=1    MPPS=71.75     (71.75 million filter comparisons per second) (verify-matches:100%)
+MaskFilter   PREFETCH=0 FLOWS=2    MPPS=51.56     (103.12 million filter comparisons per second) (verify-matches:50%,50%)
+MaskFilter   PREFETCH=0 FLOWS=4    MPPS=45.39     (181.56 million filter comparisons per second) (verify-matches:25%,25%,25%,25%)
+MaskFilter   PREFETCH=0 FLOWS=8    MPPS=41.62     (332.96 million filter comparisons per second) (verify-matches:12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%)
+MaskFilter   PREFETCH=0 FLOWS=16   MPPS=29.3      (468.8 million filter comparisons per second) (verify-matches:6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%)
+MaskFilter   PREFETCH=0 FLOWS=32   MPPS=20.86     (667.52 million filter comparisons per second) (verify-matches:3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%...)
+MaskFilter   PREFETCH=0 FLOWS=64   MPPS=13.65     (873.6 million filter comparisons per second) (verify-matches:1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%...)
+MaskFilter   PREFETCH=0 FLOWS=128  MPPS=8.09      (1035.52 million filter comparisons per second) (verify-matches:0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%...)
+MaskFilter   PREFETCH=0 FLOWS=256  MPPS=4.49      (1149.44 million filter comparisons per second) (verify-matches:0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%...)
+MaskFilter   PREFETCH=0 FLOWS=512  MPPS=2.38      (1218.56 million filter comparisons per second) (verify-matches:0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%...)
+MaskFilter   PREFETCH=0 FLOWS=1024 MPPS=1.15      (1177.6 million filter comparisons per second) (verify-matches:0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%...)
+
+
+MaskFilter   PREFETCH=4 FLOWS=1    MPPS=65.12     (65.12 million filter comparisons per second) (verify-matches:100%)
+MaskFilter   PREFETCH=4 FLOWS=2    MPPS=50.01     (100.02 million filter comparisons per second) (verify-matches:50%,50%)
+MaskFilter   PREFETCH=4 FLOWS=4    MPPS=44.34     (177.36 million filter comparisons per second) (verify-matches:25%,25%,25%,25%)
+MaskFilter   PREFETCH=4 FLOWS=8    MPPS=35.77     (286.16 million filter comparisons per second) (verify-matches:12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%)
+MaskFilter   PREFETCH=4 FLOWS=16   MPPS=26.42     (422.72 million filter comparisons per second) (verify-matches:6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%)
+MaskFilter   PREFETCH=4 FLOWS=32   MPPS=17.05     (545.6 million filter comparisons per second) (verify-matches:3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%...)
+MaskFilter   PREFETCH=4 FLOWS=64   MPPS=9.98      (638.72 million filter comparisons per second) (verify-matches:1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%...)
+MaskFilter   PREFETCH=4 FLOWS=128  MPPS=6.02      (770.56 million filter comparisons per second) (verify-matches:0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%...)
+MaskFilter   PREFETCH=4 FLOWS=256  MPPS=3.27      (837.12 million filter comparisons per second) (verify-matches:0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%...)
+MaskFilter   PREFETCH=4 FLOWS=512  MPPS=1.69      (865.28 million filter comparisons per second) (verify-matches:0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%...)
+MaskFilter   PREFETCH=4 FLOWS=1024 MPPS=0.84      (860.16 million filter comparisons per second) (verify-matches:0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%...)
+
+
+MaskFilter   PREFETCH=8 FLOWS=1    MPPS=85.64     (85.64 million filter comparisons per second) (verify-matches:100%)
+MaskFilter   PREFETCH=8 FLOWS=2    MPPS=61.57     (123.14 million filter comparisons per second) (verify-matches:50%,50%)
+MaskFilter   PREFETCH=8 FLOWS=4    MPPS=70.73     (282.92 million filter comparisons per second) (verify-matches:25%,25%,25%,25%)
+MaskFilter   PREFETCH=8 FLOWS=8    MPPS=56.84     (454.72 million filter comparisons per second) (verify-matches:12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%)
+MaskFilter   PREFETCH=8 FLOWS=16   MPPS=36.23     (579.68 million filter comparisons per second) (verify-matches:6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%)
+MaskFilter   PREFETCH=8 FLOWS=32   MPPS=20.35     (651.2 million filter comparisons per second) (verify-matches:3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%...)
+MaskFilter   PREFETCH=8 FLOWS=64   MPPS=10.59     (677.76 million filter comparisons per second) (verify-matches:1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%...)
+MaskFilter   PREFETCH=8 FLOWS=128  MPPS=5.81      (743.68 million filter comparisons per second) (verify-matches:0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%...)
+MaskFilter   PREFETCH=8 FLOWS=256  MPPS=2.79      (714.24 million filter comparisons per second) (verify-matches:0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%...)
+MaskFilter   PREFETCH=8 FLOWS=512  MPPS=1.46      (747.52 million filter comparisons per second) (verify-matches:0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%,0.19%...)
+MaskFilter   PREFETCH=8 FLOWS=1024 MPPS=0.73      (747.52 million filter comparisons per second) (verify-matches:0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%,0.09%...)
+
 

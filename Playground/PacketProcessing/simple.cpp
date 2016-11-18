@@ -45,20 +45,23 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
     const uint32_t num_flows = flows.size();
     const auto start_time = Clock::now();
     const auto num_packets = packets.size();
-    if (packets.size() % 4 != 0) { throw std::runtime_error("Number of packets should be divisible by 4."); }
-    for (auto i = 0ul; i != num_packets; i += 4)
+    for (auto i = 0ul; i != num_packets; i += 8)
     {
         const Packet& packet = packets[i];
 
         for (auto flow_index = 0ul; flow_index != num_flows; ++flow_index)
         {
             const Packet* packet_ptr = &packet;
-			auto p = [&](int i) { if (prefetch) { __builtin_prefetch((packet_ptr + prefetch + i)->data() + sizeof(EthernetHeader) + sizeof(IPv4Header), 0, 0); } };
+            auto p = [&](uint32_t i) { if (i < prefetch) { __builtin_prefetch((packet_ptr + prefetch + i)->data() + sizeof(EthernetHeader) + sizeof(IPv4Header), 0, 0); } };
             auto result = 0ul;
-			p(0); result += flows[flow_index].match(packet_ptr[0].data(), packet_ptr[0].size());
+            p(0); result += flows[flow_index].match(packet_ptr[0].data(), packet_ptr[0].size());
             p(1); result += flows[flow_index].match(packet_ptr[1].data(), packet_ptr[1].size());
             p(2); result += flows[flow_index].match(packet_ptr[2].data(), packet_ptr[2].size());
             p(3); result += flows[flow_index].match(packet_ptr[3].data(), packet_ptr[3].size());
+            p(4); result += flows[flow_index].match(packet_ptr[4].data(), packet_ptr[4].size());
+            p(5); result += flows[flow_index].match(packet_ptr[5].data(), packet_ptr[5].size());
+            p(6); result += flows[flow_index].match(packet_ptr[6].data(), packet_ptr[6].size());
+            p(7); result += flows[flow_index].match(packet_ptr[7].data(), packet_ptr[7].size());
             matches[flow_index] += result;
         }
     }

@@ -57,8 +57,8 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
             auto result = 0ul;
 			p(0); result += flows[flow_index].match(packet_ptr[0].data(), packet_ptr[0].size());
             p(1); result += flows[flow_index].match(packet_ptr[1].data(), packet_ptr[1].size());
-            p(1); result += flows[flow_index].match(packet_ptr[2].data(), packet_ptr[2].size());
-            p(1); result += flows[flow_index].match(packet_ptr[3].data(), packet_ptr[3].size());
+            p(2); result += flows[flow_index].match(packet_ptr[2].data(), packet_ptr[2].size());
+            p(3); result += flows[flow_index].match(packet_ptr[3].data(), packet_ptr[3].size());
             matches[flow_index] += result;
         }
     }

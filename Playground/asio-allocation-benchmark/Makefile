@@ -1,7 +1,7 @@
 all:
-	[ -d ./build ] || mkdir build
-	[ -f build/Makefile ] || (cd build && cmake ..)
-	(cd build && make -j$(shell nproc) "$@")
+	[ -d build ] || mkdir build
+	[ -d build/Makefile ] || (cd build && cmake ..)
+	(cd build && make -j$(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 3))
 
 clean:
 	rm -rf build

@@ -1,6 +1,6 @@
-#include <boost/asio.hpp>
-#include <boost/function.hpp>
 #include <boost/container/static_vector.hpp>
+#include <boost/function.hpp>
+#include <boost/asio.hpp>
 #include <atomic>
 #include <thread>
 #include <stdint.h>
@@ -8,6 +8,7 @@
 
 
 std::atomic<bool> enable_trace{true};
+
 
 struct Worker
 {
@@ -18,7 +19,6 @@ struct Worker
     template<typename F>
     void post(F f)
     {
-
         const auto old_size = mTasks.size();
 
         if (old_size < mTasks.capacity())
@@ -32,125 +32,116 @@ struct Worker
 
         if (old_size == 0)
         {
-            ios.post(PostedTask(*this));
+            ios.post(HelperTask(*this));
         }
     }
 
-    struct PostedTask
+    struct HelperTask
     {
-        PostedTask() : worker_() {}
-        PostedTask(Worker& worker) : worker_(&worker) {}
+        HelperTask(Worker& worker) :
+            mWorker(&worker)
+        {
+        }
 
         void operator()() const
         {
-            if (!worker_)
-            {
-                throw std::runtime_error("std::bad");
-            }
-            worker_->run_tasks();
+            mWorker->run_tasks();
         }
 
-        friend void* asio_handler_allocate(std::size_t size, PostedTask* task)
+        friend void* asio_handler_allocate(std::size_t size, HelperTask* task)
         {
-            if (!task->worker_->mStorageInUse)
+            if (!task->mWorker->mStorageInUse)
             {
-                task->worker_->mStorageInUse = true;
-                return &task->worker_->mStorage;
+                task->mWorker->mStorageInUse = true;
+                return &task->mWorker->mStorage;
             }
             else
             {
-                printf("    NEW size=%d\n", int(size));
+                printf("    UNEXPECTED NEW size=%d\n", int(size));
                 return ::operator new (size);
             }
         }
 
-        friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, PostedTask* task)
+        friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, HelperTask* task)
         {
-            if (pointer == &task->worker_->mStorage)
+            if (pointer == &task->mWorker->mStorage)
             {
-                task->worker_->mStorageInUse = false;
+                task->mWorker->mStorageInUse = false;
             }
             else
             {
-                printf("    DEL\n");
+                printf("    UNEXPECTED DELETE\n");
                 ::operator delete (pointer);
             }
         }
-
-        Worker* worker_;
+        Worker* mWorker;
     };
 
     void run_tasks()
     {
-
         for (auto& task : mTasks)
         {
             task();
         }
-
-        mTasks.clear();
-
 
         for (auto& task : mAdditionalTasks)
         {
             task();
         }
 
+        mTasks.clear();
         mAdditionalTasks.clear();
     }
 
     using Function  = boost::function<void()>;
-    using Storage = std::aligned_storage<sizeof(PostedTask), 32>::type;
+    using Storage = std::aligned_storage<sizeof(HelperTask), 32>::type;
 
     boost::container::static_vector<Function, 4> mTasks;
-    std::vector<Function> mAdditionalTasks;
+    std::vector<Function> mAdditionalTasks; // used as a fallback
     Storage mStorage;
     bool mStorageInUse = false;
     boost::asio::io_service& ios;
 };
 
 
-
-
-void run(boost::asio::io_service& ios)
-{
-    {
-        printf("---- few tasks (no allocs) ----\n");
-        {
-            Worker worker(ios);
-            for (auto i = 0; i != 4; ++i)
-            {
-                worker.post([i]{ printf("Invocation of task %d\n", int(i + 1)); });
-            }
-            ios.run();
-            ios.reset();
-        }
-        printf("---- end of few tasks ----\n");
-    }
-    {
-        printf("\n---- many asks ----\n");
-        {
-            Worker worker(ios);
-            for (auto i = 0; i != 8; ++i)
-            {
-                worker.post([i]{ printf("Invocation of task %d\n", int(i + 1)); });
-            }
-            ios.run();
-            ios.reset();
-        }
-        printf("---- end of many tasks ----\n");
-    }
-}
-
-
 int main()
 {
-    printf("============ start of main ============\n");
-    boost::asio::io_service ios;
-    run(ios);
-    printf("============ end of main ============\n");
-}
+    {
+        printf("--- creating io_service object ---\n");
+        boost::asio::io_service ios;
 
+        Worker worker(ios);
+        {
+            printf("---- schedule few tasks ----\n");
+            {
+                for (auto i = 0; i != 4; ++i)
+                {
+                    printf("Posting task %d.\n", int(i + 1));
+                    worker.post([i]{ printf("Running task %d!\n", int(i + 1)); });
+                }
+                ios.run();
+                ios.reset();
+            }
+        }
+
+        {
+            printf("---- schedule more tasks ----\n");
+            {
+                for (auto i = 0; i != 8; ++i)
+                {
+                    printf("Posting task %d.\n", int(i + 1));
+                    worker.post([i]{ printf("Running task %d!\n", int(i + 1)); });
+                }
+                ios.run();
+                ios.reset();
+            }
+        }
+
+        printf("---- destroying io_service object ----\n");
+    }
+
+    printf("---- end-of-main ----\n");
+}
 
 
 void * operator new(std::size_t n) throw(std::bad_alloc)

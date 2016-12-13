@@ -4,65 +4,86 @@
 #include <thread>
 #include <iostream>
 
-using Integer = uint32_t;
+
+using Integer = uint64_t;
 
 
-std::vector<Integer> GenerateVector(std::size_t size)
+struct Matrix
 {
-    std::vector<Integer> result;
-    result.reserve(size);
-    while (result.size() != result.capacity())
+    Matrix(int w, int h) :
+        mWidth(w),
+        mHeight(h),
+        mVec(w * h)
     {
-        result.push_back(result.size());
     }
-    return result;
-}
+
+    Integer get(int x, int y) const
+    {
+        return *(mVec.data() + y * mWidth + x);
+    }
+
+    void set(int x, int y, Integer n)
+    {
+        *(mVec.data() + y * mWidth + x) = n;
+    }
+
+    Integer sum_slow() const
+    {
+        auto result = Integer();
+        for (auto x = 0u; x != mWidth; ++x)
+        {
+            for (auto y = 0u; y != mHeight; ++y)
+            {
+                result += get(x, y);
+            }
+        }
+        return result;
+    }
+
+    Integer sum_fast() const
+    {
+        auto result = Integer();
+
+        for (auto y = 0u; y != mHeight; ++y)
+        {
+            for (auto x = 0u; x != mWidth; ++x)
+            {
+                result += get(x, y);
+            }
+        }
+        return result;
+    }
+
+    uint32_t mWidth;
+    uint32_t mHeight;
+    std::vector<uint64_t> mVec;
+
+};
 
 
-auto vec_512 = GenerateVector(512);
-auto vec_1024 = GenerateVector(1024);
-auto vec_2048 = GenerateVector(2048);
-auto vec_4096 = GenerateVector(4096);
-auto vec_8192 = GenerateVector(8192);
-auto vec_16384 = GenerateVector(16384);
-auto vec_32768 = GenerateVector(32768);
-auto vec_134217728 = GenerateVector(134217728);
-
-
-
-Integer sum(std::vector<Integer>& vec)
-{
-    return std::accumulate(vec.begin(), vec.end(), 0u, [](Integer a, Integer b) { return a + b; });
-}
-
-
+using Clock = std::chrono::steady_clock;
 volatile Integer volatile_sink;
+volatile const Integer volatile_zero = 0;
 
 
 template<typename F>
-void benchmark(F&& f)
+int64_t benchmark(F&& f)
 {
     using Clock = std::chrono::steady_clock;
-    auto t1 = Clock::now();
+    auto start_time = Clock::now();
     volatile_sink = f();
-    auto t2 = Clock::now();
-    volatile_sink = f();
-    auto t3 = Clock::now();
-    volatile_sink = f();
-    auto t4 = Clock::now();
-    std::cout
-        << "  " << std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() << '\n'
-        << "  " << std::chrono::duration_cast<std::chrono::nanoseconds>(t3 - t2).count() << '\n'
-        << "  " << std::chrono::duration_cast<std::chrono::nanoseconds>(t4 - t3).count() << "\n\n";
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - start_time).count();
 }
+
 
 int main()
 {
-#define B(n) std::cout << #n << ": " << std::endl; benchmark([]{ return sum(vec_##n); });
-    B(134217728)
-    B(32768)
-    B(8192)
-    B(4096)
-    B(2048)
-    B(1024)
+    Matrix m(64 * 1024, 512);
+
+    for (auto i = 0; i != 10; ++i)
+    {
+        auto t1 = benchmark([&] { return m.sum_fast(); });
+        auto t2 = benchmark([&] { return m.sum_slow(); });
+        std::cout << t1 << "/" << t2 << "=" << double(t1)/t2 << std::endl;
+    }
 }

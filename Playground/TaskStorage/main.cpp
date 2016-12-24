@@ -18,25 +18,23 @@ struct Scheduler
     }
 
     template<typename F>
-    void post(F&& f)
+    void post(F&& f) noexcept
     {
-        //std::cout << "=> PUSHING TASK <= mFreed=" << mFreed << std::endl;
         mTasks.push_back(Create(std::forward<F>(f), *this));
     }
 
-    void run()
+    void run() noexcept
     {
-        std::cout << "Running " << mTasks.size() << " tasks mFreed=" << mFreed << std::endl;
         for (TaskImplBase* taskImplBase : mTasks)
         {
             taskImplBase->call();
             if (taskImplBase->dispose(*this))
             {
-                if (!mQueue.push(mFreed++ % Capacity))
+                auto freed = mFreed;
+                mFreed = (freed + 1) % Capacity;
+                if (!mQueue.push(freed))
                 {
-                    std::cout << "PUSH FAILED! mFreed=" << mFreed << std::endl;
                 }
-                std::cout << "mFreed=" << mFreed << std::endl;
             }
         }
         mTasks.clear();
@@ -68,20 +66,17 @@ private:
 
         void call() override final
         {
-            //std::cout << "Calling this: " << typeid(*this).name() << std::endl;
             mF();
         }
         bool dispose(Scheduler& /*s*/) override final
         {
             if (HasLocalStorage)
             {
-                //std::cout << "In-place destruction of this: " << typeid(*this).name() << std::endl;
                 this->~TaskImpl();
                 return true;
             }
             else
             {
-                //std::cout << "Deleting this: " << typeid(*this).name() << std::endl;
                 delete this;
                 return false;
             }
@@ -100,17 +95,22 @@ private:
             {
                 s.run();
             }
-
-            if (s.mQueue.pop(i))
+            else
             {
-                //std::cout << "YES TO QUEUE => USE NEW " << std::endl;
+                goto doit;
+            }
+
+            if (!s.mQueue.pop(i))
+            {
+            }
+            else
+            {
+                doit:
                 LocalStorage& local_storage = s.mLocalStorages[i];
                 auto result = new (&local_storage) TaskImpl<F, true>(std::move(f));
                 return result;
             }
-
         }
-        //std::cout << "FAILED TO QUEUE => USE NEW " << std::endl;
         return new TaskImpl<F, false>(std::move(f));
     }
 
@@ -126,35 +126,38 @@ int main()
 {
     Scheduler s;
 
-    for (auto i = 0; i != 4000; ++i)
+    for (auto i = 0; i != 200; ++i)
     {
+        std::cout << "================ i=" << i << " ================" << std::endl;
         s.post([]{});
 
         std::array<char, 1024> big_array;
-        s.post([big_array]{});
+        s.post([big_array]{
+            std::cout << "    big_array.size=" << sizeof(big_array) << std::endl;
+
+        });
 
 
-        std::string abc("abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc");
+        std::string abc("abc");
 
         s.post([abc] {
-            //std::cout << abc << std::endl;
+
+            std::cout << "    abc=" << abc << std::endl;
         });
 
         std::array<std::string, 4> strings;
         for (auto& s : strings)
         {
             s = abc;
+            std::cout << "    s=" << s << std::endl;
         }
 
         s.post([strings]{
             for (auto& s : strings)
             {
-                //std::cout << "s=" << s << std::endl;
-                (void)s;
+                std::cout << "    s[" << (&s - strings.data()) << "]=" << s << std::endl;
             }
         });
-
-
+        s.run();
     }
-    s.run();
 }

@@ -1,4 +1,3 @@
-#include <boost/lockfree/spsc_queue.hpp>
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
@@ -11,10 +10,6 @@ struct Scheduler
 {
     Scheduler()
     {
-        for (auto i = 0; i != Capacity; ++i)
-        {
-            mQueue.push(i++);
-        }
     }
 
     template<typename F>
@@ -30,12 +25,7 @@ struct Scheduler
             taskImplBase->call();
             if (taskImplBase->dispose(*this))
             {
-                auto freed = mFreed;
-                mFreed = (freed + 1) % Capacity;
-                if (!mQueue.push(freed))
-                {
-                    throw std::runtime_error("Failed to free!");
-                }
+                mFreed++;
             }
         }
         mTasks.clear();
@@ -44,7 +34,6 @@ struct Scheduler
 private:
     enum { Capacity = 1024 };
     struct TaskImplBase;
-    using Queue = boost::lockfree::spsc_queue<uint16_t, boost::lockfree::capacity<Capacity>>;
 
     using LocalStorage = typename std::aligned_storage<32, 32>::type;
 
@@ -92,32 +81,27 @@ private:
         uint16_t i = 0;
         if (sizeof(F) <= sizeof(LocalStorage))
         {
-            if (!s.mQueue.pop(i))
+            auto freed = s.mFreed.load();
+            auto alloc = s.mAllocated.load();
+            if (freed + alloc - Capacity == 0)
             {
                 s.run();
-            }
-            else
-            {
-                goto doit;
+                assert(s.mFreed > freed);
+                freed = s.mFreed;
+                assert(freed + alloc - Capacity > 0);
             }
 
-            if (!s.mQueue.pop(i))
-            {
-            }
-            else
-            {
-                doit:
-                LocalStorage& local_storage = s.mLocalStorages[i];
-                auto result = new (&local_storage) TaskImpl<F, true>(std::move(f));
-                return result;
-            }
+            LocalStorage& local_storage = s.mLocalStorages[alloc];
+            s.mAllocated = alloc + 1;
+            auto result = new (&local_storage) TaskImpl<F, true>(std::move(f));
+            return result;
         }
         return new TaskImpl<F, false>(std::move(f));
     }
 
     std::array<LocalStorage, Capacity> mLocalStorages;
-    uint16_t mFreed = 0;
-    Queue mQueue;
+    std::atomic<uint16_t> mAllocated{0};
+    std::atomic<uint16_t> mFreed{0};
     std::vector<TaskImplBase*> mTasks;
 };
 

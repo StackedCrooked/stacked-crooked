@@ -1,52 +1,59 @@
+#include <boost/lockfree/spsc_queue.hpp>
+#include <cassert>
+#include <stdexcept>
 #include <iostream>
 #include <array>
 #include <string>
 #include <vector>
 
 
-
-
-
 struct Scheduler
 {
     Scheduler()
     {
-		mPool.reserve(mLocalStorages.size());
-		for (auto& local_storage : mLocalStorages)
-		{
-			mPool.push_back(&local_storage);
-		}
+        for (auto i = 0; i != Capacity; ++i)
+        {
+            mQueue.push(i++);
+        }
     }
-
 
     template<typename F>
     void post(F&& f)
     {
-		mTasks.push_back(Create(std::forward<F>(f), mPool));
-
+        //std::cout << "=> PUSHING TASK <= mFreed=" << mFreed << std::endl;
+        mTasks.push_back(Create(std::forward<F>(f), *this));
     }
 
     void run()
     {
+        std::cout << "Running " << mTasks.size() << " tasks mFreed=" << mFreed << std::endl;
         for (TaskImplBase* taskImplBase : mTasks)
         {
             taskImplBase->call();
-            taskImplBase->dispose(mPool);
+            if (taskImplBase->dispose(*this))
+            {
+                if (!mQueue.push(mFreed++ % Capacity))
+                {
+                    std::cout << "PUSH FAILED! mFreed=" << mFreed << std::endl;
+                }
+                std::cout << "mFreed=" << mFreed << std::endl;
+            }
         }
-		mTasks.clear();
+        mTasks.clear();
     }
 
 private:
+    enum { Capacity = 1024 };
     struct TaskImplBase;
+    using Queue = boost::lockfree::spsc_queue<uint16_t, boost::lockfree::capacity<Capacity>>;
 
-	using LocalStorage = typename std::aligned_storage<32, 32>::type;
-	using Pool = std::vector<LocalStorage*>;
+    using LocalStorage = typename std::aligned_storage<32, 32>::type;
 
     struct TaskImplBase
     {
         virtual ~TaskImplBase() { }
         virtual void call() = 0;
-        virtual void dispose(Pool& pool) = 0;
+        virtual bool dispose(Scheduler& s) = 0;
     };
 
     template<typename F, bool HasLocalStorage>
@@ -61,47 +68,56 @@ private:
 
         void call() override final
         {
-			std::cout << "Calling this: " << typeid(*this).name() << std::endl;
+            //std::cout << "Calling this: " << typeid(*this).name() << std::endl;
             mF();
         }
-
-        void dispose(Pool& pool) override final
+        bool dispose(Scheduler& /*s*/) override final
         {
             if (HasLocalStorage)
             {
-				std::cout << "In-place destruction of this: " << typeid(*this).name() << std::endl;
+                //std::cout << "In-place destruction of this: " << typeid(*this).name() << std::endl;
                 this->~TaskImpl();
-				//pool.push_back(this);
-				(void)pool;
+                return true;
             }
             else
             {
-				std::cout << "Deleting this: " << typeid(*this).name() << std::endl;
+                //std::cout << "Deleting this: " << typeid(*this).name() << std::endl;
                 delete this;
+                return false;
             }
         }
 
         F mF;
     };
 
-	template<typename F>
-	static auto Create(F f, Pool& pool) -> TaskImplBase*
-	{
-		if (sizeof(F) <= sizeof(LocalStorage))
-		{
-			auto result = new (pool.back()) TaskImpl<F, true>(std::move(f));
-			pool.pop_back();
-			return result;
-		}
-		else
-		{
-			return new TaskImpl<F, false>(std::move(f));
-		}
-	}
+    template<typename F>
+    static TaskImplBase* Create(F f, Scheduler& s)
+    {
+        uint16_t i = 0;
+        if (sizeof(F) <= sizeof(LocalStorage))
+        {
+            if (!s.mQueue.pop(i))
+            {
+                s.run();
+            }
 
-	std::array<LocalStorage, 1024> mLocalStorages;
-	Pool mPool;
-	std::vector<TaskImplBase*> mTasks;
+            if (s.mQueue.pop(i))
+            {
+                //std::cout << "YES TO QUEUE => USE NEW " << std::endl;
+                LocalStorage& local_storage = s.mLocalStorages[i];
+                auto result = new (&local_storage) TaskImpl<F, true>(std::move(f));
+                return result;
+            }
+
+        }
+        //std::cout << "FAILED TO QUEUE => USE NEW " << std::endl;
+        return new TaskImpl<F, false>(std::move(f));
+    }
+
+    std::array<LocalStorage, Capacity> mLocalStorages;
+    uint16_t mFreed = 0;
+    Queue mQueue;
+    std::vector<TaskImplBase*> mTasks;
 };
 
 
@@ -109,30 +125,36 @@ private:
 int main()
 {
     Scheduler s;
-    s.post([]{});
 
-    std::array<char, 1024> big_array;
-    s.post([big_array]{});
+    for (auto i = 0; i != 4000; ++i)
+    {
+        s.post([]{});
+
+        std::array<char, 1024> big_array;
+        s.post([big_array]{});
 
 
-	std::string abc("abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc");
+        std::string abc("abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc");
 
-	s.post([abc] {
-		std::cout << abc << std::endl;
-	});
+        s.post([abc] {
+            //std::cout << abc << std::endl;
+        });
 
-	std::array<std::string, 4> strings;
-	for (auto& s : strings)
-	{
-		s = abc;
-	}
+        std::array<std::string, 4> strings;
+        for (auto& s : strings)
+        {
+            s = abc;
+        }
 
-	s.post([strings]{
-		for (auto& s : strings) 
-		{
-			std::cout << "s=" << s << std::endl;
-		}
-	});
+        s.post([strings]{
+            for (auto& s : strings)
+            {
+                //std::cout << "s=" << s << std::endl;
+                (void)s;
+            }
+        });
 
-	s.run();
+
+    }
+    s.run();
 }

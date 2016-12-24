@@ -17,7 +17,7 @@ struct PCAPWriter::Impl
 
     ~Impl()
     {
-        mQueue.push(nullptr); // stop-flag for the consumer thread
+        mQueue.push(""); // stop-flag for the consumer thread
         mThread.join();
     }
 
@@ -30,19 +30,20 @@ struct PCAPWriter::Impl
             uint32_t cap_len;
             uint32_t len;
         };
-        auto header = PCAPHeader();
 
-        auto tv = to_timeval(std::chrono::system_clock::now());
+        timeval tv = to_timeval(std::chrono::system_clock::now());
+
+        PCAPHeader header{};
         header.sec = tv.tv_sec;
         header.usec = tv.tv_usec;
         header.cap_len = len;
         header.len = len;
 
-        std::unique_ptr<std::string> str(new std::string);
-        str->reserve(sizeof(header) + len);
-        str->append(cstr(&header), sizeof(header));
-        str->append(cstr(bytes), len);
-        mQueue.push(str.release());
+        std::string str;
+        str.reserve(sizeof(header) + len);
+        str.append(cstr(&header), sizeof(header));
+        str.append(cstr(bytes), len);
+        mQueue.push(str);
     }
 
     void consumer_thread()
@@ -51,17 +52,16 @@ struct PCAPWriter::Impl
 
         for (;;)
         {
-            std::string* pcap_string;
+            std::string pcap_string;
             mQueue.pop(pcap_string);
-            std::unique_ptr<std::string> guard(pcap_string);
 
-            if (!pcap_string)
+            if (pcap_string.empty())
             {
-                // nullptr is stop-flag
+                // empty string is stop-flag
                 return;
             }
 
-            mOutput.write(pcap_string->data(), pcap_string->size());
+            mOutput.write(pcap_string.data(), pcap_string.size());
         }
     }
 
@@ -99,7 +99,7 @@ struct PCAPWriter::Impl
     }
 
     std::ofstream mOutput;
-    tbb::concurrent_bounded_queue<std::string*> mQueue;
+    tbb::concurrent_bounded_queue<std::string> mQueue;
     std::thread mThread;
 };
 

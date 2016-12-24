@@ -34,6 +34,7 @@ struct Scheduler
                 mFreed = (freed + 1) % Capacity;
                 if (!mQueue.push(freed))
                 {
+                    throw std::runtime_error("Failed to free!");
                 }
             }
         }

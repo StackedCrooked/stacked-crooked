@@ -20,6 +20,7 @@ struct Scheduler
 
     void run() noexcept
     {
+        std::cout << "+++++++++++++++++ run mTasks.size=" << mTasks.size() << std::endl;
         for (TaskImplBase* taskImplBase : mTasks)
         {
             taskImplBase->call();
@@ -32,7 +33,7 @@ struct Scheduler
     }
 
 private:
-    enum { Capacity = 1024 };
+    enum { Capacity = 64 };
     struct TaskImplBase;
 
     using LocalStorage = typename std::aligned_storage<32, 32>::type;
@@ -78,21 +79,19 @@ private:
     template<typename F>
     static TaskImplBase* Create(F f, Scheduler& s)
     {
-        uint16_t i = 0;
         if (sizeof(F) <= sizeof(LocalStorage))
         {
             auto freed = s.mFreed.load();
             auto alloc = s.mAllocated.load();
-            if (freed + alloc - Capacity == 0)
+            if (alloc - freed == Capacity)
             {
                 s.run();
                 assert(s.mFreed > freed);
-                freed = s.mFreed;
-                assert(freed + alloc - Capacity > 0);
+                assert(s.mAllocated == alloc);
             }
 
-            LocalStorage& local_storage = s.mLocalStorages[alloc];
-            s.mAllocated = alloc + 1;
+            LocalStorage& local_storage = s.mLocalStorages[s.mAllocated++ % Capacity];
+
             auto result = new (&local_storage) TaskImpl<F, true>(std::move(f));
             return result;
         }
@@ -111,38 +110,27 @@ int main()
 {
     Scheduler s;
 
-    for (auto i = 0; i != 200; ++i)
+    for (auto i = 0; i != 100; ++i)
     {
-        std::cout << "================ i=" << i << " ================" << std::endl;
-        s.post([]{});
+        s.post([]{
+            std::cout << "Hi!" << std::endl;
+        });
 
-        std::array<char, 1024> big_array;
+        auto big_array = std::array<char, 1024>();
         s.post([big_array]{
-            std::cout << "    big_array.size=" << sizeof(big_array) << std::endl;
+            std::cout << "big_array[middle]=" << big_array[big_array.size() / 2] << std::endl;
 
         });
 
-
-        std::string abc("abc");
-
-        s.post([abc] {
-
-            std::cout << "    abc=" << abc << std::endl;
-        });
-
-        std::array<std::string, 4> strings;
-        for (auto& s : strings)
+        std::vector<std::string> vec;
+        for (auto i = 0; i != 1024; ++i)
         {
-            s = abc;
-            std::cout << "    s=" << s << std::endl;
+
+            vec.push_back(std::to_string(i));
         }
 
-        s.post([strings]{
-            for (auto& s : strings)
-            {
-                std::cout << "    s[" << (&s - strings.data()) << "]=" << s << std::endl;
-            }
+        s.post([vec]{
+                std::cout << "vec[middle]=" << vec.at(vec.size() / 2) << std::endl;
         });
-        s.run();
     }
 }

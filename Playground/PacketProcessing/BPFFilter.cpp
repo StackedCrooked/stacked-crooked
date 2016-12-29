@@ -1,5 +1,4 @@
 #include "BPFFilter.h"
-#include <iostream>
 #include <sstream>
 
 
@@ -31,7 +30,7 @@ BPFFilter::BPFFilter(std::string bpf_filter)
     auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_filter.c_str(), 1, 0xff000000);
     if (result != 0)
     {
-        std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
+        //std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
         throw std::runtime_error("pcap_compile failed. Filter=" + bpf_filter);
     }
 }

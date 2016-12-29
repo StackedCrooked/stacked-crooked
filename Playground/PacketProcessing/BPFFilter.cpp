@@ -9,9 +9,9 @@ std::string BPFFilter::get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4A
 
     std::stringstream ss;
     ss  << "ip src " << src_ip
-    << " && ip dst " << dst_ip
-    << " && " << protocol_str << " src port " << src_port
-    << " && " << protocol_str << " dst port " << dst_port
+        << " && ip dst " << dst_ip
+        << " && " << protocol_str << " src port " << src_port
+        << " && " << protocol_str << " dst port " << dst_port
     ;
     return ss.str();
 }

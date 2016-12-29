@@ -90,7 +90,6 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
 }
 
 
-
 template<typename FilterType, int prefetch>
 void do_run(uint32_t num_packets, uint32_t num_flows)
 {
@@ -123,8 +122,6 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     std::cout << std::endl;
 
 }
-
-
 
 
 template<typename FilterType>

@@ -9,3 +9,4 @@ htop
 ccache
 openssh-server
 iwyu
+ruby

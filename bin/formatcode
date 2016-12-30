@@ -43,6 +43,10 @@ format_h() {
 }
 
 
+format_c() { 
+    format_cpp "$@"
+}
+
 format_hpp() { 
     format_h "$@"
 }

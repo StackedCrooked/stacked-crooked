@@ -96,7 +96,7 @@ struct Flows
     {
         auto flow_index = mFlows.size();
         mFlows.emplace_back(protocol, source_ip, target_ip, src_port, dst_port);
-		auto hash = mFlows[flow_index].hash();
+        auto hash = mFlows[flow_index].hash();
         auto bucket_index = hash % mHashTable.size();
         mHashTable[bucket_index].push_back(flow_index);
 
@@ -108,14 +108,14 @@ struct Flows
         #endif
     }
 
-	void print()
+    void print()
     {
-		std::cout << "HashTable:" << std::endl;
-		for (auto i = 0u; i != mHashTable.size(); ++i)
-		{
-			std::cout << " i=" << i << " size=" << mHashTable[i].size() << std::endl;
-		}
-	}
+        std::cout << "HashTable:" << std::endl;
+        for (auto i = 0u; i != mHashTable.size(); ++i)
+        {
+            std::cout << " i=" << i << " size=" << mHashTable[i].size() << std::endl;
+        }
+    }
 
     std::size_t size() const
     {

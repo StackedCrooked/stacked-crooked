@@ -1,4 +1,4 @@
-﻿#ifndef PREFETCH
+#ifndef PREFETCH
 #error "PREFETCH is not defined."
 #endif
 
@@ -139,7 +139,10 @@ struct Flows
         Bucket& flow_indexes = mHashTable[bucket_index];
         for (const uint32_t& flow_index : flow_indexes)
         {
-            matches[flow_index] += mFlows[flow_index].match(packet.data(), packet.size());
+            if (mFlows[flow_index].match(packet.data(), packet.size()))
+            {
+                matches[flow_index]++;
+            }
         }
     }
 
@@ -148,7 +151,7 @@ struct Flows
     static_assert(sizeof(Bucket) == 32, "");
 
     // Using a prime-number because it greatly reduces the number of hash collisions.
-    std::array<Bucket, 512> mHashTable;
+    std::array<Bucket, 128> mHashTable;
 };
 
 

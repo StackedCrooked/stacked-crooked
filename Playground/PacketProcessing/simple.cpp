@@ -45,6 +45,7 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
     const uint32_t num_flows = flows.size();
     const auto start_time = Clock::now();
     const auto num_packets = packets.size();
+    uint32_t comparisons = 0;
     for (auto i = 0ul; i != num_packets; i += 1)
     {
         const Packet& packet = packets[i];
@@ -56,7 +57,12 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
 
         for (auto flow_index = 0ul; flow_index != num_flows; ++flow_index)
         {
-            matches[flow_index] += flows[flow_index].match(packet.data(), packet.size());
+            comparisons++;
+            if (flows[flow_index].match(packet.data(), packet.size()))
+            {
+                matches[flow_index]++;
+                break;
+            }
         }
     }
 
@@ -65,12 +71,14 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
     auto mpps = 1e9 / ns_per_packet / 1000000;
     auto mpps_rounded = int(0.5 + 100 * mpps)/100.0;
 
+    auto million_filter_comparisons_per_s = int(0.5 + 100.0 * 1e3 * comparisons / elapsed_ns)/100.0;
+
     std::cout << std::setw(12) << std::left << GetTypeName<FilterType>()
             << " PREFETCH=" << prefetch
             << " FLOWS=" << std::setw(4) << std::left << num_flows
-            //<< " ns_per_packet=" << ns_per_packet
             << " MPPS=" << std::setw(9) << std::left << mpps_rounded
-            << " (" << num_flows * mpps_rounded << " million filter comparisons per second)"
+            << " (" << million_filter_comparisons_per_s << "M filter-checks/s)"
+
             ;
 
     #if 1

@@ -10,6 +10,33 @@ struct RxPacket
 };
 
 
+using RxPackets = Range<RxPacket>;
+
+
+
+struct Processor_Flow
+{
+    void receive(RxPackets packet)
+    {
+        auto l3 = packet.getLayer3Offset();
+        (void)l3;
+        //etc...
+    }
+
+    uint64_t mFields[2];
+    uint64_t mMasks[2];
+};
+
+
+struct Processor_BPF
+{
+    void receive(RxPacket packet)
+    {
+        // bpf_filter(...)
+    }
+};
+
+
 
 struct BBPort
 {
@@ -21,8 +48,9 @@ struct BBPort
 
 struct BBInterface
 {
-    void receive(RxPacket packet)
+    void receive(RxPackets packets)
     {
+        //std::stable_sort(packets.begin(), packets.end(), [](Packet p) { return p.
         BBPort& bbPort = get_bb_port(packet);
         bbPort.receive(packet);
     }

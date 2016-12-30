@@ -51,13 +51,13 @@ void pcap_for_each(std::string pcap, F&& f)
 
 
 
-    std::cout << "fileHeader.magic=" << std::hex << std::setw(2) << std::setfill('0') << file_header.magic << std::dec << std::endl;
-    std::cout << "fileHeader.version_major=" << file_header.version_major << std::endl;
-    std::cout << "fileHeader.version_minor=" << file_header.version_minor << std::endl;
-    std::cout << "fileHeader.thiszone=" << file_header.thiszone << std::endl;
-    std::cout << "fileHeader.sigfigs=" << file_header.sigfigs << std::endl;
-    std::cout << "fileHeader.snaplen=" << file_header.snaplen << std::endl;
-    std::cout << "fileHeader.linktype=" << file_header.linktype << std::endl;
+//    std::cout << "fileHeader.magic=" << std::hex << std::setw(2) << std::setfill('0') << file_header.magic << std::dec << std::endl;
+//    std::cout << "fileHeader.version_major=" << file_header.version_major << std::endl;
+//    std::cout << "fileHeader.version_minor=" << file_header.version_minor << std::endl;
+//    std::cout << "fileHeader.thiszone=" << file_header.thiszone << std::endl;
+//    std::cout << "fileHeader.sigfigs=" << file_header.sigfigs << std::endl;
+//    std::cout << "fileHeader.snaplen=" << file_header.snaplen << std::endl;
+//    std::cout << "fileHeader.linktype=" << file_header.linktype << std::endl;
 
     bool bigendian = false;
 
@@ -77,7 +77,7 @@ void pcap_for_each(std::string pcap, F&& f)
     if (file_header.linktype != 1 /*DLT_EN10MB*/)
     {
         std::cout << "Invalid linktype: " << file_header.linktype << std::endl;
-        throw std::runtime_error("Invalid linktype: " + std::to_string(file_header.linktype));
+        //throw std::runtime_error("Invalid linktype: " + std::to_string(file_header.linktype));
     }
 
     for (;;)
@@ -85,7 +85,12 @@ void pcap_for_each(std::string pcap, F&& f)
         PCAPHeader h;
         if (!input.read(reinterpret_cast<char*>(&h), sizeof(h)))
         {
-            if (input.eof()) return;
+            if (input.eof())
+            {
+                //std::cout << "EOF" << std::endl;
+                return;
+            }
+
             std::cout << "errno=" << errno << " strerror=" << strerror(errno) << std::endl;
             throw std::runtime_error("read failed.");
         }
@@ -110,11 +115,24 @@ void pcap_for_each(std::string pcap, F&& f)
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
-    pcap_for_each("/Users/francis/Dropbox/TCPStuff/fixed.pcap", [](PCAPHeader h, char* b, char* e) {
-        std::cout << h.sec << "." << h.usec << ": caplen=" << h.caplen << " len=" << h.len << " (e-b)=" << (e-b) << '\n';
+    if (argc != 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " PCAPFile" << std::endl;
+        return 1;
+    }
+    auto count = 0UL;
+    auto byte_count = 0UL;
+    pcap_for_each(argv[1], [&](PCAPHeader h, char* b, char* e) {
+        count++;
+        byte_count += e - b;
+
+        (void)h;
+        //std::cout << h.sec << "." << h.usec << ": caplen=" << h.caplen << " len=" << h.len << " (e-b)=" << (e-b) << '\n';
     });
+
+    std::cout << "count=" << count << " byte_count=" << byte_count << std::endl;
 }
 
 

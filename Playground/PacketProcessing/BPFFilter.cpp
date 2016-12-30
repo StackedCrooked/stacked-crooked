@@ -36,7 +36,6 @@ BPFFilter::BPFFilter(std::string bpf_filter)
     }
 }
 
-
 u_int BPFFilter::bpf_filter_embedded(const bpf_insn* pc, const u_char* p, u_int wirelen, u_int buflen)
 {
     uint32_t A = 0;

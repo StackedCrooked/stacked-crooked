@@ -142,6 +142,7 @@ struct Flows
             if (mFlows[flow_index].match(packet.data(), packet.size()))
             {
                 matches[flow_index]++;
+                break;
             }
         }
     }

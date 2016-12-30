@@ -1,5 +1,6 @@
 #include "BPFFilter.h"
 #include <sstream>
+#include <cstdint>
 
 
 std::string BPFFilter::get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)

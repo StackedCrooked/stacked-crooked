@@ -31,7 +31,7 @@ struct MACAddress
 
 
 
-struct Processor_Flow
+struct Processor_Flow_v4
 {
     void receive(RxPackets /*packet*/)
     {
@@ -40,8 +40,35 @@ struct Processor_Flow
         //etc...
     }
 
+    void receive(RxPacket packet)
+    {
+        is_ipv4()
+
+        // bpf_filter(...)
+    }
+
     uint64_t mFields[2];
     uint64_t mMasks[2];
+};
+
+
+struct Processor_Flow_v6
+{
+    void receive(RxPackets /*packet*/)
+    {
+
+    }
+
+    bool match(RxPacket rxPacket) const;
+
+    void receive(RxPacket packet)
+    {
+
+        // bpf_filter(...)
+    }
+
+    uint64_t mFields[5];
+    uint64_t mMasks[5];
 };
 
 
@@ -49,6 +76,12 @@ struct Processor_BPF
 {
     void receive(RxPackets /*packet*/)
     {
+        // bpf_filter(...)
+    }
+
+    void receive(RxPacket /*packet*/)
+    {
+
         // bpf_filter(...)
     }
 };
@@ -86,7 +119,12 @@ struct BBPort
 {
     void receive(RxPackets packets)
     {
-        for (Processor_Flow& flow : mProcessors_Flow)
+        for (Processor_Flow_v4& flow : mProcessors_Flow_v4)
+        {
+            flow.receive(packets);
+        }
+
+        for (Processor_Flow_v6& flow : mProcessors_Flow_v6)
         {
             flow.receive(packets);
         }
@@ -100,7 +138,8 @@ struct BBPort
     }
 
     Processor_BroadcastUnicast mPortCounters;
-    std::vector<Processor_Flow> mProcessors_Flow;
+    std::vector<Processor_Flow_v4> mProcessors_Flow_v4;
+    std::vector<Processor_Flow_v6> mProcessors_Flow_v6;
     std::vector<Processor_BPF> mProcessors_BPF;
     ProtocolStack mStack;
 };

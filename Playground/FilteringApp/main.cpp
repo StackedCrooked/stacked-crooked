@@ -1,5 +1,6 @@
 #include "Range.h"
 #include <vector>
+#include <forward_list>
 #include <iostream>
 
 
@@ -9,6 +10,15 @@ struct RxPacket
     uint32_t size() const;
 
     uint32_t get_interface_id() const;
+
+private:
+    const uint8_t* data_;
+    uint16_t size_;
+    uint8_t bb_interface_id_;
+    uint8_t physical_port_id_;
+
+    uint8_t ofload_flags_tcp_checksum_ok:1;
+    uint8_t ofload_flags_udp_checksum_ok:1;
 };
 
 
@@ -111,7 +121,6 @@ struct BBInterface
         {
             active_list.push_back(this);
         }
-
         mBatch.push_back(packet);
     }
 

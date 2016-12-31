@@ -26,14 +26,4 @@ MaskFilter::MaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip,
 
     memcpy(&mFields[0], &h, sizeof(mFields));
 
-    uint8_t mask_bytes[16] = {
-    0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
-    0xff, 0xff, 0xff, 0xff, // source ip
-    0xff, 0xff, 0xff, 0xff, // destination ip
-    0xff, 0xff, 0xff, 0xff  // source and destination ports
-    };
-
-    static_assert(sizeof(mask_bytes) == sizeof(mMasks), "");
-
-    memcpy(&mMasks[0], &mask_bytes[0], sizeof(mMasks));
 }

@@ -19,6 +19,12 @@ inline T Decode(const uint8_t* data)
 
 struct MACAddress
 {
+    MACAddress() :
+        mData()
+    {
+    }
+
+
     std::array<uint8_t, 6> mData;
 };
 

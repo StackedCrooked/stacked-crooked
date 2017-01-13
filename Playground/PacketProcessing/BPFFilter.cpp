@@ -3,7 +3,7 @@
 #include <cstdint>
 
 
-std::string BPFFilter::get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+std::string BPFFilter::generate_bpf_filter_string(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
 {
     const char* protocol_str = (protocol == 6) ? "tcp" : "(unknown)";
 
@@ -17,25 +17,7 @@ std::string BPFFilter::get_bpffilter(uint8_t protocol, IPv4Address src_ip, IPv4A
 }
 
 
-BPFFilter::BPFFilter(std::string bpf_filter)
-{
-    using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
-
-    DummyInterface dummy_interface(pcap_open_dead(DLT_EN10MB, 1518), &pcap_close);
-
-    if (!dummy_interface)
-    {
-        throw std::runtime_error("Failed to open pcap dummy interface");
-    }
-
-    auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_filter.c_str(), 1, 0xff000000);
-    if (result != 0)
-    {
-        //std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
-        throw std::runtime_error("pcap_compile failed. Filter=" + bpf_filter);
-    }
-}
-u_int BPFFilter::bpf_filter_embedded(const bpf_insn* pc, const u_char* p, u_int wirelen, u_int buflen)
+u_int BPFFilter::match_bpf(const bpf_insn* pc, const u_char* p, u_int wirelen, u_int buflen)
 {
     uint32_t A = 0;
     uint32_t X = 0;
@@ -43,10 +25,10 @@ u_int BPFFilter::bpf_filter_embedded(const bpf_insn* pc, const u_char* p, u_int 
     uint32_t mem[BPF_MEMWORDS];
 
     if (pc == 0)
-        /*
-             * No filter means accept all.
-             */
+    {
+        // No filter means accept all.
         return (u_int)-1;
+    }
 
     --pc;
 
@@ -103,7 +85,7 @@ u_int BPFFilter::bpf_filter_embedded(const bpf_insn* pc, const u_char* p, u_int 
             case BPF_LD|BPF_W|BPF_IND:
                 k = X + pc->k;
                 if (pc->k > buflen || X > buflen - pc->k ||
-                sizeof(int32_t) > buflen - k)
+                        sizeof(int32_t) > buflen - k)
                 {
                     return 0;
                 }
@@ -113,7 +95,7 @@ u_int BPFFilter::bpf_filter_embedded(const bpf_insn* pc, const u_char* p, u_int 
             case BPF_LD|BPF_H|BPF_IND:
                 k = X + pc->k;
                 if (X > buflen || pc->k > buflen - X ||
-                sizeof(int16_t) > buflen - k)
+                        sizeof(int16_t) > buflen - k)
                 {
                     return 0;
                 }
@@ -305,3 +287,32 @@ u_int BPFFilter::bpf_filter_embedded(const bpf_insn* pc, const u_char* p, u_int 
         }
     }
 }
+
+
+BPFFilter::BPFFilter(std::string bpf_filter)
+{
+    using DummyInterface = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
+
+    DummyInterface dummy_interface(pcap_open_dead(DLT_RAW, 1518), &pcap_close);
+
+    if (!dummy_interface)
+    {
+        throw std::runtime_error("Failed to open pcap dummy interface");
+    }
+
+    auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_filter.c_str(), 1, 0xff000000);
+    if (result != 0)
+    {
+        //std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
+        throw std::runtime_error("pcap_compile failed. Filter=" + bpf_filter);
+    }
+}
+
+
+BPFFilter::BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+    BPFFilter(generate_bpf_filter_string(protocol, src_ip, dst_ip, src_port, dst_port))
+{
+}
+
+
+

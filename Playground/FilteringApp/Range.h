@@ -13,6 +13,9 @@ struct Range
 
     Range(T* b, T* e) : mBegin(b), mEnd(e) { }
 
+    const T& operator[](std::size_t i) const { return mBegin[i]; }
+    T& operator[](std::size_t i) { return mBegin[i]; }
+
     T* begin() { return mBegin; }
     T* end() { return mEnd; }
 

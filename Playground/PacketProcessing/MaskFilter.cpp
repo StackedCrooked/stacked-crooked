@@ -27,3 +27,6 @@ MaskFilter::MaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip,
     memcpy(&mFields[0], &h, sizeof(mFields));
 
 }
+
+
+std::array<uint64_t, 2> MaskFilter::static_mask = MaskFilter::GetMask();

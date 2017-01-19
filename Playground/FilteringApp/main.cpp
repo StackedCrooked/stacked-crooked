@@ -73,7 +73,8 @@ int main()
     for (auto& ns : tests)
     {
         auto ns_per_packet = 1.0 * ns.count() / num_packets;
-        std::cout << "ns=" << ns.count() << " ns_per_packet=" << int(0.5 + ns_per_packet) << " cycles_per_packet=" << int(0.5 + 3.5 * ns_per_packet) << " UnicastCounter=" << bbPort.mUnicastCounter << " BroadcastCounter=" << bbPort.mBroadcastCounter << std::endl;
+        auto Mpps = int(1.0 * num_packets / (ns.count() / 1e3));
+        std::cout << "Mpps=" << Mpps << " ns_per_packet=" << int(0.5 + ns_per_packet) << " cycles_per_packet=" << int(0.5 + 3.5 * ns_per_packet) << " UnicastCounter=" << bbPort.mUnicastCounter << " BroadcastCounter=" << bbPort.mBroadcastCounter << std::endl;
         break;
     }
 

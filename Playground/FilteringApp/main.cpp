@@ -1,146 +1,89 @@
-#include "Range.h"
+#include "BBPort.h"
+#include "BBInterface.h"
+#include "PhysicalInterface.h"
+#include <algorithm>
+#include <thread>
 #include <vector>
-#include <forward_list>
+#include <chrono>
 #include <iostream>
 
 
+namespace {
 
-struct FlowCounters
-{
-    uint64_t mRxPackets;
-    uint64_t mRxBytes;
+
+std::vector<uint8_t> cICMPRequest {
+    0x00, 0x25, 0x90, 0x31, 0x82, 0x06, 0x00, 0x25,
+    0x64, 0x9f, 0xda, 0x50, 0x08, 0x00, 0x45, 0x00,
+    0x00, 0x54, 0x00, 0x00, 0x40, 0x00, 0x40, 0x01,
+    0x21, 0xdd, 0x0a, 0x04, 0x01, 0x9e, 0x0a, 0x04,
+    0x03, 0x27, 0x08, 0x00, 0x60, 0x3f, 0x1a, 0x61,
+    0x00, 0x01, 0xb6, 0x7e, 0xc8, 0x4f, 0x00, 0x00,
+    0x00, 0x00, 0x31, 0xbd, 0x0e, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
+    0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d,
+    0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25,
+    0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d,
+    0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
+    0x36, 0x37,
 };
 
 
-
-struct BPFFilter
+enum
 {
-
+    num_packets = 2 * 1000 * 1000
 };
 
 
-struct UDPFlow
-{
+}
 
-    bool match(Packet packet) const
-    {
-
-    }
-
-    uint64_t mMask[2];
-    uint64_t mRxPackets;
-    uint64_t mRxBytes;
-};
-
-
-struct Trigger
-{
-
-};
-
-
-struct UDPFlow
-{
-
-    bool match(Packet p, uint32_t l3offset) const
-    {
-        auto data = p.data() + l3offset + mask_offset;
-
-        auto u64 = Decode<std::array<uint64_t, 2>>(data);
-
-        return ((u64[0] & mFields[0]) == mMasks[0])
-            && ((u64[1] & mFields[1]) == mMasks[1]);
-    }
-
-
-    void pop(Packet p, uint32_t l3offset)
-    {
-        if (match(p, l3offset))
-        {
-            mCounters.mRxBytes += p.size();
-            mCounters.mRxPackets++;
-        }
-    }
-
-    uint64_t mMasks[2];
-    FlowCounters mCounters;
-};
-
-
-struct UDPFlows
-{
-    void pop(Packet packet, uint32_t layer3_offset)
-    {
-        auto hash = get_hash(packet);
-        mHashTable[hash];
-    }
-
-    HashTable mHashTable;
-    std::vector<FlowCounters> mFlows;
-};
-
-
-
-struct BBPort
-{
-    void pop(Packet packet)
-    {
-        // validate mac address and vlan tags
-        if (!validate(packet))
-        {
-            return;
-        }
-    }
-
-    std::vector<UDPFlow> mUDPFlows;
-    uint32_t mLayer3Offset;
-    uint64_t mUnicastCount;
-    uint64_t mBroadcastCount;
-};
-
-
-struct BBInterface
-{
-    void pop(Packet packet)
-    {
-        for (BPFFilter& bpf : mBPFFilters)
-        {
-            bpf.pop(packet);
-        }
-
-        for (BBPort& bbPort : mBBPorts)
-        {
-            bbPort.pop(packet);
-        }
-    }
-
-    std::vector<BPFFilter> mBPFFilters;
-    std::vector<BBPort> mBBPorts;
-};
-
-
-struct PhysicalInterface
-{
-};
 
 
 struct BBServer
 {
     void run()
     {
+        for (auto i = 0; i != num_packets; ++i)
+        {
+            mPhysicalInterface.pop(cICMPRequest.data(), cICMPRequest.size(), 0);
+        }
     }
+
+    PhysicalInterface mPhysicalInterface;
 };
 
 
-int main()
+using SteadyClock = std::chrono::steady_clock;
+
+
+std::chrono::nanoseconds run_test(BBServer& bbServer)
 {
-    std::cout << "Hello!" << std::endl;
-
-    BBServer bbServer;
+    auto start_time = SteadyClock::now();
     bbServer.run();
-
-    std::cout << "Goodbye!" << std::endl;
+    auto elapsed_time = SteadyClock::now() - start_time;
+    return elapsed_time;
 }
 
 
 
+int main()
+{
+
+    BBServer bbServer;
+    bbServer.mPhysicalInterface.getBBInterface(0).addPort(MACAddress{{ 0x00, 0xff, 0x23, 0x00, 0x00, 0x01}});
+
+    std::array<std::chrono::nanoseconds, 64> tests;
+
+    for (auto& ns : tests)
+    {
+        ns = run_test(bbServer);
+    }
+
+    std::sort(tests.begin(), tests.end());
+
+    for (auto& ns : tests)
+    {
+        auto ns_per_packet = 1.0 * ns.count() / num_packets;
+        std::cout << "ns_per_packet=" << ns_per_packet << std::endl;
+        break;
+    }
+}

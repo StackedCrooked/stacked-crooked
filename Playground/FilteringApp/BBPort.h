@@ -13,7 +13,7 @@ struct BBPort
     {
         auto dst_mac = Decode<MACAddress>(data);
 
-        if (__builtin_expect(mLocalMAC == dst_mac, 1))
+        if (mLocalMAC == dst_mac)
         {
             mUnicastCounter++;
         }

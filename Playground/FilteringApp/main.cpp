@@ -1,6 +1,7 @@
 #include "BBPort.h"
 #include "BBInterface.h"
 #include "PhysicalInterface.h"
+#include "BBServer.h"
 #include <algorithm>
 #include <thread>
 #include <vector>
@@ -28,31 +29,17 @@ std::vector<uint8_t> cICMPRequest {
 };
 
 
-std::vector<std::vector<uint8_t>> cICMPRequestBatch(16, cICMPRequest);
+std::vector<std::vector<uint8_t>> cICMPRequestBatch(32, cICMPRequest);
 
 
 enum
 {
-    num_packets = 200 * 1000
+    num_packets = 1000 * 1000
 };
 
 
 }
 
-
-
-struct BBServer
-{
-    void run()
-    {
-        for (auto i = 0; i != num_packets; ++i)
-        {
-            mPhysicalInterface.pop(cICMPRequestBatch[i % 16].data(), cICMPRequestBatch[i % 16].size(), 0);
-        }
-    }
-
-    PhysicalInterface mPhysicalInterface;
-};
 
 
 using SteadyClock = std::chrono::steady_clock;
@@ -61,11 +48,10 @@ using SteadyClock = std::chrono::steady_clock;
 std::chrono::nanoseconds run_test(BBServer& bbServer)
 {
     auto start_time = SteadyClock::now();
-    bbServer.run();
+    bbServer.run(cICMPRequestBatch, num_packets);
     auto elapsed_time = SteadyClock::now() - start_time;
     return elapsed_time;
 }
-
 
 
 int main()

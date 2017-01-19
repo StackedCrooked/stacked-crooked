@@ -11,6 +11,7 @@ set(FilteringApp_INCLUDES
     Range.h)
 
 set(FilteringApp_SOURCES
+    BBServer.cpp
     main.cpp)
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})

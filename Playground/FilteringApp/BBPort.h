@@ -7,10 +7,7 @@
 
 struct BBPort
 {
-    BBPort(MACAddress local_mac) :
-        mLocalMAC(local_mac)
-    {
-    }
+    BBPort(MACAddress local_mac);
 
     void pop(const uint8_t* data, uint32_t /*length*/)
     {

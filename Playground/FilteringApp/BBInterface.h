@@ -7,11 +7,7 @@
 
 struct BBInterface
 {
-    BBPort& addPort(MACAddress localMAC)
-    {
-        mBBPorts.emplace_back(localMAC);
-        return mBBPorts.back();
-    }
+    BBPort& addPort(MACAddress localMAC);
 
     void pop(const uint8_t* data, uint32_t length)
     {

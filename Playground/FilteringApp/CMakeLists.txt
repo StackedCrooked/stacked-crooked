@@ -10,9 +10,13 @@ include_directories(SYSTEM /usr/local/include /usr/include)
 set(FilteringApp_INCLUDES
     Range.h)
 
+
 set(FilteringApp_SOURCES
-    BBServer.cpp
-    main.cpp)
+	BBInterface.cpp
+	BBPort.cpp
+	BBServer.cpp
+	PhysicalInterface.cpp
+	main.cpp)
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})
 set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -march=native -Wall -Wextra -Werror -pedantic ")

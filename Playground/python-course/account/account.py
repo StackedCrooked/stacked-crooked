@@ -36,9 +36,7 @@ assert account.get_balance() == 0
 account.withdraw(10000)
 assert account.get_balance() == -10000
 
-print account.transactions
+print(account.transactions)
 
-
-print "Everything is OK."
-
+print("Everything is OK.")
 

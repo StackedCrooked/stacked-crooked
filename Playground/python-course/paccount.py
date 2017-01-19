@@ -64,15 +64,19 @@ try:
     account.withdraw(1000)
     assert False # an exception should have been thrown
 except Exception as e:
-    print "OK. I can't withdraw 1000"
+    print("OK. I can't withdraw 1000")
     assert account.balance == 0
 
+print("Transactions:")
 
-print "Transactions:"
-for trans in account:
-    print "    ", trans
+print("account[:] => ", account[:])
 
-print "account[:] => ", account[:]
-print "List:", list(account)
+print("Everything is OK.")
 
-print "Everything is OK."
+
+class A(object):
+    pass
+
+a = A();
+a.x = 1
+a.x = 1

@@ -28,9 +28,12 @@ std::vector<uint8_t> cICMPRequest {
 };
 
 
+std::vector<std::vector<uint8_t>> cICMPRequestBatch(16, cICMPRequest);
+
+
 enum
 {
-    num_packets = 2 * 1000 * 1000
+    num_packets = 200 * 1000
 };
 
 
@@ -44,7 +47,7 @@ struct BBServer
     {
         for (auto i = 0; i != num_packets; ++i)
         {
-            mPhysicalInterface.pop(cICMPRequest.data(), cICMPRequest.size(), 0);
+            mPhysicalInterface.pop(cICMPRequestBatch[i % 16].data(), cICMPRequestBatch[i % 16].size(), 0);
         }
     }
 
@@ -67,11 +70,12 @@ std::chrono::nanoseconds run_test(BBServer& bbServer)
 
 int main()
 {
+    //*reinterpret_cast<MACAddress*>(cICMPRequestBatch.front().data()) = MACAddress::BroadcastAddress();
 
     BBServer bbServer;
-    bbServer.mPhysicalInterface.getBBInterface(0).addPort(MACAddress{{ 0x00, 0xff, 0x23, 0x00, 0x00, 0x01}});
+    auto& bbPort = bbServer.mPhysicalInterface.getBBInterface(0).addPort(MACAddress{{ 0x00, 0x25, 0x90, 0x31, 0x82, 0x06}});
 
-    std::array<std::chrono::nanoseconds, 64> tests;
+    std::array<std::chrono::nanoseconds, 32> tests;
 
     for (auto& ns : tests)
     {
@@ -83,7 +87,9 @@ int main()
     for (auto& ns : tests)
     {
         auto ns_per_packet = 1.0 * ns.count() / num_packets;
-        std::cout << "cycles_per_packet=" << 3.5 * ns_per_packet << std::endl;
+        std::cout << "ns_per_packet=" << int(0.5 + ns_per_packet) << " cycles_per_packet=" << int(0.5 + 3.5 * ns_per_packet) << " UnicastCounter=" << bbPort.mUnicastCounter << " BroadcastCounter=" << bbPort.mBroadcastCounter << std::endl;
         break;
     }
+
+    assert(bbPort.mUnicastCounter == num_packets * tests.size());
 }

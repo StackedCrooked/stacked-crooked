@@ -16,9 +16,10 @@ using BBPorts = std::vector<BBPort>;
 
 struct BBInterface
 {
-    void addPort(MACAddress localMAC)
+    BBPort& addPort(MACAddress localMAC)
     {
         mBBPorts.emplace_back(localMAC);
+        return mBBPorts.back();
     }
 
     void pop(const uint8_t* data, uint32_t length)

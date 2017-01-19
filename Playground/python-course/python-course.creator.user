@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.0.3, 2016-10-13T17:09:24. -->
+<!-- Written by QtCreator 4.0.2, 2017-01-19T11:54:09. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -167,7 +167,7 @@
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes">
      <value type="QString">PYTHONPATH=/home/francis/stacked-crooked/Playground/python-course:$PYTHONPATH</value>
     </valuelist>
-    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments">paccount.py</value>
+    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments">dec.py</value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">python</value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.WorkingDirectory">%{buildDir}</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Run python</value>

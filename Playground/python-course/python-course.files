@@ -2,3 +2,6 @@ account/account.py
 test.py
 hello.py
 paccount.py
+Point.py
+metaclass.py
+dec.py

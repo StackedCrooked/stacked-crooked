@@ -2,16 +2,7 @@
 
 
 #include "BBPort.h"
-
-
-#if 0
-#include <boost/container/static_vector.hpp>
-using BBPorts = boost::container::static_vector<BBPort, 2>;
-#else
 #include <vector>
-using BBPorts = std::vector<BBPort>;
-#endif
-
 
 
 struct BBInterface
@@ -30,5 +21,5 @@ struct BBInterface
         }
     }
 
-    BBPorts mBBPorts;
+    std::vector<BBPort> mBBPorts;
 };

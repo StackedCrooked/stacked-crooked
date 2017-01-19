@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "Likely.h"
 #include "Decode.h"
 #include "MACAddress.h"
 
@@ -13,7 +14,7 @@ struct BBPort
     {
         auto dst_mac = Decode<MACAddress>(data);
 
-        if (mLocalMAC == dst_mac)
+        if (LIKELY(mLocalMAC == dst_mac))
         {
             mUnicastCounter++;
         }

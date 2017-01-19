@@ -61,7 +61,7 @@ int main()
     BBServer bbServer;
     auto& bbPort = bbServer.mPhysicalInterface.getBBInterface(0).addPort(MACAddress{{ 0x00, 0x25, 0x90, 0x31, 0x82, 0x06}});
 
-    std::array<std::chrono::nanoseconds, 32> tests;
+    std::array<std::chrono::nanoseconds, 1024> tests;
 
     for (auto& ns : tests)
     {

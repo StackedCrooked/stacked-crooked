@@ -12,13 +12,13 @@ set(FilteringApp_INCLUDES
 
 
 set(FilteringApp_SOURCES
-	BBInterface.cpp
-	BBPort.cpp
-	BBServer.cpp
-	PhysicalInterface.cpp
-	main.cpp)
+    BBInterface.cpp
+    BBPort.cpp
+    BBServer.cpp
+    PhysicalInterface.cpp
+    main.cpp)
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})
-set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -march=native -Wall -Wextra -Werror -pedantic ")
+set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2  -march=native -Wall -Wextra -Werror -pedantic ")
 
 #target_link_libraries(FilteringApp -lpcap)

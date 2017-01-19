@@ -83,7 +83,7 @@ int main()
     for (auto& ns : tests)
     {
         auto ns_per_packet = 1.0 * ns.count() / num_packets;
-        std::cout << "ns_per_packet=" << ns_per_packet << std::endl;
+        std::cout << "cycles_per_packet=" << 3.5 * ns_per_packet << std::endl;
         break;
     }
 }

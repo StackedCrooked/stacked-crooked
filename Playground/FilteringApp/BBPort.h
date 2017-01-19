@@ -15,17 +15,14 @@ struct BBPort
     {
         auto dst_mac = Decode<MACAddress>(data);
 
-        if (dst_mac != mLocalMAC && dst_mac.isBroadcast() && dst_mac.isMulticast())
+        if (mLocalMAC == dst_mac)
         {
-            // Reject packet
-            return;
+            mUnicastCounter++;
         }
-
-        mBroadcastCounter += dst_mac.isBroadcast();
-        mUnicastCounter++;
-
-        // pop to stack
-
+        else if (dst_mac.isBroadcast())
+        {
+            mBroadcastCounter++;
+        }
     }
 
     MACAddress mLocalMAC = MACAddress();

@@ -12,7 +12,7 @@ struct PhysicalInterface
 {
     void pop(const uint8_t* data, uint32_t length, uint32_t interfaceId)
     {
-        //assert(interfaceId < mBBInterfaces.size());
+        assert(interfaceId < mBBInterfaces.size());
         BBInterface& bbInterface = mBBInterfaces[interfaceId];
         bbInterface.pop(data, length);
     }

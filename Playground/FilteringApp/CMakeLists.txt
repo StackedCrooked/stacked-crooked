@@ -16,6 +16,9 @@ set(FilteringApp_SOURCES
     BBPort.cpp
     BBServer.cpp
     PhysicalInterface.cpp
+	MaskFilter.cpp
+	Networking.cpp
+	UDPFlow.cpp
     main.cpp)
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})

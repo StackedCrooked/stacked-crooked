@@ -13,3 +13,9 @@ CMakeLists.txt
 Likely.h
 RxPacket.h
 RxPacket.cpp
+MaskFilter.cpp
+MaskFilter.h
+Networking.cpp
+Networking.h
+UDPFlow.h
+UDPFlow.cpp

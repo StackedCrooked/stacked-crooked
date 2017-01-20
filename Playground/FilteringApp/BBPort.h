@@ -29,3 +29,8 @@ struct BBPort
     uint64_t mUnicastCounter = 0;
     uint64_t mBroadcastCounter = 0;
 };
+
+
+// Validate size
+// Define one or more UDP flows.
+// Use MaskFilter

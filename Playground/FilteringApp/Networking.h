@@ -3,26 +3,25 @@
 
 
 #include "Decode.h"
+#include "MACAddress.h"
 #include <cstdint>
 #include <cstring>
 #include <array>
 #include <arpa/inet.h>
 
 
-struct MACAddress
-{
-    MACAddress() :
-        mData()
-    {
-    }
-
-
-    std::array<uint8_t, 6> mData;
-};
-
-
 struct IPv4Address
 {
+    static IPv4Address Create(int i)
+    {
+        IPv4Address result;
+        result.mData[0] = 1;
+        result.mData[1] = 1;
+        result.mData[2] = 1;
+        result.mData[3] = i;
+        return result;
+    }
+
     IPv4Address() : mData() {}
 
     IPv4Address(int a, int b, int c, int d)
@@ -81,9 +80,10 @@ struct Net16
 
 struct EthernetHeader
 {
-    static EthernetHeader Create()
+    static EthernetHeader Create(MACAddress mac)
     {
         auto result = EthernetHeader();
+        result.mDestination = mac;
         result.mEtherType = Net16(0x0800);
         return result;
     }

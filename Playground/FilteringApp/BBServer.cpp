@@ -7,7 +7,7 @@ BBServer::BBServer()
 }
 
 
-void BBServer::run(std::vector<std::vector<uint8_t>>& batch, uint32_t num_packets)
+void BBServer::run(const std::vector<std::vector<uint8_t>>& batch, uint32_t num_packets)
 {
     assert(batch.size() == 32);
     std::array<RxPacket, 32> rxPackets;

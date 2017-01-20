@@ -8,7 +8,7 @@ struct BBServer
 {
     BBServer();
 
-    void run(std::vector<std::vector<uint8_t>>& batch, uint32_t num_packets);
+    void run(const std::vector<std::vector<uint8_t> >& vec, uint32_t num_packets);
 
     PhysicalInterface mPhysicalInterface;
 };

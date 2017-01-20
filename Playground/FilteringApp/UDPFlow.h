@@ -2,6 +2,7 @@
 
 
 #include "MaskFilter.h"
+#include "RxPacket.h"
 #include <cstdint>
 
 
@@ -12,7 +13,16 @@ struct UDPFlow
     {
     }
 
+    void process(RxPacket packet)
+    {
+        if (mFilter.match(packet.mData, packet.mSize))
+        {
+            mPacketsReceived++;
+            mBytesReceived += packet.mSize;
+        }
+    }
+
     MaskFilter mFilter;
-    uint64_t mPacketsReceived;
-    uint64_t mBytesReceived;
+    uint64_t mPacketsReceived = 0;
+    uint64_t mBytesReceived = 0;
 };

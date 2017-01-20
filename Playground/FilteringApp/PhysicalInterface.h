@@ -13,13 +13,13 @@ struct PhysicalInterface
 {
     void pop(RxPacket packet)
     {
-        mBBInterfaces[packet.mBBInterfaceId].pop(packet);
+        mBBInterface.pop(packet);
     }
 
-    BBInterface& getBBInterface(uint32_t interfaceId)
+    BBInterface& getBBInterface(uint32_t )
     {
-        return mBBInterfaces[interfaceId];
+        return mBBInterface;
     }
 
-    std::array<BBInterface, 48> mBBInterfaces;
+    BBInterface mBBInterface;
 };

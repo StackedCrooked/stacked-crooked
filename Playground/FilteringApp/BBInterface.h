@@ -12,10 +12,7 @@ struct BBInterface
 
     void pop(RxPacket packet)
     {
-        for (BBPort& bbPort : mBBPorts)
-        {
-            bbPort.pop(packet);
-        }
+        mBBPorts.data()->pop(packet);
     }
 
     std::vector<BBPort> mBBPorts;

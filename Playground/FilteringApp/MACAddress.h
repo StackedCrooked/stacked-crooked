@@ -40,7 +40,11 @@ struct MACAddress
 
     friend bool operator==(MACAddress lhs, MACAddress rhs)
     {
-        return lhs.toInteger() == rhs.toInteger();
+        auto lhs_u16 = reinterpret_cast<const uint16_t*>(lhs.data());
+        auto rhs_u16 = reinterpret_cast<const uint16_t*>(rhs.data());
+        return (lhs_u16[0] == rhs_u16[0])
+            && (lhs_u16[1] == rhs_u16[1])
+            && (lhs_u16[2] == rhs_u16[2]);
     }
 
     friend bool operator!=(MACAddress lhs, MACAddress rhs)

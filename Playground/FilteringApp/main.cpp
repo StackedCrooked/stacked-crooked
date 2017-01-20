@@ -54,7 +54,7 @@ std::chrono::nanoseconds run_test(BBServer& bbServer)
 }
 
 
-int main()
+void run()
 {
     //*reinterpret_cast<MACAddress*>(cICMPRequestBatch.front().data()) = MACAddress::BroadcastAddress();
 
@@ -80,4 +80,13 @@ int main()
     }
 
     assert(bbPort.mUnicastCounter == num_packets * tests.size());
+}
+
+
+int main()
+{
+    for (auto i = 0; i != 4; ++i)
+    {
+        run();
+    }
 }

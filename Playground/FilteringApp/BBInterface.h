@@ -2,6 +2,7 @@
 
 
 #include "BBPort.h"
+#include "RxPacket.h"
 #include <vector>
 
 
@@ -9,11 +10,11 @@ struct BBInterface
 {
     BBPort& addPort(MACAddress localMAC);
 
-    void pop(const uint8_t* data, uint32_t length)
+    void pop(RxPacket packet)
     {
         for (BBPort& bbPort : mBBPorts)
         {
-            bbPort.pop(data, length);
+            bbPort.pop(packet);
         }
     }
 

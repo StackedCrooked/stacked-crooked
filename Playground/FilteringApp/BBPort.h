@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "RxPacket.h"
 #include "Likely.h"
 #include "Decode.h"
 #include "MACAddress.h"
@@ -10,11 +11,11 @@ struct BBPort
 {
     BBPort(MACAddress local_mac);
 
-    void pop(const uint8_t* data, uint32_t /*length*/)
+    void pop(RxPacket packet)
     {
-        auto dst_mac = Decode<MACAddress>(data);
+        auto dst_mac = Decode<MACAddress>(packet.mData);
 
-        if (LIKELY(mLocalMAC == dst_mac))
+        if (mLocalMAC == dst_mac)
         {
             mUnicastCounter++;
         }

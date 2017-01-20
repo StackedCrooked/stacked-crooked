@@ -20,7 +20,7 @@ struct BBPort
     {
         auto dst_mac = Decode<MACAddress>(packet.mData);
 
-        if (mLocalMAC == dst_mac)
+        if (LIKELY(mLocalMAC == dst_mac))
         {
             mUnicastCounter++;
         }

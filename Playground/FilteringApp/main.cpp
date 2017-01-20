@@ -104,6 +104,12 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 }
 
 
+// TODO: Enable dynamic config:
+// - number of ports
+// - number of flows per port
+// - etc..
+
+
 int main()
 {
 
@@ -114,15 +120,11 @@ int main()
     for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(3)); }
     for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(4)); }
 
-    //std::random_shuffle(packets.begin(), packets.end());
+//    std::srand(std::time(0));
+//    std::random_shuffle(packets.begin(), packets.end());
 
     for (auto i = 0; i != 4; ++i)
     {
         run(packets);
     }
 }
-
-
-
-// Prepare packets
-// MakeUDPPacket

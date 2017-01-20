@@ -12,7 +12,7 @@ struct BBInterface
 
     void pop(RxPacket packet)
     {
-        mBBPorts.data()->pop(packet);
+        mBBPorts[packet.mBBInterfaceId].pop(packet);
     }
 
     std::vector<BBPort> mBBPorts;

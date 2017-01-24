@@ -92,7 +92,7 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
         auto ns_per_packet = 1.0 * ns.count() / num_packets;
         auto budget_usage = int(0.5 + 100 * ns_per_packet / 25.0);
         auto Mpps = int(1.0 * num_packets / (ns.count() / 1e3));
-        std::cout << "budget_consumed=" << budget_usage << "% Mpps=" << Mpps << " ns_per_packet=" << int(0.5 + ns_per_packet) << " cycles_per_packet=" << int(0.5 + 3.5 * ns_per_packet) << std::endl;
+        std::cout << "budget_consumed=" << budget_usage << "% Mpps=" << Mpps << " ns_per_packet=" << int(0.5 + 100.0 * ns_per_packet)/100.0 << " cycles_per_packet=" << int(0.5 + 35.0 * ns_per_packet)/10.0 << std::endl;
 
         std::cout << bbServer.getPhysicalInterface(0).getBBInterface(0).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
         std::cout << bbServer.getPhysicalInterface(0).getBBInterface(1).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
@@ -125,8 +125,8 @@ int main()
     for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(4)); }
 
     std::srand(std::time(0));
-    //std::random_shuffle(packets.begin() + 8, packets.begin() + 24);
-    //std::random_shuffle(packets.begin(), packets.end());
+    std::random_shuffle(packets.begin() + 8, packets.begin() + 24);
+//    std::random_shuffle(packets.begin(), packets.end());
 
     for (auto i = 0; i != 4; ++i)
     {

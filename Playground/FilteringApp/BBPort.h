@@ -15,6 +15,7 @@ struct BBPort
     BBPort(MACAddress local_mac);
 
     void addUDPFlow(uint16_t dst_port);
+
     UDPFlow& getUDPFlow(uint32_t i)
     {
         return mUDPFlows[i];
@@ -24,44 +25,23 @@ struct BBPort
     {
         while (length >= 4)
         {
-            bool b0 = check_mac(packet[0]);
-            bool b1 = check_mac(packet[1]);
-            bool b2 = check_mac(packet[2]);
-            bool b3 = check_mac(packet[3]);
+            bool all_ok = true;
+            all_ok &= check_mac(packet[0]);
+            all_ok &= check_mac(packet[1]);
+            all_ok &= check_mac(packet[2]);
+            all_ok &= check_mac(packet[3]);
 
-            if ((b0 & b1) & (b2 & b3))
+            if (all_ok)
             {
                 mUnicastCounter += 4;
-
-                for (UDPFlow& flow : mUDPFlows)
-                {
-                    bool b0 = flow.match(packet[0]);
-                    bool b1 = flow.match(packet[1]);
-                    bool b2 = flow.match(packet[2]);
-                    bool b3 = flow.match(packet[3]);
-
-                    if ((b0 & b1) & (b2 & b3))
-                    {
-                        flow.accept(packet[0]);
-                        flow.accept(packet[1]);
-                        flow.accept(packet[2]);
-                        flow.accept(packet[3]);
-                    }
-                    else
-                    {
-                        if (b0) flow.accept(packet[0]);
-                        if (b1) flow.accept(packet[1]);
-                        if (b2) flow.accept(packet[2]);
-                        if (b3) flow.accept(packet[3]);
-                    }
-                }
+                udp_pop_4(packet);
             }
             else
             {
-                if (b0) pop(packet[0]);
-                if (b1) pop(packet[1]);
-                if (b2) pop(packet[2]);
-                if (b3) pop(packet[3]);
+                pop(packet[0]);
+                pop(packet[1]);
+                pop(packet[2]);
+                pop(packet[3]);
             }
 
             length -= 4;
@@ -103,6 +83,29 @@ struct BBPort
         return (0xFFFFFFFF == *reinterpret_cast<const uint32_t*>(packet.data() + 2))
              & (0x0000FFFF == *reinterpret_cast<const uint16_t*>(packet.data() + 0))
         ;
+    }
+
+    void udp_pop_4(const RxPacket* packet)
+    {
+        for (UDPFlow& flow : mUDPFlows)
+        {
+            bool b0 = flow.match(packet[0]);
+            bool b1 = flow.match(packet[1]);
+            bool b2 = flow.match(packet[2]);
+            bool b3 = flow.match(packet[3]);
+
+            if (b0 & b1 & b2 & b3)
+            {
+                flow.accept_4(packet);
+            }
+            else
+            {
+                if (b0) flow.accept(packet[0]);
+                if (b1) flow.accept(packet[1]);
+                if (b2) flow.accept(packet[2]);
+                if (b3) flow.accept(packet[3]);
+            }
+        }
     }
 
     MACAddress mLocalMAC = MACAddress();

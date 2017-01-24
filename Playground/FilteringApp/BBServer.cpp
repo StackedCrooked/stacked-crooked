@@ -21,6 +21,7 @@ void BBServer::run(const std::vector<std::vector<uint8_t>>& batch, uint32_t num_
 
     auto num_iterations = num_packets / 32;
 
+
     for (auto i = 0u; i != num_iterations; ++i)
     {
 #if 1

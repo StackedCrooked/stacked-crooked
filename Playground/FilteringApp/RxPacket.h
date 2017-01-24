@@ -20,6 +20,9 @@ struct RxPacket
     {
     }
 
+    const uint8_t* data() const { return mData; }
+    uint32_t size() const { return mSize; }
+
     const uint8_t* mData;
     uint16_t mSize;
     uint8_t mBBInterfaceId;

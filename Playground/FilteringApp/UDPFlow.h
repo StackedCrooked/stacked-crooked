@@ -15,7 +15,7 @@ struct UDPFlow
 
     void process(RxPacket packet)
     {
-        if (mFilter.match(packet.mData, packet.mSize))
+        if (mFilter.match(packet.data(), packet.size()))
         {
             mPacketsReceived++;
             mBytesReceived += packet.mSize;

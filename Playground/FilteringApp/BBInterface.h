@@ -12,7 +12,18 @@ struct BBInterface
 
     void pop(RxPacket packet)
     {
-        mBBPorts[packet.mBBInterfaceId].pop(packet);
+        for (BBPort& port : mBBPorts)
+        {
+            port.pop(packet);
+        }
+    }
+
+    void pop_many(const RxPacket* packet_ptr, uint32_t length)
+    {
+        for (BBPort& port : mBBPorts)
+        {
+            port.pop_many(packet_ptr, length);
+        }
     }
 
     std::vector<BBPort> mBBPorts;

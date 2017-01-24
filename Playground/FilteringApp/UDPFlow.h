@@ -15,11 +15,21 @@ struct UDPFlow
 
     void process(RxPacket packet)
     {
-        if (mFilter.match(packet.data(), packet.size()))
+        if (match(packet))
         {
-            mPacketsReceived++;
-            mBytesReceived += packet.mSize;
+            accept(packet);
         }
+    }
+
+    bool match(RxPacket packet)
+    {
+        return mFilter.match(packet.data(), packet.size());
+    }
+
+    void accept(RxPacket packet)
+    {
+        mPacketsReceived++;
+        mBytesReceived += packet.mSize;
     }
 
     MaskFilter mFilter;

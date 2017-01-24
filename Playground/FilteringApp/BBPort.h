@@ -24,10 +24,47 @@ struct BBPort
     {
         while (length >= 4)
         {
-            pop(packet[0]);
-            pop(packet[1]);
-            pop(packet[2]);
-            pop(packet[3]);
+            bool all_ok = true;
+            all_ok &= check_mac(packet[0]);
+            all_ok &= check_mac(packet[1]);
+            all_ok &= check_mac(packet[2]);
+            all_ok &= check_mac(packet[3]);
+
+            if (all_ok)
+            {
+                mUnicastCounter += 4;
+
+                for (UDPFlow& flow : mUDPFlows)
+                {
+                    bool b0 = flow.match(packet[0]);
+                    bool b1 = flow.match(packet[1]);
+                    bool b2 = flow.match(packet[2]);
+                    bool b3 = flow.match(packet[3]);
+
+                    if ((b0 & b1) & (b2 & b3))
+                    {
+                        flow.accept(packet[0]);
+                        flow.accept(packet[1]);
+                        flow.accept(packet[2]);
+                        flow.accept(packet[3]);
+                    }
+                    else
+                    {
+                        if (b0) flow.accept(packet[0]);
+                        if (b1) flow.accept(packet[1]);
+                        if (b2) flow.accept(packet[2]);
+                        if (b3) flow.accept(packet[3]);
+                    }
+                }
+            }
+            else
+            {
+                pop(packet[0]);
+                pop(packet[1]);
+                pop(packet[2]);
+                pop(packet[3]);
+            }
+
             length -= 4;
             packet += 4;
         }

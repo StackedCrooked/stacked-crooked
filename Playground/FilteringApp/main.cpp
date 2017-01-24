@@ -46,7 +46,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 1000 * 1000,
+    num_packets = 2 * 1000 * 1000,
     num_iterations = num_packets / 32
 };
 
@@ -124,8 +124,9 @@ int main()
     for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(3)); }
     for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(4)); }
 
-//    std::srand(std::time(0));
-//    std::random_shuffle(packets.begin(), packets.end());
+    std::srand(std::time(0));
+    //std::random_shuffle(packets.begin() + 8, packets.begin() + 24);
+    //std::random_shuffle(packets.begin(), packets.end());
 
     for (auto i = 0; i != 4; ++i)
     {

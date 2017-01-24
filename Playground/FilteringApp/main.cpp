@@ -125,7 +125,7 @@ int main()
     for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(4)); }
 
     std::srand(std::time(0));
-    std::random_shuffle(packets.begin() + 8, packets.begin() + 24);
+    std::random_shuffle(packets.begin() + packets.size()/2, packets.end());
 //    std::random_shuffle(packets.begin(), packets.end());
 
     for (auto i = 0; i != 4; ++i)

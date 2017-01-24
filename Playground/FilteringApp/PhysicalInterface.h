@@ -20,7 +20,7 @@ struct PhysicalInterface
     void pop_many(const RxPacket* packet_ptr, uint32_t length)
     {
         auto b = packet_ptr;
-        const auto e = packet_ptr + length;
+        auto e = packet_ptr + length;
 
         for (;;)
         {
@@ -45,5 +45,5 @@ struct PhysicalInterface
         return mBBInterfaces[i];
     }
 
-    std::array<BBInterface, 48> mBBInterfaces;
+    std::array<BBInterface, 64> mBBInterfaces;
 };

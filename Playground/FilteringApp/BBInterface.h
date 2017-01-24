@@ -26,5 +26,10 @@ struct BBInterface
         }
     }
 
+    BBPort& getBBPort(uint32_t i)
+    {
+        return mBBPorts[i];
+    }
+
     std::vector<BBPort> mBBPorts;
 };

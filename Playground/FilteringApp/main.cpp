@@ -20,14 +20,21 @@ void append(std::vector<uint8_t>& vec, T value)
 }
 
 
-MACAddress mac{{ 0x00, 0x25, 0x90, 0x31, 0x82, 0x06}};
+MACAddress generate_mac(uint32_t i)
+{
+    MACAddress mac{{ 0x00, 0x25, 0x90, 0x31, 0x82, 0x06}};
+    mac.data()[5] = i;
+    return mac;
+}
+
+
 
 
 std::vector<uint8_t> make_packet(uint16_t dst_port)
 {
     std::vector<uint8_t> result;
     result.reserve(128);
-    append(result, EthernetHeader::Create(mac));
+    append(result, EthernetHeader::Create(generate_mac(dst_port)));
     append(result, IPv4Header::Create(ProtocolId::UDP, IPv4Address::Create(1), IPv4Address::Create(1)));
     append(result, UDPHeader::Create(1, dst_port));
     return result;
@@ -66,15 +73,12 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 {
 
     BBServer bbServer;
-    auto& bbPort = bbServer.mPhysicalInterface.getBBInterface(0).addPort(mac);
+    bbServer.getPhysicalInterface(0).getBBInterface(0).addPort(generate_mac(1)).addUDPFlow(1);
+    bbServer.getPhysicalInterface(0).getBBInterface(1).addPort(generate_mac(2)).addUDPFlow(2);
+    bbServer.getPhysicalInterface(0).getBBInterface(2).addPort(generate_mac(3)).addUDPFlow(3);
+    bbServer.getPhysicalInterface(0).getBBInterface(3).addPort(generate_mac(4)).addUDPFlow(4);
 
-
-    bbPort.addUDPFlow(1);
-    bbPort.addUDPFlow(2);
-    bbPort.addUDPFlow(3);
-    bbPort.addUDPFlow(4);
-
-    std::array<std::chrono::nanoseconds, 64> tests;
+    std::array<std::chrono::nanoseconds, 1> tests;
 
     for (auto& ns : tests)
     {
@@ -88,7 +92,12 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
         auto ns_per_packet = 1.0 * ns.count() / num_packets;
         auto budget_usage = int(0.5 + 100 * ns_per_packet / 25.0);
         auto Mpps = int(1.0 * num_packets / (ns.count() / 1e3));
-        std::cout << "budget_consumed=" << budget_usage << "% Mpps=" << Mpps << " ns_per_packet=" << int(0.5 + ns_per_packet) << " cycles_per_packet=" << int(0.5 + 3.5 * ns_per_packet) << " UnicastCounter=" << bbPort.mUnicastCounter << " BroadcastCounter=" << bbPort.mBroadcastCounter << std::endl;
+        std::cout << "budget_consumed=" << budget_usage << "% Mpps=" << Mpps << " ns_per_packet=" << int(0.5 + ns_per_packet) << " cycles_per_packet=" << int(0.5 + 3.5 * ns_per_packet) << std::endl;
+
+        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(0).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
+        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(1).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
+        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(2).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
+        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(3).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
 
         #if 0
         for (const UDPFlow& flow : bbPort.mUDPFlows)
@@ -99,11 +108,10 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
         break;
     }
 
-    assert(bbPort.mUnicastCounter == num_packets * tests.size());
-    assert(bbPort.mUDPFlows[0].mPacketsReceived == num_packets * tests.size() / 4);
-    assert(bbPort.mUDPFlows[1].mPacketsReceived == num_packets * tests.size() / 4);
-    assert(bbPort.mUDPFlows[2].mPacketsReceived == num_packets * tests.size() / 4);
-    assert(bbPort.mUDPFlows[3].mPacketsReceived == num_packets * tests.size() / 4);
+    assert(bbServer.getPhysicalInterface(0).getBBInterface(0).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
+    assert(bbServer.getPhysicalInterface(0).getBBInterface(1).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
+    assert(bbServer.getPhysicalInterface(0).getBBInterface(2).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
+    assert(bbServer.getPhysicalInterface(0).getBBInterface(3).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
 }
 
 

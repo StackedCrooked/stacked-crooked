@@ -15,6 +15,10 @@ struct BBPort
     BBPort(MACAddress local_mac);
 
     void addUDPFlow(uint16_t dst_port);
+    UDPFlow& getUDPFlow(uint32_t i)
+    {
+        return mUDPFlows[i];
+    }
 
     void pop(RxPacket packet)
     {

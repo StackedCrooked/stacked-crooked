@@ -89,10 +89,13 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
         auto budget_usage = int(0.5 + 100 * ns_per_packet / 25.0);
         auto Mpps = int(1.0 * num_packets / (ns.count() / 1e3));
         std::cout << "budget_consumed=" << budget_usage << "% Mpps=" << Mpps << " ns_per_packet=" << int(0.5 + ns_per_packet) << " cycles_per_packet=" << int(0.5 + 3.5 * ns_per_packet) << " UnicastCounter=" << bbPort.mUnicastCounter << " BroadcastCounter=" << bbPort.mBroadcastCounter << std::endl;
+
+        #if 0
         for (const UDPFlow& flow : bbPort.mUDPFlows)
         {
             std::cout << "Flow result: " << flow.mPacketsReceived << std::endl;
         }
+        #endif
         break;
     }
 

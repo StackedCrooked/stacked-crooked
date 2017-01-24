@@ -78,7 +78,7 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
     bbServer.getPhysicalInterface(0).getBBInterface(2).addPort(generate_mac(3)).addUDPFlow(3);
     bbServer.getPhysicalInterface(0).getBBInterface(3).addPort(generate_mac(4)).addUDPFlow(4);
 
-    std::array<std::chrono::nanoseconds, 1> tests;
+    std::array<std::chrono::nanoseconds, 64> tests;
 
     for (auto& ns : tests)
     {
@@ -98,13 +98,6 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
         std::cout << bbServer.getPhysicalInterface(0).getBBInterface(1).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
         std::cout << bbServer.getPhysicalInterface(0).getBBInterface(2).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
         std::cout << bbServer.getPhysicalInterface(0).getBBInterface(3).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
-
-        #if 0
-        for (const UDPFlow& flow : bbPort.mUDPFlows)
-        {
-            std::cout << "Flow result: " << flow.mPacketsReceived << std::endl;
-        }
-        #endif
         break;
     }
 

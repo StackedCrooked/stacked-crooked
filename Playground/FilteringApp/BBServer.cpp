@@ -23,6 +23,13 @@ void BBServer::run(const std::vector<std::vector<uint8_t>>& batch, uint32_t num_
 
     for (auto i = 0u; i != num_iterations; ++i)
     {
+#if 1
         getPhysicalInterface(0).pop_many(rxPackets.data(), rxPackets.size());
+#else
+        for (const RxPacket& rxPacket : rxPackets)
+        {
+            getPhysicalInterface(0).pop(rxPacket);
+        }
+#endif
     }
 }

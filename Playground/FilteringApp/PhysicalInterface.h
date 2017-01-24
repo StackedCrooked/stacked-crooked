@@ -14,7 +14,7 @@ struct PhysicalInterface
 {
     void pop(RxPacket packet)
     {
-        mBBInterfaces[packet.mBBInterfaceId].pop(packet);
+        getBBInterface(packet.mBBInterfaceId).pop(packet);
     }
 
     void pop_many(const RxPacket* packet_ptr, uint32_t length)

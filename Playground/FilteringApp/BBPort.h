@@ -20,6 +20,24 @@ struct BBPort
         return mUDPFlows[i];
     }
 
+    void pop_many(const RxPacket* packet, uint32_t length)
+    {
+        while (length >= 4)
+        {
+            pop(packet[0]);
+            pop(packet[1]);
+            pop(packet[2]);
+            pop(packet[3]);
+            length -= 4;
+            packet += 4;
+        }
+
+        for (auto i = 0u; i != length; ++i)
+        {
+            pop(packet[i]);
+        }
+    }
+
     void pop(RxPacket packet)
     {
         if (check_mac(packet))
@@ -49,24 +67,6 @@ struct BBPort
         return (0xFFFFFFFF == *reinterpret_cast<const uint32_t*>(packet.data() + 2))
              & (0x0000FFFF == *reinterpret_cast<const uint16_t*>(packet.data() + 0))
         ;
-    }
-
-    void pop_many(const RxPacket* packet, uint32_t length)
-    {
-        while (length >= 4)
-        {
-            pop(packet[0]);
-            pop(packet[1]);
-            pop(packet[2]);
-            pop(packet[3]);
-            length -= 4;
-            packet += 4;
-        }
-
-        for (auto i = 0u; i != length; ++i)
-        {
-            pop(packet[i]);
-        }
     }
 
     MACAddress mLocalMAC = MACAddress();

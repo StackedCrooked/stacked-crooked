@@ -21,6 +21,8 @@ struct BBPort
         return mUDPFlows[i];
     }
 
+
+	__attribute__((always_inline))
     void pop_many(const RxPacket* packet, uint32_t length)
     {
         while (length >= 4)
@@ -71,39 +73,43 @@ struct BBPort
         }
     }
 
+    __attribute__((always_inline))
     bool check_mac(const RxPacket& packet)
     {
         return (*reinterpret_cast<const uint32_t*>(mLocalMAC.data() + 2) == *reinterpret_cast<const uint32_t*>(packet.data() + 2))
-             & (*reinterpret_cast<const uint16_t*>(mLocalMAC.data() + 0) == *reinterpret_cast<const uint16_t*>(packet.data() + 0))
+            && (*reinterpret_cast<const uint16_t*>(mLocalMAC.data() + 0) == *reinterpret_cast<const uint16_t*>(packet.data() + 0))
         ;
     }
 
+    __attribute__((always_inline))
     bool is_broadcast(const RxPacket& packet)
     {
         return (0xFFFFFFFF == *reinterpret_cast<const uint32_t*>(packet.data() + 2))
-             & (0x0000FFFF == *reinterpret_cast<const uint16_t*>(packet.data() + 0))
+            && (0x0000FFFF == *reinterpret_cast<const uint16_t*>(packet.data() + 0))
         ;
     }
 
-    void udp_pop_4(const RxPacket* packet)
+    __attribute__((always_inline))
+	void udp_pop_4(const RxPacket* packet)
     {
         for (UDPFlow& flow : mUDPFlows)
         {
-            bool b0 = flow.match(packet[0]);
-            bool b1 = flow.match(packet[1]);
-            bool b2 = flow.match(packet[2]);
-            bool b3 = flow.match(packet[3]);
+			bool all_ok = true;
+			all_ok &= flow.match(packet[0]);
+			all_ok &= flow.match(packet[1]);
+			all_ok &= flow.match(packet[2]);
+			all_ok &= flow.match(packet[3]);
 
-            if (b0 & b1 & b2 & b3)
+            if (all_ok)
             {
                 flow.accept_4(packet);
             }
             else
             {
-                if (b0) flow.accept(packet[0]);
-                if (b1) flow.accept(packet[1]);
-                if (b2) flow.accept(packet[2]);
-                if (b3) flow.accept(packet[3]);
+                flow.process(packet[0]);
+                flow.process(packet[1]);
+                flow.process(packet[2]);
+                flow.process(packet[3]);
             }
         }
     }

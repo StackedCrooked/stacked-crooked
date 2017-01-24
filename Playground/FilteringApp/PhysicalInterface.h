@@ -17,6 +17,7 @@ struct PhysicalInterface
         getBBInterface(packet.mBBInterfaceId).pop(packet);
     }
 
+	__attribute__((always_inline))
     void pop_many(RxPacket* packet_ptr, uint32_t length)
     {
         auto b = packet_ptr;

@@ -47,7 +47,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 4 * 1000 * 1000,
+    num_packets = 8 * 1000 * 1000,
     num_iterations = num_packets / 32
 };
 
@@ -97,11 +97,6 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
             << " ns_per_packet=" << int(0.5 + 100.0 * ns_per_packet)/100.0
             << " cycles_per_packet=" << int(0.5 + 100.0 * cycles_per_packet)/100.0
             << std::endl;
-
-        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(0).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
-        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(1).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
-        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(2).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
-        std::cout << bbServer.getPhysicalInterface(0).getBBInterface(3).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
         break;
     }
 

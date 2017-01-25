@@ -1,6 +1,7 @@
 #include "BBPort.h"
 #include "BBInterface.h"
 #include "BBServer.h"
+#include "Clock.h"
 #include "Networking.h"
 #include "PhysicalInterface.h"
 #include <algorithm>
@@ -46,7 +47,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 16 * 1000 * 1000,
+    num_packets = 4 * 1000 * 1000,
     num_iterations = num_packets / 32
 };
 
@@ -55,16 +56,13 @@ static_assert(num_packets % 32 == 0, "");
 
 
 
-using SteadyClock = std::chrono::steady_clock;
-
-
-std::chrono::nanoseconds run_test(BBServer& bbServer, const std::vector<std::vector<uint8_t>>& vec)
+int64_t run_test(BBServer& bbServer, const std::vector<std::vector<uint8_t>>& vec)
 {
-    auto start_time = SteadyClock::now();
+    auto start_time = Benchmark::start();
 
     assert(vec.size() == 32);
     bbServer.run(vec, num_packets);
-    auto elapsed_time = SteadyClock::now() - start_time;
+    auto elapsed_time = Benchmark::stop() - start_time;
     return elapsed_time;
 }
 
@@ -78,7 +76,7 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
     bbServer.getPhysicalInterface(0).getBBInterface(2).addPort(generate_mac(3)).addUDPFlow(3);
     bbServer.getPhysicalInterface(0).getBBInterface(3).addPort(generate_mac(4)).addUDPFlow(4);
 
-    std::array<std::chrono::nanoseconds, 64> tests;
+    std::array<int64_t, 64> tests;
 
     for (auto& ns : tests)
     {
@@ -87,12 +85,18 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 
     std::sort(tests.begin(), tests.end());
 
-    for (auto& ns : tests)
+    for (auto& cycles : tests)
     {
-        auto ns_per_packet = 1.0 * ns.count() / num_packets;
-        auto budget_usage = int(0.5 + 100 * ns_per_packet / 25.0);
-        auto Mpps = int(1.0 * num_packets / (ns.count() / 1e3));
-        std::cout << "budget_consumed=" << budget_usage << "% Mpps=" << Mpps << " ns_per_packet=" << int(0.5 + 100.0 * ns_per_packet)/100.0 << " cycles_per_packet=" << int(0.5 + 35.0 * ns_per_packet)/10.0 << std::endl;
+        auto cycles_per_packet = 1.0 * cycles / num_packets;
+        auto ns_per_packet = 1e9 * cycles / cpu_hz / num_packets;
+        auto budget_usage = int(0.5 + 100 * cycles_per_packet / 25.0);
+        auto Mpps = int(1.0 * num_packets / (cycles / 1e3));
+        std::cout
+            << "budget_consumed=" << budget_usage << "%"
+            << " Mpps=" << Mpps
+            << " ns_per_packet=" << int(0.5 + 100.0 * ns_per_packet)/100.0
+            << " cycles_per_packet=" << int(0.5 + 100.0 * cycles_per_packet)/100.0
+            << std::endl;
 
         std::cout << bbServer.getPhysicalInterface(0).getBBInterface(0).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;
         std::cout << bbServer.getPhysicalInterface(0).getBBInterface(1).getBBPort(0).getUDPFlow(0).mPacketsReceived << std::endl;

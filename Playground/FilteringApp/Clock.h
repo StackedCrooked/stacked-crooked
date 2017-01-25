@@ -63,11 +63,16 @@ inline int64_t detect_cpu_hz()
 static auto cpu_hz = detect_cpu_hz();
 
 
+inline int64_t cycles_to_ns(int64_t cycles)
+{
+	return (1e9 * cycles) / cpu_hz;
+}
+
+
 inline int64_t rdtsc_elapsed_cycles(int64_t rdtsc_start_time)
 {
     return Benchmark::stop() - rdtsc_start_time;
 }
-
 
 
 inline int64_t rdtsc_elapsed_ns(int64_t rdtsc_start_time)

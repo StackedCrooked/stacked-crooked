@@ -46,7 +46,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 2 * 1000 * 1000,
+    num_packets = 16 * 1000 * 1000,
     num_iterations = num_packets / 32
 };
 

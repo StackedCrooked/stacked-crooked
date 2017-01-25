@@ -5,7 +5,6 @@
 #include "RxPacket.h"
 #include "MACAddress.h"
 #include "Decode.h"
-#include "Likely.h"
 #include <vector>
 
 
@@ -27,13 +26,7 @@ struct BBPort
     {
         while (length >= 4)
         {
-            bool all_ok = true;
-            all_ok &= check_mac(packet[0]);
-            all_ok &= check_mac(packet[1]);
-            all_ok &= check_mac(packet[2]);
-            all_ok &= check_mac(packet[3]);
-
-            if (all_ok)
+            if (check_mac(packet[0]) && check_mac(packet[1]) && check_mac(packet[2]) && check_mac(packet[3]))
             {
                 mUnicastCounter += 4;
                 udp_pop_4(packet);
@@ -50,10 +43,10 @@ struct BBPort
             packet += 4;
         }
 
-        for (auto i = 0u; i != length; ++i)
-        {
-            pop(packet[i]);
-        }
+		for (auto i = 0u; i != length; ++i)
+		{
+			pop(packet[i]);
+		}
     }
 
     void pop(RxPacket packet)
@@ -94,13 +87,7 @@ struct BBPort
     {
         for (UDPFlow& flow : mUDPFlows)
         {
-			bool all_ok = true;
-			all_ok &= flow.match(packet[0]);
-			all_ok &= flow.match(packet[1]);
-			all_ok &= flow.match(packet[2]);
-			all_ok &= flow.match(packet[3]);
-
-            if (all_ok)
+			if (flow.match(packet[0]) && flow.match(packet[1]) && flow.match(packet[2]) && flow.match(packet[3]))
             {
                 flow.accept_4(packet);
             }

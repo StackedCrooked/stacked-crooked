@@ -89,7 +89,7 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
     {
         auto cycles_per_packet = 1.0 * cycles / num_packets;
         auto ns_per_packet = 1e9 * cycles / cpu_hz / num_packets;
-        auto budget_usage = int(0.5 + 100 * cycles_per_packet / 25.0);
+        auto budget_usage = int(0.5 + 100 * ns_per_packet / 25.0);
         auto Mpps = int(1.0 * num_packets / (cycles / 1e3));
         std::cout
             << "budget_consumed=" << budget_usage << "%"

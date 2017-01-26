@@ -49,7 +49,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 4 * 1000 * 1000,
+    num_packets = 1000 * 1000,
     num_iterations = num_packets / 32
 };
 
@@ -84,20 +84,26 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 
     std::sort(tests.begin(), tests.end());
 
-    for (auto& cycles : tests)
+    auto print_cycles = [](const char* message, int64_t cycles)
+
     {
         auto cycles_per_packet = 1.0 * cycles / num_packets;
         auto ns_per_packet = 1e9 * cycles / cpu_hz / num_packets;
         auto budget_usage = int(0.5 + 100 * ns_per_packet / 25.0);
         auto Mpps = int(0.5 + 1e3 * num_packets / cycles_to_ns(cycles));
         std::cout
-            << "budget_consumed=" << budget_usage << "%"
+            << message
+            << " budget_consumed=" << budget_usage << "%"
             << " Mpps=" << Mpps
-            << " ns_per_packet=" << int(0.5 + 100.0 * ns_per_packet)/100.0
-            << " cycles_per_packet=" << int(0.5 + 100.0 * cycles_per_packet)/100.0
+            << " ns_per_packet=" << int(0.5 + ns_per_packet)
+            << " cycles_per_packet=" << int(0.5 + cycles_per_packet)
             << std::endl;
-        break;
-    }
+    };
+
+    print_cycles("BEST  : ", tests.front());
+    print_cycles("MEDIAN: ", tests[tests.size()/2]);
+    print_cycles("WORST : ", tests.back());
+    std::cout << "===" << std::endl;
 }
 
 
@@ -129,7 +135,7 @@ int main()
 
     for (auto i = 0; i != 4; ++i)
     {
-        std::random_shuffle(packets.begin() + packets.size() / 2, packets.end());
+        std::random_shuffle(packets.begin(), packets.end());
         run(packets);
     }
 

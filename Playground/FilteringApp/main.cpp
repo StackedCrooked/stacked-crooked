@@ -49,7 +49,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 1000 * 1000,
+    num_packets = 4 * 1000 * 1000,
     num_iterations = num_packets / 32
 };
 
@@ -100,9 +100,9 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
             << std::endl;
     };
 
-    print_cycles("BEST  : ", tests.front());
-    print_cycles("MEDIAN: ", tests[tests.size()/2]);
-    print_cycles("WORST : ", tests.back());
+    print_cycles("BEST   : ", tests.front());
+    print_cycles("MEDIAN : ", tests[tests.size()/2]);
+    print_cycles("WORST  : ", tests.back());
     std::cout << "===" << std::endl;
 }
 

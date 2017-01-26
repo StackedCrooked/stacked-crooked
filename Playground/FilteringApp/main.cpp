@@ -11,6 +11,8 @@
 #include <iostream>
 
 
+#define ASSERT_EQ(x, y) if (x != y) { std::cout << (x) << " != " << (y) << std::endl; assert(false); }
+
 
 template<typename T>
 void append(std::vector<uint8_t>& vec, T value)
@@ -23,7 +25,7 @@ void append(std::vector<uint8_t>& vec, T value)
 
 MACAddress generate_mac(uint32_t i)
 {
-    MACAddress mac{{ 0x00, 0x25, 0x90, 0x31, 0x82, 0x06}};
+    MACAddress mac{{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x00}};
     mac.data()[5] = i;
     return mac;
 }
@@ -47,7 +49,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 8 * 1000 * 1000,
+    num_packets = 4 * 1000 * 1000,
     num_iterations = num_packets / 32
 };
 
@@ -60,21 +62,18 @@ int64_t run_test(BBServer& bbServer, const std::vector<std::vector<uint8_t>>& ve
 {
     auto start_time = Benchmark::start();
 
-    assert(vec.size() == 32);
+    //ASSERT_EQ(vec.size(), 32);
     bbServer.run(vec, num_packets);
     auto elapsed_time = Benchmark::stop() - start_time;
     return elapsed_time;
 }
 
 
+BBServer bbServer;
+
+
 void run(const std::vector<std::vector<uint8_t>>& packets)
 {
-
-    BBServer bbServer;
-    bbServer.getPhysicalInterface(0).getBBInterface(0).addPort(generate_mac(1)).addUDPFlow(1);
-    bbServer.getPhysicalInterface(0).getBBInterface(1).addPort(generate_mac(2)).addUDPFlow(2);
-    bbServer.getPhysicalInterface(0).getBBInterface(2).addPort(generate_mac(3)).addUDPFlow(3);
-    bbServer.getPhysicalInterface(0).getBBInterface(3).addPort(generate_mac(4)).addUDPFlow(4);
 
     std::array<int64_t, 64> tests;
 
@@ -99,11 +98,6 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
             << std::endl;
         break;
     }
-
-    assert(bbServer.getPhysicalInterface(0).getBBInterface(0).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
-    assert(bbServer.getPhysicalInterface(0).getBBInterface(1).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
-    assert(bbServer.getPhysicalInterface(0).getBBInterface(2).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
-    assert(bbServer.getPhysicalInterface(0).getBBInterface(3).getBBPort(0).getUDPFlow(0).mPacketsReceived == num_packets * tests.size() / 4);
 }
 
 
@@ -117,14 +111,32 @@ int main()
 {
 
     std::vector<std::vector<uint8_t>> packets;
-    packets.reserve(32);
-    for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(1)); }
-    for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(2)); }
-    for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(3)); }
-    for (auto i = 0u; i != 8u; ++i) { packets.push_back(make_packet(4)); }
+    packets.reserve(32u * 8);
+    for (auto flow_index = 0; flow_index != 32u; ++flow_index)
+    {
+        for (auto i = 0u; i != 8u; ++i) // bursts of 8
+        {
+            packets.push_back(make_packet(flow_index + 1));
+        }
+    }
+
+    for (auto flow_index = 0; flow_index != 32; ++flow_index)
+    {
+        bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
+    }
+
+    srand(time(0));
 
     for (auto i = 0; i != 4; ++i)
     {
+        std::random_shuffle(packets.begin() + packets.size() / 2, packets.end());
         run(packets);
+    }
+
+    for (auto i = 0; i != 32; ++i)
+    {
+        assert(bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mBroadcastCounter == 0);
+        ASSERT_EQ(bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mTotalCounter, bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mUnicastCounter);
+        std::cout << "Flow " << (i + 1) << " Unicast=" << bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mUnicastCounter << "/" << bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mTotalCounter << std::endl;
     }
 }

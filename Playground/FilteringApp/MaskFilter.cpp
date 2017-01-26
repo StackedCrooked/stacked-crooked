@@ -1,4 +1,5 @@
 #include "MaskFilter.h"
+#include "MACAddress.h"
 
 
 MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
@@ -30,3 +31,4 @@ MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address ds
 
 
 std::array<uint64_t, 2> MaskFilter::static_mask = MaskFilter::GetMask();
+

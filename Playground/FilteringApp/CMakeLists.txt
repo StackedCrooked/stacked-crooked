@@ -16,10 +16,10 @@ set(FilteringApp_SOURCES
     BBPort.cpp
     BBServer.cpp
     PhysicalInterface.cpp
-	MaskFilter.cpp
-	Networking.cpp
-	UDPFlow.cpp
+    MaskFilter.cpp
+    Networking.cpp
+    UDPFlow.cpp
     main.cpp)
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})
-set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++11 -O2 -g -march=native -Wall -Wextra -Werror -pedantic  -Wno-missing-braces ")
+set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++11 -O2 -g -march=native -Wall -Wextra -Werror -Wno-missing-braces ")

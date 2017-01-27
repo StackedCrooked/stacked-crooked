@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include <cassert>
 #include <cstdint>
 
 
@@ -22,6 +23,12 @@ struct RxPacket
 
     const uint8_t* data() const { return mData; }
     uint32_t size() const { return mSize; }
+
+    uint8_t operator[](std::size_t index) const
+    {
+        assert(index < mSize);
+        return mData[index];
+    }
 
     const uint8_t* mData;
     uint16_t mSize;

@@ -18,14 +18,6 @@ struct BBInterface
         }
     }
 
-    void pop_many(const RxPacket* packet_ptr, uint32_t length)
-    {
-        for (BBPort& port : mBBPorts)
-        {
-            port.pop_many(packet_ptr, length);
-        }
-    }
-
     BBPort& getBBPort(uint32_t i)
     {
         return mBBPorts[i];

@@ -18,6 +18,8 @@ set(FilteringApp_SOURCES
     PhysicalInterface.cpp
     MaskFilter.cpp
     Networking.cpp
+    RxTrigger.cpp
+    Stack.cpp
     UDPFlow.cpp
     main.cpp)
 

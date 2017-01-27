@@ -1,10 +1,12 @@
 #pragma once
 
 
-#include "UDPFlow.h"
-#include "RxPacket.h"
-#include "MACAddress.h"
 #include "Decode.h"
+#include "MACAddress.h"
+#include "RxPacket.h"
+#include "RxTrigger.h"
+#include "Stack.h"
+#include "UDPFlow.h"
 #include <vector>
 
 
@@ -22,23 +24,17 @@ struct BBPort
 
     void pop(RxPacket packet)
     {
-        mTotalCounter++;
-
         if (mLocalMAC.equals(packet.data()))
         {
             mUnicastCounter++;
-
-            for (UDPFlow& flow : mUDPFlows)
-            {
-                flow.process(packet);
-            }
         }
         else if (is_broadcast(packet))
         {
             mBroadcastCounter++;
         }
-    }
 
+        process(packet);
+    }
 
     bool is_local_mac(const RxPacket& packet)
     {
@@ -50,63 +46,47 @@ struct BBPort
         return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
     }
 
-    void pop_many(const RxPacket* packets, uint32_t length);
-    void udp_pop_4(const RxPacket* packet);
+    static ProtocolId get_protocol(RxPacket rxPacket)
+    {
+        return ProtocolId(rxPacket[offsetof(IPv4Header, mProtocolId)]);
+    }
+
+    void process(RxPacket packet)
+    {
+        if (!mRxTriggers.empty())
+        {
+            // All packets must be checked against all triggers.
+            pop_rx_triggers(packet);
+        }
+
+        if (get_protocol(packet) == ProtocolId::UDP)
+        {
+            for (UDPFlow& flow : mUDPFlows)
+            {
+                if (flow.match(packet, mLayer3Offset))
+                {
+                    flow.accept(packet);
+                    // No further processing needed.
+                    return;
+                }
+            }
+        }
+
+        mStack.pop(packet);
+    }
+
+    void pop_rx_triggers(RxPacket packet);
 
     LocalMAC mLocalMAC;
+    uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
+    uint16_t mInterfaceVlanId = 0; // default
     uint64_t mUnicastCounter = 0;
-    uint64_t mTotalCounter = 0;
     uint64_t mBroadcastCounter = 0;
+    uint64_t mTotalCounter = 0;
+    std::vector<RxTrigger> mRxTriggers;
     std::vector<UDPFlow> mUDPFlows;
-
+    Stack mStack;
 };
-
-
-inline void BBPort::pop_many(const RxPacket* packets, uint32_t length)
-{
-    while (length >= 4)
-    {
-        if (is_local_mac(packets[0]) && is_local_mac(packets[1]) && is_local_mac(packets[2]) && is_local_mac(packets[3]))
-        {
-            mUnicastCounter += 4;
-            udp_pop_4(packets);
-        }
-        else
-        {
-            pop(packets[0]);
-            pop(packets[1]);
-            pop(packets[2]);
-            pop(packets[3]);
-        }
-
-        length -= 4;
-        packets += 4;
-    }
-
-    for (auto i = 0u; i != length; ++i)
-    {
-        pop(packets[i]);
-    }
-}
-
-
-inline void BBPort::udp_pop_4(const RxPacket* packet)
-{
-    for (UDPFlow& flow : mUDPFlows)
-    {
-        if (flow.match(packet[0]) && flow.match(packet[1]) && flow.match(packet[2]) && flow.match(packet[3]))
-        {
-            flow.accept_4(packet);
-        }
-        else
-        {
-            flow.process(packet[0]);
-            flow.process(packet[1]);
-            flow.process(packet[2]);
-            flow.process(packet[3]);
-        }
-    }
-}
 
 
 // Validate size

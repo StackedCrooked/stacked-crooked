@@ -10,17 +10,9 @@ struct UDPFlow
 {
     UDPFlow(IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
-    void process(RxPacket packet)
+    bool match(RxPacket packet, uint32_t l3_offset)
     {
-        if (match(packet))
-        {
-            accept(packet);
-        }
-    }
-
-    bool match(RxPacket packet)
-    {
-        return mFilter.match(packet.data(), packet.size());
+        return mFilter.match(packet.data() + l3_offset);
     }
 
     void accept(RxPacket packet)

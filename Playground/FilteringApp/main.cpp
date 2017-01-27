@@ -110,13 +110,13 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 int main()
 {
 
-	// Create UDP flows
+    // Create UDP flows
     for (auto flow_index = 0; flow_index != 32; ++flow_index)
     {
         bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
     }
 
-	// Create packets for the UDP flows.
+    // Create packets for the UDP flows.
     std::vector<std::vector<uint8_t>> packets;
     packets.reserve(32u * 8);
 
@@ -128,22 +128,20 @@ int main()
         }
     }
 
-	// Shuffling makes it harder to efficiently demultiplex packet batches.
-	// However, it does not seem to affect speed of per-packet demultiplexing.
+    // Shuffling makes it harder to efficiently demultiplex packet batches.
+    // However, it does not seem to affect speed of per-packet demultiplexing.
     srand(time(0));
-	std::random_shuffle(packets.begin(), packets.end());
-	
-	// Run the benchmark a couple of times.
+    std::random_shuffle(packets.begin(), packets.end());
+
+    // Run the benchmark a couple of times.
     for (auto i = 0; i != 4; ++i)
     {
         run(packets);
     }
 
-	// Verify the counters.
+    // Verify the counters.
     for (auto i = 0; i != 32; ++i)
     {
-        assert(bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mBroadcastCounter == 0);
-        ASSERT_EQ(bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mTotalCounter, bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mUnicastCounter);
-        std::cout << "Flow " << (i + 1) << " Unicast=" << bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mUnicastCounter << "/" << bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mTotalCounter << std::endl;
+        std::cout << "Flow " << (i + 1) << " Unicast=" << bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mUnicastCounter << std::endl;
     }
 }

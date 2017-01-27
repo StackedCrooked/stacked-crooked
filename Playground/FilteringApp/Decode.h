@@ -6,7 +6,7 @@
 
 
 template<typename T>
-T Decode(const uint8_t* data)
+inline T Decode(const uint8_t* data)
 {
     T result;
     memcpy(&result, data, sizeof(result));

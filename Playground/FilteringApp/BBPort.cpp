@@ -13,5 +13,10 @@ void BBPort::addUDPFlow(uint16_t dst_port)
 }
 
 
-
-
+void BBPort::pop_rx_triggers(RxPacket packet)
+{
+    for (RxTrigger& rxTrigger : mRxTriggers)
+    {
+        rxTrigger.process(packet);
+    }
+}

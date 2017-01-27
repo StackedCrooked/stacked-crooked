@@ -4,6 +4,7 @@
 
 #include "Decode.h"
 #include "MACAddress.h"
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <array>

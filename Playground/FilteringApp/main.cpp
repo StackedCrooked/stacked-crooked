@@ -107,12 +107,6 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 }
 
 
-// TODO: Enable dynamic config:
-// - number of ports
-// - number of flows per port
-// - etc..
-
-
 int main()
 {
 

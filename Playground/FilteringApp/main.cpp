@@ -116,8 +116,16 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 int main()
 {
 
+	// Create UDP flows
+    for (auto flow_index = 0; flow_index != 32; ++flow_index)
+    {
+        bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
+    }
+
+	// Create packets for the UDP flows.
     std::vector<std::vector<uint8_t>> packets;
     packets.reserve(32u * 8);
+
     for (auto flow_index = 0; flow_index != 32u; ++flow_index)
     {
         for (auto i = 0u; i != 8u; ++i) // bursts of 8
@@ -126,16 +134,13 @@ int main()
         }
     }
 
-    for (auto flow_index = 0; flow_index != 32; ++flow_index)
-    {
-        bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
-    }
-
+	// Shuffling makes it harder to efficiently demultiplex packet batches.
+	// However, it does not seem to affect speed of per-packet demultiplexing.
     srand(time(0));
+	std::random_shuffle(packets.begin(), packets.end());
 
     for (auto i = 0; i != 4; ++i)
     {
-        std::random_shuffle(packets.begin(), packets.end());
         run(packets);
     }
 

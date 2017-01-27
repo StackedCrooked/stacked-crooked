@@ -7,7 +7,14 @@ BBPort::BBPort(MACAddress local_mac) :
 }
 
 
-
+void BBPort::process_rx_triggers(RxPacket packet)
+{
+    // Check packet against all BPF filters.
+    for (RxTrigger& rxTrigger : mRxTriggers)
+    {
+        rxTrigger.process(packet);
+    }
+}
 
 
 void BBPort::addUDPFlow(uint16_t dst_port)

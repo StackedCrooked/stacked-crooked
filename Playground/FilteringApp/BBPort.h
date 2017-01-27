@@ -24,7 +24,7 @@ struct BBPort
     __attribute__((always_inline))
     void pop(RxPacket packet)
     {
-        if (LIKELY(is_local_mac(packet)))
+        if (is_local_mac(packet))
         {
             mUnicastCounter++;
         }
@@ -37,26 +37,21 @@ struct BBPort
             mOtherCounter++;
         }
 
-        if (UNLIKELY(!mRxTriggers.empty()))
+        if (!mRxTriggers.empty())
         {
-            // Check packet against all BPF filters.
-            for (RxTrigger& rxTrigger : mRxTriggers)
-            {
-                rxTrigger.process(packet);
-            }
+            process_rx_triggers(packet);
         }
 
-        if (LIKELY(is_udp(packet)))
+        if (is_udp(packet))
         {
             // Check packet against all UDP flows.
             // TODO: use a hash table
             for (UDPFlow& flow : mUDPFlows)
             {
-                if (LIKELY(flow.match(packet, mLayer3Offset))) // BBPort knows its layer-3 offset
+                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
                 {
                     flow.accept(packet);
                     mUDPAccepted++;
-                    // No further processing needed.
                     return;
                 }
             }
@@ -65,6 +60,8 @@ struct BBPort
         // If we get here then we need to pass it to the stack.
         mStack.add_to_queue(packet);
     }
+
+    void process_rx_triggers(RxPacket packet);
 
     bool is_local_mac(const RxPacket& packet)
     {

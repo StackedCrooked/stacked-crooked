@@ -44,7 +44,7 @@ struct BBPort
             }
         }
 
-        if (get_protocol(packet) == ProtocolId::UDP) // check once
+        if (get_protocol(packet) == ProtocolId::UDP)
         {
             // Check packet against all UDP flows.
             // TODO: use a hash table

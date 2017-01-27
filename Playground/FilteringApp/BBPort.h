@@ -50,7 +50,7 @@ struct BBPort
             // TODO: use a hash table
             for (UDPFlow& flow : mUDPFlows)
             {
-                if (flow.match(packet, mLayer3Offset))
+                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
                 {
                     flow.accept(packet);
                     mUDPAccepted++;

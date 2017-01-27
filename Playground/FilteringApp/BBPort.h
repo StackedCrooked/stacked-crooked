@@ -70,7 +70,7 @@ struct BBPort
             }
         }
 
-        //mStack.pop(packet);
+        mStack.pop(packet);
     }
 
     void pop_rx_triggers(RxPacket packet);

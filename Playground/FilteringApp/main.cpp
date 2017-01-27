@@ -62,7 +62,6 @@ int64_t run_test(BBServer& bbServer, const std::vector<std::vector<uint8_t>>& ve
 {
     auto start_time = Benchmark::start();
 
-    //ASSERT_EQ(vec.size(), 32);
     bbServer.run(vec, num_packets);
     auto elapsed_time = Benchmark::stop() - start_time;
     return elapsed_time;

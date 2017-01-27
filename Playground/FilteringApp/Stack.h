@@ -6,7 +6,5 @@
 
 struct Stack
 {
-    Stack();
-
     void pop(RxPacket packet);
 };

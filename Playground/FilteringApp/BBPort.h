@@ -35,29 +35,19 @@ struct BBPort
             mBroadcastCounter++;
         }
 
-        process(packet);
-    }
-
-    bool is_local_mac(const RxPacket& packet)
-    {
-        return mLocalMAC.equals(packet.data());
-    }
-
-    bool is_broadcast(const RxPacket& packet)
-    {
-        return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
-    }
-
-    void process(RxPacket packet)
-    {
         if (!mRxTriggers.empty())
         {
-            // All packets must be checked against all triggers.
-            pop_rx_triggers(packet);
+            // Check packet against all BPF filters.
+            for (RxTrigger& rxTrigger : mRxTriggers)
+            {
+                rxTrigger.process(packet);
+            }
         }
 
-        if (get_protocol(packet) == ProtocolId::UDP)
+        if (get_protocol(packet) == ProtocolId::UDP) // check once
         {
+            // Check packet against all UDP flows.
+            // TODO: use a hash table
             for (UDPFlow& flow : mUDPFlows)
             {
                 if (flow.match(packet, mLayer3Offset))
@@ -73,7 +63,15 @@ struct BBPort
         mStack.pop(packet);
     }
 
-    void pop_rx_triggers(RxPacket packet);
+    bool is_local_mac(const RxPacket& packet)
+    {
+        return mLocalMAC.equals(packet.data());
+    }
+
+    bool is_broadcast(const RxPacket& packet)
+    {
+        return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
+    }
 
     ProtocolId get_protocol(RxPacket rxPacket)
     {

@@ -18,7 +18,6 @@ struct BBInterface
         }
     }
 
-	__attribute__((always_inline))
     void pop_many(const RxPacket* packet_ptr, uint32_t length)
     {
         for (BBPort& port : mBBPorts)

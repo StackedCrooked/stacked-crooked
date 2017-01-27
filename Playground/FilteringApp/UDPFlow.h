@@ -21,15 +21,6 @@ struct UDPFlow
         mBytesReceived += packet.mSize;
     }
 
-    void accept_4(const RxPacket* packet)
-    {
-        mPacketsReceived += 4;
-        mBytesReceived += packet[0].size();
-        mBytesReceived += packet[1].size();
-        mBytesReceived += packet[2].size();
-        mBytesReceived += packet[3].size();
-    }
-
     MaskFilter mFilter;
     uint64_t mPacketsReceived = 0;
     uint64_t mBytesReceived = 0;

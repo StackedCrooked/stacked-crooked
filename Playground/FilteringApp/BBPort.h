@@ -46,11 +46,6 @@ struct BBPort
         return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
     }
 
-    static ProtocolId get_protocol(RxPacket rxPacket)
-    {
-        return ProtocolId(rxPacket[offsetof(IPv4Header, mProtocolId)]);
-    }
-
     void process(RxPacket packet)
     {
         if (!mRxTriggers.empty())
@@ -76,6 +71,11 @@ struct BBPort
     }
 
     void pop_rx_triggers(RxPacket packet);
+
+    static ProtocolId get_protocol(RxPacket rxPacket)
+    {
+        return ProtocolId(rxPacket[offsetof(IPv4Header, mProtocolId)]);
+    }
 
     LocalMAC mLocalMAC;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default

@@ -26,7 +26,7 @@ struct BBPort
     {
         mTotalCounter++;
 
-        if (mLocalMAC.equals(packet.data()))
+        if (is_local_mac(packet))
         {
             mUnicastCounter++;
         }

@@ -143,6 +143,6 @@ int main()
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
 
-        std::cout << "Flow " << (i + 1) << " Accepted=" << bbPort.mUDPAccepted << "/" << bbPort.mTotalCounter << std::endl;
+        std::cout << "Flow " << (i + 1) << " Accepted=" << bbPort.mUDPAccepted << "/" << bbPort.getTotalCount() << std::endl;
     }
 }

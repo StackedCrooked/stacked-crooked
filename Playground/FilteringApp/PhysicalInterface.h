@@ -12,6 +12,7 @@
 
 struct PhysicalInterface
 {
+    __attribute__((always_inline))
     void pop(RxPacket packet)
     {
         BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];

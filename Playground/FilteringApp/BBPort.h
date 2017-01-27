@@ -2,6 +2,7 @@
 
 
 #include "Decode.h"
+#include "Likely.h"
 #include "MACAddress.h"
 #include "RxPacket.h"
 #include "RxTrigger.h"
@@ -15,11 +16,15 @@ struct BBPort
 {
     BBPort(MACAddress local_mac);
 
+    uint64_t getTotalCount() const
+    {
+        return mUnicastCounter + mBroadcastCounter + mOtherCounter;
+    }
+
+    __attribute__((always_inline))
     void pop(RxPacket packet)
     {
-        mTotalCounter++;
-
-        if (is_local_mac(packet))
+        if (LIKELY(is_local_mac(packet)))
         {
             mUnicastCounter++;
         }
@@ -27,8 +32,12 @@ struct BBPort
         {
             mBroadcastCounter++;
         }
+        else
+        {
+            mOtherCounter++;
+        }
 
-        if (!mRxTriggers.empty())
+        if (UNLIKELY(!mRxTriggers.empty()))
         {
             // Check packet against all BPF filters.
             for (RxTrigger& rxTrigger : mRxTriggers)
@@ -37,13 +46,13 @@ struct BBPort
             }
         }
 
-        if (is_udp(packet))
+        if (LIKELY(is_udp(packet)))
         {
             // Check packet against all UDP flows.
             // TODO: use a hash table
             for (UDPFlow& flow : mUDPFlows)
             {
-                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+                if (LIKELY(flow.match(packet, mLayer3Offset))) // BBPort knows its layer-3 offset
                 {
                     flow.accept(packet);
                     mUDPAccepted++;
@@ -80,9 +89,9 @@ struct BBPort
     LocalMAC mLocalMAC;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     uint16_t mInterfaceVlanId = 0; // default
-    uint64_t mTotalCounter = 0;
     uint64_t mUnicastCounter = 0;
     uint64_t mBroadcastCounter = 0;
+    uint64_t mOtherCounter = 0;
     uint64_t mUDPAccepted = 0;
     std::vector<RxTrigger> mRxTriggers;
     std::vector<UDPFlow> mUDPFlows;

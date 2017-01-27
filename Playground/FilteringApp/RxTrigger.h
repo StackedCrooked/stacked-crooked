@@ -6,5 +6,8 @@
 
 struct RxTrigger
 {
-    void process(RxPacket packet);
+    void process(RxPacket /*packet*/)
+    {
+
+    }
 };

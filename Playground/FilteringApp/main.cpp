@@ -132,12 +132,14 @@ int main()
 	// However, it does not seem to affect speed of per-packet demultiplexing.
     srand(time(0));
 	std::random_shuffle(packets.begin(), packets.end());
-
+	
+	// Run the benchmark a couple of times.
     for (auto i = 0; i != 4; ++i)
     {
         run(packets);
     }
 
+	// Verify the counters.
     for (auto i = 0; i != 32; ++i)
     {
         assert(bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mBroadcastCounter == 0);

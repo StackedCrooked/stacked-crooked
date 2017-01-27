@@ -6,5 +6,5 @@
 
 struct Stack
 {
-    void pop(RxPacket packet);
+    void add_to_queue(RxPacket packet);
 };

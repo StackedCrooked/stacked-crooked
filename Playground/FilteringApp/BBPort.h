@@ -60,7 +60,8 @@ struct BBPort
             }
         }
 
-        mStack.pop(packet);
+        // If we get here then we need to pass it to the stack.
+        mStack.add_to_queue(packet);
     }
 
     bool is_local_mac(const RxPacket& packet)

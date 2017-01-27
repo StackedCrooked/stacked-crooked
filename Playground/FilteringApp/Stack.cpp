@@ -1,6 +1,6 @@
 #include "Stack.h"
 
 
-void Stack::pop(RxPacket)
+void Stack::add_to_queue(RxPacket)
 {
 }

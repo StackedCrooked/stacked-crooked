@@ -15,13 +15,6 @@ struct BBPort
 {
     BBPort(MACAddress local_mac);
 
-    void addUDPFlow(uint16_t dst_port);
-
-    UDPFlow& getUDPFlow(uint32_t i)
-    {
-        return mUDPFlows[i];
-    }
-
     void pop(RxPacket packet)
     {
         mTotalCounter++;
@@ -44,7 +37,7 @@ struct BBPort
             }
         }
 
-        if (get_protocol(packet) == ProtocolId::UDP)
+        if (is_udp(packet))
         {
             // Check packet against all UDP flows.
             // TODO: use a hash table
@@ -74,11 +67,15 @@ struct BBPort
         return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
     }
 
-    ProtocolId get_protocol(RxPacket rxPacket)
+    bool is_udp(RxPacket rxPacket)
     {
         auto l3_data = rxPacket.data() + mLayer3Offset;
-        return ProtocolId(l3_data[offsetof(IPv4Header, mProtocolId)]);
+        return ProtocolId(l3_data[offsetof(IPv4Header, mProtocolId)]) == ProtocolId::UDP;
     }
+
+    UDPFlow& getUDPFlow(uint32_t index);
+
+    void addUDPFlow(uint16_t dst_port);
 
     LocalMAC mLocalMAC;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default

@@ -10,14 +10,14 @@ struct RxPacket
     RxPacket() :
         mData(),
         mSize(),
-        mBBInterfaceId()
+        mVlanId()
     {
     }
 
     RxPacket(const uint8_t* data, uint16_t size, uint8_t interfaceId) :
         mData(data),
         mSize(size),
-        mBBInterfaceId(interfaceId)
+        mVlanId(interfaceId)
     {
     }
 
@@ -28,5 +28,5 @@ struct RxPacket
 
     const uint8_t* mData;
     uint16_t mSize;
-    uint8_t mBBInterfaceId;
+    uint8_t mVlanId;
 };

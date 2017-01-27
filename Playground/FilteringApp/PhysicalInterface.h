@@ -14,7 +14,8 @@ struct PhysicalInterface
 {
     void pop(RxPacket packet)
     {
-        getBBInterface(packet.mBBInterfaceId).pop(packet);
+        BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];
+        bbInterface.pop(packet);
     }
 
     BBInterface& getBBInterface(uint32_t i)

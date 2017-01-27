@@ -24,6 +24,8 @@ struct BBPort
 
     void pop(RxPacket packet)
     {
+        mTotalCounter++;
+
         if (mLocalMAC.equals(packet.data()))
         {
             mUnicastCounter++;
@@ -61,28 +63,31 @@ struct BBPort
                 if (flow.match(packet, mLayer3Offset))
                 {
                     flow.accept(packet);
+                    mUDPAccepted++;
                     // No further processing needed.
                     return;
                 }
             }
         }
 
-        mStack.pop(packet);
+        //mStack.pop(packet);
     }
 
     void pop_rx_triggers(RxPacket packet);
 
-    static ProtocolId get_protocol(RxPacket rxPacket)
+    ProtocolId get_protocol(RxPacket rxPacket)
     {
-        return ProtocolId(rxPacket[offsetof(IPv4Header, mProtocolId)]);
+        auto l3_data = rxPacket.data() + mLayer3Offset;
+        return ProtocolId(l3_data[offsetof(IPv4Header, mProtocolId)]);
     }
 
     LocalMAC mLocalMAC;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     uint16_t mInterfaceVlanId = 0; // default
+    uint64_t mTotalCounter = 0;
     uint64_t mUnicastCounter = 0;
     uint64_t mBroadcastCounter = 0;
-    uint64_t mTotalCounter = 0;
+    uint64_t mUDPAccepted = 0;
     std::vector<RxTrigger> mRxTriggers;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;

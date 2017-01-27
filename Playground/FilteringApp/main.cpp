@@ -49,7 +49,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum
 {
-    num_packets = 4 * 1000 * 1000,
+    num_packets = 128 * 1000,
     num_iterations = num_packets / 32
 };
 
@@ -142,6 +142,8 @@ int main()
     // Verify the counters.
     for (auto i = 0; i != 32; ++i)
     {
-        std::cout << "Flow " << (i + 1) << " Unicast=" << bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0).mUnicastCounter << std::endl;
+        BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
+
+        std::cout << "Flow " << (i + 1) << " Accepted=" << bbPort.mUDPAccepted << "/" << bbPort.mTotalCounter << std::endl;
     }
 }

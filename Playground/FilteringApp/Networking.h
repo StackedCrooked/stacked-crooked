@@ -95,7 +95,7 @@ struct EthernetHeader
 };
 
 
-enum class ProtocolId : uint8_t
+enum ProtocolId : uint8_t
 {
     UDP = 17
 };

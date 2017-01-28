@@ -14,6 +14,8 @@
 
 struct BBPort
 {
+    //BBPort* mNextPort = nullptr;
+
     BBPort(MACAddress local_mac);
 
     uint64_t getTotalCount() const
@@ -23,7 +25,6 @@ struct BBPort
 
     void pop(RxPacket packet)
     {
-
         if (is_local_mac(packet))
         {
             mUnicastCounter++;
@@ -78,8 +79,8 @@ struct BBPort
 
     bool is_udp(RxPacket rxPacket)
     {
-        auto l3_data = rxPacket.data() + mLayer3Offset;
-        return ProtocolId(l3_data[offsetof(IPv4Header, mProtocolId)]) == ProtocolId::UDP;
+        auto ip_data = rxPacket.data() + mLayer3Offset;
+        return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::UDP;
     }
 
     UDPFlow& getUDPFlow(uint32_t index);
@@ -96,6 +97,7 @@ struct BBPort
     uint64_t mUDPAccepted = 0;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;
+    uint64_t mPadding[3];
 };
 
 

@@ -105,8 +105,15 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 
 int main()
 {
+#define PRINT_SIZE(x) std::cout << "sizeof(" << #x << ")=" << sizeof(x) << std::endl;
+    PRINT_SIZE(PhysicalInterface);
+    PRINT_SIZE(BBInterface);
+    PRINT_SIZE(RxTrigger);
+    PRINT_SIZE(BBPort);
+    PRINT_SIZE(UDPFlow);
+    PRINT_SIZE(RxPacket);
     auto bbServerPtr = std::make_unique<BBServer>();
-	BBServer& bbServer = *bbServerPtr;
+    BBServer& bbServer = *bbServerPtr;
 
     // Create UDP flows
     for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
@@ -114,7 +121,7 @@ int main()
         bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
     }
 
-	std::cout << "num_packets=" << num_packets << std::endl;
+    std::cout << "num_packets=" << num_packets << std::endl;
 
 
     // Create packet buffers and fill them with UDP data

@@ -27,4 +27,5 @@ struct BBInterface
 
     std::vector<BBPort> mBBPorts;
     std::vector<RxTrigger> mRxTriggers;
+    uint64_t mPadding[2];
 };

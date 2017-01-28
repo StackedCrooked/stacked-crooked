@@ -19,11 +19,6 @@ struct BBInterface
         }
 
         // Also run any bpf filters.
-        run_rx_triggers(packet);
-    }
-
-    void run_rx_triggers(RxPacket packet)
-    {
         for (RxTrigger& rxTrigger : mRxTriggers)
         {
             rxTrigger.process(packet);

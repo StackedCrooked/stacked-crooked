@@ -43,24 +43,26 @@ struct BBPort
             return;
         }
 
-        if (is_udp(packet))
+        switch (get_protocol(packet))
         {
-            // Check packet against all UDP flows.
-            // TODO: use a hash table
-            for (UDPFlow& flow : mUDPFlows)
+            case ProtocolId::UDP:
             {
-                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
-                {
-                    flow.accept(packet);
-                    mUDPAccepted++;
-                    return;
-                }
+                handle_udp(packet);
+                return;
+            }
+            case ProtocolId::TCP:
+            {
+                handle_tcp(packet);
+                return;
             }
         }
 
         // Pass the packet to the stack
         mStack.add_to_queue(packet);
     }
+
+    void handle_udp(const RxPacket& packet);
+    void handle_tcp(const RxPacket& packet);
 
     bool is_local_mac(const RxPacket& packet)
     {
@@ -77,7 +79,19 @@ struct BBPort
         return packet[0] & 0x01;
     }
 
+    ProtocolId get_protocol(RxPacket rxPacket)
+    {
+        auto ip_data = rxPacket.data() + mLayer3Offset;
+        return Decode<IPv4Header>(ip_data).mProtocolId;
+    }
+
     bool is_udp(RxPacket rxPacket)
+    {
+        auto ip_data = rxPacket.data() + mLayer3Offset;
+        return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::UDP;
+    }
+
+    bool is_tcp(RxPacket rxPacket)
     {
         auto ip_data = rxPacket.data() + mLayer3Offset;
         return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::UDP;
@@ -95,9 +109,10 @@ struct BBPort
     uint64_t mBroadcastCounter = 0;
     uint64_t mInvalidDestination = 0;
     uint64_t mUDPAccepted = 0;
+    uint64_t mTCPAccepted = 0;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;
-    uint64_t mPadding[3];
+    uint64_t mPadding[2];
 };
 
 

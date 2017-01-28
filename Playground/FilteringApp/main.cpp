@@ -34,7 +34,7 @@ MACAddress generate_mac(uint32_t i)
 
 
 
-std::vector<uint8_t> make_packet(uint16_t dst_port)
+std::vector<uint8_t> make_udp_packet(uint16_t dst_port)
 {
     std::vector<uint8_t> result;
     result.reserve(64);
@@ -44,11 +44,22 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
     return result;
 }
 
+std::vector<uint8_t> make_tcp_packet(uint16_t dst_port)
+{
+    std::vector<uint8_t> result;
+    result.reserve(64);
+    append(result, EthernetHeader::Create(generate_mac(dst_port)));
+    append(result, IPv4Header::Create(ProtocolId::TCP, IPv4Address::Create(1), IPv4Address::Create(1)));
+    append(result, TCPHeader::Create(1, dst_port));
+    return result;
+}
+
 enum : uint64_t
 {
-    num_flows = 128,
-    num_packets = 4 * 1000UL * 1000UL,
-    num_iterations = num_packets / num_flows
+    num_flows = 20,
+    num_packets = 1 * 1000UL * 1000UL,
+    num_iterations = num_packets / num_flows,
+    burst_size = 8
 };
 
 
@@ -122,13 +133,20 @@ int main()
 
     // Create packet buffers and fill them with UDP data
     std::vector<std::vector<uint8_t>> packet_buffers;
-    packet_buffers.reserve(num_flows * 8);
+    packet_buffers.reserve(num_flows * burst_size);
 
     for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
     {
         for (auto i = 0u; i != 8u; ++i) // bursts of 8
         {
-            packet_buffers.push_back(make_packet(flow_index + 1));
+            if (i / 4)
+            {
+                packet_buffers.push_back(make_udp_packet(flow_index + 1));
+            }
+            else
+            {
+                packet_buffers.push_back(make_tcp_packet(flow_index + 1));
+            }
         }
     }
 
@@ -156,7 +174,10 @@ int main()
     for (auto i = 0; i != num_flows; ++i)
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
-        assert(bbPort.mUDPAccepted == bbPort.getTotalCount());
-        //std::cout << "Flow " << (i + 1) << " Accepted=" << bbPort.mUDPAccepted << "/" << bbPort.getTotalCount() << std::endl;
+        std::cout << "Flow " << (i + 1)
+        << " MAC=" << bbPort.mUnicastCounter << " "
+        << " UDP=" << bbPort.mUDPAccepted << " "
+        << " TCP=" << bbPort.mTCPAccepted << " "
+        << " TOTAL=" << bbPort.getTotalCount() << std::endl;
     }
 }

@@ -79,6 +79,29 @@ struct Net16
 };
 
 
+struct Net32
+{
+    Net32() : mValue() {}
+
+    explicit Net32(uint32_t value) :
+        mValue(htonl(value))
+    {
+    }
+
+    void operator=(uint32_t value)
+    {
+        *this = Net32(value);
+    }
+
+    uint32_t hostValue() const { return ntohl(mValue); }
+
+    friend bool operator==(Net32 lhs, Net32 rhs) { return lhs.mValue == rhs.mValue; }
+    friend bool operator<(Net32 lhs, Net32 rhs) { return lhs.hostValue() < rhs.hostValue(); }
+
+    uint32_t mValue;
+};
+
+
 struct EthernetHeader
 {
     static EthernetHeader Create(MACAddress mac)
@@ -97,7 +120,8 @@ struct EthernetHeader
 
 enum ProtocolId : uint8_t
 {
-    UDP = 17
+    UDP = 17,
+    TCP = 6
 };
 
 
@@ -140,6 +164,28 @@ struct UDPHeader
     Net16 mLength{0};
     Net16 mChecksum{0};
 };
+
+
+struct TCPHeader
+{
+    static TCPHeader Create(uint16_t src_port, uint16_t dst_port)
+    {
+        auto result = TCPHeader();
+        result.mSourcePort = src_port;
+        result.mDestinationPort = dst_port;
+        return result;
+    }
+
+    Net16 mSourcePort;
+    Net16 mDestinationPort;
+    Net32 mSequenceNumber;
+    Net32 mAcknowledgmentNumber;
+    Net16 mDataOffsetAndFlags;
+    Net16 mWindowSize;
+    Net16 mCheckSum;
+    Net16 mUrgentPointer;
+};
+
 
 
 #endif // NETWORKING_H

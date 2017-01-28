@@ -120,8 +120,10 @@ struct EthernetHeader
 
 enum ProtocolId : uint8_t
 {
-    UDP = 17,
-    TCP = 6
+    ICMP = 1,
+    IGMP = 2,
+    TCP = 6,
+    UDP = 17
 };
 
 

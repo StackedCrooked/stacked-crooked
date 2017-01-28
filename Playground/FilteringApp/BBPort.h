@@ -45,6 +45,16 @@ struct BBPort
 
         switch (get_protocol(packet))
         {
+            case ProtocolId::ICMP:
+            {
+                handle_icmp(packet);
+                return;
+            }
+            case ProtocolId::IGMP:
+            {
+                handle_igmp(packet);
+                return;
+            }
             case ProtocolId::UDP:
             {
                 handle_udp(packet);
@@ -61,6 +71,8 @@ struct BBPort
         mStack.add_to_queue(packet);
     }
 
+    void handle_igmp(const RxPacket& packet);
+    void handle_icmp(const RxPacket& packet);
     void handle_udp(const RxPacket& packet);
     void handle_tcp(const RxPacket& packet);
 

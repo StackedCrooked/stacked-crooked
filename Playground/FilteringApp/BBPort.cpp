@@ -26,6 +26,17 @@ void BBPort::handle_udp(const RxPacket& packet)
 void BBPort::handle_tcp(const RxPacket& /*packet*/)
 {
     mTCPAccepted++;
+}
+
+
+void BBPort::handle_igmp(const RxPacket& /*packet*/)
+{
+
+}
+
+
+void BBPort::handle_icmp(const RxPacket& /*packet*/)
+{
 
 }
 

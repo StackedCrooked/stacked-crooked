@@ -9,6 +9,7 @@
 struct BBInterface
 {
     BBPort& addPort(MACAddress localMAC);
+    BBPort& getBBPort(uint32_t i) { return mBBPorts[i]; }
 
     void pop(RxPacket packet)
     {
@@ -16,12 +17,19 @@ struct BBInterface
         {
             port.pop(packet);
         }
+
+        // Also run any bpf filters.
+        run_rx_triggers(packet);
     }
 
-    BBPort& getBBPort(uint32_t i)
+    void run_rx_triggers(RxPacket packet)
     {
-        return mBBPorts[i];
+        for (RxTrigger& rxTrigger : mRxTriggers)
+        {
+            rxTrigger.process(packet);
+        }
     }
 
     std::vector<BBPort> mBBPorts;
+    std::vector<RxTrigger> mRxTriggers;
 };

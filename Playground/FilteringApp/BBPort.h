@@ -23,6 +23,7 @@ struct BBPort
 
     void pop(RxPacket packet)
     {
+
         if (is_local_mac(packet))
         {
             mUnicastCounter++;
@@ -41,11 +42,6 @@ struct BBPort
             return;
         }
 
-        if (!mRxTriggers.empty()) // triggers should run on bbinterface
-        {
-            process_rx_triggers(packet);
-        }
-
         if (is_udp(packet))
         {
             // Check packet against all UDP flows.
@@ -61,17 +57,8 @@ struct BBPort
             }
         }
 
-        // If we get here then we need to pass it to the stack.
+        // Pass the packet to the stack
         mStack.add_to_queue(packet);
-    }
-
-    void process_rx_triggers(RxPacket packet)
-    {
-        // Check packet against all BPF filters.
-        for (RxTrigger& rxTrigger : mRxTriggers)
-        {
-            rxTrigger.process(packet);
-        }
     }
 
     bool is_local_mac(const RxPacket& packet)
@@ -107,7 +94,6 @@ struct BBPort
     uint64_t mBroadcastCounter = 0;
     uint64_t mInvalidDestination = 0;
     uint64_t mUDPAccepted = 0;
-    std::vector<RxTrigger> mRxTriggers;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;
 };

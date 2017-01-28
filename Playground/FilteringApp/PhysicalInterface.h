@@ -12,11 +12,7 @@
 
 struct PhysicalInterface
 {
-    void pop(RxPacket packet)
-    {
-        BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];
-        bbInterface.pop(packet);
-    }
+    void pop(const std::vector<RxPacket>& packets);
 
     BBInterface& getBBInterface(uint32_t i)
     {

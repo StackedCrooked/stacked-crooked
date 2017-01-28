@@ -10,7 +10,6 @@ struct BBInterface
 {
     BBPort& addPort(MACAddress localMAC);
 
-    __attribute__((always_inline))
     void pop(RxPacket packet)
     {
         for (BBPort& port : mBBPorts)

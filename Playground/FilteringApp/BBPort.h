@@ -21,7 +21,6 @@ struct BBPort
         return mUnicastCounter + mBroadcastCounter + mOtherCounter;
     }
 
-    __attribute__((always_inline))
     void pop(RxPacket packet)
     {
         if (is_local_mac(packet))
@@ -61,7 +60,14 @@ struct BBPort
         mStack.add_to_queue(packet);
     }
 
-    void process_rx_triggers(RxPacket packet);
+    void process_rx_triggers(RxPacket packet)
+    {
+        // Check packet against all BPF filters.
+        for (RxTrigger& rxTrigger : mRxTriggers)
+        {
+            rxTrigger.process(packet);
+        }
+    }
 
     bool is_local_mac(const RxPacket& packet)
     {

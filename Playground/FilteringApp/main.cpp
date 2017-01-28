@@ -5,6 +5,7 @@
 #include "Networking.h"
 #include "PhysicalInterface.h"
 #include <algorithm>
+#include <memory>
 #include <thread>
 #include <vector>
 #include <chrono>
@@ -49,8 +50,8 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum : uint64_t
 {
-	num_flows = 64,
-    num_packets = (4 * 1000UL * 1000UL / num_flows) * num_flows, 
+    num_flows = 250,
+    num_packets = 4 * 1000UL * 1000UL,
     num_iterations = num_packets / num_flows
 };
 
@@ -104,7 +105,8 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 
 int main()
 {
-    BBServer bbServer;
+    auto bbServerPtr = std::make_unique<BBServer>();
+	BBServer& bbServer = *bbServerPtr;
 
     // Create UDP flows
     for (auto flow_index = 0; flow_index != num_flows; ++flow_index)

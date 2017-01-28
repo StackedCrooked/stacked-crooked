@@ -20,6 +20,5 @@ struct Stack
     void flush();
 
     std::vector<PacketBuffer*> mPackets;
-
     std::vector<PacketBuffer*> mFreeBuffers;
 };

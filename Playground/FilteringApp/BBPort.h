@@ -14,14 +14,10 @@
 
 struct BBPort
 {
-    //BBPort* mNextPort = nullptr;
-
     BBPort(MACAddress local_mac);
 
-    uint64_t getTotalCount() const
-    {
-        return mUnicastCounter + mBroadcastCounter + mInvalidDestination;
-    }
+    UDPFlow& getUDPFlow(uint32_t index);
+    void addUDPFlow(uint16_t dst_port);
 
     void pop(RxPacket packet)
     {
@@ -106,13 +102,8 @@ struct BBPort
         return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::UDP;
     }
 
-    UDPFlow& getUDPFlow(uint32_t index);
-
-    void addUDPFlow(uint16_t dst_port);
-
     LocalMAC mLocalMAC;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
-    uint16_t mInterfaceVlanId = 0; // default
     uint64_t mUnicastCounter = 0;
     uint64_t mMulticastCounter = 0;
     uint64_t mBroadcastCounter = 0;

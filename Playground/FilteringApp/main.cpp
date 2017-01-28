@@ -177,7 +177,7 @@ int main()
         std::cout << "Flow " << (i + 1)
         << " MAC=" << bbPort.mUnicastCounter << " "
         << " UDP=" << bbPort.mUDPAccepted << " "
-        << " TCP=" << bbPort.mTCPAccepted << " "
-        << " TOTAL=" << bbPort.getTotalCount() << std::endl;
+        << " TCP=" << bbPort.mTCPAccepted
+        << std::endl;
     }
 }

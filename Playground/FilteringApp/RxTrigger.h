@@ -6,10 +6,15 @@
 
 struct RxTrigger
 {
-    void process(RxPacket /*packet*/)
+    void process(RxPacket packet)
     {
-        mCounter++;
+        if (packet[0] == packet[1])
+        {
+            mPackets++;
+            mBytes += packet.size();
+        }
     }
 
-    uint64_t mCounter = 0;
+    uint64_t mPackets = 0;
+    uint64_t mBytes = 0;
 };

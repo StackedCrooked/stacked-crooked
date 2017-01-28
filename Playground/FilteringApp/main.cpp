@@ -50,11 +50,12 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 enum : uint64_t
 {
     num_packets = 4 * 1000UL * 1000UL,
-    num_iterations = num_packets / 32
+	num_flows = 128,
+    num_iterations = num_packets / num_flows
 };
 
 
-static_assert(num_packets % 32 == 0, "");
+static_assert(num_packets % num_flows == 0, "");
 
 
 
@@ -106,16 +107,16 @@ int main()
     BBServer bbServer;
 
     // Create UDP flows
-    for (auto flow_index = 0; flow_index != 32; ++flow_index)
+    for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
     {
         bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
     }
 
     // Create packet buffers and fill them with UDP data
     std::vector<std::vector<uint8_t>> packet_buffers;
-    packet_buffers.reserve(32u * 8);
+    packet_buffers.reserve(num_flows * 8);
 
-    for (auto flow_index = 0; flow_index != 32u; ++flow_index)
+    for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
     {
         for (auto i = 0u; i != 8u; ++i) // bursts of 8
         {
@@ -144,7 +145,7 @@ int main()
     }
 
     // Verify the counters.
-    for (auto i = 0; i != 32; ++i)
+    for (auto i = 0; i != num_flows; ++i)
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
 

@@ -44,13 +44,9 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
     return result;
 }
 
-
-
-
-
 enum : uint64_t
 {
-    num_flows = 40,
+    num_flows = 128,
     num_packets = 4 * 1000UL * 1000UL,
     num_iterations = num_packets / num_flows
 };
@@ -160,7 +156,7 @@ int main()
     for (auto i = 0; i != num_flows; ++i)
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
-
-        std::cout << "Flow " << (i + 1) << " Accepted=" << bbPort.mUDPAccepted << "/" << bbPort.getTotalCount() << std::endl;
+        assert(bbPort.mUDPAccepted == bbPort.getTotalCount());
+        //std::cout << "Flow " << (i + 1) << " Accepted=" << bbPort.mUDPAccepted << "/" << bbPort.getTotalCount() << std::endl;
     }
 }

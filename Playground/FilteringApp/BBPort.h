@@ -18,7 +18,7 @@ struct BBPort
 
     uint64_t getTotalCount() const
     {
-        return mUnicastCounter + mBroadcastCounter + mOtherCounter;
+        return mUnicastCounter + mBroadcastCounter + mInvalidDestination;
     }
 
     void pop(RxPacket packet)
@@ -31,12 +31,17 @@ struct BBPort
         {
             mBroadcastCounter++;
         }
+        else if (is_multicast(packet))
+        {
+            mMulticastCounter++;
+        }
         else
         {
-            mOtherCounter++;
+            mInvalidDestination++;
+            return;
         }
 
-        if (!mRxTriggers.empty())
+        if (!mRxTriggers.empty()) // triggers should run on bbinterface
         {
             process_rx_triggers(packet);
         }
@@ -79,6 +84,11 @@ struct BBPort
         return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
     }
 
+    bool is_multicast(const RxPacket& packet)
+    {
+        return packet[0] & 0x01;
+    }
+
     bool is_udp(RxPacket rxPacket)
     {
         auto l3_data = rxPacket.data() + mLayer3Offset;
@@ -93,8 +103,9 @@ struct BBPort
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     uint16_t mInterfaceVlanId = 0; // default
     uint64_t mUnicastCounter = 0;
+    uint64_t mMulticastCounter = 0;
     uint64_t mBroadcastCounter = 0;
-    uint64_t mOtherCounter = 0;
+    uint64_t mInvalidDestination = 0;
     uint64_t mUDPAccepted = 0;
     std::vector<RxTrigger> mRxTriggers;
     std::vector<UDPFlow> mUDPFlows;

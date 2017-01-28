@@ -49,8 +49,8 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum : uint64_t
 {
-    num_flows = 1,
-    num_packets = (4 * 1000UL * 1000UL / num_flows) * num_flows,
+	num_flows = 64,
+    num_packets = (4 * 1000UL * 1000UL / num_flows) * num_flows, 
     num_iterations = num_packets / num_flows
 };
 
@@ -101,28 +101,9 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
     std::cout << "===" << std::endl;
 }
 
-template<int N>
-struct is_power_of_two
-{
-    enum { value = N && !(N & (N - 1)) };
-};
-
-
-
-
 
 int main()
 {
-    static_assert(is_power_of_two<sizeof(PhysicalInterface)>::value, "");
-    static_assert(is_power_of_two<sizeof(BBInterface)>::value, "");
-    static_assert(is_power_of_two<sizeof(BBPort)>::value, "");
-    static_assert(is_power_of_two<sizeof(UDPFlow)>::value, "");
-    static_assert(is_power_of_two<sizeof(RxPacket)>::value, "");
-
-    std::cout << "sizeof(PhysicalInterface)=" << sizeof(PhysicalInterface) << std::endl;
-    std::cout << "sizeof(BBInterface)=" << sizeof(BBInterface) << std::endl;
-    std::cout << "sizeof(BBPort)=" << sizeof(BBPort) << std::endl;
-    std::cout << "sizeof(UDPFlow)=" << sizeof(UDPFlow) << std::endl;
     BBServer bbServer;
 
     // Create UDP flows
@@ -131,7 +112,7 @@ int main()
         bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
     }
 
-    std::cout << "num_packets=" << num_packets << std::endl;
+	std::cout << "num_packets=" << num_packets << std::endl;
 
 
     // Create packet buffers and fill them with UDP data

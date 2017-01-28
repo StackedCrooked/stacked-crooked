@@ -25,5 +25,4 @@ struct BBInterface
     }
 
     std::vector<BBPort> mBBPorts;
-    uint64_t mCounter = 0;
 };

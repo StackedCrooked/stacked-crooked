@@ -18,7 +18,7 @@ struct UDPFlow
     void accept(RxPacket packet)
     {
         mPacketsReceived++;
-        mBytesReceived += packet.size();
+        mBytesReceived += packet.mSize;
     }
 
     MaskFilter mFilter;

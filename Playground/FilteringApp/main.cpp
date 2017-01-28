@@ -50,7 +50,7 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum : uint64_t
 {
-    num_flows = 250,
+    num_flows = 40,
     num_packets = 4 * 1000UL * 1000UL,
     num_iterations = num_packets / num_flows
 };

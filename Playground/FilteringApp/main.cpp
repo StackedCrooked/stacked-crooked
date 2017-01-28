@@ -36,7 +36,7 @@ MACAddress generate_mac(uint32_t i)
 std::vector<uint8_t> make_packet(uint16_t dst_port)
 {
     std::vector<uint8_t> result;
-    result.reserve(128);
+    result.reserve(64);
     append(result, EthernetHeader::Create(generate_mac(dst_port)));
     append(result, IPv4Header::Create(ProtocolId::UDP, IPv4Address::Create(1), IPv4Address::Create(1)));
     append(result, UDPHeader::Create(1, dst_port));
@@ -49,8 +49,8 @@ std::vector<uint8_t> make_packet(uint16_t dst_port)
 
 enum : uint64_t
 {
-    num_packets = 4 * 1000UL * 1000UL,
-	num_flows = 128,
+	num_flows = 64,
+    num_packets = (4 * 1000UL * 1000UL / num_flows) * num_flows, 
     num_iterations = num_packets / num_flows
 };
 
@@ -111,6 +111,9 @@ int main()
     {
         bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
     }
+
+	std::cout << "num_packets=" << num_packets << std::endl;
+
 
     // Create packet buffers and fill them with UDP data
     std::vector<std::vector<uint8_t>> packet_buffers;

@@ -5,13 +5,21 @@
 #include <vector>
 
 
+struct PacketBuffer
+{
+    uint8_t mBuffer[1536];
+};
+
+
 struct Stack
 {
-    void add_to_queue(RxPacket packet)
-    {
-        mPackets.push_back(packet);
-        mPackets.clear();
-    }
+    Stack();
 
-    std::vector<RxPacket> mPackets;
+    void add_to_queue(RxPacket packet);
+
+    void flush();
+
+    std::vector<PacketBuffer*> mPackets;
+
+    std::vector<PacketBuffer*> mFreeBuffers;
 };

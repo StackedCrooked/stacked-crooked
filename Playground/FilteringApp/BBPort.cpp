@@ -4,6 +4,7 @@
 BBPort::BBPort(MACAddress local_mac) :
     mLocalMAC(local_mac)
 {
+    mStack.mPackets.reserve(1024);
 }
 
 
@@ -23,21 +24,25 @@ void BBPort::handle_udp(const RxPacket& packet)
 }
 
 
-void BBPort::handle_tcp(const RxPacket& /*packet*/)
+void BBPort::handle_tcp(const RxPacket& packet)
 {
     mTCPAccepted++;
+    // Pass the packet to the stack
+    mStack.add_to_queue(packet);
 }
 
 
-void BBPort::handle_igmp(const RxPacket& /*packet*/)
+void BBPort::handle_igmp(const RxPacket& packet)
 {
-
+    // Pass the packet to the stack
+    mStack.add_to_queue(packet);
 }
 
 
-void BBPort::handle_icmp(const RxPacket& /*packet*/)
+void BBPort::handle_icmp(const RxPacket& packet)
 {
-
+    // Pass the packet to the stack
+    mStack.add_to_queue(packet);
 }
 
 

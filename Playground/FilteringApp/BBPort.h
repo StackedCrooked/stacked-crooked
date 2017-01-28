@@ -66,9 +66,6 @@ struct BBPort
                 return;
             }
         }
-
-        // Pass the packet to the stack
-        mStack.add_to_queue(packet);
     }
 
     void handle_igmp(const RxPacket& packet);

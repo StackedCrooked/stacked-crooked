@@ -18,6 +18,7 @@ set(FilteringApp_SOURCES
     PhysicalInterface.cpp
     MaskFilter.cpp
     Networking.cpp
+    RxPacket.cpp
     RxTrigger.cpp
     Stack.cpp
     UDPFlow.cpp

@@ -21,45 +21,7 @@ struct BBPort
         return mUnicastCounter + mBroadcastCounter + mOtherCounter;
     }
 
-    __attribute__((always_inline))
-    void pop(RxPacket packet)
-    {
-        if (is_local_mac(packet))
-        {
-            mUnicastCounter++;
-        }
-        else if (is_broadcast(packet))
-        {
-            mBroadcastCounter++;
-        }
-        else
-        {
-            mOtherCounter++;
-        }
-
-        if (!mRxTriggers.empty())
-        {
-            process_rx_triggers(packet);
-        }
-
-        if (is_udp(packet))
-        {
-            // Check packet against all UDP flows.
-            // TODO: use a hash table
-            for (UDPFlow& flow : mUDPFlows)
-            {
-                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
-                {
-                    flow.accept(packet);
-                    mUDPAccepted++;
-                    return;
-                }
-            }
-        }
-
-        // If we get here then we need to pass it to the stack.
-        mStack.add_to_queue(packet);
-    }
+    void pop(RxPacket packet);
 
     void process_rx_triggers(RxPacket packet);
 
@@ -84,8 +46,8 @@ struct BBPort
     void addUDPFlow(uint16_t dst_port);
 
     LocalMAC mLocalMAC;
-    uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
-    uint16_t mInterfaceVlanId = 0; // default
+    uint32_t mLayer3Offset = sizeof(EthernetHeader); // default
+    uint32_t mInterfaceVlanId = 0; // default
     uint64_t mUnicastCounter = 0;
     uint64_t mBroadcastCounter = 0;
     uint64_t mOtherCounter = 0;
@@ -93,7 +55,9 @@ struct BBPort
     std::vector<RxTrigger> mRxTriggers;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;
-};
+}
+
+__attribute__((aligned(32)));
 
 
 // Validate size

@@ -12,10 +12,12 @@
 
 struct PhysicalInterface
 {
+    PhysicalInterface();
+
     __attribute__((always_inline))
     void pop(RxPacket packet)
     {
-        BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];
+        BBInterface& bbInterface = mBBInterfaces[packet.vlanId()];
         bbInterface.pop(packet);
     }
 
@@ -24,5 +26,5 @@ struct PhysicalInterface
         return mBBInterfaces[i];
     }
 
-    std::array<BBInterface, 64> mBBInterfaces;
+    std::unique_ptr<BBInterface[]> mBBInterfaces;
 };

@@ -13,7 +13,7 @@ struct BBServer
         return mPhysicalInterfaces[i];
     }
 
-    void run(const std::vector<std::vector<uint8_t> >& vec, uint32_t num_packets);
+    void run(const std::vector<RxPacket>& rxPackets, uint32_t num_repeats);
 
     std::array<PhysicalInterface, 4> mPhysicalInterfaces;
 };

@@ -58,27 +58,22 @@ static_assert(num_packets % 32 == 0, "");
 
 
 
-int64_t run_test(BBServer& bbServer, const std::vector<std::vector<uint8_t>>& vec)
+int64_t run_test(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 {
     auto start_time = Benchmark::start();
-
-    bbServer.run(vec, num_packets);
+    bbServer.run(rxPackets, num_packets / rxPackets.size());
     auto elapsed_time = Benchmark::stop() - start_time;
     return elapsed_time;
 }
 
 
-BBServer bbServer;
-
-
-void run(const std::vector<std::vector<uint8_t>>& packets)
+void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 {
-
     std::array<int64_t, 64> tests;
 
     for (auto& ns : tests)
     {
-        ns = run_test(bbServer, packets);
+        ns = run_test(bbServer, rxPackets);
     }
 
     std::sort(tests.begin(), tests.end());
@@ -108,6 +103,7 @@ void run(const std::vector<std::vector<uint8_t>>& packets)
 
 int main()
 {
+    BBServer bbServer;
 
     // Create UDP flows
     for (auto flow_index = 0; flow_index != 32; ++flow_index)
@@ -115,27 +111,36 @@ int main()
         bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
     }
 
-    // Create packets for the UDP flows.
-    std::vector<std::vector<uint8_t>> packets;
-    packets.reserve(32u * 8);
+    // Create packet buffers and fill them with UDP data
+    std::vector<std::vector<uint8_t>> packet_buffers;
+    packet_buffers.reserve(32u * 8);
 
     for (auto flow_index = 0; flow_index != 32u; ++flow_index)
     {
         for (auto i = 0u; i != 8u; ++i) // bursts of 8
         {
-            packets.push_back(make_packet(flow_index + 1));
+            packet_buffers.push_back(make_packet(flow_index + 1));
         }
     }
 
     // Shuffling makes it harder to efficiently demultiplex packet batches.
     // However, it does not seem to affect speed of per-packet demultiplexing.
     srand(time(0));
-    std::random_shuffle(packets.begin(), packets.end());
+    std::random_shuffle(packet_buffers.begin(), packet_buffers.end());
+
+    // Convert to list of RxPacket objects.
+    std::vector<RxPacket> rxPackets;
+    rxPackets.resize(packet_buffers.size());
+    for (RxPacket& rxPacket : rxPackets)
+    {
+        auto i = &rxPacket - rxPackets.data();
+        rxPacket = RxPacket(packet_buffers[i].data(), packet_buffers[i].size(), packet_buffers[i][5] - 1);
+    }
 
     // Run the benchmark a couple of times.
     for (auto i = 0; i != 4; ++i)
     {
-        run(packets);
+        run(bbServer, rxPackets);
     }
 
     // Verify the counters.

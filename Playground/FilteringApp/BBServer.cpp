@@ -7,30 +7,15 @@ BBServer::BBServer()
 }
 
 
-std::vector<RxPacket> mRxPackets;
-
-
-void BBServer::run(const std::vector<std::vector<uint8_t>>& batch, uint32_t num_packets)
+void BBServer::run(const std::vector<RxPacket>& rxPackets, uint32_t num_repeats)
 {
-    if (mRxPackets.size() != batch.size())
+    PhysicalInterface& physicalInterface = mPhysicalInterfaces[0];
+
+    for (auto i = 0u; i != num_repeats; ++i)
     {
-        mRxPackets.resize(batch.size());
-        for (RxPacket& rxPacket : mRxPackets)
+        for (const RxPacket& rxPacket : rxPackets)
         {
-            auto i = &rxPacket - mRxPackets.data();
-            rxPacket = RxPacket(batch[i].data(), batch[i].size(), batch[i][5] - 1);
-        }
-    }
-
-    auto num_repeats = num_packets / batch.size();
-    for (auto repeat_index = 0u; repeat_index != num_repeats; ++repeat_index)
-    {
-
-        auto& ph = getPhysicalInterface(0);
-
-        for (RxPacket& rxPacket : mRxPackets)
-        {
-            ph.pop(rxPacket);
+            physicalInterface.pop(rxPacket);
         }
     }
 }

@@ -111,7 +111,3 @@ struct BBPort
 };
 
 
-// Validate size
-// Define one or more UDP flows.
-// Use MaskFilter
-//

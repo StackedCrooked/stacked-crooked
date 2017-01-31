@@ -39,35 +39,30 @@ struct BBPort
             return;
         }
 
-        switch (get_protocol(packet))
-        {
-            case ProtocolId::ICMP:
-            {
-                handle_icmp(packet);
-                return;
-            }
-            case ProtocolId::IGMP:
-            {
-                handle_igmp(packet);
-                return;
-            }
-            case ProtocolId::UDP:
-            {
-                handle_udp(packet);
-                return;
-            }
-            case ProtocolId::TCP:
-            {
-                handle_tcp(packet);
-                return;
-            }
-        }
+		if (get_protocol(packet) == ProtocolId::UDP)
+		{
+			handle_udp(packet);
+		}
+		else
+		{
+			// handled by protocol stack
+			handle_other(packet);
+		}
     }
 
-    void handle_igmp(const RxPacket& packet);
-    void handle_icmp(const RxPacket& packet);
-    void handle_udp(const RxPacket& packet);
-    void handle_tcp(const RxPacket& packet);
+    void handle_udp(const RxPacket& packet)
+	{
+		for (UDPFlow& flow : mUDPFlows)
+		{
+			if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+			{
+				flow.accept(packet);
+				mUDPAccepted++;
+				return;
+			}
+		}
+	}
+    void handle_other(const RxPacket& packet);
 
     bool is_local_mac(const RxPacket& packet)
     {

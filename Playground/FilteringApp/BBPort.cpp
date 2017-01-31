@@ -9,39 +9,9 @@ BBPort::BBPort(MACAddress local_mac) :
 }
 
 
-void BBPort::handle_udp(const RxPacket& packet)
-{
-    // Check packet against all UDP flows.
-    // TODO: use a hash table
-    for (UDPFlow& flow : mUDPFlows)
-    {
-        if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
-        {
-            flow.accept(packet);
-            mUDPAccepted++;
-            return;
-        }
-    }
-}
-
-
-void BBPort::handle_tcp(const RxPacket& packet)
+void BBPort::handle_other(const RxPacket& packet)
 {
     mTCPAccepted++;
-    mStack.add_to_queue(packet);
-}
-
-
-void BBPort::handle_igmp(const RxPacket& packet)
-{
-    // Pass the packet to the stack
-    mStack.add_to_queue(packet);
-}
-
-
-void BBPort::handle_icmp(const RxPacket& packet)
-{
-    // Pass the packet to the stack
     mStack.add_to_queue(packet);
 }
 

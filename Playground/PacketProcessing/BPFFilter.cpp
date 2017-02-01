@@ -313,6 +313,3 @@ BPFFilter::BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, u
     BPFFilter(generate_bpf_filter_string(protocol, src_ip, dst_ip, src_port, dst_port))
 {
 }
-
-
-

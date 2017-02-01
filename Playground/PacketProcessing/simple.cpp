@@ -61,7 +61,6 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
             if (flows[flow_index].match(packet.data(), packet.size()))
             {
                 matches[flow_index]++;
-                break;
             }
         }
     }

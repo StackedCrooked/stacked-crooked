@@ -152,7 +152,7 @@ struct Flows
     static_assert(sizeof(Bucket) == 32, "");
 
     // Using a prime-number because it greatly reduces the number of hash collisions.
-    std::array<Bucket, 512> mHashTable;
+    std::array<Bucket, 4096> mHashTable;
 };
 
 
@@ -243,7 +243,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
 void run(uint32_t num_packets = 1000 * 1000)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 };
 
     for (auto flow_count : flow_counts)
     {

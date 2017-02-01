@@ -13,5 +13,3 @@ VectorFilter.cpp
 VectorFilter.h
 simple.cpp
 with-hash.cpp
-PCAPWriter.h
-PCAPWriter.cpp

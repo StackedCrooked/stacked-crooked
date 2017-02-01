@@ -113,7 +113,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
         IPv4Address dst_ip(1, 1, 1, 1);
         uint16_t src_port = i % num_flows;
         uint16_t dst_port = i % num_flows;
-        packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+        packets.push_back(Packet(6, src_ip, dst_ip, src_port, dst_port));
     }
 
     for (auto i = 1ul; i <= num_flows; ++i)
@@ -122,7 +122,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
         IPv4Address dst_ip(1, 1, 1, 1);
         uint16_t src_port = i % num_flows;
         uint16_t dst_port = i % num_flows;
-        flows.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+        flows.push_back(Flow<FilterType>(6, src_ip, dst_ip, src_port, dst_port));
     }
 
     std::vector<uint64_t> matches(num_flows);

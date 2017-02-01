@@ -57,8 +57,6 @@ using Flow = FlowImpl<FILTERTYPE>;
 
 struct Bucket
 {
-    using value_type = uint16_t; // number of flows shouldn't exceed 2**16
-
     Bucket() :
         mBuffer(),
         mBegin(&mBuffer[0]),
@@ -67,21 +65,21 @@ struct Bucket
     {
     }
 
-    void push_back(value_type value);
+    void push_back(uint16_t value);
 
-    value_type operator[](std::size_t i) const { return mBegin[i]; }
+    uint16_t operator[](std::size_t i) const { return mBegin[i]; }
 
-    const value_type* begin() const { return mBegin; }
-    const value_type* end() const { return mEnd; }
+    const uint16_t* begin() const { return mBegin; }
+    const uint16_t* end() const { return mEnd; }
 
     bool empty() const { return mBegin == mEnd; }
 
     std::size_t size() const { return mEnd - mBegin; }
 private:
-    std::array<value_type, 4> mBuffer;
-    value_type* mBegin;
-    value_type* mEnd;
-    std::unique_ptr<std::vector<value_type>> mVector;
+    std::array<uint16_t, 4> mBuffer;
+    uint16_t* mBegin;
+    uint16_t* mEnd;
+    std::unique_ptr<std::vector<uint16_t>> mVector;
 };
 
 
@@ -257,7 +255,7 @@ int main()
 }
 
 
-void Bucket::push_back(Bucket::value_type value)
+void Bucket::push_back(uint16_t value)
 {
     uint32_t length = mEnd - mBegin;
 
@@ -275,7 +273,7 @@ void Bucket::push_back(Bucket::value_type value)
         return;
     }
 
-    mVector.reset(new std::vector<value_type>);
+    mVector.reset(new std::vector<uint16_t>);
     mVector->reserve(2 * mBuffer.size());
     mVector->assign(mBuffer.begin(), mBuffer.end());
     mVector->push_back(value);

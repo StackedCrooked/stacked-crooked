@@ -56,7 +56,7 @@ std::vector<uint8_t> make_tcp_packet(uint16_t dst_port)
 
 enum : uint64_t
 {
-    num_flows = 20,
+    num_flows = 64,
     num_packets = 2 * 1000UL * 1000UL,
     num_iterations = num_packets / num_flows,
     burst_size = 8
@@ -113,12 +113,12 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 int main()
 {
 #define PRINT_SIZE(x) std::cout << "sizeof(" << #x << ")=" << sizeof(x) << std::endl;
-    PRINT_SIZE(PhysicalInterface);
-    PRINT_SIZE(BBInterface);
-    PRINT_SIZE(RxTrigger);
-    PRINT_SIZE(BBPort);
-    PRINT_SIZE(UDPFlow);
-    PRINT_SIZE(RxPacket);
+    //PRINT_SIZE(PhysicalInterface);
+    //PRINT_SIZE(BBInterface);
+    //PRINT_SIZE(RxTrigger);
+    //PRINT_SIZE(BBPort);
+    //PRINT_SIZE(UDPFlow);
+    //PRINT_SIZE(RxPacket);
     auto bbServerPtr = std::make_unique<BBServer>();
     BBServer& bbServer = *bbServerPtr;
 
@@ -139,14 +139,7 @@ int main()
     {
         for (auto i = 0u; i != 8u; ++i) // bursts of 8
         {
-            if (i / 4)
-            {
-                packet_buffers.push_back(make_udp_packet(flow_index + 1));
-            }
-            else
-            {
-                packet_buffers.push_back(make_tcp_packet(flow_index + 1));
-            }
+			packet_buffers.push_back(make_udp_packet(flow_index + 1));
         }
     }
 

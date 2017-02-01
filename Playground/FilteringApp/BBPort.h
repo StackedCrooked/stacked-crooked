@@ -40,8 +40,16 @@ struct BBPort
         }
 
 		if (get_protocol(packet) == ProtocolId::UDP)
-		{
-			handle_udp(packet);
+        {
+            for (UDPFlow& flow : mUDPFlows)
+            {
+                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+                {
+                    flow.accept(packet);
+                    mUDPAccepted++;
+                    return;
+                }
+            }
 		}
 		else
 		{
@@ -50,18 +58,6 @@ struct BBPort
 		}
     }
 
-    void handle_udp(const RxPacket& packet)
-	{
-		for (UDPFlow& flow : mUDPFlows)
-		{
-			if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
-			{
-				flow.accept(packet);
-				mUDPAccepted++;
-				return;
-			}
-		}
-	}
     void handle_other(const RxPacket& packet);
 
     bool is_local_mac(const RxPacket& packet)

@@ -13,15 +13,15 @@ struct BBInterface
 
     void pop(RxPacket packet)
     {
-        for (BBPort& port : mBBPorts)
-        {
-            port.pop(packet);
-        }
-
         // Also run any bpf filters.
         for (RxTrigger& rxTrigger : mRxTriggers)
         {
             rxTrigger.process(packet);
+        }
+
+        for (BBPort& port : mBBPorts)
+        {
+            port.pop(packet);
         }
     }
 

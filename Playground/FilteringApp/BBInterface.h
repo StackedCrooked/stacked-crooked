@@ -6,22 +6,29 @@
 #include <vector>
 
 
+
+struct PhysicalInterface;
+
+
 struct BBInterface
 {
-    BBPort& addPort(MACAddress localMAC);
+    BBPort& addPort(PhysicalInterface& physicalInterface, MACAddress localMAC);
     BBPort& getBBPort(uint32_t i) { return mBBPorts[i]; }
 
     void pop(RxPacket packet)
     {
-        // Also run any bpf filters.
+        for (BBPort& bbPort : mBBPorts)
+        {
+            bbPort.pop(packet);
+        }
+    }
+
+    void pop_bpf(RxPacket packet)
+    {
+
         for (RxTrigger& rxTrigger : mRxTriggers)
         {
             rxTrigger.process(packet);
-        }
-
-        for (BBPort& port : mBBPorts)
-        {
-            port.pop(packet);
         }
     }
 

@@ -96,7 +96,7 @@ struct LocalMAC
     {
     }
 
-    const uint8_t* data() { return mBytes + 2; }
+    const uint8_t* data() { return mMAC.data(); }
     std::size_t size() const { return 6; }
 
     const uint8_t* storage_data() { return mBytes; }

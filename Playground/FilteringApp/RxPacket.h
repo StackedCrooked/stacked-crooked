@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "Networking.h"
 #include <cassert>
 #include <cstdint>
 
@@ -10,14 +11,16 @@ struct RxPacket
     RxPacket() :
         mData(),
         mSize(),
-        mVlanId()
+        mVlanId(),
+        mProtocolId()
     {
     }
 
-    RxPacket(const uint8_t* data, uint16_t size, uint8_t interfaceId) :
+    RxPacket(const uint8_t* data, uint16_t size, uint8_t interfaceId, ProtocolId protocolId) :
         mData(data),
         mSize(size),
-        mVlanId(interfaceId)
+        mVlanId(interfaceId),
+        mProtocolId(protocolId)
     {
     }
 
@@ -29,4 +32,5 @@ struct RxPacket
     const uint8_t* mData;
     uint16_t mSize;
     uint8_t mVlanId;
+    ProtocolId mProtocolId;
 };

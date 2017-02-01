@@ -125,7 +125,7 @@ int main()
     // Create UDP flows
     for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
     {
-        bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
+        bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(bbServer.mPhysicalInterfaces[0], generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
     }
 
     std::cout << "num_packets=" << num_packets << std::endl;
@@ -135,27 +135,24 @@ int main()
     std::vector<std::vector<uint8_t>> packet_buffers;
     packet_buffers.reserve(num_flows * burst_size);
 
+    std::vector<RxPacket> rxPackets;
+    rxPackets.resize(packet_buffers.size());
+
     for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
     {
         for (auto i = 0u; i != 8u; ++i) // bursts of 8
         {
-			packet_buffers.push_back(make_udp_packet(flow_index + 1));
+            packet_buffers.push_back(make_udp_packet(flow_index + 1));
+            std::vector<uint8_t>& buf = packet_buffers.back();
+
+            rxPackets.push_back(RxPacket(buf.data(), buf.size(), buf[5] - 1, ProtocolId::UDP));
         }
     }
 
     // Shuffling makes it harder to efficiently demultiplex packet batches.
     // However, it does not seem to affect speed of per-packet demultiplexing.
     srand(time(0));
-    std::random_shuffle(packet_buffers.begin(), packet_buffers.end());
-
-    // Convert to list of RxPacket objects.
-    std::vector<RxPacket> rxPackets;
-    rxPackets.resize(packet_buffers.size());
-    for (RxPacket& rxPacket : rxPackets)
-    {
-        auto i = &rxPacket - rxPackets.data();
-        rxPacket = RxPacket(packet_buffers[i].data(), packet_buffers[i].size(), packet_buffers[i][5] - 1);
-    }
+    std::random_shuffle(rxPackets.begin(), rxPackets.end());
 
     // Run the benchmark a couple of times.
     for (auto i = 0; i != 4; ++i)

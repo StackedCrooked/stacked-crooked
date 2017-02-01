@@ -9,11 +9,7 @@ BBPort::BBPort(MACAddress local_mac) :
 }
 
 
-void BBPort::handle_other(const RxPacket& packet)
-{
-    mTCPAccepted++;
-    mStack.add_to_queue(packet);
-}
+
 
 
 void BBPort::addUDPFlow(uint16_t dst_port)

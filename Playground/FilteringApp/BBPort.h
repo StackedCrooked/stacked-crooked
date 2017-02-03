@@ -39,23 +39,18 @@ struct BBPort
             return;
         }
 
-		if (get_protocol(packet) == ProtocolId::UDP)
+        for (UDPFlow& flow : mUDPFlows)
         {
-            for (UDPFlow& flow : mUDPFlows)
+            if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
             {
-                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
-                {
-                    flow.accept(packet);
-                    mUDPAccepted++;
-                    return;
-                }
+                flow.accept(packet);
+                mUDPAccepted++;
+                return;
             }
-		}
-		else
-		{
-			// handled by protocol stack
-			handle_other(packet);
-		}
+        }
+
+        // handled by protocol stack
+        handle_other(packet);
     }
 
     void handle_other(const RxPacket& packet);

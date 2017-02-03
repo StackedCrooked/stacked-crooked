@@ -2,6 +2,7 @@
 
 
 #include "PhysicalInterface.h"
+#include "Array.h"
 
 
 struct BBServer
@@ -15,7 +16,7 @@ struct BBServer
 
     void run(const std::vector<RxPacket>& rxPackets, uint32_t num_repeats);
 
-    std::array<PhysicalInterface, 4> mPhysicalInterfaces;
+    Array<PhysicalInterface, 4> mPhysicalInterfaces;
 };
 
 

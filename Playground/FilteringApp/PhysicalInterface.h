@@ -2,6 +2,7 @@
 
 
 #include "BBInterface.h"
+#include "Array.h"
 #include "RxPacket.h"
 #include <algorithm>
 #include <array>
@@ -19,5 +20,5 @@ struct PhysicalInterface
         return mBBInterfaces[i];
     }
 
-    std::array<BBInterface, 64> mBBInterfaces;
+    Array<BBInterface, 64> mBBInterfaces;
 };

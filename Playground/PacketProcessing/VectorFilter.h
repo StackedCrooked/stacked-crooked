@@ -4,7 +4,12 @@
 
 #include "Networking.h"
 #include <cstdint>
+#include <iostream>
 #include <x86intrin.h>
+#include "vectorclass/vectori128.h"
+
+
+using namespace vec;
 
 
 struct VectorFilter
@@ -13,14 +18,16 @@ struct VectorFilter
 
     bool match(const uint8_t* packet_data, uint32_t /*len*/) const
     {
-        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(static_mask_) };
+        enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(std::array<uint64_t, 2>) };
+        Vec4ui item;
+        item.load(packet_data + offset);
 
-        auto mask_result = _mm_and_si128(static_mask_, _mm_loadu_si128((__m128i*)(packet_data + offset)));
-        return _mm_testz_si128(field_, mask_result);
+        return !vec::horizontal_or(field_ ^ (item & static_mask_));
+
     }
 
 private:
-    static __m128i GetMask()
+    static Vec4ui GetMask()
     {
         uint8_t mask_bytes[16] = {
             0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
@@ -29,11 +36,13 @@ private:
             0xff, 0xff, 0xff, 0xff  // source and destination ports
         };
 
-        return _mm_loadu_si128((__m128i*)&mask_bytes[0]);
+        Vec4ui result;
+        result.load(&mask_bytes[0]);
+        return result;
     }
 
-    __m128i field_;
-    static __m128i static_mask_;
+    Vec4ui field_;
+    static Vec4ui static_mask_;
 };
 
 

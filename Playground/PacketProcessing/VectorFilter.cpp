@@ -25,8 +25,8 @@ VectorFilter::VectorFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst
 
     static_assert(sizeof(field_) == sizeof(h), "");
 
-    field_ = _mm_loadu_si128((__m128i*)&h);
+    field_.load(&h);
 }
 
 
-__m128i VectorFilter::static_mask_;
+Vec4ui VectorFilter::static_mask_ = VectorFilter::GetMask();

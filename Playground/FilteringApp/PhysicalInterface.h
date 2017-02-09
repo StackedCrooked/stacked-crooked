@@ -21,4 +21,5 @@ struct PhysicalInterface
     }
 
     Array<BBInterface, 64> mBBInterfaces;
+    std::vector<BBInterface*> mActiveInterfaces;
 };

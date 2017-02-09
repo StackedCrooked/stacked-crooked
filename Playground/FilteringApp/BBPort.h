@@ -20,31 +20,13 @@ struct BBPort
     void addUDPFlow(uint16_t dst_port);
 
 
-	void pop_many(RxPacket* packets, uint32_t size)
-	{
-		while (size >= 4)
-		{
-			pop(packets[0]);
-			pop(packets[1]);
-			pop(packets[2]);
-			pop(packets[3]);
-			packets += 4;
-			size -= 4;
-		}
-
-		while (size >= 2)
-		{
-			pop(packets[0]);
-			pop(packets[1]);
-			packets += 2;
-			size -= 2;
-		}
-
-		if (size != 0)
-		{
-			pop(packets[0]);
-		}
-	}
+    void pop_many(RxPacket* packets, uint32_t size)
+    {
+        for (auto i = 0u; i != size; ++i)
+        {
+            pop(packets[i]);
+        }
+    }
 
     void pop(RxPacket packet)
     {

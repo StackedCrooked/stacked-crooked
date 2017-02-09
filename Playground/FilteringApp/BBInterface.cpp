@@ -1,7 +1,13 @@
 #include "BBInterface.h"
 
 
-static_assert(sizeof(BBInterface) == 64, "");
+static_assert(sizeof(BBInterface) == 128, "");
+
+
+BBInterface::BBInterface()
+{
+	mPackets.reserve(32);
+}
 
 
 BBPort& BBInterface::addPort(MACAddress localMAC)

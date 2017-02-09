@@ -8,6 +8,7 @@
 
 struct BBInterface
 {
+	BBInterface();
     BBPort& addPort(MACAddress localMAC);
     BBPort& getBBPort(uint32_t i) { return mBBPorts[i]; }
 
@@ -25,7 +26,25 @@ struct BBInterface
         }
     }
 
+	void pop_later(RxPacket packet, std::vector<BBInterface*>& bb_interfaces)
+	{
+		if (mPackets.empty())
+		{
+			bb_interfaces.push_back(this);
+		}
+		mPackets.push_back(packet);
+	}
+
+	void pop_now()
+	{
+		for (BBPort& port : mBBPorts)
+		{
+			port.pop_many(mPackets.data(), mPackets.size());
+		}
+		mPackets.clear();
+	}
     std::vector<BBPort> mBBPorts;
+    std::vector<RxPacket> mPackets;
     std::vector<RxTrigger> mRxTriggers;
-    uint64_t mPadding[2];
+    uint64_t mPadding[7];
 };

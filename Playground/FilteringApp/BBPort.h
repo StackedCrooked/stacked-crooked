@@ -56,9 +56,9 @@ struct BBPort
 
                 return true;
             }
-
         }
 
+        // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
         auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
 
         if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())

@@ -53,5 +53,4 @@ struct BBInterface
     std::vector<BBPort> mBBPorts;
     std::vector<RxPacket> mPackets;
     std::vector<RxTrigger> mRxTriggers;
-    uint64_t mPadding[7];
 };

@@ -1,9 +1,6 @@
 #include "BBInterface.h"
 
 
-static_assert(sizeof(BBInterface) == 128, "");
-
-
 BBInterface::BBInterface()
 {
     mPackets.reserve(32);

@@ -35,7 +35,14 @@ struct BBInterface
         mPackets.push_back(packet);
     }
 
-    void pop_now();
+    void pop_now()
+    {
+        for (BBPort& port : mBBPorts)
+        {
+            port.pop_many(mPackets.data(), mPackets.size());
+        }
+        mPackets.clear();
+    }
 
     std::vector<BBPort> mBBPorts;
     std::vector<RxPacket> mPackets;

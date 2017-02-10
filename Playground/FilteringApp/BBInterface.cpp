@@ -17,11 +17,4 @@ BBPort& BBInterface::addPort(MACAddress localMAC)
 }
 
 
-void BBInterface::pop_now()
-{
-    for (BBPort& port : mBBPorts)
-    {
-        port.pop_many(mPackets.data(), mPackets.size());
-    }
-    mPackets.clear();
-}
+

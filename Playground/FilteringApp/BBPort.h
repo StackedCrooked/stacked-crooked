@@ -54,11 +54,6 @@ struct BBPort
             {
                 return;
             }
-
-            if (is_tcp(packet))
-            {
-                mTCPAccepted++;
-            }
         }
 
         // handled by protocol stack
@@ -125,7 +120,6 @@ struct BBPort
     uint64_t mBroadcastCounter = 0;
     uint64_t mInvalidDestination = 0;
     uint64_t mUDPAccepted = 0;
-    uint64_t mTCPAccepted = 0;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;
 };

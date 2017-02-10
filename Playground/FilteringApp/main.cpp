@@ -170,7 +170,6 @@ int main()
         std::cout << "Flow " << (i + 1)
         << " MAC=" << bbPort.mUnicastCounter << " "
         << " UDP=" << bbPort.mUDPAccepted << " "
-        << " TCP=" << bbPort.mTCPAccepted << " "
         << " InvalidDestination=" << bbPort.mInvalidDestination << " "
         << std::endl;
     }

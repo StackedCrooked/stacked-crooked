@@ -18,6 +18,3 @@ struct BBServer
 
     Array<PhysicalInterface, 4> mPhysicalInterfaces;
 };
-
-
-

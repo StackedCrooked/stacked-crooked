@@ -16,5 +16,3 @@ void BBServer::run(const std::vector<RxPacket>& rxPackets, uint32_t num_repeats)
         physicalInterface.pop(rxPackets);
     }
 }
-
-

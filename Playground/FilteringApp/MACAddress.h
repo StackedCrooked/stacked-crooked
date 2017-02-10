@@ -34,13 +34,12 @@ struct MACAddress
         union
         {
             uint16_t u16[4];
+            uint32_t u32[2];
             uint64_t u64;
         };
 
-        auto data16 = reinterpret_cast<const uint16_t*>(data());
-        u16[0] = data16[0];
-        u16[1] = data16[1];
-        u16[2] = data16[2];
+        u32[0] = Decode<uint32_t>(data());
+        u16[2] = Decode<uint16_t>(data() + sizeof(uint32_t));
         u16[3] = 0;
 
         return u64;

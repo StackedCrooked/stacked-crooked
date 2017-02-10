@@ -113,10 +113,10 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 int main()
 {
 #define PRINT_SIZE(x) std::cout << "sizeof(" << #x << ")=" << sizeof(x) << std::endl;
-    //PRINT_SIZE(PhysicalInterface);
-    //PRINT_SIZE(BBInterface);
+    PRINT_SIZE(PhysicalInterface);
+    PRINT_SIZE(BBInterface);
     //PRINT_SIZE(RxTrigger);
-    //PRINT_SIZE(BBPort);
+    PRINT_SIZE(BBPort);
     //PRINT_SIZE(UDPFlow);
     //PRINT_SIZE(RxPacket);
     auto bbServerPtr = std::make_unique<BBServer>();
@@ -172,7 +172,6 @@ int main()
         << " UDP=" << bbPort.mUDPAccepted << " "
         << " TCP=" << bbPort.mTCPAccepted << " "
         << " InvalidDestination=" << bbPort.mInvalidDestination << " "
-        << " InvalidIP=" << bbPort.mInvalidIP << " "
         << std::endl;
     }
 }

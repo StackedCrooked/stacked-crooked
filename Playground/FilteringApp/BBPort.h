@@ -37,11 +37,7 @@ struct BBPort
         {
             mBroadcastCounter++;
         }
-        else if (is_multicast(packet))
-        {
-            mMulticastCounter++;
-        }
-        else
+        else if (!is_multicast(packet))
         {
             mInvalidDestination++;
             return false;
@@ -63,7 +59,6 @@ struct BBPort
 
         if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
         {
-            mInvalidIP++;
             return false;
         }
 
@@ -121,15 +116,13 @@ struct BBPort
     IPv4Address mLocalIP;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     uint64_t mUnicastCounter = 0;
-    uint64_t mMulticastCounter = 0;
+    //uint64_t mMulticastCounter = 0;
     uint64_t mBroadcastCounter = 0;
     uint64_t mInvalidDestination = 0;
-    uint64_t mInvalidIP = 0;
     uint64_t mUDPAccepted = 0;
     uint64_t mTCPAccepted = 0;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;
-    uint64_t mPadding[2];
 };
 
 

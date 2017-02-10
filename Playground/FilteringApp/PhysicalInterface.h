@@ -20,6 +20,7 @@ struct PhysicalInterface
         return mBBInterfaces[i];
     }
 
-    Array<BBInterface, 64> mBBInterfaces;
+    Array<BBInterface, 63> mBBInterfaces;
     std::vector<BBInterface*> mActiveInterfaces;
+    uint8_t mPadding[104];
 };

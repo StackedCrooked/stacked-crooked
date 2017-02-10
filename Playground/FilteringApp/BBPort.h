@@ -19,7 +19,7 @@ struct BBPort
 
     void addUDPFlow(uint16_t dst_port);
 
-    bool pop(RxPacket packet)
+    void pop(RxPacket packet)
     {
         if (is_local_mac(packet))
         {
@@ -32,7 +32,7 @@ struct BBPort
         else if (!is_multicast(packet))
         {
             mInvalidDestination++;
-            return false;
+            return;
         }
 
         if (is_ipv4(packet))
@@ -43,7 +43,7 @@ struct BBPort
                 {
                     flow.accept(packet);
                     mUDPAccepted++;
-                    return true;
+                    return;
                 }
             }
 
@@ -52,7 +52,7 @@ struct BBPort
 
             if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
             {
-                return false;
+                return;
             }
 
             if (is_tcp(packet))
@@ -63,10 +63,6 @@ struct BBPort
 
         // handled by protocol stack
         handle_other(packet);
-
-        // We should also try popping the packet to the other
-        // bbports on the same interface.
-        return false;
     }
 
     bool is_ipv4(RxPacket packet) const

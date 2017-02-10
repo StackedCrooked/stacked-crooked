@@ -67,7 +67,7 @@ struct BBPort
 
     bool is_ipv4(RxPacket packet) const
     {
-        return Decode<uint16_t>(packet.data() + sizeof(MACAddress)) == htons(0x0800);
+        return Decode<EthernetHeader>(packet.data()).mEtherType == Net16(0x0800);
     }
 
     void pop_many(RxPacket* packets, uint32_t size)

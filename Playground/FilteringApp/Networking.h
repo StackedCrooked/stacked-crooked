@@ -33,6 +33,15 @@ struct IPv4Address
         mData[3] = d;
     }
 
+    uint8_t operator[](uint32_t i) const
+    {
+        return mData[i];
+    }
+
+    bool isBroadcast() const { return *this == IPv4Address(0xFF, 0xFF, 0xFF, 0xFF); }
+    bool isMulticast() const { return (mData[0] & 0xF0) == 0xE0; }
+
+
     uint32_t toInteger() const
     {
         uint32_t result;
@@ -43,6 +52,11 @@ struct IPv4Address
     friend bool operator==(IPv4Address lhs, IPv4Address rhs)
     {
         return lhs.toInteger() == rhs.toInteger();
+    }
+
+    friend bool operator!=(IPv4Address lhs, IPv4Address rhs)
+    {
+        return lhs.toInteger() != rhs.toInteger();
     }
 
     friend bool operator<(IPv4Address lhs, IPv4Address rhs)

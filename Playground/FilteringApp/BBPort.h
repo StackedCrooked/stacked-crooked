@@ -11,7 +11,6 @@
 #include <vector>
 
 
-
 struct BBPort
 {
     BBPort(MACAddress local_mac);
@@ -28,7 +27,7 @@ struct BBPort
         }
     }
 
-    void pop(RxPacket packet)
+    bool pop(RxPacket packet)
     {
         if (is_local_mac(packet))
         {
@@ -45,7 +44,7 @@ struct BBPort
         else
         {
             mInvalidDestination++;
-            return;
+            return false;
         }
 
         for (UDPFlow& flow : mUDPFlows)
@@ -54,15 +53,36 @@ struct BBPort
             {
                 flow.accept(packet);
                 mUDPAccepted++;
-                return;
+
+                return true;
             }
+
+        }
+
+        auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
+
+        if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
+        {
+            mInvalidIP++;
+            return false;
+        }
+
+        if (is_tcp(packet))
+        {
+            mTCPAccepted++;
         }
 
         // handled by protocol stack
         handle_other(packet);
+        return false;
     }
 
     void handle_other(const RxPacket& packet);
+
+    bool is_local_ip(const RxPacket& packet)
+    {
+        return Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP == mLocalIP;
+    }
 
     bool is_local_mac(const RxPacket& packet)
     {
@@ -94,15 +114,17 @@ struct BBPort
     bool is_tcp(RxPacket rxPacket)
     {
         auto ip_data = rxPacket.data() + mLayer3Offset;
-        return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::UDP;
+        return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::TCP;
     }
 
     LocalMAC mLocalMAC;
+    IPv4Address mLocalIP;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     uint64_t mUnicastCounter = 0;
     uint64_t mMulticastCounter = 0;
     uint64_t mBroadcastCounter = 0;
     uint64_t mInvalidDestination = 0;
+    uint64_t mInvalidIP = 0;
     uint64_t mUDPAccepted = 0;
     uint64_t mTCPAccepted = 0;
     std::vector<UDPFlow> mUDPFlows;

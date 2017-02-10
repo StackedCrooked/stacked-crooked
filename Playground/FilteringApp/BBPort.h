@@ -41,7 +41,6 @@ struct BBPort
             {
                 flow.accept(packet);
                 mUDPAccepted++;
-
                 return true;
             }
         }
@@ -61,6 +60,9 @@ struct BBPort
 
         // handled by protocol stack
         handle_other(packet);
+
+        // We should also try popping the packet to the other
+        // bbports on the same interface.
         return false;
     }
 

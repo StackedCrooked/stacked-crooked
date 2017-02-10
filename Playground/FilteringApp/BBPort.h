@@ -116,7 +116,6 @@ struct BBPort
     IPv4Address mLocalIP;
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     uint64_t mUnicastCounter = 0;
-    //uint64_t mMulticastCounter = 0;
     uint64_t mBroadcastCounter = 0;
     uint64_t mInvalidDestination = 0;
     uint64_t mUDPAccepted = 0;

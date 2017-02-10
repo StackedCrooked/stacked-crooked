@@ -41,6 +41,12 @@ struct BBInterface
         {
             port.pop_many(mPackets.data(), mPackets.size());
         }
+
+        for (RxTrigger& rxTrigger : mRxTriggers)
+        {
+            rxTrigger.process(mPackets);
+        }
+
         mPackets.clear();
     }
 

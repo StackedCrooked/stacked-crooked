@@ -3,6 +3,7 @@
 
 #include "RxPacket.h"
 #include "BPFFilter.h"
+#include <vector>
 
 
 struct RxTrigger
@@ -15,6 +16,14 @@ struct RxTrigger
         {
             mPackets++;
             mBytes += packet.size();
+        }
+    }
+
+    void process(const std::vector<RxPacket>& packets)
+    {
+        for (const RxPacket& packet : packets)
+        {
+            process(packet);
         }
     }
 

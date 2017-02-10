@@ -67,7 +67,7 @@ struct BBPort
 
     bool is_ipv4(RxPacket packet) const
     {
-        return Decode<uint16_t>(packet.data() + sizeof(MACAddress)) == 0x0008;
+        return Decode<uint16_t>(packet.data() + sizeof(MACAddress)) == htons(0x0800);
     }
 
     void pop_many(RxPacket* packets, uint32_t size)

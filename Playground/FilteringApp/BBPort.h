@@ -35,27 +35,30 @@ struct BBPort
             return false;
         }
 
-        for (UDPFlow& flow : mUDPFlows)
+        if (is_ipv4(packet))
         {
-            if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+            for (UDPFlow& flow : mUDPFlows)
             {
-                flow.accept(packet);
-                mUDPAccepted++;
-                return true;
+                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+                {
+                    flow.accept(packet);
+                    mUDPAccepted++;
+                    return true;
+                }
             }
-        }
 
-        // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
-        auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
+            // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
+            auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
 
-        if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
-        {
-            return false;
-        }
+            if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
+            {
+                return false;
+            }
 
-        if (is_tcp(packet))
-        {
-            mTCPAccepted++;
+            if (is_tcp(packet))
+            {
+                mTCPAccepted++;
+            }
         }
 
         // handled by protocol stack
@@ -64,6 +67,11 @@ struct BBPort
         // We should also try popping the packet to the other
         // bbports on the same interface.
         return false;
+    }
+
+    bool is_ipv4(RxPacket packet) const
+    {
+        return Decode<uint16_t>(packet.data() + sizeof(MACAddress)) == 0x0008;
     }
 
     void pop_many(RxPacket* packets, uint32_t size)

@@ -6,7 +6,6 @@ BBPort::BBPort(MACAddress local_mac) :
     mLocalIP(1, 1, 1, local_mac[5])
 {
     mStack.mPackets.reserve(1024);
-    //(void)mPadding;
 }
 
 
@@ -22,7 +21,4 @@ void BBPort::handle_other(const RxPacket& packet)
 }
 
 
-UDPFlow& BBPort::getUDPFlow(uint32_t index)
-{
-    return mUDPFlows[index];
-}
+

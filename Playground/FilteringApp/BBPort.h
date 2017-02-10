@@ -15,17 +15,9 @@ struct BBPort
 {
     BBPort(MACAddress local_mac);
 
-    UDPFlow& getUDPFlow(uint32_t index);
+    UDPFlow& getUDPFlow(uint32_t index) { return mUDPFlows[index]; }
+
     void addUDPFlow(uint16_t dst_port);
-
-
-    void pop_many(RxPacket* packets, uint32_t size)
-    {
-        for (auto i = 0u; i != size; ++i)
-        {
-            pop(packets[i]);
-        }
-    }
 
     bool pop(RxPacket packet)
     {
@@ -70,6 +62,14 @@ struct BBPort
         // handled by protocol stack
         handle_other(packet);
         return false;
+    }
+
+    void pop_many(RxPacket* packets, uint32_t size)
+    {
+        for (auto i = 0u; i != size; ++i)
+        {
+            pop(packets[i]);
+        }
     }
 
     void handle_other(const RxPacket& packet);

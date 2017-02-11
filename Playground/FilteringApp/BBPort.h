@@ -55,11 +55,12 @@ struct BBPort
 
             if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
             {
+                // Invalid destination IP.
                 return;
             }
         }
 
-        // handled by protocol stack
+        // Send it to the stack.
         handle_other(packet);
     }
 

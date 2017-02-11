@@ -31,16 +31,23 @@ MACAddress generate_mac(uint32_t i)
     return mac;
 }
 
+enum : uint64_t
+{
+    num_flows = 4,
+    num_ports = 10,
+    num_packets = 1000UL * 1000UL,
+    num_iterations = num_packets / num_flows,
+    burst_size = 8
+};
 
 
-
-std::vector<uint8_t> make_udp_packet(uint16_t dst_port)
+std::vector<uint8_t> make_udp_packet(uint16_t bb_port_id, uint16_t udp_flow_id)
 {
     std::vector<uint8_t> result;
     result.reserve(64);
-    append(result, EthernetHeader::Create(generate_mac(dst_port)));
-    append(result, IPv4Header::Create(ProtocolId::UDP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
-    append(result, UDPHeader::Create(1, dst_port));
+    append(result, EthernetHeader::Create(generate_mac(bb_port_id)));
+    append(result, IPv4Header::Create(ProtocolId::UDP, IPv4Address::Create(1), IPv4Address::Create(bb_port_id)));
+    append(result, UDPHeader::Create(1, udp_flow_id));
     return result;
 }
 
@@ -53,14 +60,6 @@ std::vector<uint8_t> make_tcp_packet(uint16_t dst_port)
     append(result, TCPHeader::Create(1, dst_port));
     return result;
 }
-
-enum : uint64_t
-{
-    num_flows = 40,
-    num_packets = 2 * 1000UL * 1000UL,
-    num_iterations = num_packets / num_flows,
-    burst_size = 8
-};
 
 
 static_assert(num_packets % num_flows == 0, "");
@@ -123,9 +122,12 @@ int main()
     BBServer& bbServer = *bbServerPtr;
 
     // Create UDP flows
-    for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
+    for (auto port_index = 0; port_index != num_ports; ++port_index)
     {
-        bbServer.getPhysicalInterface(0).getBBInterface(flow_index).addPort(generate_mac(flow_index + 1)).addUDPFlow(flow_index + 1);
+        for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
+        {
+            bbServer.getPhysicalInterface(0).getBBInterface(port_index).addPort(generate_mac(port_index + 1)).addUDPFlow(flow_index + 1);
+        }
     }
 
     std::cout << "num_packets=" << num_packets << std::endl;
@@ -135,11 +137,15 @@ int main()
     std::vector<std::vector<uint8_t>> packet_buffers;
     packet_buffers.reserve(num_flows * burst_size);
 
-    for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
+
+    for (auto port_index = 0; port_index != num_ports; ++port_index)
     {
-        for (auto i = 0u; i != 8u; ++i) // bursts of 8
+        for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
         {
-            packet_buffers.push_back(make_udp_packet(flow_index + 1));
+            for (auto i = 0u; i != 8u; ++i) // bursts of 8
+            {
+                packet_buffers.push_back(make_udp_packet(port_index + 1, flow_index + 1));
+            }
         }
     }
 
@@ -164,13 +170,19 @@ int main()
     }
 
     // Verify the counters.
-    for (auto i = 0; i != num_flows; ++i)
+    for (auto port_index = 0; port_index != num_ports; ++port_index)
     {
-        BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
-        std::cout << "Flow " << (i + 1)
-        << " MAC=" << bbPort.mStats.mUnicastCounter << " "
-        << " UDP=" << bbPort.mStats.mUDPAccepted << " "
-        << " InvalidDestination=" << bbPort.mStats.mMulticastCounter << " "
-        << std::endl;
+        std::cout << "BBPort " << (port_index + 1) << std::endl;
+        for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
+        {
+            BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(port_index).getBBPort(0);
+            std::cout
+                << " Flow=" << (flow_index + 1)
+                << " mUDPFlows.size=" << bbPort.mUDPFlows.size()
+                << " MAC=" << bbPort.mStats.mUnicastCounter << " "
+                << " UDP=" << bbPort.mStats.mUDPAccepted << " "
+                << " InvalidDestination=" << bbPort.mStats.mMulticastCounter << " "
+                << std::endl;
+        }
     }
 }

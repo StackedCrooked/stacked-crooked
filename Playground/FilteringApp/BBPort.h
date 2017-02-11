@@ -75,43 +75,9 @@ struct BBPort
 
     void handle_other(const RxPacket& packet);
 
-    bool is_local_ip(const RxPacket& packet)
-    {
-        return Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP == mLocalIP;
-    }
-
-    bool is_local_mac(const RxPacket& packet)
-    {
-        return mLocalMAC.equals(packet.data());
-    }
-
-    bool is_broadcast(const RxPacket& packet)
-    {
-        return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
-    }
-
-    bool is_multicast(const RxPacket& packet)
-    {
-        return packet[0] & 0x01;
-    }
-
-    ProtocolId get_protocol(RxPacket rxPacket)
-    {
-        auto ip_data = rxPacket.data() + mLayer3Offset;
-        return Decode<IPv4Header>(ip_data).mProtocolId;
-    }
-
-    bool is_udp(RxPacket rxPacket)
-    {
-        auto ip_data = rxPacket.data() + mLayer3Offset;
-        return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::UDP;
-    }
-
-    bool is_tcp(RxPacket rxPacket)
-    {
-        auto ip_data = rxPacket.data() + mLayer3Offset;
-        return Decode<IPv4Header>(ip_data).mProtocolId == ProtocolId::TCP;
-    }
+    bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
+    bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }
+    bool is_multicast(const RxPacket& packet) { return packet[0] & 0x01; }
 
     LocalMAC mLocalMAC;
     IPv4Address mLocalIP;

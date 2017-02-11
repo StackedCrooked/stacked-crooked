@@ -23,15 +23,18 @@ struct BBPort
     {
         if (is_local_mac(packet))
         {
-            mUnicastCounter++;
+            mStats.mUnicastCounter++;
         }
         else if (is_broadcast(packet))
         {
-            mBroadcastCounter++;
+            mStats.mBroadcastCounter++;
         }
-        else if (!is_multicast(packet))
+        else if (is_multicast(packet))
         {
-            mInvalidDestination++;
+            mStats.mMulticastCounter++;
+        }
+        else
+        {
             return;
         }
 
@@ -42,7 +45,7 @@ struct BBPort
                 if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
                 {
                     flow.accept(packet);
-                    mUDPAccepted++;
+                    mStats.mUDPAccepted++;
                     return;
                 }
             }
@@ -79,13 +82,19 @@ struct BBPort
     bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }
     bool is_multicast(const RxPacket& packet) { return packet[0] & 0x01; }
 
+    struct Stats
+    {
+        uint64_t mUnicastCounter = 0;
+        uint64_t mBroadcastCounter = 0;
+        uint64_t mMulticastCounter = 0;
+        uint64_t mUDPAccepted = 0;
+    };
+
     LocalMAC mLocalMAC;
     IPv4Address mLocalIP;
+    uint16_t mVLANId = 0; // zero means on vlan id
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
-    uint64_t mUnicastCounter = 0;
-    uint64_t mBroadcastCounter = 0;
-    uint64_t mInvalidDestination = 0;
-    uint64_t mUDPAccepted = 0;
+    Stats mStats;
     std::vector<UDPFlow> mUDPFlows;
     Stack mStack;
 };

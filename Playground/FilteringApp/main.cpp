@@ -168,9 +168,9 @@ int main()
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
         std::cout << "Flow " << (i + 1)
-        << " MAC=" << bbPort.mUnicastCounter << " "
-        << " UDP=" << bbPort.mUDPAccepted << " "
-        << " InvalidDestination=" << bbPort.mInvalidDestination << " "
+        << " MAC=" << bbPort.mStats.mUnicastCounter << " "
+        << " UDP=" << bbPort.mStats.mUDPAccepted << " "
+        << " InvalidDestination=" << bbPort.mStats.mMulticastCounter << " "
         << std::endl;
     }
 }

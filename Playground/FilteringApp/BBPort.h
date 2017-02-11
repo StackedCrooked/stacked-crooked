@@ -77,7 +77,10 @@ struct BBPort
         }
     }
 
-    void handle_other(const RxPacket& packet);
+    void handle_other(const RxPacket& packet)
+    {
+        mStack.add_to_queue(packet);
+    }
 
     bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
     bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }

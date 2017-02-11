@@ -15,10 +15,7 @@ void BBPort::addUDPFlow(uint16_t dst_port)
 }
 
 
-void BBPort::handle_other(const RxPacket& packet)
-{
-    mStack.add_to_queue(packet);
-}
+
 
 
 

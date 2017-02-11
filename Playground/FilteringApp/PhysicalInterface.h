@@ -13,6 +13,8 @@
 
 struct PhysicalInterface
 {
+    PhysicalInterface();
+
     void pop(const std::vector<RxPacket>& packets);
 
     BBInterface& getBBInterface(uint32_t i)
@@ -20,6 +22,6 @@ struct PhysicalInterface
         return mBBInterfaces[i];
     }
 
-    Array<BBInterface, 63> mBBInterfaces;
+    std::vector<BBInterface> mBBInterfaces;
     std::vector<BBInterface*> mActiveInterfaces;
 };

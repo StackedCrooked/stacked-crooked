@@ -11,38 +11,44 @@ Stack::Stack() :
 Stack::~Stack()
 {
     stop();
-    //std::cout << this << " Stack::mRxPackets=" << mRxPackets << std::endl;
+    std::cout << this << " Stack::mRxPackets=" << mRxPackets << std::endl;
 }
 
 
 void Stack::stop()
 {
-    mPackets.push(RxPacket(nullptr, 0, 0));
+    {
+        std::unique_lock<std::mutex> lock(mMutex);
+        mQuit = true;
+        mCondition.notify_all();
+    }
     mConsumerThread.join();
 }
 
 
 void Stack::run_consumer()
 {
-    std::array<RxPacket, 32> batch;
     for (;;)
     {
-        auto n = mPackets.pop(batch.data(), batch.size());
-        if (n == 0)
+        std::unique_lock<std::mutex> lock(mMutex);
+        mCondition.wait(lock);
+
+        if (mQuit)
         {
-            asm volatile ("pause;");
+            return;
+        }
+
+        if (mSharedItems.empty())
+        {
             continue;
         }
 
-        for (auto i = 0ul; i != n; ++i)
-        {
-            RxPacket rxPacket = batch[i];
-            if (!rxPacket.data())
-            {
-                return;
-            }
-        }
+        std::swap(mSharedItems, mConsumerItems);
 
-        mRxPackets += n;
+        mSharedItems.clear();
+
+        lock.unlock();
+
+        mRxPackets += mSharedItems.size();
     }
 }

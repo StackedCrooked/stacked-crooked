@@ -5,8 +5,12 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <array>
 #include <vector>
-#include <iostream>
+#include <condition_variable>
+#include <mutex>
 #include <thread>
+
+
+#include <iostream>
 
 
 struct Stack
@@ -22,28 +26,34 @@ struct Stack
 
     void pop_later(RxPacket rxPacket)
     {
-        mBatch.push_back(rxPacket);
+        mProducerItems.push_back(rxPacket);
     }
 
     void pop_now()
     {
-        if (!mBatch.empty())
+        if (mProducerItems.empty())
         {
-            mPackets.push(mBatch.data(), mBatch.size());
-            std::cout << mBatch.size() << std::endl;
-            mBatch.clear();
+            return;
         }
+
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            std::swap(mProducerItems, mSharedItems);
+        }
+
+        mCondition.notify_one();
     }
 
 private:
     void run_consumer();
 
-    __attribute__((aligned(64)))
-    boost::lockfree::spsc_queue<RxPacket, boost::lockfree::capacity<256>> mPackets;
+    __attribute__((aligned(64))) bool mQuit = false;
+    __attribute__((aligned(64))) std::vector<RxPacket> mProducerItems;
+    __attribute__((aligned(64))) std::vector<RxPacket> mSharedItems;
+    __attribute__((aligned(64))) std::vector<RxPacket> mConsumerItems;
+    __attribute__((aligned(64))) uint64_t mRxPackets = 0;
 
-    __attribute__((aligned(64)))
-    std::vector<RxPacket> mBatch;
-
-    uint64_t mRxPackets = 0;
+    std::mutex mMutex;
+    std::condition_variable mCondition;
     std::thread mConsumerThread;
 };

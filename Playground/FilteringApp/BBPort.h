@@ -40,17 +40,6 @@ struct BBPort
 
         if (is_ipv4(packet))
         {
-
-            // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
-            auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
-
-            if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
-            {
-                // Invalid destination IP.
-                return;
-            }
-
-
             for (UDPFlow& flow : mUDPFlows)
             {
                 if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
@@ -59,6 +48,22 @@ struct BBPort
                     mStats.mUDPAccepted++;
                     return;
                 }
+            }
+
+
+            // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
+            auto ip_hdr = Decode<IPv4Header>(packet.data() + mLayer3Offset);
+            auto dst_ip = ip_hdr.mDestinationIP;
+
+            if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
+            {
+                // Invalid destination IP.
+                return;
+            }
+
+            if (ip_hdr.mProtocolId == ProtocolId::TCP)
+            {
+                mStats.mTCPAccepted++;
             }
         }
 

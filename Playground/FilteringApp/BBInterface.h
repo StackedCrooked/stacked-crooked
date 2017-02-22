@@ -3,6 +3,7 @@
 
 #include "BBPort.h"
 #include "RxPacket.h"
+#include <memory>
 #include <vector>
 
 
@@ -10,7 +11,7 @@ struct BBInterface
 {
     BBInterface();
     BBPort& addPort(MACAddress localMAC);
-    BBPort& getBBPort(uint32_t i) { return mBBPorts[i]; }
+    BBPort& getBBPort(uint32_t i) { return *mBBPorts[i]; }
 
     void pop(RxPacket packet)
     {
@@ -20,9 +21,10 @@ struct BBInterface
             rxTrigger.process(packet);
         }
 
-        for (BBPort& port : mBBPorts)
+        for (auto& bbPortPtr : mBBPorts)
         {
-            port.pop(packet);
+            BBPort& bbPort = *bbPortPtr;
+            bbPort.pop(packet);
         }
     }
 
@@ -37,9 +39,10 @@ struct BBInterface
 
     void pop_now()
     {
-        for (BBPort& port : mBBPorts)
+        for (auto& bbPortPtr : mBBPorts)
         {
-            port.pop_many(mPackets.data(), mPackets.size());
+            BBPort& bbPort = *bbPortPtr;
+            bbPort.pop_many(mPackets.data(), mPackets.size());
         }
 
         for (RxTrigger& rxTrigger : mRxTriggers)
@@ -50,7 +53,7 @@ struct BBInterface
         mPackets.clear();
     }
 
-    std::vector<BBPort> mBBPorts;
+    std::vector<std::unique_ptr<BBPort>> mBBPorts;
     std::vector<RxPacket> mPackets;
     std::vector<RxTrigger> mRxTriggers;
 };

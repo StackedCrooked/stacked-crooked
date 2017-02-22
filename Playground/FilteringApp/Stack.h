@@ -2,26 +2,18 @@
 
 
 #include "RxPacket.h"
+#include <boost/lockfree/spsc_queue.hpp>
 #include <vector>
-
-
-struct PacketBuffer
-{
-    uint8_t mBuffer[1536];
-};
 
 
 struct Stack
 {
     Stack();
 
-    void add_to_queue(RxPacket)
+    void add_to_queue(RxPacket rxPacket)
     {
-        // TODO
+        mPackets.push(rxPacket);
     }
 
-    void flush();
-
-    std::vector<PacketBuffer*> mPackets;
-    std::vector<PacketBuffer*> mFreeBuffers;
+    boost::lockfree::spsc_queue<RxPacket, boost::lockfree::capacity<1024>> mPackets;
 };

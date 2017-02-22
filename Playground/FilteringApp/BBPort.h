@@ -79,7 +79,7 @@ struct BBPort
 
     void handle_other(const RxPacket& packet)
     {
-        mStack.add_to_queue(packet);
+        mStack->add_to_queue(packet);
     }
 
     bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
@@ -100,5 +100,5 @@ struct BBPort
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     Stats mStats;
     std::vector<UDPFlow> mUDPFlows;
-    Stack mStack;
+    std::shared_ptr<Stack> mStack;
 };

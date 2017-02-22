@@ -75,11 +75,12 @@ struct BBPort
         {
             pop(packets[i]);
         }
+        mStack->pop_now();
     }
 
     void handle_other(const RxPacket& packet)
     {
-        mStack->add_to_queue(packet);
+        mStack->pop_later(packet);
     }
 
     bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
@@ -92,6 +93,7 @@ struct BBPort
         uint64_t mBroadcastCounter = 0;
         uint64_t mMulticastCounter = 0;
         uint64_t mUDPAccepted = 0;
+        uint64_t mTCPAccepted = 0;
     };
 
     LocalMAC mLocalMAC;

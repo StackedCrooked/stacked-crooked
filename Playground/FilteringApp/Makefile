@@ -1,2 +1,2 @@
 all:
-	cd build && make
+    cd build && make -j4

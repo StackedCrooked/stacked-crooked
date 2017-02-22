@@ -2,6 +2,7 @@
 
 
 #include "RxPacket.h"
+#include "Logger.h"
 #include <boost/lockfree/spsc_queue.hpp>
 #include <array>
 #include <vector>
@@ -37,7 +38,19 @@ struct Stack
         }
 
         {
-            std::unique_lock<std::mutex> lock(mMutex);
+            if (!mMutex.try_lock())
+            {
+                mFailedLocks++;
+
+                do {
+                    asm volatile ("pause;");
+                }
+                while (!mMutex.try_lock());
+            }
+
+            mLocks++;
+
+            std::lock_guard<std::mutex> lock(mMutex, std::adopt_lock);
             std::swap(mProducerItems, mSharedItems);
         }
 
@@ -52,6 +65,8 @@ private:
     __attribute__((aligned(64))) std::vector<RxPacket> mSharedItems;
     __attribute__((aligned(64))) std::vector<RxPacket> mConsumerItems;
     __attribute__((aligned(64))) uint64_t mRxPackets = 0;
+    __attribute__((aligned(64))) uint64_t mFailedLocks = 0;
+    __attribute__((aligned(64))) uint64_t mLocks = 0;
 
     std::mutex mMutex;
     std::condition_variable mCondition;

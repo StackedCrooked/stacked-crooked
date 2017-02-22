@@ -12,7 +12,7 @@ Stack::Stack() :
 Stack::~Stack()
 {
     stop();
-    Log() << this << " Stack::mRxPackets=" << mRxPackets << std::endl;
+    Log() << this << " Stack::mRxPackets=" << mRxPackets << " mFailedLocks=" << mFailedLocks << '/' << mLocks << std::endl;
 }
 
 

@@ -16,6 +16,7 @@ set(FilteringApp_SOURCES
     BBInterface.cpp
     BBPort.cpp
     BBServer.cpp
+    Logger.cpp
     PhysicalInterface.cpp
     MaskFilter.cpp
     Networking.cpp

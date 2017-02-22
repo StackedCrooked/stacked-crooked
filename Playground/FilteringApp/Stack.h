@@ -37,7 +37,7 @@ struct Stack
         }
 
         {
-            std::lock_guard<std::mutex> lock(mMutex);
+            std::unique_lock<std::mutex> lock(mMutex);
             std::swap(mProducerItems, mSharedItems);
         }
 

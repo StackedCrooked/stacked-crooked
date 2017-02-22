@@ -82,12 +82,12 @@ struct BBPort
         {
             pop(packets[i]);
         }
-        //mStack->pop_now();
+        mStack->pop_now();
     }
 
     void handle_other(const RxPacket& packet)
     {
-        //mStack->pop_later(packet);
+        mStack->pop_later(packet);
         (void)packet;
     }
 

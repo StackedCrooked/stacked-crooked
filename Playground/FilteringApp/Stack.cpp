@@ -1,4 +1,5 @@
 #include "Stack.h"
+#include "Logger.h"
 #include <cstring>
 
 
@@ -11,7 +12,7 @@ Stack::Stack() :
 Stack::~Stack()
 {
     stop();
-    std::cout << this << " Stack::mRxPackets=" << mRxPackets << std::endl;
+    Log() << this << " Stack::mRxPackets=" << mRxPackets << std::endl;
 }
 
 
@@ -45,10 +46,12 @@ void Stack::run_consumer()
 
         std::swap(mSharedItems, mConsumerItems);
 
+        //Log() << this << " mSharedItems.size=" << mSharedItems.size() << std::endl;
+
         mSharedItems.clear();
 
         lock.unlock();
 
-        mRxPackets += mSharedItems.size();
+        mRxPackets += mConsumerItems.size();
     }
 }

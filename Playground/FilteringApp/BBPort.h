@@ -40,15 +40,6 @@ struct BBPort
 
         if (is_ipv4(packet))
         {
-            for (UDPFlow& flow : mUDPFlows)
-            {
-                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
-                {
-                    flow.accept(packet);
-                    mStats.mUDPAccepted++;
-                    return;
-                }
-            }
 
             // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
             auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
@@ -57,6 +48,17 @@ struct BBPort
             {
                 // Invalid destination IP.
                 return;
+            }
+
+
+            for (UDPFlow& flow : mUDPFlows)
+            {
+                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+                {
+                    flow.accept(packet);
+                    mStats.mUDPAccepted++;
+                    return;
+                }
             }
         }
 
@@ -75,12 +77,13 @@ struct BBPort
         {
             pop(packets[i]);
         }
-        mStack->pop_now();
+        //mStack->pop_now();
     }
 
     void handle_other(const RxPacket& packet)
     {
-        mStack->pop_later(packet);
+        //mStack->pop_later(packet);
+        (void)packet;
     }
 
     bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }

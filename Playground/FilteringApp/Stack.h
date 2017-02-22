@@ -30,6 +30,7 @@ struct Stack
         if (!mBatch.empty())
         {
             mPackets.push(mBatch.data(), mBatch.size());
+            std::cout << mBatch.size() << std::endl;
             mBatch.clear();
         }
     }
@@ -37,9 +38,12 @@ struct Stack
 private:
     void run_consumer();
 
-    //__attribute__((aligned(128)))
-    boost::lockfree::spsc_queue<RxPacket, boost::lockfree::capacity<1024>> mPackets;
+    __attribute__((aligned(64)))
+    boost::lockfree::spsc_queue<RxPacket, boost::lockfree::capacity<256>> mPackets;
+
+    __attribute__((aligned(64)))
     std::vector<RxPacket> mBatch;
+
     uint64_t mRxPackets = 0;
     std::thread mConsumerThread;
 };

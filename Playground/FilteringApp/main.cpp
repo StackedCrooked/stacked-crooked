@@ -55,7 +55,7 @@ std::vector<uint8_t> make_tcp_packet(uint16_t dst_port)
 enum : uint64_t
 {
     num_flows = 48,
-    num_packets = num_flows * (2U * 1000UL / num_flows),
+    num_packets = num_flows * (1U * 128UL * 1000UL / num_flows),
     num_iterations = num_packets / num_flows,
     burst_size = 8
 };
@@ -137,7 +137,7 @@ int main()
     {
         for (auto i = 0u; i != 8u; ++i) // bursts of 8
         {
-            packet_buffers.push_back(make_tcp_packet(flow_index + 1));
+            packet_buffers.push_back(make_udp_packet(flow_index + 1));
         }
     }
 

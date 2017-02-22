@@ -137,7 +137,7 @@ int main()
     {
         for (auto i = 0u; i != burst_size; ++i)
         {
-            packet_buffers.push_back(make_tcp_packet(flow_index + 1));
+            packet_buffers.push_back(make_udp_packet(flow_index + 1));
         }
     }
 

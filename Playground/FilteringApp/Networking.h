@@ -192,8 +192,8 @@ struct TCPHeader
         return result;
     }
 
-    Net16 mSourcePort{0};
-    Net16 mDestinationPort{0};
+    Net16 mSourcePort;
+    Net16 mDestinationPort;
     Net32 mSequenceNumber;
     Net32 mAcknowledgmentNumber;
     Net16 mDataOffsetAndFlags;

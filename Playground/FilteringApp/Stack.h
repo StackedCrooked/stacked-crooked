@@ -2,73 +2,26 @@
 
 
 #include "RxPacket.h"
-#include "Logger.h"
-#include <boost/lockfree/spsc_queue.hpp>
-#include <array>
 #include <vector>
-#include <condition_variable>
-#include <mutex>
-#include <thread>
 
 
-#include <iostream>
+struct PacketBuffer
+{
+    uint8_t mBuffer[1536];
+};
 
 
 struct Stack
 {
     Stack();
 
-    Stack(const Stack&) = delete;
-    Stack& operator=(const Stack&) = delete;
-
-    ~Stack();
-
-    void stop();
-
-    void pop_later(RxPacket rxPacket)
+    void add_to_queue(RxPacket)
     {
-        mProducerItems.push_back(rxPacket);
+        // TODO
     }
 
-    void pop_now()
-    {
-        if (mProducerItems.empty())
-        {
-            return;
-        }
+    void flush();
 
-        {
-            if (!mMutex.try_lock())
-            {
-                mFailedLocks++;
-
-                do {
-                    asm volatile ("pause;");
-                }
-                while (!mMutex.try_lock());
-            }
-
-            mLocks++;
-
-            std::lock_guard<std::mutex> lock(mMutex, std::adopt_lock);
-            std::swap(mProducerItems, mSharedItems);
-        }
-
-        mCondition.notify_one();
-    }
-
-private:
-    void run_consumer();
-
-    __attribute__((aligned(64))) bool mQuit = false;
-    __attribute__((aligned(64))) std::vector<RxPacket> mProducerItems;
-    __attribute__((aligned(64))) std::vector<RxPacket> mSharedItems;
-    __attribute__((aligned(64))) std::vector<RxPacket> mConsumerItems;
-    __attribute__((aligned(64))) uint64_t mRxPackets = 0;
-    __attribute__((aligned(64))) uint64_t mFailedLocks = 0;
-    __attribute__((aligned(64))) uint64_t mLocks = 0;
-
-    std::mutex mMutex;
-    std::condition_variable mCondition;
-    std::thread mConsumerThread;
+    std::vector<PacketBuffer*> mPackets;
+    std::vector<PacketBuffer*> mFreeBuffers;
 };

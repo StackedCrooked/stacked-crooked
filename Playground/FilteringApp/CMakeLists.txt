@@ -16,7 +16,6 @@ set(FilteringApp_SOURCES
     BBInterface.cpp
     BBPort.cpp
     BBServer.cpp
-    Logger.cpp
     PhysicalInterface.cpp
     MaskFilter.cpp
     Networking.cpp
@@ -27,4 +26,4 @@ set(FilteringApp_SOURCES
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})
 set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -g -march=native -Wall -Wextra -Werror -Wno-missing-braces ")
-target_link_libraries(FilteringApp "-L/usr/local/lib -lpcap -pthread")
+target_link_libraries(FilteringApp "-L/usr/local/lib -lpcap")

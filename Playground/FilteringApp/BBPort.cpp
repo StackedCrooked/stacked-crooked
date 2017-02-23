@@ -3,9 +3,9 @@
 
 BBPort::BBPort(MACAddress local_mac) :
     mLocalMAC(local_mac),
-    mLocalIP(1, 1, 1, local_mac[5]),
-    mStack(new Stack)
+    mLocalIP(1, 1, 1, local_mac[5])
 {
+    mStack.mPackets.reserve(1024);
 }
 
 

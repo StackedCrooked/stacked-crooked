@@ -9,6 +9,6 @@ BBInterface::BBInterface()
 
 BBPort& BBInterface::addPort(MACAddress localMAC)
 {
-    mBBPorts.push_back(std::make_unique<BBPort>(localMAC));
-    return *mBBPorts.back();
+    mBBPorts.emplace_back(localMAC);
+    return mBBPorts.back();
 }

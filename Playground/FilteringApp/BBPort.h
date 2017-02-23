@@ -50,20 +50,13 @@ struct BBPort
                 }
             }
 
-
             // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
-            auto ip_hdr = Decode<IPv4Header>(packet.data() + mLayer3Offset);
-            auto dst_ip = ip_hdr.mDestinationIP;
+            auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
 
             if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
             {
                 // Invalid destination IP.
                 return;
-            }
-
-            if (ip_hdr.mProtocolId == ProtocolId::TCP)
-            {
-                mStats.mTCPAccepted++;
             }
         }
 
@@ -82,13 +75,11 @@ struct BBPort
         {
             pop(packets[i]);
         }
-        mStack->pop_now();
     }
 
     void handle_other(const RxPacket& packet)
     {
-        mStack->pop_later(packet);
-        (void)packet;
+        mStack.add_to_queue(packet);
     }
 
     bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
@@ -101,7 +92,6 @@ struct BBPort
         uint64_t mBroadcastCounter = 0;
         uint64_t mMulticastCounter = 0;
         uint64_t mUDPAccepted = 0;
-        uint64_t mTCPAccepted = 0;
     };
 
     LocalMAC mLocalMAC;
@@ -110,5 +100,5 @@ struct BBPort
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     Stats mStats;
     std::vector<UDPFlow> mUDPFlows;
-    std::shared_ptr<Stack> mStack;
+    Stack mStack;
 };

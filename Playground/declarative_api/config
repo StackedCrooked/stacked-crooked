@@ -1,0 +1,12 @@
+PORT: name=port1 bbserver=1.2.3.4 bbinterface=trunk-1-1 mac=00-ff-23-00-00-01 IPv4=dhcp
+PORT: name=port2 bbserver=1.2.3.4 bbinterface=trunk-1-2 mac=00-ff-23-00-00-02 IPv4=dhcp 
+
+FLOW_TEMPLATE: name=tcp1 protocol=tcp httpmethod=GET duration=30s
+FLOW_TEMPLATE: name=tcp2 protocol=tcp httpmethod=PUT size=1GiB
+
+FLOW: name=flow1 template=tcp1 from=port2 to=port1
+FLOW: name=flow2 template=tcp2 from=port2 to=port1
+
+SCENARIO: name=scenario1 flows=flow1,flow2
+
+RUN: scenario1

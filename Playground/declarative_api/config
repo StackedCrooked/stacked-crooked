@@ -1,6 +1,6 @@
 PORT:
-    name=port1 bbserver=1.2.3.4 bbinterface=trunk-1-1 mac=00-ff-23-00-00-01 IPv4=dhcp
-    name=port2 bbserver=1.2.3.4 bbinterface=trunk-1-2 mac=00-ff-23-00-00-02 IPv4=dhcp 
+    name=port1 bbserver=1.2.3.4 bbinterface=trunk-1-1 mac=00-ff-23-00-00-01 ipv4=dhcp
+    name=port2 bbserver=1.2.3.4 bbinterface=trunk-1-2 mac=00-ff-23-00-00-02 ipv4=dhcp 
 
 FLOW:
     name=tcp1 protocol=tcp httpmethod=GET duration=30s

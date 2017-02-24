@@ -1,0 +1,15 @@
+{
+	"ports": [
+		{ "name": "port1", "bbinterface": "trunk-1-1", "mac": "automatic", "ipv4": "dhcp" },
+		{ "name": "port2", "bbinterface": "non-trunk", "mac": "automatic", "ipv4": "dhcp" }
+	],
+
+	"flows": [
+		{ "name": "flow1", "protocol": "tcp", "httpmethod": "GET", "duration": 30 },
+		{ "name": "flow2", "protocol": "udp", "framesize": 64, "interframegap": "100us" }
+	],
+	"scenarios": [
+		{ "name": "scenario1", "flow": "flow1", "from": "port1", "to": "port2" },
+		{ "name": "scenario2", "flow": "flow2", "from": "port1", "to": "port2" }
+	]
+}

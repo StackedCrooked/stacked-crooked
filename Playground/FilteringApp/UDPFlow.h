@@ -23,6 +23,6 @@ struct UDPFlow
     }
 
     MaskFilter mFilter;
-    Counter mPacketsReceived = 0;
-    Counter mBytesReceived = 0;
+    uint64_t mPacketsReceived = 0;
+    uint64_t mBytesReceived = 0;
 };

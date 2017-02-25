@@ -80,6 +80,9 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 {
     std::array<int64_t, 64> tests;
 
+	// Warmup
+	tests.front() = run_test(bbServer, rxPackets);
+
     for (auto& ns : tests)
     {
         ns = run_test(bbServer, rxPackets);
@@ -164,6 +167,7 @@ int main()
     }
 
     // Verify the counters.
+#if 0
     for (auto i = 0; i != num_flows; ++i)
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
@@ -173,4 +177,5 @@ int main()
         << " InvalidDestination=" << bbPort.mStats.mMulticastCounter << " "
         << std::endl;
     }
+#endif
 }

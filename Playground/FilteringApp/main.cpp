@@ -80,8 +80,8 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 {
     std::array<int64_t, 64> tests;
 
-	// Warmup
-	tests.front() = run_test(bbServer, rxPackets);
+    // Warmup
+    tests.front() = run_test(bbServer, rxPackets);
 
     for (auto& ns : tests)
     {
@@ -115,6 +115,12 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 
 int main()
 {
+    std::cout << "enable_stats=" << Features::enable_stats << std::endl;
+    std::cout << "enable_mac_check=" << Features::enable_mac_check << std::endl;
+    std::cout << "enable_ip_check=" << Features::enable_ip_check << std::endl;
+    std::cout << "enable_udp=" << Features::enable_udp << std::endl;
+    std::cout << "enable_tcp=" << Features::enable_tcp << std::endl;
+
 #define PRINT_SIZE(x) std::cout << "sizeof(" << #x << ")=" << sizeof(x) << std::endl;
     PRINT_SIZE(PhysicalInterface);
     PRINT_SIZE(BBInterface);

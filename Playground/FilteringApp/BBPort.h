@@ -54,7 +54,7 @@ struct BBPort
                     if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
                     {
                         flow.accept(packet);
-                        mStats.mUDPAccepted = mStats.mUDPAccepted.mValue + 1;
+                        mStats.mUDPAccepted++;
                         return;
                     }
                 }
@@ -121,7 +121,7 @@ struct BBPort
         Counter mUnicastCounter = 0;
         Counter mBroadcastCounter = 0;
         Counter mMulticastCounter = 0;
-        Counter mUDPAccepted = 0;
+        uint64_t mUDPAccepted = 0;
     };
 
     LocalMAC mLocalMAC;

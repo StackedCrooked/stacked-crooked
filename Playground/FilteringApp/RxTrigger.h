@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "Features.h"
 #include "RxPacket.h"
 #include "BPFFilter.h"
 #include <vector>
@@ -28,6 +29,6 @@ struct RxTrigger
     }
 
     BPFFilter mBPFFilter;
-    uint64_t mPackets = 0;
-    uint64_t mBytes = 0;
+    Counter mPackets = 0;
+    Counter mBytes = 0;
 };

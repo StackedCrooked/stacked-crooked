@@ -27,33 +27,24 @@ struct BBPort
 
     void pop(RxPacket packet)
     {
-        if (is_local_mac(packet) || !Features::enable_mac_check)
+        if (is_local_mac(packet))
         {
-            if (Features::enable_stats)
-            {
-                mStats.mUnicastCounter++;
-            }
+            mStats.mUnicastCounter++;
         }
-        else if (is_broadcast(packet) || !Features::enable_mac_check)
+        else if (is_broadcast(packet))
         {
-            if (Features::enable_stats)
-            {
-                mStats.mBroadcastCounter++;
-            }
+            mStats.mBroadcastCounter++;
         }
-        else if (is_multicast(packet) || !Features::enable_mac_check)
+        else if (is_multicast(packet))
         {
-            if (Features::enable_stats)
-            {
-                mStats.mMulticastCounter++;
-            }
+            mStats.mMulticastCounter++;
         }
         else
         {
             return;
         }
 
-        if (is_ipv4(packet) || !Features::enable_ip_check)
+        if (has_ethertype_ipv4(packet))
         {
             if (Features::enable_udp)
             {
@@ -87,8 +78,27 @@ struct BBPort
         }
     }
 
-    bool is_ipv4(RxPacket packet) const
+    bool is_local_mac(const RxPacket& packet)
     {
+        if (!Features::enable_mac_check) return true;
+        return mLocalMAC.equals(packet.data());
+    }
+
+    bool is_broadcast(const RxPacket& packet)
+    {
+        if (!Features::enable_mac_check) return true;
+        return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF);
+    }
+
+    bool is_multicast(const RxPacket& packet)
+    {
+        if (!Features::enable_mac_check) return true;
+        return packet[0] & 0x01;
+    }
+
+    bool has_ethertype_ipv4(RxPacket packet) const
+    {
+        if (!Features::enable_ip_check) return true;
         return Decode<EthernetHeader>(packet.data()).mEtherType == Net16(0x0800);
     }
 
@@ -105,16 +115,12 @@ struct BBPort
         mStack.add_to_queue(packet);
     }
 
-    bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
-    bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }
-    bool is_multicast(const RxPacket& packet) { return packet[0] & 0x01; }
-
     struct Stats
     {
-        uint64_t mUnicastCounter = 0;
-        uint64_t mBroadcastCounter = 0;
-        uint64_t mMulticastCounter = 0;
-        uint64_t mUDPAccepted = 0;
+        Counter mUnicastCounter = 0;
+        Counter mBroadcastCounter = 0;
+        Counter mMulticastCounter = 0;
+        Counter mUDPAccepted = 0;
     };
 
     LocalMAC mLocalMAC;

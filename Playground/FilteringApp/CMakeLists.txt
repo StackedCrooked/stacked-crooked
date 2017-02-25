@@ -7,6 +7,7 @@ set(CMAKE_CXX_COMPILER_LAUNCHER "ccache")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 include_directories(SYSTEM /usr/local/include /usr/include)
 
+
 set(FilteringApp_INCLUDES
     Range.h)
 

@@ -1,12 +1,14 @@
 #pragma once
 
 
-#define ENABLE_MAC_CHECK 1
-#define ENABLE_IP_CHECK  1
+#include <iostream>
 
-#define ENABLE_STAT 1
-#define ENABLE_UDP  1
-#define ENABLE_TCP  1
+
+#define FEATURES_ENABLE_STATS       1
+#define FEATURES_ENABLE_MAC_CHECK   1
+#define FEATURES_ENABLE_IP_CHECK    1
+#define FEATURES_ENABLE_UDP         1
+#define FEATURES_ENABLE_TCP         1
 
 
 namespace Features {
@@ -14,19 +16,43 @@ namespace Features {
 
 enum
 {
-    enable_stats     = ENABLE_STAT      * (1 << 0),
-    enable_mac_check = ENABLE_MAC_CHECK * (1 << 1),
-    enable_ip_check  = ENABLE_IP_CHECK  * (1 << 2),
-    enable_udp       = ENABLE_UDP       * (1 << 3),
-    enable_tcp       = ENABLE_UDP       * (1 << 4),
+    enable_stats     = (1 << 0) * FEATURES_ENABLE_STATS,
+    enable_mac_check = (1 << 1) * FEATURES_ENABLE_MAC_CHECK,
+    enable_ip_check  = (1 << 2) * FEATURES_ENABLE_IP_CHECK,
+    enable_udp       = (1 << 3) * FEATURES_ENABLE_UDP,
+    enable_tcp       = (1 << 4) * FEATURES_ENABLE_TCP
 };
 
 
-static_assert(enable_stats, "");
-static_assert(enable_mac_check, "");
-static_assert(enable_ip_check, "");
-static_assert(enable_udp, "");
-static_assert(enable_tcp, "");
-
-
 } // namespace Features
+
+
+struct Counter
+{
+    Counter(uint64_t value) : mValue(value) {}
+
+    Counter operator++(int)
+    {
+        if (Features::enable_stats)
+        {
+            mValue++;
+        }
+        return *this;
+    }
+
+    Counter& operator+=(uint64_t n)
+    {
+        if (Features::enable_stats)
+        {
+            mValue += n;
+        }
+        return *this;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Counter& counter)
+    {
+        return os << counter.mValue;
+    }
+
+    uint64_t mValue = 0;
+};

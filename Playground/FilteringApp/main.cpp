@@ -56,7 +56,7 @@ std::vector<uint8_t> make_tcp_packet(uint16_t dst_port)
 
 enum : uint64_t
 {
-    num_flows = 48,
+    num_flows = 32,
     num_packets = num_flows * (2U * 1000UL * 1000UL / num_flows),
     num_iterations = num_packets / num_flows,
     burst_size = 8

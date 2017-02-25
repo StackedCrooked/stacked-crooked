@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "Features.h"
 #include "MaskFilter.h"
 #include "RxPacket.h"
 #include <cstdint>
@@ -22,6 +23,6 @@ struct UDPFlow
     }
 
     MaskFilter mFilter;
-    uint64_t mPacketsReceived = 0;
-    uint64_t mBytesReceived = 0;
+    Counter mPacketsReceived = 0;
+    Counter mBytesReceived = 0;
 };

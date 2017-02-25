@@ -39,7 +39,7 @@ std::vector<uint8_t> make_udp_packet(uint16_t dst_port)
     std::vector<uint8_t> result;
     result.reserve(64);
     append(result, EthernetHeader::Create(generate_mac(dst_port)));
-    append(result, IPv4Header::Create(ProtocolId::UDP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
+    append(result, IPv4Header::Create(ProtocolId::kUDP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
     append(result, UDPHeader::Create(1, dst_port));
     return result;
 }
@@ -49,7 +49,7 @@ std::vector<uint8_t> make_tcp_packet(uint16_t dst_port)
     std::vector<uint8_t> result;
     result.reserve(64);
     append(result, EthernetHeader::Create(generate_mac(dst_port)));
-    append(result, IPv4Header::Create(ProtocolId::TCP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
+    append(result, IPv4Header::Create(ProtocolId::kTCP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
     append(result, TCPHeader::Create(1, dst_port));
     return result;
 }

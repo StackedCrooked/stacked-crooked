@@ -136,8 +136,8 @@ enum ProtocolId : uint8_t
 {
     ICMP = 1,
     IGMP = 2,
-    TCP = 6,
-    UDP = 17
+    kTCP = 6,
+    kUDP = 17
 };
 
 

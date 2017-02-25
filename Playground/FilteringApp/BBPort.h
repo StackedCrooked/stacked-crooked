@@ -2,6 +2,7 @@
 
 
 #include "Decode.h"
+#include "Features.h"
 #include "Likely.h"
 #include "MACAddress.h"
 #include "RxPacket.h"
@@ -9,6 +10,11 @@
 #include "Stack.h"
 #include "UDPFlow.h"
 #include <vector>
+
+
+namespace Features {
+
+}
 
 
 struct BBPort
@@ -21,47 +27,64 @@ struct BBPort
 
     void pop(RxPacket packet)
     {
-        if (is_local_mac(packet))
+        if (is_local_mac(packet) || !Features::enable_mac_check)
         {
-            mStats.mUnicastCounter++;
+            if (Features::enable_stats)
+            {
+                mStats.mUnicastCounter++;
+            }
         }
-        else if (is_broadcast(packet))
+        else if (is_broadcast(packet) || !Features::enable_mac_check)
         {
-            mStats.mBroadcastCounter++;
+            if (Features::enable_stats)
+            {
+                mStats.mBroadcastCounter++;
+            }
         }
-        else if (is_multicast(packet))
+        else if (is_multicast(packet) || !Features::enable_mac_check)
         {
-            mStats.mMulticastCounter++;
+            if (Features::enable_stats)
+            {
+                mStats.mMulticastCounter++;
+            }
         }
         else
         {
             return;
         }
 
-        if (is_ipv4(packet))
+        if (is_ipv4(packet) || !Features::enable_ip_check)
         {
-            for (UDPFlow& flow : mUDPFlows)
+            if (Features::enable_udp)
             {
-                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+                for (UDPFlow& flow : mUDPFlows)
                 {
-                    flow.accept(packet);
-                    mStats.mUDPAccepted++;
-                    return;
+                    if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+                    {
+                        flow.accept(packet);
+                        mStats.mUDPAccepted++;
+                        return;
+                    }
                 }
             }
 
             // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
-            auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
-
-            if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
+            if (Features::enable_ip_check)
             {
-                // Invalid destination IP.
-                return;
+                auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
+                if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
+                {
+                    // Invalid destination IP.
+                    return;
+                }
             }
         }
 
         // Send it to the stack.
-        handle_other(packet);
+        if (Features::enable_tcp)
+        {
+            handle_other(packet);
+        }
     }
 
     bool is_ipv4(RxPacket packet) const

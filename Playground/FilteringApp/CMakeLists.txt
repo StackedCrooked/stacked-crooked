@@ -25,5 +25,5 @@ set(FilteringApp_SOURCES
     main.cpp)
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})
-set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -g -march=native -Wall -Wextra -Werror -Wno-missing-braces ")
+set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -g -march=native -Wall -Wextra -Werror -Wno-missing-braces")
 target_link_libraries(FilteringApp "-L/usr/local/lib -lpcap")

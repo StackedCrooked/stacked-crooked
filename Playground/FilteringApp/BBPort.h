@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "Counter.h"
 #include "Decode.h"
 #include "Features.h"
 #include "Likely.h"

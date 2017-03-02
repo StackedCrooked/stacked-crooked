@@ -82,6 +82,7 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 
     // Warmup
     tests.front() = run_test(bbServer, rxPackets);
+    tests.back() = run_test(bbServer, rxPackets);
 
     for (auto& ns : tests)
     {
@@ -173,7 +174,7 @@ int main()
     }
 
     // Verify the counters.
-#if 0
+#if 1
     for (auto i = 0; i != num_flows; ++i)
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);

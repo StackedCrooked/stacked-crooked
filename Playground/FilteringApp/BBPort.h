@@ -47,6 +47,17 @@ struct BBPort
 
         if (has_ethertype_ipv4(packet))
         {
+            // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
+            if (Features::enable_ip_check)
+            {
+                auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
+                if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
+                {
+                    // Invalid destination IP.
+                    return;
+                }
+            }
+
             if (Features::enable_udp)
             {
                 for (UDPFlow& flow : mUDPFlows)
@@ -59,23 +70,12 @@ struct BBPort
                     }
                 }
             }
-
-            // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
-            if (Features::enable_ip_check)
-            {
-                auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
-                if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
-                {
-                    // Invalid destination IP.
-                    return;
-                }
-            }
         }
 
         // Send it to the stack.
         if (Features::enable_tcp)
         {
-            handle_other(packet);
+            mStack.add_to_queue(packet);
         }
     }
 
@@ -109,11 +109,6 @@ struct BBPort
         {
             pop(packets[i]);
         }
-    }
-
-    void handle_other(const RxPacket& packet)
-    {
-        mStack.add_to_queue(packet);
     }
 
     struct Stats

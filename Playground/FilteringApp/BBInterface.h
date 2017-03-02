@@ -14,7 +14,6 @@ struct BBInterface
 
     void pop(RxPacket packet)
     {
-        // Also run any bpf filters.
         for (RxTrigger& rxTrigger : mRxTriggers)
         {
             rxTrigger.process(packet);
@@ -22,7 +21,7 @@ struct BBInterface
 
         for (BBPort& port : mBBPorts)
         {
-            port.pop(packet);
+            port.pop_one(packet);
         }
     }
 

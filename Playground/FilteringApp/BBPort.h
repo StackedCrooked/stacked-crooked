@@ -26,7 +26,7 @@ struct BBPort
 
     void addUDPFlow(uint16_t dst_port);
 
-    void pop(RxPacket packet)
+    void pop_one(RxPacket packet)
     {
         if (is_local_mac(packet))
         {
@@ -107,7 +107,7 @@ struct BBPort
     {
         for (auto i = 0u; i != size; ++i)
         {
-            pop(packets[i]);
+            pop_one(packets[i]);
         }
     }
 

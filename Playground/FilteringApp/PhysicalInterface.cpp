@@ -9,7 +9,7 @@ PhysicalInterface::PhysicalInterface()
 
 void PhysicalInterface::pop(const std::vector<RxPacket>& packets)
 {
-#if 1
+#if 0
     for (const RxPacket& packet : packets)
     {
         BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];

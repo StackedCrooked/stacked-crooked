@@ -121,7 +121,7 @@ struct BBPort
 
     LocalMAC mLocalMAC;
     IPv4Address mLocalIP;
-    uint16_t mVLANId = 0; // zero means on vlan id
+    uint16_t mVLANId = 0; // zero means no vlan id
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     Stats mStats;
     std::vector<UDPFlow> mUDPFlows;

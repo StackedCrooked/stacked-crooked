@@ -10,3 +10,5 @@ ccache
 openssh-server
 iwyu
 ruby
+cmake
+libboost-dev

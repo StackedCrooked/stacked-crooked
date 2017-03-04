@@ -12,3 +12,4 @@ iwyu
 ruby
 cmake
 libboost-dev
+curl

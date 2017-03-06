@@ -72,6 +72,16 @@ int main()
     std::vector<double> raw_timevals = get_values("raw_timeval");
     std::vector<double> current_times = get_values("current_time");
 
+    for (auto& n : raw_timevals)
+    {
+        n -= current_times.front();
+    }
+
+    for (auto& n : current_times)
+    {
+        n -= current_times.front();
+    }
+
     std::cout << "current_times.size=" << current_times.size() << std::endl;
     std::cout << "raw_timevals.size=" << raw_timevals.size() << std::endl;
 

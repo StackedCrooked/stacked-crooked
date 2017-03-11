@@ -32,6 +32,6 @@ private:
     }
 
     static std::array<uint64_t, 2> static_mask;
+
     std::array<uint64_t, 2> mFields;
 };
-

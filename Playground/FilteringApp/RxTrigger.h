@@ -12,7 +12,7 @@ struct RxTrigger
 {
     RxTrigger(const std::string& filter);
 
-    void process(RxPacket packet)
+    void process_one(RxPacket packet)
     {
         if (mBPFFilter.match(packet.data(), packet.size()))
         {
@@ -21,11 +21,11 @@ struct RxTrigger
         }
     }
 
-    void process(const std::vector<RxPacket>& packets)
+    void process_many(const std::vector<RxPacket>& packets)
     {
         for (const RxPacket& packet : packets)
         {
-            process(packet);
+            process_one(packet);
         }
     }
 

@@ -1,8 +1,6 @@
 #pragma once
 
 
-#include "Counter.h"
-#include "Features.h"
 #include "RxPacket.h"
 #include "BPFFilter.h"
 #include <vector>
@@ -12,7 +10,7 @@ struct RxTrigger
 {
     RxTrigger(const std::string& filter);
 
-    void process_one(RxPacket packet)
+    void process(RxPacket packet)
     {
         if (mBPFFilter.match(packet.data(), packet.size()))
         {
@@ -21,15 +19,15 @@ struct RxTrigger
         }
     }
 
-    void process_many(const std::vector<RxPacket>& packets)
+    void process(const std::vector<RxPacket>& packets)
     {
         for (const RxPacket& packet : packets)
         {
-            process_one(packet);
+            process(packet);
         }
     }
 
     BPFFilter mBPFFilter;
-    Counter mPackets = 0;
-    Counter mBytes = 0;
+    uint64_t mPackets = 0;
+    uint64_t mBytes = 0;
 };

@@ -31,3 +31,4 @@ MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address ds
 
 
 std::array<uint64_t, 2> MaskFilter::static_mask = MaskFilter::GetMask();
+

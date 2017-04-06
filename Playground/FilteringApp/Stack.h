@@ -2,22 +2,26 @@
 
 
 #include "RxPacket.h"
-#include <condition_variable>
-#include <mutex>
 #include <vector>
+
+
+struct PacketBuffer
+{
+    uint8_t mBuffer[1536];
+};
 
 
 struct Stack
 {
     Stack();
-    Stack(const Stack&){}
-    Stack& operator=(const Stack&){ return *this; }
-    ~Stack() = default;
 
-    void add_to_queue(const RxPacket& packet);
+    void add_to_queue(RxPacket)
+    {
+        // TODO
+    }
 
     void flush();
 
-    std::mutex mMutex;
-    std::vector<RxPacket> mPackets;
+    std::vector<PacketBuffer*> mPackets;
+    std::vector<PacketBuffer*> mFreeBuffers;
 };

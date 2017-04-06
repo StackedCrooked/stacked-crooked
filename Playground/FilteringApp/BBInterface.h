@@ -12,16 +12,17 @@ struct BBInterface
     BBPort& addPort(MACAddress localMAC);
     BBPort& getBBPort(uint32_t i) { return mBBPorts[i]; }
 
-    void pop_one(RxPacket packet)
+    void pop(RxPacket packet)
     {
+        // Also run any bpf filters.
         for (RxTrigger& rxTrigger : mRxTriggers)
         {
-            rxTrigger.process_one(packet);
+            rxTrigger.process(packet);
         }
 
         for (BBPort& port : mBBPorts)
         {
-            port.pop_one(packet);
+            port.pop(packet);
         }
     }
 
@@ -43,7 +44,7 @@ struct BBInterface
 
         for (RxTrigger& rxTrigger : mRxTriggers)
         {
-            rxTrigger.process_many(mPackets);
+            rxTrigger.process(mPackets);
         }
 
         mPackets.clear();

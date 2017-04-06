@@ -39,7 +39,7 @@ std::vector<uint8_t> make_udp_packet(uint16_t dst_port)
     std::vector<uint8_t> result;
     result.reserve(64);
     append(result, EthernetHeader::Create(generate_mac(dst_port)));
-    append(result, IPv4Header::Create(ProtocolId::kUDP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
+    append(result, IPv4Header::Create(ProtocolId::UDP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
     append(result, UDPHeader::Create(1, dst_port));
     return result;
 }
@@ -49,7 +49,7 @@ std::vector<uint8_t> make_tcp_packet(uint16_t dst_port)
     std::vector<uint8_t> result;
     result.reserve(64);
     append(result, EthernetHeader::Create(generate_mac(dst_port)));
-    append(result, IPv4Header::Create(ProtocolId::kTCP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
+    append(result, IPv4Header::Create(ProtocolId::TCP, IPv4Address::Create(1), IPv4Address::Create(dst_port)));
     append(result, TCPHeader::Create(1, dst_port));
     return result;
 }
@@ -79,10 +79,6 @@ int64_t run_test(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 {
     std::array<int64_t, 64> tests;
-
-    // Warmup
-    tests.front() = run_test(bbServer, rxPackets);
-    tests.back() = run_test(bbServer, rxPackets);
 
     for (auto& ns : tests)
     {
@@ -116,12 +112,6 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
 
 int main()
 {
-    std::cout << "enable_stats=" << Features::enable_stats << std::endl;
-    std::cout << "enable_mac_check=" << Features::enable_mac_check << std::endl;
-    std::cout << "enable_ip_check=" << Features::enable_ip_check << std::endl;
-    std::cout << "enable_udp=" << Features::enable_udp << std::endl;
-    std::cout << "enable_tcp=" << Features::enable_tcp << std::endl;
-
 #define PRINT_SIZE(x) std::cout << "sizeof(" << #x << ")=" << sizeof(x) << std::endl;
     PRINT_SIZE(PhysicalInterface);
     PRINT_SIZE(BBInterface);
@@ -174,7 +164,6 @@ int main()
     }
 
     // Verify the counters.
-#if 1
     for (auto i = 0; i != num_flows; ++i)
     {
         BBPort& bbPort = bbServer.getPhysicalInterface(0).getBBInterface(i).getBBPort(0);
@@ -184,5 +173,4 @@ int main()
         << " InvalidDestination=" << bbPort.mStats.mMulticastCounter << " "
         << std::endl;
     }
-#endif
 }

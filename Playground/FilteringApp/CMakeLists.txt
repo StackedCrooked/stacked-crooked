@@ -7,7 +7,6 @@ set(CMAKE_CXX_COMPILER_LAUNCHER "ccache")
 set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 include_directories(SYSTEM /usr/local/include /usr/include)
 
-
 set(FilteringApp_INCLUDES
     Range.h)
 
@@ -26,5 +25,5 @@ set(FilteringApp_SOURCES
     main.cpp)
 
 add_executable(FilteringApp ${FilteringApp_SOURCES})
-set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -g -march=native -Wall -Wextra -Werror -Wno-missing-braces")
+set_target_properties(FilteringApp PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -g -march=native -Wall -Wextra -Werror -Wno-missing-braces ")
 target_link_libraries(FilteringApp "-L/usr/local/lib -lpcap")

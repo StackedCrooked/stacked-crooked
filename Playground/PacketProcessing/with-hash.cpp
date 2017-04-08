@@ -96,23 +96,30 @@ struct Flows
         mFlows.emplace_back(protocol, source_ip, target_ip, src_port, dst_port);
         auto hash = mFlows[flow_index].hash();
         auto bucket_index = hash % mHashTable.size();
-        mHashTable[bucket_index].push_back(flow_index);
 
-        #if 0
-        if (mHashTable[bucket_index].size() >= 2)
+        Bucket& bucket = mHashTable[bucket_index];
+
+        bucket.push_back(flow_index);
+
+        if (bucket.size() == 1)
         {
-            std::cout << "flow_index=" << flow_index << " hash=" << hash << " bucket_index=" << bucket_index << " bucket_entries=" << mHashTable[bucket_index].size() << std::endl;
+            mUsedBuckets++;
         }
-        #endif
+        if (bucket.size() == 2)
+        {
+            mUsedBuckets--;
+            mSharedBuckets++;
+        }
+        else if (bucket.size() == 5)
+        {
+            mSharedBuckets--;
+            mOverflowingBuckets++;
+        }
     }
 
     void print()
     {
-        std::cout << "HashTable:" << std::endl;
-        for (auto i = 0u; i != mHashTable.size(); ++i)
-        {
-            std::cout << " i=" << i << " size=" << mHashTable[i].size() << std::endl;
-        }
+        std::cout << " " << mUsedBuckets << "/" << mSharedBuckets << "/" << mOverflowingBuckets << std::endl;
     }
 
     std::size_t size() const
@@ -149,7 +156,10 @@ struct Flows
 
     static_assert(sizeof(Bucket) == 32, "");
 
-    std::array<Bucket, 4096> mHashTable;
+    std::array<Bucket, 512> mHashTable;
+    uint32_t mUsedBuckets = 0;
+    uint32_t mSharedBuckets = 0;
+    uint32_t mOverflowingBuckets = 0;
 };
 
 
@@ -184,6 +194,8 @@ void run3(std::vector<Packet>& packets, Flows& flows, uint64_t* const matches)
             //<< " ns_per_packet=" << ns_per_packet/
             << " MPPS=" << std::setw(9) << std::left << mpps_rounded
             ;
+
+    std::cout << " BUCKETS(perfect/shared/overflowing)=" << flows.mUsedBuckets << "/" << flows.mSharedBuckets << "/" << flows.mOverflowingBuckets;
 
     #if 1
     std::cout << " (verify-matches:";
@@ -232,13 +244,14 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
     std::vector<uint64_t> matches(num_flows);
     run3<prefetch>(packets, flows, matches.data());
+
     std::cout << std::endl;
 }
 
 
 void run(uint32_t num_packets = 1000 * 1000)
 {
-    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 };
+    int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
 
     for (auto flow_count : flow_counts)
     {

@@ -12,14 +12,19 @@
 </head>
 
 <body>
-    <textarea id="input" style="width:400px; height:100px;" onkeyup="refresh();"></textarea>
-    <div id="tcp_graph" style="width: 400; height: 100px;"></div>
-    <div>
+    <h1>input</h1>
+    <div><textarea id="input" style="width:400px; height:100px;" onkeyup="refresh();"></textarea></div>
+
+    <h1>graph</h1>
+
+    <div id="tcp_graph" style="width: 800; height: 400px;"></div>
+
+    <h1>Settings</h1>
+
         <ul id="fields" style="width: 400px; heaght: 100px; list-style: outside none;">
             <li>TEST</li>
         </ul>
-    </div>
-    <div id="summary" style="width: 400; height: 100px;"></div>
+    <!--<div id="summary" style="width: 400; height: 100px;"></div>-->
 </body>
 
 <script>
@@ -69,13 +74,35 @@ document.getElementById('input').value = "speed,rtt,cwnd\n111,11,1\n222,22,2\n33
 
 function refresh() {
     lists = parse_csv(document.getElementById('input').value)
-    print("After parsing:", lists)
+    //print("After parsing:", lists)
 
     var ul = document.getElementById("fields");
     ul.innerHTML = ""
     for (var field in lists) {
-        ul.innerHTML += '<li><input type="checkbox">&nbsp' + field + '</input></li>';
+        ul.innerHTML += '<li><input type="checkbox" id="' + field + '" checked="true" onclick="refresh_graph()" >&nbsp' + field + '</input></li>';
     }
+
+    refresh_graph()
+}
+
+function refresh_graph() {
+    Plotly.newPlot('tcp_graph', get_graphs(lists));
+}
+
+
+function get_graphs(lists) {
+    var result = [];
+    for (var field in lists) {
+        if (document.getElementById(field).checked) {
+            result.push({
+                name: field,
+                y: lists[field],
+                type: 'scatter'
+            });
+            }
+    }
+    console.log("result: " + JSON.stringify(result, null, 2));
+    return result;
 }
 
 

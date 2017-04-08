@@ -16,6 +16,7 @@
 #include "Packet.h"
 #include "PCAPWriter.h"
 #include <boost/functional/hash.hpp>
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <vector>
@@ -190,12 +191,9 @@ void run3(std::vector<Packet>& packets, Flows& flows, uint64_t* const matches)
 
     std::cout << std::setw(12) << std::left << GetTypeName<FILTERTYPE>()
             << " PREFETCH=" << prefetch
-            << " FLOWS=" << std::setw(4) << std::left << num_flows
-            //<< " ns_per_packet=" << ns_per_packet/
+            << " FLOWS=" << std::setw(5) << std::left << num_flows
             << " MPPS=" << std::setw(9) << std::left << mpps_rounded
-            ;
-
-    std::cout << " BUCKETS(perfect/shared/overflowing)=" << flows.mUsedBuckets << "/" << flows.mSharedBuckets << "/" << flows.mOverflowingBuckets;
+            << " BUCKETS(perfect/shared/overflowing)=" << flows.mUsedBuckets << "/" << flows.mSharedBuckets << "/" << flows.mOverflowingBuckets;
 
     #if 1
     std::cout << " (verify-matches:";
@@ -241,6 +239,8 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
         uint16_t dst_port = i % num_flows;
         flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
     }
+
+    std::random_shuffle(packets.begin(), packets.end());
 
     std::vector<uint64_t> matches(num_flows);
     run3<prefetch>(packets, flows, matches.data());

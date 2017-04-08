@@ -34,7 +34,7 @@ var ts = [
     40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
     78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 110
 ];
-    
+
 var rtt = [
     0, 4713, 4528, 4648, 4592, 4611, 4681, 4540, 4779, 4612, 4663, 4704, 4591, 4603, 4685, 4544, 4662, 4537, 4776, 4594, 4646, 4611, 4622, 4644, 4605,
     4612, 4675, 4568, 4593, 4664, 4505, 4550, 4732, 4605, 4681, 4511, 4656, 4735, 4673, 4681, 4607, 4656, 4670, 4582, 4665, 4590, 4837, 4690, 4535,
@@ -61,7 +61,7 @@ for (var i = 0; i != rtt.length; ++i) { goodput.push(rtt[i]*3); }
 
 var goodput_graph = {
     x: ts,
-    y: goodput, 
+    y: goodput,
     type: 'scatter',
     name: 'goodput',
     marker: { color: 'rgb(64, 64, 255)' }
@@ -70,7 +70,7 @@ var goodput_graph = {
 
 var ts_graph = {
     x: ts,
-    y: ts, 
+    y: ts,
     type: 'scatter',
     name: 'ts'
 };
@@ -78,7 +78,7 @@ var ts_graph = {
 
 var cwnd_graph = {
     x: ts,
-    y: cwnd, 
+    y: cwnd,
     type: 'scatter',
     name: 'cwnd'
 };
@@ -86,7 +86,7 @@ var cwnd_graph = {
 
 var rtt_graph = {
     x: ts,
-    y: rtt, 
+    y: rtt,
     type: 'scatter',
     name: 'rtt'
 };
@@ -94,14 +94,14 @@ var rtt_graph = {
 
 var rtt_min_graph = {
     x: ts,
-    y: rtt_min, 
+    y: rtt_min,
     type: 'scatter',
     name: 'rtt.min'
 };
 
 var rtt_max_graph = {
     x: ts,
-    y: rtt_max, 
+    y: rtt_max,
     type: 'scatter',
     name: 'rtt.max'
 };

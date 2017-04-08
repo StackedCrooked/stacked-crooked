@@ -1,153 +1,85 @@
+
+<!--<meta http-equiv="refresh" content="1" />-->
 <head>
     <!-- Plotly.js -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
-        var app = {};
-        app.name = "TCP Graphs";
-        app.progress = 80;
+        var app = {
+            "name": "TCP Graphs",
+            "progress": 80
+        };
     </script>
 </head>
 
 <body>
-
-    <div id="tcp_graph" style="width: 800; height: 400px;"></div>
-    <ul style="list-style: outside none;">
-        <li><input type="checkbox" id="goodput" checked="true" onclick="refresh(app.progress)">&nbsp;GOODPUT</li>
-        <li><input type="checkbox" id="cwnd"    checked="false" onclick="refresh(app.progress)">&nbsp;CWND</li>
-        <li><input type="checkbox" id="rtt"     checked="false" onclick="refresh(app.progress)">&nbsp;RTT</li>
-        <li><input type="checkbox" id="rtt_min" checked="false" onclick="refresh(app.progress)">&nbsp;RTT.MIN</li>
-        <li><input type="checkbox" id="rtt_max" checked="false" onclick="refresh(app.progress)">&nbsp;RTT.MAX</li>
-        <li>&nbsp;</li>
-        <li><input type="checkbox" onclick="toggle()">&nbsp;Emulate live updates</input></li>
-    </ul>
+    <textarea id="input" style="width:400px; height:100px;" onkeyup="refresh();"></textarea>
+    <div id="tcp_graph" style="width: 400; height: 100px;"></div>
+    <div>
+        <ul id="fields" style="width: 400px; heaght: 100px; list-style: outside none;">
+            <li>TEST</li>
+        </ul>
+    </div>
+    <div id="summary" style="width: 400; height: 100px;"></div>
 </body>
 
 <script>
 
 
-document.getElementById('cwnd').checked = false;
-document.getElementById('rtt_min').checked = false;
-document.getElementById('rtt_max').checked = false;
-
-var ts = [
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-    40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
-    78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 110
-];
-    
-var rtt = [
-    0, 4713, 4528, 4648, 4592, 4611, 4681, 4540, 4779, 4612, 4663, 4704, 4591, 4603, 4685, 4544, 4662, 4537, 4776, 4594, 4646, 4611, 4622, 4644, 4605,
-    4612, 4675, 4568, 4593, 4664, 4505, 4550, 4732, 4605, 4681, 4511, 4656, 4735, 4673, 4681, 4607, 4656, 4670, 4582, 4665, 4590, 4837, 4690, 4535,
-    4668, 4488, 4641, 4731, 4485, 4769, 4677, 4517, 4620, 4619, 4615, 4609, 4611, 4555, 4684, 4598, 4541, 4690, 4776, 4585, 4790, 5076, 6828, 9626,
-    9936, 11817, 12497, 7780, 5224, 4690, 4861, 6594, 8908, 10325, 12234, 13586, 6752, 5111, 4670, 4829, 5650, 6810, 6760, 10893, 10977, 10079, 5438,
-    4795, 4770, 4874, 7072
-];
-
-var cwnd = [
-    370, 406, 445, 483, 519, 560, 593, 633, 670, 705, 743, 778, 817, 859, 891, 932, 968, 1006, 1044, 1078, 1118, 1154, 1193, 1231, 1266, 1306, 1346, 1379,
-    1423, 1457, 1494, 1533, 1569, 1604, 1645, 1678, 1720, 1754, 1793, 1831, 1868, 1908, 1941, 1983, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002,
-    2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2002, 2008, 5000, 10000, 20000, 30000, 61, 77, 89, 100, 113,
-    128, 141, 155, 170, 183, 195, 209, 222, 237, 251, 264, 279, 293, 306, 320, 334, 349, 360, 373, 388, 401, 415, 428
-];
-
-var rtt_min = [];
-var rtt_max = [];
-var goodput = [];
-
-for (var i = 0; i != rtt.length; ++i) { rtt_min.push(Math.random() ** 10 * rtt[i]/3 + 1111); }
-for (var i = 0; i != rtt.length; ++i) { rtt_max.push(rtt[i]*2); }
-for (var i = 0; i != rtt.length; ++i) { goodput.push(rtt[i]*3); }
-
-
-var goodput_graph = {
-    x: ts,
-    y: goodput, 
-    type: 'scatter',
-    name: 'goodput',
-    marker: { color: 'rgb(64, 64, 255)' }
-};
-
-
-var ts_graph = {
-    x: ts,
-    y: ts, 
-    type: 'scatter',
-    name: 'ts'
-};
-
-
-var cwnd_graph = {
-    x: ts,
-    y: cwnd, 
-    type: 'scatter',
-    name: 'cwnd'
-};
-
-
-var rtt_graph = {
-    x: ts,
-    y: rtt, 
-    type: 'scatter',
-    name: 'rtt'
-};
-
-
-var rtt_min_graph = {
-    x: ts,
-    y: rtt_min, 
-    type: 'scatter',
-    name: 'rtt.min'
-};
-
-var rtt_max_graph = {
-    x: ts,
-    y: rtt_max, 
-    type: 'scatter',
-    name: 'rtt.max'
-};
-
-function get_data(n) {
-    goodput_graph.y = goodput.slice(0, n);
-    cwnd_graph.y    = cwnd.slice(0, n);
-    rtt_graph.y     = rtt.slice(0, n);
-    rtt_min_graph.y = rtt_min.slice(0, n);
-    rtt_max_graph.y = rtt_max.slice(0, n);
-
-    var result = [ts];
-    if (document.getElementById('goodput').checked) {
-        result.push(goodput_graph);
-    }
-    if (document.getElementById('cwnd').checked) {
-        result.push(cwnd_graph);
-    }
-    if (document.getElementById('rtt').checked) {
-        result.push(rtt_graph);
-    }
-    if (document.getElementById('rtt_min').checked) {
-        result.push(rtt_min_graph);
-    }
-    if (document.getElementById('rtt_max').checked) {
-        result.push(rtt_max_graph);
-    }
-    return result;
+function make_tag(tagname, text) {
+    return "<" + tagname + ">" + text + "</" + tagname + ">";
 }
+
+function pre(text) {
+    return make_tag(pre, text)
+}
+
+function print(name, obj) {
+    document.getElementById('summary').innerHTML = "<br><strong>" + name + "<pre>" + JSON.stringify(obj, null, 2) + "</pre>";
+}
+
+function parse_csv(stringrep) {
+    lines = stringrep.split("\n")
+    headers = lines[0].split(',')
+    console.log("headers=" + headers + " headers.length=" + headers.length)
+
+    lists = {};
+
+
+    for (var i = 0; i != headers.length; ++i) {
+        headers[i] = headers[i].trim()
+        lists[headers[i]] = []
+    }
+
+    for (var li = 1; li != lines.length; ++li) {
+        var fields = lines[li].split(',');
+        if (fields.length != headers.length) {
+            break
+        }
+        //console.log("fields=" + fields + " fields.length=" + fields.length)
+        for (var fi = 0; fi != headers.length; ++fi) {
+            lists[headers[fi]].push(fields[fi])
+        }
+    }
+
+    return lists
+}
+
+document.getElementById('input').value = "speed,rtt,cwnd\n111,11,1\n222,22,2\n333,33,3"
+
 
 function refresh() {
-    Plotly.newPlot('tcp_graph', get_data(app.progress));
-}
+    lists = parse_csv(document.getElementById('input').value)
+    print("After parsing:", lists)
 
-function toggle() {
-    app.live = !app.live;
-}
-
-function live_results() {
-    refresh()
-    if (app.progress < ts.length) {
-        if (app.live) {
-            app.progress += 1;
-        }
-        window.setTimeout(function() { live_results(); }, 1000)
+    var ul = document.getElementById("fields");
+    ul.innerHTML = ""
+    for (var field in lists) {
+        ul.innerHTML += '<li><input type="checkbox">&nbsp' + field + '</input></li>';
     }
 }
-live_results()
+
+
+refresh();
+
+
 </script>

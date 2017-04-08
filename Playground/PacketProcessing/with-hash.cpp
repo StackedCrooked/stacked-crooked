@@ -157,7 +157,7 @@ struct Flows
 
     static_assert(sizeof(Bucket) == 32, "");
 
-    std::array<Bucket, 8192> mHashTable;
+    std::array<Bucket, 2048> mHashTable;
     uint32_t mUsedBuckets = 0;
     uint32_t mSharedBuckets = 0;
     uint32_t mOverflowingBuckets = 0;

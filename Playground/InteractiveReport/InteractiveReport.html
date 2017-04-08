@@ -14,7 +14,7 @@
 <body>
     <h1>input</h1>
     <div>
-        <textarea id="input" style="width:400px; height:100px;" onkeyup="refresh();">
+        <textarea type="text" id="input" style="font-family: monospace; width:400px; height:200px;" onkeyup="refresh();">
         </textarea>
     </div>
 
@@ -75,18 +75,18 @@ function parse_csv(stringrep) {
 //document.getElementById('input').value = "speed,rtt,cwnd\n111,11,1\n222,22,2\n333,33,3"
 
 
-document.getElementById('input').value = `time, cwnd, rtt,rtt.max,rtt.min,txbytes
-1484075861000000000,137319,2398612,8552293,1736261,48369360
-1484075862000000000,160061,3147695,10229304,2050121,48286480
-1484075863000000000,345227,5986569,9698224,2256032,53845360
-1484075864000000000,227186,4392060,9523208,1938289,48101480
-1484075865000000000,375826,4449655,9933859,2249340,56075720
-1484075866000000000,151590,2433335,12664259,2259417,51839960
-1484075867000000000,388687,6396743,11864148,1998901,53359920
-1484075868000000000,575996,7562008,27251352,2946322,63163440
-1484075869000000000,172083,3553161,20340175,1981390,53534560
-1484075870000000000,250818,4672844,7465536,2413946,11406400
-1484075871000000000,0,0,0,0,0
+document.getElementById('input').value = `time,  cwnd,    rtt,      rtt.max,   rtt.min,  txbytes
+61,    137319,  2398612,  8552293,   1736261,  48369360
+62,    160061,  3147695,  10229304,  2050121,  48286480
+63,    345227,  5986569,  9698224,   2256032,  53845360
+64,    227186,  4392060,  9523208,   1938289,  48101480
+65,    375826,  4449655,  9933859,   2249340,  56075720
+66,    151590,  2433335,  12664259,  2259417,  51839960
+67,    388687,  6396743,  11864148,  1998901,  53359920
+68,    575996,  7562008,  27251352,  2946322,  63163440
+69,    172083,  3553161,  20340175,  1981390,  53534560
+70,    250818,  4672844,  7465536,   2413946,  11406400
+71,    0,       0,        0,         0,        0
 `;
 
 
@@ -111,17 +111,17 @@ function refresh_graph() {
 function get_graphs(lists) {
     var result = [];
     for (var field in lists) {
-        if (document.getElementById(field).checked) {
-            var item = {
-                name: field,
-                type: 'scatter'
-            };
-            if (field != "time") {
-                item.x = lists["time"];
-                item.y = lists[field];
-            }
-            result.push(item);
+        document.getElementById(field).checked = true;
+
+        var item = {
+            name: field,
+            type: 'scatter'
+        };
+        if (field != "time") {
+            item.x = lists["time"];
+            item.y = lists[field];
         }
+        result.push(item);
     }
     console.log("result: " + JSON.stringify(result, null, 2));
     return result;

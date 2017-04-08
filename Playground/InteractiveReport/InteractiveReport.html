@@ -79,7 +79,7 @@ function refresh() {
     var ul = document.getElementById("fields");
     ul.innerHTML = ""
     for (var field in lists) {
-        ul.innerHTML += '<li><input type="checkbox" id="' + field + '" checked="true" onclick="refresh_graph()" >&nbsp' + field + '</input></li>';
+        ul.innerHTML += '<li><input type="checkbox" id="' + field + '" onclick="refresh_graph()" >&nbsp' + field + '</input></li>';
     }
 
     refresh_graph()

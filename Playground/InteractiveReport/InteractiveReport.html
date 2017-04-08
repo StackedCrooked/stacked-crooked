@@ -111,17 +111,17 @@ function refresh_graph() {
 function get_graphs(lists) {
     var result = [];
     for (var field in lists) {
-        document.getElementById(field).checked = true;
-
-        var item = {
-            name: field,
-            type: 'scatter'
-        };
-        if (field != "time") {
-            item.x = lists["time"];
-            item.y = lists[field];
+        if (document.getElementById(field).checked) {
+            var item = {
+                name: field,
+                type: 'scatter'
+            };
+            if (field != "time") {
+                item.x = lists["time"];
+                item.y = lists[field];
+            }
+            result.push(item);
         }
-        result.push(item);
     }
     console.log("result: " + JSON.stringify(result, null, 2));
     return result;

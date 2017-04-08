@@ -157,7 +157,7 @@ struct Flows
 
     static_assert(sizeof(Bucket) == 32, "");
 
-    std::array<Bucket, 512> mHashTable;
+    std::array<Bucket, 8192> mHashTable;
     uint32_t mUsedBuckets = 0;
     uint32_t mSharedBuckets = 0;
     uint32_t mOverflowingBuckets = 0;
@@ -249,7 +249,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 }
 
 
-void run(uint32_t num_packets = 1000 * 1000)
+void run(uint32_t num_packets = 500 * 1000)
 {
     int flow_counts[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
 

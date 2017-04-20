@@ -50,14 +50,10 @@ void test_vfoo()
 
 int main()
 {
-    test_inline_foo();
-    test_inline_foo();
     test_foo();
     test_foo();
     test_vfoo();
     test_vfoo();
-    test_inline_foo();
-    test_inline_foo();
     test_foo();
     test_foo();
     test_vfoo();

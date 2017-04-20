@@ -8,6 +8,5 @@ struct Test
     virtual int vfoo();
 };
 
+
 Test& get_test();
-
-

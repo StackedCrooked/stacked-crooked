@@ -9,5 +9,6 @@ struct DerivedTest : Test
 
 Test& get_test()
 {
-    return *new DerivedTest;
+    static DerivedTest d;
+    return d;
 }

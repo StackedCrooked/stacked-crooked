@@ -13,3 +13,4 @@ ruby
 cmake
 libboost-dev
 curl
+net-tools

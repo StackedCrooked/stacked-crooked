@@ -15,7 +15,7 @@ struct BBPort
 {
     BBPort(MACAddress local_mac);
 
-    UDPFlow& getUDPFlow(uint32_t index) { return mUDPFlows[index]; }
+    UDPFlow& getUDPFlow(uint32_t index) { return *mUDPFlows[index]; }
 
     void addUDPFlow(uint16_t dst_port);
 
@@ -40,11 +40,11 @@ struct BBPort
 
         if (is_ipv4(packet))
         {
-            for (UDPFlow& flow : mUDPFlows)
+            for (auto& flow : mUDPFlows)
             {
-                if (flow.match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
+                if (flow->match(packet, mLayer3Offset)) // BBPort knows its layer-3 offset
                 {
-                    flow.accept(packet);
+                    flow->accept(packet);
                     mStats.mUDPAccepted++;
                     return;
                 }
@@ -99,6 +99,6 @@ struct BBPort
     uint16_t mVLANId = 0; // zero means on vlan id
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     Stats mStats;
-    std::vector<UDPFlow> mUDPFlows;
+    std::vector<std::unique_ptr<UDPFlow>> mUDPFlows;
     Stack mStack;
 };

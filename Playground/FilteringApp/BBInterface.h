@@ -22,35 +22,23 @@ struct BBInterface
 
         for (std::unique_ptr<BBPort>& port : mBBPorts)
         {
-            port->pop(packet);
+            BBPort& bbPort = *port;
+            bbPort.pop_one(packet);
         }
     }
 
     void pop_later(RxPacket packet, std::vector<BBInterface*>& bb_interfaces)
     {
-        if (mPackets.empty())
+        if (mPacketBatch.empty())
         {
             bb_interfaces.push_back(this);
         }
-        mPackets.push_back(packet);
+        mPacketBatch.push_back(packet);
     }
 
-    void pop_now()
-    {
-        for (std::unique_ptr<BBPort>& port : mBBPorts)
-        {
-            port->pop_many(mPackets.data(), mPackets.size());
-        }
-
-        for (RxTrigger& rxTrigger : mRxTriggers)
-        {
-            rxTrigger.process(mPackets);
-        }
-
-        mPackets.clear();
-    }
+    void pop_now();
 
     std::vector<std::unique_ptr<BBPort>> mBBPorts;
-    std::vector<RxPacket> mPackets;
+    std::vector<RxPacket> mPacketBatch;
     std::vector<RxTrigger> mRxTriggers;
 };

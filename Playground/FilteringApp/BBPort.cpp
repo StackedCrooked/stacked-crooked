@@ -15,7 +15,7 @@ void BBPort::addUDPFlow(uint16_t dst_port)
 }
 
 
-void BBPort::pop(RxPacket packet)
+void BBPort::pop_one(RxPacket packet)
 {
     if (is_local_mac(packet))
     {

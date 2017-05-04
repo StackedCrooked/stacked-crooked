@@ -23,5 +23,5 @@ struct PhysicalInterface
     }
 
     std::vector<BBInterface> mBBInterfaces;
-    std::vector<BBInterface*> mActiveInterfaces;
+    std::vector<BBInterface*> mBatchedBBInterfaces;
 };

@@ -98,7 +98,7 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
             << message
             << " budget_consumed=" << budget_usage << "%"
             << " Mpps=" << Mpps
-            << " ns_per_packet=" << int(0.5 + ns_per_packet)
+            << " ns_per_packet=" << int(0.5 + 100 * ns_per_packet)/100.0
             << " cycles_per_packet=" << int(0.5 + cycles_per_packet)
             << std::endl;
     };

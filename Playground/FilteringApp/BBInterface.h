@@ -33,6 +33,11 @@ struct BBInterface
         {
             bb_interfaces.push_back(this);
         }
+        else if (mPackets.size() == mPackets.capacity())
+        {
+            pop_now();
+        }
+
         mPackets.push_back(packet);
     }
 

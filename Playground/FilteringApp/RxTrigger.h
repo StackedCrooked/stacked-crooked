@@ -1,7 +1,6 @@
 #pragma once
 
 
-#include "Array.h"
 #include "RxPacket.h"
 #include "BPFFilter.h"
 #include <vector>
@@ -20,7 +19,7 @@ struct RxTrigger
         }
     }
 
-    void process(const Vector<RxPacket, 32>& packets)
+    void process(const std::vector<RxPacket>& packets)
     {
         for (const RxPacket& packet : packets)
         {

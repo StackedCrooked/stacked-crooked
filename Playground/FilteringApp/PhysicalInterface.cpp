@@ -4,6 +4,7 @@
 PhysicalInterface::PhysicalInterface()
 {
     mBBInterfaces.resize(64);
+    assert(mActiveInterfaces.empty());
 }
 
 

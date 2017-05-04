@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "Array.h"
 #include "BBPort.h"
 #include "RxPacket.h"
 #include <vector>
@@ -26,7 +27,7 @@ struct BBInterface
         }
     }
 
-    void pop_later(RxPacket packet, std::vector<BBInterface*>& bb_interfaces)
+    void pop_later(RxPacket packet, Vector<BBInterface*, 64>& bb_interfaces)
     {
         if (mPackets.empty())
         {
@@ -51,6 +52,6 @@ struct BBInterface
     }
 
     std::vector<std::unique_ptr<BBPort>> mBBPorts;
-    std::vector<RxPacket> mPackets;
+    Vector<RxPacket, 32> mPackets;
     std::vector<RxTrigger> mRxTriggers;
 };

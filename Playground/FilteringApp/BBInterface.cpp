@@ -3,6 +3,7 @@
 
 BBInterface::BBInterface()
 {
+    mPackets.reserve(32);
 }
 
 

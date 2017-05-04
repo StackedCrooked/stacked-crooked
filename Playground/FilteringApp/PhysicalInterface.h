@@ -22,6 +22,6 @@ struct PhysicalInterface
         return mBBInterfaces[i];
     }
 
-    Array<BBInterface, 48> mBBInterfaces;
-    Vector<BBInterface*, 48> mActiveInterfaces;
+    std::vector<BBInterface> mBBInterfaces;
+    std::vector<BBInterface*> mActiveInterfaces;
 };

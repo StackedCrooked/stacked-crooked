@@ -24,12 +24,21 @@ struct Queue
 
     ~Queue();
 
+    void stop();
+
     void push(Packet value)
     {
         auto was_waiting = false;
 
         {
-            std::lock_guard<std::mutex> lock(mMutex);
+            if (!mMutex.try_lock())
+            {
+                mMutex.lock();
+                mTxBlocks++;
+            }
+            mTxLocks++;
+
+            std::lock_guard<std::mutex> lock(mMutex, std::adopt_lock);
             mRxReceived += value.mSize;
             mItems1.push_back(value);
             if (mWaiting)
@@ -49,15 +58,19 @@ struct Queue
 private:
     void run();
 
-    bool mQuit = false;
-    bool mWaiting = true;
-    uint32_t mNotifies = 0;
-    uint32_t mSwaps = 0;
-    uint32_t mRxReceived = 0;
-    uint32_t mRxProcessed = 0;
-    std::vector<Packet> mItems1;
-    std::vector<Packet> mItems2;
-    std::mutex mMutex;
-    std::condition_variable mCondition;
+    __attribute__((aligned(64))) bool mQuit = false;
+    __attribute__((aligned(64))) bool mWaiting = true;
+    __attribute__((aligned(64))) uint32_t mTxBlocks = 0;
+    __attribute__((aligned(64))) uint32_t mTxLocks = 0;
+    __attribute__((aligned(64))) uint32_t mRxBlocks = 0;
+    __attribute__((aligned(64))) uint32_t mRxLocks = 0;
+    __attribute__((aligned(64))) uint32_t mNotifies = 0;
+    __attribute__((aligned(64))) uint32_t mSwaps = 0;
+    __attribute__((aligned(64))) uint32_t mRxReceived = 0;
+    __attribute__((aligned(64))) uint32_t mRxProcessed = 0;
+    __attribute__((aligned(64))) std::vector<Packet> mItems1;
+    __attribute__((aligned(64))) std::vector<Packet> mItems2;
+    __attribute__((aligned(64))) std::mutex mMutex;
+    __attribute__((aligned(64))) std::condition_variable mCondition;
     std::thread mThread;
 };

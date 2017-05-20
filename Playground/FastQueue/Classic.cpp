@@ -11,8 +11,19 @@ Queue::Queue() :
 
 Queue::~Queue()
 {
+    stop();
+}
+
+
+void Queue::stop()
+{
     {
         std::lock_guard<std::mutex> lock(mMutex);
+        if (mQuit)
+        {
+            // Already stoppped
+            return;
+        }
         mQuit = true;
         mCondition.notify_all();
     }
@@ -25,8 +36,10 @@ Queue::~Queue()
         << " mItems1.size=" << mItems1.size()
         << " mItems2.size=" << mItems2.size()
         << " mNotifies=" << mNotifies
-        << " mSwaps=" << mSwaps
+    << " mTxBlocks=" << mTxBlocks << "/" << mTxLocks
+    << " mRxBlocks=" << mRxBlocks << "/" << mRxLocks
         << std::endl;
+
 }
 
 
@@ -35,7 +48,15 @@ void Queue::run()
     for (;;)
     {
         {
-            std::unique_lock<std::mutex> lock(mMutex);
+            if (!mMutex.try_lock())
+            {
+                mRxBlocks++;
+                mMutex.lock();
+            }
+
+            std::unique_lock<std::mutex> lock(mMutex, std::adopt_lock);
+
+            mRxLocks++;
 
             if (mQuit)
             {

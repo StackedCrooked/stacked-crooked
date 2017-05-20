@@ -26,13 +26,20 @@ struct Queue
 
     void push(Packet value)
     {
+        auto was_waiting = false;
+
         {
             std::lock_guard<std::mutex> lock(mMutex);
             mRxReceived += value.mSize;
             mItems1.push_back(value);
+            if (mWaiting)
+            {
+                was_waiting = true;
+                mWaiting = false;
+            }
         }
 
-        if (mWaiting.exchange(false))
+        if (was_waiting)
         {
             mCondition.notify_one();
             mNotifies++;
@@ -43,7 +50,7 @@ private:
     void run();
 
     bool mQuit = false;
-    std::atomic<bool> mWaiting{true};
+    bool mWaiting = true;
     uint32_t mNotifies = 0;
     uint32_t mSwaps = 0;
     uint32_t mRxReceived = 0;

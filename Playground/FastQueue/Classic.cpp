@@ -42,17 +42,13 @@ void Queue::run()
                 return;
             }
 
-            //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
-
             if (mItems1.empty())
             {
-                //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                 mWaiting = true;
                 mCondition.wait(lock, [&] {
                     return mQuit || !mItems1.empty();
                 });
             }
-            //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
 
             std::swap(mItems1, mItems2);
             mSwaps++;
@@ -60,9 +56,8 @@ void Queue::run()
 
         for (Packet& p : mItems2)
         {
-            //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
             mRxProcessed += p.mSize;
-            mItems2.clear();
         }
+        mItems2.clear();
     }
 }

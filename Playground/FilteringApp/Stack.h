@@ -15,10 +15,7 @@ struct Stack
 {
     Stack();
 
-    void add_to_queue(RxPacket)
-    {
-        // TODO
-    }
+    void add_to_queue(RxPacket);
 
     void flush();
 

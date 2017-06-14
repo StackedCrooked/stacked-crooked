@@ -19,29 +19,8 @@ struct BBPort
 
     void addUDPFlow(uint16_t dst_port);
 
-    void pop_one(RxPacket packet);
+    void pop_many(RxPacket* packets, uint32_t size);
 
-    bool is_ipv4(RxPacket packet) const
-    {
-        return Decode<EthernetHeader>(packet.data()).mEtherType == Net16(0x0800);
-    }
-
-    void pop_many(RxPacket* packets, uint32_t size)
-    {
-        for (auto i = 0u; i != size; ++i)
-        {
-            pop_one(packets[i]);
-        }
-    }
-
-    void handle_other(const RxPacket& packet)
-    {
-        mStack.add_to_queue(packet);
-    }
-
-    bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
-    bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }
-    bool is_multicast(const RxPacket& packet) { return packet[0] & 0x01; }
 
     struct Stats
     {
@@ -51,9 +30,23 @@ struct BBPort
         uint64_t mUDPAccepted = 0;
     };
 
+    const Stats& stats() const { return mStats; }
+
+private:
+    bool is_ipv4(RxPacket packet) const { return Decode<EthernetHeader>(packet.data()).mEtherType == Net16(0x0800); }
+    bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
+    bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }
+    bool is_multicast(const RxPacket& packet) { return packet[0] & 0x01; }
+
+    void pop_one(RxPacket packet);
+
+    void handle_other(const RxPacket& packet)
+    {
+        mStack.add_to_queue(packet);
+    }
+
     LocalMAC mLocalMAC;
     IPv4Address mLocalIP;
-    uint16_t mVLANId = 0; // zero means on vlan id
     uint16_t mLayer3Offset = sizeof(EthernetHeader); // default
     Stats mStats;
     std::vector<std::unique_ptr<UDPFlow>> mUDPFlows;

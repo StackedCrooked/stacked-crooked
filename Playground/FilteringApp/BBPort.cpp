@@ -15,7 +15,7 @@ void BBPort::addUDPFlow(uint16_t dst_port)
 }
 
 
-void BBPort::pop_one(RxPacket packet)
+inline void BBPort::pop_one(RxPacket packet)
 {
     if (is_local_mac(packet))
     {
@@ -58,4 +58,13 @@ void BBPort::pop_one(RxPacket packet)
 
     // Send it to the stack.
     handle_other(packet);
+}
+
+
+void BBPort::pop_many(RxPacket* packets, uint32_t size)
+{
+    for (auto i = 0u; i != size; ++i)
+    {
+        pop_one(packets[i]);
+    }
 }

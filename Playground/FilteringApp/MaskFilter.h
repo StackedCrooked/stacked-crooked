@@ -19,17 +19,7 @@ struct MaskFilter
     }
 
 private:
-    static std::array<uint64_t, 2> GetMask()
-    {
-        static const uint8_t mask_bytes[16] = {
-            0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
-            0xff, 0xff, 0xff, 0xff, // source ip
-            0xff, 0xff, 0xff, 0xff, // destination ip
-            0xff, 0xff, 0xff, 0xff  // source and destination ports
-        };
-
-        return Decode<std::array<uint64_t, 2>>(&mask_bytes[0]);
-    }
+    static std::array<uint64_t, 2> GetMask();
 
     std::array<uint64_t, 2> mMask;
     std::array<uint64_t, 2> mFields;

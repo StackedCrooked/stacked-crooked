@@ -27,5 +27,17 @@ MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address ds
     static_assert(sizeof(mFields) == sizeof(h), "");
 
     memcpy(&mFields[0], &h, sizeof(mFields));
+}
 
+
+std::array<uint64_t, 2> MaskFilter::GetMask()
+{
+    static const uint8_t mask_bytes[16] = {
+        0x00, 0xff, 0x00, 0x00, // ttl, protocol and checksum
+        0xff, 0xff, 0xff, 0xff, // source ip
+        0xff, 0xff, 0xff, 0xff, // destination ip
+        0xff, 0xff, 0xff, 0xff  // source and destination ports
+    };
+
+    return Decode<std::array<uint64_t, 2>>(&mask_bytes[0]);
 }

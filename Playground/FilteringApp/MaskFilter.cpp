@@ -2,7 +2,8 @@
 #include "MACAddress.h"
 
 
-MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+    mMask(GetMask())
 {
     // Composite of IPv4 + TCP/UDP header fields from TTL to DestinationPort.
     struct TransportHeader
@@ -28,7 +29,3 @@ MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address ds
     memcpy(&mFields[0], &h, sizeof(mFields));
 
 }
-
-
-std::array<uint64_t, 2> MaskFilter::static_mask = MaskFilter::GetMask();
-

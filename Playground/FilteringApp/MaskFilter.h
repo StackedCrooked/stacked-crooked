@@ -14,8 +14,8 @@ struct MaskFilter
     {
         auto u64_data = Decode<std::array<uint64_t, 2>>(ipv4_header + offsetof(IPv4Header, mTTL));
 
-        return (mFields[0] == (static_mask[0] & u64_data[0]))
-            && (mFields[1] == (static_mask[1] & u64_data[1]));
+        return (mFields[0] == (mMask[0] & u64_data[0]))
+            && (mFields[1] == (mMask[1] & u64_data[1]));
     }
 
 private:
@@ -31,7 +31,7 @@ private:
         return Decode<std::array<uint64_t, 2>>(&mask_bytes[0]);
     }
 
-    static std::array<uint64_t, 2> static_mask;
+    std::array<uint64_t, 2> mMask;
     std::array<uint64_t, 2> mFields;
 };
 

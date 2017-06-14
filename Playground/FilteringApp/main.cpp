@@ -32,8 +32,6 @@ MACAddress generate_mac(uint32_t i)
 }
 
 
-
-
 std::vector<uint8_t> make_udp_packet(uint16_t dst_port)
 {
     std::vector<uint8_t> result;

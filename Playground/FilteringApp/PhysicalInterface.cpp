@@ -11,8 +11,11 @@ void PhysicalInterface::pop(const std::vector<RxPacket>& packets)
 {
     for (const RxPacket& packet : packets)
     {
-        BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];
-        bbInterface.pop_later(packet, mBatchedBBInterfaces);
+        if (packet.mVlanId < mBBInterfaces.size())
+        {
+            BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];
+            bbInterface.pop_later(packet, mBatchedBBInterfaces);
+        }
     }
 
     for (BBInterface* bb_interface : mBatchedBBInterfaces)

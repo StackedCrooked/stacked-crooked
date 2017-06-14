@@ -34,4 +34,3 @@ private:
     std::array<uint64_t, 2> mMask;
     std::array<uint64_t, 2> mFields;
 };
-

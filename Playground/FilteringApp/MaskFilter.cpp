@@ -6,7 +6,7 @@ MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address ds
     mMask(GetMask())
 {
     // Composite of IPv4 + TCP/UDP header fields from TTL to DestinationPort.
-    struct TransportHeader
+    struct MaskHeader
     {
         uint8_t ttl;
         ProtocolId protocol;
@@ -17,7 +17,7 @@ MaskFilter::MaskFilter(ProtocolId protocolId, IPv4Address src_ip, IPv4Address ds
         Net16 dst_port;
     };
 
-    auto h = TransportHeader();
+    auto h = MaskHeader();
     h.protocol = protocolId;
     h.src_ip = src_ip;
     h.dst_ip = dst_ip;

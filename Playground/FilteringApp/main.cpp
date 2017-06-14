@@ -58,8 +58,7 @@ enum : uint64_t
 {
     num_flows = 48,
     num_packets = num_flows * (2U * 1000UL * 1000UL / num_flows),
-    num_iterations = num_packets / num_flows,
-    burst_size = 8
+    burst_size = 32
 };
 
 
@@ -137,7 +136,7 @@ int main()
 
     for (auto flow_index = 0; flow_index != num_flows; ++flow_index)
     {
-        for (auto i = 0u; i != 8u; ++i) // bursts of 8
+        for (auto i = 0u; i != burst_size; ++i)
         {
             packet_buffers.push_back(make_udp_packet(flow_index + 1));
         }

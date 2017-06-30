@@ -43,6 +43,10 @@ format_h() {
 }
 
 
+format_cc() { 
+    format_cpp "$@"
+}
+
 format_c() { 
     format_cpp "$@"
 }
@@ -53,5 +57,5 @@ format_hpp() {
 
 for file in "$@" ; do
   extension="$(echo "$file" | sed 's/^.*\.//')"
-  format_$extension || echo "No formatter found for extension: $extension"
+  format_$extension || format_cpp
 done

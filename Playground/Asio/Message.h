@@ -20,7 +20,7 @@
 namespace MessageProtocol {
 
 
-boost::asio::io_service & get_io_service()
+boost::asio::io_service& get_io_service()
 {
     static boost::asio::io_service result;
     return result;
@@ -38,8 +38,8 @@ class Message
         cMaxTotalLength = 100*1024*1024,
         cMaxPayloadLength = cMaxTotalLength - cHeaderLength
     };
-    
-public:    
+
+public:
     explicit Message(const std::string & str) : mData()
     {
         if (str.size() > cMaxPayloadLength)
@@ -51,17 +51,17 @@ public:
         encode_header(get_unique_id());
         std::cout << "Message created with id " << get_id() << std::endl;
     }
-        
+
     const char * data() const
     {
         return mData.data();
     }
-    
+
     char * data()
     {
         return const_cast<char*>(static_cast<const Message&>(*this).data());
     }
-    
+
     size_t length() const
     {
         return mData.size();
@@ -76,7 +76,7 @@ public:
     {
         return &data()[0];
     }
-    
+
     size_t header_length() const
     {
         return cHeaderLength;
@@ -91,7 +91,7 @@ public:
     {
         return header() + cHeaderLength;
     }
-    
+
     std::string copy_body() const
     {
         return std::string(body(), body() + body_length());
@@ -101,14 +101,14 @@ public:
     {
         return length() - cHeaderLength;
     }
-    
+
     uint32_t get_id() const
     {
         uint32_t id;
         memcpy(&id, data(), sizeof(id));
         return ntohl(id);
     }
-    
+
     void set_id(uint32_t inId)
     {
         uint32_t netEncodedId = htonl(inId);
@@ -116,13 +116,13 @@ public:
     }
 
     void decode_header()
-    {        
+    {
         auto body_length = [this]() {
             uint32_t n;
             memcpy(&n, data() + sizeof(uint32_t), sizeof(n));
             return ntohl(n);
         }();
-        
+
         uint32_t new_size = body_length + cHeaderLength;
         if (new_size > cMaxTotalLength)
         {
@@ -130,7 +130,7 @@ public:
         }
         mData.resize(new_size);
     }
-    
+
     void encode_header()
     {
         encode_header(get_id());
@@ -140,7 +140,7 @@ public:
     {
         auto netencoded_id = htonl(id);
         memcpy(data(), &netencoded_id, sizeof(netencoded_id));
-        
+
         uint32_t len = htonl(mData.size() - cHeaderLength);
         memcpy(data() + sizeof(uint32_t), &len, sizeof(len));
     }

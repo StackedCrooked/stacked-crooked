@@ -19,7 +19,7 @@ struct Message
     template<typename Socket>
     static std::string Read(Socket & socket)
     {
-        using namespace boost::asio;        
+        using namespace boost::asio;
         std::string payload(Message::get_length(socket), 0);
         if (payload.size() != read(socket, buffer(&payload[0], payload.size())))
         {
@@ -27,41 +27,41 @@ struct Message
         }
         return payload;
     }
-    
+
     template<typename Socket>
     static void Write(Socket & socket, std::string payload)
     {
         using namespace boost::asio;
-        uint32_t length_ne = htonl(payload.size());        
+        uint32_t length_ne = htonl(payload.size());
         payload.insert(payload.begin(), reinterpret_cast<char*>(&length_ne), reinterpret_cast<char*>(&length_ne) + sizeof(length_ne));
         if (payload.size() != write(socket, buffer(&payload[0], payload.size())))
         {
             throw std::runtime_error("Not all bytes were written.");
         }
     }
-    
+
 private:
     template<typename Socket>
     static uint32_t get_length(Socket & socket)
     {
         using namespace boost::asio;
-        
+
         // network-encoded length
         uint32_t length_ne;
         if (sizeof(length_ne) != read(socket, buffer(&length_ne, sizeof(length_ne))))
         {
             throw std::runtime_error("Failed to read message length.");
         }
-        
+
         // return host-encoded
         return ntohl(length_ne);
-    }   
+    }
 };
 
 
 class MessageSession
 {
-public:    
+public:
     MessageSession(boost::asio::io_service & io_serv, const RequestHandler & inRequestHandler) :
         io_service_(io_serv),
         socket_(io_service_),
@@ -73,7 +73,7 @@ public:
     {
         Message::Write(socket_, mRequestHandler(*this, Message::Read(socket_)));
     }
-    
+
     boost::asio::ip::tcp::socket & socket() { return socket_; }
 
 private:
@@ -89,7 +89,6 @@ typedef std::shared_ptr<MessageSession> MessageSessionPtr;
 class MessageServer
 {
 public:
-    
     MessageServer(boost::asio::io_service & io_serv, short port, const RequestHandler & inRequestHandler) :
         io_service_(io_serv),
         acceptor_(io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
@@ -150,7 +149,7 @@ int main(int argc, char ** argv)
             io_serv.run();
         }
         else
-        {            
+        {
             MessageClient client(io_serv, "127.0.0.1", 9999);
             std::cout << client.send("123456789") << std::endl;
         }

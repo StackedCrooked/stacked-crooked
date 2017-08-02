@@ -1,6 +1,13 @@
-MessageClient.h
 Message.h
+MessageClient.h
+MessageProtocol.h
 MessageServer.h
-Makefile
-TestServer.cpp
+Networking.h
+TCPClient.h
+TCPServer.h
+Networking.cpp
+TCPClient.cpp
+TCPServer.cpp
 TestClient.cpp
+TestServer.cpp
+main.cpp

@@ -43,7 +43,7 @@ public:
         return mSocket;
     }
 
-    void start(int remaining = 100)
+    void start(int remaining = 1000)
     {
         mRemaining = remaining;
 
@@ -91,9 +91,9 @@ public:
 
         auto rtt = std::chrono::steady_clock::now().time_since_epoch().count() - mReply.mRequest;
 
-        auto timediff = mReply.mRequest - mReply.mRequest + rtt/2;
+        auto timediff = (mReply.mReply - mReply.mRequest) - rtt/2;
 
-        std::cout << "t1=" << mReply.mRequest << " t2=" << mReply.mReply << " rtt=" << rtt << " timediff=" << timediff << std::endl;
+        std::cout << timediff << " t1=" << mReply.mRequest << " t2=" << mReply.mReply << " rtt=" << rtt << " timediff=" << timediff << std::endl;
 
         write_next();
     }

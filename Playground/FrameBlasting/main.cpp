@@ -305,7 +305,7 @@ int main()
     };
 
     int sizes[num_flows] = {   64, 128, 256, 512, 1024 };
-    int rates[num_flows] = {  400, 400, 400, 400,  400 }; // Mbit/s
+    int rates[num_flows] = {  200, 200, 200, 200,  200 }; // Mbit/s
 
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
     static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows, "");

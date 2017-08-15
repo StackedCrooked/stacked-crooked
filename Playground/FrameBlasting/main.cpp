@@ -23,7 +23,7 @@
 // - We configure 5 flows on each trunking interface:
 //     . Flow 1: 200 Mbit/s using 64-byte packets
 //     . Flow 2: 200 Mbit/s using 128-byte packets
-//     . Flow 3: 200 Mbit/s using 256-byte packets
+//     . Flow 3: 200 Mbit/s using byte packets
 //     . Flow 4: 200 Mbit/s using 512-byte packets
 //     . Flow 5: 200 Mbit/s using 1024-byte packets
 // - So we have 500 flows with total bitrate of 100 Gbit/s.
@@ -37,7 +37,7 @@
 
 using Clock = std::chrono::steady_clock;
 
-std::map<int64_t, int64_t> mCounters;
+int64_t mCounters[1025];
 
 struct Packet
 {
@@ -46,11 +46,7 @@ struct Packet
     void set_size(std::size_t n)
     {
         mSize = n;
-        counter = &mCounters[mSize];
     }
-
-
-    int64_t* counter;
 
 private:
     std::size_t mSize = 0;
@@ -234,7 +230,7 @@ private:
             {
                 bbinterface.pull([&](Packet& packet) {
                     packets.push_back(&packet);
-                    ++*packet.counter;
+                    mCounters[packet.size()]++;
                     if (packets.size() == packets.capacity()) {
                         mSocket.send_batch(now, packets);
                         packets.clear();
@@ -279,13 +275,15 @@ void Socket::send_batch(std::chrono::steady_clock::time_point ts, const std::vec
 
         mTxBytes = 0;
         mStartTime = ts;
-        for (auto& el : mCounters)
+
+        int sizes[5] = {   64, 128, 256, 512, 1024 };
+        for (auto i = 0; i != 5; ++i)
         {
-            auto packet_size = el.first;
-            auto packet_rate = el.second;
-            el.second = 0;
+            auto packet_size = sizes[i];
+            auto packet_rate = mCounters[packet_size];
+            mCounters[packet_size] = 0;
             auto bitrate = packet_size * packet_rate * 8;
-            printf("  %4ld bytes * %8ld => %4f Gbit/s\n", (long)packet_size, (long)packet_rate, (double)bitrate/1e9);
+            printf("  %d bytes * %d => %d Gbit/s\n", (int)packet_size, (int)packet_rate, (int)(0.5 + bitrate/1e9));
         }
     }
 }
@@ -300,7 +298,7 @@ int main()
     };
 
     int sizes[num_flows] = {   64, 128, 256, 512, 1024 };
-    int rates[num_flows] = {  400, 400, 400, 400,  400 }; // Mbit/s
+    int rates[num_flows] = {  600, 600, 600, 600,  600 }; // Mbit/s
 
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
     static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows, "");

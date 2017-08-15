@@ -37,12 +37,20 @@
 
 using Clock = std::chrono::steady_clock;
 
+std::map<int64_t, int64_t> mCounters;
 
 struct Packet
 {
     std::size_t size() const { return mSize; }
 
-    void set_size(std::size_t n) { mSize = n; }
+    void set_size(std::size_t n)
+    {
+        mSize = n;
+        counter = &mCounters[mSize];
+    }
+
+
+    int64_t* counter;
 
 private:
     std::size_t mSize = 0;
@@ -55,7 +63,6 @@ struct Socket
 
     uint64_t mTxBytes = 0;
     Clock::time_point mStartTime = Clock::time_point();
-    std::map<int64_t, int64_t> mCounters;
 };
 
 
@@ -82,13 +89,15 @@ struct Flow
         mNextTransmission = start_time;
     }
 
-    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
+
+    template<typename F>
+    void pull(F f, Clock::time_point current_time)
     {
-        for (auto i = 0; i != 2; ++i) // allow getting 2 packets at once (catch-up)
+        for (auto i = 0; i != 3; ++i) // allow getting multiple packets at once (catch-up)
         {
             if (current_time >= mNextTransmission)
             {
-                packets.push_back(&mPacket);
+                f(mPacket);
                 mNextTransmission += mFrameInterval;
             }
             else
@@ -113,49 +122,25 @@ private:
 
 struct BBInterface
 {
-    void pull(std::vector<Packet*>& packets, Clock::time_point current_time)
+    template<typename F>
+    void pull(F send_function, Clock::time_point current_time)
     {
-        if (mAvailablePackets.empty())
+        // Pull a packet from each ready-to-transmit flow.
+        if (check_token_bucket(current_time))
         {
-            // Pull a packet from each ready-to-transmit flow.
             for (Flow& flow : mFlows)
             {
-                flow.pull(mAvailablePackets, current_time);
+                flow.pull([this, send_function](Packet& packet) {
+                    mBucketSize -= packet.size();
+                    send_function(packet);
+                }, current_time);
             }
-
-            if (mAvailablePackets.empty())
-            {
-                return;
-            }
-
-            std::reverse(mAvailablePackets.begin(), mAvailablePackets.end());
-        }
-
-        if (!check_token_bucket(current_time))
-        {
-            // We are not allowed to transmit yet.
-            return;
-        }
-
-        Packet* next_packet = mAvailablePackets.back();
-        mAvailablePackets.pop_back();
-
-        packets.push_back(next_packet);
-
-        if (is_rate_limited())
-        {
-            mBucketSize -= next_packet->size();
         }
     }
 
     bool is_rate_limited() const
     {
-        return mBytesPerSecond != 0;
-    }
-
-    void set_rate_limit(double bytes_per_s)
-    {
-        mBytesPerSecond = bytes_per_s;
+        return mBytesPerFourNanoseconds != 0;
     }
 
     Flow& add_flow()
@@ -168,7 +153,7 @@ struct BBInterface
 private:
     bool check_token_bucket(Clock::time_point current_time)
     {
-        if (mBytesPerSecond != 0 && mBucketSize >= 0)
+        if (mBytesPerFourNanoseconds != 0 && mBucketSize >= 0)
         {
             return true;
         }
@@ -180,7 +165,7 @@ private:
     {
         std::chrono::nanoseconds elapsed_ns = current_time - mLastUpdate;
 
-        auto bucket_increment = elapsed_ns.count() * mBytesPerSecond / 1e9;
+        auto bucket_increment = 4 * elapsed_ns.count() * mBytesPerFourNanoseconds;
         auto new_bucket = std::min(mBucketSize + bucket_increment, mMaxBucketSize);
         if (new_bucket < 0)
         {
@@ -193,11 +178,10 @@ private:
         return true;
     }
 
-    double mBytesPerSecond = 2 * 1e9 / 8;
-    double mMaxBucketSize = 8 * 1024;
-    double mBucketSize = 0;
+    int64_t mBytesPerFourNanoseconds = 1;
+    int64_t mMaxBucketSize = 32 * 1024;
+    int64_t mBucketSize = mMaxBucketSize;
     Clock::time_point mLastUpdate = Clock::time_point();
-    std::vector<Packet*> mAvailablePackets;
     std::vector<Flow> mFlows;
 };
 
@@ -240,6 +224,7 @@ private:
     void run_thread()
     {
         std::vector<Packet*> packets; // memory is reused every time
+        packets.reserve(32);
 
         while (!mQuit)
         {
@@ -247,7 +232,14 @@ private:
 
             for (BBInterface& bbinterface : mBBInterfaces)
             {
-                bbinterface.pull(packets, now);
+                bbinterface.pull([&](Packet& packet) {
+                    packets.push_back(&packet);
+                    ++*packet.counter;
+                    if (packets.size() == packets.capacity()) {
+                        mSocket.send_batch(now, packets);
+                        packets.clear();
+                    }
+                }, now);
             }
 
             if (!packets.empty())
@@ -270,7 +262,8 @@ void Socket::send_batch(std::chrono::steady_clock::time_point ts, const std::vec
     for (auto& p : packets)
     {
         mTxBytes += p->size();
-        mCounters[p->size()]++;
+        //++*p->counter;
+        //mCounters[p->size()]++;
     }
 
     if (mStartTime == Clock::time_point())
@@ -288,10 +281,12 @@ void Socket::send_batch(std::chrono::steady_clock::time_point ts, const std::vec
         mStartTime = ts;
         for (auto& el : mCounters)
         {
-            auto bitrate = el.first * el.second * 8;
-            printf("  %4ld bytes * %8ld => %4f Gbit/s\n", (long)el.first, (long)el.second, (double)bitrate/1e9);
+            auto packet_size = el.first;
+            auto packet_rate = el.second;
+            el.second = 0;
+            auto bitrate = packet_size * packet_rate * 8;
+            printf("  %4ld bytes * %8ld => %4f Gbit/s\n", (long)packet_size, (long)packet_rate, (double)bitrate/1e9);
         }
-        mCounters.clear();
     }
 }
 
@@ -305,7 +300,7 @@ int main()
     };
 
     int sizes[num_flows] = {   64, 128, 256, 512, 1024 };
-    int rates[num_flows] = {  200, 200, 200, 200,  200 }; // Mbit/s
+    int rates[num_flows] = {  500, 500, 500, 500,  500 }; // Mbit/s
 
     static_assert(sizeof(sizes) == sizeof(sizes[0]) * num_flows, "");
     static_assert(sizeof(rates) == sizeof(rates[0]) * num_flows, "");

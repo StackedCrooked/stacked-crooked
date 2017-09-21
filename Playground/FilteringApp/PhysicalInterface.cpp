@@ -14,7 +14,7 @@ void PhysicalInterface::pop(const std::vector<RxPacket>& packets)
         if (packet.mVlanId < mBBInterfaces.size())
         {
             BBInterface& bbInterface = mBBInterfaces[packet.mVlanId];
-            bbInterface.pop_later(packet, mBatchedBBInterfaces);
+            bbInterface.pop(packet);
         }
     }
 

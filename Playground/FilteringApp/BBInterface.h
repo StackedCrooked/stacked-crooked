@@ -23,6 +23,15 @@ struct BBInterface
 
     void pop_now();
 
+    void pop(RxPacket packet)
+    {
+        for (std::unique_ptr<BBPort>& port : mBBPorts)
+        {
+            BBPort& bbPort = *port;
+            bbPort.pop(packet);
+        }
+    }
+
     std::vector<std::unique_ptr<BBPort>> mBBPorts;
     std::vector<RxPacket> mPacketBatch;
     std::vector<RxTrigger> mRxTriggers;

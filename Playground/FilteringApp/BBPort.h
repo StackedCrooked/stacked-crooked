@@ -21,6 +21,56 @@ struct BBPort
 
     void pop_many(RxPacket* packets, uint32_t size);
 
+    __attribute__((noinline))
+    void pop(const RxPacket& packet)
+    {
+        if (is_local_mac(packet))
+        {
+            mStats.mUnicastCounter++;
+        }
+        else if (is_broadcast(packet))
+        {
+            mStats.mBroadcastCounter++;
+        }
+        else if (is_multicast(packet))
+        {
+            mStats.mMulticastCounter++;
+        }
+        else
+        {
+            return;
+        }
+
+        if (is_ipv4(packet))
+        {
+
+            for (auto& udp_flow_ptr : mUDPFlows)
+            {
+                UDPFlow& udp_flow = *udp_flow_ptr;
+                if (udp_flow.match(packet, mLayer3Offset))
+                {
+                    udp_flow.accept(packet);
+                    mStats.mUDPAccepted++;
+                    return;
+                }
+            }
+
+            // If we didn't match any UDP flows then the IP may wrong. So we still need to check it.
+            auto dst_ip = Decode<IPv4Header>(packet.data() + mLayer3Offset).mDestinationIP;
+
+            if (dst_ip != mLocalIP && !dst_ip.isBroadcast() && !dst_ip.isMulticast())
+            {
+                // Invalid destination IP.
+                return;
+            }
+        }
+
+        // Send it to the stack.
+        handle_other(packet);
+    }
+
+
+
 
     struct Stats
     {

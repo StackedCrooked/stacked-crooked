@@ -76,7 +76,7 @@ struct BBPort
     const Stats& stats() const { return mStats; }
 
 private:
-    bool is_ipv4(RxPacket packet) const { return Decode<EthernetHeader>(packet.data()).mEtherType == Net16(0x0800); }
+    bool is_ipv4(const RxPacket& packet) const { return Decode<EthernetHeader>(packet.data()).mEtherType == Net16(0x0800); }
     bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
     bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }
     bool is_multicast(const RxPacket& packet) { return packet[0] & 0x01; }

@@ -10,12 +10,12 @@ struct UDPFlow
 {
     UDPFlow(IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
-    bool match(RxPacket packet, uint32_t l3_offset)
+    bool match(const RxPacket& packet, uint32_t l3_offset)
     {
         return mFilter.match(packet.data() + l3_offset);
     }
 
-    void accept(RxPacket packet)
+    void accept(const RxPacket& packet)
     {
         mPacketsReceived++;
         mBytesReceived += packet.mSize;

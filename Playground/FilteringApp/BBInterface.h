@@ -12,7 +12,7 @@ struct BBInterface
     BBPort& addPort(MACAddress localMAC);
     BBPort& getBBPort(uint32_t i) { return *mBBPorts[i]; }
 
-    void pop(RxPacket packet)
+    void pop(const RxPacket& packet)
     {
         for (std::unique_ptr<BBPort>& port : mBBPorts)
         {

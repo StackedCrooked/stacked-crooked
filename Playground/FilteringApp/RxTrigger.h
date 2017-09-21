@@ -10,7 +10,7 @@ struct RxTrigger
 {
     RxTrigger(const std::string& filter);
 
-    void process(RxPacket packet)
+    void process(const RxPacket& packet)
     {
         if (mBPFFilter.match(packet.data(), packet.size()))
         {

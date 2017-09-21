@@ -19,8 +19,6 @@ struct BBPort
 
     void addUDPFlow(uint16_t dst_port);
 
-    void pop_many(RxPacket* packets, uint32_t size);
-
     void pop(const RxPacket& packet)
     {
         if (is_local_mac(packet))
@@ -82,8 +80,6 @@ private:
     bool is_local_mac(const RxPacket& packet) { return mLocalMAC.equals(packet.data()); }
     bool is_broadcast(const RxPacket& packet) { return 0x0000FFFFFFFFFFFF == (Decode<uint64_t>(packet.data()) & 0x0000FFFFFFFFFFFF); }
     bool is_multicast(const RxPacket& packet) { return packet[0] & 0x01; }
-
-    void pop_one(RxPacket packet);
 
     void handle_other(const RxPacket& packet)
     {

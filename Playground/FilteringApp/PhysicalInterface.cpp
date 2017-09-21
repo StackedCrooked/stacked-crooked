@@ -17,11 +17,4 @@ void PhysicalInterface::pop(const std::vector<RxPacket>& packets)
             bbInterface.pop(packet);
         }
     }
-
-    for (BBInterface* bb_interface : mBatchedBBInterfaces)
-    {
-        bb_interface->pop_now();
-    }
-
-    mBatchedBBInterfaces.clear();
 }

@@ -12,17 +12,6 @@ struct BBInterface
     BBPort& addPort(MACAddress localMAC);
     BBPort& getBBPort(uint32_t i) { return *mBBPorts[i]; }
 
-    void pop_later(RxPacket packet, std::vector<BBInterface*>& bb_interfaces)
-    {
-        if (mPacketBatch.empty())
-        {
-            bb_interfaces.push_back(this);
-        }
-        mPacketBatch.push_back(packet);
-    }
-
-    void pop_now();
-
     void pop(RxPacket packet)
     {
         for (std::unique_ptr<BBPort>& port : mBBPorts)

@@ -21,7 +21,6 @@ struct BBPort
 
     void pop_many(RxPacket* packets, uint32_t size);
 
-    __attribute__((noinline))
     void pop(const RxPacket& packet)
     {
         if (is_local_mac(packet))
@@ -43,7 +42,6 @@ struct BBPort
 
         if (is_ipv4(packet))
         {
-
             for (auto& udp_flow_ptr : mUDPFlows)
             {
                 UDPFlow& udp_flow = *udp_flow_ptr;
@@ -68,9 +66,6 @@ struct BBPort
         // Send it to the stack.
         handle_other(packet);
     }
-
-
-
 
     struct Stats
     {

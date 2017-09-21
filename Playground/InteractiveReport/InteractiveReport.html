@@ -63,7 +63,7 @@
             <div id="cwnd_graph" style="width: 800; height: 300px;"></div>
             <div id="rwnd_graph" style="width: 800; height: 300px;"></div>
             <div id="rtt_graph" style="width: 800; height: 300px;"></div>
-            <div id="bytes_graph" style="width: 800; height: 300px;"></div>
+            <div id="segments_graph" style="width: 800; height: 300px;"></div>
         </div>
     </div>
     <!--<div id="summary" style="width: 400; height: 100px;"></div>-->
@@ -262,7 +262,7 @@ function refresh_graph() {
     Plotly.newPlot('cwnd_graph', get_graphs("Congestion Window", lists));
     Plotly.newPlot('rwnd_graph', get_graphs("Receive Window", lists));
     Plotly.newPlot('rtt_graph', get_graphs("RTT", lists));
-    Plotly.newPlot('bytes_graph', get_graphs("total[bytes]", lists));
+    Plotly.newPlot('segments_graph', get_graphs("x segments", lists));
 }
 
 

@@ -48,22 +48,21 @@
 
     <div class="hbox f1">
         <div class="vbox f1">
+            <div id="cwnd_graph" style="width: 1000; height: 400px;"></div>
+            <div id="segments_graph" style="width: 1000; height: 400px;"></div>
+            <div id="rtt_graph" style="width: 1000; height: 400px;"></div>
+            <div id="rwnd_graph" style="width: 1000; height: 400px;"></div>
+        </div>
+        <div class="vbox f1">
             <div class="hbox f0">
+                <b>Settings</b>
+                <ul id="fields" >
+                </ul>
+            </div>
+            <div class="hbox f1">
                 <textarea type="text" id="input" style="font-family: monospace; width:500px; height:200px;" onkeyup="refresh();">
                 </textarea>
             </div>
-            <div class="hbox f1">
-                <b>Settings</b>
-                <ul id="fields" style="width: 400px; heaght: 100px; list-style: outside none;">
-                    <li>TEST</li>
-                </ul>
-            </div>
-        </div>
-        <div class="vbox f1">
-            <div id="cwnd_graph" style="width: 800; height: 300px;"></div>
-            <div id="rwnd_graph" style="width: 800; height: 300px;"></div>
-            <div id="rtt_graph" style="width: 800; height: 300px;"></div>
-            <div id="segments_graph" style="width: 800; height: 300px;"></div>
         </div>
     </div>
     <!--<div id="summary" style="width: 400; height: 100px;"></div>-->
@@ -107,9 +106,6 @@ function parse_csv(stringrep) {
         for (var fi = 0; fi != headers.length; ++fi) {
             var name = headers[fi];
             var value = fields[fi].trim();
-            if (name.includes("RTT[ms]")) {
-                value = value / 1000000;
-            }
             lists[name].push(value);
         }
     }
@@ -120,7 +116,7 @@ function parse_csv(stringrep) {
 //document.getElementById('input').value = "speed,rtt,cwnd\n111,11,1\n222,22,2\n333,33,3"
 
 
-document.getElementById('input').value = `# Flow, Port, Time[ns], Duration[ns], Current Congestion Window[bytes], Maximum Congestion Window[bytes], Minimum Congestion Window[bytes], Current Receive Window[bytes], Maximum Receive Window[bytes], Minimum Receive Window[bytes], Current RTT[ms], Maximum RTT[ms], Minimum RTT[ms], Current SlowStart[bytes], Maximum SlowStart[bytes], Minimum SlowStart[bytes], Rx headers[bytes], Rx payload[bytes], Rx total[bytes], Rx segments, Out of order segments, Tx headers[bytes], Tx payload[bytes], Tx total[bytes], Tx segments, Slow retransmissions, Fast retransmissions, Total retransmissions
+document.getElementById('input').value = `# Flow, Port, Time[ns], Duration[ns], Current Congestion Window[bytes], Maximum Congestion Window[bytes], Minimum Congestion Window[bytes], Current Receive Window[bytes], Maximum Receive Window[bytes], Minimum Receive Window[bytes], Current RTT[ns], Maximum RTT[ns], Minimum RTT[ns], Current SlowStart[bytes], Maximum SlowStart[bytes], Minimum SlowStart[bytes], Rx headers[bytes], Rx payload[bytes], Rx total[bytes], Rx segments, Out of order segments, Tx headers[bytes], Tx payload[bytes], Tx total[bytes], Tx segments, Slow retransmissions, Fast retransmissions, Total retransmissions
 downstream_01,CMTS,1506000377000000000,1000000000,651160,2041810,597870,16776960,16776960,16776960,7228658,198312843,3453760,597870,1600890,597870,231160,0,231160,6447,0,570480,41645040,42215520,28524,0,317,317
 downstream_01,CMTS,1506000378000000000,1000000000,767960,767960,651161,16776960,16776960,16776960,4296117,10221293,3355782,597870,597870,597870,5000,0,5000,250,0,1285840,93866320,95152160,64292,0,0,0
 downstream_01,CMTS,1506000379000000000,1000000000,895002,895002,767961,16776960,16776960,16776960,7246899,8420821,3727047,597870,597870,597870,5000,0,5000,250,0,1492140,108926220,110418360,74607,0,0,0
@@ -259,10 +255,10 @@ function refresh() {
 }
 
 function refresh_graph() {
+    Plotly.newPlot('segments_graph', get_graphs("x segments", lists));
+    Plotly.newPlot('rtt_graph', get_graphs("RTT", lists));
     Plotly.newPlot('cwnd_graph', get_graphs("Congestion Window", lists));
     Plotly.newPlot('rwnd_graph', get_graphs("Receive Window", lists));
-    Plotly.newPlot('rtt_graph', get_graphs("RTT", lists));
-    Plotly.newPlot('segments_graph', get_graphs("x segments", lists));
 }
 
 

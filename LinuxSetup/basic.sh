@@ -1,11 +1,6 @@
 #!/bin/bash
 
 
-[ -d ~/stacked-crooked ] && {
-	echo "Basic setup seems to be already done."
-	exit 
-}
-
 mkdir -p ~/bin
 
 sudo apt-get -y install subversion vim

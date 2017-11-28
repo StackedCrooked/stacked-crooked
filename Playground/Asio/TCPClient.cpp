@@ -20,10 +20,9 @@ using boost::asio::ip::tcp;
 class client
 {
 public:
-    client(boost::asio::io_service& io_service,
-           const std::string& server, const std::string& path)
-        : resolver_(io_service),
-          socket_(io_service)
+    client(boost::asio::io_service& io_service, const std::string& server, const std::string& path):
+        resolver_(io_service),
+        socket_(io_service)
     {
         // Form the request. We specify the "Connection: close" header so that the
         // server will close the socket after transmitting the response. This will
@@ -37,10 +36,13 @@ public:
         // Start an asynchronous resolve to translate the server and service names
         // into a list of endpoints.
         tcp::resolver::query query(server, "http");
-        resolver_.async_resolve(query,
-                                boost::bind(&client::handle_resolve, this,
-                                            boost::asio::placeholders::error,
-                                            boost::asio::placeholders::iterator));
+        resolver_.async_resolve(
+            query,
+            boost::bind(
+                &client::handle_resolve,
+                this,
+                boost::asio::placeholders::error,
+                boost::asio::placeholders::iterator));
     }
 
 private:
@@ -51,13 +53,14 @@ private:
         {
             // Attempt a connection to each endpoint in the list until we
             // successfully establish a connection.
-            boost::asio::async_connect(socket_, endpoint_iterator,
-                                       boost::bind(&client::handle_connect, this,
-                                                   boost::asio::placeholders::error));
+            boost::asio::async_connect(
+                socket_,
+                endpoint_iterator,
+                boost::bind(&client::handle_connect, this, boost::asio::placeholders::error));
         }
         else
         {
-            std::cout << "Error: " << err.message() << "\n";
+            std::cout << "Resolve: " << err.message() << "\n";
         }
     }
 
@@ -66,13 +69,17 @@ private:
         if (!err)
         {
             // The connection was successful. Send the request.
-            boost::asio::async_write(socket_, request_,
-                                     boost::bind(&client::handle_write_request, this,
-                                                 boost::asio::placeholders::error));
+            boost::asio::async_write(
+                socket_,
+                request_,
+                boost::bind(
+                    &client::handle_write_request,
+                    this,
+                    boost::asio::placeholders::error));
         }
         else
         {
-            std::cout << "Error: " << err.message() << "\n";
+            std::cout << "Connect: " << err.message() << "\n";
         }
     }
 
@@ -83,13 +90,18 @@ private:
             // Read the response status line. The response_ streambuf will
             // automatically grow to accommodate the entire line. The growth may be
             // limited by passing a maximum size to the streambuf constructor.
-            boost::asio::async_read_until(socket_, response_, "\r\n",
-                                          boost::bind(&client::handle_read_status_line, this,
-                                                      boost::asio::placeholders::error));
+            boost::asio::async_read_until(
+                socket_,
+                response_,
+                "\r\n",
+                boost::bind(
+                    &client::handle_read_status_line,
+                    this,
+                    boost::asio::placeholders::error));
         }
         else
         {
-            std::cout << "Error: " << err.message() << "\n";
+            std::cout << "Write: " << err.message() << "\n";
         }
     }
 
@@ -124,7 +136,7 @@ private:
         }
         else
         {
-            std::cout << "Error: " << err << "\n";
+            std::cout << "ReadStatusLine: " << err << "\n";
         }
     }
 
@@ -151,7 +163,7 @@ private:
         }
         else
         {
-            std::cout << "Error: " << err << "\n";
+            std::cout << "ReadHeaders: " << err << "\n";
         }
     }
 
@@ -170,7 +182,7 @@ private:
         }
         else if (err != boost::asio::error::eof)
         {
-            std::cout << "Error: " << err << "\n";
+            std::cout << "ReadContent: " << err << "\n";
         }
     }
 

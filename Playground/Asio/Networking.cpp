@@ -30,12 +30,12 @@ struct UDPServer::Impl
     {
         while (true)
         {
-            const unsigned int cMaxLength = 1024 * 1024;
-            char data[cMaxLength];
-            udp::endpoint sender_endpoint;
-            size_t length = mSocket.receive_from(boost::asio::buffer(data, cMaxLength), sender_endpoint);
+            char data[128 * 1024];
+            udp::endpoint sender;
+            auto length = mSocket.receive_from(boost::asio::buffer(data, sizeof(data)), sender);
+
             std::string response = inRequestHandler(std::string(data, length));
-            mSocket.send_to(boost::asio::buffer(response.c_str(), response.size()), sender_endpoint);
+            mSocket.send_to(boost::asio::buffer(response.c_str(), response.size()), sender);
         }
     }
 
@@ -71,7 +71,6 @@ struct UDPClient::Impl : boost::noncopyable
         query(udp::v4(), inURL.c_str(), boost::lexical_cast<std::string>(inPort).c_str()),
         iterator(resolver.resolve(query))
     {
-
     }
 
     ~Impl()

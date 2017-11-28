@@ -6,19 +6,18 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <boost/strong_typedef.hpp>
 #include <string>
 
 
-BOOST_STRONG_TYPEDEF(std::string, Request)
-BOOST_STRONG_TYPEDEF(std::string, Response)
+typedef std::string Request;
+typedef std::string Response;
 
 
 
 class UDPServer : boost::noncopyable
 {
 public:
-    typedef boost::function<Response(const Request &)> RequestHandler;
+    typedef boost::function<Response(const Request&)> RequestHandler;
 
     UDPServer(unsigned local_port, const RequestHandler & requestHandler);
 

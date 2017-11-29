@@ -89,12 +89,8 @@ void run(BBServer& bbServer, const std::vector<RxPacket>& rxPackets)
     {
         auto cycles_per_packet = 1.0 * cycles / num_packets;
         auto ns_per_packet = 1e9 * cycles / cpu_hz / num_packets;
-        auto budget_usage = int(0.5 + 100 * ns_per_packet / 25.0);
-        auto Mpps = int(0.5 + 1e3 * num_packets / cycles_to_ns(cycles));
         std::cout
             << message
-            << " budget_consumed=" << budget_usage << "%"
-            << " Mpps=" << Mpps
             << " ns_per_packet=" << int(0.5 + 100 * ns_per_packet)/100.0
             << " cycles_per_packet=" << int(0.5 + cycles_per_packet)
             << std::endl;

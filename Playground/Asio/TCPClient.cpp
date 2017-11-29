@@ -17,10 +17,10 @@
 
 using boost::asio::ip::tcp;
 
-class client
+class TCPClient
 {
 public:
-    client(boost::asio::io_service& io_service, const std::string& server, const std::string& path):
+    TCPClient(boost::asio::io_service& io_service, const std::string& server, const std::string& path):
         resolver_(io_service),
         socket_(io_service)
     {
@@ -39,7 +39,7 @@ public:
         resolver_.async_resolve(
             query,
             boost::bind(
-                &client::handle_resolve,
+                &TCPClient::handle_resolve,
                 this,
                 boost::asio::placeholders::error,
                 boost::asio::placeholders::iterator));
@@ -56,7 +56,7 @@ private:
             boost::asio::async_connect(
                 socket_,
                 endpoint_iterator,
-                boost::bind(&client::handle_connect, this, boost::asio::placeholders::error));
+                boost::bind(&TCPClient::handle_connect, this, boost::asio::placeholders::error));
         }
         else
         {
@@ -73,7 +73,7 @@ private:
                 socket_,
                 request_,
                 boost::bind(
-                    &client::handle_write_request,
+                    &TCPClient::handle_write_request,
                     this,
                     boost::asio::placeholders::error));
         }
@@ -95,7 +95,7 @@ private:
                 response_,
                 "\r\n",
                 boost::bind(
-                    &client::handle_read_status_line,
+                    &TCPClient::handle_read_status_line,
                     this,
                     boost::asio::placeholders::error));
         }
@@ -130,9 +130,14 @@ private:
             }
 
             // Read the response headers, which are terminated by a blank line.
-            boost::asio::async_read_until(socket_, response_, "\r\n\r\n",
-                                          boost::bind(&client::handle_read_headers, this,
-                                                      boost::asio::placeholders::error));
+            boost::asio::async_read_until(
+                socket_,
+                response_,
+                "\r\n\r\n",
+                boost::bind(
+                    &TCPClient::handle_read_headers,
+                    this,
+                    boost::asio::placeholders::error));
         }
         else
         {
@@ -156,10 +161,13 @@ private:
                 std::cout << &response_;
 
             // Start reading remaining data until EOF.
-            boost::asio::async_read(socket_, response_,
-                                    boost::asio::transfer_at_least(1),
-                                    boost::bind(&client::handle_read_content, this,
-                                                boost::asio::placeholders::error));
+            boost::asio::async_read(
+                socket_,
+                response_,
+                boost::asio::transfer_at_least(1),
+                boost::bind(
+                    &TCPClient::handle_read_content,
+                    this, boost::asio::placeholders::error));
         }
         else
         {
@@ -175,10 +183,14 @@ private:
             std::cout << &response_;
 
             // Continue reading remaining data until EOF.
-            boost::asio::async_read(socket_, response_,
-                                    boost::asio::transfer_at_least(1),
-                                    boost::bind(&client::handle_read_content, this,
-                                                boost::asio::placeholders::error));
+            boost::asio::async_read(
+                socket_,
+                response_,
+                boost::asio::transfer_at_least(1),
+                boost::bind(
+                    &TCPClient::handle_read_content,
+                    this,
+                    boost::asio::placeholders::error));
         }
         else if (err != boost::asio::error::eof)
         {
@@ -205,7 +217,7 @@ int main(int argc, char* argv[])
         }
 
         boost::asio::io_service io_service;
-        client c(io_service, argv[1], argv[2]);
+        TCPClient c(io_service, argv[1], argv[2]);
         io_service.run();
     }
     catch (std::exception& e)

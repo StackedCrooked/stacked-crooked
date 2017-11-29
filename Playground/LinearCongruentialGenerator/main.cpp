@@ -22,6 +22,7 @@ int main()
     {
         auto r = next(seed);
         std::cout << r % max << "\n";
+        seed = r;
     }
 }
 

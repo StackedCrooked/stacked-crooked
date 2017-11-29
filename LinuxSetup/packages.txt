@@ -21,3 +21,4 @@ subversion
 swig3.0
 vim
 xclip
+sshfs

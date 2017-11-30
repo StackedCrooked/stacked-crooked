@@ -29,7 +29,7 @@
 (import javax.swing.JPanel)
 (import javax.swing.UIManager)
 (import javax.swing.JOptionPane)
-;(use 'clojure.contrib.math)
+
 
 ; =============================================================================
 ; HTTP Utility functions
@@ -40,14 +40,14 @@
 (import java.io.OutputStreamWriter)
 
 
-
 (defn uri-encode [text]
   (.. #^String text
     (replace " " "%20")
     (replace "&" "%26")
     (replace "=" "%3D")
   ))
-    
+
+
 (defn uri-decode [text]
   (.. #^String text
     (replace "%20" " ")
@@ -55,7 +55,8 @@
     (replace "%3D" "=")
     (replace "%3E" ">") ; TODO implement this more intelligently!
   ))
-    
+
+
 (defn do-get-request [url-string]
   (try
     (let [url           (URL. url-string)
@@ -69,6 +70,7 @@
         (do (recur (.readLine in) (str result line)))
         result)))
   (catch Exception exc (println "Caught exception: " (.getMessage exc)))))
+
 
 (defn do-post-request [url-string post-body]
   (try
@@ -98,14 +100,17 @@
 ; =============================================================================
 (defstruct grid :width :height)
 
+
 (defn grid-new [w h initial-value]
   (struct-map grid
     :width  w
     :height h
     :data   (atom (vec (repeat (* w h) initial-value)))))
 
+
 (defn grid-clear [g initial-value]
   (reset! (g :data) (vec (repeat (* (g :width) (g :height)) initial-value))))
+
 
 (defn grid-new-from-data [w h data]
   (struct-map grid
@@ -123,6 +128,7 @@
         idx   (+ x (* (g :width) y)) ]
     (reset! (g :data) (assoc data idx value))))
 
+
 (defn grid-get-rows [g]
   (partition (g :width) @(g :data)))
 
@@ -139,6 +145,7 @@
            sorted-pairs (sort (fn [x y] (.compare comp (first x) (first y))) 
                               key-vals)] 
        (map second sorted-pairs))))
+
 
 (defn shuffle
   "Returns a seq of coll shuffled in O(n log n) time.
@@ -159,9 +166,11 @@
   :block-width 20
   :block-height 20 })
 
+
 (def window-side-width 100)
 (def window-width (+ (* (+ 2 (prefs :num-columns)) (prefs :block-width)) window-side-width))
 (def window-height (* (+ 2 (prefs :num-rows)) (prefs :block-height)))
+
 
 (def i-block {
   :value 1
@@ -172,6 +181,7 @@
 
             (grid-new-from-data 4 2 [ 0 0 0 0
                                       1 1 1 1])]})
+
 
 (def j-block {
   :value 2
@@ -190,6 +200,7 @@
             (grid-new-from-data 3 3 [ 0 0 0
                                       2 2 2
                                       0 0 2 ])]})
+
 
 (def l-block {
   :value 3
@@ -215,6 +226,7 @@
   :grids [ (grid-new-from-data 2 2 [ 4 4
                                      4 4 ])]})
 
+
 (def s-block {
   :value 5
   :grids [ (grid-new-from-data 3 2 [  0 5 5 
@@ -223,6 +235,7 @@
            (grid-new-from-data 3 3 [  0 5 0 
                                       0 5 5
                                       0 0 5 ])]})
+
 
 (def t-block {
   :value 6
@@ -240,6 +253,7 @@
                                       0 6 6
                                       0 6 0 ])]})
 
+
 (def z-block {
   :value 7
   :grids [ (grid-new-from-data 3 2 [ 7 7 0
@@ -249,26 +263,33 @@
                                      0 7 7
                                      0 7 0 ])]})
 
+
 (def active-block {
     :type (atom l-block)
     :rotation (atom 0)
     :x (atom 0)
     :y (atom 0) })
 
+
 (def global-field (grid-new 10 20 0))
+
 
 (def block-types
   [i-block j-block l-block o-block s-block t-block z-block])
 
+
 (def bag-of-blocks (atom block-types)) ;(into block-types block-types)))
 
+
 (def bag-index (atom 0))
+
 
 (def next-blocks (atom []))
 (def num-next-blocks 1)
 (def is-game-over (atom false))
 (def user-name (atom (str)))
 (def hs-xml (atom nil))
+
 
 (defn current-time-ms [] (.getTime (java.util.Date.)))
 (def timer (atom (new Timer)))
@@ -292,6 +313,7 @@
   :t-blocks (atom 0)
   :z-blocks (atom 0)
 })
+
 
 (defn reset-stats []
   (reset! (stats :score) 0)
@@ -330,8 +352,10 @@
     (reset! bag-of-blocks
            (drop (inc num-next-blocks) @bag-of-blocks)))
 
+
 (declare check-position-valid)
 (declare do-game-over)
+
 
 (defn next-block []
   (reset!  (active-block :type)
@@ -368,6 +392,7 @@
                            167 151 134 117 100
                            100 84  84  67  67  50 ])
 
+
 (defn get-game-speed [level]
   (if (< level (count level-speed-mapping))
     (nth level-speed-mapping level)
@@ -385,6 +410,7 @@
 
 (declare move-down)
 
+
 (defn set-game-speed [interval]
   (let [task (proxy [TimerTask] []
                (run []
@@ -393,6 +419,7 @@
     (.cancel @timer)
     (reset! timer (new Timer))
     (.scheduleAtFixedRate @timer task (long interval) (long interval))))
+
 
 (defn random-block []
     (let [ bag       @bag-of-blocks
@@ -452,7 +479,9 @@
       (nth color-table grid-value)
       (Color/WHITE  ))))
 
+
 (defn half [n] (int (/ n 2)))
+
 
 (defn center-in-screen [frame]
   (let [  dim (.getScreenSize(Toolkit/getDefaultToolkit))
@@ -479,9 +508,11 @@
       (.drawLine (+ x 1) (- (+ y h) 1) (- (+ x w) 1) (- (+ y h) 1))
       (.drawLine (- (+ x w) 1) (- (+ y h) 1) (- (+ x w) 1) (+ y 1)))))
 
+
 (defn draw-text [g x y w h text]
   (doto g
     (.drawString text (* w x) (* h y))))
+
 
 (defn draw-block [g block]
   (if (= false @is-game-over)
@@ -499,6 +530,7 @@
                     y  (+ (prefs :field-y) (+ by j))]
                 (paint-grid-cell g x y cell-value)))))))))
 
+
 (defn clear-screen [panel g]
   (doto g
     (.setColor (Color/GRAY))
@@ -511,6 +543,7 @@
                          (+ (prefs :field-y) y)
                          (grid-get field x y)))))
 
+
 (defn draw-debug-field [g field]
   (dotimes [x (field :width)]
     (dotimes [y (field :height)]
@@ -519,6 +552,7 @@
                  (prefs :block-width)
                  (prefs :block-height)
                  (str (grid-get field x y))))))
+
 
 (defn draw-next-blocks [g blocks]
   (if (= false @is-game-over)
@@ -534,6 +568,7 @@
                    value  (grid-get grid i j) ]
               (if-not (zero? value)
                 (paint-grid-cell g x y value)))))))))
+
 
 (defn debug-draw-bag-of-blocks [g blocks]
   (dotimes [ n (count blocks) ]
@@ -561,10 +596,12 @@
       (reset! frame-count 0)
       (reset! start-time (current-time-ms))))
 
+
 (defn draw-fps [g]
   (doto g
     (.setColor (Color/ORANGE))
     (.drawString (str "fps " @fps) 15 (* 22 15))))
+
 
 (defn get-tetris-font [g]
   (.deriveFont (.getFont g)
@@ -574,7 +611,9 @@
 (defn get-text-rect [g str font]
   (.getStringBounds (.getFontMetrics g (get-tetris-font g)) str g))
 
+
 (def text-line-height 20)
+
 
 (defn draw-text-column [g x y lines]
   (dotimes [i           (count lines)]
@@ -591,6 +630,7 @@
     (.setColor g color)
     (.drawString g text x y-adjusted))))
 
+
 (defn draw-left-aligned-text-column [g x y lines]
   (let [text-height (* (count lines) text-line-height)  ]
     (dotimes [i (count lines)]
@@ -599,6 +639,7 @@
              text-width  (.getWidth text-rect) ]
         (.setColor g (line :color))
         (.drawString g (line :text) x (+ y (* i text-line-height)))))))
+
 
 (defn draw-centered-text-column [g x y lines]
   (let [text-height (* (count lines) text-line-height)
@@ -610,6 +651,7 @@
              x-offset    (- x (half text-width)) ]
         (.setColor g (line :color))
         (.drawString g (line :text) x-offset (+ y-offset (* i text-line-height)))))))
+
 
 (defn draw-stats [g]
   (let [lines     [ { :text (str "1x " @(stats :singles)) :color Color/LIGHT_GRAY }
@@ -676,6 +718,7 @@
                                   { :text "new game"    :color Color/GREEN }
                                    ])))
 
+
 (defn draw-all [panel g f b]
   (clear-screen panel g)
   (if (zero? (mod @frame-count 100))
@@ -694,6 +737,7 @@
       (draw-high-scores g @hs-xml)
       (draw-game-over g)))))
 
+
 (defn check-position-valid [field block]
   (let [grids          (@(block :type) :grids)
         grid-idx       (mod @(block :rotation) (count grids))
@@ -710,20 +754,24 @@
                              (< field-y (field :height))
                              (zero? (grid-get field field-x field-y))))))))
 
+
 (defn rotate [field block]
     (swap! (block :rotation) inc)
     (if-not (check-position-valid field block)
       (swap! (block :rotation) dec)))
+
 
 (defn move-left [f b]
     (swap! (b :x) dec)
     (if-not (check-position-valid f b)
     (swap! (b :x) inc)))
 
+
 (defn move-right [f b]
     (swap! (b :x) inc)
     (if-not (check-position-valid f b)
       (swap! (b :x) dec)))
+
 
 (defn update-score [num-lines-scored]
   (let [level   (get-level @(stats :lines))
@@ -737,6 +785,7 @@
       
 (defn contains [collection value]
   (> (count (filter (fn [el] (== value el)) collection)) 0))
+
 
 (defn flatten [x]
   (let [s? #(instance? clojure.lang.Sequential %)]
@@ -760,6 +809,7 @@
         (update-score num-lines-scored))
       (set-game-speed (get-game-speed (get-level @(stats :lines)))))))
 
+
 (defn commit-block [field block]
   (let [  block-type  @(block :type)
           block-x     @(block :x)
@@ -773,6 +823,7 @@
             (if-not (zero? value)
               (grid-set field (+ x block-x) (+ y block-y) value)))))))
 
+
 (defn move-down [f b]
     (swap! (b :y) inc)
     (if-not (check-position-valid f b)
@@ -781,6 +832,7 @@
         (commit-block f b)
         (clear-lines f)
         (next-block))))
+
 
 (defn drop-block [f b]
     (loop []
@@ -792,10 +844,12 @@
     (clear-lines f)
     (next-block))
 
+
 (defn reset-game []
   (reset! is-game-over false)
   (reset! hs-xml nil)
   (reset-stats))
+
 
 (defn create-panel []
   (doto
@@ -820,6 +874,7 @@
       (keyTyped [e]))
     (.setFocusable true)))
 
+
 (defn main []
   (let [frame  (JFrame. "Tetris")
         panel  (create-panel)]
@@ -836,44 +891,13 @@
       (Thread/sleep 10)      
       (.repaint panel)
       (recur))))
-  
-(defn get-user-name []
-  (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
-  (JOptionPane/showInputDialog nil "What is your name?" "Name" JOptionPane/QUESTION_MESSAGE))
-      
-;(defn get-high-scores []  
-  ; we need to explicity ask for xml (using .xml) because
-  ; for some mysterious reason the accept header of the
-  ; clojure.xml/parse call is text/html.
-  ;(clojure.xml/parse (str "http://stacked-crooked.com/hof.xml")))
-  
-(def get-agent (agent nil))
-(def post-agent (agent nil))
+
 
 (defn do-game-over []
   (if-not (= true @is-game-over)
     (do
       (init-blocks)
-      (reset! is-game-over true)
-      (reset! user-name (get-user-name))
-      (if (and (not (nil? @user-name))
-               (not (empty? @user-name)))
-        (let [url         (str "http://stacked-crooked.com/hs")
-              post-body   (str "name=" (uri-encode @user-name) "&score=" @(stats :score))]
-          (try
-            (await-for 5000 (send post-agent (fn [_] (do-post-request url post-body))))
-            (catch Exception exc (println "POST high score failed: " (.getMessage exc))))
-          (let [errors (agent-errors post-agent)]
-            (if-not (nil? errors)
-              (println "POST agent errors: " (agent-errors post-agent))))
-          ))
-          
-      ;(try
-        ;(await-for 5000 (send get-agent (fn [_] (get-high-scores))))
-        ;(catch Exception exc (println "get-high-scores failed:" (.getMessage exc))))
-      ;(if (nil? (agent-errors get-agent))
-        ;(reset! hs-xml @get-agent)
-        ;(println "Failed to get high scores. (GET agent errors: " (agent-errors post-agent) ")"))
-      )))
+      (reset! is-game-over true))))
+
 
 (main)

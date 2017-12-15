@@ -21,7 +21,7 @@
 
 
 
-std::array<std::chrono::nanoseconds, 1000> global_results;
+std::array<std::chrono::nanoseconds, 10000> global_results;
 std::atomic<uint32_t> global_result_size{};
 std::atomic<uint32_t> num_notifies{};
 std::atomic<uint32_t> num_wakeups{};

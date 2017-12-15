@@ -22,9 +22,9 @@
 
 
 std::array<std::chrono::nanoseconds, 10000> global_results;
-std::atomic<uint32_t> global_result_size{};
-std::atomic<uint32_t> num_notifies{};
-std::atomic<uint32_t> num_wakeups{};
+uint32_t global_result_size = 0;
+uint32_t num_notifies = 0;
+uint32_t num_wakeups = 0;
 
 
 
@@ -70,7 +70,7 @@ struct Waiter
                 {
                     std::cout << result.count() << std::endl;
                 }
-                std::cout << "num_notifies=" << num_notifies.load() << " num_wakeups=" << num_wakeups.load() << std::endl;
+                std::cout << "num_notifies=" << num_notifies << " num_wakeups=" << num_wakeups << std::endl;
                 std::exit(0);
             }
         }

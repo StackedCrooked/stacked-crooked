@@ -40,11 +40,15 @@ def get_input_file_dependencies(input_file)
   execute_and_handle("otool -L #{input_file}",
                      Proc.new { |outPipe|
                        outPipe.each_line do |line|
-                         if line =~ /\s+(.+dylib)\s.+/
+                         if line =~ /\s+(.+Qt5\S+)\s.+/
                            filename = $1
+                           puts "#{filename} might need localization"
                            if (needs_localization(filename))
+                               puts "#{filename} DOES need localization"
                              result.push($1)
                            end
+                         else
+                            puts "#{filename} does not need localization"
                          end
                        end
                      },

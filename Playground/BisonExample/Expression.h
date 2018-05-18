@@ -23,8 +23,8 @@ typedef struct tagSExpression
     EOperationType type;///< type of operation
 
     int value;///< valid only when type is eVALUE
-    struct tagSExpression *left; ///< left side of the tree
-    struct tagSExpression *right;///< right side of the tree
+    struct tagSExpression* left; ///< left side of the tree
+    struct tagSExpression* right;///< right side of the tree
 } SExpression;
 
 /**
@@ -32,7 +32,7 @@ typedef struct tagSExpression
  * @param value The number value
  * @return The expression or NULL in case of no memory
  */
-SExpression *createNumber(int value);
+SExpression* createNumber(int value);
 
 /**
  * @brief It creates an operation
@@ -41,12 +41,12 @@ SExpression *createNumber(int value);
  * @param right The right operand
  * @return The expression or NULL in case of no memory
  */
-SExpression *createOperation(EOperationType type, SExpression *left, SExpression *right);
+SExpression* createOperation(EOperationType type, SExpression* left, SExpression* right);
 
 /**
  * @brief Deletes a expression
  * @param b The expression
  */
-void deleteExpression(SExpression *b);
+void deleteExpression(SExpression* b);
 
 #endif // __EXPRESSION_H__

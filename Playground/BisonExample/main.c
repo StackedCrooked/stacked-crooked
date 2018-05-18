@@ -5,39 +5,42 @@
 #include "Expression.h"
 #include "Parser.h"
 #include "Lexer.h"
- 
+
 #include <stdio.h>
- 
-int yyparse(SExpression **expression, yyscan_t scanner);
- 
-SExpression *getAST(const char *expr)
+
+int yyparse(SExpression** expression, yyscan_t scanner);
+
+SExpression* getAST(const char* expr)
 {
-    SExpression *expression;
+    SExpression* expression;
     yyscan_t scanner;
     YY_BUFFER_STATE state;
- 
-    if (yylex_init(&scanner)) {
+
+    if (yylex_init(&scanner))
+    {
         // could not initialize
         return NULL;
     }
- 
+
     state = yy_scan_string(expr, scanner);
- 
-    if (yyparse(&expression, scanner)) {
+
+    if (yyparse(&expression, scanner))
+    {
         // error parsing
         return NULL;
     }
- 
+
     yy_delete_buffer(state, scanner);
- 
+
     yylex_destroy(scanner);
- 
+
     return expression;
 }
- 
-int evaluate(SExpression *e)
+
+int evaluate(SExpression* e)
 {
-    switch (e->type) {
+    switch (e->type)
+    {
         case eVALUE:
             return e->value;
         case eMULTIPLY:
@@ -49,21 +52,29 @@ int evaluate(SExpression *e)
             return 0;
     }
 }
- 
+
 void test(const char* text)
 {
-    SExpression *e = NULL;
- 
+    SExpression* e = NULL;
+
     e = getAST(text);
- 
+
+    if (!e)
+    {
+        fprintf(stderr, "Failed to parse expression: %s\n", text);
+        return;
+    }
+
     int result = evaluate(e);
- 
-    printf("Result of '%s' is %d\n", text, result);
- 
+
+    if (result == 0)
+    {
+        printf("Result of '%s' is %d\n", text, result);
+    }
+
     deleteExpression(e);
- 
 }
- 
+
 int main(void)
 {
     test("4 ~ 3");

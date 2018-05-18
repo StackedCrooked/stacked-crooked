@@ -39,16 +39,12 @@ alias pbpaste='xclip -selection clipboard -o'
 
 
 
-set_union () {
-   sort $1 $2 | uniq
-}
+# Show lines that appear only in second file
+# Can be used to generate "svn add" commands
+diff_adds() { comm -13 $1 $2; }
 
-# Show items that have been removed.
-set_difference () {
-   sort $1 $2 $2 | uniq -u
-}
 
-# Show items that have been added
-set_symmetric_difference() {
-   sort $1 $2 | uniq -u
-}
+# Show lines that appear only in first file.
+# Can be used to generate "svn delete" commands.
+diff_dels() { comm -23 $1 $2; }
+

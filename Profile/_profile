@@ -36,3 +36,19 @@ alias pbpaste='xclip -selection clipboard -o'
 
 # Load the previous current directory
 #[ -f "$HOME/.pwd" ] && cd "$(cat $HOME/.pwd)" 
+
+
+
+set_union () {
+   sort $1 $2 | uniq
+}
+
+# Show items that have been removed.
+set_difference () {
+   sort $1 $2 $2 | uniq -u
+}
+
+# Show items that have been added
+set_symmetric_difference() {
+   sort $1 $2 | uniq -u
+}

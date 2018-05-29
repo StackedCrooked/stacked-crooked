@@ -186,6 +186,7 @@ struct Parser
 
     std::string pop_token()
     {
+        assert(!mTokens.empty());
         auto result = mTokens.front();
         mTokens.pop_front();
         return result;

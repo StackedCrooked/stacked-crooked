@@ -222,7 +222,7 @@ int main()
 
 
     test("(ip and udp) or (ip6 and tcp)");
-    test("ip and udp or ip6 and tcp");
+    test("ip and udp or ip6 and tcp");  // => TODO: AND should have precedence over OR
 
     test("((ip and udp) or (ip6 and tcp)) and (ether or ppp)");
 

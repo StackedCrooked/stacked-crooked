@@ -47,6 +47,13 @@ struct Expression
         return result;
     }
 
+    static Expression Or()
+    {
+        Expression result;
+        result.mType = Type::Or;
+        return result;
+    }
+
     static Expression Or(Expression lhs, Expression rhs)
     {
         Expression result;
@@ -113,20 +120,64 @@ struct Expression
 };
 
 
+/**
+ * simplified from https://github.com/the-tcpdump-group/libpcap/blob/master/grammar.y
+ * depend on the functionality of data plane
+ * BPF: http://biot.com/capstats/bpf.html
+ *
+ *
+ *  letter = "A-Za-z"
+ *  digit = "0-9"
+ *
+ *
+ *  node_name = letter { letter | digit | "_" }
+ *  node_type = letter { letter }
+ *
+ *
+ *  node = node_name "::" node_type
+ *  edge = node_name [ "[" lexpr "]" ] "->" [ "[" lexpr "]" ] node_name
+ *
+ *
+ *  attribute = "true" | "false" | bpf_expr | nf_expr
+ *  bpf_expr = bpf_term bpf_id
+ *
+ *
+ *  bpf_id = bpf_ipv4 | digit {digit}
+ *  bpf_ipv4 = bpf_ipv4_octet "." bpf_ipv4_octet "." bpf_ipv4_octet "." bpf_ipv4_octet
+ *  bpf_ipv4_octet = "0-9" | "1-9" "0-9" | "1" "0-9" "0-9" | "2" "0-4" "0-9" | "2" "5" "0-5"
+ *
+ *
+ *  bpf_term = [bpf_proto] [bpf_dir] [bpf_type] bpf_id
+ *  bpf_proto = "ether" | "fddi" | "tr" | "wlan" | "ip" | "ip6" | "arp" | "rarp" | "decnet" | "tcp" | "udp"
+ *  bpf_dir = "src" | "dst" | "src or dst" | "src and dst"
+ *  bpf_type = "host" | "net" | "port" | "portrange"
+ *
+ *
+ *  nf_expr = nf_type nf_attr
+ *  // nf_type = load nf types from user specification
+ *  // nf_attr = load nf-specific attributes from user specification
+ *
+ *
+ *  lexpr =
+ *    "(" lexpr ")"     |
+ *    lexpr "and" lexpr |
+ *    lexpr "or" lexpr  |
+ *    attribute
+ *
+ */
 struct Parser
 {
     explicit Parser(const std::string& text) :
-        mTokens(tokenize(text))
+        mTokens(tokenize(text)),
+        mExpression(Expression::Or())
     {
     }
 
-    Expression parse_bpf_expression()
+    void parse_bpf_expression()
     {
         if (next_token("ip") || next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
         {
-            auto leaf = parse_leaf_expression();
-
-            return parse_binary_expression(leaf);
+            parse_leaf_expression();
         }
         else if (consume_token("("))
         {
@@ -163,7 +214,7 @@ struct Parser
         }
     }
 
-    Expression parse_leaf_expression()
+    void parse_leaf_expression()
     {
         return Expression::Leaf(pop_token());
     }
@@ -202,6 +253,7 @@ struct Parser
 
 
     std::deque<std::string> mTokens;
+    Expression mExpression;
 };
 
 

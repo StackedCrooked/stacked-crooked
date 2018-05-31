@@ -285,7 +285,6 @@ struct Parser
 
     Expression error(const char* file, int line)
     {
-
         std::cout
             << file << ":" << line << ":\n"
             << mOriginalText << "\n"

@@ -122,11 +122,6 @@ struct Parser
 
     Expression parse_bpf_expression()
     {
-        return parse_binary_expression();
-    }
-
-    Expression parse_binary_expression()
-    {
         auto leaf = parse_group_expression();
 
         if (consume_token("and"))
@@ -202,12 +197,10 @@ struct Parser
 
     Expression error(const char* file, int line)
     {
-        std::cout << file << ":" << line << ": " <<
-            (mTokens.empty() ? std::string("Expected more tokens") : ("Unexpected token: " + mTokens.front())) << std::endl;
+        std::cout << file << ":" << line << ": " << (mTokens.empty() ? std::string("Expected more tokens") : ("Unexpected token: " + mTokens.front())) << std::endl;
         exit(1);
         throw 1;
     }
-
 
     std::deque<std::string> mTokens;
 };

@@ -211,11 +211,18 @@ struct Parser
     {
         if (is_attribute())
         {
-            auto result = Expression::Leaf(pop_token());
+            auto attribute = Expression::Leaf(pop_token());
+
+            if (!consume_token("and"))
+            {
+                return attribute;
+            }
+
+            auto result = Expression::And(attribute, parse_bpf_expression());
 
             while (consume_token("and"))
             {
-                result = Expression::And(result, parse_bpf_expression());
+                result.mChildren.push_back(parse_bpf_expression());
             }
 
             return result;

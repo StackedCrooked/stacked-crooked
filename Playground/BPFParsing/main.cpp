@@ -1,28 +1,9 @@
-#include <boost/tokenizer.hpp>
 #include <deque>
+#include <cassert>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <set>
-
-
-typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
-
-
-std::deque<std::string> tokenize(const std::string& str)
-{
-    std::deque<std::string> result;
-
-    boost::char_separator<char> sep(" ", "()=");
-
-    tokenizer tokens(str, sep);
-    for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
-    {
-        result.push_back(*tok_iter);
-    }
-
-    return result;
-}
 
 
 static std::string indent(int level)
@@ -39,6 +20,13 @@ static std::string indent(int level)
 
 struct Expression
 {
+    static Expression And()
+    {
+        Expression result;
+        result.mType = Type::And;
+        return result;
+    }
+
     static Expression And(Expression lhs, Expression rhs)
     {
         Expression result;
@@ -78,6 +66,11 @@ struct Expression
         Or,
         Leaf
     };
+
+    void add(Expression e)
+    {
+        mChildren.push_back(e);
+    }
 
     void print(int level = 0)
     {
@@ -169,11 +162,15 @@ struct Expression
 struct Parser
 {
     explicit Parser(const std::string& text) :
-        mTokens(tokenize(text))
+        mOriginalText(text),
+        mText(mOriginalText.data())
     {
         mProtocols = {
             "ether", "ppp", "ip", "ip6", "udp", "tcp"
         };
+
+        assert(is_attribute("ether"));
+        assert(!is_attribute("pether"));
     }
 
     Expression parse_bpf_expression()
@@ -213,11 +210,18 @@ struct Parser
         {
             auto attribute = Expression::Leaf(pop_token());
 
-            if (!consume_token("and"))
+            if (consume_token("and"))
             {
-                return attribute;
-            }
+                auto result = Expression::And();
+                result.add(attribute);
 
+                while (consume_token("and"))
+                {
+                    result.add(parse_bpf_expression());
+                }
+
+                return result;
+            }
             auto result = Expression::And(attribute, parse_bpf_expression());
 
             while (consume_token("and"))
@@ -235,38 +239,65 @@ struct Parser
 
     bool is_attribute() const
     {
-        return !mTokens.empty() && mProtocols.count(mTokens.front());
+        return is_attribute(mText);
+    }
+
+    bool is_attribute(const std::string& text) const
+    {
+        for (const std::string& protocol : mProtocols)
+        {
+            if (text.find(protocol.c_str()) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     bool consume_token(const std::string& s)
     {
-        if (mTokens.empty() || mTokens.front() != s)
+        auto backup = mText;
+        for (auto& c : s)
         {
-            return false;
+            if (mText[0] != c)
+            {
+                mText = backup;
+                return false;
+            }
         }
 
-        pop_token();
         return true;
     }
 
     std::string pop_token()
     {
-        assert(!mTokens.empty());
-        auto result = mTokens.front();
-        mTokens.pop_front();
+        assert(mText && *mText);
+
+        std::string result;
+
+        while (mText && *mText)
+        {
+            result.push_back(*mText++);
+        }
+
         return result;
     }
 
     Expression error(const char* file, int line)
     {
-        std::cout << file << ":" << line << ": " <<
-            (mTokens.empty() ? std::string("Expected more tokens") : ("Unexpected token: " + mTokens.front())) << std::endl;
+
+        std::cout
+            << file << ":" << line << ":\n"
+            << mOriginalText << "\n"
+            << indent(mText - mOriginalText.data()) << "^\n"
+            << std::endl;
         exit(1);
         throw 1;
     }
 
 
-    std::deque<std::string> mTokens;
+    std::string mOriginalText;
+    const char* mText;
     std::set<std::string> mProtocols;
 };
 
@@ -283,18 +314,6 @@ void test(const char* str)
 
 int main()
 {
-    test("ip");
-    test("(ip)");
-
     test("ip and udp");
-    test("(ip and udp)");
-
-    test("ether and ip and udp");
-    test("ether and ppp and ip and udp");
-
-    test("ip or udp");
-    test("(ip or udp)");
-
-    test("(ip and udp) or (ip6 and tcp)");
-    test("ip and udp or ip6 and tcp");
+    test("(ip or ip6) and (tcp or udp)");
 }

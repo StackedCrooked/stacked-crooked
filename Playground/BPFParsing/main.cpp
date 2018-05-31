@@ -199,7 +199,7 @@ struct Parser
     {
         auto result = parse_and_expression();
 
-        while (consume_token("or"))
+        if (consume_token("or"))
         {
             result = Expression::Or(result, parse_bpf_expression());
         }
@@ -242,11 +242,6 @@ struct Parser
         return true;
     }
 
-    bool next_token(const std::string& s) const
-    {
-        return !mTokens.empty() && mTokens.front() == s;
-    }
-
     std::string pop_token()
     {
         assert(!mTokens.empty());
@@ -281,15 +276,18 @@ void test(const char* str)
 
 int main()
 {
-
     test("ip");
-    test("ip and udp");
+    test("(ip)");
 
+    test("ip and udp");
+    test("(ip and udp)");
+
+    test("ether and ip and udp");
+    test("ether and ppp and ip and udp");
+
+    test("ip or udp");
+    test("(ip or udp)");
 
     test("(ip and udp) or (ip6 and tcp)");
-    test("ip and udp or ip6 and tcp");  // => TODO: AND should have precedence over OR
-
-    test("((ip and udp) or (ip6 and tcp)) and (ether or ppp)");
-
-    test("((((ip and udp) or (ip and tcp)) or (ip6 and udp or (ip6 and tcp))))");
+    test("ip and udp or ip6 and tcp");
 }

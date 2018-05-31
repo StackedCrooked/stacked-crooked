@@ -122,19 +122,36 @@ struct Parser
 
     Expression parse_bpf_expression()
     {
-        if (next_token("ip") || next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
-        {
-            auto leaf = parse_leaf_expression();
+        return parse_binary_expression();
+    }
 
-            return parse_binary_expression(leaf);
+    Expression parse_binary_expression()
+    {
+        auto leaf = parse_group_expression();
+
+        if (consume_token("and"))
+        {
+            return Expression::And(leaf, parse_bpf_expression());
         }
-        else if (consume_token("("))
+        else if (consume_token("or"))
+        {
+            return Expression::Or(leaf, parse_bpf_expression());
+        }
+        else
+        {
+            return leaf;
+        }
+    }
+
+    Expression parse_group_expression()
+    {
+        if (consume_token("("))
         {
             auto result = parse_bpf_expression();
 
             if (consume_token(")"))
             {
-                return parse_binary_expression(result);
+                return result;
             }
             else
             {
@@ -143,29 +160,20 @@ struct Parser
         }
         else
         {
-            return error(__FILE__, __LINE__);
-        }
-    }
-
-    Expression parse_binary_expression(Expression result)
-    {
-        if (consume_token("and"))
-        {
-            return Expression::And(result, parse_bpf_expression());
-        }
-        else if (consume_token("or"))
-        {
-            return Expression::Or(result, parse_bpf_expression());
-        }
-        else
-        {
-            return result;
+            return parse_leaf_expression();
         }
     }
 
     Expression parse_leaf_expression()
     {
-        return Expression::Leaf(pop_token());
+        if (next_token("ip") || next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
+        {
+            return Expression::Leaf(pop_token());
+        }
+        else
+        {
+            return error(__FILE__, __LINE__);
+        }
     }
 
     bool consume_token(const std::string& s)
@@ -217,7 +225,6 @@ void test(const char* str)
 
 int main()
 {
-
     test("ip");
     test("ip and udp");
 

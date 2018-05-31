@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
 
 
 typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
@@ -168,29 +169,56 @@ struct Expression
 struct Parser
 {
     explicit Parser(const std::string& text) :
-        mTokens(tokenize(text)),
-        mExpression(Expression::Or())
+        mTokens(tokenize(text))
     {
+        mProtocols = {
+            "ether", "ppp", "ip", "ip6", "udp", "tcp"
+        };
     }
 
-    void parse_bpf_expression()
+    Expression parse_bpf_expression()
     {
-        if (next_token("ip") || next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
+        if (consume_token("("))
         {
-            parse_leaf_expression();
-        }
-        else if (consume_token("("))
-        {
-            auto result = parse_bpf_expression();
+            Expression result = parse_bpf_expression();
 
-            if (consume_token(")"))
-            {
-                return parse_binary_expression(result);
-            }
-            else
+            if (!consume_token(")"))
             {
                 return error(__FILE__, __LINE__);
             }
+
+            return result;
+        }
+        else
+        {
+            return parse_or_expression();
+        }
+    }
+
+    Expression parse_or_expression()
+    {
+        auto result = parse_and_expression();
+
+        while (consume_token("or"))
+        {
+            result = Expression::Or(result, parse_bpf_expression());
+        }
+
+        return result;
+    }
+
+    Expression parse_and_expression()
+    {
+        if (is_attribute())
+        {
+            auto result = Expression::Leaf(pop_token());
+
+            while (consume_token("and"))
+            {
+                result = Expression::And(result, parse_bpf_expression());
+            }
+
+            return result;
         }
         else
         {
@@ -198,25 +226,9 @@ struct Parser
         }
     }
 
-    Expression parse_binary_expression(Expression result)
+    bool is_attribute() const
     {
-        if (consume_token("and"))
-        {
-            return Expression::And(result, parse_bpf_expression());
-        }
-        else if (consume_token("or"))
-        {
-            return Expression::Or(result, parse_bpf_expression());
-        }
-        else
-        {
-            return result;
-        }
-    }
-
-    void parse_leaf_expression()
-    {
-        return Expression::Leaf(pop_token());
+        return !mTokens.empty() && mProtocols.count(mTokens.front());
     }
 
     bool consume_token(const std::string& s)
@@ -253,7 +265,7 @@ struct Parser
 
 
     std::deque<std::string> mTokens;
-    Expression mExpression;
+    std::set<std::string> mProtocols;
 };
 
 

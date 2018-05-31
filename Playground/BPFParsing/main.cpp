@@ -35,7 +35,6 @@ static std::string indent(int level)
 }
 
 
-
 struct Expression
 {
     static Expression And(Expression lhs, Expression rhs)

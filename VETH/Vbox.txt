@@ -1,0 +1,6 @@
+Starting the VM:
+	VBoxManage startvm 'Ubuntu-16.04.2-VETH' --type headless
+
+Login via SSH:
+	ssh -p 2222 francis@192.168.1.4
+

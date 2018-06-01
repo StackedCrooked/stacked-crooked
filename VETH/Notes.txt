@@ -1,0 +1,55 @@
+Creating virtual interfaces
+----------------------------
+For fun experimentation with protocolstack and raw sockets.
+See:
+    http://unix.stackexchange.com/a/152339/15679
+    https://www.youtube.com/watch?v=FUHyWfRNhTk
+
+
+Easy to read blog about network namespaces:
+    https://blog.scottlowe.org/2013/09/04/introducing-linux-network-namespaces/
+    https://blog.scottlowe.org/2014/03/21/a-follow-up-on-linux-network-namespaces/
+
+
+# Create veth pair
+sudo ip link add veth0 type veth peer name veth1
+
+
+# Disable checksum offloading
+sudo ethtool -K veth0 tx off
+sudo ethtool -K veth1 tx off
+sudo ethtool -K veth0 rx off
+sudo ethtool -K veth1 rx off
+
+
+# Put veth0 in "white" namespace
+sudo ip netns add white
+sudo ip link set veth0 netns white
+sudo ip netns exec blue ifconfig veth0 up
+
+# We need to have an IP address. However this IP should not be used by the ProtocolStack RawSocket. (This should be considered the router's IP)
+sudo ip netns exec blue ifconfig veth1 192.168.33.1/24 up
+
+
+# Put veth1 in "blue" namespace
+sudo ip netns add blue
+sudo ip link set veth1 netns blue
+
+# We need to have a source IP for our HTTP request
+sudo ip netns exec blue ifconfig veth1 192.168.33.2/24 up
+
+
+# Bind ProtocolStack to veth0 using a RawSocket. (Use 192.168.33.1 as local IP)
+sudo ip netns exec white src/stacktest  --gtest_filter=HTTPTest.Socket
+
+
+# Use curl to start a payload request for 1M
+sudo ip netns exec blue curl http://192.168.33.1/0/0/1000000
+
+
+
+DHCP SERVER
+-----------
+- This should be the next step!
+	https://yakking.branchable.com/posts/networking-5-dhcp/
+

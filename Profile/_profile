@@ -48,3 +48,13 @@ diff_adds() { comm -13 $1 $2; }
 # Can be used to generate "svn delete" commands.
 diff_dels() { comm -23 $1 $2; }
 
+
+
+# Measure the duration of something.
+# For example: measure sleep 0.1
+measure() {
+    t1=$(date "+%s%N")
+    "$@"
+    t2=$(date "+%s%N")
+    echo "$(($t2 - $t1))" | sed -e 's,......$,,g'
+}

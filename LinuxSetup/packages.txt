@@ -10,7 +10,6 @@ htop
 iwyu
 libboost-dev
 libgconf2-4
-libnss3-1d
 libtool-bin
 libxss1
 net-tools

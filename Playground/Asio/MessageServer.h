@@ -122,7 +122,8 @@ class MessageServer
 public:
     MessageServer(uint16_t port) :
         mIOService(get_io_service()),
-        mAcceptor(mIOService, ip::tcp::endpoint(ip::tcp::v4(), port))
+        //mAcceptor(mIOService, ip::tcp::endpoint(ip::tcp::v4(), port)) /* => accept all */
+        mAcceptor(mIOService, ip::tcp::endpoint(ip::address_v4::loopback(), port)) /* accept loopback clients only */
     {
         start_accept();
         mIOService.run();

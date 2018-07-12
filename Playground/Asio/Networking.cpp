@@ -1,7 +1,10 @@
 #include "Networking.h"
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <chrono>
+#include <iostream>
 
 
 using namespace boost::asio;
@@ -65,11 +68,9 @@ UDPServer::~UDPServer()
 //
 struct UDPClient::Impl : boost::noncopyable
 {
-    Impl(const std::string & inURL, unsigned inPort) :
-        socket(get_io_service(), udp::endpoint(udp::v4(), 0)),
-        resolver(get_io_service()),
-        query(udp::v4(), inURL.c_str(), boost::lexical_cast<std::string>(inPort).c_str()),
-        iterator(resolver.resolve(query))
+    Impl(const std::string& ip, unsigned port) :
+        mSocket(get_io_service(), udp::endpoint(udp::v4(), 0)),
+        mEndPoint(boost::asio::ip::address_v4::from_string(ip.c_str()), port)
     {
     }
 
@@ -77,10 +78,52 @@ struct UDPClient::Impl : boost::noncopyable
     {
     }
 
-    udp::socket socket;
-    udp::resolver resolver;
-    udp::resolver::query query;
-    udp::resolver::iterator iterator;
+    void send(const std::string & inMessage)
+    {
+        std::cout << "Send" << std::endl;
+        mMessage = inMessage;
+        mStartTime = std::chrono::steady_clock::now();
+
+        send_one();
+    }
+
+    void send_one()
+    {
+        auto start_time = std::chrono::steady_clock::now();
+        for (auto i = 0; i != 1000000; ++i)
+        {
+            mSocket.send_to(boost::asio::buffer(mMessage), mEndPoint);
+        }
+        auto elapsed_s = (std::chrono::steady_clock::now() - start_time).count() / 1e9;
+        auto mpps = 1000000 / elapsed_s / 1e6;
+        std::cout << "! MPPS=" << mpps << std::endl;
+        mSocket.async_send_to(boost::asio::buffer(mMessage), mEndPoint, boost::bind(&Impl::on_send, this, _1, _2));
+    }
+
+    void on_send(boost::system::error_code ec, std::size_t)
+    {
+        if (ec)
+        {
+            std::cerr << "Failed to send packet: " << ec.message() << std::endl;
+            return;
+        }
+
+        if (++mPacketCount == 1000000)
+        {
+            auto elapsed_time = std::chrono::steady_clock::now() - mStartTime;
+            auto elapsed_s = elapsed_time.count() / 1e9;
+            auto mpps = mPacketCount / elapsed_s / 1e6;
+            std::cout << "MPPS=" << mpps << std::endl;
+        }
+
+        send_one();
+    }
+
+    udp::socket mSocket;
+    boost::asio::ip::udp::endpoint mEndPoint;
+    std::string mMessage;
+    int64_t mPacketCount = 0;
+    std::chrono::steady_clock::time_point mStartTime{};
 };
 
 
@@ -97,13 +140,9 @@ UDPClient::~UDPClient()
 
 std::string UDPClient::send(const std::string & inMessage)
 {
-    mImpl->socket.send_to(boost::asio::buffer(inMessage.c_str(), inMessage.size()), *mImpl->iterator);
-
-    static const unsigned cMaxLength = 1024 * 1024;
-    char reply[cMaxLength];
-    udp::endpoint sender_endpoint;
-    size_t reply_length = mImpl->socket.receive_from(boost::asio::buffer(reply, cMaxLength), sender_endpoint);
-    return std::string(reply, reply_length);
+    mImpl->send(inMessage);
+    get_io_service().run();
+    return "";
 }
 
 

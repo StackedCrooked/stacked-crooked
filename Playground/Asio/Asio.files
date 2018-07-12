@@ -10,5 +10,6 @@ TCPClient.cpp
 TCPServer.cpp
 TestClient.cpp
 TestServer.cpp
+TestUDPClient.cpp
 main.cpp
 EchoServer.cpp

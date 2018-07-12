@@ -35,6 +35,24 @@ static std::string indent(int level)
 }
 
 
+static bool validate_ipv4_address(const std::string& s)
+{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+    int d = 0;
+
+    if (sscanf(s.c_str(), "%d%*[.]%d%*[.]%d%*[.]%d", &a, &b, &c, &d) != 4)
+    {
+        return false;
+    }
+
+    auto check = [](int n) { return n >= 0 && n <= 255; };
+
+    return check(a) && check(b) && check(c) && check(d);
+}
+
+
 struct Expression
 {
     static Expression And(Expression lhs, Expression rhs)
@@ -160,7 +178,40 @@ struct Parser
 
     Expression parse_leaf_expression()
     {
-        if (next_token("ip") || next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
+        if (consume_token("ip"))
+        {
+            if (consume_token("src"))
+            {
+                const std::string& token = peak_token();
+                if (validate_ipv4_address(token))
+                {
+                    mTokens.pop_front();
+                    return Expression::Leaf("ip src " + token);
+                }
+                else
+                {
+                    return error(__FILE__, __LINE__);
+                }
+            }
+            else if (consume_token("dst"))
+            {
+                const std::string& token = peak_token();
+                if (validate_ipv4_address(token))
+                {
+                    mTokens.pop_front();
+                    return Expression::Leaf("ip dst " + token);
+                }
+                else
+                {
+                    return error(__FILE__, __LINE__);
+                }
+            }
+            else
+            {
+                return Expression::Leaf("ip");
+            }
+        }
+        else if (next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
         {
             return Expression::Leaf(pop_token());
         }
@@ -168,6 +219,17 @@ struct Parser
         {
             return error(__FILE__, __LINE__);
         }
+    }
+
+    const std::string& peak_token()
+    {
+        if (mTokens.empty())
+        {
+            error(__FILE__, __LINE__);
+            throw 1;
+        }
+
+        return mTokens.front();
     }
 
     bool consume_token(const std::string& s)
@@ -218,10 +280,10 @@ void test(const char* str)
 int main()
 {
     test("ip");
-    test("ip and udp");
+    test("ip src 1.2.3.244 and udp");
 
 
-    test("(ip and udp) or (ip6 and tcp)");
+    test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");
     test("ip and udp or ip6 and tcp");  // => TODO: AND should have precedence over OR
 
     test("((ip and udp) or (ip6 and tcp)) and (ether or ppp)");

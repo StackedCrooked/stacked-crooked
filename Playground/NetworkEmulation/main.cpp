@@ -1,4 +1,5 @@
 #include "Switch.h"
+#include "Multiplexer.h"
 #include <iostream>
 
 
@@ -56,6 +57,29 @@ struct Device : SwitchPortListener
 
 
     MACAddress mMAC;
+};
+
+
+struct PhysicalInterface : MultiplexerBackend
+{
+    void send(uint32_t port_index, const uint8_t* data, uint32_t size)
+    {
+        send_to_switch(port_index, data, size);
+    }
+
+    //std::array<BBInterface*, 48> mBBInterfaces;
+};
+
+
+struct TestSetup
+{
+    TestSetup()
+    {
+        // TODO
+    }
+
+    Switch mSwitch;
+    Multiplexer mMultiplexer;
 };
 
 

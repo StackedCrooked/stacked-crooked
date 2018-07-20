@@ -7,9 +7,11 @@ set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 include_directories(SYSTEM /usr/local/include /usr/include)
 
 set(NetworkEmulation_INCLUDES
+    Multiplexer.h
     Switch.h)
 
 set(NetworkEmulation_SOURCES
+    Multiplexer.cpp
     Switch.cpp
     main.cpp)
 

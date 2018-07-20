@@ -73,10 +73,10 @@ int main()
     d1.send(d2);
     d2.send(d1);
 
-    std::cout << "=== Step 2 ===" << std::endl;
+    std::cout << "\n=== Step 2 ===" << std::endl;
     d1.send(d2);
     d2.send(d1);
 
-    std::cout << "=== Step 3 ===" << std::endl;
+    std::cout << "\n=== Step 3 ===" << std::endl;
     d1.send(d3);
 }

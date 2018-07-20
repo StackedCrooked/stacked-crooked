@@ -57,11 +57,11 @@ struct MACAddress
     {
         return os
             << std::hex
-//            << std::setw(2) << std::setfill('0') << int(mac.mData[0]) << ":"
-//            << std::setw(2) << std::setfill('0') << int(mac.mData[1]) << ":"
-//            << std::setw(2) << std::setfill('0') << int(mac.mData[2]) << ":"
-//            << std::setw(2) << std::setfill('0') << int(mac.mData[3]) << ":"
-//            << std::setw(2) << std::setfill('0') << int(mac.mData[4]) << ":"
+            << std::setw(2) << std::setfill('0') << int(mac.mData[0]) << ":"
+            << std::setw(2) << std::setfill('0') << int(mac.mData[1]) << ":"
+            << std::setw(2) << std::setfill('0') << int(mac.mData[2]) << ":"
+            << std::setw(2) << std::setfill('0') << int(mac.mData[3]) << ":"
+            << std::setw(2) << std::setfill('0') << int(mac.mData[4]) << ":"
             << std::setw(2) << std::setfill('0') << int(mac.mData[5])
             << std::dec;
     }

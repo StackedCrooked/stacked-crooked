@@ -67,7 +67,7 @@ struct Switch
         }
 
         // FLOOD
-        std::cout << "! Flooding to all ports dst_mac=" << dst_mac << std::endl;
+        std::cout << "*** Switch doesn't know where " << dst_mac << " is => sending message to all ports!" << std::endl;
         for (SwitchPortListener* port : mPortListeners)
         {
             if (port)
@@ -86,7 +86,7 @@ struct Switch
             return;
         }
 
-        std::cout << "> Switch learns that Device-" << mac << " is behind port " << port_index << std::endl;
+        std::cout << "Switch learns that " << mac << " is behind port " << port_index << std::endl;
         mDynamicConfig[mac] = port_index;
     }
 

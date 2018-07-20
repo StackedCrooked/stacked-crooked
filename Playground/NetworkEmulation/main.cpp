@@ -34,11 +34,11 @@ struct Device : SwitchPortListener
         auto dst_mac = Decode<MACAddress>(data);
         if (dst_mac == mMAC)
         {
-            std::cout << "> Device-" << mMAC << " received packet for Device-" << dst_mac << std::endl;
+            std::cout << "" << mMAC << " successfully received packet" << std::endl;
         }
         else
         {
-            std::cout << "! Device-" << mMAC << " received packet for Device-" << dst_mac << std::endl;
+            std::cout << "*** " << mMAC << " received packet that was intended for " << dst_mac << std::endl;
 
         }
     }
@@ -50,7 +50,7 @@ struct Device : SwitchPortListener
 
         Message msg(target.mMAC, mMAC, 0);
 
-        std::cout << "> Device-" << mMAC << " sends message to Device-" << target.mMAC << std::endl;
+        std::cout << "" << mMAC << " sends message to " << target.mMAC << std::endl;
         send_to_switch(msg.data(), msg.size());
     }
 

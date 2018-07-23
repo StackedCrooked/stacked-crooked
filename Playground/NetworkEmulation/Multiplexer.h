@@ -60,7 +60,10 @@ struct Multiplexer
 
     void receive_from_backend(uint32_t port_index, const uint8_t* data, uint32_t size)
     {
-        mPortListeners[port_index]->on_receive(data, size);
+        if (MultiplexerPortListener* listener = mPortListeners[port_index])
+        {
+            listener->on_receive(data, size);
+        }
     }
 
     std::array<MultiplexerPortListener*, 48> mPortListeners;

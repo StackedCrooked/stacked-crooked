@@ -83,7 +83,7 @@ struct TestSetup
 };
 
 
-int main()
+void test_switch()
 {
     Device d1(MACAddress(1));
     Device d2(MACAddress(2));
@@ -103,4 +103,11 @@ int main()
 
     std::cout << "\n=== Step 3 ===" << std::endl;
     d1.send(d3);
+}
+
+
+
+int main()
+{
+    test_switch();
 }

@@ -9,6 +9,7 @@
 //
 
 #include <cstdlib>
+#include <atomic>
 #include <deque>
 #include <iostream>
 #include <thread>
@@ -30,8 +31,14 @@ public:
     do_connect(endpoints);
   }
 
-  void write(const chat_message& msg)
+  bool write(const chat_message& msg)
   {
+    if (quit_)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": can't write because quit flag is set." << std::endl;
+        return false;
+    }
+
     boost::asio::post(io_context_,
         [this, msg]()
         {
@@ -42,6 +49,7 @@ public:
             do_write();
           }
         });
+    return true;
   }
 
   void close()
@@ -52,12 +60,15 @@ public:
 private:
   void do_connect(const tcp::resolver::results_type& endpoints)
   {
-    boost::asio::async_connect(socket_, endpoints,
-        [this](boost::system::error_code ec, tcp::endpoint)
-        {
+    boost::asio::async_connect(socket_, endpoints, [this](boost::system::error_code ec, tcp::endpoint) {
           if (!ec)
           {
             do_read_header();
+          }
+          else
+          {
+            quit_ = true;
+            std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": error=" << ec.message() << std::endl;
           }
         });
   }
@@ -74,6 +85,8 @@ private:
           }
           else
           {
+            quit_ = true;
+            std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": error=" << ec.message() << std::endl;
             socket_.close();
           }
         });
@@ -93,6 +106,8 @@ private:
           }
           else
           {
+            quit_ = true;
+            std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": error=" << ec.message() << std::endl;
             socket_.close();
           }
         });
@@ -115,6 +130,8 @@ private:
           }
           else
           {
+            quit_ = true;
+            std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": error=" << ec.message() << std::endl;
             socket_.close();
           }
         });
@@ -122,6 +139,7 @@ private:
 
 private:
   boost::asio::io_context& io_context_;
+  std::atomic<bool> quit_{false};
   tcp::socket socket_;
   chat_message read_msg_;
   chat_message_queue write_msgs_;
@@ -143,7 +161,10 @@ int main(int argc, char* argv[])
     auto endpoints = resolver.resolve(argv[1], argv[2]);
     chat_client c(io_context, endpoints);
 
-    std::thread t([&io_context](){ io_context.run(); });
+    std::thread t([&io_context](){
+        io_context.run();
+        std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": AFTER io_context.run()" << std::endl;
+    });
 
     char line[chat_message::max_body_length + 1];
     while (std::cin.getline(line, chat_message::max_body_length + 1))
@@ -152,11 +173,18 @@ int main(int argc, char* argv[])
       msg.body_length(std::strlen(line));
       std::memcpy(msg.body(), line, msg.body_length());
       msg.encode_header();
-      c.write(msg);
+      if (!c.write(msg))
+      {
+        break;
+      }
     }
 
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": BEFORE c.close()" << std::endl;
     c.close();
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": AFTER c.close()" << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": BEFORE t.join()" << std::endl;
     t.join();
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": AFTER t.join()" << std::endl;
   }
   catch (std::exception& e)
   {
@@ -165,3 +193,4 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+

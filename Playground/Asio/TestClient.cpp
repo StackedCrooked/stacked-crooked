@@ -14,8 +14,6 @@ int main(int argc, char** argv)
     std::cout << "HOSTNAME=" << hostname << std::endl;
 
     MessageProtocol::MessageClient client(hostname, 9999);
-    for (;;)
-    {
-        MessageProtocol::get_io_service().poll();
-    }
+
+    MessageProtocol::get_io_service().run();
 }

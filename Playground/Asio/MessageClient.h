@@ -53,6 +53,8 @@ private:
     {
         if (error)
         {
+            std::cout << "handle_connect failed " << std::endl;
+            std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ << " error=" << error << std::endl;
             return;
         }
 
@@ -72,6 +74,7 @@ private:
     {
         if (error)
         {
+            std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ << std::endl;
             mSocket.close();
             return;
         }
@@ -90,6 +93,7 @@ private:
     {
         if (error)
         {
+            std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ << std::endl;
             return;
         }
 

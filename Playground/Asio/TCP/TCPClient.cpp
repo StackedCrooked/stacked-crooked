@@ -59,7 +59,7 @@ private:
         }
         else
         {
-            std::cout << "Resolve: " << err.message() << "\n";
+            std::cerr << "Resolve: " << err.message() << std::endl;
         }
     }
 
@@ -78,7 +78,7 @@ private:
         }
         else
         {
-            std::cout << "Connect: " << err.message() << "\n";
+            std::cerr << "Connect: " << err.message() << std::endl;
         }
     }
 
@@ -100,7 +100,7 @@ private:
         }
         else
         {
-            std::cout << "Write: " << err.message() << "\n";
+            std::cerr << "Write: " << err.message() << std::endl;
         }
     }
 
@@ -118,13 +118,13 @@ private:
             std::getline(response_stream, status_message);
             if (!response_stream || http_version.substr(0, 5) != "HTTP/")
             {
-                std::cout << "Invalid response\n";
+                std::cerr << "Invalid response" << std::endl;
                 return;
             }
             if (status_code != 200)
             {
-                std::cout << "Response returned with status code ";
-                std::cout << status_code << "\n";
+                std::cerr << "Response returned with status code ";
+                std::cerr << status_code << std::endl;
                 return;
             }
 
@@ -140,7 +140,7 @@ private:
         }
         else
         {
-            std::cout << "ReadStatusLine: " << err << "\n";
+            std::cerr << "ReadStatusLine: " << err.message() << std::endl;
         }
     }
 
@@ -152,12 +152,16 @@ private:
             std::istream response_stream(&response_);
             std::string header;
             while (std::getline(response_stream, header) && header != "\r")
+            {
                 std::cout << header << "\n";
+            }
             std::cout << "\n";
 
             // Write whatever content we already have to output.
             if (response_.size() > 0)
+            {
                 std::cout << &response_;
+			}
 
             // Start reading remaining data until EOF.
             boost::asio::async_read(
@@ -170,7 +174,7 @@ private:
         }
         else
         {
-            std::cout << "ReadHeaders: " << err << "\n";
+            std::cerr << "ReadHeaders: " << err.message() << std::endl;
         }
     }
 
@@ -193,7 +197,11 @@ private:
         }
         else if (err != boost::asio::error::eof)
         {
-            std::cout << "ReadContent: " << err << "\n";
+            std::cerr << "ReadContent: " << err.message() << std::endl;
+        }
+        else
+        {
+            std::cerr << "Error: " << err.message() << std::endl;
         }
     }
 
@@ -209,11 +217,15 @@ int main(int argc, char* argv[])
     {
         if (argc != 3)
         {
-            std::cout << "Usage: async_client <server> <path>\n";
-            std::cout << "Example:\n";
-            std::cout << "  async_client www.boost.org /LICENSE_1_0.txt\n";
+            std::cerr << "Usage: async_client <server> <path>\n";
+            std::cerr << "Example:\n";
+            std::cerr << "  async_client www.boost.org /LICENSE_1_0.txt\n";
             return 1;
         }
+
+
+        std::cerr << "TEST CERR" << std::endl;
+        std::cout << "TEST COUT" << std::endl;
 
         boost::asio::io_service io_service;
         TCPClient c(io_service, argv[1], argv[2]);
@@ -221,7 +233,7 @@ int main(int argc, char* argv[])
     }
     catch (std::exception& e)
     {
-        std::cout << "Exception: " << e.what() << "\n";
+        std::cerr << "Exception: " << e.what() << std::endl;
     }
 
     return 0;

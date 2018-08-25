@@ -15,7 +15,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
-using boost::asio::ip::tcp;
 
 class TCPClient
 {
@@ -35,7 +34,7 @@ public:
 
         // Start an asynchronous resolve to translate the server and service names
         // into a list of endpoints.
-        tcp::resolver::query query(server, "http");
+        boost::asio::ip::tcp::resolver::query query(server, "http");
         resolver_.async_resolve(
             query,
             boost::bind(
@@ -47,7 +46,7 @@ public:
 
 private:
     void handle_resolve(const boost::system::error_code& err,
-                        tcp::resolver::iterator endpoint_iterator)
+                        boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
     {
         if (!err)
         {
@@ -198,8 +197,8 @@ private:
         }
     }
 
-    tcp::resolver resolver_;
-    tcp::socket socket_;
+    boost::asio::ip::tcp::resolver resolver_;
+    boost::asio::ip::tcp::socket socket_;
     boost::asio::streambuf request_;
     boost::asio::streambuf response_;
 };

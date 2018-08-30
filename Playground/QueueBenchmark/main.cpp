@@ -11,22 +11,10 @@
 #include <semaphore.h>
 
 
-unsigned long volatile g;
-std::atomic<int> counter{0};
+enum { num_iterations = 10 * 1000 * 1000 };
 
 
-struct Event
-{
-    Event(int n = 0) : n(n) {}
-
-    void handle()
-    {
-        counter++;
-        for (int i = 0; i != 10; ++i) g += g;
-    }
-
-    volatile int n;
-};
+std::atomic<int64_t> counter{0};
 
 
 #ifdef SEMAPHORE
@@ -76,7 +64,7 @@ private:
 
 struct Queue // using semaphore
 {
-    Queue() : mSem(), mQueue(), mThread([this]{ consumer_thread(); })
+    Queue() : mSem(), mQueue()
     {
         sched_yield(); // hack: wait for consumer_thread to start
     }
@@ -85,13 +73,32 @@ struct Queue // using semaphore
     {
         while (!mQueue.push(-1)) { sched_yield(); }
         mSem.post();
-        mThread.join();
     }
 
-    void post(Event event)
+    void post(int64_t n)
     {
-        while (!mQueue.push(event)) { sched_yield(); }
+        while (!mQueue.push(n)) { sched_yield(); }
         mSem.post();
+    }
+
+    template<typename F>
+    void consume(F&& f)
+    {
+        for (;;)
+        {
+            // swap the buffers
+            {
+                std::unique_lock<std::mutex> lock(mMutex); 
+                while (mEvents.empty())
+                {
+                    mCondition.wait(lock); // unlocks the mutex
+                }
+                std::swap(mEvents, mEvents2);
+            }
+
+            f(mEvents2);
+            mEvents2.clear();
+        }
     }
 
     void consumer_thread()
@@ -99,109 +106,116 @@ struct Queue // using semaphore
         for (;;)
         {
             mSem.wait();
-            Event event;
-            mQueue.pop(event);
-            if (event.n == -1)
-            {
-                return;
-            }
-            event.handle();
+            int64_t n;
+            mQueue.pop(n);
         }
     }
 
     Semaphore mSem;
-    boost::lockfree::spsc_queue<Event, boost::lockfree::capacity<1000>> mQueue;
-    std::thread mThread;
+    boost::lockfree::spsc_queue<int64_t, boost::lockfree::capacity<1000>> mQueue;
 };
 
 
 #else
 
 
-struct Queue // using mutex & condition_variable
+struct Queue
 {
-    Queue() : thread([this]{ consumer_thread(); })
+    void post(int64_t n)
     {
-        sched_yield(); // hack: wait for consumer_thread to start
-    }
-
-    ~Queue()
-    {
-        post(-1);
-        thread.join();
-    }
-
-    Queue(const Queue&) = delete;
-    Queue& operator=(const Queue&) = delete;
-
-    void post(Event event)
-    {
-        bool notify = false;
+        //std::cout << __FILE__ << ":" << __LINE__ << ": post(" << n << ")" << std::endl;
+        bool was_empty = false;
 
         {
-            std::lock_guard<std::mutex> lock(mutex);
-            notify = events.empty();
-            events.push_back(event);
+            std::lock_guard<std::mutex> lock(mMutex);
+            was_empty = mEvents.empty();
+            mEvents.push_back(n);
         }
 
-        if (notify)
+        if (was_empty)
         {
-            condition.notify_one();
+            mCondition.notify_one();
         }
     }
 
-    void consumer_thread()
+    template<typename F>
+    void consume(F&& f)
     {
-        for (;;)
+        // swap the buffers
         {
-            // swap the buffers
+            //std::cout << __FILE__ << ":" << __LINE__ << ": consume" << std::endl;
+            std::unique_lock<std::mutex> lock(mMutex); 
+            while (mEvents.empty())
             {
-                std::unique_lock<std::mutex> lock(mutex); 
-                while (events.empty())
-                {
-                    condition.wait(lock); // unlocks the mutex
-                }
-                std::swap(events, events2);
+                //std::cout << __FILE__ << ":" << __LINE__ << ": consume" << std::endl;
+                mCondition.wait(lock); // unlocks the mutex
             }
-            
-            
-            // batch processing!
-            for (Event& event : events2)
-            {
-                if (event.n == -1)
-                {
-                    return;
-                }
-                event.handle();
-            }
-            events2.clear();
+            std::swap(mEvents, mEvents2);
         }
+        //std::cout << __FILE__ << ":" << __LINE__ << ": consume: mEvents2.size=" << mEvents2.size() << std::endl;
+
+        f(mEvents2);
+        mEvents2.clear();
     }
 
 
-    std::vector<Event> events;          char padding1[128 - sizeof(events)];
-    std::mutex mutex;                   char padding2[128 - sizeof(mutex)];     // not sure if padding2 is needed
-    std::condition_variable condition;  char padding3[128 - sizeof(condition)];
-    std::vector<Event> events2;         char padding4[128 - sizeof(events2)];
-    std::thread thread;
+    __attribute__((aligned(64))) std::vector<int64_t> mEvents;
+    __attribute__((aligned(64))) std::vector<int64_t> mEvents2;
+    std::condition_variable mCondition;
+    std::mutex mMutex;
 };
+
 #endif
 
-
-int main(int, char** argv)
+void test_queue()
 {
-    using Clock = std::chrono::high_resolution_clock;
-    using namespace std::chrono;
+    Queue queue;
 
-    enum { num_iterations = 1000 * 1000 };
+    std::atomic<bool> consumer_started{false};
+    std::atomic<bool> consumer_stopped{false};
 
-    auto start_time = Clock::now();
-    std::thread([] {
-        Queue q;
-        for (int i = 0; i != num_iterations; ++i) q.post(i);
-    }).join();
-    auto elapsed = duration_cast<milliseconds>(Clock::now() - start_time).count();
-    std::cout << argv[0] << ": counter=" << counter <<  " time=" << elapsed << " ms" << std::endl;
+    std::thread consumer_thread([&]{
+        consumer_started = true;
+        int num_consumed = 0;
+        for (;;) {
+            //std::cout << __FILE__ << ":" << __LINE__ << ": Consume" << std::endl;
+            queue.consume([&](const std::vector<int64_t>& vec) {
+                for (auto n : vec) {
+                    counter += n;
+                }
+                //std::cout << __FILE__ << ":" << __LINE__ << ": Consumed vec.size=" << vec.size() << " counter=" << counter << " num_consumed=" << num_consumed << "/" << num_iterations << std::endl;
+                num_consumed += vec.size();
+            });
+            if (num_consumed  == num_iterations) {
+                consumer_stopped = true;
+                break;
+            }
+        }
+    });
+
+    //std::cout << "Waiting for consumer thread to start " << std::endl;
+    while (!consumer_started) asm volatile ("pause;");
+
+    auto t1 = std::chrono::system_clock::now();
+    for (int64_t i = 0; i != num_iterations; ++i)
+    {
+        queue.post(i);
+    }
+
+    //std::cout << "Waiting for consumer thread to stop " << std::endl;
+    while (!consumer_stopped) asm volatile ("pause;");
+    auto t2 = std::chrono::system_clock::now();
+
+    auto elapsed_ns = 1.0 * std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+    auto elapsed_s = elapsed_ns / 1e9;
+    auto rate = int64_t(0.5 + 10.0 * num_iterations / elapsed_s / 1000000.0)/10.0;
+    std::cout << "elapsed_s=" << elapsed_s << " rate=" << rate << " million events per second" << std::endl;
+
+    consumer_thread.join();
 }
 
 
+int main()
+{
+    test_queue();
+}

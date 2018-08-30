@@ -1,3 +1,8 @@
+#ifndef SEMAPHORE
+#error "SEMAPHORE not set"
+#endif
+
+
 #include <boost/lockfree/spsc_queue.hpp>
 #include <atomic>
 #include <condition_variable>
@@ -14,105 +19,42 @@
 enum { num_iterations = 10 * 1000 * 1000 };
 
 
-std::atomic<int64_t> counter{0};
+#if SEMAPHORE == 1
 
 
-#ifdef SEMAPHORE
-
-
-
-struct Semaphore
+struct Queue
 {
-    Semaphore()
+    Queue() :
+        mSemaphore(),
+        mBuffer()
     {
-        if (-1 == sem_init(&mSem, 0, 0))
-        {
-            throw std::system_error(std::error_code(errno, std::system_category()), strerror(errno));
-        }
-    }
-
-    ~Semaphore()
-    {
-        if (-1 == sem_destroy(&mSem))
-        {
-            // silently discard error
-        }
-    }
-
-    Semaphore(const Semaphore&) = delete;
-    Semaphore& operator=(const Semaphore&) = delete;
-
-    void post()
-    {
-        if (-1 == sem_post(&mSem))
-        {
-            throw std::system_error(std::error_code(errno, std::system_category()), strerror(errno));
-        }
-    }
-
-    void wait()
-    {
-        if (-1 == sem_wait(&mSem))
-        {
-            throw std::system_error(std::error_code(errno, std::system_category()), strerror(errno));
-        }
-    }
-
-private:
-    mutable sem_t mSem;
-};
-
-struct Queue // using semaphore
-{
-    Queue() : mSem(), mQueue()
-    {
-        sched_yield(); // hack: wait for consumer_thread to start
-    }
-
-    ~Queue()
-    {
-        while (!mQueue.push(-1)) { sched_yield(); }
-        mSem.post();
+        sem_init(&mSemaphore, 0, 0);
     }
 
     void post(int64_t n)
     {
-        while (!mQueue.push(n)) { sched_yield(); }
-        mSem.post();
+        while (!mBuffer.push(n))
+        {
+            asm volatile ("pause;");
+        }
+        sem_post(&mSemaphore);
     }
 
     template<typename F>
     void consume(F&& f)
     {
-        for (;;)
+        sem_wait(&mSemaphore);
+        int64_t n = -1;
+        if (!mBuffer.pop(n))
         {
-            // swap the buffers
-            {
-                std::unique_lock<std::mutex> lock(mMutex); 
-                while (mEvents.empty())
-                {
-                    mCondition.wait(lock); // unlocks the mutex
-                }
-                std::swap(mEvents, mEvents2);
-            }
-
-            f(mEvents2);
-            mEvents2.clear();
+            std::cerr << "Failed to pop from buffer!" << std::endl;
         }
+
+        f(n);
     }
 
-    void consumer_thread()
-    {
-        for (;;)
-        {
-            mSem.wait();
-            int64_t n;
-            mQueue.pop(n);
-        }
-    }
-
-    Semaphore mSem;
-    boost::lockfree::spsc_queue<int64_t, boost::lockfree::capacity<1000>> mQueue;
+    sem_t mSemaphore;
+    boost::lockfree::spsc_queue<int64_t, boost::lockfree::capacity<1000>> mBuffer;
 };
 
 
@@ -121,6 +63,11 @@ struct Queue // using semaphore
 
 struct Queue
 {
+    Queue()
+    {
+        mEvents.reserve(1000);
+        mEvents2.reserve(1000);
+    }
     void post(int64_t n)
     {
         //std::cout << __FILE__ << ":" << __LINE__ << ": post(" << n << ")" << std::endl;
@@ -154,7 +101,10 @@ struct Queue
         }
         //std::cout << __FILE__ << ":" << __LINE__ << ": consume: mEvents2.size=" << mEvents2.size() << std::endl;
 
-        f(mEvents2);
+        for (auto n : mEvents2)
+        {
+            f(n);
+        }
         mEvents2.clear();
     }
 
@@ -167,24 +117,33 @@ struct Queue
 
 #endif
 
-void test_queue()
+
+void pin_to_core(int core_id)
 {
+    auto cpuset = cpu_set_t();
+    CPU_SET(core_id, &cpuset);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpuset), &cpuset);
+}
+
+void test_queue(int core1, int core2)
+{
+	pin_to_core(core1);
     Queue queue;
 
     std::atomic<bool> consumer_started{false};
     std::atomic<bool> consumer_stopped{false};
 
+    int64_t sum = 0;
+
     std::thread consumer_thread([&]{
+		pin_to_core(core2);
         consumer_started = true;
         int num_consumed = 0;
         for (;;) {
             //std::cout << __FILE__ << ":" << __LINE__ << ": Consume" << std::endl;
-            queue.consume([&](const std::vector<int64_t>& vec) {
-                for (auto n : vec) {
-                    counter += n;
-                }
-                //std::cout << __FILE__ << ":" << __LINE__ << ": Consumed vec.size=" << vec.size() << " counter=" << counter << " num_consumed=" << num_consumed << "/" << num_iterations << std::endl;
-                num_consumed += vec.size();
+            queue.consume([&](int64_t n) {
+                num_consumed += 1;
+                sum += n;
             });
             if (num_consumed  == num_iterations) {
                 consumer_stopped = true;
@@ -209,13 +168,25 @@ void test_queue()
     auto elapsed_ns = 1.0 * std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
     auto elapsed_s = elapsed_ns / 1e9;
     auto rate = int64_t(0.5 + 10.0 * num_iterations / elapsed_s / 1000000.0)/10.0;
-    std::cout << "elapsed_s=" << elapsed_s << " rate=" << rate << " million events per second" << std::endl;
+    std::cout << "elapsed_s=" << elapsed_s << " rate=" << rate << "M/s sum=" << sum << std::endl;
 
     consumer_thread.join();
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
-    test_queue();
+    if (argc < 3)
+    {
+        std::cerr << "Usage: " << argv[0] << " Core1 Core2" << std::endl;
+        std::cerr << "\nExample: \n  " << argv[0] << " 1 2 " << std::endl;
+        return 1;
+    }
+
+
+    auto core1 = std::strtoul(argv[1], NULL, 10);
+    auto core2 = std::strtoul(argv[2], NULL, 10);
+    std::cout << "Using cores: producer_core=" << core1 << " consume_core=" << core2 << std::endl;
+
+    test_queue(core1, core2);
 }

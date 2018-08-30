@@ -14,6 +14,7 @@
 #include <thread>
 #include <vector>
 #include <semaphore.h>
+#include <time.h>
 
 
 enum { num_iterations = 10 * 1000 * 1000 };
@@ -31,7 +32,7 @@ struct Queue
         sem_init(&mSemaphore, 0, 0);
     }
 
-    void post(int64_t n)
+    void post(int64_t n, bool /*flush*/)
     {
         while (!mBuffer.push(n))
         {
@@ -65,18 +66,44 @@ struct Queue
 {
     Queue()
     {
-        mEvents.reserve(1000);
-        mEvents2.reserve(1000);
+        mSharedQueue.reserve(1);
+        mProducerQueue.reserve(1);
+        mConsumerQueue.reserve(1);
     }
-    void post(int64_t n)
+
+    ~Queue()
     {
-        //std::cout << __FILE__ << ":" << __LINE__ << ": post(" << n << ")" << std::endl;
+        std::cout << "mSharedQueue.capacity=" << mSharedQueue.capacity() << std::endl;
+        std::cout << "mProducerQueue.capacity=" << mProducerQueue.capacity() << std::endl;
+        std::cout << "mConsumerQueue.capacity=" << mConsumerQueue.capacity() << std::endl;
+    }
+
+    void post(int64_t n, bool flush)
+    {
+        mProducerQueue.push_back(n);
+
+        if (!flush)
+        {
+            return;
+        }
+        
         bool was_empty = false;
 
         {
             std::lock_guard<std::mutex> lock(mMutex);
-            was_empty = mEvents.empty();
-            mEvents.push_back(n);
+            if (mSharedQueue.empty())
+            {
+                was_empty = true;
+                std::swap(mProducerQueue, mSharedQueue);
+            }
+            else
+            {
+                mSharedQueue.insert(
+                    mSharedQueue.end(),
+                    mProducerQueue.begin(),
+                    mProducerQueue.end());
+                mProducerQueue.clear();
+            }
         }
 
         if (was_empty)
@@ -90,27 +117,25 @@ struct Queue
     {
         // swap the buffers
         {
-            //std::cout << __FILE__ << ":" << __LINE__ << ": consume" << std::endl;
             std::unique_lock<std::mutex> lock(mMutex); 
-            while (mEvents.empty())
+            while (mSharedQueue.empty())
             {
-                //std::cout << __FILE__ << ":" << __LINE__ << ": consume" << std::endl;
                 mCondition.wait(lock); // unlocks the mutex
             }
-            std::swap(mEvents, mEvents2);
+            std::swap(mSharedQueue, mConsumerQueue);
         }
-        //std::cout << __FILE__ << ":" << __LINE__ << ": consume: mEvents2.size=" << mEvents2.size() << std::endl;
 
-        for (auto n : mEvents2)
+        for (auto n : mConsumerQueue)
         {
             f(n);
         }
-        mEvents2.clear();
+        mConsumerQueue.clear();
     }
 
 
-    __attribute__((aligned(64))) std::vector<int64_t> mEvents;
-    __attribute__((aligned(64))) std::vector<int64_t> mEvents2;
+    __attribute__((aligned(64))) std::vector<int64_t> mProducerQueue;
+    __attribute__((aligned(64))) std::vector<int64_t> mSharedQueue;
+    __attribute__((aligned(64))) std::vector<int64_t> mConsumerQueue;
     std::condition_variable mCondition;
     std::mutex mMutex;
 };
@@ -140,7 +165,6 @@ void test_queue(int core1, int core2)
         consumer_started = true;
         int num_consumed = 0;
         for (;;) {
-            //std::cout << __FILE__ << ":" << __LINE__ << ": Consume" << std::endl;
             queue.consume([&](int64_t n) {
                 num_consumed += 1;
                 sum += n;
@@ -156,9 +180,9 @@ void test_queue(int core1, int core2)
     while (!consumer_started) asm volatile ("pause;");
 
     auto t1 = std::chrono::system_clock::now();
-    for (int64_t i = 0; i != num_iterations; ++i)
+    for (int64_t i = 1; i <= num_iterations; ++i)
     {
-        queue.post(i);
+        queue.post(i, i % 8 == 0);
     }
 
     //std::cout << "Waiting for consumer thread to stop " << std::endl;

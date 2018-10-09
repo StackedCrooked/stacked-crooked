@@ -24,15 +24,14 @@ public:
 
         // Start an asynchronous resolve to translate the server and service names
         // into a list of endpoints.
-        mResolver.async_resolve(server, "http",
-                                boost::bind(&Client::handle_resolve, this,
-                                            boost::asio::placeholders::error,
-                                            boost::asio::placeholders::results));
+        mResolver.async_resolve(
+            server,
+            "http",
+            boost::bind(&Client::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::results));
     }
 
 private:
-    void handle_resolve(const boost::system::error_code& err,
-                        const boost::asio::ip::tcp::resolver::results_type& endpoints)
+    void handle_resolve(const boost::system::error_code& err, const boost::asio::ip::tcp::resolver::results_type& endpoints)
     {
         if (!err)
         {

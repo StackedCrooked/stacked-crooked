@@ -172,7 +172,7 @@ private:
         {
             if (ec == boost::asio::error::eof)
             {
-                std::cout << "Finished (" << ec.message() << "\n";
+                std::cout << "Finished (" << ec.message() << ")\n";
             }
             else
             {
@@ -217,6 +217,7 @@ int main(int argc, char* argv[])
     catch (std::exception& e)
     {
         std::cout << "Exception: " << e.what() << "\n";
+        return 1;
     }
 
     return 0;

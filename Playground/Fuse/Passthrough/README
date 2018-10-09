@@ -5,5 +5,5 @@ For some reason I need to tell my app where to find the lib:
     export LD_LIBRARY_PATH=/usr/local/lib/x86_64-linux-gnu
 
 Launch the program:
-	mkdir ~/tmp/mountpoint
+    mkdir ~/tmp/mountpoint
     ./passthrough ~/tmp/mountpoint

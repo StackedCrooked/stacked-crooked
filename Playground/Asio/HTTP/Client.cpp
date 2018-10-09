@@ -27,149 +27,170 @@ public:
         mResolver.async_resolve(
             server,
             "http",
-            boost::bind(&Client::handle_resolve, this, boost::asio::placeholders::error, boost::asio::placeholders::results));
+            boost::bind(
+                &Client::handle_resolve,
+                this,
+                boost::asio::placeholders::error,
+                boost::asio::placeholders::results));
     }
 
 private:
-    void handle_resolve(const boost::system::error_code& err, const boost::asio::ip::tcp::resolver::results_type& endpoints)
+    void handle_resolve(
+        const boost::system::error_code& ec,
+        const boost::asio::ip::tcp::resolver::results_type& endpoints)
     {
-        if (!err)
+        if (ec)
         {
-            // Attempt a connection to each endpoint in the list until we
-            // successfully establish a connection.
-            boost::asio::async_connect(
-                mSocket,
-                endpoints,
-                boost::bind(&Client::handle_connect, this, boost::asio::placeholders::error));
+            std::cout << "Error: " << ec.message() << "\n";
+            return;
         }
-        else
-        {
-            std::cout << "Error: " << err.message() << "\n";
-        }
+
+        // Attempt a connection to each endpoint in the list until we
+        // successfully establish a connection.
+        boost::asio::async_connect(
+            mSocket,
+            endpoints,
+            boost::bind(
+                &Client::handle_connect,
+                this,
+                boost::asio::placeholders::error));
     }
 
-    void handle_connect(const boost::system::error_code& err)
+    void handle_connect(const boost::system::error_code& ec)
     {
-        if (!err)
+        if (ec)
         {
-            // The connection was successful. Send the request.
-            boost::asio::async_write(
-                mSocket,
-                mRequest,
-                boost::bind(&Client::handle_write_request, this, boost::asio::placeholders::error));
+            std::cout << "Error: " << ec.message() << "\n";
+            return;
         }
-        else
-        {
-            std::cout << "Error: " << err.message() << "\n";
-        }
+
+        // The connection was successful. Send the request.
+        boost::asio::async_write(
+            mSocket,
+            mRequest,
+            boost::bind(
+                &Client::handle_write_request,
+                this,
+                boost::asio::placeholders::error));
     }
 
-    void handle_write_request(const boost::system::error_code& err)
+    void handle_write_request(const boost::system::error_code& ec)
     {
-        if (!err)
+        if (ec)
         {
-            // Read the response status line. The response_ streambuf will
-            // automatically grow to accommodate the entire line. The growth may be
-            // limited by passing a maximum size to the streambuf constructor.
-            boost::asio::async_read_until(
-                mSocket,
-                mResponse,
-                "\r\n",
-                boost::bind(&Client::handle_read_status_line, this, boost::asio::placeholders::error));
+            std::cout << "Error: " << ec.message() << "\n";
+            return;
         }
-        else
-        {
-            std::cout << "Error: " << err.message() << "\n";
-        }
+
+        // Read the response status line. The response_ streambuf will
+        // automatically grow to accommodate the entire line. The growth may be
+        // limited by passing a maximum size to the streambuf constructor.
+        boost::asio::async_read_until(
+            mSocket,
+            mResponse,
+            "\r\n",
+            boost::bind(
+                &Client::handle_read_status_line,
+                this,
+                boost::asio::placeholders::error));
     }
 
     void handle_read_status_line(const boost::system::error_code& err)
     {
-        if (!err)
-        {
-            // Check that response is OK.
-            std::istream response_stream(&mResponse);
-            std::string http_version;
-            response_stream >> http_version;
-            unsigned int status_code;
-            response_stream >> status_code;
-            std::string status_message;
-            std::getline(response_stream, status_message);
-            if (!response_stream || http_version.substr(0, 5) != "HTTP/")
-            {
-                std::cout << "Invalid response\n";
-                return;
-            }
-            if (status_code != 200)
-            {
-                std::cout << "Response returned with status code ";
-                std::cout << status_code << "\n";
-                return;
-            }
-
-            // Read the response headers, which are terminated by a blank line.
-            boost::asio::async_read_until(
-                mSocket,
-                mResponse,
-                "\r\n\r\n",
-                boost::bind(&Client::handle_read_headers, this, boost::asio::placeholders::error));
-        }
-        else
+        if (err)
         {
             std::cout << "Error: " << err << "\n";
+            return;
         }
+
+        // Check that response is OK.
+        std::istream response_stream(&mResponse);
+        std::string http_version;
+        response_stream >> http_version;
+        unsigned int status_code;
+        response_stream >> status_code;
+        std::string status_message;
+        std::getline(response_stream, status_message);
+
+        if (!response_stream || http_version.substr(0, 5) != "HTTP/")
+        {
+            std::cout << "Invalid response\n";
+            return;
+        }
+
+        if (status_code != 200)
+        {
+            std::cout << "Response returned with status code ";
+            std::cout << status_code << "\n";
+            return;
+        }
+
+        // Read the response headers, which are terminated by a blank line.
+        boost::asio::async_read_until(
+            mSocket,
+            mResponse,
+            "\r\n\r\n",
+            boost::bind(&Client::handle_read_headers, this, boost::asio::placeholders::error));
     }
 
     void handle_read_headers(const boost::system::error_code& err)
     {
-        if (!err)
-        {
-            // Process the response headers.
-            std::istream response_stream(&mResponse);
-            std::string header;
-            while (std::getline(response_stream, header) && header != "\r")
-                std::cout << header << "\n";
-            std::cout << "\n";
-
-            // Write whatever content we already have to output.
-            if (mResponse.size() > 0)
-                std::cout << &mResponse;
-
-            // Start reading remaining data until EOF.
-            boost::asio::async_read(
-                mSocket,
-                mResponse,
-                boost::asio::transfer_at_least(1),
-                boost::bind(&Client::handle_read_content, this, boost::asio::placeholders::error));
-        }
-        else
+        if (err)
         {
             std::cout << "Error: " << err << "\n";
+            return;
         }
+
+        // Process the response headers.
+        std::istream response_stream(&mResponse);
+
+        std::string header;
+        while (std::getline(response_stream, header) && header != "\r")
+        {
+            std::cout << header << "\n";
+        }
+
+        std::cout << "\n";
+
+        // Write whatever content we already have to output.
+        if (mResponse.size() > 0)
+        {
+            std::cout << &mResponse;
+        }
+
+        // Start reading remaining data until EOF.
+        boost::asio::async_read(
+            mSocket,
+            mResponse,
+            boost::asio::transfer_at_least(1),
+            boost::bind(&Client::handle_read_content, this, boost::asio::placeholders::error));
     }
 
     void handle_read_content(const boost::system::error_code& err)
     {
-        if (!err)
+        if (err)
         {
-            // Write all of the data that has been read so far.
-            std::cout << &mResponse;
+            if (err == boost::asio::error::eof)
+            {
+                std::cout << "Finished (" << err.message() << ")\n";
+            }
+            else
+            {
+                std::cout << "Error: " << err.message() << "\n";
+            }
 
-            // Continue reading remaining data until EOF.
-            boost::asio::async_read(
-                mSocket,
-                mResponse,
-                boost::asio::transfer_at_least(1),
-                boost::bind(&Client::handle_read_content, this, boost::asio::placeholders::error));
+            return;
         }
-        else if (err != boost::asio::error::eof)
-        {
-            std::cout << "Error: " << err << "\n";
-        }
-        else
-        {
-            std::cout << "EOF received\n";
-        }
+
+        // Write all of the data that has been read so far.
+        std::cout << &mResponse;
+
+        // Continue reading remaining data until EOF.
+        boost::asio::async_read(
+            mSocket,
+            mResponse,
+            boost::asio::transfer_at_least(1),
+            boost::bind(&Client::handle_read_content, this, boost::asio::placeholders::error));
     }
 
     boost::asio::ip::tcp::resolver mResolver;
@@ -177,6 +198,7 @@ private:
     boost::asio::streambuf mRequest;
     boost::asio::streambuf mResponse;
 };
+
 
 int main(int argc, char* argv[])
 {

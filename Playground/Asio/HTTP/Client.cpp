@@ -206,9 +206,7 @@ int main(int argc, char* argv[])
     {
         if (argc != 3)
         {
-            std::cout << "Usage: async_client <server> <path>\n";
-            std::cout << "Example:\n";
-            std::cout << "  async_client www.boost.org /LICENSE_1_0.txt\n";
+            std::cout << "Usage: " << argv[0] << " <server> <path>\n";
             return 1;
         }
 

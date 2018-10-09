@@ -95,11 +95,11 @@ private:
                 boost::asio::placeholders::error));
     }
 
-    void handle_read_status_line(const boost::system::error_code& err)
+    void handle_read_status_line(const boost::system::error_code& ec)
     {
-        if (err)
+        if (ec)
         {
-            std::cout << "Error: " << err << "\n";
+            std::cout << "Error: " << ec.message() << "\n";
             return;
         }
 
@@ -133,11 +133,11 @@ private:
             boost::bind(&Client::handle_read_headers, this, boost::asio::placeholders::error));
     }
 
-    void handle_read_headers(const boost::system::error_code& err)
+    void handle_read_headers(const boost::system::error_code& ec)
     {
-        if (err)
+        if (ec)
         {
-            std::cout << "Error: " << err << "\n";
+            std::cout << "Error: " << ec.message() << "\n";
             return;
         }
 
@@ -166,17 +166,17 @@ private:
             boost::bind(&Client::handle_read_content, this, boost::asio::placeholders::error));
     }
 
-    void handle_read_content(const boost::system::error_code& err)
+    void handle_read_content(const boost::system::error_code& ec)
     {
-        if (err)
+        if (ec)
         {
-            if (err == boost::asio::error::eof)
+            if (ec == boost::asio::error::eof)
             {
-                std::cout << "Finished (" << err.message() << ")\n";
+                std::cout << "Finished (" << ec.message() << "\n";
             }
             else
             {
-                std::cout << "Error: " << err.message() << "\n";
+                std::cout << "Error: " << ec.message() << "\n";
             }
 
             return;

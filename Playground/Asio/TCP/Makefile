@@ -1,11 +1,11 @@
 all: tcp_client tcp_server
 
 tcp_client: TCPClient.cpp
-	g++ -std=c++11 -O2 -Wall -Wextra TCPClient.cpp -o tcp_client -lboost_system
+	g++ -std=c++11 -DBOOST_ERROR_CODE_HEADER_ONLY -O2 -Wall -Wextra TCPClient.cpp
 
 tcp_server: TCPServer.cpp
-	g++ -std=c++11 -O2 -Wall -Wextra TCPServer.cpp -o tcp_server -lboost_system
+	g++ -std=c++11 -DBOOST_ERROR_CODE_HEADER_ONLY -O2 -Wall -Wextra TCPServer.cpp
 
 clean:
-	rm tcp_client tcp_server
+	rm -f tcp_client tcp_server
 

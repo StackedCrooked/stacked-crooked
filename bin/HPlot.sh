@@ -1,6 +1,5 @@
 #!/bin/bash
 command="$(echo "set terminal png size 2000,1200
-set auto x
 set boxwidth 0.8 relative
 set style fill solid 1.0
 set output '$1.png'

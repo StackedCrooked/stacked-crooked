@@ -535,6 +535,7 @@ void test(const char* str)
 
 int main()
 {
+    test("ipandudp");
     test("ip and udp dst port 1024 and udp src port 1024 and len == 12 a");
     test("ip and udp dst port 1024 b and udp src port 1024 and len == 1");
     test("ip and udp dst a port 1024 b and udp src port 1024 and len == 1");

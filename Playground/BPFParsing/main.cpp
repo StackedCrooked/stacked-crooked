@@ -1,27 +1,19 @@
 #include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <deque>
 #include <iostream>
 #include <string>
 #include <vector>
 
 
-typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+/**
+ * (ip and ip src 95.174.242.22 and ip dst 212.60.47.101 and udp src port 55555 and udp dst port 55555 and len=60  ) or
+ * (ip and ip src 95.174.242.22 and ip dst 212.60.47.101 and udp src port 55555 and udp dst port 55555 and len=508 ) or
+ * (ip and ip src 95.174.242.22 and ip dst 212.60.47.101 and udp src port 55555 and udp dst port 55555 and len=1514)
+ */
 
 
-std::deque<std::string> tokenize(const std::string& str)
-{
-    std::deque<std::string> result;
-
-    boost::char_separator<char> sep(" ", "()=");
-
-    tokenizer tokens(str, sep);
-    for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
-    {
-        result.push_back(*tok_iter);
-    }
-
-    return result;
-}
 
 
 static std::string indent(int level)
@@ -53,6 +45,99 @@ static bool validate_ipv4_address(const std::string& s)
 }
 
 
+static boost::optional<int> parse_length(const std::string& s)
+{
+    int result = 0;
+
+    if (sscanf(s.c_str(), "len=%d", &result) != 1)
+    {
+        return boost::none;
+    }
+
+    return result;
+}
+
+
+enum SubType
+{
+    none,
+    ip,
+    ip_src,
+    ip_dst,
+    ip6,
+    ip6_src,
+    ip6_dst,
+    udp,
+    udp_src_port,
+    udp_dst_port,
+    tcp,
+    tcp_src_port,
+    tcp_dst_port,
+    len
+};
+
+
+std::string subtype_names[] = {
+    "none",
+    "ip",
+    "ip_src",
+    "ip_dst",
+    "ip6",
+    "ip6_src",
+    "ip6_dst",
+    "udp",
+    "udp_src_port",
+    "udp_dst_port",
+    "tcp",
+    "tcp_src_port",
+    "tcp_dst_port",
+    "len"
+};
+
+
+std::ostream& operator<<(std::ostream& os, SubType st)
+{
+    return os << subtype_names[st];
+}
+
+
+struct CheckSourceIP
+{
+    explicit CheckSourceIP(uint32_t value) : mIPAddress(value)
+    {
+
+    }
+
+    bool check_impl(const uint8_t* data, uint32_t /*size*/, uint32_t l3_offset, uint32_t /*l3_size*/, uint32_t /*l4_offset*/, uint32_t /*l4_size*/) const
+    {
+        return *reinterpret_cast<const uint32_t*>(data + l3_offset) == mIPAddress;
+    }
+
+    uint32_t mIPAddress;
+};
+
+
+struct AbstractExpressionImpl
+{
+    virtual bool check(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l3_size, uint32_t l4_offset, uint32_t l4_size) const = 0;
+};
+
+
+
+template<typename T>
+struct ConcreteExpressionImpl final : AbstractExpressionImpl
+{
+    explicit ConcreteExpressionImpl(T t) : t(t) {}
+
+    bool check(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l3_size, uint32_t l4_offset, uint32_t l4_size) const override
+    {
+        return t.check_impl(data, size, l3_offset, l3_size, l4_offset, l4_size);
+    }
+
+    T t;
+};
+
+
 struct Expression
 {
     static Expression And(Expression lhs, Expression rhs)
@@ -73,11 +158,48 @@ struct Expression
         return result;
     }
 
-    static Expression Leaf(const std::string& s)
+    static Expression Leaf(SubType subtype)
     {
         Expression result;
         result.mType = Type::Leaf;
-        result.mValue = s;
+        result.mSubType = subtype;
+        return result;
+    }
+
+    static Expression Leaf(SubType subtype, int a)
+    {
+        Expression result;
+        result.mType = Type::Leaf;
+        result.mSubType = subtype;
+        result.mArg1 = a;
+        return result;
+    }
+
+    static Expression Leaf(SubType subtype, int a, int b)
+    {
+        Expression result;
+        result.mType = Type::Leaf;
+        result.mSubType = subtype;
+        result.mArg1 = a;
+        result.mArg2 = b;
+        return result;
+    }
+
+    static Expression Leaf(SubType subtype, const std::string& value)
+    {
+        Expression result;
+        result.mType = Type::Leaf;
+        result.mSubType = subtype;
+        result.mValue = value;
+        return result;
+    }
+
+    template<typename T>
+    static Expression MakeLeaf(T t)
+    {
+        Expression result;
+        result.mImpl = std::make_shared<ConcreteExpressionImpl<T>>(t);
+        result.mType = Type::Leaf;
         return result;
     }
 
@@ -112,7 +234,11 @@ struct Expression
 
     void print_leaf(int level)
     {
-        std::cout << indent(level) << "Leaf: " << mValue << std::endl;
+        std::cout << indent(level) << "Leaf: " << mSubType;
+        if (mArg1) { std::cout << " " << mArg1; }
+        if (mArg2) { std::cout << " " << mArg2; }
+        if (!mValue.empty()) { std::cout << " " << mValue; }
+        std::cout << "\n";
     }
 
     void print_binary(const char* op, int level)
@@ -124,30 +250,38 @@ struct Expression
         }
     }
 
+    std::shared_ptr<const AbstractExpressionImpl> mImpl;
     Type mType = Type::Leaf;
+    SubType mSubType = none;
+    uint16_t mArg1 = 0;
+    uint16_t mArg2 = 0;
     std::string mValue;
     std::vector<Expression> mChildren;
 };
 
 
+#define MUST_CONSUME_INT() must_consume_int(__FILE__, __LINE__)
+#define MUST_CONSUME(s) must_consume(s, __FILE__, __LINE__)
+#define MUST_CONSUME_IP() must_consume_ip(__FILE__, __LINE__)
+
 struct Parser
 {
     explicit Parser(const std::string& text) :
-        mTokens(tokenize(text))
+        mString(text)
     {
     }
 
-    Expression parse_bpf_expression()
+    Expression parse_expression()
     {
         auto leaf = parse_group_expression();
 
-        if (consume_token("and"))
+        if (consume("and"))
         {
-            return Expression::And(leaf, parse_bpf_expression());
+            return Expression::And(leaf, parse_expression());
         }
-        else if (consume_token("or"))
+        else if (consume("or"))
         {
-            return Expression::Or(leaf, parse_bpf_expression());
+            return Expression::Or(leaf, parse_expression());
         }
         else
         {
@@ -157,18 +291,11 @@ struct Parser
 
     Expression parse_group_expression()
     {
-        if (consume_token("("))
+        if (consume("("))
         {
-            auto result = parse_bpf_expression();
-
-            if (consume_token(")"))
-            {
-                return result;
-            }
-            else
-            {
-                return error(__FILE__, __LINE__);
-            }
+            auto result = parse_expression();
+            MUST_CONSUME(")");
+            return result;
         }
         else
         {
@@ -178,92 +305,190 @@ struct Parser
 
     Expression parse_leaf_expression()
     {
-        if (consume_token("ip"))
+        if (consume("ip6"))
         {
-            if (consume_token("src"))
+            if (consume("src"))
             {
-                const std::string& token = peak_token();
-                if (validate_ipv4_address(token))
-                {
-                    mTokens.pop_front();
-                    return Expression::Leaf("ip src " + token);
-                }
-                else
-                {
-                    return error(__FILE__, __LINE__);
-                }
+                return Expression::Leaf(ip6_src, consume());
             }
-            else if (consume_token("dst"))
+            else if (consume("dst"))
             {
-                const std::string& token = peak_token();
-                if (validate_ipv4_address(token))
-                {
-                    mTokens.pop_front();
-                    return Expression::Leaf("ip dst " + token);
-                }
-                else
-                {
-                    return error(__FILE__, __LINE__);
-                }
+                return Expression::Leaf(ip6_dst, consume());
             }
             else
             {
-                return Expression::Leaf("ip");
+                return Expression::Leaf(ip6);
             }
         }
-        else if (next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
+        if (consume("ip"))
         {
-            return Expression::Leaf(pop_token());
+            if (consume("src"))
+            {
+                return Expression::Leaf(ip_src, MUST_CONSUME_IP());
+            }
+            else if (consume("dst"))
+            {
+                return Expression::Leaf(ip_dst, MUST_CONSUME_IP());
+            }
+            else
+            {
+                return Expression::Leaf(ip);
+            }
+        }
+        else if (consume("udp"))
+        {
+            if (consume("src port"))
+            {
+                return Expression::Leaf(udp_src_port, MUST_CONSUME_INT());
+            }
+            else if (consume("dst port"))
+            {
+                return Expression::Leaf(udp_dst_port, MUST_CONSUME_INT());
+            }
+            else
+            {
+                return Expression::Leaf(udp);
+            }
+        }
+        else if (consume("tcp"))
+        {
+            if (consume("src port"))
+            {
+                return Expression::Leaf(tcp_src_port, MUST_CONSUME_INT());
+            }
+            else if (consume("dst port"))
+            {
+                return Expression::Leaf(tcp_dst_port, MUST_CONSUME_INT());
+            }
+            else
+            {
+                return Expression::Leaf(udp);
+            }
         }
         else
         {
-            return error(__FILE__, __LINE__);
+            skip_whitespace();
+            auto backup = mData;
+            auto token = consume();
+
+            if (auto length = parse_length(token))
+            {
+                return Expression::Leaf(len, *length);
+            }
+
+            mData = backup;
+            return error(__FILE__, __LINE__, "len=");
         }
     }
 
-    const std::string& peak_token()
+    bool consume(const std::string& s)
     {
-        if (mTokens.empty())
+        skip_whitespace();
+
+        if (!strncmp(mData, s.c_str(), s.size()))
         {
-            error(__FILE__, __LINE__);
-            throw 1;
+            mData += s.size();
+
+            return true;
         }
 
-        return mTokens.front();
+        return false;
     }
 
-    bool consume_token(const std::string& s)
+    void must_consume(const std::string& s, const char* file, int line)
     {
-        if (mTokens.empty() || mTokens.front() != s)
+        skip_whitespace();
+        auto backup = mData;
+        if (!consume(s))
         {
-            return false;
+            mData = backup;
+            error(file, line, s);
+        }
+    }
+
+
+    int must_consume_int(const char* file, int line)
+    {
+        skip_whitespace();
+        auto backup = mData;
+        try
+        {
+            return boost::lexical_cast<int>(consume());
+        }
+        catch (...)
+        {
+            mData = backup;
+            error(file, line, "int value");
+            return 0;
+        }
+    }
+
+    int must_consume_ip(const char* file, int line)
+    {
+        skip_whitespace();
+        auto backup = mData;
+        auto ip_string = consume();
+        if (!validate_ipv4_address(ip_string))
+        {
+            mData = backup;
+            error(file, line, "valid ip string");
         }
 
-        pop_token();
-        return true;
+        return 0;
     }
 
-    bool next_token(const std::string& s) const
+    std::string consume()
     {
-        return !mTokens.empty() && mTokens.front() == s;
-    }
+        skip_whitespace();
 
-    std::string pop_token()
-    {
-        assert(!mTokens.empty());
-        auto result = mTokens.front();
-        mTokens.pop_front();
+
+        std::string result;
+
+        for (;;)
+        {
+            auto c = *mData;
+
+            if (c == 0 || is_whitespace(c) || c == ')')
+            {
+                break;
+            }
+
+            result.push_back(c);
+            mData++;
+        }
+
         return result;
     }
 
-    Expression error(const char* file, int line)
+    static bool is_whitespace(char c)
     {
-        std::cout << file << ":" << line << ": " << (mTokens.empty() ? std::string("Expected more tokens") : ("Unexpected token: " + mTokens.front())) << std::endl;
-        exit(1);
-        throw 1;
+        return c == ' ' || c == '\t' || c == '\n';
     }
 
-    std::deque<std::string> mTokens;
+    void skip_whitespace()
+    {
+        for (;;)
+        {
+            char c = *mData;
+            if (c == 0)
+            {
+                break;
+            }
+
+            if (!is_whitespace(c))
+            {
+                break;
+            }
+            mData++;
+        }
+    }
+
+    Expression error(const char* file, int line, const std::string& expectation);
+
+    std::string mString;
+    const char* mData = mString.c_str();
+    uint32_t mIndex = 0;
+    uint32_t mSize = mString.size();
 };
 
 
@@ -271,7 +496,7 @@ void test(const char* str)
 {
     std::cout << "=== TEST: " << str << " ===" << std::endl;
     Parser p(str);
-    Expression e = p.parse_bpf_expression();
+    Expression e = p.parse_expression();
     e.print();
     std::cout << std::endl;
 }
@@ -280,13 +505,42 @@ void test(const char* str)
 int main()
 {
     test("ip");
+    test("ip6");
+    test("ip or ip6");
+    test("(ip)");
+    test("(ip6)");
+    test("(ip) or (ip6)");
+    test("((ip) or (ip6))");
+
+    test("udp");
+    test("udp src port 1024");
+    test("udp dst port 1024");
+
+    test("tcp");
+    test("tcp src port 1024");
+    test("tcp dst port 1024");
+
+    test("ip and udp src port 1024");
+    test("ip and udp dst port 1024");
+    test("ip and udp dst port 1024 and udp src port 1024");
+
     test("ip src 1.2.3.244 and udp");
+
+    try { test("ip src 1.2.3 and udp"); } catch (...) {}
 
 
     test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");
     test("ip and udp or ip6 and tcp");  // => TODO: AND should have precedence over OR
 
-    test("((ip and udp) or (ip6 and tcp)) and (ether or ppp)");
+    test("((ip and udp) or (ip6 and tcp)) and ((ip and udp src port 1024) or (ip6 and tcp))");
 
     test("((((ip and udp) or (ip and tcp)) or (ip6 and udp or (ip6 and tcp))))");
+}
+
+
+Expression Parser::error(const char *file, int line, const std::string& expectation)
+{
+    std::cerr << '\n' << file << ":" << line << ": Parser error" << std::endl;
+    std::cerr << "\t" << mString << "\n\t" << std::string(mData - mString.data(), ' ')  << "^ Expected " << expectation << std::endl;
+    throw 1;
 }

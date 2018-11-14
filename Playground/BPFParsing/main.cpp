@@ -45,19 +45,6 @@ static bool validate_ipv4_address(const std::string& s)
 }
 
 
-static boost::optional<int> parse_length(const std::string& s)
-{
-    int result = 0;
-
-    if (sscanf(s.c_str(), "len=%d", &result) != 1)
-    {
-        return boost::none;
-    }
-
-    return result;
-}
-
-
 enum SubType
 {
     none,
@@ -285,6 +272,14 @@ struct Parser
         }
         else
         {
+            auto backup = mData;
+            auto s = consume();
+            if (!s.empty())
+            {
+                mData = backup;
+                error(__FILE__, __LINE__, "end of expression or a logical operator like \"and\" or \"or\"");
+            }
+
             return leaf;
         }
     }
@@ -305,6 +300,10 @@ struct Parser
 
     Expression parse_leaf_expression()
     {
+        if (consume("a"))
+        {
+            throw std::runtime_error("a is bad");
+        }
         if (consume("ip6"))
         {
             if (consume("src"))
@@ -320,7 +319,7 @@ struct Parser
                 return Expression::Leaf(ip6);
             }
         }
-        if (consume("ip"))
+        else if (consume("ip"))
         {
             if (consume("src"))
             {
@@ -337,12 +336,14 @@ struct Parser
         }
         else if (consume("udp"))
         {
-            if (consume("src port"))
+            if (consume("src"))
             {
+                MUST_CONSUME("port");
                 return Expression::Leaf(udp_src_port, MUST_CONSUME_INT());
             }
-            else if (consume("dst port"))
+            else if (consume("dst"))
             {
+                MUST_CONSUME("port");
                 return Expression::Leaf(udp_dst_port, MUST_CONSUME_INT());
             }
             else
@@ -352,12 +353,14 @@ struct Parser
         }
         else if (consume("tcp"))
         {
-            if (consume("src port"))
+            if (consume("src"))
             {
+                MUST_CONSUME("port");
                 return Expression::Leaf(tcp_src_port, MUST_CONSUME_INT());
             }
-            else if (consume("dst port"))
+            else if (consume("dst"))
             {
+                MUST_CONSUME("port");
                 return Expression::Leaf(tcp_dst_port, MUST_CONSUME_INT());
             }
             else
@@ -365,20 +368,18 @@ struct Parser
                 return Expression::Leaf(udp);
             }
         }
-        else
+        else if (consume("len"))
         {
-            skip_whitespace();
-            auto backup = mData;
-            auto token = consume();
-
-            if (auto length = parse_length(token))
+            if (consume("=="))
             {
-                return Expression::Leaf(len, *length);
+                return Expression::Leaf(len, MUST_CONSUME_INT());
             }
 
-            mData = backup;
-            return error(__FILE__, __LINE__, "len=");
+            MUST_CONSUME("=");
+            return Expression::Leaf(len, MUST_CONSUME_INT());
         }
+
+        return error(__FILE__, __LINE__, "BPF Expression");
     }
 
     bool consume(const std::string& s)
@@ -402,7 +403,7 @@ struct Parser
         if (!consume(s))
         {
             mData = backup;
-            error(file, line, s);
+            error(file, line, "\"" + s + "\"");
         }
     }
 
@@ -410,18 +411,19 @@ struct Parser
     int must_consume_int(const char* file, int line)
     {
         skip_whitespace();
+        auto int_string = consume_int_string();
+
         auto backup = mData;
-        try
-        {
-            return boost::lexical_cast<int>(consume());
-        }
-        catch (...)
+        int n = 0;
+        if (!boost::conversion::try_lexical_convert(int_string, n))
         {
             mData = backup;
-            error(file, line, "int value");
-            return 0;
+            error(file, line, "Integer[" + int_string + "]");
+            throw std::runtime_error("BPF Parsing failed");
         }
+        return n;
     }
+
 
     int must_consume_ip(const char* file, int line)
     {
@@ -449,6 +451,28 @@ struct Parser
             auto c = *mData;
 
             if (c == 0 || is_whitespace(c) || c == ')')
+            {
+                break;
+            }
+
+            result.push_back(c);
+            mData++;
+        }
+
+        return result;
+    }
+
+    std::string consume_int_string()
+    {
+        skip_whitespace();
+
+        std::string result;
+
+        for (;;)
+        {
+            auto c = *mData;
+
+            if (c < '0' || c > '9')
             {
                 break;
             }
@@ -495,15 +519,25 @@ struct Parser
 void test(const char* str)
 {
     std::cout << "=== TEST: " << str << " ===" << std::endl;
-    Parser p(str);
-    Expression e = p.parse_expression();
-    e.print();
+    try
+    {
+        Parser p(str);
+        Expression e = p.parse_expression();
+        e.print();
+    }
+    catch (const std::exception&)
+    {
+        //
+    }
     std::cout << std::endl;
 }
 
 
 int main()
 {
+    test("ip and udp dst port 1024 and udp src port 1024 and len == 12 a");
+    test("ip and udp dst port 1024 b and udp src port 1024 and len == 1");
+    test("ip and udp dst a port 1024 b and udp src port 1024 and len == 1");
     test("ip");
     test("ip6");
     test("ip or ip6");
@@ -511,6 +545,21 @@ int main()
     test("(ip6)");
     test("(ip) or (ip6)");
     test("((ip) or (ip6))");
+
+    test("len=128");
+    test("ip and udp dst port 1024 and udp src port 1024 and len =128");
+    test("len= 128");
+    test("len = 128");
+
+    test("len==128");
+    test("len ==128");
+    test("len== 128");
+    test("len == 128");
+
+    test("ip and udp dst port 1024 and udp src port 1024 and len==12a");
+    test("ip and udp dst port 1024 and udp src port 1024 and len== 12a");
+    test("ip and udp dst port 1024 and udp src port 1024 and len == 12 a");
+    test("ip and udp dst port 1024 and udp src port 1024 and len == b128");
 
     test("udp");
     test("udp src port 1024");
@@ -542,5 +591,5 @@ Expression Parser::error(const char *file, int line, const std::string& expectat
 {
     std::cerr << '\n' << file << ":" << line << ": Parser error" << std::endl;
     std::cerr << "\t" << mString << "\n\t" << std::string(mData - mString.data(), ' ')  << "^ Expected " << expectation << std::endl;
-    throw 1;
+    throw std::runtime_error("Invalid BPF expression");
 }

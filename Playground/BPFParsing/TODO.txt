@@ -1,0 +1,2 @@
+- Remove tokenizer. Use recursive descent all the way.
+- Improve error messages.

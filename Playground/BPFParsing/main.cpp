@@ -116,15 +116,23 @@ struct Expression
         return result;
     }
 
-    static Expression Leaf(bool b)
+    static Expression Boolean(bool b)
     {
         Expression result;
         result.mType = Type::Bool;
-        result.mBool = b;
+        result.mValue = static_cast<int>(b);
         return result;
     }
 
-    static Expression Leaf(bpf_expression expr)
+    static Expression Length(int value)
+    {
+        Expression result;
+        result.mType = Type::Length;
+        result.mValue = value;
+        return result;
+    }
+
+    static Expression Boolean(bpf_expression expr)
     {
         Expression result;
         result.mType = Type::BPF;
@@ -134,7 +142,7 @@ struct Expression
 
     enum class Type
     {
-        And, Or, BPF, Bool
+        And, Or, BPF, Bool, Length
     };
 
     void print(int level = 0) const
@@ -156,6 +164,11 @@ struct Expression
                 print_bool(level);
                 break;
             }
+            case Type::Length:
+            {
+                print_length(level);
+                break;
+            }
             case Type::BPF:
             {
                 print_bpf(level);
@@ -166,7 +179,12 @@ struct Expression
 
     void print_bool(int level) const
     {
-        std::cout << indent(level) << "<bool>" << (mBool ? "true" : "false") << "</bool>\n";
+        std::cout << indent(level) << "<bpf>" << (mValue ? "true" : "false") << "</bpf>\n";
+    }
+
+    void print_length(int level) const
+    {
+        std::cout << indent(level) << "<bpf>len=" << mValue << "</bpf>\n";
     }
 
     void print_bpf(int level) const
@@ -185,7 +203,7 @@ struct Expression
     }
 
     Type mType = Type::And;
-    bool mBool = false;
+    int mValue = 0;
     bpf_expression mBPF;
     std::vector<Expression> mChildren;
 };
@@ -241,16 +259,13 @@ struct Parser
     {
         if (consume_token("true"))
         {
-            return Expression::Leaf(true);
+            return Expression::Boolean(true);
         }
 
         if (consume_token("false"))
         {
-            return Expression::Leaf(false);
+            return Expression::Boolean(false);
         }
-
-
-        bpf_expression expr;
 
         if (consume_token("len"))
         {
@@ -265,8 +280,17 @@ struct Parser
             }
 
             auto length_string = pop_token(__FILE__, __LINE__, "\"len\" expects a length value");
-            expr.length = boost::lexical_cast<int>(length_string);
+            int length = 0;
+            if (boost::conversion::try_lexical_convert(length_string,  length))
+            {
+                return Expression::Length(length);
+            }
+
+            return error(__FILE__, __LINE__, "Length value should be an integer.");
         }
+
+
+        bpf_expression expr;
 
         expr.protocol = consume_one_of({"ether", "ppp", "arp", "ip", "ip6", "udp", "tcp"});
         expr.direction = consume_one_of({"src", "dst"});
@@ -284,7 +308,7 @@ struct Parser
             expr.id = token;
         }
 
-        return Expression::Leaf(expr);
+        return Expression::Boolean(expr);
     }
 
     bool consume_token(const std::string& s)
@@ -398,5 +422,5 @@ int main()
     test("udp src port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024 and len=128");
-    test("len=");
+    test("len===12 and true");
 }

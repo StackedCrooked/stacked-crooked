@@ -198,14 +198,12 @@ struct Parser
         {
             auto result = parse_logical_expression();
 
-            if (consume_text(")"))
-            {
-                return result;
-            }
-            else
+            if (!consume_text(")"))
             {
                 return error(__FILE__, __LINE__, "Invalid unary expression", "closing parenthesis (\")\"))");
             }
+
+            return result;
         }
         else
         {
@@ -229,6 +227,7 @@ struct Parser
             {
                 return error(__FILE__, __LINE__, "Invalid attribute", "equal sign ('=')");
             }
+
             int len = 0;
             if (!consume_int(len))
             {
@@ -257,8 +256,6 @@ struct Parser
             if (consume_token("src"))
             {
                 expr.direction = "src";
-
-
 
                 auto b = mText;
 
@@ -491,43 +488,36 @@ struct Parser
 
         if (!consume_int(a))
         {
-            assert(false);
             mText = backup;
             return false;
         }
         if (!consume_text("."))
         {
-            assert(false);
             mText = backup;
             return false;
         }
         if (!consume_int(b))
         {
-            assert(false);
             mText = backup;
             return false;
         }
         if (!consume_text("."))
         {
-            assert(false);
             mText = backup;
             return false;
         }
         if (!consume_int(c))
         {
-            assert(false);
             mText = backup;
             return false;
         }
         if (!consume_text("."))
         {
-            assert(false);
             mText = backup;
             return false;
         }
         if (!consume_int(d))
         {
-            assert(false);
             mText = backup;
             return false;
         }
@@ -539,8 +529,6 @@ struct Parser
             s = std::string(backup, mText);
             return true;
         }
-
-        assert(false);
 
         mText = backup;
         return false;
@@ -589,46 +577,47 @@ void test(const char* str)
 #define test(s) std::cout << __FILE__ << ":" << __LINE__ << ": test(" << s << ")" << std::endl; test(s)
 
 
+#define ASSERT_TRUE(expr) if (!(expr)) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_TRUE(" << #expr << ")" << std::endl; }
 int main()
 {
     {
         Parser p("abc");
-        assert(p.consume_text("abc") == true);
+        ASSERT_TRUE(p.consume_text("abc") == true);
     }
     {
         Parser p("(abc)");
-        assert(p.consume_text("(") == true);
-        assert(p.consume_text("abc") == true);
-        assert(p.consume_text(")") == true);
+        ASSERT_TRUE(p.consume_text("(") == true);
+        ASSERT_TRUE(p.consume_text("abc") == true);
+        ASSERT_TRUE(p.consume_text(")") == true);
     }
     {
         Parser p(".");
-        assert(p.consume_text(".") == true);
+        ASSERT_TRUE(p.consume_text(".") == true);
     }
     {
         Parser p("a.b");
-        assert(p.consume_text("a") == true);
-        assert(p.consume_text(".") == true);
-        assert(p.consume_text("b") == true);
+        ASSERT_TRUE(p.consume_text("a") == true);
+        ASSERT_TRUE(p.consume_text(".") == true);
+        ASSERT_TRUE(p.consume_text("b") == true);
     }
     {
         Parser p("abc");
-        assert(p.consume_token("abc") == true);
+        ASSERT_TRUE(p.consume_token("abc") == true);
     }
     {
         Parser p("abc and def");
-        assert(p.consume_token("abc") == true);
-        assert(p.consume_token("and") == true);
-        assert(p.consume_token("def") == true);
+        ASSERT_TRUE(p.consume_token("abc") == true);
+        ASSERT_TRUE(p.consume_token("and") == true);
+        ASSERT_TRUE(p.consume_token("def") == true);
     }
     {
         Parser p("123");
         int n = 0;
         if (!p.consume_int(n))
         {
-            assert(false);
+            ASSERT_TRUE(false);
         }
-        assert(n == 123);
+        ASSERT_TRUE(n == 123);
     }
     {
         Parser p("1.2.3.4");
@@ -636,19 +625,19 @@ int main()
         int b = 0;
         int c = 0;
         int d = 0;
-        assert(p.consume_int(a));
-        assert(p.consume_text("."));
-        assert(p.consume_int(b));
-        assert(p.consume_text("."));
-        assert(p.consume_int(c));
-        assert(p.consume_text("."));
-        assert(p.consume_int(d));
+        ASSERT_TRUE(p.consume_int(a));
+        ASSERT_TRUE(p.consume_text("."));
+        ASSERT_TRUE(p.consume_int(b));
+        ASSERT_TRUE(p.consume_text("."));
+        ASSERT_TRUE(p.consume_int(c));
+        ASSERT_TRUE(p.consume_text("."));
+        ASSERT_TRUE(p.consume_int(d));
     }
     {
         Parser p("1.2.3.4");
         std::string ip;
-        assert(p.consume_ip4(ip));
-        assert(ip == "1.2.3.4");
+        ASSERT_TRUE(p.consume_ip4(ip));
+        ASSERT_TRUE(ip == "1.2.3.4");
     }
 
     test("ip");
@@ -671,6 +660,7 @@ int main()
 
     test("ip");
     test("ip and ip src 1.1.1.1");
+    test("ip and ip src 1.333.1.1");
     test("udp src port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024 and len=128");
@@ -685,7 +675,6 @@ int main()
     test("len =12 and true");
     test("len= 12 and true");
 
-
-    test("len===12 and true");
-
+    test("len==12 and true");
+    test("len==12 and false");
 }

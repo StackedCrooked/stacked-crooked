@@ -1,62 +1,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
-#include <boost/tokenizer.hpp>
 #include <deque>
 #include <iostream>
 #include <string>
 #include <vector>
-
-
-template<typename T>
-using Optional = boost::optional<T>;
-
-
-typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
-
-
-std::deque<std::string> tokenize(const std::string& str)
-{
-    std::deque<std::string> result;
-
-    boost::char_separator<char> sep(" ", "()=");
-
-    tokenizer tokens(str, sep);
-    for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
-    {
-        result.push_back(*tok_iter);
-    }
-
-    return result;
-}
-
-
-static std::string indent(int level)
-{
-    std::string result;
-    for (auto i = 0; i != level; ++i)
-    {
-        result.push_back(' ');
-    }
-    return result;
-}
-
-
-static bool validate_ipv4_address(const std::string& s)
-{
-    int a = 0;
-    int b = 0;
-    int c = 0;
-    int d = 0;
-
-    if (sscanf(s.c_str(), "%d%*[.]%d%*[.]%d%*[.]%d", &a, &b, &c, &d) != 4)
-    {
-        return false;
-    }
-
-    auto check = [](int n) { return n >= 0 && n <= 255; };
-
-    return check(a) && check(b) && check(c) && check(d);
-}
 
 
 struct bpf_expression
@@ -202,6 +149,16 @@ struct Expression
         std::cout << indent(level) << "</" << op << ">\n";
     }
 
+    static std::string indent(int level)
+    {
+        std::string result;
+        for (auto i = 0; i != level; ++i)
+        {
+            result.push_back(' ');
+        }
+        return result;
+    }
+
     Type mType = Type::And;
     int mValue = 0;
     bpf_expression mBPF;
@@ -211,8 +168,9 @@ struct Expression
 
 struct Parser
 {
-    explicit Parser(const std::string& text) :
-        mTokens(tokenize(text))
+    explicit Parser(const char* text) :
+        mOriginal(text),
+        mText(text)
     {
     }
 
@@ -236,17 +194,17 @@ struct Parser
 
     Expression parse_unary_expression()
     {
-        if (consume_token("("))
+        if (consume_text("("))
         {
             auto result = parse_logical_expression();
 
-            if (consume_token(")"))
+            if (consume_text(")"))
             {
                 return result;
             }
             else
             {
-                return error(__FILE__, __LINE__);
+                return error(__FILE__, __LINE__, "Invalid group", "\")\"");
             }
         }
         else
@@ -265,26 +223,14 @@ struct Parser
         {
             return Expression::Boolean(false);
         }
-        else if (consume_token("len"))
+        else if (consume_text("len==") || consume_text("len="))
         {
-            if (!consume_token("="))
+            int len = 0;
+            if (!consume_int(len))
             {
-                return error(__FILE__, __LINE__, "'=' sign");
+                return error(__FILE__, __LINE__, "Invalid length expression", "Valid integer expected");
             }
-
-            if (consume_token("="))
-            {
-                // ignore second '='
-            }
-
-            auto length_string = pop_token(__FILE__, __LINE__, "\"len\" expects a length value");
-            int length = 0;
-            if (boost::conversion::try_lexical_convert(length_string,  length))
-            {
-                return Expression::Length(length);
-            }
-
-            return error(__FILE__, __LINE__, "Length value should be an integer.");
+            return Expression::Length(len);
         }
         else
         {
@@ -296,91 +242,339 @@ struct Parser
     {
         bpf_expression expr;
 
-        expr.protocol = consume_one_of({"ether", "ppp", "arp", "ip", "ip6", "udp", "tcp"});
-        expr.direction = consume_one_of({"src", "dst"});
-        expr.type = consume_one_of({"host", "port"});
-
-        if (!expr.direction.empty() || !expr.type.empty())
+        if (consume_text("ip"))
         {
-            auto token = pop_token(__FILE__, __LINE__, "Expected value for " + expr.protocol + " " + expr.direction + " " + expr.type);
-
-            if (!is_number(token) && !validate_ipv4_address(token))
+            expr.protocol = "ip";
+            if (consume_text("6"))
             {
-                return error(__FILE__, __LINE__, expr.type == "port" ? "Port number" : "IP address");
+                expr.protocol = "ip6";
             }
 
-            expr.id = token;
-        }
+            if (consume_token("src"))
+            {
+                expr.direction = "src";
 
-        return Expression::BPF(expr);
+                consume_whitespace();
+
+                auto b = mText;
+
+                std::string ip;
+                if (!consume_ip4(ip))
+                {
+                    mText = b;
+                    return error(__FILE__, __LINE__, "ip src <IP>", "Valid IP");
+
+                }
+
+                expr.id = ip;
+                return Expression::BPF(expr);
+            }
+            else if (consume_token("dst"))
+            {
+                expr.direction = "dst";
+
+                consume_whitespace();
+
+                if (!is_ipv4_address())
+                {
+                    return error(__FILE__, __LINE__, "Valid IP");
+                }
+                auto b = mText;
+                consume_non_whitespace();
+                auto ip = std::string(b, mText);
+                std::cout << "dst ip=" << ip << std::endl;
+                expr.id = ip;
+                return Expression::BPF(expr);
+            }
+            else
+            {
+                return Expression::BPF(expr);
+            }
+        }
+        else
+        {
+            if (consume_token("udp"))
+            {
+                expr.protocol = "udp";
+            }
+            else if (consume_token("tcp"))
+            {
+                expr.protocol = "tcp";
+            }
+            else
+            {
+                return error(__FILE__, __LINE__, "Invalid protocol" ,"tcp or udp");
+            }
+            if (consume_token("src"))
+            {
+                expr.direction = "src";
+                if (consume_token("port"))
+                {
+                    int port = 0;
+                    if (consume_int(port))
+                    {
+                        expr.id = std::to_string(port);
+                        return Expression::BPF(expr);
+                    }
+                    return error(__FILE__, __LINE__, "integer");
+                }
+
+                return error(__FILE__, __LINE__, "port");
+            }
+            else if (consume_token("dst"))
+            {
+                expr.direction = "dst";
+                if (consume_token("port"))
+                {
+                    int port = 0;
+                    if (consume_int(port))
+                    {
+                        expr.id = std::to_string(port);
+                        return Expression::BPF(expr);
+                    }
+                    return error(__FILE__, __LINE__, "integer");
+                }
+                return error(__FILE__, __LINE__, "port");
+            }
+            else
+            {
+                return Expression::BPF(expr);
+            }
+        }
     }
 
-    bool consume_token(const std::string& s)
+    bool is_eof() const
     {
-        if (mTokens.empty() || mTokens.front() != s)
+        return *mText == '\0';
+    }
+
+    bool consume_non_whitespace()
+    {
+        if (is_eof())
+        {
+            return true;
+        }
+
+        if (!is_space(*mText))
+        {
+            mText++;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool consume_whitespace()
+    {
+        if (is_eof())
+        {
+            return true;
+        }
+
+        if (is_space(*mText))
+        {
+            mText++;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool consume_text(const char* token)
+    {
+        consume_whitespace();
+        //std::cout << "consume_text: token=" << token << " mText=" << std::string(mText, mText + strlen(token)) << "\n";
+        return consume_text_impl(token, strlen(token));
+    }
+
+    bool consume_text_impl(const char* token, int len)
+    {
+        if (!strncmp(mText, token, len))
+        {
+            mText += len;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool consume_token(const char* token)
+    {
+        consume_whitespace();
+
+        auto backup = mText;
+
+        if (!consume_text(token))
+        {
+            mText = backup;
+            //std::cout << "Consumed FAILED: " << token << std::endl;
+            return false;
+        }
+
+        if (is_alnum(*mText))
+        {
+            // No delimiter.
+            mText = backup;
+            return false;
+        }
+
+        //std::cout << "Consumed OK: " << token << std::endl;
+
+        return true;
+    }
+
+    bool consume_int(int& n)
+    {
+        consume_whitespace();
+
+        if (is_eof())
         {
             return false;
         }
 
-        pop_token();
+        auto b = mText;
+
+        auto backup = mText;
+
+        for (;;)
+        {
+            auto c = *mText;
+
+            if (!is_digit(c))
+            {
+                break;
+            }
+
+            mText++;
+        }
+
+        if (!boost::conversion::try_lexical_convert(b, mText - b, n))
+        {
+            //std::cout << std::string(b, e) << " IS NOT INT\n";
+            mText = backup;
+            return false;
+        }
+
         return true;
     }
 
-    std::string consume_one_of(std::vector<std::string> tokens, std::string default_result = "")
+    bool is_alnum(char c) const
     {
-        for (const std::string& token : tokens)
+        return is_digit(c) || is_lcase(c) || is_ucase(c);
+    }
+
+    bool is_lcase(char c) const
+    {
+        return c >= 'a' && c <= 'z';
+    }
+
+    bool is_ucase(char c) const
+    {
+        return c >= 'A' && c <= 'Z';
+    }
+
+    bool is_digit(char c) const
+    {
+        return c >= '0' && c <= '9';
+    }
+
+    bool is_space(char c) const
+    {
+        return c == ' ' || c == '\t' || c == '\n';
+    }
+
+    bool consume_ip4(std::string& s)
+    {
+        auto backup = mText;
+        int a = 0;
+        int b = 0;
+        int c = 0;
+        int d = 0;
+        if (!consume_int(a))
         {
-            if (consume_token(token))
-            {
-                return token;
-            }
+            assert(false);
+            mText = backup;
+            return false;
+        }
+        if (!consume_text("."))
+        {
+            assert(false);
+            mText = backup;
+            return false;
+        }
+        if (!consume_int(b))
+        {
+            assert(false);
+            mText = backup;
+            return false;
+        }
+        if (!consume_text("."))
+        {
+            assert(false);
+            mText = backup;
+            return false;
+        }
+        if (!consume_int(c))
+        {
+            assert(false);
+            mText = backup;
+            return false;
+        }
+        if (!consume_text("."))
+        {
+            assert(false);
+            mText = backup;
+            return false;
+        }
+        if (!consume_int(d))
+        {
+            assert(false);
+            mText = backup;
+            return false;
         }
 
-        return default_result;
-    }
+        auto check = [](int n) { return n >= 0 && n <= 255;
+        };
 
-    std::string pop_token()
-    {
-        assert(!mTokens.empty());
-        auto result = std::move(mTokens.front());
-        mTokens.pop_front();
-        return result;
-    }
-
-    std::string pop_token(const char* file, int line, const std::string& expected)
-    {
-        if (mTokens.empty())
+        if (check(a) && check(b) && check(c) && check(d))
         {
-            error(file, line, expected);
-            return "";
+            s = std::string(backup, mText);
+            return true;
+        }assert(false);
+
+
+        mText = backup;
+        return false;
+    }
+
+    bool is_ipv4_address() const
+    {
+        int a = 0;
+        int b = 0;
+        int c = 0;
+        int d = 0;
+
+        if (sscanf(mText, "%d%*[.]%d%*[.]%d%*[.]%d", &a, &b, &c, &d) != 4)
+        {
+            return false;
         }
 
-        return pop_token();
+        auto check = [](int n) { return n >= 0 && n <= 255; };
+
+        return check(a) && check(b) && check(c) && check(d);
     }
 
-    bool is_number(const std::string& s)
+    Expression error(const char* file, int line, std::string message, std::string expected = "")
     {
-        auto p = [](char c) { return c < 0 || c > 9; };
-        auto b = s.begin();
-        auto e = s.end();
-        return std::find_if(b, e, p) != e;
-    }
-
-    Expression error(const char* file, int line)
-    {
-        std::cerr << file << ":" << line << ": " << (mTokens.empty() ? std::string("Expected more tokens") : ("Unexpected token: " + mTokens.front())) << std::endl;
-        exit(1);
-        throw 1;
-    }
-
-    Expression error(const char* file, int line, std::string message)
-    {
+        if (expected.empty()) expected = message;
         std::cerr << file << ":" << line << ": " << message << std::endl;
-        exit(1);
+        std::cerr << mOriginal << std::endl;
+        std::cerr << std::string(mText - mOriginal, ' ') << "^ Expected: " << expected << std::endl;
         throw 1;
     }
 
-    std::deque<std::string> mTokens;
+    const char* const mOriginal;
+    const char* mText;
 };
 
 
@@ -393,11 +587,78 @@ void test(const char* str)
     std::cout << std::endl;
 }
 
+#define test(s) std::cout << __FILE__ << ":" << __LINE__ << ": test(" << s << ")" << std::endl; test(s)
+
 
 int main()
 {
+    {
+        Parser p("abc");
+        assert(p.consume_text("abc") == true);
+    }
+    {
+        Parser p("(abc)");
+        assert(p.consume_text("(") == true);
+        assert(p.consume_text("abc") == true);
+        assert(p.consume_text(")") == true);
+    }
+    {
+        Parser p(".");
+        assert(p.consume_text(".") == true);
+    }
+    {
+        Parser p("a.b");
+        assert(p.consume_text("a") == true);
+        assert(p.consume_text(".") == true);
+        assert(p.consume_text("b") == true);
+    }
+    {
+        Parser p("abc");
+        assert(p.consume_token("abc") == true);
+    }
+    {
+        Parser p("abc and def");
+        assert(p.consume_token("abc") == true);
+        assert(p.consume_token("and") == true);
+        assert(p.consume_token("def") == true);
+    }
+    {
+        Parser p("123");
+        int n = 0;
+        if (!p.consume_int(n))
+        {
+            assert(false);
+        }
+        assert(n == 123);
+    }
+    {
+        Parser p("1.2.3.4");
+        int a = 0;
+        int b = 0;
+        int c = 0;
+        int d = 0;
+        assert(p.consume_int(a));
+        assert(p.consume_text("."));
+        assert(p.consume_int(b));
+        assert(p.consume_text("."));
+        assert(p.consume_int(c));
+        assert(p.consume_text("."));
+        assert(p.consume_int(d));
+    }
+    {
+        Parser p("1.2.3.4");
+        std::string ip;
+        assert(p.consume_ip4(ip));
+        assert(ip == "1.2.3.4");
+    }
+
     test("ip");
+    test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
+
+    test("ip6");
+    test("ip6 src 1.2.3.4");
+    test("ip6 src 1.2.3.244 and udp");
 
 
     test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");
@@ -416,4 +677,5 @@ int main()
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024 and len=128");
     test("len===12 and true");
+
 }

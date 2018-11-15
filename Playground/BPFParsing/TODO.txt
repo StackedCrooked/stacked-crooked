@@ -1,2 +1,4 @@
 - Remove tokenizer. Use recursive descent all the way.
 - Improve error messages.
+- Parse IPv4.
+- Optimize into NativeFilter. 

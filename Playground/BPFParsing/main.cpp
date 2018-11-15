@@ -300,6 +300,7 @@ struct Parser
             {
                 return error(__FILE__, __LINE__, "Invalid protocol" ,"tcp or udp");
             }
+
             if (consume_token("src"))
             {
                 expr.direction = "src";
@@ -633,7 +634,7 @@ int main()
 
 
     test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");
-    test("ip and udp or ip6 and tcp");  // => TODO: AND should have precedence over OR
+    test("ip and udp or ip6 and tcp");
 
 
     test("((((ip and udp) or (ip and tcp)) or (ip6 and udp or (ip6 and tcp))))");

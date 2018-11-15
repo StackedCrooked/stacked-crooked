@@ -132,7 +132,7 @@ struct Expression
         return result;
     }
 
-    static Expression Boolean(bpf_expression expr)
+    static Expression BPF(bpf_expression expr)
     {
         Expression result;
         result.mType = Type::BPF;
@@ -251,23 +251,21 @@ struct Parser
         }
         else
         {
-            return parse_bpf_expression();
+            return parse_attribute();
         }
     }
 
-    Expression parse_bpf_expression()
+    Expression parse_attribute()
     {
         if (consume_token("true"))
         {
             return Expression::Boolean(true);
         }
-
-        if (consume_token("false"))
+        else if (consume_token("false"))
         {
             return Expression::Boolean(false);
         }
-
-        if (consume_token("len"))
+        else if (consume_token("len"))
         {
             if (!consume_token("="))
             {
@@ -288,8 +286,14 @@ struct Parser
 
             return error(__FILE__, __LINE__, "Length value should be an integer.");
         }
+        else
+        {
+            return parse_bpf_expression();
+        }
+    }
 
-
+    Expression parse_bpf_expression()
+    {
         bpf_expression expr;
 
         expr.protocol = consume_one_of({"ether", "ppp", "arp", "ip", "ip6", "udp", "tcp"});
@@ -308,7 +312,7 @@ struct Parser
             expr.id = token;
         }
 
-        return Expression::Boolean(expr);
+        return Expression::BPF(expr);
     }
 
     bool consume_token(const std::string& s)

@@ -335,17 +335,6 @@ struct Parser
         return default_result;
     }
 
-    const std::string& peak_token()
-    {
-        if (mTokens.empty())
-        {
-            error(__FILE__, __LINE__);
-            throw 1;
-        }
-
-        return mTokens.front();
-    }
-
     std::string pop_token()
     {
         assert(!mTokens.empty());

@@ -204,7 +204,7 @@ struct Parser
             }
             else
             {
-                return error(__FILE__, __LINE__, "Invalid group", "\")\"");
+                return error(__FILE__, __LINE__, "Invalid unary expression", "closing parenthesis (\")\"))");
             }
         }
         else
@@ -223,12 +223,16 @@ struct Parser
         {
             return Expression::Boolean(false);
         }
-        else if (consume_text("len==") || consume_text("len="))
+        else if (consume_token("len"))
         {
+            if (!consume_text("==") && !consume_text("="))
+            {
+                return error(__FILE__, __LINE__, "Invalid attribute", "equal sign ('=')");
+            }
             int len = 0;
             if (!consume_int(len))
             {
-                return error(__FILE__, __LINE__, "Invalid length expression", "Valid integer expected");
+                return error(__FILE__, __LINE__, "Invalid attribute", "integer value");
             }
             return Expression::Length(len);
         }
@@ -254,7 +258,7 @@ struct Parser
             {
                 expr.direction = "src";
 
-                consume_whitespace();
+
 
                 auto b = mText;
 
@@ -273,17 +277,11 @@ struct Parser
             {
                 expr.direction = "dst";
 
-                consume_whitespace();
-
-                if (!is_ipv4_address())
+                if (!consume_ip4(expr.id))
                 {
-                    return error(__FILE__, __LINE__, "Valid IP");
+                    return error(__FILE__, __LINE__, "IP address");
                 }
-                auto b = mText;
-                consume_non_whitespace();
-                auto ip = std::string(b, mText);
-                std::cout << "dst ip=" << ip << std::endl;
-                expr.id = ip;
+
                 return Expression::BPF(expr);
             }
             else
@@ -364,26 +362,27 @@ struct Parser
         return false;
     }
 
-    bool consume_whitespace()
+    void consume_whitespace()
     {
-        if (is_eof())
+        for (;;)
         {
-            return true;
-        }
+            if (is_eof())
+            {
+                return;
+            }
 
-        if (is_space(*mText))
-        {
+            if (!is_space(*mText))
+            {
+                return;
+            }
+
             mText++;
-            return true;
         }
-
-        return false;
     }
 
     bool consume_text(const char* token)
     {
         consume_whitespace();
-        //std::cout << "consume_text: token=" << token << " mText=" << std::string(mText, mText + strlen(token)) << "\n";
         return consume_text_impl(token, strlen(token));
     }
 
@@ -407,7 +406,6 @@ struct Parser
         if (!consume_text(token))
         {
             mText = backup;
-            //std::cout << "Consumed FAILED: " << token << std::endl;
             return false;
         }
 
@@ -417,8 +415,6 @@ struct Parser
             mText = backup;
             return false;
         }
-
-        //std::cout << "Consumed OK: " << token << std::endl;
 
         return true;
     }
@@ -450,7 +446,6 @@ struct Parser
 
         if (!boost::conversion::try_lexical_convert(b, mText - b, n))
         {
-            //std::cout << std::string(b, e) << " IS NOT INT\n";
             mText = backup;
             return false;
         }
@@ -485,11 +480,15 @@ struct Parser
 
     bool consume_ip4(std::string& s)
     {
+        consume_whitespace();
+
         auto backup = mText;
+
         int a = 0;
         int b = 0;
         int c = 0;
         int d = 0;
+
         if (!consume_int(a))
         {
             assert(false);
@@ -533,15 +532,15 @@ struct Parser
             return false;
         }
 
-        auto check = [](int n) { return n >= 0 && n <= 255;
-        };
+        auto check = [](int n) { return n >= 0 && n <= 255; };
 
         if (check(a) && check(b) && check(c) && check(d))
         {
             s = std::string(backup, mText);
             return true;
-        }assert(false);
+        }
 
+        assert(false);
 
         mText = backup;
         return false;
@@ -570,7 +569,7 @@ struct Parser
         std::cerr << file << ":" << line << ": " << message << std::endl;
         std::cerr << mOriginal << std::endl;
         std::cerr << std::string(mText - mOriginal, ' ') << "^ Expected: " << expected << std::endl;
-        throw 1;
+        return Expression::Boolean(false);
     }
 
     const char* const mOriginal;
@@ -669,13 +668,24 @@ int main()
 
     test("true or false");
     test("(udp and tcp) or false");
-    test("((ip and udp) or (ip6 and tcp)) and (ether or ppp)");
 
     test("ip");
     test("ip and ip src 1.1.1.1");
     test("udp src port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024 and len=128");
+    test("len==12 and true");
+    test("len ==  12 and true");
+    test("len ==12 and true");
+    test("len== 12 and true");
+
+
+    test("len=12 and true");
+    test("len =  12 and true");
+    test("len =12 and true");
+    test("len= 12 and true");
+
+
     test("len===12 and true");
 
 }

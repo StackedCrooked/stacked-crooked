@@ -534,23 +534,6 @@ struct Parser
         return false;
     }
 
-    bool is_ipv4_address() const
-    {
-        int a = 0;
-        int b = 0;
-        int c = 0;
-        int d = 0;
-
-        if (sscanf(mText, "%d%*[.]%d%*[.]%d%*[.]%d", &a, &b, &c, &d) != 4)
-        {
-            return false;
-        }
-
-        auto check = [](int n) { return n >= 0 && n <= 255; };
-
-        return check(a) && check(b) && check(c) && check(d);
-    }
-
     Expression error(const char* file, int line, std::string message, std::string expected = "")
     {
         if (expected.empty()) expected = message;

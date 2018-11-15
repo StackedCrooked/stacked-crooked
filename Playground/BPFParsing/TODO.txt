@@ -1,4 +1,4 @@
-- Remove tokenizer. Use recursive descent all the way.
-- Improve error messages.
-- Parse IPv4.
+- Improve error message!!
 - Optimize into NativeFilter. 
+v Remove tokenizer. Use recursive descent all the way.
+v Parse IPv4.

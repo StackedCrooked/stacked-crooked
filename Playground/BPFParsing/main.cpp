@@ -1,19 +1,27 @@
 #include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/optional.hpp>
 #include <deque>
 #include <iostream>
 #include <string>
 #include <vector>
 
 
-/**
- * (ip and ip src 95.174.242.22 and ip dst 212.60.47.101 and udp src port 55555 and udp dst port 55555 and len=60  ) or
- * (ip and ip src 95.174.242.22 and ip dst 212.60.47.101 and udp src port 55555 and udp dst port 55555 and len=508 ) or
- * (ip and ip src 95.174.242.22 and ip dst 212.60.47.101 and udp src port 55555 and udp dst port 55555 and len=1514)
- */
+typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
 
 
+std::deque<std::string> tokenize(const std::string& str)
+{
+    std::deque<std::string> result;
+
+    boost::char_separator<char> sep(" ", "()=");
+
+    tokenizer tokens(str, sep);
+    for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+    {
+        result.push_back(*tok_iter);
+    }
+
+    return result;
+}
 
 
 static std::string indent(int level)
@@ -45,86 +53,6 @@ static bool validate_ipv4_address(const std::string& s)
 }
 
 
-enum SubType
-{
-    none,
-    ip,
-    ip_src,
-    ip_dst,
-    ip6,
-    ip6_src,
-    ip6_dst,
-    udp,
-    udp_src_port,
-    udp_dst_port,
-    tcp,
-    tcp_src_port,
-    tcp_dst_port,
-    len
-};
-
-
-std::string subtype_names[] = {
-    "none",
-    "ip",
-    "ip_src",
-    "ip_dst",
-    "ip6",
-    "ip6_src",
-    "ip6_dst",
-    "udp",
-    "udp_src_port",
-    "udp_dst_port",
-    "tcp",
-    "tcp_src_port",
-    "tcp_dst_port",
-    "len"
-};
-
-
-std::ostream& operator<<(std::ostream& os, SubType st)
-{
-    return os << subtype_names[st];
-}
-
-
-struct CheckSourceIP
-{
-    explicit CheckSourceIP(uint32_t value) : mIPAddress(value)
-    {
-
-    }
-
-    bool check_impl(const uint8_t* data, uint32_t /*size*/, uint32_t l3_offset, uint32_t /*l3_size*/, uint32_t /*l4_offset*/, uint32_t /*l4_size*/) const
-    {
-        return *reinterpret_cast<const uint32_t*>(data + l3_offset) == mIPAddress;
-    }
-
-    uint32_t mIPAddress;
-};
-
-
-struct AbstractExpressionImpl
-{
-    virtual bool check(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l3_size, uint32_t l4_offset, uint32_t l4_size) const = 0;
-};
-
-
-
-template<typename T>
-struct ConcreteExpressionImpl final : AbstractExpressionImpl
-{
-    explicit ConcreteExpressionImpl(T t) : t(t) {}
-
-    bool check(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l3_size, uint32_t l4_offset, uint32_t l4_size) const override
-    {
-        return t.check_impl(data, size, l3_offset, l3_size, l4_offset, l4_size);
-    }
-
-    T t;
-};
-
-
 struct Expression
 {
     static Expression And(Expression lhs, Expression rhs)
@@ -145,48 +73,11 @@ struct Expression
         return result;
     }
 
-    static Expression Leaf(SubType subtype)
+    static Expression Leaf(const std::string& s)
     {
         Expression result;
         result.mType = Type::Leaf;
-        result.mSubType = subtype;
-        return result;
-    }
-
-    static Expression Leaf(SubType subtype, int a)
-    {
-        Expression result;
-        result.mType = Type::Leaf;
-        result.mSubType = subtype;
-        result.mArg1 = a;
-        return result;
-    }
-
-    static Expression Leaf(SubType subtype, int a, int b)
-    {
-        Expression result;
-        result.mType = Type::Leaf;
-        result.mSubType = subtype;
-        result.mArg1 = a;
-        result.mArg2 = b;
-        return result;
-    }
-
-    static Expression Leaf(SubType subtype, const std::string& value)
-    {
-        Expression result;
-        result.mType = Type::Leaf;
-        result.mSubType = subtype;
-        result.mValue = value;
-        return result;
-    }
-
-    template<typename T>
-    static Expression MakeLeaf(T t)
-    {
-        Expression result;
-        result.mImpl = std::make_shared<ConcreteExpressionImpl<T>>(t);
-        result.mType = Type::Leaf;
+        result.mValue = s;
         return result;
     }
 
@@ -221,11 +112,7 @@ struct Expression
 
     void print_leaf(int level)
     {
-        std::cout << indent(level) << "Leaf: " << mSubType;
-        if (mArg1) { std::cout << " " << mArg1; }
-        if (mArg2) { std::cout << " " << mArg2; }
-        if (!mValue.empty()) { std::cout << " " << mValue; }
-        std::cout << "\n";
+        std::cout << indent(level) << "Leaf: " << mValue << std::endl;
     }
 
     void print_binary(const char* op, int level)
@@ -237,60 +124,51 @@ struct Expression
         }
     }
 
-    std::shared_ptr<const AbstractExpressionImpl> mImpl;
     Type mType = Type::Leaf;
-    SubType mSubType = none;
-    uint16_t mArg1 = 0;
-    uint16_t mArg2 = 0;
     std::string mValue;
     std::vector<Expression> mChildren;
 };
 
 
-#define MUST_CONSUME_INT() must_consume_int(__FILE__, __LINE__)
-#define MUST_CONSUME(s) must_consume(s, __FILE__, __LINE__)
-#define MUST_CONSUME_IP() must_consume_ip(__FILE__, __LINE__)
-
 struct Parser
 {
     explicit Parser(const std::string& text) :
-        mString(text)
+        mTokens(tokenize(text))
     {
     }
 
-    Expression parse_expression()
+    Expression parse_bpf_expression()
     {
         auto leaf = parse_group_expression();
 
-        if (consume("and"))
+        if (consume_token("and"))
         {
-            return Expression::And(leaf, parse_expression());
+            return Expression::And(leaf, parse_bpf_expression());
         }
-        else if (consume("or"))
+        else if (consume_token("or"))
         {
-            return Expression::Or(leaf, parse_expression());
+            return Expression::Or(leaf, parse_bpf_expression());
         }
         else
         {
-            auto backup = mData;
-            auto s = consume();
-            if (!s.empty())
-            {
-                mData = backup;
-                error(__FILE__, __LINE__, "end of expression or a logical operator like \"and\" or \"or\"");
-            }
-
             return leaf;
         }
     }
 
     Expression parse_group_expression()
     {
-        if (consume("("))
+        if (consume_token("("))
         {
-            auto result = parse_expression();
-            MUST_CONSUME(")");
-            return result;
+            auto result = parse_bpf_expression();
+
+            if (consume_token(")"))
+            {
+                return result;
+            }
+            else
+            {
+                return error(__FILE__, __LINE__);
+            }
         }
         else
         {
@@ -300,297 +178,115 @@ struct Parser
 
     Expression parse_leaf_expression()
     {
-        if (consume("a"))
+        if (consume_token("ip"))
         {
-            throw std::runtime_error("a is bad");
-        }
-        if (consume("ip6"))
-        {
-            if (consume("src"))
+            if (consume_token("src"))
             {
-                return Expression::Leaf(ip6_src, consume());
+                const std::string& token = peak_token();
+                if (validate_ipv4_address(token))
+                {
+                    mTokens.pop_front();
+                    return Expression::Leaf("ip src " + token);
+                }
+                else
+                {
+                    return error(__FILE__, __LINE__);
+                }
             }
-            else if (consume("dst"))
+            else if (consume_token("dst"))
             {
-                return Expression::Leaf(ip6_dst, consume());
+                const std::string& token = peak_token();
+                if (validate_ipv4_address(token))
+                {
+                    mTokens.pop_front();
+                    return Expression::Leaf("ip dst " + token);
+                }
+                else
+                {
+                    return error(__FILE__, __LINE__);
+                }
             }
             else
             {
-                return Expression::Leaf(ip6);
+                return Expression::Leaf("ip");
             }
         }
-        else if (consume("ip"))
+        else if (next_token("ip6") || next_token("udp") || next_token("tcp") || next_token("ether") || next_token("ppp"))
         {
-            if (consume("src"))
-            {
-                return Expression::Leaf(ip_src, MUST_CONSUME_IP());
-            }
-            else if (consume("dst"))
-            {
-                return Expression::Leaf(ip_dst, MUST_CONSUME_IP());
-            }
-            else
-            {
-                return Expression::Leaf(ip);
-            }
+            return Expression::Leaf(pop_token());
         }
-        else if (consume("udp"))
+        else
         {
-            if (consume("src"))
-            {
-                MUST_CONSUME("port");
-                return Expression::Leaf(udp_src_port, MUST_CONSUME_INT());
-            }
-            else if (consume("dst"))
-            {
-                MUST_CONSUME("port");
-                return Expression::Leaf(udp_dst_port, MUST_CONSUME_INT());
-            }
-            else
-            {
-                return Expression::Leaf(udp);
-            }
-        }
-        else if (consume("tcp"))
-        {
-            if (consume("src"))
-            {
-                MUST_CONSUME("port");
-                return Expression::Leaf(tcp_src_port, MUST_CONSUME_INT());
-            }
-            else if (consume("dst"))
-            {
-                MUST_CONSUME("port");
-                return Expression::Leaf(tcp_dst_port, MUST_CONSUME_INT());
-            }
-            else
-            {
-                return Expression::Leaf(udp);
-            }
-        }
-        else if (consume("len"))
-        {
-            if (consume("=="))
-            {
-                return Expression::Leaf(len, MUST_CONSUME_INT());
-            }
-
-            MUST_CONSUME("=");
-            return Expression::Leaf(len, MUST_CONSUME_INT());
-        }
-
-        return error(__FILE__, __LINE__, "BPF Expression");
-    }
-
-    bool consume(const std::string& s)
-    {
-        skip_whitespace();
-
-        if (!strncmp(mData, s.c_str(), s.size()))
-        {
-            mData += s.size();
-
-            return true;
-        }
-
-        return false;
-    }
-
-    void must_consume(const std::string& s, const char* file, int line)
-    {
-        skip_whitespace();
-        auto backup = mData;
-        if (!consume(s))
-        {
-            mData = backup;
-            error(file, line, "\"" + s + "\"");
+            return error(__FILE__, __LINE__);
         }
     }
 
-
-    int must_consume_int(const char* file, int line)
+    const std::string& peak_token()
     {
-        skip_whitespace();
-        auto int_string = consume_int_string();
-
-        auto backup = mData;
-        int n = 0;
-        if (!boost::conversion::try_lexical_convert(int_string, n))
+        if (mTokens.empty())
         {
-            mData = backup;
-            error(file, line, "Integer[" + int_string + "]");
-            throw std::runtime_error("BPF Parsing failed");
+            error(__FILE__, __LINE__);
+            throw 1;
         }
-        return n;
+
+        return mTokens.front();
     }
 
-
-    int must_consume_ip(const char* file, int line)
+    bool consume_token(const std::string& s)
     {
-        skip_whitespace();
-        auto backup = mData;
-        auto ip_string = consume();
-        if (!validate_ipv4_address(ip_string))
+        if (mTokens.empty() || mTokens.front() != s)
         {
-            mData = backup;
-            error(file, line, "valid ip string");
+            return false;
         }
 
-        return 0;
+        pop_token();
+        return true;
     }
 
-    std::string consume()
+    bool next_token(const std::string& s) const
     {
-        skip_whitespace();
+        return !mTokens.empty() && mTokens.front() == s;
+    }
 
-
-        std::string result;
-
-        for (;;)
-        {
-            auto c = *mData;
-
-            if (c == 0 || is_whitespace(c) || c == ')')
-            {
-                break;
-            }
-
-            result.push_back(c);
-            mData++;
-        }
-
+    std::string pop_token()
+    {
+        assert(!mTokens.empty());
+        auto result = mTokens.front();
+        mTokens.pop_front();
         return result;
     }
 
-    std::string consume_int_string()
+    Expression error(const char* file, int line)
     {
-        skip_whitespace();
-
-        std::string result;
-
-        for (;;)
-        {
-            auto c = *mData;
-
-            if (c < '0' || c > '9')
-            {
-                break;
-            }
-
-            result.push_back(c);
-            mData++;
-        }
-
-        return result;
+        std::cout << file << ":" << line << ": " << (mTokens.empty() ? std::string("Expected more tokens") : ("Unexpected token: " + mTokens.front())) << std::endl;
+        exit(1);
+        throw 1;
     }
 
-    static bool is_whitespace(char c)
-    {
-        return c == ' ' || c == '\t' || c == '\n';
-    }
-
-    void skip_whitespace()
-    {
-        for (;;)
-        {
-            char c = *mData;
-            if (c == 0)
-            {
-                break;
-            }
-
-            if (!is_whitespace(c))
-            {
-                break;
-            }
-            mData++;
-        }
-    }
-
-    Expression error(const char* file, int line, const std::string& expectation);
-
-    std::string mString;
-    const char* mData = mString.c_str();
-    uint32_t mIndex = 0;
-    uint32_t mSize = mString.size();
+    std::deque<std::string> mTokens;
 };
 
 
 void test(const char* str)
 {
     std::cout << "=== TEST: " << str << " ===" << std::endl;
-    try
-    {
-        Parser p(str);
-        Expression e = p.parse_expression();
-        e.print();
-    }
-    catch (const std::exception&)
-    {
-        //
-    }
+    Parser p(str);
+    Expression e = p.parse_bpf_expression();
+    e.print();
     std::cout << std::endl;
 }
 
 
 int main()
 {
-    test("ipandudp");
-    test("ip and udp dst port 1024 and udp src port 1024 and len == 12 a");
-    test("ip and udp dst port 1024 b and udp src port 1024 and len == 1");
-    test("ip and udp dst a port 1024 b and udp src port 1024 and len == 1");
     test("ip");
-    test("ip6");
-    test("ip or ip6");
-    test("(ip)");
-    test("(ip6)");
-    test("(ip) or (ip6)");
-    test("((ip) or (ip6))");
-
-    test("len=128");
-    test("ip and udp dst port 1024 and udp src port 1024 and len =128");
-    test("len= 128");
-    test("len = 128");
-
-    test("len==128");
-    test("len ==128");
-    test("len== 128");
-    test("len == 128");
-
-    test("ip and udp dst port 1024 and udp src port 1024 and len==12a");
-    test("ip and udp dst port 1024 and udp src port 1024 and len== 12a");
-    test("ip and udp dst port 1024 and udp src port 1024 and len == 12 a");
-    test("ip and udp dst port 1024 and udp src port 1024 and len == b128");
-
-    test("udp");
-    test("udp src port 1024");
-    test("udp dst port 1024");
-
-    test("tcp");
-    test("tcp src port 1024");
-    test("tcp dst port 1024");
-
-    test("ip and udp src port 1024");
-    test("ip and udp dst port 1024");
-    test("ip and udp dst port 1024 and udp src port 1024");
-
     test("ip src 1.2.3.244 and udp");
-
-    try { test("ip src 1.2.3 and udp"); } catch (...) {}
 
 
     test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");
     test("ip and udp or ip6 and tcp");  // => TODO: AND should have precedence over OR
 
-    test("((ip and udp) or (ip6 and tcp)) and ((ip and udp src port 1024) or (ip6 and tcp))");
+    test("((ip and udp) or (ip6 and tcp)) and (ether or ppp)");
 
     test("((((ip and udp) or (ip and tcp)) or (ip6 and udp or (ip6 and tcp))))");
-}
-
-
-Expression Parser::error(const char *file, int line, const std::string& expectation)
-{
-    std::cerr << '\n' << file << ":" << line << ": Parser error" << std::endl;
-    std::cerr << "\t" << mString << "\n\t" << std::string(mData - mString.data(), ' ')  << "^ Expected " << expectation << std::endl;
-    throw std::runtime_error("Invalid BPF expression");
 }

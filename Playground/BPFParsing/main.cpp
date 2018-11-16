@@ -505,7 +505,7 @@ struct Parser
         std::cerr << "Error: " << message << std::endl;
         std::cerr << "    " << mOriginal << std::endl;
         std::cerr << "    " << std::string(mText - mOriginal, ' ') << "^--- Expected: " << expected << std::endl << std::endl;
-		throw 1;
+        throw 1;
     }
 
     const char* const mOriginal;
@@ -517,15 +517,15 @@ void test(const char* str)
 {
     std::cout << "=== TEST: " << str << " ===" << std::endl;
     Parser p(str);
-	try
-	{
-		Expression e = p.parse_logical_expression();
-		e.print();
-	}
-	catch (...)
-	{
-		
-	}
+    try
+    {
+        Expression e = p.parse_logical_expression();
+        e.print();
+    }
+    catch (...)
+    {
+        
+    }
     std::cout << std::endl << std::endl;
 }
 

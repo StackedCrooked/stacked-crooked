@@ -185,7 +185,7 @@ struct Parser
         }
         else
         {
-            if (is_alnum(*mText))
+            if (*mText && !is_space(*mText) && *mText != ')')
             {
                 return error(__FILE__, __LINE__, "Junk at end of expression", "End of expression.");
             }
@@ -227,13 +227,13 @@ struct Parser
         {
             if (!consume_text("==") && !consume_text("="))
             {
-                return error(__FILE__, __LINE__, "Invalid attribute", "equal sign ('=')");
+                return error(__FILE__, __LINE__, "Invalid expression", "equal sign ('=')");
             }
 
             int len = 0;
             if (!consume_int(len))
             {
-                return error(__FILE__, __LINE__, "Invalid attribute", "integer value");
+                return error(__FILE__, __LINE__, "Invalid expression", "length value");
             }
             return Expression::Length(len);
         }
@@ -504,8 +504,8 @@ struct Parser
         if (expected.empty()) expected = message;
         std::cerr << file << ":" << line << ": error: " << message << std::endl;
         std::cerr << mOriginal << std::endl;
-        std::cerr << std::string(mText - mOriginal, ' ') << "^ Expected: " << expected << std::endl;
-        return Expression::Boolean(false);
+        std::cerr << std::string(mText - mOriginal, ' ') << "^--- Expected: " << expected << std::endl << std::endl;
+		throw 1;
     }
 
     const char* const mOriginal;
@@ -517,9 +517,16 @@ void test(const char* str)
 {
     std::cout << "=== TEST: " << str << " ===" << std::endl;
     Parser p(str);
-    Expression e = p.parse_logical_expression();
-    e.print();
-    std::cout << std::endl;
+	try
+	{
+		Expression e = p.parse_logical_expression();
+		e.print();
+	}
+	catch (...)
+	{
+		
+	}
+    std::cout << std::endl << std::endl;
 }
 
 

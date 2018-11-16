@@ -437,7 +437,7 @@ struct Parser
 
     bool is_space(char c) const
     {
-        return c == ' ' || c == '\t' || c == '\n';
+        return c == ' ' || c == '\t' || c == '\n' || c == '\r';
     }
 
     bool consume_ip4(std::string& s)

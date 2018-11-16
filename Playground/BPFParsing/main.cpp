@@ -187,7 +187,7 @@ struct Parser
         {
             if (*mText && !is_space(*mText) && *mText != ')')
             {
-                return error(__FILE__, __LINE__, "Junk at end of expression", "End of expression.");
+                return error("Junk at end of expression", "End of expression.");
             }
 
             return result;
@@ -202,7 +202,7 @@ struct Parser
 
             if (!consume_text(")"))
             {
-                return error(__FILE__, __LINE__, "Invalid unary expression", "closing parenthesis (\")\"))");
+                return error("Invalid unary expression", "closing parenthesis (\")\"))");
             }
 
             return result;
@@ -227,13 +227,13 @@ struct Parser
         {
             if (!consume_text("==") && !consume_text("="))
             {
-                return error(__FILE__, __LINE__, "Invalid expression", "equal sign ('=')");
+                return error("Invalid expression", "equal sign ('=')");
             }
 
             int len = 0;
             if (!consume_int(len))
             {
-                return error(__FILE__, __LINE__, "Invalid expression", "length value");
+                return error("Invalid expression", "length value");
             }
             return Expression::Length(len);
         }
@@ -265,7 +265,7 @@ struct Parser
                 if (!consume_ip4(ip))
                 {
                     mText = b;
-                    return error(__FILE__, __LINE__, "ip src <IP>", "Valid IP");
+                    return error("ip src <IP>", "Valid IP");
 
                 }
 
@@ -278,7 +278,7 @@ struct Parser
 
                 if (!consume_ip4(expr.id))
                 {
-                    return error(__FILE__, __LINE__, "IP address");
+                    return error("IP address");
                 }
 
                 return Expression::BPF(expr);
@@ -300,7 +300,7 @@ struct Parser
             }
             else
             {
-                return error(__FILE__, __LINE__, "Invalid protocol" ,"tcp or udp");
+                return error("Invalid protocol" ,"tcp or udp");
             }
 
             if (consume_token("src"))
@@ -314,10 +314,10 @@ struct Parser
                         expr.id = std::to_string(port);
                         return Expression::BPF(expr);
                     }
-                    return error(__FILE__, __LINE__, "integer");
+                    return error("integer");
                 }
 
-                return error(__FILE__, __LINE__, "port");
+                return error("port");
             }
             else if (consume_token("dst"))
             {
@@ -330,9 +330,9 @@ struct Parser
                         expr.id = std::to_string(port);
                         return Expression::BPF(expr);
                     }
-                    return error(__FILE__, __LINE__, "integer");
+                    return error("integer");
                 }
-                return error(__FILE__, __LINE__, "port");
+                return error("port");
             }
             else
             {
@@ -499,12 +499,12 @@ struct Parser
         return false;
     }
 
-    Expression error(const char* file, int line, std::string message, std::string expected = "")
+    Expression error(std::string message, std::string expected = "")
     {
         if (expected.empty()) expected = message;
-        std::cerr << file << ":" << line << ": error: " << message << std::endl;
-        std::cerr << mOriginal << std::endl;
-        std::cerr << std::string(mText - mOriginal, ' ') << "^--- Expected: " << expected << std::endl << std::endl;
+        std::cerr << "Error: " << message << std::endl;
+        std::cerr << "    " << mOriginal << std::endl;
+        std::cerr << "    " << std::string(mText - mOriginal, ' ') << "^--- Expected: " << expected << std::endl << std::endl;
 		throw 1;
     }
 

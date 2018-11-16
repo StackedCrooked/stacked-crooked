@@ -1,3 +1,5 @@
+- consume_whitespace should not be called implicitly
+- "ip 6" should not be parsed as "ip6"
 - Improve error message!!
 - Optimize into NativeFilter. 
 v Remove tokenizer. Use recursive descent all the way.

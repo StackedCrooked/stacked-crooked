@@ -1,6 +1,3 @@
-#include <boost/lexical_cast.hpp>
-#include <boost/optional.hpp>
-#include <deque>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -188,6 +185,11 @@ struct Parser
         }
         else
         {
+			if (is_alnum(*mText))
+			{
+				return error(__FILE__, __LINE__, "Junk at end of expression", "End of expression.");
+			}
+
             return result;
         }
     }
@@ -344,38 +346,12 @@ struct Parser
         return *mText == '\0';
     }
 
-    bool consume_non_whitespace()
-    {
-        if (is_eof())
-        {
-            return true;
-        }
-
-        if (!is_space(*mText))
-        {
-            mText++;
-            return true;
-        }
-
-        return false;
-    }
-
     void consume_whitespace()
     {
-        for (;;)
-        {
-            if (is_eof())
-            {
-                return;
-            }
-
-            if (!is_space(*mText))
-            {
-                return;
-            }
-
-            mText++;
-        }
+		while (is_space(*mText))
+		{
+			++mText;
+		}
     }
 
     bool consume_text(const char* token)
@@ -419,36 +395,24 @@ struct Parser
 
     bool consume_int(int& n)
     {
-        consume_whitespace();
+		consume_whitespace();
 
-        if (is_eof())
-        {
-            return false;
-        }
+		if (!is_digit(*mText))
+		{
+			return false;
+		}
 
-        auto b = mText;
+		for (;;)
+		{
+			n = (10 * n) + (*mText++ - '0');
 
-        auto backup = mText;
+			if (!is_digit(*mText))
+			{
+				break;
+			}
+		}
 
-        for (;;)
-        {
-            auto c = *mText;
-
-            if (!is_digit(c))
-            {
-                break;
-            }
-
-            mText++;
-        }
-
-        if (!boost::conversion::try_lexical_convert(b, mText - b, n))
-        {
-            mText = backup;
-            return false;
-        }
-
-        return true;
+		return true;
     }
 
     bool is_alnum(char c) const
@@ -538,7 +502,7 @@ struct Parser
     Expression error(const char* file, int line, std::string message, std::string expected = "")
     {
         if (expected.empty()) expected = message;
-        std::cerr << file << ":" << line << ": " << message << std::endl;
+        std::cerr << file << ":" << line << ": error: " << message << std::endl;
         std::cerr << mOriginal << std::endl;
         std::cerr << std::string(mText - mOriginal, ' ') << "^ Expected: " << expected << std::endl;
         return Expression::Boolean(false);
@@ -558,12 +522,66 @@ void test(const char* str)
     std::cout << std::endl;
 }
 
-#define test(s) std::cout << __FILE__ << ":" << __LINE__ << ": test(" << s << ")" << std::endl; test(s)
-
 
 #define ASSERT_TRUE(expr) if (!(expr)) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_TRUE(" << #expr << ")" << std::endl; }
+#define ASSERT_EQ(x, y) if (x != y) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_EQ(" << #x << "(" << x << "), " << #y << "(" << y << "))\n"; }
 int main()
 {
+	{
+		Parser p("");
+		int n = 0;
+		ASSERT_TRUE(!p.consume_int(n));
+		ASSERT_EQ(n, 0);
+	}
+
+	{
+		Parser p("1");
+		int n = 0;
+		ASSERT_TRUE(p.consume_int(n));
+		ASSERT_EQ(n, 1);
+	}
+
+	{
+		Parser p("10");
+		int n = 0;
+		ASSERT_TRUE(p.consume_int(n));
+		ASSERT_EQ(n, 10);
+	}
+
+	{
+		Parser p("123");
+		int n = 0;
+		ASSERT_TRUE(p.consume_int(n));
+		ASSERT_EQ(n, 123);
+	}
+
+
+	{
+		Parser p("123d");
+		int n = 0;
+		ASSERT_TRUE(p.consume_int(n));
+		ASSERT_EQ(n, 123);
+	}
+
+    {
+        Parser p("1.2.3.4");
+        int a = 0;
+        int b = 0;
+        int c = 0;
+        int d = 0;
+        ASSERT_TRUE(p.consume_int(a));
+		ASSERT_EQ(a, 1);
+        ASSERT_TRUE(p.consume_text("."));
+        ASSERT_TRUE(p.consume_int(b));
+		ASSERT_EQ(b, 2);
+        ASSERT_TRUE(p.consume_text("."));
+        ASSERT_TRUE(p.consume_int(c));
+		ASSERT_EQ(c, 3);
+        ASSERT_TRUE(p.consume_text("."));
+        ASSERT_TRUE(p.consume_int(d));
+		ASSERT_EQ(d, 4);
+    }
+
     {
         Parser p("abc");
         ASSERT_TRUE(p.consume_text("abc") == true);
@@ -605,20 +623,6 @@ int main()
     }
     {
         Parser p("1.2.3.4");
-        int a = 0;
-        int b = 0;
-        int c = 0;
-        int d = 0;
-        ASSERT_TRUE(p.consume_int(a));
-        ASSERT_TRUE(p.consume_text("."));
-        ASSERT_TRUE(p.consume_int(b));
-        ASSERT_TRUE(p.consume_text("."));
-        ASSERT_TRUE(p.consume_int(c));
-        ASSERT_TRUE(p.consume_text("."));
-        ASSERT_TRUE(p.consume_int(d));
-    }
-    {
-        Parser p("1.2.3.4");
         std::string ip;
         ASSERT_TRUE(p.consume_ip4(ip));
         ASSERT_TRUE(ip == "1.2.3.4");
@@ -643,8 +647,8 @@ int main()
     test("(udp and tcp) or false");
 
     test("ip");
-    test("ip and ip src 1.1.1.1");
-    test("ip and ip src 1.333.1.1");
+    test("ip and ip src 192.168.12.13");
+    test("ip and ip src 255.255.255.255");
     test("udp src port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024");
     test("ip and ip src 1.1.1.1 and ip dst 1.1.1.2 and udp and udp src port 1024 and udp dst port 1024 and len=128");
@@ -661,4 +665,9 @@ int main()
 
     test("len==12 and true");
     test("len==12 and false");
+
+	test("len==12a");
+	test("len==12 a");
+	test("len===12a"); // SHOULD FAIL
+	test("len===12a"); // SHOULD FAIL
 }

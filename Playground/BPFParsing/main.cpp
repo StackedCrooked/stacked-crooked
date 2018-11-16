@@ -185,10 +185,10 @@ struct Parser
         }
         else
         {
-			if (is_alnum(*mText))
-			{
-				return error(__FILE__, __LINE__, "Junk at end of expression", "End of expression.");
-			}
+            if (is_alnum(*mText))
+            {
+                return error(__FILE__, __LINE__, "Junk at end of expression", "End of expression.");
+            }
 
             return result;
         }
@@ -348,10 +348,10 @@ struct Parser
 
     void consume_whitespace()
     {
-		while (is_space(*mText))
-		{
-			++mText;
-		}
+        while (is_space(*mText))
+        {
+            ++mText;
+        }
     }
 
     bool consume_text(const char* token)
@@ -393,26 +393,26 @@ struct Parser
         return true;
     }
 
-    bool consume_int(int& n)
+    bool consume_int(int& n) // TODO: FR: consider overflow
     {
-		consume_whitespace();
+        consume_whitespace();
 
-		if (!is_digit(*mText))
-		{
-			return false;
-		}
+        if (!is_digit(*mText))
+        {
+            return false;
+        }
 
-		for (;;)
-		{
-			n = (10 * n) + (*mText++ - '0');
+        for (;;)
+        {
+            n = (10 * n) + (*mText++ - '0');
 
-			if (!is_digit(*mText))
-			{
-				break;
-			}
-		}
+            if (!is_digit(*mText))
+            {
+                break;
+            }
+        }
 
-		return true;
+        return true;
     }
 
     bool is_alnum(char c) const
@@ -527,41 +527,41 @@ void test(const char* str)
 #define ASSERT_EQ(x, y) if (x != y) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_EQ(" << #x << "(" << x << "), " << #y << "(" << y << "))\n"; }
 int main()
 {
-	{
-		Parser p("");
-		int n = 0;
-		ASSERT_TRUE(!p.consume_int(n));
-		ASSERT_EQ(n, 0);
-	}
+    {
+        Parser p("");
+        int n = 0;
+        ASSERT_TRUE(!p.consume_int(n));
+        ASSERT_EQ(n, 0);
+    }
 
-	{
-		Parser p("1");
-		int n = 0;
-		ASSERT_TRUE(p.consume_int(n));
-		ASSERT_EQ(n, 1);
-	}
+    {
+        Parser p("1");
+        int n = 0;
+        ASSERT_TRUE(p.consume_int(n));
+        ASSERT_EQ(n, 1);
+    }
 
-	{
-		Parser p("10");
-		int n = 0;
-		ASSERT_TRUE(p.consume_int(n));
-		ASSERT_EQ(n, 10);
-	}
+    {
+        Parser p("10");
+        int n = 0;
+        ASSERT_TRUE(p.consume_int(n));
+        ASSERT_EQ(n, 10);
+    }
 
-	{
-		Parser p("123");
-		int n = 0;
-		ASSERT_TRUE(p.consume_int(n));
-		ASSERT_EQ(n, 123);
-	}
+    {
+        Parser p("123");
+        int n = 0;
+        ASSERT_TRUE(p.consume_int(n));
+        ASSERT_EQ(n, 123);
+    }
 
 
-	{
-		Parser p("123d");
-		int n = 0;
-		ASSERT_TRUE(p.consume_int(n));
-		ASSERT_EQ(n, 123);
-	}
+    {
+        Parser p("123d");
+        int n = 0;
+        ASSERT_TRUE(p.consume_int(n));
+        ASSERT_EQ(n, 123);
+    }
 
     {
         Parser p("1.2.3.4");
@@ -570,16 +570,16 @@ int main()
         int c = 0;
         int d = 0;
         ASSERT_TRUE(p.consume_int(a));
-		ASSERT_EQ(a, 1);
+        ASSERT_EQ(a, 1);
         ASSERT_TRUE(p.consume_text("."));
         ASSERT_TRUE(p.consume_int(b));
-		ASSERT_EQ(b, 2);
+        ASSERT_EQ(b, 2);
         ASSERT_TRUE(p.consume_text("."));
         ASSERT_TRUE(p.consume_int(c));
-		ASSERT_EQ(c, 3);
+        ASSERT_EQ(c, 3);
         ASSERT_TRUE(p.consume_text("."));
         ASSERT_TRUE(p.consume_int(d));
-		ASSERT_EQ(d, 4);
+        ASSERT_EQ(d, 4);
     }
 
     {
@@ -666,8 +666,8 @@ int main()
     test("len==12 and true");
     test("len==12 and false");
 
-	test("len==12a");
-	test("len==12 a");
-	test("len===12a"); // SHOULD FAIL
-	test("len===12a"); // SHOULD FAIL
+    test("len==12a");
+    test("len==12 a");
+    test("len===12a"); // SHOULD FAIL
+    test("len===12a"); // SHOULD FAIL
 }

@@ -683,13 +683,32 @@ void test_(const char* file, int line, const char* str)
 #define ASSERT_EQ(x, y) if (x != y) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_EQ(" << #x << "(" << x << "), " << #y << "(" << y << "))\n"; }
 int main()
 {
-    RxPacket rx_packet;
-    PacketInfo info;
-    Parser p("src ip 1.1.1.1");
-	std::cout << __LINE__ << std::endl;
-    Expression e = p.parse();
-	std::cout << __LINE__ << std::endl;
-    assert(e.evaluate(rx_packet, info));
+    struct Data
+    {
+        RxPacket rx_packet = RxPacket();
+        PacketInfo info = PacketInfo();
+        Parser p = Parser("ip src 1.1.1.1");
+        Expression e;
+    };
+
+    std::cout << __LINE__ << std::endl;
+
+    Data* data = new Data;
+
+    std::cout << __LINE__ << std::endl;
+
+    data->e = data->p.parse();
+
+
+    std::cout << __LINE__ << std::endl;
+
+    std::cout << "Result 1: " << data->e.evaluate(data->rx_packet, data->info) << std::endl;
+    data->rx_packet.mIPv4Header.src_ip = IPv4Address(1, 1, 1, 2);
+    std::cout << "Result 2: " << data->e.evaluate(data->rx_packet, data->info) << std::endl;
+    data->rx_packet.mIPv4Header.src_ip = IPv4Address(1, 1, 1, 1);
+    std::cout << "Result 3: " << data->e.evaluate(data->rx_packet, data->info) << std::endl;
+
+    std::cout << __LINE__ << std::endl;
 
     test("ip");
     test("ip src 1.2.3.4");

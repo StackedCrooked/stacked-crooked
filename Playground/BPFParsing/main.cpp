@@ -211,7 +211,7 @@ private:
 
             if (!consume_text(")"))
             {
-                return error("closing parenthesis (\")\"))");
+                return error("')'");
             }
 
             return result;
@@ -575,6 +575,8 @@ int main()
     test("ip6 src 1.2.3.244 and udp");
 
     test("(ip)");
+    test("(ip");
+    test("ip)");
     test("(ip) and (udp)");
     test("(ip and udp) or (ip and tcp)");
 

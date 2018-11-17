@@ -435,7 +435,7 @@ private:
         {
             expr.add_flag(Flags_ip);
         }
-        else if (consume_token("udp src"))
+        else if (consume_token("udp src port"))
         {
             int n = 0;
             if (consume_int(n))
@@ -444,7 +444,7 @@ private:
                 expr.src_port = n;
             }
         }
-        else if (consume_token("udp dst"))
+        else if (consume_token("udp dst port"))
         {
             int n = 0;
             if (consume_int(n))
@@ -660,7 +660,6 @@ private:
 void test_(const char* file, int line, const char* str)
 {
     std::string prefix = std::string(file) + ":" + std::to_string(line) + ": ";
-    std::cout << prefix << str << std::endl;
     Parser p(str);
     try
     {
@@ -670,6 +669,7 @@ void test_(const char* file, int line, const char* str)
     }
     catch (const std::exception& e)
     {
+        std::cout << prefix << str << std::endl;
         std::cerr << std::string(prefix.size(), ' ') << e.what() << std::endl;
         
     }
@@ -683,63 +683,19 @@ void test_(const char* file, int line, const char* str)
 #define ASSERT_EQ(x, y) if (x != y) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_EQ(" << #x << "(" << x << "), " << #y << "(" << y << "))\n"; }
 int main()
 {
-    struct Data
-    {
-        RxPacket rx_packet = RxPacket();
-        PacketInfo info = PacketInfo();
-        Parser p = Parser("ip src 1.1.1.1");
-        Expression e;
-    };
-
-    std::cout << __LINE__ << std::endl;
-
-    Data* data = new Data;
-
-    std::cout << __LINE__ << std::endl;
-
-    data->e = data->p.parse();
-
-
-    std::cout << __LINE__ << std::endl;
-
-    std::cout << "Result 1: " << data->e.evaluate(data->rx_packet, data->info) << std::endl;
-    data->rx_packet.mIPv4Header.src_ip = IPv4Address(1, 1, 1, 2);
-    std::cout << "Result 2: " << data->e.evaluate(data->rx_packet, data->info) << std::endl;
-    data->rx_packet.mIPv4Header.src_ip = IPv4Address(1, 1, 1, 1);
-    std::cout << "Result 3: " << data->e.evaluate(data->rx_packet, data->info) << std::endl;
-
-    std::cout << __LINE__ << std::endl;
-
     test("ip");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
     test("ip src 1.2.3.244 and rpg");
     test("ip src 1.2.3.24o and rpg");
 
-    test("ip6");
-    test("ip6 src 1.2.3.4");
-    test("ip6 src 1.2.3.244 and udp");
-
     test("(ip)");
     test("(ip");
     test("ip)");
     test("(ip) and (udp)");
-    test("(ip and udp) or (ip and tcp)");
 
-
-    test("(ip and udp) or (ip and tcp) x)");  // JUNK NOT DETECTED
-    test("(ip and udp) or (ip and tcp)  )");  // JUNK NOT DETECTED
-    test("(ip and udp) or (ip and tcp) z)");  // JUNK NOT DETECTED
-
-
-    test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");
-    test("ip and udp or ip6 and tcp");
-
-
-    test("((((ip and udp) or (ip and tcp)) or (ip6 and udp or (ip6 and tcp))))");
 
     test("true or false");
-    test("(udp and tcp) or false");
 
     test("ip");
     test("ip and ip src 192.168.12.13");
@@ -765,5 +721,23 @@ int main()
     test("len==12 a");
     test("len===12a"); // SHOULD FAIL
     test("len===12a"); // SHOULD FAIL
+
+
+    //
+    // PARSER + EVALUATOR
+    //
+
+    Parser p = Parser("ip src 1.1.1.1 and (ip dst 1.1.1.3 or ip dst 1.1.1.2)");
+    Expression e = p.parse();
+
+
+    PacketInfo info = PacketInfo();
+    RxPacket rx_packet = RxPacket();
+    rx_packet.mIPv4Header.src_ip = IPv4Address(1, 1, 1, 1);
+    rx_packet.mIPv4Header.dst_ip = IPv4Address(1, 1, 1, 2);
+
+    std::cout << "Result 1: " << e.evaluate(rx_packet, info) << std::endl;
+    std::cout << "Result 2: " << e.evaluate(rx_packet, info) << std::endl;
+    std::cout << "Result 3: " << e.evaluate(rx_packet, info) << std::endl;
 }
 

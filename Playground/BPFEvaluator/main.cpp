@@ -13,7 +13,8 @@ enum Flags : uint32_t
     Flags_ip_dst   = 1 << 2,
     Flags_udp      = 1 << 3,
     Flags_udp_src  = 1 << 4,
-    Flags_udp_dst  = 1 << 5
+    Flags_udp_dst  = 1 << 5,
+    Flags_length   = 1 << 6
 };
 
 
@@ -41,27 +42,6 @@ Flags& operator&=(Flags& lhs, Flags rhs)
 }
 
 
-enum Type
-{
-    Type_none = 0,
-    Type_host = 1 << 4,
-    Type_port = 1 << 5,
-};
-
-
-std::ostream& operator<<(std::ostream& os, Type type)
-{
-    switch (type)
-    {
-        case Type_none: return os << "(none)";
-        case Type_host: return os << "host";
-        case Type_port: return os << "port";
-    }
-
-    throw std::runtime_error("Direction(" + std::to_string(type) + ")");
-}
-
-
 struct PacketInfo
 {
     uint32_t layer3_offset = 0;
@@ -86,8 +66,8 @@ struct RxPacket
     uint16_t mSize = 0;
     Flags mFlags = Flags_none;
 
-    IPv4Header mIPv4Header;
-    UDPHeader mUDPHeader;
+    IPv4Header mIPv4Header;  // FOR NOW
+    UDPHeader mUDPHeader;    // FOR NOW
 
 };
 
@@ -150,17 +130,23 @@ struct bpf_expression
                 return false;
             }
         }
+        if (mFlags & Flags_length)
+        {
+            if (length != rx_packet.size())
+            {
+                return false;
+            }
+        }
 
         return true;
     }
 
     Flags mFlags = Flags_none;
-
     IPv4Address src_ip;
     IPv4Address dst_ip;
     int src_port = 0;
     int dst_port = 0;
-    int length = 0;
+    uint32_t length = 0;
 };
 
 
@@ -733,11 +719,18 @@ int main()
 
     PacketInfo info = PacketInfo();
     RxPacket rx_packet = RxPacket();
+
     rx_packet.mIPv4Header.src_ip = IPv4Address(1, 1, 1, 1);
     rx_packet.mIPv4Header.dst_ip = IPv4Address(1, 1, 1, 2);
 
-    std::cout << "Result 1: " << e.evaluate(rx_packet, info) << std::endl;
-    std::cout << "Result 2: " << e.evaluate(rx_packet, info) << std::endl;
-    std::cout << "Result 3: " << e.evaluate(rx_packet, info) << std::endl;
+    std::cout << "Expecte match: " << e.evaluate(rx_packet, info) << std::endl;
+
+    rx_packet.mIPv4Header.dst_ip = IPv4Address(1, 1, 1, 3);
+
+    std::cout << "Expect match: " << e.evaluate(rx_packet, info) << std::endl;
+
+    rx_packet.mIPv4Header.dst_ip = IPv4Address(1, 1, 1, 4);
+
+    std::cout << "Expect no match: " << e.evaluate(rx_packet, info) << std::endl;
 }
 

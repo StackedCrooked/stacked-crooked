@@ -198,7 +198,6 @@ private:
         }
         else
         {
-            consume_whitespace();
             return result;
         }
     }

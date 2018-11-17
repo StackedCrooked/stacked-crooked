@@ -183,6 +183,7 @@ struct Parser
         return result;
     }
 
+private:
     Expression parse_logical_expression()
     {
         auto result = parse_unary_expression();
@@ -241,7 +242,7 @@ struct Parser
             int len = 0;
             if (!consume_int(len))
             {
-                return error("int");
+                return error("digit");
             }
             return Expression::Length(len);
         }
@@ -267,14 +268,10 @@ struct Parser
             {
                 expr.direction = "src";
 
-                auto b = mText;
-
                 std::string ip;
                 if (!consume_ip4(ip))
                 {
-                    mText = b;
                     return error("IP");
-
                 }
 
                 expr.id = ip;
@@ -434,6 +431,16 @@ struct Parser
         return is_digit(c) || is_lcase(c) || is_ucase(c);
     }
 
+    bool is_alpha(char c) const
+    {
+        return is_lcase(c) || is_ucase(c);
+    }
+
+    bool is_delim(char c) const
+    {
+        return is_space(c) || is_eof() || c == ')';
+    }
+
     bool is_lcase(char c) const
     {
         return c >= 'a' && c <= 'z';
@@ -503,14 +510,22 @@ struct Parser
 
         auto check = [](int n) { return n >= 0 && n <= 255; };
 
-        if (check(a) && check(b) && check(c) && check(d))
+        if (!check(a) || !check(b) || !check(c) || !check(d))
         {
-            s = std::string(backup, mText);
-            return true;
+            mText = backup;
+            return false;
         }
 
-        mText = backup;
-        return false;
+        // IP should be followed by delim
+        auto end_of_ip = mText;
+        if (is_alnum(*mText))
+        {
+            mText = end_of_ip;
+            return false;
+        }
+
+        s = std::string(backup, mText);
+        return true;
     }
 
     Expression error(std::string expected = "")
@@ -549,110 +564,11 @@ void test_(const char* file, int line, const char* str)
 #define ASSERT_EQ(x, y) if (x != y) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_EQ(" << #x << "(" << x << "), " << #y << "(" << y << "))\n"; }
 int main()
 {
-    {
-        Parser p("");
-        int n = 0;
-        ASSERT_TRUE(!p.consume_int(n));
-        ASSERT_EQ(n, 0);
-    }
-
-    {
-        Parser p("1");
-        int n = 0;
-        ASSERT_TRUE(p.consume_int(n));
-        ASSERT_EQ(n, 1);
-    }
-
-    {
-        Parser p("10");
-        int n = 0;
-        ASSERT_TRUE(p.consume_int(n));
-        ASSERT_EQ(n, 10);
-    }
-
-    {
-        Parser p("123");
-        int n = 0;
-        ASSERT_TRUE(p.consume_int(n));
-        ASSERT_EQ(n, 123);
-    }
-
-
-    {
-        Parser p("123d");
-        int n = 0;
-        ASSERT_TRUE(p.consume_int(n));
-        ASSERT_EQ(n, 123);
-    }
-
-    {
-        Parser p("1.2.3.4");
-        int a = 0;
-        int b = 0;
-        int c = 0;
-        int d = 0;
-        ASSERT_TRUE(p.consume_int(a));
-        ASSERT_EQ(a, 1);
-        ASSERT_TRUE(p.consume_text("."));
-        ASSERT_TRUE(p.consume_int(b));
-        ASSERT_EQ(b, 2);
-        ASSERT_TRUE(p.consume_text("."));
-        ASSERT_TRUE(p.consume_int(c));
-        ASSERT_EQ(c, 3);
-        ASSERT_TRUE(p.consume_text("."));
-        ASSERT_TRUE(p.consume_int(d));
-        ASSERT_EQ(d, 4);
-    }
-
-    {
-        Parser p("abc");
-        ASSERT_TRUE(p.consume_text("abc") == true);
-    }
-    {
-        Parser p("(abc)");
-        ASSERT_TRUE(p.consume_text("(") == true);
-        ASSERT_TRUE(p.consume_text("abc") == true);
-        ASSERT_TRUE(p.consume_text(")") == true);
-    }
-    {
-        Parser p(".");
-        ASSERT_TRUE(p.consume_text(".") == true);
-    }
-    {
-        Parser p("a.b");
-        ASSERT_TRUE(p.consume_text("a") == true);
-        ASSERT_TRUE(p.consume_text(".") == true);
-        ASSERT_TRUE(p.consume_text("b") == true);
-    }
-    {
-        Parser p("abc");
-        ASSERT_TRUE(p.consume_token("abc") == true);
-    }
-    {
-        Parser p("abc and def");
-        ASSERT_TRUE(p.consume_token("abc") == true);
-        ASSERT_TRUE(p.consume_token("and") == true);
-        ASSERT_TRUE(p.consume_token("def") == true);
-    }
-    {
-        Parser p("123");
-        int n = 0;
-        if (!p.consume_int(n))
-        {
-            ASSERT_TRUE(false);
-        }
-        ASSERT_TRUE(n == 123);
-    }
-    {
-        Parser p("1.2.3.4");
-        std::string ip;
-        ASSERT_TRUE(p.consume_ip4(ip));
-        ASSERT_TRUE(ip == "1.2.3.4");
-    }
-
     test("ip");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
+    test("ip src 1.2.3.244 and rpg");
+    test("ip src 1.2.3.24o and rpg");
 
     test("ip6");
     test("ip6 src 1.2.3.4");
@@ -702,3 +618,4 @@ int main()
     test("len===12a"); // SHOULD FAIL
     test("len===12a"); // SHOULD FAIL
 }
+

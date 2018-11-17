@@ -384,23 +384,7 @@ private:
     bool consume_token(const char* token)
     {
         consume_whitespace();
-
-        auto backup = mText;
-
-        if (!consume_text(token))
-        {
-            mText = backup;
-            return false;
-        }
-
-        if (is_alnum(*mText))
-        {
-            // No delimiter.
-            mText = backup;
-            return false;
-        }
-
-        return true;
+        return consume_text(token);
     }
 
     bool consume_int(int& n) // TODO: FR: consider overflow

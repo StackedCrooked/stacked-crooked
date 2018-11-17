@@ -386,24 +386,20 @@ struct Parser
 
     bool consume_token(const char* token)
     {
+        return consume_token_impl(token, strlen(token));
+    }
+
+    bool consume_token_impl(const char* token, int len)
+    {
         consume_whitespace();
 
-        auto backup = mText;
-
-        if (!consume_text(token))
+        if (!strncmp(mText, token, len))
         {
-            mText = backup;
-            return false;
+            mText += len;
+            return true;
         }
 
-        if (is_alnum(*mText))
-        {
-            // No delimiter.
-            mText = backup;
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     int to_digit(char c)

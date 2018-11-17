@@ -1,165 +1,41 @@
-#include "Networking.h"
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <vector>
-
-
-enum Flags : uint32_t
-{
-    Flags_none     = 0,
-    Flags_ip       = 1 << 0,
-    Flags_ip_src   = 1 << 1,
-    Flags_ip_dst   = 1 << 2,
-    Flags_udp      = 1 << 3,
-    Flags_udp_src  = 1 << 4,
-    Flags_udp_dst  = 1 << 5
-};
-
-
-Flags operator|(Flags lhs, Flags rhs)
-{
-    return Flags(uint32_t(lhs) | uint32_t(rhs));
-}
-
-
-Flags& operator|=(Flags& lhs, Flags rhs)
-{
-    return lhs = lhs | rhs;
-}
-
-
-Flags operator&(Flags lhs, Flags rhs)
-{
-    return Flags(uint32_t(lhs) & uint32_t(rhs));
-}
-
-
-Flags& operator&=(Flags& lhs, Flags rhs)
-{
-    return lhs = lhs & rhs;
-}
-
-
-enum Type
-{
-    Type_none = 0,
-    Type_host = 1 << 4,
-    Type_port = 1 << 5,
-};
-
-
-std::ostream& operator<<(std::ostream& os, Type type)
-{
-    switch (type)
-    {
-        case Type_none: return os << "(none)";
-        case Type_host: return os << "host";
-        case Type_port: return os << "port";
-    }
-
-    throw std::runtime_error("Direction(" + std::to_string(type) + ")");
-}
-
-
-struct PacketInfo
-{
-    uint32_t layer3_offset = 0;
-    uint32_t layer4_offset = 0;
-    Flags flags = Flags_none;
-};
-
-
-struct RxPacket
-{
-    RxPacket()
-    {
-        mIPv4Header.src_ip = IPv4Address(1, 1, 1, 1); // FOR NOW
-        mIPv4Header.dst_ip = IPv4Address(1, 1, 1, 1); // FOR NOW
-        mUDPHeader.src_port = 1024;
-        mUDPHeader.dst_port = 1024;
-    }
-    const uint8_t* data() const { return mData; }
-    uint32_t size() const { return mSize; }
-
-    const uint8_t* mData = nullptr;
-    uint16_t mSize = 0;
-    Flags mFlags = Flags_none;
-
-    IPv4Header mIPv4Header;
-    UDPHeader mUDPHeader;
-
-};
 
 
 struct bpf_expression
 {
     std::string toString() const
     {
-        return std::to_string(mFlags);
-    }
+        std::string result = protocol;
 
-    void add_flag(Flags flag)
-    {
-        mFlags |= flag;
-    }
-
-    bool match_any(Flags flag)
-    {
-        return mFlags & flag;
-    }
-
-    bool match_one(Flags flag)
-    {
-        return (mFlags & flag) == flag;
-    }
-
-    bool evaluate(const RxPacket& rx_packet, const PacketInfo& /*info*/) const
-    {
-        //auto data = rx_packet.data();
-        //auto l3 = info.layer3_offset;
-        //auto l4 = info.layer4_offset;
-
-        auto ip_header = rx_packet.mIPv4Header;//Decode<IPv4Header>(data + l3);
-        auto udp_header = rx_packet.mUDPHeader; //Decode<UDPHeader>(data + l4);
-        if (mFlags & Flags_ip_src)
+        if (!direction.empty())
         {
-            if (src_ip != ip_header.src_ip)
-            {
-                return false;
-            }
-        }
-        if (mFlags & Flags_ip_dst)
-        {
-            if (dst_ip != ip_header.dst_ip)
-            {
-                return false;
-            }
-        }
-        if (mFlags & Flags_udp_src)
-        {
-            if (src_port != udp_header.src_port.hostValue())
-            {
-                return false;
-            }
-        }
-        if (mFlags & Flags_udp_dst)
-        {
-            if (dst_port != udp_header.dst_port.hostValue())
-            {
-                return false;
-            }
+            result += (result.empty() ? "" : " ") + direction;
         }
 
-        return true;
+        if (!type.empty())
+        {
+            result += (result.empty() ? "" : " ") + type;
+        }
+
+        if (!id.empty())
+        {
+            result += (result.empty() ? "" : " ") + id;
+        }
+
+        if (length > 0)
+        {
+            result += (result.empty() ? "" : " ") + ("len=" + std::to_string(length));
+        }
+
+        return result;
     }
 
-    Flags mFlags = Flags_none;
-
-    IPv4Address src_ip;
-    IPv4Address dst_ip;
-    int src_port = 0;
-    int dst_port = 0;
+    std::string protocol;
+    std::string direction;
+    std::string type;
+    std::string id;
     int length = 0;
 };
 
@@ -280,46 +156,6 @@ struct Expression
         return result;
     }
 
-    bool evaluate(const RxPacket& rx_packet, const PacketInfo& info) const
-    {
-        if (mType == Type::BPF)
-        {
-            return mBPF.evaluate(rx_packet, info);
-        }
-        if (mType == Type::And)
-        {
-            for (const Expression& c : mChildren)
-            {
-                if (!c.evaluate(rx_packet, info))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        else if (mType == Type::Or)
-        {
-            for (const Expression& c : mChildren)
-            {
-                if (c.evaluate(rx_packet, info))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        else if (mType == Type::Length)
-        {
-            return mValue == static_cast<int32_t>(rx_packet.size());
-        }
-        else if (mType == Type::Bool)
-        {
-            return mValue;
-        }
-
-        return true;
-    }
-
     Type mType = Type::And;
     int mValue = 0;
     bpf_expression mBPF;
@@ -368,11 +204,11 @@ private:
 
     Expression parse_unary_expression()
     {
-        if (consume_token("("))
+        if (consume_text("("))
         {
             auto result = parse_logical_expression();
 
-            if (!consume_token(")"))
+            if (!consume_text(")"))
             {
                 return error("')'");
             }
@@ -397,7 +233,7 @@ private:
         }
         else if (consume_token("len"))
         {
-            if (!consume_token("==") && !consume_token("="))
+            if (!consume_text("==") && !consume_text("="))
             {
                 return error("equal sign ('=')");
             }
@@ -415,57 +251,98 @@ private:
         }
     }
 
-    void consume_flags(bpf_expression& expr)
-    {
-        if (consume_token("ip src"))
-        {
-            if (consume_ip4(expr.src_ip))
-            {
-                expr.add_flag(Flags_ip_src);
-            }
-        }
-        else if (consume_token("ip dst"))
-        {
-            if (consume_ip4(expr.dst_ip))
-            {
-                expr.add_flag(Flags_ip_dst);
-            }
-        }
-        else if (consume_token("ip"))
-        {
-            expr.add_flag(Flags_ip);
-        }
-        else if (consume_token("udp src"))
-        {
-            int n = 0;
-            if (consume_int(n))
-            {
-                expr.add_flag(Flags_udp_src);
-                expr.src_port = n;
-            }
-        }
-        else if (consume_token("udp dst"))
-        {
-            int n = 0;
-            if (consume_int(n))
-            {
-                expr.add_flag(Flags_udp_dst);
-                expr.dst_port = n;
-            }
-        }
-        else if (consume_token("udp"))
-        {
-            expr.add_flag(Flags_udp);
-        }
-    }
-
     Expression parse_bpf_expression()
     {
         bpf_expression expr;
 
-        consume_flags(expr);
+        if (consume_text("ip"))
+        {
+            expr.protocol = "ip";
+            if (consume_text("6"))
+            {
+                expr.protocol = "ip6";
+            }
 
-        return Expression::BPF(expr);
+            if (consume_token("src"))
+            {
+                expr.direction = "src";
+
+                std::string ip;
+                if (!consume_ip4(ip))
+                {
+                    return error("IP");
+                }
+
+                expr.id = ip;
+                return Expression::BPF(expr);
+            }
+            else if (consume_token("dst"))
+            {
+                expr.direction = "dst";
+
+                if (!consume_ip4(expr.id))
+                {
+                    return error("IP");
+                }
+
+                return Expression::BPF(expr);
+            }
+            else
+            {
+                return Expression::BPF(expr);
+            }
+        }
+        else
+        {
+            if (consume_token("udp"))
+            {
+                expr.protocol = "udp";
+            }
+            else if (consume_token("tcp"))
+            {
+                expr.protocol = "tcp";
+            }
+            else
+            {
+                return error("tcp or udp");
+            }
+
+            if (consume_token("src"))
+            {
+                expr.direction = "src";
+                if (consume_token("port"))
+                {
+                    int port = 0;
+                    if (consume_int(port))
+                    {
+                        expr.id = std::to_string(port);
+                        return Expression::BPF(expr);
+                    }
+                    return error("integer");
+                }
+
+                return error("port");
+            }
+            else if (consume_token("dst"))
+            {
+                expr.direction = "dst";
+                if (consume_token("port"))
+                {
+                    int port = 0;
+                    if (consume_int(port))
+                    {
+                        expr.id = std::to_string(port);
+                        return Expression::BPF(expr);
+                    }
+                    return error("integer");
+                }
+                return error("port");
+            }
+            else
+            {
+                return Expression::BPF(expr);
+            }
+        }
     }
 
     bool consume_eof()
@@ -489,6 +366,7 @@ private:
 
     bool consume_text(const char* token)
     {
+        consume_whitespace();
         return consume_text_impl(token, strlen(token));
     }
 
@@ -501,16 +379,6 @@ private:
         }
 
         return false;
-    }
-
-    bool check_text(const char* token)
-    {
-        return check_text_impl(token, strlen(token));
-    }
-
-    bool check_text_impl(const char* token, int len)
-    {
-        return !strncmp(mText, token, len);
     }
 
     bool consume_token(const char* token)
@@ -551,6 +419,11 @@ private:
         return is_lcase(c) || is_ucase(c);
     }
 
+    bool is_delim(char c) const
+    {
+        return is_space(c) || is_eof() || c == ')';
+    }
+
     bool is_lcase(char c) const
     {
         return c >= 'a' && c <= 'z';
@@ -571,12 +444,7 @@ private:
         return c == ' ' || c == '\t' || c == '\n' || c == '\r';
     }
 
-    bool consume_ip4(IPv4Address& ip)
-    {
-        return consume_ip4(ip.data());
-    }
-
-    bool consume_ip4(uint8_t* bytes)
+    bool consume_ip4(std::string& s)
     {
         consume_whitespace();
 
@@ -639,11 +507,7 @@ private:
             return false;
         }
 
-
-        bytes[0] = a;
-        bytes[1] = b;
-        bytes[2] = c;
-        bytes[3] = d;
+        s = std::string(backup, mText);
         return true;
     }
 
@@ -683,14 +547,6 @@ void test_(const char* file, int line, const char* str)
 #define ASSERT_EQ(x, y) if (x != y) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_EQ(" << #x << "(" << x << "), " << #y << "(" << y << "))\n"; }
 int main()
 {
-    RxPacket rx_packet;
-    PacketInfo info;
-    Parser p("src ip 1.1.1.1");
-	std::cout << __LINE__ << std::endl;
-    Expression e = p.parse();
-	std::cout << __LINE__ << std::endl;
-    assert(e.evaluate(rx_packet, info));
-
     test("ip");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");

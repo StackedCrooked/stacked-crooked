@@ -3,15 +3,35 @@
 #include <vector>
 
 
+enum Protocol
+{
+    Protocol_None,
+    Protocol_IPv4,
+    Protocol_IPv6,
+    Protocol_UDP,
+    Protocol_TCP
+};
+
+
+enum Direction
+{
+    Direction_none,
+    Direction_src,
+    Direction_dst,
+    Direction_src_or_dst,
+    Direction_src_and_dst
+};
+
+
 struct bpf_expression
 {
     std::string toString() const
     {
-        std::string result = protocol;
+        std::string result = protocol_name;
 
-        if (!direction.empty())
+        if (!direction_name.empty())
         {
-            result += (result.empty() ? "" : " ") + direction;
+            result += (result.empty() ? "" : " ") + direction_name;
         }
 
         if (!type.empty())
@@ -32,8 +52,11 @@ struct bpf_expression
         return result;
     }
 
-    std::string protocol;
-    std::string direction;
+    Protocol protocol;
+    Direction direction;
+
+    std::string protocol_name;
+    std::string direction_name;
     std::string type;
     std::string id;
     int length = 0;
@@ -251,21 +274,48 @@ private:
         }
     }
 
+    Protocol consume_protocol()
+    {
+        consume_whitespace();
+        if (consume_token("ip6")) { return Protocol_IPv6; }
+        if (consume_token("ip"))  { return Protocol_IPv4; }
+        if (consume_token("udp")) { return Protocol_UDP;  }
+        if (consume_token("tcp")) { return Protocol_TCP;  }
+        return Protocol_None;
+    }
+
+    Direction consume_direction()
+    {
+        consume_whitespace();
+        if (consume_token("src")) { return Direction_src; }
+        if (consume_token("dst")) { return Direction_dst; }
+        if (consume_token("src or dst"))  { return Direction_src_or_dst; }
+        if (consume_token("src and dst")) { return Direction_src_and_dst; }
+        return Direction_none;
+    }
+
     Expression parse_bpf_expression()
     {
         bpf_expression expr;
 
+#if 0 // TODO: FR: Parse into a small struct that can be used for implementing a evaluator.
+        expr.protocol = consume_protocol();
+        expr.direction = consume_direction();
+        expr.type = consume_type();
+#endif
+
+        // TODO: FR: Remove this silly code.
         if (consume_token("ip"))
         {
-            expr.protocol = "ip";
+            expr.protocol_name = "ip";
             if (consume_text("6"))
             {
-                expr.protocol = "ip6";
+                expr.protocol_name = "ip6";
             }
 
             if (consume_token("src"))
             {
-                expr.direction = "src";
+                expr.direction_name = "src";
 
                 std::string ip;
                 if (!consume_ip4(ip))
@@ -278,7 +328,7 @@ private:
             }
             else if (consume_token("dst"))
             {
-                expr.direction = "dst";
+                expr.direction_name = "dst";
 
                 if (!consume_ip4(expr.id))
                 {
@@ -296,11 +346,11 @@ private:
         {
             if (consume_token("udp"))
             {
-                expr.protocol = "udp";
+                expr.protocol_name = "udp";
             }
             else if (consume_token("tcp"))
             {
-                expr.protocol = "tcp";
+                expr.protocol_name = "tcp";
             }
             else
             {
@@ -309,7 +359,7 @@ private:
 
             if (consume_token("src"))
             {
-                expr.direction = "src";
+                expr.direction_name = "src";
                 if (consume_token("port"))
                 {
                     int port = 0;
@@ -325,7 +375,7 @@ private:
             }
             else if (consume_token("dst"))
             {
-                expr.direction = "dst";
+                expr.direction_name = "dst";
                 if (consume_token("port"))
                 {
                     int port = 0;
@@ -384,6 +434,7 @@ private:
     {
         consume_whitespace();
         return consume_text(token);
+
     }
 
     bool consume_int(int& n) // TODO: FR: consider overflow

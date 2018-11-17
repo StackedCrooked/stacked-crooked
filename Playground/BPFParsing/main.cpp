@@ -183,21 +183,29 @@ struct Parser
         {
             return Expression::Or(result, parse_logical_expression());
         }
-        else if (consume_end_of_expression())
-        {
-            return result;
-        }
         else
         {
-            return error("Junk at end of expression", "End of expression.");
+            if (*mText && !is_space(*mText) && *mText != ')')
+            {
+                return error("End of expression.");
+            }
+
+            return result;
         }
     }
 
     Expression parse_unary_expression()
     {
-        if (consume_operator("("))
+        if (consume_text("("))
         {
-            return parse_logical_expression();
+            auto result = parse_logical_expression();
+
+            if (!consume_text(")"))
+            {
+                return error("closing parenthesis (\")\"))");
+            }
+
+            return result;
         }
         else
         {
@@ -219,13 +227,13 @@ struct Parser
         {
             if (!consume_text("==") && !consume_text("="))
             {
-                return error("Invalid expression", "equal sign ('=')");
+                return error("equal sign ('=')");
             }
 
             int len = 0;
             if (!consume_int(len))
             {
-                return error("Invalid expression", "length value");
+                return error("int");
             }
             return Expression::Length(len);
         }
@@ -257,7 +265,7 @@ struct Parser
                 if (!consume_ip4(ip))
                 {
                     mText = b;
-                    return error("ip src <IP>", "Valid IP");
+                    return error("IP");
 
                 }
 
@@ -270,7 +278,7 @@ struct Parser
 
                 if (!consume_ip4(expr.id))
                 {
-                    return error("IP address");
+                    return error("IP");
                 }
 
                 return Expression::BPF(expr);
@@ -292,7 +300,7 @@ struct Parser
             }
             else
             {
-                return error("Invalid protocol" ,"tcp or udp");
+                return error("tcp or udp");
             }
 
             if (consume_token("src"))
@@ -338,33 +346,12 @@ struct Parser
         return *mText == '\0';
     }
 
-    bool consume_end_of_expression()
-    {
-        consume_whitespace();
-        return is_eof() || *mText == ')';
-    }
-
     void consume_whitespace()
     {
         while (is_space(*mText))
         {
             ++mText;
         }
-    }
-
-    bool consume_operator(const char* op)
-    {
-        return consume_operator_impl(op, strlen(op));
-    }
-
-    bool consume_operator_impl(const char* op, int len)
-    {
-        if (!strncmp(mText, op, len))
-        {
-            mText += len;
-            return true;
-        }
-        return false;
     }
 
     bool consume_text(const char* token)
@@ -386,39 +373,46 @@ struct Parser
 
     bool consume_token(const char* token)
     {
-        return consume_token_impl(token, strlen(token));
-    }
-
-    bool consume_token_impl(const char* token, int len)
-    {
-        consume_whitespace();
-
-        if (!strncmp(mText, token, len))
-        {
-            mText += len;
-            return true;
-        }
-
-        return false;
-    }
-
-    int to_digit(char c)
-    {
-        return c - '0';
-    }
-
-    bool consume_int(int& n)
-    {
         consume_whitespace();
 
         auto backup = mText;
 
-        while (is_digit(*mText))
+        if (!consume_text(token))
         {
-            n = 10 * n + to_digit(*mText++);
+            mText = backup;
+            return false;
         }
 
-        return mText != backup;
+        if (is_alnum(*mText))
+        {
+            // No delimiter.
+            mText = backup;
+            return false;
+        }
+
+        return true;
+    }
+
+    bool consume_int(int& n) // TODO: FR: consider overflow
+    {
+        consume_whitespace();
+
+        if (!is_digit(*mText))
+        {
+            return false;
+        }
+
+        for (;;)
+        {
+            n = (10 * n) + (*mText++ - '0');
+
+            if (!is_digit(*mText))
+            {
+                break;
+            }
+        }
+
+        return true;
     }
 
     bool is_alnum(char c) const
@@ -505,13 +499,9 @@ struct Parser
         return false;
     }
 
-    Expression error(std::string message, std::string expected = "")
+    Expression error(std::string expected = "")
     {
-        if (expected.empty()) expected = message;
-        std::cerr << "Error: " << message << std::endl;
-        std::cerr << "    " << mOriginal << std::endl;
-        std::cerr << "    " << std::string(mText - mOriginal, ' ') << "^--- Expected: " << expected << std::endl << std::endl;
-        throw 1;
+        throw std::runtime_error(std::string(mText - mOriginal, ' ') + "^--- Expected: " + expected);
     }
 
     const char* const mOriginal;
@@ -519,21 +509,26 @@ struct Parser
 };
 
 
-void test(const char* str)
+void test_(const char* file, int line, const char* str)
 {
-    std::cout << "=== TEST: " << str << " ===" << std::endl;
+    std::string prefix = std::string(file) + ":" + std::to_string(line) + ": ";
+    std::cout << prefix << str << std::endl;
     Parser p(str);
     try
     {
         Expression e = p.parse_logical_expression();
-        e.print();
+        //e.print();
+        (void)e;
     }
-    catch (...)
+    catch (const std::exception& e)
     {
+        std::cerr << std::string(prefix.size(), ' ') << e.what() << std::endl;
         
     }
-    std::cout << std::endl << std::endl;
 }
+
+
+#define test(s) test_(__FILE__, __LINE__, s)
 
 
 #define ASSERT_TRUE(expr) if (!(expr)) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_TRUE(" << #expr << ")" << std::endl; }
@@ -645,11 +640,16 @@ int main()
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
 
-    test("ip src 1.2.3.244 and utp");
-
     test("ip6");
     test("ip6 src 1.2.3.4");
     test("ip6 src 1.2.3.244 and udp");
+
+    test("(ip)");
+    test("(ip) and (udp)");
+    test("(ip and udp) or (ip and tcp)");
+
+
+    test("(ip and udp) or (ip and tcp))");  // JUNK NOT DETECTED
 
 
     test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");

@@ -171,6 +171,18 @@ struct Parser
     {
     }
 
+    Expression parse()
+    {
+        auto result = parse_logical_expression();
+
+        if (!consume_eof())
+        {
+            return error("eof");
+        }
+
+        return result;
+    }
+
     Expression parse_logical_expression()
     {
         auto result = parse_unary_expression();
@@ -185,11 +197,7 @@ struct Parser
         }
         else
         {
-            if (*mText && !is_space(*mText) && *mText != ')')
-            {
-                return error("End of expression.");
-            }
-
+            consume_whitespace();
             return result;
         }
     }
@@ -339,6 +347,12 @@ struct Parser
                 return Expression::BPF(expr);
             }
         }
+    }
+
+    bool consume_eof()
+    {
+        consume_whitespace();
+        return is_eof();
     }
 
     bool is_eof() const
@@ -516,7 +530,7 @@ void test_(const char* file, int line, const char* str)
     Parser p(str);
     try
     {
-        Expression e = p.parse_logical_expression();
+        Expression e = p.parse();
         //e.print();
         (void)e;
     }
@@ -649,7 +663,9 @@ int main()
     test("(ip and udp) or (ip and tcp)");
 
 
-    test("(ip and udp) or (ip and tcp))");  // JUNK NOT DETECTED
+    test("(ip and udp) or (ip and tcp) x)");  // JUNK NOT DETECTED
+    test("(ip and udp) or (ip and tcp)  )");  // JUNK NOT DETECTED
+    test("(ip and udp) or (ip and tcp) z)");  // JUNK NOT DETECTED
 
 
     test("(ip and ip src 1.2.3.44 and udp) or (ip6 and tcp)");

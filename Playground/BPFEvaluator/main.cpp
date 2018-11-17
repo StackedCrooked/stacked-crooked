@@ -401,13 +401,14 @@ private:
         }
     }
 
-    void consume_flags(bpf_expression& expr)
+    bool consume_flags(bpf_expression& expr)
     {
         if (consume_token("ip src"))
         {
             if (consume_ip4(expr.src_ip))
             {
                 expr.add_flag(Flags_ip_src);
+                return true;
             }
         }
         else if (consume_token("ip dst"))
@@ -415,11 +416,13 @@ private:
             if (consume_ip4(expr.dst_ip))
             {
                 expr.add_flag(Flags_ip_dst);
+                return true;
             }
         }
         else if (consume_token("ip"))
         {
             expr.add_flag(Flags_ip);
+                return true;
         }
         else if (consume_token("udp src port"))
         {
@@ -428,6 +431,7 @@ private:
             {
                 expr.add_flag(Flags_udp_src);
                 expr.src_port = n;
+                return true;
             }
         }
         else if (consume_token("udp dst port"))
@@ -437,19 +441,29 @@ private:
             {
                 expr.add_flag(Flags_udp_dst);
                 expr.dst_port = n;
+                return true;
             }
         }
         else if (consume_token("udp"))
         {
             expr.add_flag(Flags_udp);
+            return true;
         }
+        return false;
     }
 
     Expression parse_bpf_expression()
     {
         bpf_expression expr;
 
-        consume_flags(expr);
+        if (!consume_flags(expr))
+        {
+            if (consume_eof())
+            {
+                return error("binary operand");
+            }
+            return error("bpf expression");
+        }
 
         return Expression::BPF(expr);
     }
@@ -670,6 +684,9 @@ void test_(const char* file, int line, const char* str)
 int main()
 {
     test("ip");
+    test("ip and");
+    test("ip and 1");
+    test("ip and -");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
     test("ip src 1.2.3.244 and rpg");

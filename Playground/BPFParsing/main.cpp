@@ -204,11 +204,11 @@ private:
 
     Expression parse_unary_expression()
     {
-        if (consume_text("("))
+        if (consume_token("("))
         {
             auto result = parse_logical_expression();
 
-            if (!consume_text(")"))
+            if (!consume_token(")"))
             {
                 return error("')'");
             }
@@ -233,7 +233,7 @@ private:
         }
         else if (consume_token("len"))
         {
-            if (!consume_text("==") && !consume_text("="))
+            if (!consume_token("==") && !consume_token("="))
             {
                 return error("equal sign ('=')");
             }
@@ -255,7 +255,7 @@ private:
     {
         bpf_expression expr;
 
-        if (consume_text("ip"))
+        if (consume_token("ip"))
         {
             expr.protocol = "ip";
             if (consume_text("6"))
@@ -366,7 +366,6 @@ private:
 
     bool consume_text(const char* token)
     {
-        consume_whitespace();
         return consume_text_impl(token, strlen(token));
     }
 
@@ -417,11 +416,6 @@ private:
     bool is_alpha(char c) const
     {
         return is_lcase(c) || is_ucase(c);
-    }
-
-    bool is_delim(char c) const
-    {
-        return is_space(c) || is_eof() || c == ')';
     }
 
     bool is_lcase(char c) const

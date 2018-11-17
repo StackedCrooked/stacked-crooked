@@ -718,6 +718,12 @@ int main()
 
 
     PacketInfo info = PacketInfo();
+    info.flags |= Flags_ip;
+    info.flags |= Flags_ip_src;
+    info.flags |= Flags_ip_dst;
+    info.flags |= Flags_udp;
+    info.flags |= Flags_udp_src;
+    info.flags |= Flags_udp_dst;
     RxPacket rx_packet = RxPacket();
 
     rx_packet.mIPv4Header.src_ip = IPv4Address(1, 1, 1, 1);

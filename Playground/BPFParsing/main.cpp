@@ -185,7 +185,9 @@ struct Parser
         }
         else
         {
-            if (*mText && !is_space(*mText) && *mText != ')')
+            consume_whitespace();
+
+            if (!is_end_of_expression())
             {
                 return error("Junk at end of expression", "End of expression.");
             }
@@ -346,6 +348,11 @@ struct Parser
         return *mText == '\0';
     }
 
+    bool is_end_of_expression() const
+    {
+        return is_eof() || *mText == ')';
+    }
+
     void consume_whitespace()
     {
         while (is_space(*mText))
@@ -393,26 +400,23 @@ struct Parser
         return true;
     }
 
-    bool consume_int(int& n) // TODO: FR: consider overflow
+    int to_digit(char c)
+    {
+        return c - '0';
+    }
+
+    bool consume_int(int& n)
     {
         consume_whitespace();
 
-        if (!is_digit(*mText))
+        auto backup = mText;
+
+        while (is_digit(*mText))
         {
-            return false;
+            n = 10 * n + to_digit(*mText++);
         }
 
-        for (;;)
-        {
-            n = (10 * n) + (*mText++ - '0');
-
-            if (!is_digit(*mText))
-            {
-                break;
-            }
-        }
-
-        return true;
+        return mText != backup;
     }
 
     bool is_alnum(char c) const

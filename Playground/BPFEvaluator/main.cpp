@@ -327,7 +327,7 @@ struct Parser
 
         if (!consume_eof())
         {
-            return error("eof");
+            return error("eof or binary operator", mText);
         }
 
         return result;
@@ -360,7 +360,7 @@ private:
 
             if (!consume_token(")"))
             {
-                return error("')'");
+                return error("')'", mText);
             }
 
             return result;
@@ -385,13 +385,13 @@ private:
         {
             if (!consume_token("==") && !consume_token("="))
             {
-                return error("equal sign ('=')");
+                return error("equal sign ('=')", mText);
             }
 
             int len = 0;
             if (!consume_int(len))
             {
-                return error("digit");
+                return error("digit", mText);
             }
             return Expression::Length(len);
         }
@@ -462,7 +462,7 @@ private:
             {
                 return error("binary operand");
             }
-            return error("bpf expression");
+            return error("bpf expression", mText);
         }
 
         return Expression::BPF(expr);
@@ -647,9 +647,14 @@ private:
         return true;
     }
 
-    Expression error(std::string expected = "")
+    Expression error(std::string expected = "", std::string got = "")
     {
-        throw std::runtime_error(std::string(mText - mOriginal, ' ') + "^--- Expected: " + expected);
+        if (!got.empty())
+        {
+            throw std::runtime_error(std::string(mText - mOriginal, ' ') + "^--- Got \"" + got + "\" when expecting " + expected);
+        }
+
+        throw std::runtime_error(std::string(mText - mOriginal, ' ') + "^--- Expected " + expected);
     }
 
     const char* const mOriginal;
@@ -664,6 +669,7 @@ void test_(const char* file, int line, const char* str)
     try
     {
         Expression e = p.parse();
+        std::cout << prefix << str << std::endl;
         //e.print();
         (void)e;
     }

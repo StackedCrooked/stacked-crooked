@@ -183,31 +183,21 @@ struct Parser
         {
             return Expression::Or(result, parse_logical_expression());
         }
+        else if (consume_end_of_expression())
+        {
+            return result;
+        }
         else
         {
-            consume_whitespace();
-
-            if (!is_end_of_expression())
-            {
-                return error("Junk at end of expression", "End of expression.");
-            }
-
-            return result;
+            return error("Junk at end of expression", "End of expression.");
         }
     }
 
     Expression parse_unary_expression()
     {
-        if (consume_text("("))
+        if (consume_operator("("))
         {
-            auto result = parse_logical_expression();
-
-            if (!consume_text(")"))
-            {
-                return error("Invalid unary expression", "closing parenthesis (\")\"))");
-            }
-
-            return result;
+            return parse_logical_expression();
         }
         else
         {
@@ -348,8 +338,9 @@ struct Parser
         return *mText == '\0';
     }
 
-    bool is_end_of_expression() const
+    bool consume_end_of_expression()
     {
+        consume_whitespace();
         return is_eof() || *mText == ')';
     }
 
@@ -359,6 +350,21 @@ struct Parser
         {
             ++mText;
         }
+    }
+
+    bool consume_operator(const char* op)
+    {
+        return consume_operator_impl(op, strlen(op));
+    }
+
+    bool consume_operator_impl(const char* op, int len)
+    {
+        if (!strncmp(mText, op, len))
+        {
+            mText += len;
+            return true;
+        }
+        return false;
     }
 
     bool consume_text(const char* token)
@@ -642,6 +648,8 @@ int main()
     test("ip");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
+
+    test("ip src 1.2.3.244 and utp");
 
     test("ip6");
     test("ip6 src 1.2.3.4");

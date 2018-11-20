@@ -193,11 +193,11 @@ struct Parser
     {
         auto result = parse_unary_expression();
 
-        if (consume_token("and"))
+        if (consume_token("and") || consume_text("&&"))
         {
             return Expression::And(result, parse_logical_expression());
         }
-        else if (consume_token("or"))
+        else if (consume_token("or") || consume_text("||"))
         {
             return Expression::Or(result, parse_logical_expression());
         }
@@ -545,7 +545,7 @@ void test_(const char* file, int line, const char* str)
     try
     {
         Expression e = p.parse();
-        //e.print();
+        e.print();
         (void)e;
     }
     catch (const std::exception& e)
@@ -581,6 +581,8 @@ int main()
     test("ip");
     test("ipandudp");
     test("ip and udp");
+    test("ip && udp");
+    test("ip&&udp"); // no spaces needed around '&&'
     test("(ip and udp)");
     test("(ip) and (udp)");
     test("((ip) and (udp))");

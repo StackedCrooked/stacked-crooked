@@ -183,7 +183,7 @@ struct Parser
 
         if (!consume_eof())
         {
-            return error("eof");
+            return error("binary operator or eof");
         }
 
         return result;
@@ -336,7 +336,7 @@ struct Parser
         num_parts += consume_id(expr);
         if (num_parts == 0)
         {
-            return error("bpf_expression");
+            return error("expression");
         }
         return Expression::BPF(expr);
     }
@@ -586,8 +586,13 @@ int main()
     test("(ip and udp)");
     test("(ip) and (udp)");
     test("((ip) and (udp))");
+    test("ip a");
+    test("ip an");
     test("ip and");
-    test("ip and [");
+    test("ip and (");
+    test("ip and (udp");
+    test("ip and (udp)");
+    test("ip and (udp))");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
     test("ip src 1.2.3.244 and rpg");

@@ -168,7 +168,8 @@ struct Parser
 {
     explicit Parser(const char* text) :
         mOriginal(text),
-        mText(text)
+        mText(text),
+        mEnd(mOriginal + strlen(text))
     {
     }
 
@@ -364,26 +365,17 @@ struct Parser
     {
         consume_whitespace();
 
-        auto buffer = std::array<char, 128>();
-        int buffer_length = 0;
-
-        if (sscanf(mText, "%[a-z0-9]%n", buffer.data(), &buffer_length) != 1)
+        if (!consume_text(token))
         {
             return false;
         }
 
-        if (buffer_length != static_cast<int>(strlen(token)))
+        if (is_alnum(*mText))
         {
             return false;
         }
 
-        if (!strncmp(token, buffer.data(), buffer_length))
-        {
-            mText += buffer_length;
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     bool consume_text(const char* token)
@@ -394,6 +386,11 @@ struct Parser
 
     bool consume_text_impl(const char* token, int len)
     {
+        if (len > static_cast<int>(mEnd - mText))
+        {
+            return false;
+        }
+
         if (!strncmp(mText, token, len))
         {
             mText += len;
@@ -534,6 +531,7 @@ struct Parser
 
     const char* const mOriginal;
     const char* mText;
+    const char* mEnd;
 };
 
 

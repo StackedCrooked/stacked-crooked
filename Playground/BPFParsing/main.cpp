@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <array>
 #include <vector>
 
 
@@ -173,6 +174,11 @@ struct Parser
 
     Expression parse()
     {
+        if (consume_eof())
+        {
+            return Expression::Boolean(true);
+        }
+
         auto result = parse_logical_expression();
 
         if (!consume_eof())
@@ -183,7 +189,6 @@ struct Parser
         return result;
     }
 
-private:
     Expression parse_logical_expression()
     {
         auto result = parse_unary_expression();
@@ -251,98 +256,89 @@ private:
         }
     }
 
-    Expression parse_bpf_expression()
+    bool consume_protocol(bpf_expression& expr)
     {
-        bpf_expression expr;
-
-        if (consume_text("ip"))
+        if (consume_token("ip"))
         {
             expr.protocol = "ip";
-            if (consume_text("6"))
-            {
-                expr.protocol = "ip6";
-            }
-
-            if (consume_token("src"))
-            {
-                expr.direction = "src";
-
-                std::string ip;
-                if (!consume_ip4(ip))
-                {
-                    return error("IP");
-                }
-
-                expr.id = ip;
-                return Expression::BPF(expr);
-            }
-            else if (consume_token("dst"))
-            {
-                expr.direction = "dst";
-
-                if (!consume_ip4(expr.id))
-                {
-                    return error("IP");
-                }
-
-                return Expression::BPF(expr);
-            }
-            else
-            {
-                return Expression::BPF(expr);
-            }
+            return true;
+        }
+        else if (consume_token("ip6"))
+        {
+            expr.protocol = "ip6";
+            return true;
+        }
+        else if (consume_token("udp"))
+        {
+            expr.protocol = "udp";
+            return true;
+        }
+        else if (consume_token("tcp"))
+        {
+            expr.protocol = "tcp";
+            return true;
         }
         else
         {
-            if (consume_token("udp"))
-            {
-                expr.protocol = "udp";
-            }
-            else if (consume_token("tcp"))
-            {
-                expr.protocol = "tcp";
-            }
-            else
-            {
-                return error("tcp or udp");
-            }
-
-            if (consume_token("src"))
-            {
-                expr.direction = "src";
-                if (consume_token("port"))
-                {
-                    int port = 0;
-                    if (consume_int(port))
-                    {
-                        expr.id = std::to_string(port);
-                        return Expression::BPF(expr);
-                    }
-                    return error("integer");
-                }
-
-                return error("port");
-            }
-            else if (consume_token("dst"))
-            {
-                expr.direction = "dst";
-                if (consume_token("port"))
-                {
-                    int port = 0;
-                    if (consume_int(port))
-                    {
-                        expr.id = std::to_string(port);
-                        return Expression::BPF(expr);
-                    }
-                    return error("integer");
-                }
-                return error("port");
-            }
-            else
-            {
-                return Expression::BPF(expr);
-            }
+            return false;
         }
+    }
+
+    bool consume_direction(bpf_expression& expr)
+    {
+        if (consume_token("src"))
+        {
+            expr.direction = "src";
+            return true;
+        }
+        else if (consume_token("dst"))
+        {
+            expr.direction = "dst";
+            return true;
+        }
+        return false;
+    }
+
+    bool consume_type(bpf_expression& expr)
+    {
+        if (consume_token("port"))
+        {
+            expr.type = "port";
+            return true;
+        }
+        return false;
+    }
+
+    bool consume_id(bpf_expression& expr)
+    {
+        if (consume_ip4(expr.id))
+        {
+            return true;
+        }
+
+        int n;
+        if (consume_int(n))
+        {
+            expr.id = std::to_string(n);
+            return true;
+        }
+
+        return false;
+    }
+
+    Expression parse_bpf_expression()
+    {
+        bpf_expression expr;
+        auto num_parts = 0;
+        num_parts += consume_protocol(expr);
+        num_parts += consume_direction(expr);
+        num_parts += consume_type(expr);
+        num_parts += consume_id(expr);
+        if (num_parts == 0)
+        {
+            return error("bpf_expression");
+        }
+        return Expression::BPF(expr);
     }
 
     bool consume_eof()
@@ -364,6 +360,32 @@ private:
         }
     }
 
+    bool consume_token(const char* token)
+    {
+        consume_whitespace();
+
+        auto buffer = std::array<char, 128>();
+        int buffer_length = 0;
+
+        if (sscanf(mText, "%[a-z0-9]%n", buffer.data(), &buffer_length) != 1)
+        {
+            return false;
+        }
+
+        if (buffer_length != static_cast<int>(strlen(token)))
+        {
+            return false;
+        }
+
+        if (!strncmp(token, buffer.data(), buffer_length))
+        {
+            mText += buffer_length;
+            return true;
+        }
+
+        return false;
+    }
+
     bool consume_text(const char* token)
     {
         consume_whitespace();
@@ -379,12 +401,6 @@ private:
         }
 
         return false;
-    }
-
-    bool consume_token(const char* token)
-    {
-        consume_whitespace();
-        return consume_text(token);
     }
 
     bool consume_int(int& n) // TODO: FR: consider overflow
@@ -544,10 +560,32 @@ void test_(const char* file, int line, const char* str)
 
 
 #define ASSERT_TRUE(expr) if (!(expr)) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_TRUE(" << #expr << ")" << std::endl; }
+#define ASSERT_FALSE(expr) if (expr) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_TRUE(" << #expr << ")" << std::endl; }
 #define ASSERT_EQ(x, y) if (x != y) { std::cerr << __FILE__ << ":" << __LINE__ << ": Assertion failure: ASSERT_EQ(" << #x << "(" << x << "), " << #y << "(" << y << "))\n"; }
 int main()
 {
+    {
+        Parser p("ip6");
+        ASSERT_TRUE(p.consume_token("ip6"));
+    }
+    {
+        Parser p("ip6");
+        ASSERT_FALSE(p.consume_token("ip"));
+    }
+    {
+        Parser p("ip6");
+        ASSERT_FALSE(p.consume_token("ip64"));
+    }
+
+    test("");
     test("ip");
+    test("ipandudp");
+    test("ip and udp");
+    test("(ip and udp)");
+    test("(ip) and (udp)");
+    test("((ip) and (udp))");
+    test("ip and");
+    test("ip and [");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
     test("ip src 1.2.3.244 and rpg");

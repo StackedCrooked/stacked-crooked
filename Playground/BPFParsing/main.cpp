@@ -367,6 +367,8 @@ struct Parser
     {
         consume_whitespace();
 
+        auto backup = mText;
+
         if (!consume_text(token))
         {
             return false;
@@ -374,6 +376,7 @@ struct Parser
 
         if (is_alnum(*mText))
         {
+            mText = backup;
             return false;
         }
 

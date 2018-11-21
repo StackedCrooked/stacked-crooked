@@ -111,8 +111,8 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     {
         IPv4Address src_ip(1, 1, 1, 1);
         IPv4Address dst_ip(1, 1, 1, 1);
-        uint16_t src_port = i % num_flows;
-        uint16_t dst_port = i % num_flows;
+        uint16_t src_port = 1001 + i % num_flows;
+        uint16_t dst_port = 2001 + i % num_flows;
         packets.push_back(Packet(ProtocolId::TCP, src_ip, dst_ip, src_port, dst_port));
     }
 
@@ -120,8 +120,8 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     {
         IPv4Address src_ip(1, 1, 1, 1);
         IPv4Address dst_ip(1, 1, 1, 1);
-        uint16_t src_port = i % num_flows;
-        uint16_t dst_port = i % num_flows;
+        uint16_t src_port = 1001 + i % num_flows;
+        uint16_t dst_port = 2001 + i % num_flows;
         flows.push_back(Flow<FilterType>(ProtocolId::TCP, src_ip, dst_ip, src_port, dst_port));
     }
 

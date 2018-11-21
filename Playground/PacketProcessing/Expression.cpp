@@ -40,7 +40,3 @@ std::string Expression::indent(int level)
     }
     return result;
 }
-
-
-
-

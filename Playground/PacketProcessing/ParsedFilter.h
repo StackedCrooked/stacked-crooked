@@ -16,11 +16,9 @@ struct ParsedFilter
 
     bool match(const uint8_t* packet_data, uint32_t len) const
     {
-
         // TODO: FR: Caller must provide these values.
         auto l3_offset = sizeof(EthernetHeader);
-        auto l4_offset = sizeof(IPv4Header);
-
+        auto l4_offset = l3_offset + sizeof(IPv4Header);
 
         return mExpression.match(packet_data, len, l3_offset, l4_offset);
     }

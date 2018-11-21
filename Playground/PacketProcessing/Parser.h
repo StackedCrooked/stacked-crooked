@@ -131,7 +131,6 @@ struct Parser
         }
         else if (consume_token("ip6"))
         {
-            std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__;
             throw std::runtime_error("TODO: IP6");
         }
         else if (consume_token("udp"))
@@ -143,6 +142,7 @@ struct Parser
                 {
                     return Expression::bpf_src_port(n);
                 }
+                return error("port number");
             }
             else if (consume_token("dst port"))
             {
@@ -151,6 +151,7 @@ struct Parser
                 {
                     return Expression::bpf_dst_port(n);
                 }
+                return error("port number");
             }
             else if (consume_token("port"))
             {
@@ -159,6 +160,7 @@ struct Parser
                 {
                     return Expression::bpf_src_or_dst_port(n);
                 }
+                return error("port number");
             }
             else
             {
@@ -174,6 +176,7 @@ struct Parser
                 {
                     return Expression::bpf_src_port(n);
                 }
+                return error("port number");
             }
             else if (consume_token("dst port"))
             {
@@ -182,6 +185,7 @@ struct Parser
                 {
                     return Expression::bpf_dst_port(n);
                 }
+                return error("port number");
             }
             else if (consume_token("port"))
             {
@@ -190,6 +194,7 @@ struct Parser
                 {
                     return Expression::bpf_src_or_dst_port(n);
                 }
+                return error("port number");
             }
             else
             {
@@ -201,12 +206,9 @@ struct Parser
             consume_whitespace();
             if (consume_text("udp["))
             {
-                std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__;
                 throw std::runtime_error("TODO: UDP payload");
             }
         }
-
-        std::cout << __FILE__ << ":" << __LINE__ << ": Invalid filter: " << mText << std::endl;
 
         throw std::runtime_error("Invalid filter");
     }

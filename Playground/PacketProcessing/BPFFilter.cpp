@@ -6,6 +6,8 @@
 
 std::string BPFFilter::generate_bpf_filter_string(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
 {
+    assert(dst_port != 0);
+    assert(src_port != 0);
     const char* protocol_str = protocol == ProtocolId::TCP ? "tcp" : protocol == ProtocolId::UDP ? "udp" : "(unknown)";
 
     std::stringstream ss;

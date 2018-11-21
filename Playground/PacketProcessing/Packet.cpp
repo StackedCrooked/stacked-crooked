@@ -4,6 +4,11 @@
 Packet::Packet(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
     mStorage()
 {
+
+    assert(src_port >= 100 && src_port <= 10000);
+    assert(dst_port >= 100 && dst_port <= 10000);
+
+
     auto eth_header = EthernetHeader::Create(EtherType::IPv4);
     memcpy(mStorage.data(), &eth_header, sizeof(eth_header));
 

@@ -82,6 +82,7 @@ struct Net16
     uint16_t hostValue() const { return ntohs(mValue); }
 
     friend bool operator==(Net16 lhs, Net16 rhs) { return lhs.mValue == rhs.mValue; }
+    friend bool operator!=(Net16 lhs, Net16 rhs) { return lhs.mValue != rhs.mValue; }
     friend bool operator<(Net16 lhs, Net16 rhs) { return lhs.hostValue() < rhs.hostValue(); }
     friend std::ostream& operator<<(std::ostream& os, Net16 net16);
 

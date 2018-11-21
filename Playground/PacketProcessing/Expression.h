@@ -146,11 +146,14 @@ struct SourceOrDestinationIPv4 : BPFExpression
 
 struct SourcePort : BPFExpression
 {
-    explicit SourcePort(uint16_t value) : mValue(value) {}
+    explicit SourcePort(uint16_t value) : mValue(value)
+    {
+    }
 
     bool match_impl(const uint8_t* data, uint32_t /*size*/, uint32_t /*l3_offset*/, uint32_t l4_offset) const override final
     {
-        return Decode<TCPHeader>(data + l4_offset).mSourcePort == mValue;
+        auto src_port = Decode<TCPHeader>(data + l4_offset).mSourcePort;
+        return src_port == mValue;
     }
 
     std::string toStringImpl() const override final
@@ -164,7 +167,9 @@ struct SourcePort : BPFExpression
 
 struct DestinationPort : BPFExpression
 {
-    explicit DestinationPort(uint16_t value) : mValue(value) {}
+    explicit DestinationPort(uint16_t value) : mValue(value)
+    {
+    }
 
     bool match_impl(const uint8_t* data, uint32_t /*size*/, uint32_t /*l3_offset*/, uint32_t l4_offset) const override final
     {
@@ -329,7 +334,11 @@ struct Expression
             }
             case Type::Length:
             {
-                return static_cast<int32_t>(size) == mValue;
+                if (static_cast<int32_t>(size) != mValue)
+                {
+                    return false;
+                }
+                return true;
             }
             case Type::BPF:
             {

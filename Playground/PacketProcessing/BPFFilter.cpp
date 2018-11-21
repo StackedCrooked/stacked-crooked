@@ -1,4 +1,5 @@
 #include "BPFFilter.h"
+#include <cassert>
 #include <cstdint>
 #include <sstream>
 #include <iostream>

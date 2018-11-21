@@ -1,4 +1,5 @@
 #include "Packet.h"
+#include <cassert>
 
 
 Packet::Packet(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :

@@ -5,6 +5,7 @@
 #include "Networking.h"
 #include "Utils.h"
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 

@@ -334,7 +334,7 @@ struct Parser
             return true;
         }
 
-        int n;
+        int n = 0;
         if (consume_int(n))
         {
             expr.id = std::to_string(n);

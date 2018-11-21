@@ -13,6 +13,7 @@
 #include "VectorFilter.h"
 #include "BPFFilter.h"
 #include "MaskFilter.h"
+#include "ParsedFilter.h"
 #include "Packet.h"
 #include "PCAPWriter.h"
 #include <boost/functional/hash.hpp>
@@ -25,7 +26,7 @@
 template<typename FilterType>
 struct FlowImpl
 {
-    FlowImpl(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port) :
+    FlowImpl(ProtocolId protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port) :
         mFilter(protocol, source_ip, target_ip, src_port, dst_port),
         mHash(0)
     {
@@ -36,10 +37,10 @@ struct FlowImpl
         boost::hash_combine(mHash, dst_port);
     }
 
-    bool match(const uint8_t* frame_bytes, int len) const
+    bool match(const uint8_t* frame_bytes, int len, uint32_t l3_offset, uint32_t l4_offset) const
     {
         // avoid unpredictable branch here.
-        return mFilter.match(frame_bytes, len);
+        return mFilter.match(frame_bytes, len, l3_offset, l4_offset);
     }
 
     std::size_t hash() const
@@ -91,7 +92,7 @@ struct Flows
         return mFlows.empty();
     }
 
-    void add_flow(uint8_t protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
+    void add_flow(ProtocolId protocol, IPv4Address source_ip, IPv4Address target_ip, uint16_t src_port, uint16_t dst_port)
     {
         auto flow_index = mFlows.size();
         mFlows.emplace_back(protocol, source_ip, target_ip, src_port, dst_port);
@@ -130,6 +131,8 @@ struct Flows
 
     void match(const Packet& packet, uint64_t* matches)
     {
+		const auto l3_offset = sizeof(EthernetHeader);
+		const auto l4_offset = l3_offset + sizeof(IPv4Header);
         auto ip4_header = Decode<IPv4Header>(packet.data() + sizeof(EthernetHeader));
         auto tcp_header = Decode<TCPHeader>(packet.data() + sizeof(EthernetHeader) + sizeof(IPv4Header));
 
@@ -145,7 +148,7 @@ struct Flows
         Bucket& flow_indexes = mHashTable[bucket_index];
         for (const uint32_t& flow_index : flow_indexes)
         {
-            if (mFlows[flow_index].match(packet.data(), packet.size()))
+            if (mFlows[flow_index].match(packet.data(), packet.size(), l3_offset, l4_offset))
             {
                 matches[flow_index]++;
                 break;
@@ -222,22 +225,22 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     Flows flows;
     flows.mFlows.reserve(num_flows);
 
-    const IPv4Address src_ip(1, 1, 1, 1);
-    const IPv4Address dst_ip(1, 1, 1, 1);
+    const IPv4Address src_ip(192, 168, 1, 1);
+    const IPv4Address dst_ip(192, 168, 1, 2);
 
 
     for (auto i = 1ul; i <= num_packets; ++i)
     {
-        uint16_t src_port = i % num_flows;
-        uint16_t dst_port = i % num_flows;
-        packets.emplace_back(6, src_ip, dst_ip, src_port, dst_port);
+        uint16_t src_port = 1001 + i % num_flows;
+        uint16_t dst_port = 2001 + i % num_flows;
+        packets.emplace_back(ProtocolId::TCP, src_ip, dst_ip, src_port, dst_port);
     }
 
     for (auto i = 1ul; i <= num_flows; ++i)
     {
-        uint16_t src_port = i % num_flows;
-        uint16_t dst_port = i % num_flows;
-        flows.add_flow(6, src_ip, dst_ip, src_port, dst_port);
+        uint16_t src_port = 1001 + i % num_flows;
+        uint16_t dst_port = 2001 + i % num_flows;
+        flows.add_flow(ProtocolId::TCP, src_ip, dst_ip, src_port, dst_port);
     }
 
     std::random_shuffle(packets.begin(), packets.end());

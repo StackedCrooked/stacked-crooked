@@ -33,7 +33,7 @@ endmacro(_add_target_2)
 # Helper for add_target
 macro(_add_target_1 filtertype prefetch)
     _add_target_2(simple ${filtertype} ${prefetch})
-    #_add_target_2(with-hash ${filtertype} ${prefetch})
+    _add_target_2(with-hash ${filtertype} ${prefetch})
 endmacro(_add_target_1)
 
 
@@ -48,5 +48,5 @@ endmacro(add_target)
 add_target(BPFFilter)
 add_target(MaskFilter)
 add_target(ParsedFilter)
-add_target(NativeFilter)
-add_target(VectorFilter)
+#add_target(NativeFilter)
+#add_target(VectorFilter)

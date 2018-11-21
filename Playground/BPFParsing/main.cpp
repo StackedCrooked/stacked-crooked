@@ -178,6 +178,7 @@ struct Parser
     {
         if (consume_eof())
         {
+            // Empty BPF returns "true" expression.
             return Expression::Boolean(true);
         }
 

@@ -10,7 +10,7 @@ struct NativeFilter
 {
     NativeFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
-    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
+    bool match(const uint8_t* packet_data, uint32_t /*len*/, uint32_t /*l3_offset*/, uint32_t /*l4_offset*/) const
     {
         const auto& ip_header = *reinterpret_cast<const IPv4Header*>(packet_data + sizeof(EthernetHeader));
         const auto& tcp_header = *reinterpret_cast<const TCPHeader*>(packet_data + sizeof(EthernetHeader) + sizeof(IPv4Header));

@@ -18,7 +18,7 @@ struct BPFFilter
 
     BPFFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
-    bool match(const uint8_t* data, uint32_t size) const
+    bool match(const uint8_t* data, uint32_t size, uint32_t /*l3_offset*/, uint32_t /*l4_offset*/) const
     {
         auto ip_data = data + sizeof(EthernetHeader);
         auto ip_size = size - sizeof(EthernetHeader);

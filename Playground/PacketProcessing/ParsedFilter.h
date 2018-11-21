@@ -14,12 +14,8 @@ struct ParsedFilter
     ParsedFilter(const std::string& bpf);
     ParsedFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
-    bool match(const uint8_t* packet_data, uint32_t len) const
+    bool match(const uint8_t* packet_data, uint32_t len, uint32_t l3_offset, uint32_t l4_offset) const
     {
-        // TODO: FR: Caller must provide these values.
-        auto l3_offset = sizeof(EthernetHeader);
-        auto l4_offset = l3_offset + sizeof(IPv4Header);
-
         return mExpression.match(packet_data, len, l3_offset, l4_offset);
     }
 

@@ -214,3 +214,4 @@ struct Parser
     const char* mText;
     const char* mEnd;
 };
+

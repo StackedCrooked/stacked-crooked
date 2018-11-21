@@ -11,8 +11,9 @@ struct MaskFilter
 {
     MaskFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
-    bool match(const uint8_t* packet_data, uint32_t /*len*/) const
+    bool match(const uint8_t* packet_data, uint32_t /*len*/, uint32_t /*l3_offset*/, uint32_t l4_offset) const
     {
+        auto offset = l4_offset + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(std::array<uint64_t, 2>);
         auto u64_data = Decode<std::array<uint64_t, 2>>(packet_data + offset);
 
         return (mFields[1] == (static_mask[1] & u64_data[1]))
@@ -20,8 +21,6 @@ struct MaskFilter
     }
 
 private:
-    enum { offset = sizeof(EthernetHeader) + sizeof(IPv4Header) + sizeof(uint16_t) + sizeof(uint16_t) - sizeof(std::array<uint64_t, 2>) };
-
     static std::array<uint64_t, 2> GetMask()
     {
         static const uint8_t mask_bytes[16] = {

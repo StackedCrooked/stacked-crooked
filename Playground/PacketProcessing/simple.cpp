@@ -29,10 +29,10 @@ struct Flow
     {
     }
 
-    bool match(const uint8_t* frame_bytes, int len) const
+    bool match(const uint8_t* frame_bytes, int len, uint32_t l3_offset, uint32_t l4_offset) const
     {
         // avoid unpredictable branch here.
-        return mFilter.match(frame_bytes, len);
+        return mFilter.match(frame_bytes, len, l3_offset, l4_offset);
     }
 
 private:
@@ -41,7 +41,7 @@ private:
 
 
 template<typename FilterType, uint32_t prefetch>
-void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint64_t* const matches)
+void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flows, uint32_t l3_offset, uint32_t l4_offset, uint64_t* const matches)
 {
     const uint32_t num_flows = flows.size();
     const auto start_time = Clock::now();
@@ -51,15 +51,16 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
     {
         const Packet& packet = packets[i];
 
+
         if (prefetch)
         {
-            __builtin_prefetch((&packet + prefetch)->data() + sizeof(EthernetHeader) + sizeof(IPv4Header), 0, 0);
+            __builtin_prefetch((&packet + prefetch)->data() + l4_offset, 0, 0);
         }
 
         for (auto flow_index = 0ul; flow_index != num_flows; ++flow_index)
         {
             comparisons++;
-            if (flows[flow_index].match(packet.data(), packet.size()))
+            if (flows[flow_index].match(packet.data(), packet.size(), l3_offset, l4_offset))
             {
                 matches[flow_index]++;
             }
@@ -94,7 +95,6 @@ void test(const std::vector<Packet>& packets, std::vector<Flow<FilterType>>& flo
     }
     std::cout << ")";
     #endif
-
 }
 
 
@@ -106,6 +106,9 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
 
     std::vector<Flow<FilterType>> flows;
     flows.reserve(num_flows);
+
+    auto l3_offset = sizeof(EthernetHeader);
+    auto l4_offset = l3_offset + sizeof(IPv4Header);
 
     for (auto i = 1ul; i <= num_packets; ++i)
     {
@@ -126,7 +129,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     }
 
     std::vector<uint64_t> matches(num_flows);
-    test<FilterType, prefetch>(packets, flows, matches.data());
+    test<FilterType, prefetch>(packets, flows, l3_offset, l4_offset, matches.data());
     std::cout << std::endl;
 
 }
@@ -150,3 +153,4 @@ int main()
     run<FILTERTYPE>();
     std::cout << std::endl;
 }
+

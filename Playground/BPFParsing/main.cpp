@@ -1,6 +1,7 @@
+#include <array>
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <array>
 #include <vector>
 
 
@@ -184,7 +185,7 @@ struct Parser
 
         if (!consume_eof())
         {
-            return error("binary operator or eof");
+            return error("binary operator or end of expression");
         }
 
         return result;
@@ -257,6 +258,21 @@ struct Parser
         }
     }
 
+    Expression parse_bpf_expression()
+    {
+        bpf_expression expr;
+        auto num_parts = 0;
+        num_parts += consume_protocol(expr);
+        num_parts += consume_direction(expr);
+        num_parts += consume_type(expr);
+        num_parts += consume_id(expr);
+        if (num_parts == 0)
+        {
+            return error("expression");
+        }
+        return Expression::BPF(expr);
+    }
+
     bool consume_protocol(bpf_expression& expr)
     {
         if (consume_token("ip"))
@@ -325,21 +341,6 @@ struct Parser
         }
 
         return false;
-    }
-
-    Expression parse_bpf_expression()
-    {
-        bpf_expression expr;
-        auto num_parts = 0;
-        num_parts += consume_protocol(expr);
-        num_parts += consume_direction(expr);
-        num_parts += consume_type(expr);
-        num_parts += consume_id(expr);
-        if (num_parts == 0)
-        {
-            return error("expression");
-        }
-        return Expression::BPF(expr);
     }
 
     bool consume_eof()
@@ -543,13 +544,13 @@ void test_(const char* file, int line, const char* str)
     try
     {
         Expression e = p.parse();
-        e.print();
+        //e.print();
         (void)e;
     }
     catch (const std::exception& e)
     {
         std::cerr << std::string(prefix.size(), ' ') << e.what() << std::endl;
-        
+
     }
 }
 

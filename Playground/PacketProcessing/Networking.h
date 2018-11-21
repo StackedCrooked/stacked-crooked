@@ -31,36 +31,36 @@ struct MACAddress
 
 struct IPv4Address
 {
-    IPv4Address() : mData() {}
+    IPv4Address() : mValue() {}
 
     IPv4Address(int a, int b, int c, int d)
     {
-        mData[0] = a;
-        mData[1] = b;
-        mData[2] = c;
-        mData[3] = d;
+		auto u8 = data();
+        u8[0] = a;
+        u8[1] = b;
+        u8[2] = c;
+        u8[3] = d;
     }
 
-    uint32_t toInteger() const
-    {
-        uint32_t result;
-        memcpy(&result, mData.data(), mData.size());
-        return result;
-    }
+
+    uint8_t& operator[](std::size_t i) { return data()[i]; }
+    const uint8_t& operator[](std::size_t i) const { return data()[i]; }
+
+    uint8_t* data() { return static_cast<uint8_t*>(static_cast<void*>(&mValue)); }
+    const uint8_t* data() const { return static_cast<const uint8_t*>(static_cast<const void*>(&mValue)); }
+
+	uint32_t size() const { return sizeof(mValue); }
+    uint32_t toInteger() const { return mValue; }
 
     friend bool operator==(IPv4Address lhs, IPv4Address rhs)
-    {
-        return lhs.toInteger() == rhs.toInteger();
-    }
+    { return lhs.mValue == rhs.mValue; }
 
     friend bool operator<(IPv4Address lhs, IPv4Address rhs)
-    {
-        return lhs.toInteger() < rhs.toInteger();
-    }
+    { return lhs.mValue < rhs.mValue; }
 
     friend std::ostream& operator<<(std::ostream& os, IPv4Address ip);
 
-    std::array<uint8_t, 4> mData;
+	uint32_t mValue;
 };
 
 
@@ -87,12 +87,18 @@ struct Net16
 };
 
 
+static constexpr uint16_t ARP   = 0x0806;
+static constexpr uint16_t IPv4  = 0x0800;
+static constexpr uint16_t VLAN  = 0x8100;
+static constexpr uint16_t IPv6  = 0x86DD;
+
+
 struct EthernetHeader
 {
     static EthernetHeader Create()
     {
         auto result = EthernetHeader();
-        result.mEtherType = Net16(0x0800);
+        result.mEtherType = Net16(IPv4);
         return result;
     }
 

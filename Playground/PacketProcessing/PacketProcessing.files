@@ -13,3 +13,7 @@ VectorFilter.cpp
 VectorFilter.h
 simple.cpp
 with-hash.cpp
+Expression.h
+Expression.cpp
+Parser.h
+Parser.cpp

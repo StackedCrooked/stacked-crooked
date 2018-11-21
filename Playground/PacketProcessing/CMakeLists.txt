@@ -8,6 +8,8 @@ set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
 include_directories(SYSTEM /usr/local/include /usr/include)
 
 set(PacketProcessing_SOURCES
+	Expression.cpp
+	Parser.cpp
     BPFFilter.cpp
     MaskFilter.cpp
     NativeFilter.cpp
@@ -30,7 +32,7 @@ endmacro(_add_target_2)
 # Helper for add_target
 macro(_add_target_1 filtertype prefetch)
     _add_target_2(simple ${filtertype} ${prefetch})
-    _add_target_2(with-hash ${filtertype} ${prefetch})
+    #_add_target_2(with-hash ${filtertype} ${prefetch})
 endmacro(_add_target_1)
 
 
@@ -42,7 +44,7 @@ macro(add_target filtertype)
 endmacro(add_target)
 
 
-#add_target(BPFFilter)
+add_target(BPFFilter)
 add_target(MaskFilter)
 #add_target(NativeFilter)
-add_target(VectorFilter)
+#add_target(VectorFilter)

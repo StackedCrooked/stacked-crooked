@@ -4,10 +4,10 @@
 
 std::ostream& operator<<(std::ostream& os, IPv4Address ip)
 {
-    return os << static_cast<int>(ip.mData[0]) << '.'
-              << static_cast<int>(ip.mData[1]) << '.'
-              << static_cast<int>(ip.mData[2]) << '.'
-              << static_cast<int>(ip.mData[3]);
+    return os << static_cast<int>(ip[0]) << '.'
+              << static_cast<int>(ip[1]) << '.'
+              << static_cast<int>(ip[2]) << '.'
+              << static_cast<int>(ip[3]);
 }
 
 

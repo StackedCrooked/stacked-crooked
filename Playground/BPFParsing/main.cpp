@@ -269,7 +269,7 @@ struct Parser
         num_parts += consume_id(expr);
         if (num_parts == 0)
         {
-            return error("expression");
+            return error("BPF expression");
         }
         return Expression::BPF(expr);
     }

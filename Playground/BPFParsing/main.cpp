@@ -598,8 +598,8 @@ int main()
     test("ip and (udp))");
     test("ip src 1.2.3.4");
     test("ip src 1.2.3.244 and udp");
-    test("ip src 1.2.3.244 and rpg");
-    test("ip src 1.2.3.24o and rpg");
+    test("ip src 1.2.3.244 and bla");
+    test("ip src 1.2.3.24o and bla");
 
     test("ip6");
     test("ip6 src 1.2.3.4");

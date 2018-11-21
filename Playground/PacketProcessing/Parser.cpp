@@ -192,3 +192,4 @@ bool Parser::consume_ip4(IPv4Address& ip)
 
     return true;
 }
+

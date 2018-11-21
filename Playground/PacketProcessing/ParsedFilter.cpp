@@ -7,6 +7,8 @@ ParsedFilter::ParsedFilter(const std::string& bpf) :
 {
     Parser p(bpf.c_str());
     mExpression = p.parse();
+
+    mExpression.print();
 }
 
 ParsedFilter::ParsedFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :

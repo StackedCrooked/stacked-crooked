@@ -10,6 +10,7 @@ include_directories(SYSTEM /usr/local/include /usr/include)
 set(PacketProcessing_SOURCES
 	Expression.cpp
 	Parser.cpp
+	ParsedFilter.cpp
     BPFFilter.cpp
     MaskFilter.cpp
     NativeFilter.cpp
@@ -46,5 +47,6 @@ endmacro(add_target)
 
 add_target(BPFFilter)
 add_target(MaskFilter)
+add_target(ParsedFilter)
 #add_target(NativeFilter)
 #add_target(VectorFilter)

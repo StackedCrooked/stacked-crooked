@@ -9,7 +9,7 @@
 
 struct Packet
 {
-    Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
+    Packet(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
     const uint8_t* data() const { return mStorage.data(); }
 

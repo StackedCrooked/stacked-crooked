@@ -9,7 +9,7 @@
 
 struct MaskFilter
 {
-    MaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
+    MaskFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
     bool match(const uint8_t* packet_data, uint32_t /*len*/) const
     {

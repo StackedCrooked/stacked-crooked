@@ -1,4 +1,8 @@
+#pragma once
+
+
 #include "Expression.h"
+#include "Networking.h"
 #include <cstring>
 #include <string>
 
@@ -17,7 +21,7 @@ struct Parser
         if (consume_eof())
         {
             // Empty BPF returns "true" expression.
-            return Expression::Boolean(true);
+            return Expression::True();
         }
 
         auto result = parse_logical_expression();
@@ -69,15 +73,7 @@ struct Parser
 
     Expression parse_attribute()
     {
-        if (consume_token("true"))
-        {
-            return Expression::Boolean(true);
-        }
-        else if (consume_token("false"))
-        {
-            return Expression::Boolean(false);
-        }
-        else if (consume_token("len"))
+        if (consume_token("len"))
         {
             if (!consume_text("==") && !consume_text("="))
             {
@@ -99,87 +95,120 @@ struct Parser
 
     Expression parse_bpf_expression()
     {
-        bpf_expression expr;
-        auto num_parts = 0;
-        num_parts += consume_protocol(expr);
-        num_parts += consume_direction(expr);
-        num_parts += consume_type(expr);
-        num_parts += consume_id(expr);
-        if (num_parts == 0)
-        {
-            return error("BPF expression");
-        }
-        return Expression::BPF(expr);
-    }
-
-    bool consume_protocol(bpf_expression& expr)
-    {
         if (consume_token("ip"))
         {
-            expr.protocol = "ip";
-            return true;
+            if (consume_token("src"))
+            {
+                IPv4Address ip;
+                if (consume_ip4(ip))
+                {
+                    return Expression::bpf_src_ip(ip);
+                }
+                return error("Valid IPv4 address");
+            }
+            else if (consume_token("dst"))
+            {
+                IPv4Address ip;
+                if (consume_ip4(ip))
+                {
+                    return Expression::bpf_dst_ip(ip);
+                }
+                return error("Valid IPv4 address");
+            }
+            else if (consume_token("host"))
+            {
+                IPv4Address ip;
+                if (consume_ip4(ip))
+                {
+                    return Expression::bpf_src_or_dst_ip(ip);
+                }
+                return error("Valid IPv4 address");
+            }
+            else
+            {
+                return Expression::bpf_l3_type(EtherType::IPv4);
+            }
         }
         else if (consume_token("ip6"))
         {
-            expr.protocol = "ip6";
-            return true;
+            std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__;
+            throw std::runtime_error("TODO: IP6");
         }
         else if (consume_token("udp"))
         {
-            expr.protocol = "udp";
-            return true;
+            if (consume_token("src port"))
+            {
+                int n = 0;
+                if (consume_int(n))
+                {
+                    return Expression::bpf_src_port(n);
+                }
+            }
+            else if (consume_token("dst port"))
+            {
+                int n = 0;
+                if (consume_int(n))
+                {
+                    return Expression::bpf_dst_port(n);
+                }
+            }
+            else if (consume_token("port"))
+            {
+                int n = 0;
+                if (consume_int(n))
+                {
+                    return Expression::bpf_src_or_dst_port(n);
+                }
+            }
+            else
+            {
+                return Expression::bpf_l4_type(ProtocolId::UDP);
+            }
         }
         else if (consume_token("tcp"))
         {
-            expr.protocol = "tcp";
-            return true;
+            if (consume_token("src port"))
+            {
+                int n = 0;
+                if (consume_int(n))
+                {
+                    return Expression::bpf_src_port(n);
+                }
+            }
+            else if (consume_token("dst port"))
+            {
+                int n = 0;
+                if (consume_int(n))
+                {
+                    return Expression::bpf_dst_port(n);
+                }
+            }
+            else if (consume_token("port"))
+            {
+                int n = 0;
+                if (consume_int(n))
+                {
+                    return Expression::bpf_src_or_dst_port(n);
+                }
+            }
+            else
+            {
+                return Expression::bpf_l4_type(ProtocolId::TCP);
+            }
         }
         else
         {
-            return false;
-        }
-    }
-
-    bool consume_direction(bpf_expression& expr)
-    {
-        if (consume_token("src"))
-        {
-            expr.direction = "src";
-            return true;
-        }
-        else if (consume_token("dst"))
-        {
-            expr.direction = "dst";
-            return true;
-        }
-        return false;
-    }
-
-    bool consume_type(bpf_expression& expr)
-    {
-        if (consume_token("port"))
-        {
-            expr.type = "port";
-            return true;
-        }
-        return false;
-    }
-
-    bool consume_id(bpf_expression& expr)
-    {
-        if (consume_ip4(expr.id))
-        {
-            return true;
+            consume_whitespace();
+            if (consume_text("udp["))
+            {
+                std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__;
+                throw std::runtime_error("TODO: UDP payload");
+            }
         }
 
-        int n = 0;
-        if (consume_int(n))
-        {
-            expr.id = std::to_string(n);
-            return true;
-        }
+        std::cout << __FILE__ << ":" << __LINE__ << ": Invalid filter: " << mText << std::endl;
 
-        return false;
+        throw std::runtime_error("Invalid filter");
     }
 
     bool consume_eof()
@@ -300,7 +329,7 @@ struct Parser
         return c == ' ' || c == '\t' || c == '\n' || c == '\r';
     }
 
-    bool consume_ip4(std::string& s)
+    bool consume_ip4(IPv4Address& ip)
     {
         consume_whitespace();
 
@@ -363,7 +392,11 @@ struct Parser
             return false;
         }
 
-        s = std::string(backup, mText);
+        ip[0] = a;
+        ip[1] = b;
+        ip[2] = c;
+        ip[3] = d;
+
         return true;
     }
 

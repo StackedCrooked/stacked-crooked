@@ -2,10 +2,11 @@
 #include <iostream>
 
 
-void Expression::print_bool(int level) const
+void Expression::print_true(int level) const
 {
-    std::cout << indent(level) << "<bpf>" << (mValue ? "true" : "false") << "</bpf>\n";
+    std::cout << indent(level) << "<true/>\n";
 }
+
 
 void Expression::print_length(int level) const
 {
@@ -15,7 +16,7 @@ void Expression::print_length(int level) const
 
 void Expression::print_bpf(int level) const
 {
-    std::cout << indent(level) << "<bpf>" << mBPF.toString() << "</bpf>\n";
+    std::cout << indent(level) << "<bpf>" << mBPF->toString() << "</bpf>\n";
 }
 
 
@@ -39,3 +40,7 @@ std::string Expression::indent(int level)
     }
     return result;
 }
+
+
+
+

@@ -1,13 +1,13 @@
 #include "MaskFilter.h"
 
 
-MaskFilter::MaskFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+MaskFilter::MaskFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
 {
     // Composite of IPv4 + TCP/UDP header fields from TTL to DestinationPort.
     struct TransportHeader
     {
         uint8_t ttl;
-        uint8_t protocol;
+        ProtocolId protocol;
         uint16_t checksum;
         IPv4Address src_ip = IPv4Address();
         IPv4Address dst_ip = IPv4Address();

@@ -8,12 +8,11 @@
 #include <arpa/inet.h>
 
 
+
 template<typename T>
-inline T Decode(const uint8_t* data)
+inline const T& Decode(const uint8_t* data)
 {
-    auto result = T();
-    memcpy(&result, data, sizeof(result));
-    return result;
+    return *reinterpret_cast<const T*>(data);
 }
 
 
@@ -42,6 +41,7 @@ struct IPv4Address
         u8[3] = d;
     }
 
+    bool try_parse(const char* s);
 
     uint8_t& operator[](std::size_t i) { return data()[i]; }
     const uint8_t& operator[](std::size_t i) const { return data()[i]; }
@@ -51,6 +51,7 @@ struct IPv4Address
 
 	uint32_t size() const { return sizeof(mValue); }
     uint32_t toInteger() const { return mValue; }
+    std::string toString() const;
 
     friend bool operator==(IPv4Address lhs, IPv4Address rhs)
     { return lhs.mValue == rhs.mValue; }
@@ -66,7 +67,7 @@ struct IPv4Address
 
 struct Net16
 {
-    Net16() : mValue() {}
+    Net16() = default;
 
     explicit Net16(uint16_t value) :
         mValue(htons(value))
@@ -82,23 +83,27 @@ struct Net16
 
     friend bool operator==(Net16 lhs, Net16 rhs) { return lhs.mValue == rhs.mValue; }
     friend bool operator<(Net16 lhs, Net16 rhs) { return lhs.hostValue() < rhs.hostValue(); }
+    friend std::ostream& operator<<(std::ostream& os, Net16 net16);
 
     uint16_t mValue;
 };
 
 
-static constexpr uint16_t ARP   = 0x0806;
-static constexpr uint16_t IPv4  = 0x0800;
-static constexpr uint16_t VLAN  = 0x8100;
-static constexpr uint16_t IPv6  = 0x86DD;
+enum class EtherType : uint16_t
+{
+    ARP   = 0x0806,
+    IPv4  = 0x0800,
+    VLAN  = 0x8100,
+    IPv6  = 0x86DD
+};
 
 
 struct EthernetHeader
 {
-    static EthernetHeader Create()
+    static EthernetHeader Create(EtherType ethertype)
     {
         auto result = EthernetHeader();
-        result.mEtherType = Net16(IPv4);
+        result.mEtherType = Net16(static_cast<uint16_t>(ethertype));
         return result;
     }
 
@@ -108,9 +113,18 @@ struct EthernetHeader
 };
 
 
+enum class ProtocolId : uint8_t
+{
+    ICMP = 1,
+    IGMP = 2,
+    TCP  = 6,
+    UDP  = 17
+};
+
+
 struct IPv4Header
 {
-    static IPv4Header Create(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip)
+    static IPv4Header Create(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip)
     {
         auto result = IPv4Header();
         result.mProtocol = protocol;
@@ -125,10 +139,29 @@ struct IPv4Header
     Net16 mIdentification;
     Net16 mFlagsAndFragmentOffset;
     uint8_t mTTL = 255;
-    uint8_t mProtocol;
+    ProtocolId mProtocol;
     uint16_t mChecksum;
     IPv4Address mSourceIP;
     IPv4Address mDestinationIP;
+};
+
+
+struct UDPHeader
+{
+    static UDPHeader Create(uint16_t src_port, uint16_t dst_port)
+    {
+        auto result = UDPHeader();
+        result.mSourcePort = src_port;
+        result.mDestinationPort = dst_port;
+        return result;
+    }
+
+    UDPHeader() = default;
+
+    Net16 mSourcePort;
+    Net16 mDestinationPort;
+    Net16 mChecksum;
+    Net16 mLength;
 };
 
 

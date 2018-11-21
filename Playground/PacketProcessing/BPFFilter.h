@@ -12,10 +12,11 @@
 
 struct BPFFilter
 {
+    static std::string generate_bpf_filter_string(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
     BPFFilter(std::string match_bpf);
 
-    BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
+    BPFFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
     bool match(const uint8_t* data, uint32_t size) const
     {
@@ -25,8 +26,6 @@ struct BPFFilter
     }
 
 private:
-    static std::string generate_bpf_filter_string(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
-
     #define BPFFILTER_EXTRACT_SHORT(p)  ((u_short)ntohs(*(u_short *)p))
     #define BPFFILTER_EXTRACT_LONG(p) (ntohl(*(uint32_t *)p))
 

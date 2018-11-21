@@ -1,10 +1,10 @@
 #include "Packet.h"
 
 
-Packet::Packet(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+Packet::Packet(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
     mStorage()
 {
-    auto eth_header = EthernetHeader::Create();
+    auto eth_header = EthernetHeader::Create(EtherType::IPv4);
     memcpy(mStorage.data(), &eth_header, sizeof(eth_header));
 
     auto ip4_ptr = mStorage.data() + sizeof(EthernetHeader);

@@ -1,11 +1,12 @@
 #include "BPFFilter.h"
-#include <sstream>
 #include <cstdint>
+#include <sstream>
+#include <iostream>
 
 
-std::string BPFFilter::generate_bpf_filter_string(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
+std::string BPFFilter::generate_bpf_filter_string(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port)
 {
-    const char* protocol_str = (protocol == 6) ? "tcp" : "(unknown)";
+    const char* protocol_str = protocol == ProtocolId::TCP ? "tcp" : protocol == ProtocolId::UDP ? "udp" : "(unknown)";
 
     std::stringstream ss;
     ss  << "ip src " << src_ip
@@ -303,13 +304,12 @@ BPFFilter::BPFFilter(std::string bpf_filter)
     auto result = pcap_compile(dummy_interface.get(), &mProgram, bpf_filter.c_str(), 1, 0xff000000);
     if (result != 0)
     {
-        //std::cout << "pcap_geterr: [" << pcap_geterr(dummy_interface.get()) << "]" << std::endl;
         throw std::runtime_error("pcap_compile failed. Filter=" + bpf_filter);
     }
 }
 
 
-BPFFilter::BPFFilter(uint8_t protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
+BPFFilter::BPFFilter(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port) :
     BPFFilter(generate_bpf_filter_string(protocol, src_ip, dst_ip, src_port, dst_port))
 {
 }

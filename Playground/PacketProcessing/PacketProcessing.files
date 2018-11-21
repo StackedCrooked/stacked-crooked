@@ -1,4 +1,4 @@
-﻿CMakeLists.txt
+CMakeLists.txt
 BPFFilter.cpp
 BPFFilter.h
 MaskFilter.cpp
@@ -11,6 +11,8 @@ Utils.cpp
 Utils.h
 VectorFilter.cpp
 VectorFilter.h
+ParsedFilter.cpp
+ParsedFilter.h
 simple.cpp
 with-hash.cpp
 Expression.h

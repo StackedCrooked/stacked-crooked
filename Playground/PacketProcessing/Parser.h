@@ -83,7 +83,7 @@ struct Parser
             int len = 0;
             if (!consume_int(len))
             {
-                return error("digit");
+                return error("length value");
             }
             return Expression::Length(len);
         }
@@ -178,11 +178,6 @@ struct Parser
     bool is_alpha(char c) const
     {
         return is_lcase(c) || is_ucase(c);
-    }
-
-    bool is_delim(char c) const
-    {
-        return is_space(c) || is_eof() || c == ')';
     }
 
     bool is_lcase(char c) const

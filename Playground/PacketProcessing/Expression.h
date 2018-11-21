@@ -35,8 +35,6 @@ struct L3Type : BPFExpression
     explicit L3Type(EtherType ethertype) :
         mValue(static_cast<uint16_t>(ethertype))
     {
-        assert(mValue.hostValue() == static_cast<uint16_t>(ethertype));
-        assert(mValue.mValue == htons(static_cast<uint16_t>(ethertype)));
     }
 
     bool match_impl(const uint8_t* data, uint32_t /*size*/, uint32_t /*l3_offset*/, uint32_t /*l4_offset*/) const override final

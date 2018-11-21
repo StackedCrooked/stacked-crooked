@@ -2,7 +2,7 @@
 "  General Settings
 " -----------------------------------------------------------------------------
 
-colorscheme desert
+colorscheme morning
 
 " Show line numbers
 set number

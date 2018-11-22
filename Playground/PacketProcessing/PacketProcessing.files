@@ -1,3 +1,5 @@
+BPFExpression.cpp
+BPFExpression.h
 CMakeLists.txt
 BPFFilter.cpp
 BPFFilter.h

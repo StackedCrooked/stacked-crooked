@@ -9,30 +9,9 @@
 
 struct Parser
 {
-    explicit Parser(const char* text) :
-        mOriginal(text),
-        mText(text),
-        mEnd(mOriginal + strlen(text))
-    {
-    }
+    explicit Parser(const char* text);
 
-    Expression parse()
-    {
-        if (consume_eof())
-        {
-            // Empty BPF returns "true" expression.
-            return Expression::True();
-        }
-
-        auto result = parse_logical_expression();
-
-        if (!consume_eof())
-        {
-            return error("binary operator or end of expression");
-        }
-
-        return result;
-    }
+    Expression parse();
 
     Expression parse_logical_expression()
     {
@@ -40,16 +19,14 @@ struct Parser
 
         if (consume_token("and") || consume_text("&&"))
         {
-            return Expression::And(result, parse_logical_expression());
+            result = Expression::And(std::move(result), parse_logical_expression());
         }
         else if (consume_token("or") || consume_text("||"))
         {
-            return Expression::Or(result, parse_logical_expression());
+            result = Expression::Or(std::move(result), parse_logical_expression());
         }
-        else
-        {
-            return result;
-        }
+
+        return result;
     }
 
     Expression parse_unary_expression()
@@ -85,7 +62,7 @@ struct Parser
             {
                 return error("length value");
             }
-            return Expression::Length(len);
+            return Expression::bpf_length(len);
         }
         else
         {

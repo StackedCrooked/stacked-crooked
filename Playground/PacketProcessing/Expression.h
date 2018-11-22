@@ -11,12 +11,16 @@
 
 
 
+struct BPFCompositeExpression;
+
+
+
 struct Expression
 {
     static Expression True();
     static Expression And(Expression lhs, Expression rhs);
     static Expression Or(Expression lhs, Expression rhs);
-    static Expression Length(int value);
+    static Expression bpf_length(int value);
     static Expression bpf_l3_type(EtherType ethertype);
     static Expression bpf_l4_type(ProtocolId protocolId);
     static Expression bpf_src_ip(IPv4Address value);
@@ -30,20 +34,24 @@ struct Expression
 
     enum class Type
     {
-        True, And, Or, BPF, Length
+        And, Or, BPF
     };
 
     void print(int level = 0) const;
 
-    void print_true(int level) const;
-    void print_length(int level) const;
     void print_bpf(int level) const;
     void print_binary(const char* op, int level) const;
 
     static std::string indent(int level);
 
+    void and_append(Expression expr);
+    void or_append(Expression&& expr);
+
+    bool is_and() const { return mType == Type::And; }
+    bool is_or() const { return mType == Type::Or; }
+    bool is_bpf() const { return mType == Type::BPF; }
+
     Type mType = Type::And;
-    int mValue = 0;
     std::shared_ptr<BPFExpression> mBPF;
     std::vector<Expression> mChildren;
 };

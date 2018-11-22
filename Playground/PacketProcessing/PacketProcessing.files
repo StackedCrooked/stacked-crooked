@@ -1,3 +1,5 @@
+BPFCompositeExpression.cpp
+BPFCompositeExpression.h
 BPFExpression.cpp
 BPFExpression.h
 CMakeLists.txt

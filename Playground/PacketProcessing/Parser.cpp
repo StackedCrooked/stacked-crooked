@@ -1,5 +1,57 @@
 #include "Parser.h"
+#include <iostream>
 
+
+static Expression test(const char* text)
+{
+    try
+    {
+        Parser p(text);
+        Expression result = p.parse();
+        //result.print();
+        return result;
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << text << std::endl;
+        std::cout << e.what() << std::endl;
+        return Expression();
+    }
+}
+
+
+static Expression fTest = test("(ip and ip src 1.2.3.44) and (udp and udp src port 1024) and (len=120) and (udp dst port 1024)");
+static Expression fTest3 = test("(ip and ip src 1.2.3.44 and udp dst port 1024 and len=60) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=124) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=508) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=1020)");
+static Expression fTest2 = test("(ip and ip src 1.2.3.44 and udp dst port 1024 and len=60) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=124) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=508) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=1020)");
+
+
+Parser::Parser(const char* text) :
+    mOriginal(text),
+    mText(text),
+    mEnd(mOriginal + strlen(text))
+{
+}
+
+
+Expression Parser::parse()
+{
+    if (consume_eof())
+    {
+        // Empty BPF returns "true" expression.
+        return Expression::True();
+    }
+
+    auto result = parse_logical_expression();
+
+    if (!consume_eof())
+    {
+        return error("binary operator or end of expression");
+    }
+
+    //result.print();
+
+    return result;
+}
 
 Expression Parser::parse_bpf_expression()
 {

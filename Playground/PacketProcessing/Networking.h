@@ -16,6 +16,56 @@ inline const T& Decode(const uint8_t* data)
 }
 
 
+struct Net16
+{
+    Net16() = default;
+
+    explicit Net16(uint16_t value) :
+        mValue(htons(value))
+    {
+    }
+
+    void operator=(uint16_t value)
+    {
+        *this = Net16(value);
+    }
+
+    uint16_t hostValue() const { return ntohs(mValue); }
+
+    friend bool operator==(Net16 lhs, Net16 rhs) { return lhs.mValue == rhs.mValue; }
+    friend bool operator!=(Net16 lhs, Net16 rhs) { return lhs.mValue != rhs.mValue; }
+    friend bool operator<(Net16 lhs, Net16 rhs) { return lhs.hostValue() < rhs.hostValue(); }
+    friend std::ostream& operator<<(std::ostream& os, Net16 net16);
+
+    uint16_t mValue;
+};
+
+
+struct Net32
+{
+    Net32() = default;
+
+    explicit Net32(uint32_t value) :
+        mValue(htonl(value))
+    {
+    }
+
+    void operator=(uint32_t value)
+    {
+        *this = Net32(value);
+    }
+
+    uint32_t hostValue() const { return ntohl(mValue); }
+
+    friend bool operator==(Net32 lhs, Net32 rhs) { return lhs.mValue == rhs.mValue; }
+    friend bool operator!=(Net32 lhs, Net32 rhs) { return lhs.mValue != rhs.mValue; }
+    friend bool operator<(Net32 lhs, Net32 rhs) { return lhs.hostValue() < rhs.hostValue(); }
+    friend std::ostream& operator<<(std::ostream& os, Net32 net32);
+
+    uint32_t mValue;
+};
+
+
 struct MACAddress
 {
     MACAddress() :
@@ -50,51 +100,27 @@ struct IPv4Address
     const uint8_t* data() const { return static_cast<const uint8_t*>(static_cast<const void*>(&mValue)); }
 
 	uint32_t size() const { return sizeof(mValue); }
-    uint32_t toInteger() const { return mValue; }
+    uint32_t toInteger() const { return mValue.hostValue(); }
     std::string toString() const;
 
     friend bool operator==(IPv4Address lhs, IPv4Address rhs)
     { return lhs.mValue == rhs.mValue; }
 
+    friend bool operator!=(IPv4Address lhs, IPv4Address rhs)
+    { return lhs.mValue != rhs.mValue; }
+
     friend bool operator<(IPv4Address lhs, IPv4Address rhs)
-    { return lhs.mValue < rhs.mValue; }
+    { return lhs.mValue.hostValue() < rhs.mValue.hostValue(); }
 
     friend std::ostream& operator<<(std::ostream& os, IPv4Address ip);
 
-	uint32_t mValue;
-};
-
-
-struct Net16
-{
-    Net16() = default;
-
-    explicit Net16(uint16_t value) :
-        mValue(htons(value))
-    {
-    }
-
-    void operator=(uint16_t value)
-    {
-        *this = Net16(value);
-    }
-
-    uint16_t hostValue() const { return ntohs(mValue); }
-
-    friend bool operator==(Net16 lhs, Net16 rhs) { return lhs.mValue == rhs.mValue; }
-    friend bool operator!=(Net16 lhs, Net16 rhs) { return lhs.mValue != rhs.mValue; }
-    friend bool operator<(Net16 lhs, Net16 rhs) { return lhs.hostValue() < rhs.hostValue(); }
-    friend std::ostream& operator<<(std::ostream& os, Net16 net16);
-
-    uint16_t mValue;
+    Net32 mValue;
 };
 
 
 enum class EtherType : uint16_t
 {
-    ARP   = 0x0806,
     IPv4  = 0x0800,
-    VLAN  = 0x8100,
     IPv6  = 0x86DD
 };
 
@@ -116,8 +142,6 @@ struct EthernetHeader
 
 enum class ProtocolId : uint8_t
 {
-    ICMP = 1,
-    IGMP = 2,
     TCP  = 6,
     UDP  = 17
 };

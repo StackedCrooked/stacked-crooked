@@ -1,22 +1,55 @@
 #include "Expression.h"
+#include "BPFCompositeExpression.h"
 #include <iostream>
 
 
 Expression Expression::True()
 {
     Expression result;
-    result.mType = Type::True;
+
+    // And expression without children is true.
+    result.mType = Type::And;
     return result;
 }
-
 
 Expression Expression::And(Expression lhs, Expression rhs)
 {
     Expression result;
     result.mType = Type::And;
-    result.mChildren.push_back(lhs);
-    result.mChildren.push_back(rhs);
+    result.and_append(std::move(lhs));
+    result.and_append(std::move(rhs));
+    if (result.mChildren.empty())
+    {
+        assert(result.mBPF);
+        result.mType = Type::BPF;
+    }
     return result;
+}
+
+void Expression::and_append(Expression expr)
+{
+    assert(is_and());
+
+    if (expr.is_and())
+    {
+        for (Expression& e : expr.mChildren)
+        {
+            and_append(std::move(e));
+        }
+    }
+    else if (expr.is_bpf())
+    {
+        if (!mBPF)
+        {
+            mBPF.reset(new BPFCompositeExpression());
+        }
+
+        dynamic_cast<BPFCompositeExpression&>(*mBPF).add(*expr.mBPF);
+    }
+    else
+    {
+        mChildren.push_back(std::move(expr));
+    }
 }
 
 
@@ -24,17 +57,34 @@ Expression Expression::Or(Expression lhs, Expression rhs)
 {
     Expression result;
     result.mType = Type::Or;
-    result.mChildren.push_back(lhs);
-    result.mChildren.push_back(rhs);
+    result.or_append(std::move(lhs));
+    result.or_append(std::move(rhs));
     return result;
 }
 
 
-Expression Expression::Length(int value)
+void Expression::or_append(Expression&& expr)
+{
+    assert(is_or());
+
+    if (expr.is_or())
+    {
+        auto b = std::make_move_iterator(expr.mChildren.begin());
+        auto e = std::make_move_iterator(expr.mChildren.end());
+        mChildren.insert(mChildren.end(), b, e);
+    }
+    else
+    {
+        mChildren.push_back(std::move(expr));
+    }
+}
+
+
+Expression Expression::bpf_length(int value)
 {
     Expression result;
-    result.mType = Type::Length;
-    result.mValue = value;
+    result.mType = Type::BPF;
+    result.mBPF = std::make_shared<Length>(value);
     return result;
 }
 
@@ -116,12 +166,12 @@ bool Expression::match(const uint8_t* data, uint32_t size, uint32_t l3_offset, u
 {
     switch (mType)
     {
-        case Type::True:
-        {
-            return true;
-        }
         case Type::And:
         {
+            if (mBPF && !mBPF->match(data, size, l3_offset, l4_offset))
+            {
+                return false;
+            }
             for (const Expression& child : mChildren)
             {
                 if (!child.match(data, size, l3_offset, l4_offset))
@@ -133,6 +183,7 @@ bool Expression::match(const uint8_t* data, uint32_t size, uint32_t l3_offset, u
         }
         case Type::Or:
         {
+            assert(!mBPF);
             for (const Expression& child : mChildren)
             {
                 if (child.match(data, size, l3_offset, l4_offset))
@@ -141,14 +192,6 @@ bool Expression::match(const uint8_t* data, uint32_t size, uint32_t l3_offset, u
                 }
             }
             return false;
-        }
-        case Type::Length:
-        {
-            if (static_cast<int32_t>(size) != mValue)
-            {
-                return false;
-            }
-            return true;
         }
         case Type::BPF:
         {
@@ -164,11 +207,6 @@ void Expression::print(int level) const
 {
     switch (mType)
     {
-        case Type::True:
-        {
-            print_true(level);
-            break;
-        }
         case Type::And:
         {
             print_binary("and", level);
@@ -179,29 +217,12 @@ void Expression::print(int level) const
             print_binary("or", level);
             break;
         }
-        case Type::Length:
-        {
-            print_length(level);
-            break;
-        }
         case Type::BPF:
         {
             print_bpf(level);
             break;
         }
     }
-}
-
-
-void Expression::print_true(int level) const
-{
-    std::cout << indent(level) << "<true/>\n";
-}
-
-
-void Expression::print_length(int level) const
-{
-    std::cout << indent(level) << "<bpf>len=" << mValue << "</bpf>\n";
 }
 
 

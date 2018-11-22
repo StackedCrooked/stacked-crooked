@@ -12,6 +12,8 @@ set(PacketProcessing_SOURCES
 	Parser.cpp
 	ParsedFilter.cpp
     BPFFilter.cpp
+    BPFExpression.cpp
+    BPFCompositeExpression.cpp
     MaskFilter.cpp
     NativeFilter.cpp
     VectorFilter.cpp
@@ -48,5 +50,5 @@ endmacro(add_target)
 add_target(BPFFilter)
 add_target(MaskFilter)
 add_target(ParsedFilter)
-#add_target(NativeFilter)
+add_target(NativeFilter)
 #add_target(VectorFilter)

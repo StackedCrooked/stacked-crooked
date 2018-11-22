@@ -18,6 +18,12 @@ std::ostream& operator<<(std::ostream& os, Net16 net16)
     return os << net16.hostValue();
 }
 
+
+std::ostream& operator<<(std::ostream& os, Net32 net32)
+{
+    return os << net32.hostValue();
+}
+
 static_assert(std::is_trivially_copyable<Net16>::value, "");
 static_assert(std::is_trivially_copyable<MACAddress>::value, "");
 static_assert(std::is_trivially_copyable<IPv4Address>::value, "");

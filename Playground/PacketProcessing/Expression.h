@@ -52,7 +52,7 @@ struct Expression
     bool is_bpf() const { return mType == Type::BPF; }
 
     Type mType = Type::And;
-    std::shared_ptr<BPFExpression> mBPF;
+    std::shared_ptr<BPFCompositeExpression> mBPF;
     std::vector<Expression> mChildren;
 };
 

@@ -26,7 +26,7 @@ enum FilterFlags
 };
 
 
-struct BPFCompositeExpression : BPFExpression
+struct BPFCompositeExpression
 {
     BPFCompositeExpression();
 
@@ -35,15 +35,13 @@ struct BPFCompositeExpression : BPFExpression
         return (mFilterFlags & flag) == flag;
     }
 
-    void add(BPFExpression& expr);
-
     void add_impl(Length len)
     {
         mLength = len.mValue;
         mFilterFlags |= FilterFlags_Length;
     }
 
-    void add_impl(BPFCompositeExpression& rhs)
+    void add(BPFCompositeExpression& rhs)
     {
         mFilterFlags |= rhs.mFilterFlags;
         if (rhs.hasFlag(FilterFlags_Length)) { mLength = rhs.mLength; }
@@ -129,7 +127,7 @@ struct BPFCompositeExpression : BPFExpression
         throw std::runtime_error(__FUNCTION__);
     }
 
-    bool match_impl(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l4_offset) const override final
+    bool match(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l4_offset) const
     {
         if (mFilterFlags == 0)
         {
@@ -182,7 +180,7 @@ struct BPFCompositeExpression : BPFExpression
         return true;
     }
 
-    std::string toStringImpl() const override final;
+    std::string toString() const;
 
 
     uint16_t mFilterFlags = 0;

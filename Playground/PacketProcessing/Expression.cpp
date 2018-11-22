@@ -44,7 +44,8 @@ void Expression::and_append(Expression expr)
             mBPF.reset(new BPFCompositeExpression());
         }
 
-        dynamic_cast<BPFCompositeExpression&>(*mBPF).add(*expr.mBPF);
+        BPFCompositeExpression& comp = *expr.mBPF;
+        mBPF->add(comp);
     }
     else
     {
@@ -84,7 +85,8 @@ Expression Expression::bpf_length(int value)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<Length>(value);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(Length(value));
     return result;
 }
 
@@ -93,7 +95,8 @@ Expression Expression::bpf_l3_type(EtherType ethertype)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<L3Type>(ethertype);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(L3Type(ethertype));
     return result;
 }
 
@@ -103,7 +106,8 @@ Expression Expression::bpf_l4_type(ProtocolId protocolId)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<L4Type>(protocolId);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(L4Type(protocolId));
     return result;
 }
 
@@ -112,7 +116,8 @@ Expression Expression::bpf_src_ip(IPv4Address value)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<SourceIPv4>(value);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(SourceIPv4(value));
     return result;
 }
 
@@ -121,7 +126,8 @@ Expression Expression::bpf_dst_ip(IPv4Address value)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<DestinationIPv4>(value);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(DestinationIPv4(value));
     return result;
 }
 
@@ -130,7 +136,8 @@ Expression Expression::bpf_src_or_dst_ip(IPv4Address value)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<SourceOrDestinationIPv4>(value);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(SourceOrDestinationIPv4(value));
     return result;
 }
 
@@ -139,7 +146,8 @@ Expression Expression::bpf_src_port(uint16_t value)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<SourcePort>(value);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(SourcePort(value));
     return result;
 }
 
@@ -148,7 +156,8 @@ Expression Expression::bpf_dst_port(uint16_t value)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<DestinationPort>(value);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(DestinationPort(value));
     return result;
 }
 
@@ -157,7 +166,8 @@ Expression Expression::bpf_src_or_dst_port(uint16_t value)
 {
     Expression result;
     result.mType = Type::BPF;
-    result.mBPF = std::make_shared<SourceOrDestinationPort>(value);
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(SourceOrDestinationPort(value));
     return result;
 }
 

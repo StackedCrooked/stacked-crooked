@@ -7,52 +7,7 @@ BPFCompositeExpression::BPFCompositeExpression()
 }
 
 
-void BPFCompositeExpression::add(BPFExpression& expr)
-{
-    if (auto derived = dynamic_cast<BPFCompositeExpression*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<Length*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<L3Type*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<L4Type*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<SourceIPv4*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<DestinationIPv4*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<SourceOrDestinationIPv4*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<SourcePort*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<DestinationPort*>(&expr))
-    {
-        add_impl(*derived);
-    }
-    else if (auto derived = dynamic_cast<SourceOrDestinationPort*>(&expr))
-    {
-        add_impl(*derived);
-    }
-}
-
-
-std::string BPFCompositeExpression::toStringImpl() const
+std::string BPFCompositeExpression::toString() const
 {
     std::stringstream ss;
 

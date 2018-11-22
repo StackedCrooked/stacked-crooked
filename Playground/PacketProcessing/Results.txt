@@ -1,4 +1,34 @@
 
+22 November 2018: BPFCompositeFilter
+------------------------------------
+BEFORE:
+	ParsedFilter PREFETCH=8 FLOWS=1    MPPS=46.56     (46.56M filter-checks/s) (verify-matches:100%)
+	ParsedFilter PREFETCH=8 FLOWS=2    MPPS=32.5      (64.99M filter-checks/s) (verify-matches:50%,50%)
+	ParsedFilter PREFETCH=8 FLOWS=4    MPPS=18.23     (72.93M filter-checks/s) (verify-matches:25%,25%,25%,25%)
+	ParsedFilter PREFETCH=8 FLOWS=8    MPPS=7.78      (62.23M filter-checks/s) (verify-matches:12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%)
+	ParsedFilter PREFETCH=8 FLOWS=16   MPPS=4.44      (71.09M filter-checks/s) (verify-matches:6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%)
+	ParsedFilter PREFETCH=8 FLOWS=32   MPPS=2.35      (75.27M filter-checks/s) (verify-matches:3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%...)
+	ParsedFilter PREFETCH=8 FLOWS=64   MPPS=1.01      (64.46M filter-checks/s) (verify-matches:1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%...)
+	ParsedFilter PREFETCH=8 FLOWS=128  MPPS=0.48      (61.96M filter-checks/s) (verify-matches:0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%...)
+	ParsedFilter PREFETCH=8 FLOWS=256  MPPS=0.26      (65.61M filter-checks/s) (verify-matches:0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%...)
+
+AFTER:
+	ParsedFilter PREFETCH=8 FLOWS=1    MPPS=103.58    (103.58M filter-checks/s) (verify-matches:100%)
+	ParsedFilter PREFETCH=8 FLOWS=2    MPPS=88.02     (176.03M filter-checks/s) (verify-matches:50%,50%)
+	ParsedFilter PREFETCH=8 FLOWS=4    MPPS=54.29     (217.18M filter-checks/s) (verify-matches:25%,25%,25%,25%)
+	ParsedFilter PREFETCH=8 FLOWS=8    MPPS=24.67     (197.39M filter-checks/s) (verify-matches:12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%,12.5%)
+	ParsedFilter PREFETCH=8 FLOWS=16   MPPS=12.51     (200.11M filter-checks/s) (verify-matches:6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%,6.25%)
+	ParsedFilter PREFETCH=8 FLOWS=32   MPPS=7.01      (224.42M filter-checks/s) (verify-matches:3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%,3.12%...)
+	ParsedFilter PREFETCH=8 FLOWS=64   MPPS=3.85      (246.7M filter-checks/s) (verify-matches:1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%,1.56%...)
+	ParsedFilter PREFETCH=8 FLOWS=128  MPPS=2.04      (260.89M filter-checks/s) (verify-matches:0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%,0.78%...)
+	ParsedFilter PREFETCH=8 FLOWS=256  MPPS=1.02      (261.63M filter-checks/s) (verify-matches:0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%,0.39%...)
+
+
+
+
+
+
+
 VectorFilter PREFETCH=0 FLOWS=1    MPPS=73.45     (73.45 million filter comparisons per second) (verify-matches:100%)
 VectorFilter PREFETCH=0 FLOWS=2    MPPS=66.38     (132.76 million filter comparisons per second) (verify-matches:100%,50%)
 VectorFilter PREFETCH=0 FLOWS=4    MPPS=48.86     (195.44 million filter comparisons per second) (verify-matches:50%,50%,100%,25%)

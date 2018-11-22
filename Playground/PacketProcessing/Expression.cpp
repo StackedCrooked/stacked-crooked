@@ -1,5 +1,6 @@
 #include "Expression.h"
 #include "BPFCompositeExpression.h"
+#include <cassert>
 #include <iostream>
 
 

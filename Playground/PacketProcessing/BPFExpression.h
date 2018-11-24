@@ -18,6 +18,7 @@ struct Length
 };
 
 
+// Using SSE register to check up to 8 length values quickly.
 struct Lengths
 {
     Lengths() :
@@ -39,13 +40,19 @@ struct Lengths
         throw std::runtime_error("Lengths is full.");
     }
 
-    template<typename T>
-    bool match(T) const = delete;
+	// Creates the vector and calls match_vector
+	// Avoid using this method.
+	bool match(uint16_t length)
+	{
+		return match_vector(vec::Vec8s(length));
+	}
 
-    bool match(vec::Vec8s length) const
+	// Create the Vec8s from the call-site and then reuse it by calling match_vector on multiple methods.
+    bool match_vector(vec::Vec8s length) const
     {
         return horizontal_or(mLengths == length);
     }
+
 
     vec::Vec8s mLengths;
 };

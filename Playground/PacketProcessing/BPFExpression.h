@@ -49,17 +49,16 @@ struct Lengths
 	// Avoid using this method.
 	bool match(uint16_t length)
 	{
-		return match_vector(vec::Vec8s(length));
+        return match_vector(vec::Vec8us(length));
 	}
 
-	// Create the Vec8s from the call-site and then reuse it by calling match_vector on multiple methods.
-    bool match_vector(vec::Vec8s length) const
+    // Create the Vec8us from the call-site and then reuse it by calling match_vector on multiple methods.
+    bool match_vector(vec::Vec8us length) const
     {
         return horizontal_or(mLengths == length);
     }
 
-
-    vec::Vec8s mLengths;
+    vec::Vec8us mLengths;
 };
 
 

@@ -18,7 +18,11 @@ struct Length
 };
 
 
-// Using SSE register to check up to 8 length values quickly.
+/**
+ * For BPF filters like: "len=128 or len=256 or len=400 ..."
+ * Compares a given length to all values and returns true if one of them matches.
+ * This can hold up to 8 length values. TODO: support any number of values.
+ */
 struct Lengths
 {
     Lengths() :
@@ -26,6 +30,7 @@ struct Lengths
     {
     }
 
+    // Very slow. Only do this during configuration time.
     void add(uint16_t length)
     {
         for (auto i = 0; i != mLengths.size(); ++i)

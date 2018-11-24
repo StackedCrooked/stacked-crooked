@@ -3,6 +3,7 @@
 
 
 #include "Networking.h"
+#include "vectorclass/vectori128.h"
 #include <cstdint>
 #include <string>
 
@@ -14,6 +15,39 @@ struct Length
     std::string toString() const;
 
     int mValue;
+};
+
+
+struct Lengths
+{
+    Lengths() :
+        mLengths(0)
+    {
+    }
+
+    void add(uint16_t length)
+    {
+        for (auto i = 0; i != mLengths.size(); ++i)
+        {
+            if (mLengths[i] == 0)
+            {
+                mLengths.insert(i, length);
+                return;
+            }
+        }
+
+        throw std::runtime_error("Lengths is full.");
+    }
+
+    template<typename T>
+    bool match(T) const = delete;
+
+    bool match(vec::Vec8s length) const
+    {
+        return horizontal_or(mLengths == length);
+    }
+
+    vec::Vec8s mLengths;
 };
 
 

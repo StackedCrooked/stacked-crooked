@@ -94,7 +94,11 @@ struct Parser
     bool consume_token(const char* token)
     {
         consume_whitespace();
+        return consume_token_here(token);
+    }
 
+    bool consume_token_here(const char* token)
+    {
         auto backup = mText;
 
         if (!consume_text(token))
@@ -114,6 +118,11 @@ struct Parser
     bool consume_text(const char* token)
     {
         consume_whitespace();
+        return consume_text_here(token);
+    }
+
+    bool consume_text_here(const char* token)
+    {
         return consume_text_impl(token, strlen(token));
     }
 
@@ -133,19 +142,11 @@ struct Parser
         return false;
     }
 
+    bool consume_int(int& result);
+
+    bool consume_uint8(uint8_t& result);
+
     bool consume_ip4(IPv4Address& ip);
-
-    bool consume_int(int& result)
-    {
-        int n = 0;
-        if (sscanf(mText, "%d%n", &result, &n) == 1)
-        {
-            mText += n;
-            return true;
-        }
-
-        return false;
-    }
 
     bool is_alnum(char c) const
     {

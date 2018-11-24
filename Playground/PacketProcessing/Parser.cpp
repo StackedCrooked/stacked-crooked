@@ -164,7 +164,7 @@ Expression Parser::parse_bpf_expression()
     else
     {
         consume_whitespace();
-        if (consume_text("udp["))
+        if (consume_text_here("udp["))
         {
             throw std::runtime_error("TODO: UDP payload");
         }
@@ -174,74 +174,52 @@ Expression Parser::parse_bpf_expression()
 }
 
 
+bool Parser::consume_int(int& result)
+{
+    int n = 0;
+    if (sscanf(mText, "%d%n", &result, &n) == 1)
+    {
+        mText += n;
+        return true;
+    }
+
+    return false;
+}
+
+
+bool Parser::consume_uint8(uint8_t& result)
+{
+    int n = 0;
+    int num_read = 0;
+    if (sscanf(mText, "%d%n", &n, &num_read) == 1)
+    {
+        if (n >= 0 && n <= 255)
+        {
+            result = static_cast<uint8_t>(n);
+            mText += num_read;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 bool Parser::consume_ip4(IPv4Address& ip)
 {
     consume_whitespace();
 
     auto backup = mText;
 
-    int a = 0;
-    int b = 0;
-    int c = 0;
-    int d = 0;
-
-    if (!consume_int(a))
+    if (consume_uint8(ip[0]) && consume_text_here(".") &&
+        consume_uint8(ip[1]) && consume_text_here(".") &&
+        consume_uint8(ip[2]) && consume_text_here(".") &&
+        consume_uint8(ip[3]) && !is_alnum(*mText))
     {
-        mText = backup;
-        return false;
-    }
-    if (!consume_text("."))
-    {
-        mText = backup;
-        return false;
-    }
-    if (!consume_int(b))
-    {
-        mText = backup;
-        return false;
-    }
-    if (!consume_text("."))
-    {
-        mText = backup;
-        return false;
-    }
-    if (!consume_int(c))
-    {
-        mText = backup;
-        return false;
-    }
-    if (!consume_text("."))
-    {
-        mText = backup;
-        return false;
-    }
-    if (!consume_int(d))
-    {
-        mText = backup;
-        return false;
+        return true;
     }
 
-    auto check = [](int n) { return n >= 0 && n <= 255; };
-
-    if (!check(a) || !check(b) || !check(c) || !check(d))
-    {
-        mText = backup;
-        return false;
-    }
-
-    // IP should be followed by delim
-    auto end_of_ip = mText;
-    if (is_alnum(*mText))
-    {
-        mText = end_of_ip;
-        return false;
-    }
-
-    ip[0] = a;
-    ip[1] = b;
-    ip[2] = c;
-    ip[3] = d;
-
-    return true;
+    mText = backup;
+    return false;
 }
 

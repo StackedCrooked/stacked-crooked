@@ -104,8 +104,9 @@ struct HashedTimerWheel
     {
         void run_tasks()
         {
-            std::swap(mEntries, mEntries2);
+            assert(mEntries2.empty());
 
+            std::swap(mEntries, mEntries2);
 
             for (Entry& entry : mEntries2)
             {
@@ -121,7 +122,6 @@ struct HashedTimerWheel
             }
 
             mEntries2.clear();
-
 
             // Check for entries inserted while running the timers.
             if (!mEntries.empty())

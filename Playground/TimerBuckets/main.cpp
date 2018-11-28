@@ -83,12 +83,13 @@ struct HashedTimerWheel
         auto index = delay % num_buckets;
         auto count = delay / num_buckets;
 
-        Bucket& bucket = mBuckets[(mActiveIndex + index) % 10];
+        Bucket& bucket = mBuckets[(mActiveIndex + index) % num_buckets];
 
         Entry entry;
         entry.mCount = count;
         entry.mTask = task;
         bucket.mEntries.push_back(entry);
+
     }
 
 

@@ -4,5 +4,5 @@ set(CONAN_SYSTEM_INCLUDES ON)
 
 add_definitions("-std=c++14 -Wall -Wextra -Werror -pedantic-errors")
 
-add_executable(TimerBuckets main.cpp)
-target_link_libraries(TimerBuckets)
+add_executable(timer_test main.cpp)
+target_link_libraries(timer_test)

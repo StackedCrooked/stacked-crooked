@@ -1,7 +1,8 @@
-#include <iostream>
+#include <algorithm>
 #include <array>
-#include <thread>
 #include <chrono>
+#include <cstring>
+#include <iostream>
 
 
 std::ostream& operator<<(std::ostream& os, std::chrono::nanoseconds ns)
@@ -16,7 +17,7 @@ std::ostream& operator<<(std::ostream& os, std::chrono::nanoseconds ns)
 static const volatile auto volatile_zero = 0;
 static volatile auto volatile_sink = 0;
 
-std::array<int64_t, 1024 * 1024> items __attribute__((aligned(64)));
+std::array<int32_t, 128 * 1024 * 1024 / sizeof(int32_t)> items __attribute__((aligned(64)));
 
 
 
@@ -79,15 +80,15 @@ std::chrono::nanoseconds benchmark_one(F&& f, int skip)
 template<typename F>
 std::chrono::nanoseconds benchmark(const char* name, F&& f, int skip)
 {
-	std::cout << name << ":skip=" << skip << ": " << std::flush;
-	std::array<std::chrono::nanoseconds, 8> results;
+	std::cout << name << "(skip=" << skip << ") " << std::flush;
+	std::array<std::chrono::nanoseconds, 4> results;
 	for (auto& result : results)
 	{
 		result = benchmark_one(f, skip);
 	}
 	std::sort(results.begin(), results.end());
 	auto result = results.front();
-	std::cout << result << " result*skip=" << result.count() * skip << "\n";
+	std::cout << result << "\n";
 	return result;
 }
 

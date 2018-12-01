@@ -130,19 +130,24 @@ Expression Parser::parse_bpf_expression()
             return error("=");
         }
 
-        if (!consume_text("0x"))
-        {
-            return error("hex value");
-        }
+
+        bool hex = consume_text("0x");
+
+
 
         uint32_t value = 0;
         std::istringstream iss(mText);
-        if (!(iss >> std::hex >> value))
+        if (!(iss >> (hex ? std::hex : std::dec) >> value))
         {
             return error("value");
         }
 
-        mText += std::to_string(value).size();
+        std::cout << "VALUE=" << value << " to_string=" << std::to_string(value) << std::endl;
+
+        while (is_alnum(*mText))
+        {
+            mText++;
+        }
 
         return Expression::bpf_udp_payload(offset, width, value);
     }

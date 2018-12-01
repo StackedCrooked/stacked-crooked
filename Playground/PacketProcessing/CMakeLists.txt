@@ -47,8 +47,14 @@ macro(add_target filtertype)
 endmacro(add_target)
 
 
-add_target(BPFFilter)
-add_target(MaskFilter)
-add_target(ParsedFilter)
-add_target(NativeFilter)
+#add_target(BPFFilter)
+#add_target(MaskFilter)
+#add_target(ParsedFilter)
+#add_target(NativeFilter)
 #add_target(VectorFilter)
+
+
+
+add_executable(parsetest ${PacketProcessing_SOURCES} ParseTest.cpp)
+set_target_properties(parsetest PROPERTIES COMPILE_FLAGS "-std=c++14 -O2 -march=native -DVCL_NAMESPACE=vec  -Wall -Wextra -Werror -pedantic -Wno-missing-braces")
+target_link_libraries(parsetest -lpcap)

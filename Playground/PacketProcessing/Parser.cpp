@@ -1,28 +1,30 @@
 #include "Parser.h"
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 
-static Expression test(const char* text)
-{
-    try
-    {
-        Parser p(text);
-        Expression result = p.parse();
-        //result.print();
-        return result;
-    }
-    catch (const std::exception& e)
-    {
-        std::cout << text << std::endl;
-        std::cout << e.what() << std::endl;
-        return Expression();
-    }
-}
+//static Expression test(const char* text)
+//{
+//    try
+//    {
+//        Parser p(text);
+//        Expression result = p.parse();
+//        //result.print();
+//        return result;
+//    }
+//    catch (const std::exception& e)
+//    {
+//        std::cout << text << std::endl;
+//        std::cout << e.what() << std::endl;
+//        return Expression();
+//    }
+//}
 
 
-static Expression fTest = test("(ip and ip src 1.2.3.44) and (udp and udp src port 1024) and (len=120) and (udp dst port 1024)");
-static Expression fTest3 = test("(ip and ip src 1.2.3.44 and udp dst port 1024 and len=60) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=124) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=508) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=1020)");
-static Expression fTest2 = test("(ip and ip src 1.2.3.44 and udp dst port 1024 and len=60) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=124) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=508) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=1020)");
+//static Expression fTest = test("(ip and ip src 1.2.3.44) and (udp and udp src port 1024) and (len=120) and (udp dst port 1024)");
+//static Expression fTest3 = test("(ip and ip src 1.2.3.44 and udp dst port 1024 and len=60) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=124) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=508) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=1020)");
+//static Expression fTest2 = test("(ip and ip src 1.2.3.44 and udp dst port 1024 and len=60) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=124) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=508) or (ip and ip src 1.2.3.44 and udp dst port 1024 and len=1020)");
 
 
 Parser::Parser(const char* text) :
@@ -93,6 +95,57 @@ Expression Parser::parse_bpf_expression()
     {
         throw std::runtime_error("TODO: IP6");
     }
+    else if (consume_text("udp["))
+    {
+        consume_whitespace();
+        auto offset = 0;
+        if (!consume_int(offset))
+        {
+            return error("byte offset");
+        }
+
+        if (!consume_text(":"))
+        {
+            return error(":");
+        }
+
+        auto width = 0;
+        if (!consume_int(width))
+        {
+            return error("number of bytes");
+        }
+
+        if (width == 0)
+        {
+            return error("non-zero width value");
+        }
+
+        if (!consume_text("]"))
+        {
+            return error("]");
+        }
+
+        if (!consume_text("==") && !consume_text("="))
+        {
+            return error("=");
+        }
+
+        if (!consume_text("0x"))
+        {
+            return error("hex value");
+        }
+
+        uint32_t value = 0;
+        std::istringstream iss(mText);
+        if (!(iss >> std::hex >> value))
+        {
+            return error("value");
+        }
+
+        mText += std::to_string(value).size();
+
+        return Expression::bpf_udp_payload(offset, width, value);
+    }
     else if (consume_token("udp"))
     {
         if (consume_token("src port"))
@@ -159,14 +212,6 @@ Expression Parser::parse_bpf_expression()
         else
         {
             return Expression::bpf_l4_type(ProtocolId::TCP);
-        }
-    }
-    else
-    {
-        consume_whitespace();
-        if (consume_text_here("udp["))
-        {
-            throw std::runtime_error("TODO: UDP payload");
         }
     }
 

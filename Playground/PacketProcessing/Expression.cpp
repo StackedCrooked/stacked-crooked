@@ -173,6 +173,17 @@ Expression Expression::bpf_src_or_dst_port(uint16_t value)
 }
 
 
+Expression Expression::bpf_udp_payload(int offset, int size, uint32_t value)
+{
+    Expression result;
+    result.mType = Type::BPF;
+    result.mBPF = std::make_shared<BPFCompositeExpression>();
+    result.mBPF->add_impl(UDPPayload(offset, size, value));
+    result.print();
+    return result;
+}
+
+
 bool Expression::match(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l4_offset) const
 {
     switch (mType)

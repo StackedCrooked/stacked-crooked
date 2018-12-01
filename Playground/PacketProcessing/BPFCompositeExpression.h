@@ -16,13 +16,14 @@ enum PacketFlags
 
 enum FilterFlags
 {
-    FilterFlags_Length  = (1 << 0),
-    FilterFlags_L3Type  = (1 << 1),
-    FilterFlags_L4Type  = (1 << 2),
-    FilterFlags_SrcIPv4 = (1 << 3),
-    FilterFlags_DstIPv4 = (1 << 4),
-    FilterFlags_SrcPort = (1 << 5),
-    FilterFlags_DstPort = (1 << 6),
+    FilterFlags_Length     = (1 << 0),
+    FilterFlags_L3Type     = (1 << 1),
+    FilterFlags_L4Type     = (1 << 2),
+    FilterFlags_SrcIPv4    = (1 << 3),
+    FilterFlags_DstIPv4    = (1 << 4),
+    FilterFlags_SrcPort    = (1 << 5),
+    FilterFlags_DstPort    = (1 << 6),
+    FilterFlags_UDPPayload = (1 << 7)
 };
 
 
@@ -44,11 +45,42 @@ struct BPFCompositeExpression
     void add(BPFCompositeExpression& rhs)
     {
         mFilterFlags |= rhs.mFilterFlags;
-        if (rhs.hasFlag(FilterFlags_Length)) { mLength = rhs.mLength; }
-        if (rhs.hasFlag(FilterFlags_SrcIPv4)) { mSourceIP = rhs.mSourceIP; }
-        if (rhs.hasFlag(FilterFlags_DstIPv4)) { mDestinationIP= rhs.mDestinationIP; }
-        if (rhs.hasFlag(FilterFlags_SrcPort)) { mSourcePort = rhs.mSourcePort; }
-        if (rhs.hasFlag(FilterFlags_DstPort)) { mDestinationPort = rhs.mDestinationPort; }
+        mPacketFlags |= rhs.mPacketFlags;
+
+        if (rhs.hasFlag(FilterFlags_Length))
+        {
+            mLength = rhs.mLength;
+        }
+
+        if (rhs.hasFlag(FilterFlags_SrcIPv4))
+        {
+            mPacketFlags |= PacketFlags_IPv4;
+            mSourceIP = rhs.mSourceIP;
+        }
+
+        if (rhs.hasFlag(FilterFlags_DstIPv4))
+        {
+            mPacketFlags |= PacketFlags_IPv4;
+            mDestinationIP= rhs.mDestinationIP;
+        }
+
+        if (rhs.hasFlag(FilterFlags_SrcPort))
+        {
+            mSourcePort = rhs.mSourcePort;
+        }
+
+        if (rhs.hasFlag(FilterFlags_DstPort))
+        {
+            mDestinationPort = rhs.mDestinationPort;
+        }
+
+        if (rhs.hasFlag(FilterFlags_UDPPayload))
+        {
+            mPacketFlags |= PacketFlags_UDP;
+            mUDPPayloadOffset = rhs.mUDPPayloadOffset;
+            mUDPPayloadSize = rhs.mUDPPayloadSize;
+            mUDPPayloadValue = rhs.mUDPPayloadValue;
+        }
     }
 
     void add_impl(L3Type l3type)
@@ -127,58 +159,9 @@ struct BPFCompositeExpression
         throw std::runtime_error(__FUNCTION__);
     }
 
-    bool match(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l4_offset) const
-    {
-        if (mFilterFlags == 0)
-        {
-            return true;
-        }
+    void add_impl(UDPPayload udp_payload);
 
-        if (mFilterFlags & FilterFlags_Length)
-        {
-            if (size != mLength)
-            {
-                return false;
-            }
-        }
-
-        // if (mFlags & FilterFlags_IPv4)
-        // if (mFlags & FilterFlags_IPv6)
-
-        if (mFilterFlags & FilterFlags_SrcIPv4)
-        {
-            if (mSourceIP != Decode<IPv4Header>(data + l3_offset).mSourceIP)
-            {
-                return false;
-            }
-        }
-
-        if (mFilterFlags & FilterFlags_DstIPv4)
-        {
-            if (mDestinationIP != Decode<IPv4Header>(data + l3_offset).mDestinationIP)
-            {
-                return false;
-            }
-        }
-
-        if (mFilterFlags & FilterFlags_SrcPort)
-        {
-            if (mSourcePort != Decode<TCPHeader>(data + l4_offset).mSourcePort)
-            {
-                return false;
-            }
-        }
-
-        if (mFilterFlags & FilterFlags_DstPort)
-        {
-            if (mDestinationPort != Decode<TCPHeader>(data + l4_offset).mDestinationPort)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    bool match(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l4_offset) const;
 
     std::string toString() const;
 
@@ -191,6 +174,9 @@ struct BPFCompositeExpression
     IPv4Address mDestinationIP{};
     Net16 mSourcePort{};
     Net16 mDestinationPort{};
+    uint16_t mUDPPayloadOffset = 0;
+    uint16_t mUDPPayloadSize = 0;
+    Net32 mUDPPayloadValue{};
 };
 
 

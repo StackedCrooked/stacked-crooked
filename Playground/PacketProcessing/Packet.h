@@ -12,6 +12,7 @@ struct Packet
     Packet(ProtocolId protocol, IPv4Address src_ip, IPv4Address dst_ip, uint16_t src_port, uint16_t dst_port);
 
     const uint8_t* data() const { return mStorage.data(); }
+    uint8_t* data() { return mStorage.data(); }
 
     uint32_t size() const { return mStorage.size(); }
 

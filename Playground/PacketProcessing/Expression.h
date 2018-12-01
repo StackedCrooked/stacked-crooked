@@ -29,6 +29,7 @@ struct Expression
     static Expression bpf_src_port(uint16_t value);
     static Expression bpf_dst_port(uint16_t value);
     static Expression bpf_src_or_dst_port(uint16_t value);
+    static Expression bpf_udp_payload(int offset, int size, uint32_t value);
 
     bool match(const uint8_t* data, uint32_t size, uint32_t l3_offset, uint32_t l4_offset) const;
 

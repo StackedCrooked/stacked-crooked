@@ -142,4 +142,16 @@ struct SourceOrDestinationPort
 };
 
 
+struct UDPPayload
+{
+    explicit UDPPayload(int offset, int size, uint32_t value);
+
+    std::string toString() const;
+
+    uint16_t mOffset = 0;
+    uint16_t mSize = 0;
+    Net32 mValue;
+};
+
+
 #endif // BPFEXPRESSION_H

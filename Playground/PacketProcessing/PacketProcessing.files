@@ -11,6 +11,7 @@ NativeFilter.cpp
 NativeFilter.h
 Networking.cpp
 Networking.h
+ParseTest.cpp
 Utils.cpp
 Utils.h
 VectorFilter.cpp

@@ -63,3 +63,22 @@ std::string SourceOrDestinationPort::toString() const
 {
     return "src or dst port " + std::to_string(mValue.hostValue());
 }
+
+
+UDPPayload::UDPPayload(int offset, int size, uint32_t value) :
+    mOffset(offset),
+    mSize(size),
+    mValue(value)
+{
+}
+
+
+std::string UDPPayload::toString() const
+{
+    return "udp["
+         + std::to_string(mOffset)
+         + ":"
+         + std::to_string(mSize)
+         + "]="
+         + std::to_string(mValue.hostValue());
+}

@@ -41,4 +41,8 @@ int main()
     test("ip src 1.1.1.1 and ip dst 1.1.1.2 and udp src port 1024 and udp dst port 1024 and udp[8:1]=0xF", 0xF);
     test("ip src 1.1.1.1 and ip dst 1.1.1.2 and udp src port 1024 and udp dst port 1024 and udp[8:1]=0x1", 0x1);
     test("ip src 1.1.1.1 and ip dst 1.1.1.2 and udp src port 1024 and udp dst port 1024 and udp[8:1]=0xFEFE", 0xFEFE);
+
+
+
+    test("(ip src 1.1.1.1 and ip dst 1.1.1.2 and udp src port 1024 and udp dst port 1024 and udp[8:1]=0x1) or (ip src 1.1.1.1 and ip dst 1.1.1.2 and udp src port 1024 and udp dst port 1024 and udp[8:1]=0x11)", 0x1);
 }

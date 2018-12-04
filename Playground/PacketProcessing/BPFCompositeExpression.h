@@ -3,6 +3,8 @@
 
 
 #include "BPFExpression.h"
+#include <algorithm>
+#include <vector>
 
 
 enum PacketFlags
@@ -31,7 +33,7 @@ struct BPFCompositeExpression
 {
     BPFCompositeExpression();
 
-    bool hasFlag(int flag) const
+    bool has_flag(int flag) const
     {
         return (mFilterFlags & flag) == flag;
     }
@@ -42,45 +44,76 @@ struct BPFCompositeExpression
         mFilterFlags |= FilterFlags_Length;
     }
 
-    void add(BPFCompositeExpression& rhs)
+    void merge_and(BPFCompositeExpression& rhs)
     {
         mFilterFlags |= rhs.mFilterFlags;
         mPacketFlags |= rhs.mPacketFlags;
 
-        if (rhs.hasFlag(FilterFlags_Length))
+        if (rhs.has_flag(FilterFlags_Length))
         {
             mLength = rhs.mLength;
         }
 
-        if (rhs.hasFlag(FilterFlags_SrcIPv4))
+        if (rhs.has_flag(FilterFlags_SrcIPv4))
         {
             mPacketFlags |= PacketFlags_IPv4;
             mSourceIP = rhs.mSourceIP;
         }
 
-        if (rhs.hasFlag(FilterFlags_DstIPv4))
+        if (rhs.has_flag(FilterFlags_DstIPv4))
         {
             mPacketFlags |= PacketFlags_IPv4;
             mDestinationIP= rhs.mDestinationIP;
         }
 
-        if (rhs.hasFlag(FilterFlags_SrcPort))
+        if (rhs.has_flag(FilterFlags_SrcPort))
         {
             mSourcePort = rhs.mSourcePort;
         }
 
-        if (rhs.hasFlag(FilterFlags_DstPort))
+        if (rhs.has_flag(FilterFlags_DstPort))
         {
             mDestinationPort = rhs.mDestinationPort;
         }
 
-        if (rhs.hasFlag(FilterFlags_UDPPayload))
+        if (rhs.has_flag(FilterFlags_UDPPayload))
         {
             mPacketFlags |= PacketFlags_UDP;
             mUDPPayloadOffset = rhs.mUDPPayloadOffset;
             mUDPPayloadSize = rhs.mUDPPayloadSize;
             mUDPPayloadValue = rhs.mUDPPayloadValue;
         }
+    }
+
+    bool merge_or(BPFCompositeExpression& rhs);
+
+    bool match_length(const BPFCompositeExpression& rhs) const
+    {
+        if (match_length(rhs.mLength))
+        {
+            return true;
+        }
+
+        for (auto length : rhs.mLengths)
+        {
+            if (match_length(length))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool match_length(uint16_t value) const
+    {
+        if (value == mLength)
+        {
+            return true;
+        }
+
+        return !mLengths.empty()
+            && std::find(mLengths.begin(), mLengths.end(), value) != mLengths.end();
     }
 
     void add_impl(L3Type l3type)
@@ -169,7 +202,6 @@ struct BPFCompositeExpression
     uint16_t mFilterFlags = 0;
     uint16_t mPacketFlags = 0;
     uint16_t mLength = 0;
-    EtherType mEtherType{};
     IPv4Address mSourceIP{};
     IPv4Address mDestinationIP{};
     Net16 mSourcePort{};
@@ -177,6 +209,7 @@ struct BPFCompositeExpression
     uint16_t mUDPPayloadOffset = 0;
     uint16_t mUDPPayloadSize = 0;
     Net32 mUDPPayloadValue{};
+    std::vector<uint16_t> mLengths;
 };
 
 

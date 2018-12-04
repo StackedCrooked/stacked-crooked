@@ -8,6 +8,66 @@ BPFCompositeExpression::BPFCompositeExpression()
 }
 
 
+bool BPFCompositeExpression::merge_or(BPFCompositeExpression& rhs)
+{
+    if (mFilterFlags != rhs.mFilterFlags)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+        return false;
+    }
+
+    if (mPacketFlags != rhs.mPacketFlags)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+        return false;
+    }
+
+    if (has_flag(FilterFlags_SrcIPv4) && mSourceIP != rhs.mSourceIP)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+        return false;
+    }
+
+    if (has_flag(FilterFlags_DstIPv4) && mDestinationIP != rhs.mDestinationIP)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+        return false;
+    }
+
+    if (has_flag(FilterFlags_SrcPort) && mSourcePort != rhs.mSourcePort)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+        return false;
+    }
+
+    if (has_flag(FilterFlags_DstPort) && mDestinationPort != rhs.mDestinationPort)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+        return false;
+    }
+
+    if (has_flag(FilterFlags_UDPPayload)
+            && mUDPPayloadOffset != rhs.mUDPPayloadOffset
+            && mUDPPayloadSize   != rhs.mUDPPayloadSize
+            && mUDPPayloadValue  != rhs.mUDPPayloadValue)
+    {
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+        return false;
+    }
+
+    if (has_flag(FilterFlags_Length) && !match_length(rhs))
+    {
+        mLengths.push_back(rhs.mLength);
+        mLengths.insert(mLengths.end(), rhs.mLengths.begin(), rhs.mLengths.end());
+        return true;
+    }
+
+    // Filters are identical?
+    std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+    return true;
+}
+
+
 void BPFCompositeExpression::add_impl(UDPPayload udp_payload)
 {
     mFilterFlags |= FilterFlags_UDPPayload;
@@ -26,7 +86,7 @@ bool BPFCompositeExpression::match(const uint8_t* data, uint32_t size, uint32_t 
 
     if (mFilterFlags & FilterFlags_Length)
     {
-        if (size != mLength)
+        if (!match_length(size))
         {
             return false;
         }
@@ -91,14 +151,66 @@ std::string BPFCompositeExpression::toString() const
 
     int count = 0;
 
-    if (hasFlag(FilterFlags_L3Type )) { ss << (count == 0 ? "" : " and ") << ((mPacketFlags & PacketFlags_IPv4) ? "ip" : (mPacketFlags & PacketFlags_IPv6) ? "ip6" : "(NO IP?)") ; count++ ; }
-    if (hasFlag(FilterFlags_SrcIPv4)) { ss << (count == 0 ? "" : " and ") << "ip src " << mSourceIP.toString()                  ; count++ ; }
-    if (hasFlag(FilterFlags_DstIPv4)) { ss << (count == 0 ? "" : " and ") << "ip dst " << mSourceIP.toString()                  ; count++ ; }
-    if (hasFlag(FilterFlags_L4Type )) { ss << (count == 0 ? "" : " and ") << ((mPacketFlags & PacketFlags_UDP) ? "udp" : (mPacketFlags & PacketFlags_TCP) ? "tcp" : "(NO L4)") ; count++ ; }
-    if (hasFlag(FilterFlags_SrcPort)) { ss << (count == 0 ? "" : " and ") << "src port " << mSourcePort                         ; count++ ; }
-    if (hasFlag(FilterFlags_DstPort)) { ss << (count == 0 ? "" : " and ") << "dst port " << mSourcePort                         ; count++ ; }
-    if (hasFlag(FilterFlags_Length )) { ss << (count == 0 ? "" : " and ") << "len=" << mLength                                  ; count++ ; }
-    if (hasFlag(FilterFlags_UDPPayload)) { ss << (count == 0 ? "" : " and ") << " udp[" << mUDPPayloadOffset << ":" << mUDPPayloadSize << "]=" << mUDPPayloadValue; count++; }
+    if (has_flag(FilterFlags_L3Type))
+    {
+        ss << (count == 0 ? "" : " and ") << ((mPacketFlags & PacketFlags_IPv4) ? "ip" : (mPacketFlags & PacketFlags_IPv6) ? "ip6" : "(NO IP?)");
+        count++;
+    }
+
+    if (has_flag(FilterFlags_SrcIPv4))
+    {
+        ss << (count == 0 ? "" : " and ") << "ip src " << mSourceIP.toString();
+        count++;
+    }
+
+    if (has_flag(FilterFlags_DstIPv4))
+    {
+        ss << (count == 0 ? "" : " and ") << "ip dst " << mSourceIP.toString();
+        count++;
+    }
+
+    if (has_flag(FilterFlags_L4Type))
+    {
+        ss << (count == 0 ? "" : " and ") << ((mPacketFlags & PacketFlags_UDP) ? "udp" : (mPacketFlags & PacketFlags_TCP) ? "tcp" : "(NO L4)");
+        count++;
+    }
+
+    if (has_flag(FilterFlags_SrcPort))
+    {
+        ss << (count == 0 ? "" : " and ") << "src port " << mSourcePort;
+        count++;
+    }
+
+    if (has_flag(FilterFlags_DstPort))
+    {
+        ss << (count == 0 ? "" : " and ") << "dst port " << mSourcePort;
+        count++;
+    }
+
+    if (has_flag(FilterFlags_Length))
+    {
+        ss << (count == 0 ? "" : " and ");
+        if (mLengths.empty())
+        {
+            ss << "len=" << mLength;
+        }
+        else
+        {
+            ss << "(len=" << mLength;
+            for (auto value : mLengths)
+            {
+                ss << " or len=" << value;
+            }
+            ss << ")";
+        }
+        count++;
+    }
+
+    if (has_flag(FilterFlags_UDPPayload))
+    {
+        ss << (count == 0 ? "" : " and ") << " udp[" << mUDPPayloadOffset << ":" << mUDPPayloadSize << "]=" << mUDPPayloadValue;
+        count++;
+    }
 
     return ss.str();
 }

@@ -129,7 +129,7 @@ void do_run(uint32_t num_packets, uint32_t num_flows)
     }
 
     std::vector<uint64_t> matches(num_flows);
-    test<FilterType, prefetch>(packets, flows, l3_offset, l4_offset, matches.data());
+    test_udp_payload<FilterType, prefetch>(packets, flows, l3_offset, l4_offset, matches.data());
     std::cout << std::endl;
 
 }

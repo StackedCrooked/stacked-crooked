@@ -46,7 +46,7 @@ void Expression::and_append(Expression expr)
         }
 
         BPFCompositeExpression& comp = *expr.mBPF;
-        mBPF->add(comp);
+        mBPF->merge_and(comp);
     }
     else
     {
@@ -57,10 +57,44 @@ void Expression::and_append(Expression expr)
 
 Expression Expression::Or(Expression lhs, Expression rhs)
 {
+    if (lhs.is_bpf() && rhs.is_bpf())
+    {
+        if (lhs.mBPF->merge_or(*rhs.mBPF))
+        {
+            return lhs;
+        }
+    }
+
+
     Expression result;
     result.mType = Type::Or;
     result.or_append(std::move(lhs));
     result.or_append(std::move(rhs));
+
+    std::shared_ptr<BPFCompositeExpression> expr;
+
+    for (const Expression& child : result.mChildren)
+    {
+        if (!child.is_bpf())
+        {
+            return result;
+        }
+
+        if (!expr)
+        {
+            expr.reset(new BPFCompositeExpression(*child.mBPF));
+            continue;
+        }
+
+        if (!expr->merge_or(*child.mBPF))
+        {
+            return result;
+        }
+    }
+
+    result.mType = Type::BPF;
+    result.mBPF = std::move(expr);
+    result.mChildren.clear();
     return result;
 }
 

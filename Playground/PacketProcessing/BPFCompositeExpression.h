@@ -44,46 +44,7 @@ struct BPFCompositeExpression
         mFilterFlags |= FilterFlags_Length;
     }
 
-    void merge_and(BPFCompositeExpression& rhs)
-    {
-        mFilterFlags |= rhs.mFilterFlags;
-        mPacketFlags |= rhs.mPacketFlags;
-
-        if (rhs.has_flag(FilterFlags_Length))
-        {
-            mLength = rhs.mLength;
-        }
-
-        if (rhs.has_flag(FilterFlags_SrcIPv4))
-        {
-            mPacketFlags |= PacketFlags_IPv4;
-            mSourceIP = rhs.mSourceIP;
-        }
-
-        if (rhs.has_flag(FilterFlags_DstIPv4))
-        {
-            mPacketFlags |= PacketFlags_IPv4;
-            mDestinationIP= rhs.mDestinationIP;
-        }
-
-        if (rhs.has_flag(FilterFlags_SrcPort))
-        {
-            mSourcePort = rhs.mSourcePort;
-        }
-
-        if (rhs.has_flag(FilterFlags_DstPort))
-        {
-            mDestinationPort = rhs.mDestinationPort;
-        }
-
-        if (rhs.has_flag(FilterFlags_UDPPayload))
-        {
-            mPacketFlags |= PacketFlags_UDP;
-            mUDPPayloadOffset = rhs.mUDPPayloadOffset;
-            mUDPPayloadSize = rhs.mUDPPayloadSize;
-            mUDPPayloadValue = rhs.mUDPPayloadValue;
-        }
-    }
+    void merge_and(BPFCompositeExpression& rhs);
 
     bool merge_or(BPFCompositeExpression& rhs);
 

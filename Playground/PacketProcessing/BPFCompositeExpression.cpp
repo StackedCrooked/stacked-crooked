@@ -8,41 +8,79 @@ BPFCompositeExpression::BPFCompositeExpression()
 }
 
 
+void BPFCompositeExpression::merge_and(BPFCompositeExpression& rhs)
+{
+    // TODO: FR: We must check for conflicts (in which case the filter always returns false)
+
+    mFilterFlags |= rhs.mFilterFlags;
+    mPacketFlags |= rhs.mPacketFlags;
+
+    if (rhs.has_flag(FilterFlags_Length))
+    {
+        mLength = rhs.mLength;
+    }
+
+    if (rhs.has_flag(FilterFlags_SrcIPv4))
+    {
+        mPacketFlags |= PacketFlags_IPv4;
+        mSourceIP = rhs.mSourceIP;
+    }
+
+    if (rhs.has_flag(FilterFlags_DstIPv4))
+    {
+        mPacketFlags |= PacketFlags_IPv4;
+        mDestinationIP= rhs.mDestinationIP;
+    }
+
+    if (rhs.has_flag(FilterFlags_SrcPort))
+    {
+        mSourcePort = rhs.mSourcePort;
+    }
+
+    if (rhs.has_flag(FilterFlags_DstPort))
+    {
+        mDestinationPort = rhs.mDestinationPort;
+    }
+
+    if (rhs.has_flag(FilterFlags_UDPPayload))
+    {
+        mPacketFlags |= PacketFlags_UDP;
+        mUDPPayloadOffset = rhs.mUDPPayloadOffset;
+        mUDPPayloadSize = rhs.mUDPPayloadSize;
+        mUDPPayloadValue = rhs.mUDPPayloadValue;
+    }
+}
+
+
 bool BPFCompositeExpression::merge_or(BPFCompositeExpression& rhs)
 {
     if (mFilterFlags != rhs.mFilterFlags)
     {
-        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return false;
     }
 
     if (mPacketFlags != rhs.mPacketFlags)
     {
-        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return false;
     }
 
     if (has_flag(FilterFlags_SrcIPv4) && mSourceIP != rhs.mSourceIP)
     {
-        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return false;
     }
 
     if (has_flag(FilterFlags_DstIPv4) && mDestinationIP != rhs.mDestinationIP)
     {
-        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return false;
     }
 
     if (has_flag(FilterFlags_SrcPort) && mSourcePort != rhs.mSourcePort)
     {
-        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return false;
     }
 
     if (has_flag(FilterFlags_DstPort) && mDestinationPort != rhs.mDestinationPort)
     {
-        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return false;
     }
 
@@ -51,7 +89,6 @@ bool BPFCompositeExpression::merge_or(BPFCompositeExpression& rhs)
             && mUDPPayloadSize   != rhs.mUDPPayloadSize
             && mUDPPayloadValue  != rhs.mUDPPayloadValue)
     {
-        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return false;
     }
 
@@ -62,8 +99,7 @@ bool BPFCompositeExpression::merge_or(BPFCompositeExpression& rhs)
         return true;
     }
 
-    // Filters are identical?
-    std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+    // Filters are identical.
     return true;
 }
 

@@ -128,9 +128,6 @@ bool BPFCompositeExpression::match(const uint8_t* data, uint32_t size, uint32_t 
         }
     }
 
-    // if (mFlags & FilterFlags_IPv4)
-    // if (mFlags & FilterFlags_IPv6)
-
     if (mFilterFlags & FilterFlags_SrcIPv4)
     {
         if (mSourceIP != Decode<IPv4Header>(data + l3_offset).mSourceIP)

@@ -1,5 +1,6 @@
 #include "ParsedFilter.h"
 #include "Packet.h"
+#include <cassert>
 #include <iostream>
 
 

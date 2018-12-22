@@ -1,4 +1,3 @@
-#!/usr/local/bin/awk
 
 #
 # Helper for C++ code formatting. 

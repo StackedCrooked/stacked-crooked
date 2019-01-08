@@ -2,6 +2,7 @@
 #include <cassert>
 #include <chrono>
 #include <cstdint>
+#include <thread>
 
 
 using Clock = std::chrono::system_clock;
@@ -25,16 +26,14 @@ double detect_cpu_ghz_impl(Milliseconds ms)
 {
     auto start_tsc = get_rdtsc();
     auto start_time = Clock::now();
-    auto now = start_time;
 
-    while (now < start_time + ms)
-    {
-        now = Clock::now();
-    }
+    std::this_thread::sleep_for(ms);
+
+    auto end_time = Clock::now();
     auto elapsed_tsc = get_rdtsc() - start_tsc;
-    auto elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(now - start_time).count();
+    auto elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
 
-    return elapsed_tsc / elapsed_ns;
+    return 1.0 * elapsed_tsc / elapsed_ns;
 }
 
 

@@ -67,21 +67,17 @@ inline int64_t benchmark(int64_t n, int64_t& sum)
 
     auto start_time = now();
 
-    assert(n % 8 == 0); // required for unrolling
+    assert(n % 4 == 0); // required for unrolling
     for (auto i = 0; i != repetitions; ++i)
     {
         auto b = items;
         auto e = b + n;
-        for (; b != e; b += 8)
+        for (; b != e; b += 4)
         {
             sum += b[0] % modulo;
             sum += b[1] % modulo;
             sum += b[2] % modulo;
             sum += b[3] % modulo;
-            sum += b[4] % modulo;
-            sum += b[5] % modulo;
-            sum += b[6] % modulo;
-            sum += b[7] % modulo;
         }
     }
 
@@ -103,6 +99,13 @@ int main(int argc, char** argv)
 
     { static constexpr int64_t modulo = 4; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
     { static constexpr int64_t modulo = 8; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
+    { static constexpr int64_t modulo = 16; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
+    { static constexpr int64_t modulo = 32; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
+    { static constexpr int64_t modulo = 64; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
+    { static constexpr int64_t modulo = 128; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
     { static constexpr int64_t modulo = 10; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
     { static constexpr int64_t modulo = 100; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
+    { static constexpr int64_t modulo = 1000; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
+    { static constexpr int64_t modulo = 10000; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
+    { static constexpr int64_t modulo = 100000; int64_t sum = 0; auto cycles = benchmark<modulo>(num_items, sum); std::cout << "sum=" << sum << " num_items=" << num_items << " modulo=" << modulo << " cycles=" << cycles << " cycles_per_operation=" << (1.0 * cycles / num_items / repetitions) << std::endl; }
 }

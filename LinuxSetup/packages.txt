@@ -24,3 +24,5 @@ sshfs
 meld
 rlfe
 rabbitvcs-cli
+gnuplot-qt
+astyle

@@ -26,3 +26,4 @@ rlfe
 rabbitvcs-cli
 gnuplot-qt
 astyle
+p7zip-full

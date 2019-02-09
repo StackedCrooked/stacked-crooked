@@ -1,0 +1,1 @@
+{ echo "Time,TxPackets,RxPackets"; q -H --delimiter=','  "select tx.Time, tx.TxPackets, rx.RxPackets from Stream.csv tx join Trigger.csv rx on (tx.Time = rx.Time)" | head -n20 ; } | sed -e 's,\,, ,g' | column -t 

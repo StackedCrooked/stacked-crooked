@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 # Stream config
 pps=1000 # pps
 duration=10

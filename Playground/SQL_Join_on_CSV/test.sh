@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "Timestamp Packets" >Stream.csv
-echo "Timestamp Packets" >Trigger.csv
 
 
 # Stream config
@@ -14,8 +12,15 @@ latency_ms=15
 # Initial timestamp (start of flow)
 timestamp=1
 
+
+# Print CSV header
+echo "Timestamp Packets" >Stream.csv
+echo "Timestamp Packets" >Trigger.csv
+
+# How many packets the stream is ahead on the trigger.
+head_start=$(($pps * $latency_ms / 1000))
+
 for i in $(seq $duration); do
-    head_start=$(($pps * $latency_ms / 1000))
     echo "$timestamp $(($pps + $head_start))" >> Stream.csv
     echo "$timestamp $pps" >> Trigger.csv
     timestamp=$(($timestamp + 1))

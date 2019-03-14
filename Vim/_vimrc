@@ -1,6 +1,3 @@
-" -----------------------------------------------------------------------------
-"  General Settings
-" -----------------------------------------------------------------------------
 
 colorscheme morning
 
@@ -15,10 +12,6 @@ set bs=2
 
 " Expand tabs to spaces
 set expandtab
-
-" Don't replace tabs with spaces in makefiles
-autocmd FileType make set noexpandtab
-autocmd FileType * :set paste
 
 " Set scroll to 2 lines (default is 32)
 " Use with CTRL+D and CTRL+U
@@ -38,8 +31,6 @@ set incsearch
 " Set auto-indent rules
 set autoindent
 
-" Set filetype dependent indention rules
-filetype plugin indent on
 
 " Disable annoying backup/swap files
 set nobackup
@@ -47,7 +38,7 @@ set noswapfile
 set nowritebackup 
 
 " Turn off vi compatibility
-set nocompatible
+"set nocompatible
 
 " Show the ruler at the bottom
 set ruler
@@ -81,73 +72,6 @@ set splitbelow
 set splitright
 
 
-" I don't know what this is.
-fun! OpenFileBrowser()
-    let file = expand("%:t")
-    :Ve
-    exec ":normal 1G/^" . file . "\n"
-endf
-
-
 :map <F2> :tab split<CR>
 :map <F3> :vsplit<CR>
 
-
-
-"
-" OpenFile function.
-" Modelled after the Firefox "Open Link in New Tab"-command.
-"
-fun! OpenFile()
-  let tab_id = expand("%")
-  tab split
-  tabmove
-  normal gf
-  while tab_id != expand("%")
-    tabprev
-  endw
-  normal j
-endf
-
-
-" Map CTRL-G to the OpenFile function
-:map <C-G> :call OpenFile()<CR>
-
-
-
-"
-" Vundle
-"
-set nocompatible               " be iMproved
-filetype off                   " required!
-
-set rtp+=~/.vim/bundle/vundle/
-call vundle#rc()
-
-" let Vundle manage Vundle
-" required! 
-Bundle 'gmarik/vundle'
-
-" My Bundles here:
-"
-" original repos on github
-Bundle 'scrooloose/nerdtree'
-
-" vim-scripts repos
-Bundle 'Align'
-
-" non github repos
-Bundle 'git://git.wincent.com/command-t.git'
-
-filetype plugin indent on     " required!
-"
-" Brief help
-" :BundleList          - list configured bundles
-" :BundleInstall(!)    - install(update) bundles
-" :BundleSearch(!) foo - search(or refresh cache first) for foo
-" :BundleClean(!)      - confirm(or auto-approve) removal of unused bundles
-"
-" see :h vundle for more details or wiki for FAQ
-" NOTE: comments after Bundle command are not allowed..
-
-let NERDTreeIgnore = ['\.o$']

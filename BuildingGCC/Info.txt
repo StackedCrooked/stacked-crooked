@@ -1,4 +1,31 @@
 
 
+Basic build command
+-------------------
+./configure --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j2
 
-./configure --prefix=/usr/local --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j2
+ 
+./configure --prefix=/home/francis/local/gcc-7.3.0 --program-suffix=-7.3.0
+
+export V="7.3.0" ; export PREFIX="/home/francis/local/gcc-${V}" ; mkdir -p "${PREFIX}" ; ./configure --prefix=$PREFIX --program-suffix=-${V} --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j22
+
+./configure --prefix=/home/francis/local/gcc-8.2.0 --program-suffix=-8.2.0 --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j22
+
+
+Download
+--------
+https://ftp.gnu.org/gnu/gcc/gcc-8.2.0/gcc-8.2.0.tar.xz
+https://ftp.gnu.org/gnu/gcc/gcc-7.3.0/gcc-7.3.0.tar.xz
+
+
+Installing multiple versions
+----------------------------
+- Manual page:
+	https://gcc.gnu.org/faq.html#multiple
+- Using an install prefix
+	./configure --prefix=/usr/local/gcc-7.3.0
+- Modifying the program name
+	./configure --program-suffix=-7.3.0
+	./configure --program-prefix=GNU
+	./configure --program-transform-name=s/gcc/gcc-7.3.0/
+

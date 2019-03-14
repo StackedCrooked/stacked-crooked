@@ -1,6 +1,6 @@
 #!/bin/bash
 [ "$#" == "0" ] && {
-    MESMERIZE_AUTOLOAD="$(pwd)" open -n /Users/francis/programming/projects/build-Mesmerize-Qt_5_9_1_5_9_1-Release/Mesmerize.app
+    MESMERIZE_AUTOLOAD="$(pwd)" open -n /Users/francis/programming/projects/build-Mesmerize-Desktop_Qt_5_8_0_clang_64bit-Release/Mesmerize.app
     exit
 }
 

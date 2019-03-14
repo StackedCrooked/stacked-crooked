@@ -10,7 +10,7 @@
 # Repeat above procedure for input file dependenc
 
 
-require 'ftools'
+#require 'ftools'
 require 'fileutils'
 require 'open3'
 

@@ -174,11 +174,11 @@ struct Expression
     {
         Expression result;
         result.mType = Type::Bool;
-        result.mValue = static_cast<int>(b);
+        result.mValue = static_cast<uint32_t>(b);
         return result;
     }
 
-    static Expression Length(int value)
+    static Expression Length(uint32_t value)
     {
         Expression result;
         result.mType = Type::Length;
@@ -307,7 +307,7 @@ struct Expression
     }
 
     Type mType = Type::And;
-    int mValue = 0;
+    uint32_t mValue = 0;
     bpf_expression mBPF;
     std::vector<Expression> mChildren;
 };

@@ -64,6 +64,10 @@ int main()
                    "|| (ip and udp and len=124) "
                    "|| (ip and udp and len=252) "
                    "|| (ip and udp and len=508) ", 60, true);
+    test_length_or("(ip and udp and len=60) "
+                   "|| (ip and udp and len=124) "
+                   "|| (ip and udp and len=252) "
+                   "|| (ip and udp and len=508) ", 252, true);
     std::cout << std::endl;
     std::cout << std::endl;
     std::cout << std::endl;

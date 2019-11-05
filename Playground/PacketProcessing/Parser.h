@@ -13,33 +13,45 @@ struct Parser
 
     Expression parse();
 
-    Expression parse_logical_expression()
+    Expression parse_expression()
     {
-        auto result = parse_unary_expression();
+        // expr = term { ("and"|"or" term }
 
-        if (consume_token("and") || consume_text("&&"))
+        Expression result = parse_term();
+
+        for (;;)
         {
-            result = Expression::And(std::move(result), parse_logical_expression());
-        }
-        else if (consume_token("or") || consume_text("||"))
-        {
-            result = Expression::Or(std::move(result), parse_logical_expression());
+            if (consume_either_token("and", "&&"))
+            {
+                result = Expression::And(result, parse_term());
+            }
+            else if (consume_either_token("or", "||"))
+            {
+                result = Expression::Or(result, parse_term());
+            }
+            else
+            {
+                break;
+            }
         }
 
         return result;
     }
 
-    Expression parse_unary_expression()
+    void expect(const char* str)
+    {
+        if (!consume_text(str))
+        {
+            error(std::string("Expected: ") + str);
+        }
+    }
+
+    Expression parse_term()
     {
         if (consume_text("("))
         {
-            auto result = parse_logical_expression();
-
-            if (!consume_text(")"))
-            {
-                return error("')'");
-            }
-
+            auto result = parse_expression();
+            expect(")");
             return result;
         }
         else
@@ -83,12 +95,21 @@ struct Parser
         return *mText == '\0';
     }
 
+
+
+
     void consume_whitespace()
     {
         while (is_space(*mText))
         {
             ++mText;
         }
+    }
+
+    bool consume_either_token(const char* token1, const char* token2)
+    {
+        consume_whitespace();
+        return consume_token_here(token1) || consume_token_here(token2);
     }
 
     bool consume_token(const char* token)

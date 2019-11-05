@@ -43,7 +43,7 @@ Expression Parser::parse()
         return Expression::True();
     }
 
-    auto result = parse_logical_expression();
+    auto result = parse_expression();
 
     if (!consume_eof())
     {
@@ -220,7 +220,7 @@ Expression Parser::parse_bpf_expression()
         }
     }
 
-    throw std::runtime_error("Invalid filter");
+    throw std::runtime_error(std::string("Invalid filter: ") + mText);
 }
 
 

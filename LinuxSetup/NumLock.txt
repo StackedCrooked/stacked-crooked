@@ -1,0 +1,8 @@
+How to enable NumLock at boot time
+----------------------------------
+- Install numlockx:
+    sudo apt-get install numlockx
+
+- Add a cron job that turns on numlock at boot time:
+    @reboot /usr/bin/numlockx on
+

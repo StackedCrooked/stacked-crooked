@@ -12,12 +12,12 @@
 
 struct Node
 {
-    explicit Node(int64_t id) :
+    explicit Node(uint32_t id) :
         mId(id)
     {
     }
 
-    int64_t id() const
+    uint32_t id() const
     {
         return mId;
     }
@@ -41,7 +41,7 @@ struct Node
         return mParent && mParent->is_connected();
     }
 
-    int64_t num_elements() const
+    uint32_t num_elements() const
     {
         // Note that the root node is not counted as an element
         auto result = mChildren.size();
@@ -54,21 +54,21 @@ struct Node
         return result;
     }
 
-    int64_t mId = 0;
+    uint32_t mId = 0;
     Node* mParent = nullptr;
-    std::map<int64_t, Node*> mChildren;
+    std::map<uint32_t, Node*> mChildren;
     bool mIsConnected = mId == 0;
     bool mIsLeaf = false;
 };
 
 
 Node gRootNode(0);
-std::unordered_map<int64_t, std::unique_ptr<Node>> gAllNodes;
+std::unordered_map<uint32_t, std::unique_ptr<Node>> gAllNodes;
 std::set<Node*> gOrphans;
-int64_t gLeafMarkers = 0;
+uint32_t gLeafMarkers = 0;
 
 
-Node* find_node(int64_t node_id)
+Node* find_node(uint32_t node_id)
 {
     if (node_id == 0)
     {
@@ -86,7 +86,7 @@ Node* find_node(int64_t node_id)
 }
 
 
-Node& obtain_node(int64_t node_id)
+Node& obtain_node(uint32_t node_id)
 {
     if (node_id == 0)
     {
@@ -224,7 +224,7 @@ void verify_results()
 
 int main()
 {
-    std::random_shuffle(gInput.begin(), gInput.end());
+    //std::random_shuffle(gInput.begin(), gInput.end());
     //print_input();
     build_tree();
     print_tree();
@@ -240,6 +240,7 @@ int main()
     std::cout << "  Orphans:  " << gOrphans.size() << std::endl;
     std::cout << "  LeafTags: " << gLeafMarkers << std::endl;
     std::cout << std::endl;
-    std::cout << "Tree.size + Orphans.size + LeafTags.size=" << gRootNode.num_elements() + gOrphans.size() + gLeafMarkers << std::endl;
+    std::cout << "Tree + Orphans = " << gRootNode.num_elements() + gOrphans.size() << std::endl;
+    std::cout << "Tree + Orphans + LeafTags = " << gRootNode.num_elements() + gOrphans.size() + gLeafMarkers << std::endl;
 }
 

@@ -1,7 +1,7 @@
 #include "Input.h"
 
 
-std::vector<std::pair<int64_t, int64_t>> gInput = {
+std::vector<std::pair<uint32_t, uint32_t>> gInput = {
     { 0,268435747 },
     { 0,268435748 },
     { 0,268435749 },
@@ -1593,7 +1593,7 @@ std::vector<std::pair<int64_t, int64_t>> gInput = {
 
 
 
-std::unordered_map<int64_t, std::string> gDescriptions = {
+std::unordered_map<uint32_t, std::string> gDescriptions = {
     { 34213896 , "cable-upstream 1/0/0" },
     { 34213897 , "cable-upstream 1/0/0.0" },
     { 34213904 , "cable-upstream 1/0/1" },

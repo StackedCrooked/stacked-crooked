@@ -65,6 +65,7 @@ struct Node
 Node gRootNode(0);
 std::unordered_map<int64_t, std::unique_ptr<Node>> gAllNodes;
 std::set<Node*> gOrphans;
+int64_t gLeafMarkers = 0;
 
 
 Node* find_node(int64_t node_id)
@@ -148,6 +149,18 @@ void count_orphans()
 }
 
 
+void count_leaf_markers()
+{
+    for (auto& el : gInput)
+    {
+        if (el.first != 0 && el.second == 0)
+        {
+            gLeafMarkers++;
+        }
+    }
+}
+
+
 void build_tree()
 {
     for (const auto& pair : gInput)
@@ -217,12 +230,16 @@ int main()
     print_tree();
     verify_results();
     count_orphans();
+    count_leaf_markers();
 
     std::cout << std::endl;
 
     std::cout << "INFO:\n";
-    std::cout << "  Input:   " << gInput.size() << " elements" << std::endl;
-    std::cout << "  Tree:    " << gRootNode.num_elements() << " elements" << std::endl;
-    std::cout << "  Orphans: " << gOrphans.size() << " elements" << std::endl;
+    std::cout << "  Input:    " << gInput.size() << std::endl;
+    std::cout << "  Tree:     " << gRootNode.num_elements() << std::endl;
+    std::cout << "  Orphans:  " << gOrphans.size() << std::endl;
+    std::cout << "  LeafTags: " << gLeafMarkers << std::endl;
+    std::cout << std::endl;
+    std::cout << "Tree.size + Orphans.size + LeafTags.size=" << gRootNode.num_elements() + gOrphans.size() + gLeafMarkers << std::endl;
 }
 

@@ -1,9 +1,11 @@
 #include "Input.h"
 #include <algorithm>
-#include <iostream>
+#include <cassert>
 #include <iomanip>
+#include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 
@@ -21,6 +23,11 @@ struct Node
     }
     const std::string& name() const
     {
+        if (mId == 0)
+        {
+            static std::string root_name = "root";
+            return root_name;
+        }
         return gDescriptions[mId];
     }
 
@@ -36,7 +43,8 @@ struct Node
 
     int64_t num_elements() const
     {
-        auto result = 1;
+        // Note that the root node is not counted as an element
+        auto result = mChildren.size();
 
         for (auto& el : mChildren)
         {
@@ -56,6 +64,7 @@ struct Node
 
 Node gRootNode(0);
 std::unordered_map<int64_t, std::unique_ptr<Node>> gAllNodes;
+std::set<Node*> gOrphans;
 
 
 Node* find_node(int64_t node_id)
@@ -93,10 +102,9 @@ Node& obtain_node(int64_t node_id)
 }
 
 
-void print_node(const Node& node, int indent = 0)
+void print_node(const Node& node, int indent)
 {
     std::cout
-        << std::setw(12) << std::left << node.id() << ":"
         << std::string(indent, ' ')
         << node.name()
         << std::endl;
@@ -107,16 +115,47 @@ void print_node(const Node& node, int indent = 0)
 }
 
 
+void print_tree()
+{
+    std::cout << "TREE:" << std::endl;
+    print_node(gRootNode, 0);
+}
+
+
+void print_input()
+{
+    std::cout << "Input: " << std::endl;
+    for (auto& el : gInput)
+    {
+        std::cout << el.first << " " << el.second << std::endl;
+    }
+
+    std::cout << std::endl;
+
+}
+
+
+void count_orphans()
+{
+    for (auto& el : gAllNodes)
+    {
+        Node& node = *el.second;
+        if (!node.is_connected())
+        {
+            gOrphans.insert(&node);
+        }
+    }
+}
+
+
 void build_tree()
 {
     for (const auto& pair : gInput)
     {
         auto parent_id = pair.first;
-        auto child_id = pair.second;
-
-
         Node& parent_node = obtain_node(parent_id);
 
+        auto child_id = pair.second;
         if (child_id == 0)
         {
             parent_node.mIsLeaf = true;
@@ -124,12 +163,11 @@ void build_tree()
         }
 
         Node& child_node = obtain_node(child_id);
-
         parent_node.mChildren[child_id] = &child_node;
         child_node.mParent = &parent_node;
     }
-
 }
+
 
 void verify_results()
 {
@@ -168,43 +206,23 @@ void verify_results()
     }
 
     std::cout << "OK" << std::endl;
-
 }
-
-
 
 
 int main()
 {
     std::random_shuffle(gInput.begin(), gInput.end());
-
-    std::cout << "Input: " << std::endl;
-    for (auto& el : gInput)
-    {
-        std::cout << el.first << " " << el.second << std::endl;
-    }
-
-    std::cout << std::endl;
-
+    //print_input();
     build_tree();
-
-
-    std::cout << "gAllNodes.size=" << gAllNodes.size() << " gRootNode.num_elements=" << gRootNode.num_elements() << std::endl;
-    print_node(gRootNode);
-
-    std::cout << "Not connected:\n";
-    for (auto& el : gAllNodes)
-    {
-        Node& node = *el.second;
-        if (!node.is_connected())
-        {
-            std::cout << "    [x] " << std::setw(12) << std::left << node.id() << " (" << node.name() << ")\n";
-        }
-    }
-
+    print_tree();
     verify_results();
+    count_orphans();
 
     std::cout << std::endl;
 
+    std::cout << "INFO:\n";
+    std::cout << "  Input:   " << gInput.size() << " elements" << std::endl;
+    std::cout << "  Tree:    " << gRootNode.num_elements() << " elements" << std::endl;
+    std::cout << "  Orphans: " << gOrphans.size() << " elements" << std::endl;
 }
 

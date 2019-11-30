@@ -42,7 +42,7 @@ struct Node
 
     int64_t mId = 0;
     Node* mParent = nullptr;
-    std::unordered_map<int64_t, Node*> mChildren;
+    std::map<int64_t, Node*> mChildren;
     bool mIsConnected = mId == 0;
 };
 

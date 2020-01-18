@@ -90,7 +90,7 @@ bool Stream::try_send()
         }
         else
         {
-            throw std::runtime_error("Failed to transmit frame. Stopping flow.");
+            throw boost::system::system_error(ec);
         }
     }
 

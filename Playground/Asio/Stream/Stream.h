@@ -23,6 +23,7 @@ class Stream
 {
 public:
     Stream(boost::asio::io_context& context, const std::string& ip, int port, StreamConfig config) :
+        mContext(context),
         mRemoteEndPoint(boost::asio::ip::make_address(ip), port),
         mSocket(context),
         mTimer(context),
@@ -92,7 +93,7 @@ private:
         }
 
         // Reschedule immediately using post().
-        mSocket.get_io_context().post([this] {
+        mContext.post([this] {
             send_burst(Clock::now());
         });
     }
@@ -116,6 +117,7 @@ private:
         return true;
     }
 
+    boost::asio::io_context& mContext;
     boost::asio::ip::udp::endpoint mRemoteEndPoint;
     boost::asio::ip::udp::socket mSocket;
     boost::asio::system_timer mTimer;

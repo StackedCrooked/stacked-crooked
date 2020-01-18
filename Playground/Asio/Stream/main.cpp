@@ -9,8 +9,8 @@ void run(const std::string& ip, int port)
 
     auto start_time = Clock::now();
     StreamConfig config;
-    config.payload.resize(4, 'a');
-    config.number_of_frames = 10 * 1000;
+    config.payload.resize(1200, 'a');
+    config.number_of_frames = 1000 * 1000;
     config.frame_interval = std::chrono::microseconds(5);
     Stream stream(context, ip, port, config);
     stream.start();

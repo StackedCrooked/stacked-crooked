@@ -33,9 +33,8 @@ public:
     }
 
 private:
-    void send_next_packet();
-    void send_next_packet(Clock::time_point current_time);
-    bool try_send();
+    void send_next();
+    void send_next(Clock::time_point current_time);
 
     boost::asio::io_context& mContext;
     boost::asio::ip::udp::endpoint mRemoteEndPoint;

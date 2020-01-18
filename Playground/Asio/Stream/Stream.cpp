@@ -25,11 +25,11 @@ void Stream::start()
     mNextTransmitTime = current_time;
     mExpectedStopTime = current_time + mMaxTransmissions * mTransmitInterval;
     mForcedStopTime = mExpectedStopTime + std::chrono::milliseconds(500); // extra time
-    send_next_packet();
+    send_next();
 }
 
 
-void Stream::send_next_packet()
+void Stream::send_next()
 {
     auto current_time = Clock::now();
 
@@ -41,10 +41,17 @@ void Stream::send_next_packet()
     // Send a burst of at most 8 packets.
     for (auto i = 0; i != 8; ++i)
     {
-        if (!try_send())
+        boost::system::error_code ec;
+        mSocket.send_to(boost::asio::buffer(mPayload), mRemoteEndPoint, 0, ec);
+        if (ec)
         {
-            // Socket is blocked. Reschedule immediately using post().
-            break;
+            if (ec == boost::asio::error::would_block)
+            {
+                // End the current burst.
+                break;
+            }
+
+            throw boost::system::system_error(ec);
         }
 
         mNextTransmitTime += mTransmitInterval;
@@ -61,38 +68,16 @@ void Stream::send_next_packet()
             mTimer.expires_at(std::min(mForcedStopTime, mNextTransmitTime));
             mTimer.async_wait([this](boost::system::error_code ec) {
                 if (!ec) {
-                    send_next_packet();
+                    send_next();
                 }
             });
             return;
         }
     }
 
-    // Reschedule immediately.
+    // End of burst was reached without catching up with the timer => reschedule immediately.
     mContext.post([this] {
-        send_next_packet();
+        send_next();
     });
 
-}
-
-
-bool Stream::try_send()
-{
-    boost::system::error_code ec;
-    mSocket.send_to(boost::asio::buffer(mPayload), mRemoteEndPoint, 0, ec);
-
-    if (ec)
-    {
-        if (ec == boost::asio::error::would_block)
-        {
-            // We failed to transmit the packet.
-            return false;
-        }
-        else
-        {
-            throw boost::system::system_error(ec);
-        }
-    }
-
-    return true;
 }

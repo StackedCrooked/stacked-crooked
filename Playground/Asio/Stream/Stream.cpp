@@ -7,7 +7,7 @@ Stream::Stream(boost::asio::io_context& context, const std::string& ip, int port
     mContext(context),
     mRemoteEndPoint(boost::asio::ip::make_address(ip), port),
     mSocket(mContext),
-    mTransmitTimer(mContext),
+    mTimer(mContext),
     mPayload(config.payload),
     mNumFramesSent(0),
     mMaxTransmissions(config.number_of_frames),
@@ -21,61 +21,84 @@ Stream::Stream(boost::asio::io_context& context, const std::string& ip, int port
 void Stream::start()
 {
     auto current_time = Clock::now();
+    mNextTransmitTime = mStartTime;
     mNextTransmitTime = current_time;
-    mStopTime = current_time + mMaxTransmissions * mTransmitInterval;
+    mExpectedStopTime = current_time + mMaxTransmissions * mTransmitInterval;
+    mForcedStopTime = mExpectedStopTime + std::chrono::milliseconds(500); // extra time
+    enter_transmit_loop();
+}
+
+
+void Stream::enter_transmit_loop()
+{
+    auto current_time = Clock::now();
+
+    if (current_time >= mForcedStopTime)
+    {
+        return;
+    }
+
     send_next(current_time);
 }
 
 
 void Stream::send_next(Clock::time_point current_time)
 {
-    for (;;)
+    for (auto i = 0; i != 8; ++i)
     {
-        if (current_time >= mStopTime)
+        if (!try_send())
         {
-            std::cout << "Stopping because timer has expired." << std::endl;
+            // Socket is blocked. Reschedule immediately using post().
+            break;
+        }
+
+        mNextTransmitTime += mTransmitInterval;
+        mNumFramesSent++;
+
+        if (mNumFramesSent >= mMaxTransmissions)
+        {
+            assert(mNumFramesSent == mMaxTransmissions);
             return;
         }
 
         if (current_time < mNextTransmitTime)
         {
-            //std::cout << "Reschedule in " << (mNextTransmitTime - current_time).count() << "us. mNumFramesSent=" << mNumFramesSent << std::endl;
-
-            mTransmitTimer.expires_at(mNextTransmitTime);
-            mTransmitTimer.async_wait([this](const boost::system::error_code& ec) {
-                if (ec) {
-                    std::cout << "mTransmitTimer: got error in async_await callback: " << ec.message() << std::endl;
-                    return;
+            mTimer.expires_at(mNextTransmitTime);
+            mTimer.async_wait([this](boost::system::error_code ec) {
+                if (!ec) {
+                    enter_transmit_loop();
                 }
-                send_next(Clock::now());
             });
             return;
         }
-
-        boost::system::error_code ec;
-        mSocket.send_to(boost::asio::buffer(mPayload), mRemoteEndPoint, 0, ec);
-
-        if (ec)
-        {
-            if (ec == boost::asio::error::would_block)
-            {
-                std::cout << "mNumFramesSent=" << mNumFramesSent << std::endl;
-                mContext.post([this] { send_next(Clock::now()); });
-                return;
-            }
-
-            std::cout << "Stream: transmit error: " << ec.message();
-            std::cout << "Stopping transmission!" << std::endl;
-            return;
-        }
-
-        if (++mNumFramesSent == mMaxTransmissions)
-        {
-            //std::cout << "Stream is finished! Stopping transmission!" << std::endl;
-            return;
-        }
-
-        mNextTransmitTime += mTransmitInterval;
     }
 
+    // The burst was sent without catching up.
+    // Reschedule immediately.
+    mContext.post([this] {
+        enter_transmit_loop();
+    });
+
+}
+
+
+bool Stream::try_send()
+{
+    boost::system::error_code ec;
+    mSocket.send_to(boost::asio::buffer(mPayload), mRemoteEndPoint, 0, ec);
+
+    if (ec)
+    {
+        if (ec == boost::asio::error::would_block)
+        {
+            // We failed to transmit the packet.
+            return 0;
+        }
+        else
+        {
+            throw std::runtime_error("Failed to transmit frame. Stopping flow.");
+        }
+    }
+
+    return mPayload.size();
 }

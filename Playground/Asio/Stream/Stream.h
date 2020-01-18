@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <chrono>
-#include <memory>
 #include <string>
 #include <boost/asio.hpp>
 
@@ -20,35 +19,113 @@ struct StreamConfig
 };
 
 
-class Stream : std::enable_shared_from_this<Stream>
+class Stream
 {
 public:
-    Stream(boost::asio::io_context& context, const std::string& ip, int port, StreamConfig config);
+    Stream(boost::asio::io_context& context, const std::string& ip, int port, StreamConfig config) :
+        mRemoteEndPoint(boost::asio::ip::make_address(ip), port),
+        mSocket(context),
+        mTimer(context),
+        mFrame(config.payload),
+        mNumberOfFramesSent(0),
+        mNumberOfFrames(config.number_of_frames),
+        mFrameInterval(config.frame_interval)
+    {
+        mSocket.open(boost::asio::ip::udp::v4());
 
-    void start();
+        // open socket in non-blocking mode!
+        mSocket.non_blocking(true);
+    }
+
+    void start()
+    {
+        auto current_time = Clock::now();
+        mNextTransmitTime = current_time;
+        mStopTime = current_time + mNumberOfFrames * mFrameInterval;
+        send_burst(current_time);
+    }
 
     int64_t getNumFramesSent() const
     {
-        return mNumFramesSent;
+        return mNumberOfFramesSent;
     }
 
 private:
-    void send_next();
-    void send_next(Clock::time_point current_time);
+    void send_burst(Clock::time_point current_time)
+    {
+        if (current_time >= mStopTime)
+        {
+            return;
+        }
 
-    boost::asio::io_context& mContext;
+        for (auto i = 0; i != 128; ++i)
+        {
+            if (!try_send())
+            {
+                break;
+            }
+
+            mNumberOfFramesSent++;
+            mNextTransmitTime += mFrameInterval;
+
+            if (mNumberOfFramesSent >= mNumberOfFrames)
+            {
+                return;
+            }
+
+            if (current_time < mNextTransmitTime)
+            {
+                if (mNextTransmitTime >= mStopTime)
+                {
+                    // Don't schedule a transmission to happen after the stop time.
+                    return;
+                }
+
+                mTimer.expires_at(mNextTransmitTime);
+                mTimer.async_wait([this](boost::system::error_code ec) {
+                    if (!ec) {
+                        send_burst(Clock::now());
+                    }
+                });
+                return;
+            }
+        }
+
+        // Reschedule immediately using post().
+        mSocket.get_io_context().post([this] {
+            send_burst(Clock::now());
+        });
+    }
+
+    bool try_send()
+    {
+        boost::system::error_code ec;
+
+        mSocket.send_to(boost::asio::buffer(mFrame), mRemoteEndPoint, 0, ec);
+
+        if (ec)
+        {
+            if (ec == boost::asio::error::would_block)
+            {
+                return false;
+            }
+
+            throw boost::system::system_error(ec);
+        }
+
+        return true;
+    }
+
     boost::asio::ip::udp::endpoint mRemoteEndPoint;
     boost::asio::ip::udp::socket mSocket;
     boost::asio::system_timer mTimer;
-    std::string mPayload;
-    int64_t mNumFramesSent = 0;
-    int64_t mMaxTransmissions = 0;
-    std::chrono::microseconds mTransmitInterval{};
+    std::string mFrame;
+    int64_t mNumberOfFramesSent = 0;
+    int64_t mNumberOfFrames = 0;
+    std::chrono::microseconds mFrameInterval{};
 
     Clock::time_point mNextTransmitTime{};
-    Clock::time_point mStartTime{};
-    Clock::time_point mExpectedStopTime{};
-    Clock::time_point mForcedStopTime{};
+    Clock::time_point mStopTime{};
 };
 
 

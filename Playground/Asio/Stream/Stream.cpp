@@ -58,7 +58,7 @@ void Stream::send_next_packet()
 
         if (current_time < mNextTransmitTime)
         {
-            mTimer.expires_at(mNextTransmitTime);
+            mTimer.expires_at(std::min(mForcedStopTime, mNextTransmitTime));
             mTimer.async_wait([this](boost::system::error_code ec) {
                 if (!ec) {
                     send_next_packet();

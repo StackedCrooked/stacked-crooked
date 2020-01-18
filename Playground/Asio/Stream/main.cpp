@@ -4,6 +4,7 @@
 
 void run(const std::string& ip, int port)
 {
+    std::cout << "Starting stream" << std::endl;
     boost::asio::io_context context;
 
     auto start_time = Clock::now();
@@ -14,7 +15,9 @@ void run(const std::string& ip, int port)
     Stream stream(context, ip, port, config);
     stream.start();
 
+    // This will block until the flow is finished.
     context.run();
+    std::cout << "io_context.run() returned." << std::endl;
 
     auto elapsed_time = Clock::now() - start_time;
     auto num_frames_sent = stream.getNumFramesSent();
@@ -24,7 +27,7 @@ void run(const std::string& ip, int port)
     }
     else
     {
-        std::cout << "All frames sent in time!" << std::endl;
+        std::cout << "All " << num_frames_sent << " frames sent in time!" << std::endl;
     }
 
     std::cout << "Finished!" << std::endl;

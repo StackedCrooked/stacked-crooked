@@ -33,8 +33,8 @@ public:
     }
 
 private:
-    void enter_transmit_loop();
-    void send_next(Clock::time_point current_time);
+    void send_next_packet();
+    void send_next_packet(Clock::time_point current_time);
     bool try_send();
 
     boost::asio::io_context& mContext;

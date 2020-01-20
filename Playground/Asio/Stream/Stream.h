@@ -34,8 +34,12 @@ public:
     {
         mSocket.open(boost::asio::ip::udp::v4());
 
-        // open socket in non-blocking mode!
+        // open socket in non-blocking mode
         mSocket.non_blocking(true);
+
+        // configure a maximum buffer size
+        boost::asio::socket_base::send_buffer_size option(32 * 1024);
+        mSocket.set_option(option);
     }
 
     void start()

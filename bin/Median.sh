@@ -20,7 +20,7 @@ sort -n | awk '{
             a = numbers[i,num_lines/2]
             b = numbers[i,num_lines/2 + 1]
             avg = (a + b)/2
-            printf "%1s",avg
+            printf "%s",avg
             if (i < num_columns) {
                 printf " "
             }

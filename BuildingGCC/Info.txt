@@ -5,12 +5,26 @@ Basic build command
 ./configure --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j2
 
  
+
+Downloading prerequisites
+-------------------------
+
+# This takes care of MPC, MPFR, GMP and ISL dependencies
+./contrib/download_prerequisites
+
+# Try this one
+./configure --disable-multilib --enable-languages=c,c++ && make -j2
+
+
+# If above fails then try this
+#./configure --disable-multilib --without-cloog --enable-languages=c,c++ && make -j2
+
+
+Using a prefix
+---------------
 ./configure --prefix=/home/francis/local/gcc-7.3.0 --program-suffix=-7.3.0
-
 export V="7.3.0" ; export PREFIX="/home/francis/local/gcc-${V}" ; mkdir -p "${PREFIX}" ; ./configure --prefix=$PREFIX --program-suffix=-${V} --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j22
-
 ./configure --prefix=/home/francis/local/gcc-8.2.0 --program-suffix=-8.2.0 --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j22
-
 
 Download
 --------

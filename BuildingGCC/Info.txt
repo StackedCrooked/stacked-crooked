@@ -1,10 +1,5 @@
 
 
-Basic build command
--------------------
-./configure --disable-multilib --without-mpc --without-mpfr --without-gmp --without-cloog --without-isl --enable-languages=c,c++ && make -j2
-
-
 Installing GCC
 --------------
 - Link: https://gcc.gnu.org/wiki/InstallingGCC

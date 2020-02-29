@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo apt-get install -y $(cat command-line-packages.txt) $(cat desktop-packages.txt | xargs)

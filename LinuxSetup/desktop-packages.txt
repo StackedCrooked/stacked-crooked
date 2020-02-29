@@ -1,0 +1,4 @@
+libxss1
+python-gtk2
+xclip
+gnuplot-qt

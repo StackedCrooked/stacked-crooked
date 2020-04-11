@@ -17,11 +17,11 @@ Installing GCC
     cd .. && mkdir build && cd build
 
     # Configure step. Note that this should always be called from outside the source directory.
-    $(pwd)/../gcc-9.2.0/configure --prefix=/opt/gcc-9.2.0 --disable-multilib --enable-languages=c,c++
+    ../gcc-9.2.0/configure --prefix=/opt/gcc-9.2.0 --disable-multilib --enable-languages=c,c++
 
     # Build the code
     make -j3
-    make install
+    make install-strip
 
 
 

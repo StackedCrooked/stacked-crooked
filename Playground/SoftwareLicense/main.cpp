@@ -35,12 +35,14 @@ struct UserFields
 uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware_identifier, int version)
 {
     // Adding a salt makes it a little harder to reverse engineer the checksum algorithm.
-    static const std::string secret_salt = "Hans en Grietje";
+    static const std::string salt = "Hans en Grietje";
 
     SHA256 sha256;
-    sha256.add(secret_salt);
+    sha256.add(salt);
     sha256.add(hardware_identifier);
     sha256.add(version);
+
+    // Version 1
     sha256.add(fields.mNumberOfTrunkingPorts);
     sha256.add(fields.mNumberOfNonTrunkingPorts);
 
@@ -75,7 +77,7 @@ struct LicenseFile
 
     static LicenseFile LoadFromString(const std::string& str)
     {
-        LicenseFile result = LicenseFile();
+        LicenseFile result;
         memcpy(&result, str.data(), std::min(str.size(), sizeof(result)));
         return result;
     }
@@ -84,13 +86,13 @@ struct LicenseFile
     {
         if (mVersion < Version1 || mVersion > CurrentVersion)
         {
-            // Unsupported version number;
+            // Unsupported version number.
             return false;
         }
 
         if (CalculateChecksum(mFields, hardware_identifier, mVersion) != mChecksum)
         {
-            // Invalid checksum!
+            // Invalid checksum.
             return false;
         }
 

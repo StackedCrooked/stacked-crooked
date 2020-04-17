@@ -139,11 +139,11 @@ int main(int argc, char** argv)
     LicenseFile v2 = LicenseFile(fields, hardware_identifier, Version2);
     assert(v2.validate(hardware_identifier));
 
-    // The NBase-T field is not part of the checksum for Version 2.
+    // The G5 field is not part of the checksum for Version 2.
     v2.mFields.mNumberOfG5Modules++;
     assert(v2.validate(hardware_identifier));
 
-    // However, the USB field is part of the checksum for Version 2.
+    // However, the serial port field is part of the checksum for Version 2.
     v2.mFields.mNumberOfSerialPorts++;
     assert(!v2.validate(hardware_identifier));
 

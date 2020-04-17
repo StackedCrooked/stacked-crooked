@@ -25,7 +25,7 @@ struct UserFields
     uint32_t mNumberOfBluetoothPorts = 0;
 
     // Since Version 3:
-    uint32_t mNumberOfNBaseTPorts = 0;
+    uint32_t mNumberOfG5Modules = 0;
 };
 
 
@@ -41,12 +41,8 @@ uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware
     sha256.add(secret_salt);
     sha256.add(hardware_identifier);
     sha256.add(version);
-
-    if (version >= 1) // needless check, but I like the consistency with the code below
-    {
-        sha256.add(fields.mNumberOfTrunkingPorts);
-        sha256.add(fields.mNumberOfNonTrunkingPorts);
-    }
+    sha256.add(fields.mNumberOfTrunkingPorts);
+    sha256.add(fields.mNumberOfNonTrunkingPorts);
 
     if (version >= 2)
     {
@@ -56,7 +52,7 @@ uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware
 
     if (version >= 3)
     {
-        sha256.add(fields.mNumberOfNBaseTPorts);
+        sha256.add(fields.mNumberOfG5Modules);
     }
 
     return sha256.getLower64Bit();
@@ -79,7 +75,7 @@ struct LicenseFile
 
     static LicenseFile LoadFromString(const std::string& str)
     {
-        LicenseFile result;
+        LicenseFile result = LicenseFile();
         memcpy(&result, str.data(), std::min(str.size(), sizeof(result)));
         return result;
     }
@@ -132,7 +128,7 @@ int main(int argc, char** argv)
     UserFields fields;
     fields.mNumberOfNonTrunkingPorts = 2;
     fields.mNumberOfTrunkingPorts = 48;
-    fields.mNumberOfNBaseTPorts = 8;
+    fields.mNumberOfG5Modules = 8;
 
     LicenseFile good_license = LicenseFile(fields, hardware_identifier, CurrentVersion);
     assert(good_license.validate(hardware_identifier));
@@ -142,7 +138,7 @@ int main(int argc, char** argv)
     assert(v2.validate(hardware_identifier));
 
     // The NBase-T field is not part of the checksum for Version 2.
-    v2.mFields.mNumberOfNBaseTPorts++;
+    v2.mFields.mNumberOfG5Modules++;
     assert(v2.validate(hardware_identifier));
 
     // However, the USB field is part of the checksum for Version 2.

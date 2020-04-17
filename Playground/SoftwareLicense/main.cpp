@@ -1,105 +1,26 @@
-#include <cryptopp/hmac.h>
-#include <cryptopp/sha.h>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
-#include <arpa/inet.h>
-
-
-
-//! Decode binary data to POD object.
-template<typename T>
-inline T Decode(const uint8_t* bytes)
-{
-    static_assert(std::is_pod<T>::value, "");
-
-    T result;
-    memcpy(&result, bytes, sizeof(result));
-    return result;
-}
-
-
-// Wrapper around a network encoded 32-bit unsigned integer.
-struct Net32
-{
-    void operator=(uint32_t value)
-    {
-        mValue = htonl(value);
-    }
-
-    friend bool operator==(Net32 lhs, Net32 rhs)
-    {
-        return lhs.mValue == rhs.mValue;
-    }
-
-    uint32_t mValue;
-};
-
-
-//! Helper for generating SHA-256 checksums.
-struct ChecksumGenerator
-{
-    ChecksumGenerator(const std::string& salt) :
-        mSHA()
-    {
-        add(salt);
-    }
-
-    void add(Net32 value)
-    {
-        mSHA.Update(reinterpret_cast<const uint8_t*>(&value), sizeof(value));
-    }
-
-    void add(const std::string& str)
-    {
-        mSHA.Update(reinterpret_cast<const uint8_t*>(str.data()), str.size());
-    }
-
-    void finalize(Net32& result)
-    {
-        auto vec = finalize();
-        memcpy(&result, vec.data() + vec.size() - sizeof(result), sizeof(result));
-    }
-
-    std::vector<uint8_t> finalize()
-    {
-        std::vector<uint8_t> result(mSHA.DigestSize());
-        mSHA.Final(reinterpret_cast<uint8_t*>(result.data()));
-        assert(8 * result.size() == 256); // result should be 256 bit 
-        return result;
-    }
-
-    CryptoPP::SHA256 mSHA;
-};
-
+#include "Utils.h"
 
 //! License binary format
 struct License
 {
-    Net32 calculate_checksum(const std::string& hardware_id)
+    uint64_t calculate_checksum(const std::string& hardware_id)
     {
-        Net32 result;
+        SHA256 sha256;
+        sha256.add(hardware_id);
+        sha256.add(mMajorVersion);
+        sha256.add(mMinorVersion);
+        sha256.add(mNumTrunkPorts);
+        sha256.add(mNumNonTrunkPorts);
+        sha256.add(mNumNBaseTPorts);
 
-        ChecksumGenerator c(hardware_id);
-        c.add(major_version);
-        c.add(minor_version);
-        c.add(num_trunks);
-        c.add(num_nontrunks);
-        c.add(num_nbase_t);
-
-        std::vector<uint8_t> bytes = c.finalize();
-
-        memcpy(&result, bytes.data() + bytes.size() - sizeof(result), sizeof(result));
-
-        return result;
+        // Extract final 64 bits from the checksum string.
+        std::vector<uint8_t> bytes = sha256.get();
+        return Decode<uint64_t>(bytes.data() + bytes.size() - sizeof(uint64_t));
     }
 
     bool validate_checksum(const std::string& hardware_id)
     {
-        return calculate_checksum(hardware_id) == checksum;
+        return calculate_checksum(hardware_id) == mChecksum;
     }
 
     std::vector<uint8_t> serialize() const
@@ -116,13 +37,13 @@ struct License
         return result;
     }
 
-    Net32 major_version{};
-    Net32 minor_version{};
-    Net32 checksum{};
+    uint32_t mMajorVersion{};
+    uint32_t mMinorVersion{};
+    uint64_t mChecksum{};
 
-    Net32 num_trunks{};
-    Net32 num_nontrunks{};
-    Net32 num_nbase_t{};
+    uint32_t mNumTrunkPorts{};
+    uint32_t mNumNonTrunkPorts{};
+    uint32_t mNumNBaseTPorts{};
 };
 
 
@@ -143,21 +64,23 @@ int main(int argc, char** argv)
     std::string hardware_id = salt + argv[1];
 
     License good_license = License();
-    good_license.num_trunks = 48;
-    good_license.num_nontrunks = 2;
-    good_license.checksum = good_license.calculate_checksum(hardware_id);
+    good_license.mNumTrunkPorts = 48;
+    good_license.mNumNonTrunkPorts = 2;
+    good_license.mChecksum = good_license.calculate_checksum(hardware_id);
     auto serialized_license = good_license.serialize();
 
     License bad_license = good_license;
-    bad_license.num_trunks = 1234;
+    bad_license.mNumTrunkPorts = 1234;
     assert(!bad_license.validate_checksum(hardware_id));
 
     License bad = License::parse(bad_license.serialize());
-    assert(bad.num_trunks == bad_license.num_trunks);
+    assert(bad.mNumTrunkPorts == bad_license.mNumTrunkPorts);
     assert(!bad.validate_checksum(hardware_id));
 
     License good = License::parse(serialized_license);
     assert(good.validate_checksum(hardware_id));
+
+    std::cout << "Program finished without errors." << std::endl;
 
     return 0;
 }

@@ -63,7 +63,6 @@ uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware
  */
 struct LicenseFile
 {
-
     LicenseFile() = default;
 
     explicit LicenseFile(const UserFields& fields, const std::string& hardware_identifier, int version) :

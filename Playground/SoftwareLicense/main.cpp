@@ -33,7 +33,7 @@ struct UserFields
  */
 uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware_identifier, int version)
 {
-    static const std::string secret_salt = "Excentis - Gildestraat 8 - 9000 Gent";
+    static const std::string secret_salt = "Hans en Grietje";
 
     SHA256 sha256;
     sha256.add(secret_salt);            // This makes it a little harder to reverse engineer the checksum algorithm.

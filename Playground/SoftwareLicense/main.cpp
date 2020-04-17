@@ -17,14 +17,14 @@ enum
 struct UserFields
 {
     // Since Version 1:
-    uint32_t mNumTrunkPorts = 0;
-    uint32_t mNumNonTrunkPorts = 0;
+    uint32_t mNumberOfTrunkingPorts = 0;
+    uint32_t mNumberOfNonTrunkingPorts = 0;
 
     // Since Version 2:
-    uint32_t mNumUSBPorts = 0;
+    uint32_t mNumberOfUSBPorts = 0;
 
     // Since Version 3:
-    uint32_t mNumNBaseTPorts = 0;
+    uint32_t mNumberOfNBaseTPorts = 0;
 };
 
 
@@ -38,20 +38,17 @@ uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware
     SHA256 sha256;
     sha256.add(secret_salt);            // This makes it a little harder to reverse engineer the checksum algorithm.
     sha256.add(hardware_identifier);    // Adding the hardware identifier is the key to making the license work on only one machine.
-
-    assert(version >= 1);
-
-    sha256.add(fields.mNumTrunkPorts);
-    sha256.add(fields.mNumNonTrunkPorts);
+    sha256.add(fields.mNumberOfTrunkingPorts);
+    sha256.add(fields.mNumberOfNonTrunkingPorts);
 
     if (version >= 2)
     {
-        sha256.add(fields.mNumUSBPorts);
+        sha256.add(fields.mNumberOfUSBPorts);
     }
 
     if (version >= 3)
     {
-        sha256.add(fields.mNumNBaseTPorts);
+        sha256.add(fields.mNumberOfNBaseTPorts);
     }
 
     return sha256.get();
@@ -133,9 +130,9 @@ int main(int argc, char** argv)
     std::string hardware_identifier = salt + argv[1];
 
     UserFields fields;
-    fields.mNumNonTrunkPorts = 2;
-    fields.mNumTrunkPorts = 48;
-    fields.mNumNBaseTPorts = 8;
+    fields.mNumberOfNonTrunkingPorts = 2;
+    fields.mNumberOfTrunkingPorts = 48;
+    fields.mNumberOfNBaseTPorts = 8;
 
     LicenseFile good_license = LicenseFile(fields, hardware_identifier, CurrentVersion);
     assert(good_license.validate(hardware_identifier));
@@ -145,20 +142,20 @@ int main(int argc, char** argv)
     assert(v2.validate(hardware_identifier));
 
     // The NBase-T field is not part of the checksum for Version 2.
-    v2.mFields.mNumNBaseTPorts++;
+    v2.mFields.mNumberOfNBaseTPorts++;
     assert(v2.validate(hardware_identifier));
 
     // However, the USB field is part of the checksum for Version 2.
-    v2.mFields.mNumUSBPorts++;
+    v2.mFields.mNumberOfUSBPorts++;
     assert(!v2.validate(hardware_identifier));
 
     LicenseFile bad_license = good_license;
     assert(bad_license.validate(hardware_identifier));
-    bad_license.mFields.mNumTrunkPorts = 1234;
+    bad_license.mFields.mNumberOfTrunkingPorts = 1234;
     assert(!bad_license.validate(hardware_identifier));
 
     LicenseFile bad = LicenseFile::CreateFromData(bad_license.serialize());
-    assert(bad.mFields.mNumTrunkPorts == bad_license.mFields.mNumTrunkPorts);
+    assert(bad.mFields.mNumberOfTrunkingPorts == bad_license.mFields.mNumberOfTrunkingPorts);
     assert(!bad.validate(hardware_identifier));
 
     LicenseFile good = LicenseFile::CreateFromData(serialized_license);

@@ -69,7 +69,7 @@ struct LicenseFile
     {
     }
 
-    static LicenseFile CreateFromData(const std::string& str)
+    static LicenseFile LoadFromString(const std::string& str)
     {
         LicenseFile result;
         memcpy(&result, str.data(), std::min(str.size(), sizeof(result)));
@@ -124,10 +124,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    static const std::string salt = "Excentis - Gildestraat 8 - 9000 Gent";
-
-    // Hardware ID is salted with secret string.
-    std::string hardware_identifier = salt + argv[1];
+    const std::string hardware_identifier = argv[1];
 
     UserFields fields;
     fields.mNumberOfNonTrunkingPorts = 2;
@@ -154,11 +151,11 @@ int main(int argc, char** argv)
     bad_license.mFields.mNumberOfTrunkingPorts = 1234;
     assert(!bad_license.validate(hardware_identifier));
 
-    LicenseFile bad = LicenseFile::CreateFromData(bad_license.serialize());
+    LicenseFile bad = LicenseFile::LoadFromString(bad_license.serialize());
     assert(bad.mFields.mNumberOfTrunkingPorts == bad_license.mFields.mNumberOfTrunkingPorts);
     assert(!bad.validate(hardware_identifier));
 
-    LicenseFile good = LicenseFile::CreateFromData(serialized_license);
+    LicenseFile good = LicenseFile::LoadFromString(serialized_license);
     assert(good.validate(hardware_identifier));
 
     std::cout << "Program finished without errors." << std::endl;

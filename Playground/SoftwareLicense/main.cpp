@@ -21,7 +21,8 @@ struct UserFields
     uint32_t mNumberOfNonTrunkingPorts = 0;
 
     // Since Version 2:
-    uint32_t mNumberOfUSBPorts = 0;
+    uint32_t mNumberOfSerialPorts = 0;
+    uint32_t mNumberOfBluetoothPorts = 0;
 
     // Since Version 3:
     uint32_t mNumberOfNBaseTPorts = 0;
@@ -33,17 +34,24 @@ struct UserFields
  */
 uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware_identifier, int version)
 {
+    // Adding a salt makes it a little harder to reverse engineer the checksum algorithm.
     static const std::string secret_salt = "Hans en Grietje";
 
     SHA256 sha256;
-    sha256.add(secret_salt);            // This makes it a little harder to reverse engineer the checksum algorithm.
-    sha256.add(hardware_identifier);    // Adding the hardware identifier is the key to making the license work on only one machine.
-    sha256.add(fields.mNumberOfTrunkingPorts);
-    sha256.add(fields.mNumberOfNonTrunkingPorts);
+    sha256.add(secret_salt);
+    sha256.add(hardware_identifier);
+    sha256.add(version);
+
+    if (version >= 1) // needless check, but I like the consistency with the code below
+    {
+        sha256.add(fields.mNumberOfTrunkingPorts);
+        sha256.add(fields.mNumberOfNonTrunkingPorts);
+    }
 
     if (version >= 2)
     {
-        sha256.add(fields.mNumberOfUSBPorts);
+        sha256.add(fields.mNumberOfSerialPorts);
+        sha256.add(fields.mNumberOfBluetoothPorts);
     }
 
     if (version >= 3)
@@ -62,7 +70,7 @@ struct LicenseFile
 {
     LicenseFile() = default;
 
-    explicit LicenseFile(const UserFields& fields, const std::string& hardware_identifier, int version) :
+    explicit LicenseFile(const UserFields& fields, const std::string& hardware_identifier, int version = CurrentVersion) :
         mVersion(version),
         mChecksum(CalculateChecksum(fields, hardware_identifier, version)),
         mFields(fields)
@@ -78,15 +86,15 @@ struct LicenseFile
 
     bool validate(const std::string& hardware_identifier) const
     {
-        if (mVersion > CurrentVersion)
+        if (mVersion < Version1 || mVersion > CurrentVersion)
         {
-            std::cerr << "Unsupported license version: " << mVersion << std::endl;
+            // Unsupported version number;
             return false;
         }
 
         if (CalculateChecksum(mFields, hardware_identifier, mVersion) != mChecksum)
         {
-            std::cerr << "Invalid checksum for hardware id" << std::endl;
+            // Invalid checksum!
             return false;
         }
 
@@ -107,12 +115,7 @@ struct LicenseFile
 };
 
 
-
-//! There should be no padding.
-static_assert(sizeof(LicenseFile) == sizeof(LicenseFile::mVersion) + sizeof(LicenseFile::mChecksum) + sizeof(LicenseFile::mFields), "");
-
-
-  //! Trivially copyable allows us to memcpy the object from and to memory.
+//! Trivially copyable allows us to memcpy the object from and to memory.
 static_assert(std::is_trivially_copyable<LicenseFile>::value, "");
 
 
@@ -143,7 +146,7 @@ int main(int argc, char** argv)
     assert(v2.validate(hardware_identifier));
 
     // However, the USB field is part of the checksum for Version 2.
-    v2.mFields.mNumberOfUSBPorts++;
+    v2.mFields.mNumberOfSerialPorts++;
     assert(!v2.validate(hardware_identifier));
 
     LicenseFile bad_license = good_license;

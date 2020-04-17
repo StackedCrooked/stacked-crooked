@@ -13,9 +13,9 @@
 
 //! Decode binary data to POD object.
 template<typename T>
-inline T Decode(const uint8_t* bytes)
+inline T Decode(const void* bytes)
 {
-    static_assert(std::is_pod<T>::value, "");
+    static_assert(std::is_trivially_copyable<T>::value, "");
 
     T result;
     memcpy(&result, bytes, sizeof(result));
@@ -36,12 +36,18 @@ struct SHA256
         mSHA.Update(reinterpret_cast<const uint8_t*>(str.data()), str.size());
     }
 
-    std::vector<uint8_t> get()
+    std::vector<uint8_t> getBytes()
     {
         std::vector<uint8_t> result(mSHA.DigestSize());
         mSHA.Final(reinterpret_cast<uint8_t*>(result.data()));
         assert(8 * result.size() == 256); // result should be 256 bit
         return result;
+    }
+
+    uint64_t get()
+    {
+        std::vector<uint8_t> bytes = getBytes();
+        return Decode<uint64_t>(bytes.data() + bytes.size() - sizeof(uint64_t));
     }
 
     CryptoPP::SHA256 mSHA;

@@ -51,7 +51,7 @@ uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware
         sha256.add(fields.mNumberOfNBaseTPorts);
     }
 
-    return sha256.get();
+    return sha256.getLower64Bit();
 }
 
 

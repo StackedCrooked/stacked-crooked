@@ -44,7 +44,7 @@ struct SHA256
         return result;
     }
 
-    uint64_t get()
+    uint64_t getLower64Bit()
     {
         std::vector<uint8_t> bytes = getBytes();
         return Decode<uint64_t>(bytes.data() + bytes.size() - sizeof(uint64_t));

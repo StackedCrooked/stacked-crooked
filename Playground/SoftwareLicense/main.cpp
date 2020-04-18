@@ -30,9 +30,9 @@ struct UserFields
 
 
 /**
- * CalculateChecksum: calculates the license checksum
+ * GenerateChecksum: generates the license checksum based on the license fields and a hardware identifier.
  */
-uint64_t CalculateChecksum(const UserFields& fields, const std::string& hardware_identifier, int version)
+uint64_t GenerateChecksum(const UserFields& fields, const std::string& hardware_identifier, int version)
 {
     // Adding a salt makes it a little harder to reverse engineer the checksum algorithm.
     static const std::string salt = "Hans en Grietje";
@@ -70,7 +70,7 @@ struct LicenseFile
 
     explicit LicenseFile(const UserFields& fields, const std::string& hardware_identifier, int version = CurrentVersion) :
         mVersion(version),
-        mChecksum(CalculateChecksum(fields, hardware_identifier, version)),
+        mChecksum(GenerateChecksum(fields, hardware_identifier, version)),
         mFields(fields)
     {
     }
@@ -90,7 +90,7 @@ struct LicenseFile
             return false;
         }
 
-        if (CalculateChecksum(mFields, hardware_identifier, mVersion) != mChecksum)
+        if (GenerateChecksum(mFields, hardware_identifier, mVersion) != mChecksum)
         {
             // Invalid checksum.
             return false;

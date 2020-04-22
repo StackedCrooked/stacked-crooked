@@ -52,3 +52,4 @@ struct SHA256
 
     CryptoPP::SHA256 mSHA;
 };
+

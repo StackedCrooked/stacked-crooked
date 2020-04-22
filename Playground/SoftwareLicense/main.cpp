@@ -1,4 +1,4 @@
-#include "Utils.h" 
+#include "Utils.h"
 
 
 enum
@@ -17,15 +17,15 @@ enum
 struct UserFields
 {
     // Since Version 1:
-    uint32_t mNumberOfTrunkingPorts = 0;
-    uint32_t mNumberOfNonTrunkingPorts = 0;
+    uint32_t numberOfTrunkingPorts = 0;
+    uint32_t numberOfNonTrunkingPorts = 0;
 
     // Since Version 2:
-    uint32_t mNumberOfSerialPorts = 0;
-    uint32_t mNumberOfBluetoothPorts = 0;
+    uint32_t numberOfSerialPorts = 0;
+    uint32_t numberOfBluetoothPorts = 0;
 
     // Since Version 3:
-    uint32_t mNumberOfG5Modules = 0;
+    uint32_t numberOfG5Modules = 0;
 };
 
 
@@ -43,18 +43,18 @@ uint64_t GenerateChecksum(const UserFields& fields, const std::string& hardware_
     sha256.add(version);
 
     // Version 1
-    sha256.add(fields.mNumberOfTrunkingPorts);
-    sha256.add(fields.mNumberOfNonTrunkingPorts);
+    sha256.add(fields.numberOfTrunkingPorts);
+    sha256.add(fields.numberOfNonTrunkingPorts);
 
     if (version >= 2)
     {
-        sha256.add(fields.mNumberOfSerialPorts);
-        sha256.add(fields.mNumberOfBluetoothPorts);
+        sha256.add(fields.numberOfSerialPorts);
+        sha256.add(fields.numberOfBluetoothPorts);
     }
 
     if (version >= 3)
     {
-        sha256.add(fields.mNumberOfG5Modules);
+        sha256.add(fields.numberOfG5Modules);
     }
 
     return sha256.getLower64Bit();
@@ -128,9 +128,9 @@ int main(int argc, char** argv)
     const std::string hardware_identifier = argv[1];
 
     UserFields fields;
-    fields.mNumberOfNonTrunkingPorts = 2;
-    fields.mNumberOfTrunkingPorts = 48;
-    fields.mNumberOfG5Modules = 8;
+    fields.numberOfNonTrunkingPorts = 2;
+    fields.numberOfTrunkingPorts = 48;
+    fields.numberOfG5Modules = 8;
 
     LicenseFile good_license = LicenseFile(fields, hardware_identifier, CurrentVersion);
     assert(good_license.validate(hardware_identifier));
@@ -140,20 +140,20 @@ int main(int argc, char** argv)
     assert(v2.validate(hardware_identifier));
 
     // The G5 field is not part of the checksum for Version 2.
-    v2.mFields.mNumberOfG5Modules++;
+    v2.mFields.numberOfG5Modules++;
     assert(v2.validate(hardware_identifier));
 
     // However, the serial port field is part of the checksum for Version 2.
-    v2.mFields.mNumberOfSerialPorts++;
+    v2.mFields.numberOfSerialPorts++;
     assert(!v2.validate(hardware_identifier));
 
     LicenseFile bad_license = good_license;
     assert(bad_license.validate(hardware_identifier));
-    bad_license.mFields.mNumberOfTrunkingPorts = 1234;
+    bad_license.mFields.numberOfTrunkingPorts = 1234;
     assert(!bad_license.validate(hardware_identifier));
 
     LicenseFile bad = LicenseFile::LoadFromString(bad_license.serialize());
-    assert(bad.mFields.mNumberOfTrunkingPorts == bad_license.mFields.mNumberOfTrunkingPorts);
+    assert(bad.mFields.numberOfTrunkingPorts == bad_license.mFields.numberOfTrunkingPorts);
     assert(!bad.validate(hardware_identifier));
 
     LicenseFile good = LicenseFile::LoadFromString(serialized_license);

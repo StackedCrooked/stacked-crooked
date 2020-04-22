@@ -1,4 +1,48 @@
-#include "Utils.h"
+#include <cryptopp/sha.h>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <type_traits>
+
+
+
+//! Helper for generating SHA-256 checksums.
+struct SHA256
+{
+    void add(uint32_t value)
+    {
+        mSHA.Update(reinterpret_cast<const uint8_t*>(&value), sizeof(value));
+    }
+
+    void add(const std::string& str)
+    {
+        mSHA.Update(reinterpret_cast<const uint8_t*>(str.data()), str.size());
+    }
+
+    std::vector<uint8_t> getBytes()
+    {
+        std::vector<uint8_t> result(mSHA.DigestSize());
+        mSHA.Final(reinterpret_cast<uint8_t*>(result.data()));
+        assert(8 * result.size() == 256); // result should be 256 bit
+        return result;
+    }
+
+    uint64_t getLower64Bit()
+    {
+        std::vector<uint8_t> bytes = getBytes();
+
+        uint64_t result = 0;
+        memcpy(&result, bytes.data(), sizeof(result));
+        return result;
+    }
+
+    CryptoPP::SHA256 mSHA;
+};
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 enum

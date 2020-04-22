@@ -4,8 +4,6 @@
 #include <string>
 
 
-
-
 /**
  * This proof-of-concept provides 3 core features for the software license:
  *
@@ -172,20 +170,19 @@ static_assert(std::is_trivially_copyable<LicenseFile>::value, "");
 
 int main(int argc, char** argv)
 {
-    /**
-     * Hardware identifier candidates:
-     *   - Motherboard serial: cat /sys/class/dmi/id/board_serial
-     *   - MAC address of management port: cat /sys/class/net/man0/address
-     *   - ...
-     */
-
-
+    // Hardware identifier must passed as command line argument.
     if (argc != 2)
     {
         std::cerr << "Usage: " + std::string(argv[0]) + " hardware_identifier" << std::endl;
         return -1;
     }
 
+    /**
+     * Hardware identifier candidates:
+     *   - Motherboard serial number: cat /sys/class/dmi/id/board_serial
+     *   - MAC address of management port: cat /sys/class/net/man0/address
+     *   - ...
+     */
     const std::string hardware_identifier = argv[1];
 
     LicenseFields fields;
@@ -193,37 +190,10 @@ int main(int argc, char** argv)
     fields.numberOfTrunkingPorts = 48;
     fields.numberOfG5Modules = 8;
 
-    LicenseFile good_license = LicenseFile(fields, hardware_identifier);
-    assert(good_license.validate(hardware_identifier));
-    auto serialized_license = serialize(good_license);
-
-    auto fields_v2 = fields;
-    fields_v2.version = Version2;
-    LicenseFile v2 = LicenseFile(fields_v2, hardware_identifier);
-    assert(v2.validate(hardware_identifier));
-
-    // The G5 field is not part of the checksum for Version 2.
-    v2.mFields.numberOfG5Modules++;
-    assert(v2.validate(hardware_identifier));
-
-    // However, the serial port field is part of the checksum for Version 2.
-    v2.mFields.numberOfSerialPorts++;
-    assert(!v2.validate(hardware_identifier));
-
-    LicenseFile bad_license = good_license;
-    assert(bad_license.validate(hardware_identifier));
-    bad_license.mFields.numberOfTrunkingPorts = 1234;
-    assert(!bad_license.validate(hardware_identifier));
-
-    LicenseFile bad = parse(serialize(bad_license));
-    assert(bad.mFields.numberOfTrunkingPorts == bad_license.mFields.numberOfTrunkingPorts);
-    assert(!bad.validate(hardware_identifier));
-
-    LicenseFile good = parse(serialized_license);
-    assert(good.validate(hardware_identifier));
+    LicenseFile license(fields, hardware_identifier);
+    assert(license.validate(hardware_identifier));
 
     std::cout << "Program finished without errors." << std::endl;
 
     return 0;
 }
-

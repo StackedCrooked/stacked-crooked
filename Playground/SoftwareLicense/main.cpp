@@ -4,6 +4,22 @@
 #include <string>
 
 
+
+
+/**
+ * This proof-of-concept provides 3 core features for the software license:
+ *
+ *  (1) License integrity check: detect invalid changes in the license file
+ *
+ *  (2) Hardware check: prevents using a license on different machines
+ *
+ *  (3) Backwards compatibility: enable validation old license version
+ *
+ *
+ * NOTE: below code should be considered as pseudo-code.
+ */
+
+
 //! Helper for generating SHA-256 checksums.
 struct SHA256
 {
@@ -45,22 +61,6 @@ struct SHA256
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-/**
- * This implementation provides 3 core features for the software license:
- *
- *  - License integrity check: detect invalid changes in the license file
- *
- *  - Hardware check: prevents using a license on different machines
- *
- *  - Backwards compatibility: enable validation old license version
- *
- *
- * Below code should be considered as pseudo-code.
- */
-
-
 enum Version
 {
     Version1 = 1,
@@ -74,7 +74,7 @@ enum Version
 /**
  * LicenseFields contains the license fields that need to be validated.
  *
- * Simple strategy to enable backwards compatibility:
+ * To enable backwards compatibility:
  *   - new fields are always added at the end
  *   - existing fields are never changed or removed
  */

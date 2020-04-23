@@ -1,7 +1,12 @@
 #include <cryptopp/sha.h>
+#include "Protobuf/license.pb.h"
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <string>
+
+
+
 
 
 /**
@@ -118,6 +123,30 @@ uint64_t CalculateChecksum(const LicenseFields& fields, const std::string& hardw
 }
 
 
+uint64_t CalculateChecksum(const PbLicense& pblicense, const std::string& hardware_id)
+{
+    SHA256 sha;
+    sha.add("Hans en Grietje" + hardware_id);
+    sha.add(pblicense.version());
+    sha.add(pblicense.num_trunk_ports());
+    sha.add(pblicense.num_nontrunk_ports());
+
+    if (pblicense.version() >= 2)
+    {
+        sha.add(pblicense.num_serial_ports());
+        sha.add(pblicense.num_bluetooth_ports());
+    }
+
+    if (pblicense.version() >= 3)
+    {
+        sha.add(pblicense.num_serial_ports());
+        sha.add(pblicense.num_g5_modules());
+    }
+
+    return sha.getLower64Bit();
+}
+
+
 /**
  * LicenseFile: actual contents of the license file
  */
@@ -167,7 +196,6 @@ LicenseFile parse(const std::string& str)
 //! Check that we can use memcpy safely.
 static_assert(std::is_trivially_copyable<LicenseFile>::value, "");
 
-
 int main(int argc, char** argv)
 {
     // Hardware identifier must passed as command line argument.
@@ -177,6 +205,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
+
     /**
      * Hardware identifier candidates:
      *   - Motherboard serial number: cat /sys/class/dmi/id/board_serial
@@ -184,6 +213,50 @@ int main(int argc, char** argv)
      *   - ...
      */
     const std::string hardware_identifier = argv[1];
+
+
+    {
+
+        PbLicense pblicense;
+        pblicense.set_version(1);
+        pblicense.set_num_nontrunk_ports(2);
+        pblicense.set_num_trunk_ports(48);
+        pblicense.set_num_g5_modules(8);
+
+        pblicense.set_checksum(CalculateChecksum(pblicense, hardware_identifier));
+
+        std::string serialized = pblicense.SerializeAsString();
+        std::cout << "serialized.size=" << serialized.size() << std::endl;
+
+
+        {
+            std::ofstream ofs("license.v1", std::ios::binary);
+            ofs.write(serialized.data(), serialized.size());
+        }
+
+        std::ifstream ifs("license.v1", std::ios::binary | std::ios::ate);
+        std::streamsize size = ifs.tellg();
+        ifs.seekg(0, std::ios::beg);
+
+        std::string raw;
+        raw.resize(size);
+
+        if (!ifs.read(raw.data(), size))
+        {
+            throw std::runtime_error("Failed to read from licensefile.v1");
+        }
+
+        PbLicense deserialized;
+        deserialized.ParseFromString(raw);
+
+        std::cout << "deserialized.version()=" << deserialized.version() << std::endl;
+
+        auto checksum = CalculateChecksum(deserialized, hardware_identifier);
+        std::cout << "deserialized.checksum=" << deserialized.checksum() << " verify=" << checksum << std::endl;
+
+        std::cout << "raw.size=" << raw.size() << std::endl;
+
+    }
 
     LicenseFields fields;
     fields.numberOfNonTrunkingPorts = 2;

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+
+message PbLicense {
+    int32 version = 1;
+    int64 checksum = 2;
+
+    // Version 1
+    int32 num_trunk_ports = 3;
+    int32 num_nontrunk_ports = 4;
+
+    // Version 2
+    int32 num_serial_ports = 5;
+
+    // Version 3
+    int32 num_bluetooth_ports = 6;
+    int32 num_g5_modules = 7;
+}

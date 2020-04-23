@@ -218,7 +218,7 @@ int main(int argc, char** argv)
     {
 
         PbLicense pblicense;
-        pblicense.set_version(1);
+        pblicense.set_version(CurrentVersion);
         pblicense.set_num_nontrunk_ports(2);
         pblicense.set_num_trunk_ports(48);
         pblicense.set_num_g5_modules(8);

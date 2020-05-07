@@ -1,10 +1,12 @@
 proc bind_first { f x } {
-    set c "proc helper$f$x { y } { return \[ $f $x \$y \]; } ; return helper$f$x;"
+    set name "bind_result<${f},${x}>"
+    set c "proc $name { y } { return \[ $f $x \$y \]; }"
 
     # For debuggin
-    #puts $c
+    puts $c
 
     eval $c
+    return $name
 }
 
 

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# SVN passes the three last parameters to diff3:
+# diff3 [OPTION]... MYFILE OLDFILE YOURFILE
+
+MYFILE="${BASH_ARGV[2]}"   # third last param
+OLDFILE="${BASH_ARGV[1]}"   # second last param
+YOURFILE="${BASH_ARGV[0]}" # last param
+
+echo "PARAMS: $@"
+echo "  MYFILE=$MYFILE"
+echo "  OLDFILE=$OLDFILE"
+echo "  YOURFILE=$YOURFILE"
+
+# If the files are identical then return immediately
+#diff "$6" "$7" >/dev/null && exit 1
+
+if [[ "`uname`" == 'Darwin' ]]; then
+
+    # Print the arguments:
+    i=1; for a in "$@"; do echo "$i	$a"; i=$(($i+1)); done
+
+    echo open -W -n -a FileMerge --args -left "$YOURFILE" -right "$MYFILE" -ancestor "$OLDFILE" -merge "$merged"
+    #open -W -n -a FileMerge --args -left "$YOURFILE" -right "$mine" -ancestor "$OLDFILE" -merge "$merged"
+else
+    meld "$6" "$7" & disown
+fi

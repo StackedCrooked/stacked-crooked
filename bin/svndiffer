@@ -1,8 +1,7 @@
 #!/bin/bash
 # Subversion passes "$6" as HEAD file and "$7" as modified file.
 if [[ "`uname`" == 'Darwin' ]]; then
-    opendiff "$6" "$7" ; read </dev/tty
+    open -W -n -a FileMerge --args -left "$6"  -right "$7" -merge "$(pwd)/$3"
 else
     meld "$6" "$7" & disown
 fi
-

@@ -1,2 +1,2 @@
 #!/bin/sh
-svn diff --diff-cmd=svndiffer "$@" & disown
+svn diff --diff-cmd=svndiffer "$@"

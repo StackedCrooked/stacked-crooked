@@ -4,16 +4,18 @@ awk '{
         a[NR,i] = $i
     }
 
-    if (NF > num_fields) {
-        num_fields = NF
+    if (NF > num_columns) {
+        num_columns = NF
     }
 }
 END {    
-    for (j = 1; j <= num_fields; j++) {
-        str = a[1,j]
-        for(i = 2; i <= NR; i++){
-            str = str" "a[i,j];
+    for (j = 1; j <= num_columns; ++j) {
+        for (i = 1; i <= NR; ++i) {
+            if (i > 1) {
+                printf(" ")
+            }
+            printf("%s", a[i,j]);
         }
-        print str
+        printf("\n")
     }
 }'  "$1"

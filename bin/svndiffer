@@ -1,7 +1,19 @@
 #!/bin/bash
+
 # Subversion passes "$6" as HEAD file and "$7" as modified file.
+
+# If the files are identical then return immediately
+diff "$6" "$7" >/dev/null && exit 1
+
 if [[ "`uname`" == 'Darwin' ]]; then
-    open -W -n -a FileMerge --args -left "$6"  -right "$7" -merge "$(pwd)/$3"
+    i=1
+    for a in "$@"; do
+        echo "$i	$a"
+        i=$(($i+1))
+    done
+
+    source_file="$(pwd)/$(echo "$3" | cut -d'	' -f1)"
+    open -W -n -a FileMerge --args -left "$6"  -right "$7" -merge "$source_file"
 else
     meld "$6" "$7" & disown
 fi

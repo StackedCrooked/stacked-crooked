@@ -6,12 +6,11 @@
 diff "$6" "$7" >/dev/null && exit 1
 
 if [[ "`uname`" == 'Darwin' ]]; then
-    i=1
-    for a in "$@"; do
-        echo "$i	$a"
-        i=$(($i+1))
-    done
 
+    # Print the arguments:
+    #i=1; for a in "$@"; do echo "$i	$a"; i=$(($i+1)); done
+
+    # The source file is extracted from the label 
     source_file="$(pwd)/$(echo "$3" | cut -d'	' -f1)"
     open -W -n -a FileMerge --args -left "$6"  -right "$7" -merge "$source_file"
 else

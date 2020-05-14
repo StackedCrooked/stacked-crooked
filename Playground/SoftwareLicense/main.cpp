@@ -79,11 +79,9 @@ enum Version
 {
     Version1 = 1,
     Version2 = 2,
-    Version3 = 3
+    Version3 = 3,
+    CurrentVersion = Version3
 };
-
-
-static constexpr Version current_version = Version3;
 
 
 uint64_t CalculateChecksum(const License& license, const std::string& hardware_id)
@@ -113,120 +111,134 @@ uint64_t CalculateChecksum(const License& license, const std::string& hardware_i
 }
 
 
-License GenerateLicense_v1(const std::string& hardware_identifier, int num_nontrunk, int num_trunk)
+void CreateLicense(const std::string& filename, const std::string& hardware_identifier, int num_trunk, int num_nontrunk)
 {
     License license;
-    license.set_version(Version1);
+    license.set_version(CurrentVersion);
     license.set_num_nontrunk_ports(num_nontrunk);
     license.set_num_trunk_ports(num_trunk);
     license.set_checksum(CalculateChecksum(license, hardware_identifier));
-    return license;
+
+    std::ofstream ofs(filename, std::ios::binary);
+    std::string serialized = license.SerializeAsString();
+    ofs.write(serialized.data(), serialized.size());
 }
 
 
-License GenerateLicense_v2(const std::string& hardware_identifier, int num_nontrunk, int num_trunk, int num_usb)
+void VerifyLicense(const std::string& filename, const std::string& hardware_id)
 {
-    License license;
-    license.set_version(Version1);
-    license.set_num_nontrunk_ports(num_nontrunk);
-    license.set_num_trunk_ports(num_trunk);
-    license.set_num_usb_ports(num_usb);
-    license.set_checksum(CalculateChecksum(license, hardware_identifier));
-    return license;
-}
+    std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
+    std::streamsize size = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
 
+    std::string raw;
+    raw.resize(size);
 
-void GenerateLicense(Version version, const std::string& hardware_identifier, int num_nontrunk, int num_trunk, int num_usb, int num_nbase_t)
-{
-    License license;
-    license.set_version(version);
-
-    if (version >= Version1)
+    if (!ifs.read(raw.data(), size))
     {
-        license.set_num_nontrunk_ports(num_nontrunk);
-        license.set_num_trunk_ports(num_trunk);
+        throw std::runtime_error("Failed to read from licensefile.v1");
     }
-
-    if (version >= Version2)
-    {
-        license.set_num_usb_ports(num_usb);
-    }
-
-    if (version >= Version3)
-    {
-        license.set_num_nbaset_ports(num_nbase_t);
-    }
-
-    license.set_checksum(CalculateChecksum(license, hardware_identifier));
-}
-
-
-void CreateLicense(const std::string& filename, const std::string& hardware_identifier)
-{
-    std::cout << "Creating license " << filename << " using hardware id " << hardware_identifier << std::endl;
-
-
-    License license_v1 = GenerateLicense_v1(hardware_identifier, 1, 48);
-    license_v1.SerializeAsString();
-
 
     License license;
-    license.set_version(current_version);
-    license.set_num_nontrunk_ports(2);
-    license.set_num_trunk_ports(48);
-    license.set_checksum(CalculateChecksum(license, hardware_identifier));
+    license.ParseFromString(raw);
 
+    auto checksum = CalculateChecksum(license, hardware_id);
 
+    if (checksum != license.checksum())
     {
-        std::ofstream ofs(filename, std::ios::binary);
-        std::string serialized = license.SerializeAsString();
-        ofs.write(serialized.data(), serialized.size());
-        std::cout << "Written " << filename << std::endl;
+        std::cerr << "Invalid license checksum. The hardware identifier doesn't match or license file is corrupted." << std::endl;
+        std::exit(-1);
     }
-
 }
 
 
-int usage_create(const char* program_name)
+void create(const std::vector<std::string>& args)
 {
-    std::cerr << "Usage: " << program_name << " create <filename> <hardwareid>" << std::endl;
-    return -1;
+    using namespace boost::program_options;
+
+    options_description options;
+
+    try
+    {
+        std::string filename;
+        std::string hardware_id;
+        int32_t num_trunk = 0;
+        int32_t num_nontrunk = 0;
+
+        options.add_options()
+            ("filename,F", value(&filename)->required(), "License filename")
+            ("hardware_id,H", value(&hardware_id)->required(), "Hardware identifier that connects the license to a specific machine.")
+            ("trunk,T", value(&num_trunk)->required(), "Number of trunking ports")
+            ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports");
+
+        variables_map vm;
+        store(command_line_parser(args).options(options).run(), vm);
+        vm.notify();
+        CreateLicense(filename, hardware_id, num_trunk, num_nontrunk);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << "\n\nUsage:\n" << options << std::endl;
+        std::exit(-1);
+    }
 }
 
+
+void check(const std::vector<std::string>& args)
+{
+    using namespace boost::program_options;
+
+    options_description options;
+
+    try
+    {
+        std::string filename;
+        std::string hardware_id;
+
+        options.add_options()
+            ("filename,F", value(&filename)->required(), "License filename")
+            ("hardware_id,H", value(&hardware_id)->required(), "Hardware identifier that connects the license to a specific machine.");
+
+        variables_map vm;
+        store(command_line_parser(args).options(options).run(), vm);
+        vm.notify();
+        VerifyLicense(filename, hardware_id);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << "\n\nUsage:\n" << options << std::endl;
+        std::exit(-1);
+    }
+}
+
+
+void run(int argc, char** argv)
+{
+    if (!strcmp(argv[0], "create"))
+    {
+        create(std::vector<std::string>(argv + 1, argv + argc));
+    }
+    else if (!strcmp(argv[0], "check"))
+    {
+        check(std::vector<std::string>(argv + 1, argv + argc));
+    }
+    else
+    {
+        throw std::runtime_error("Invalid command: " + std::string(argv[0]));
+    }
+}
 
 int main(int argc, char** argv)
 {
-    // Hardware identifier must passed as command line argument.
-    if (argc < 3)
+    try
     {
-        std::cerr
-            << "Usage: \n"
-            << "  " << argv[0] << " create <filename> <hardwareid>\n"
-            << "  " << argv[0] << " check <filename>\n"
-            ;
+        run(argc - 1, argv + 1);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
         return -1;
     }
-
-    if (!strcmp(argv[1], "create"))
-    {
-        if (argc != 4)
-        {
-            return usage_create(argv[0]);
-        }
-
-        const std::string& filename = argv[2];
-        const std::string& hardware_identifier = argv[3];
-
-        CreateLicense(filename, hardware_identifier);
-        return 0;
-    }
-
-    if (!strcmp(argv[1], "check"))
-    {
-        std::cout << "Checking license" << std::endl;
-        return -1;
-    }
-
 
     return 0;
 }

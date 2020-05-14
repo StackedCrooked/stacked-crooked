@@ -1,4 +1,5 @@
 #include "Protobuf/license.pb.h"
+#include <boost/program_options.hpp>
 #include <cryptopp/sha.h>
 #include <cstdint>
 #include <fstream>

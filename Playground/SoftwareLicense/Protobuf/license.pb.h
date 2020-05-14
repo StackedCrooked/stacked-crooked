@@ -54,32 +54,32 @@ struct TableStruct_license_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_license_2eproto;
-class PbLicense;
-class PbLicenseDefaultTypeInternal;
-extern PbLicenseDefaultTypeInternal _PbLicense_default_instance_;
+class License;
+class LicenseDefaultTypeInternal;
+extern LicenseDefaultTypeInternal _License_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
-template<> ::PbLicense* Arena::CreateMaybeMessage<::PbLicense>(Arena*);
+template<> ::License* Arena::CreateMaybeMessage<::License>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 
 // ===================================================================
 
-class PbLicense :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:PbLicense) */ {
+class License :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:License) */ {
  public:
-  PbLicense();
-  virtual ~PbLicense();
+  License();
+  virtual ~License();
 
-  PbLicense(const PbLicense& from);
-  PbLicense(PbLicense&& from) noexcept
-    : PbLicense() {
+  License(const License& from);
+  License(License&& from) noexcept
+    : License() {
     *this = ::std::move(from);
   }
 
-  inline PbLicense& operator=(const PbLicense& from) {
+  inline License& operator=(const License& from) {
     CopyFrom(from);
     return *this;
   }
-  inline PbLicense& operator=(PbLicense&& from) noexcept {
+  inline License& operator=(License&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -97,37 +97,37 @@ class PbLicense :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const PbLicense& default_instance();
+  static const License& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const PbLicense* internal_default_instance() {
-    return reinterpret_cast<const PbLicense*>(
-               &_PbLicense_default_instance_);
+  static inline const License* internal_default_instance() {
+    return reinterpret_cast<const License*>(
+               &_License_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     0;
 
-  friend void swap(PbLicense& a, PbLicense& b) {
+  friend void swap(License& a, License& b) {
     a.Swap(&b);
   }
-  inline void Swap(PbLicense* other) {
+  inline void Swap(License* other) {
     if (other == this) return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline PbLicense* New() const final {
-    return CreateMaybeMessage<PbLicense>(nullptr);
+  inline License* New() const final {
+    return CreateMaybeMessage<License>(nullptr);
   }
 
-  PbLicense* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<PbLicense>(arena);
+  License* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<License>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const PbLicense& from);
-  void MergeFrom(const PbLicense& from);
+  void CopyFrom(const License& from);
+  void MergeFrom(const License& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -141,10 +141,10 @@ class PbLicense :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(PbLicense* other);
+  void InternalSwap(License* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "PbLicense";
+    return "License";
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
@@ -169,15 +169,14 @@ class PbLicense :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kChecksumFieldNumber = 2,
-    kVersionFieldNumber = 1,
+    kChecksumFieldNumber = 1,
+    kVersionFieldNumber = 2,
     kNumTrunkPortsFieldNumber = 3,
     kNumNontrunkPortsFieldNumber = 4,
-    kNumSerialPortsFieldNumber = 5,
-    kNumBluetoothPortsFieldNumber = 6,
-    kNumG5ModulesFieldNumber = 7,
+    kNumUsbPortsFieldNumber = 5,
+    kNumNbasetPortsFieldNumber = 6,
   };
-  // int64 checksum = 2;
+  // int64 checksum = 1;
   void clear_checksum();
   ::PROTOBUF_NAMESPACE_ID::int64 checksum() const;
   void set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value);
@@ -186,7 +185,7 @@ class PbLicense :
   void _internal_set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value);
   public:
 
-  // int32 version = 1;
+  // int32 version = 2;
   void clear_version();
   ::PROTOBUF_NAMESPACE_ID::int32 version() const;
   void set_version(::PROTOBUF_NAMESPACE_ID::int32 value);
@@ -213,34 +212,25 @@ class PbLicense :
   void _internal_set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
-  // int32 num_serial_ports = 5;
-  void clear_num_serial_ports();
-  ::PROTOBUF_NAMESPACE_ID::int32 num_serial_ports() const;
-  void set_num_serial_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  // int32 num_usb_ports = 5;
+  void clear_num_usb_ports();
+  ::PROTOBUF_NAMESPACE_ID::int32 num_usb_ports() const;
+  void set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_serial_ports() const;
-  void _internal_set_num_serial_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_usb_ports() const;
+  void _internal_set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
-  // int32 num_bluetooth_ports = 6;
-  void clear_num_bluetooth_ports();
-  ::PROTOBUF_NAMESPACE_ID::int32 num_bluetooth_ports() const;
-  void set_num_bluetooth_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  // int32 num_nbaset_ports = 6;
+  void clear_num_nbaset_ports();
+  ::PROTOBUF_NAMESPACE_ID::int32 num_nbaset_ports() const;
+  void set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_bluetooth_ports() const;
-  void _internal_set_num_bluetooth_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_nbaset_ports() const;
+  void _internal_set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
-  // int32 num_g5_modules = 7;
-  void clear_num_g5_modules();
-  ::PROTOBUF_NAMESPACE_ID::int32 num_g5_modules() const;
-  void set_num_g5_modules(::PROTOBUF_NAMESPACE_ID::int32 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_g5_modules() const;
-  void _internal_set_num_g5_modules(::PROTOBUF_NAMESPACE_ID::int32 value);
-  public:
-
-  // @@protoc_insertion_point(class_scope:PbLicense)
+  // @@protoc_insertion_point(class_scope:License)
  private:
   class _Internal;
 
@@ -249,9 +239,8 @@ class PbLicense :
   ::PROTOBUF_NAMESPACE_ID::int32 version_;
   ::PROTOBUF_NAMESPACE_ID::int32 num_trunk_ports_;
   ::PROTOBUF_NAMESPACE_ID::int32 num_nontrunk_ports_;
-  ::PROTOBUF_NAMESPACE_ID::int32 num_serial_ports_;
-  ::PROTOBUF_NAMESPACE_ID::int32 num_bluetooth_ports_;
-  ::PROTOBUF_NAMESPACE_ID::int32 num_g5_modules_;
+  ::PROTOBUF_NAMESPACE_ID::int32 num_usb_ports_;
+  ::PROTOBUF_NAMESPACE_ID::int32 num_nbaset_ports_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_license_2eproto;
 };
@@ -264,146 +253,126 @@ class PbLicense :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// PbLicense
+// License
 
-// int32 version = 1;
-inline void PbLicense::clear_version() {
-  version_ = 0;
-}
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::_internal_version() const {
-  return version_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::version() const {
-  // @@protoc_insertion_point(field_get:PbLicense.version)
-  return _internal_version();
-}
-inline void PbLicense::_internal_set_version(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  
-  version_ = value;
-}
-inline void PbLicense::set_version(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_version(value);
-  // @@protoc_insertion_point(field_set:PbLicense.version)
-}
-
-// int64 checksum = 2;
-inline void PbLicense::clear_checksum() {
+// int64 checksum = 1;
+inline void License::clear_checksum() {
   checksum_ = PROTOBUF_LONGLONG(0);
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 PbLicense::_internal_checksum() const {
+inline ::PROTOBUF_NAMESPACE_ID::int64 License::_internal_checksum() const {
   return checksum_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 PbLicense::checksum() const {
-  // @@protoc_insertion_point(field_get:PbLicense.checksum)
+inline ::PROTOBUF_NAMESPACE_ID::int64 License::checksum() const {
+  // @@protoc_insertion_point(field_get:License.checksum)
   return _internal_checksum();
 }
-inline void PbLicense::_internal_set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void License::_internal_set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value) {
   
   checksum_ = value;
 }
-inline void PbLicense::set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void License::set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value) {
   _internal_set_checksum(value);
-  // @@protoc_insertion_point(field_set:PbLicense.checksum)
+  // @@protoc_insertion_point(field_set:License.checksum)
+}
+
+// int32 version = 2;
+inline void License::clear_version() {
+  version_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_version() const {
+  return version_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::version() const {
+  // @@protoc_insertion_point(field_get:License.version)
+  return _internal_version();
+}
+inline void License::_internal_set_version(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  version_ = value;
+}
+inline void License::set_version(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_version(value);
+  // @@protoc_insertion_point(field_set:License.version)
 }
 
 // int32 num_trunk_ports = 3;
-inline void PbLicense::clear_num_trunk_ports() {
+inline void License::clear_num_trunk_ports() {
   num_trunk_ports_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::_internal_num_trunk_ports() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_trunk_ports() const {
   return num_trunk_ports_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::num_trunk_ports() const {
-  // @@protoc_insertion_point(field_get:PbLicense.num_trunk_ports)
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_trunk_ports() const {
+  // @@protoc_insertion_point(field_get:License.num_trunk_ports)
   return _internal_num_trunk_ports();
 }
-inline void PbLicense::_internal_set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void License::_internal_set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
   
   num_trunk_ports_ = value;
 }
-inline void PbLicense::set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void License::set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_num_trunk_ports(value);
-  // @@protoc_insertion_point(field_set:PbLicense.num_trunk_ports)
+  // @@protoc_insertion_point(field_set:License.num_trunk_ports)
 }
 
 // int32 num_nontrunk_ports = 4;
-inline void PbLicense::clear_num_nontrunk_ports() {
+inline void License::clear_num_nontrunk_ports() {
   num_nontrunk_ports_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::_internal_num_nontrunk_ports() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_nontrunk_ports() const {
   return num_nontrunk_ports_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::num_nontrunk_ports() const {
-  // @@protoc_insertion_point(field_get:PbLicense.num_nontrunk_ports)
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_nontrunk_ports() const {
+  // @@protoc_insertion_point(field_get:License.num_nontrunk_ports)
   return _internal_num_nontrunk_ports();
 }
-inline void PbLicense::_internal_set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void License::_internal_set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
   
   num_nontrunk_ports_ = value;
 }
-inline void PbLicense::set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void License::set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_num_nontrunk_ports(value);
-  // @@protoc_insertion_point(field_set:PbLicense.num_nontrunk_ports)
+  // @@protoc_insertion_point(field_set:License.num_nontrunk_ports)
 }
 
-// int32 num_serial_ports = 5;
-inline void PbLicense::clear_num_serial_ports() {
-  num_serial_ports_ = 0;
+// int32 num_usb_ports = 5;
+inline void License::clear_num_usb_ports() {
+  num_usb_ports_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::_internal_num_serial_ports() const {
-  return num_serial_ports_;
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_usb_ports() const {
+  return num_usb_ports_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::num_serial_ports() const {
-  // @@protoc_insertion_point(field_get:PbLicense.num_serial_ports)
-  return _internal_num_serial_ports();
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_usb_ports() const {
+  // @@protoc_insertion_point(field_get:License.num_usb_ports)
+  return _internal_num_usb_ports();
 }
-inline void PbLicense::_internal_set_num_serial_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void License::_internal_set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
   
-  num_serial_ports_ = value;
+  num_usb_ports_ = value;
 }
-inline void PbLicense::set_num_serial_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_num_serial_ports(value);
-  // @@protoc_insertion_point(field_set:PbLicense.num_serial_ports)
+inline void License::set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_num_usb_ports(value);
+  // @@protoc_insertion_point(field_set:License.num_usb_ports)
 }
 
-// int32 num_bluetooth_ports = 6;
-inline void PbLicense::clear_num_bluetooth_ports() {
-  num_bluetooth_ports_ = 0;
+// int32 num_nbaset_ports = 6;
+inline void License::clear_num_nbaset_ports() {
+  num_nbaset_ports_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::_internal_num_bluetooth_ports() const {
-  return num_bluetooth_ports_;
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_nbaset_ports() const {
+  return num_nbaset_ports_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::num_bluetooth_ports() const {
-  // @@protoc_insertion_point(field_get:PbLicense.num_bluetooth_ports)
-  return _internal_num_bluetooth_ports();
+inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_nbaset_ports() const {
+  // @@protoc_insertion_point(field_get:License.num_nbaset_ports)
+  return _internal_num_nbaset_ports();
 }
-inline void PbLicense::_internal_set_num_bluetooth_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void License::_internal_set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
   
-  num_bluetooth_ports_ = value;
+  num_nbaset_ports_ = value;
 }
-inline void PbLicense::set_num_bluetooth_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_num_bluetooth_ports(value);
-  // @@protoc_insertion_point(field_set:PbLicense.num_bluetooth_ports)
-}
-
-// int32 num_g5_modules = 7;
-inline void PbLicense::clear_num_g5_modules() {
-  num_g5_modules_ = 0;
-}
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::_internal_num_g5_modules() const {
-  return num_g5_modules_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::int32 PbLicense::num_g5_modules() const {
-  // @@protoc_insertion_point(field_get:PbLicense.num_g5_modules)
-  return _internal_num_g5_modules();
-}
-inline void PbLicense::_internal_set_num_g5_modules(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  
-  num_g5_modules_ = value;
-}
-inline void PbLicense::set_num_g5_modules(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_num_g5_modules(value);
-  // @@protoc_insertion_point(field_set:PbLicense.num_g5_modules)
+inline void License::set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_num_nbaset_ports(value);
+  // @@protoc_insertion_point(field_set:License.num_nbaset_ports)
 }
 
 #ifdef __GNUC__

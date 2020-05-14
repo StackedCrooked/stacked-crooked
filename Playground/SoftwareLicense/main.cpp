@@ -68,133 +68,89 @@ enum Version
 {
     Version1 = 1,
     Version2 = 2,
-    Version3 = 3,
-
-    CurrentVersion = Version3
+    Version3 = 3
 };
 
 
-/**
- * LicenseFields contains the license fields that need to be validated.
- *
- * To enable backwards compatibility:
- *   - new fields are always added at the end
- *   - existing fields are never changed or removed
- */
-struct LicenseFields
-{
-    uint32_t version = CurrentVersion;
-
-    uint32_t numberOfTrunkingPorts = 0;
-    uint32_t numberOfNonTrunkingPorts = 0;
-
-    // Since Version 2:
-    uint32_t numberOfSerialPorts = 0;
-    uint32_t numberOfBluetoothPorts = 0;
-
-    // Since Version 3:
-    uint32_t numberOfG5Modules = 0;
-};
+static constexpr Version current_version = Version3;
 
 
-/**
- * Generates a secure hash of the license fields and a hardware identifier.
- */
-uint64_t CalculateChecksum(const LicenseFields& fields, const std::string& hardware_identifier)
-{
-    SHA256 sha256;
-    sha256.add("Hans en Grietje" + hardware_identifier); // use "salted" hardware identifier
-    sha256.add(fields.version);
-    sha256.add(fields.numberOfTrunkingPorts);
-    sha256.add(fields.numberOfNonTrunkingPorts);
-
-    if (fields.version >= 2)                                                                        // Backwards compatibility for old licenses
-    {
-        sha256.add(fields.numberOfSerialPorts);
-        sha256.add(fields.numberOfBluetoothPorts);
-    }
-
-    if (fields.version >= 3)
-    {
-        sha256.add(fields.numberOfG5Modules);
-    }
-
-    return sha256.getLower64Bit();
-}
-
-
-uint64_t CalculateChecksum(const PbLicense& pblicense, const std::string& hardware_id)
+uint64_t CalculateChecksum(const License& license, const std::string& hardware_id)
 {
     SHA256 sha;
     sha.add("Hans en Grietje" + hardware_id);
-    sha.add(pblicense.version());
-    sha.add(pblicense.num_trunk_ports());
-    sha.add(pblicense.num_nontrunk_ports());
 
-    if (pblicense.version() >= 2)
+    sha.add(license.version());
+
+    if (license.version() >= Version1)
     {
-        sha.add(pblicense.num_serial_ports());
-        sha.add(pblicense.num_bluetooth_ports());
+        sha.add(license.num_trunk_ports());
+        sha.add(license.num_nontrunk_ports());
     }
 
-    if (pblicense.version() >= 3)
+    if (license.version() >= Version2)
     {
-        sha.add(pblicense.num_serial_ports());
-        sha.add(pblicense.num_g5_modules());
+        sha.add(license.num_usb_ports());
+    }
+
+    if (license.version() >= Version3)
+    {
+        sha.add(license.num_nbaset_ports());
     }
 
     return sha.getLower64Bit();
 }
 
 
-/**
- * LicenseFile: actual contents of the license file
- */
-struct LicenseFile
+License GenerateLicense_v1(const std::string& hardware_identifier, int num_nontrunk, int num_trunk)
 {
-    LicenseFile() = default;
-
-    explicit LicenseFile(const LicenseFields& fields, const std::string& hardware_identifier) :
-        mChecksum(CalculateChecksum(fields, hardware_identifier)),
-        mFields(fields)
-    {
-    }
-
-    bool validate(const std::string& hardware_identifier) const
-    {
-        if (CalculateChecksum(mFields, hardware_identifier) != mChecksum)
-        {
-            // Invalid checksum.
-            return false;
-        }
-
-        return true;
-    }
-
-    uint64_t mChecksum = 0;
-    LicenseFields mFields;
-};
-
-
-std::string serialize(const LicenseFile& license_file)
-{
-    std::string result;
-    result.resize(sizeof(license_file));
-    memcpy(result.data(), &license_file, result.size());
-    return result;
+    License license;
+    license.set_version(Version1);
+    license.set_num_nontrunk_ports(num_nontrunk);
+    license.set_num_trunk_ports(num_trunk);
+    license.set_checksum(CalculateChecksum(license, hardware_identifier));
+    return license;
 }
 
 
-LicenseFile parse(const std::string& str)
+License GenerateLicense_v2(const std::string& hardware_identifier, int num_nontrunk, int num_trunk, int num_usb)
 {
-    LicenseFile result;
-    memcpy(&result, str.data(), std::min(str.size(), sizeof(result)));
-    return result;
+    License license;
+    license.set_version(Version1);
+    license.set_num_nontrunk_ports(num_nontrunk);
+    license.set_num_trunk_ports(num_trunk);
+    license.set_num_usb_ports(num_usb);
+    license.set_checksum(CalculateChecksum(license, hardware_identifier));
+    return license;
 }
 
 
-//! Check that we can use memcpy safely.
-static_assert(std::is_trivially_copyable<LicenseFile>::value, "");
+void GenerateLicense(Version version, const std::string& hardware_identifier, int num_nontrunk, int num_trunk, int num_usb, int num_nbase_t)
+{
+    License license;
+    license.set_version(version);
+
+    if (version >= Version1)
+    {
+        license.set_num_nontrunk_ports(num_nontrunk);
+        license.set_num_trunk_ports(num_trunk);
+    }
+
+    if (version >= Version2)
+    {
+        license.set_num_usb_ports(num_usb);
+    }
+
+    if (version >= Version3)
+    {
+        license.set_num_nbaset_ports(num_nbase_t);
+    }
+
+    license.set_checksum(CalculateChecksum(license, hardware_identifier));
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -209,62 +165,54 @@ int main(int argc, char** argv)
     /**
      * Hardware identifier candidates:
      *   - Motherboard serial number: cat /sys/class/dmi/id/board_serial
-     *   - MAC address of management port: cat /sys/class/net/man0/address
+     *   - MAC address of management port:cat /sys/class/net/man0/address
      *   - ...
      */
     const std::string hardware_identifier = argv[1];
 
 
+    License license_v1 = GenerateLicense_v1(hardware_identifier, 1, 48);
+    license_v1.SerializeAsString();
+
+
+    License license;
+    license.set_version(current_version);
+    license.set_num_nontrunk_ports(2);
+    license.set_num_trunk_ports(48);
+
+    license.set_checksum(CalculateChecksum(license, hardware_identifier));
+
+    std::string serialized = license.SerializeAsString();
+    std::cout << "serialized.size=" << serialized.size() << std::endl;
+
+
     {
-
-        PbLicense pblicense;
-        pblicense.set_version(CurrentVersion);
-        pblicense.set_num_nontrunk_ports(2);
-        pblicense.set_num_trunk_ports(48);
-        pblicense.set_num_g5_modules(8);
-
-        pblicense.set_checksum(CalculateChecksum(pblicense, hardware_identifier));
-
-        std::string serialized = pblicense.SerializeAsString();
-        std::cout << "serialized.size=" << serialized.size() << std::endl;
-
-
-        {
-            std::ofstream ofs("license.v1", std::ios::binary);
-            ofs.write(serialized.data(), serialized.size());
-        }
-
-        std::ifstream ifs("license.v1", std::ios::binary | std::ios::ate);
-        std::streamsize size = ifs.tellg();
-        ifs.seekg(0, std::ios::beg);
-
-        std::string raw;
-        raw.resize(size);
-
-        if (!ifs.read(raw.data(), size))
-        {
-            throw std::runtime_error("Failed to read from licensefile.v1");
-        }
-
-        PbLicense deserialized;
-        deserialized.ParseFromString(raw);
-
-        std::cout << "deserialized.version()=" << deserialized.version() << std::endl;
-
-        auto checksum = CalculateChecksum(deserialized, hardware_identifier);
-        std::cout << "deserialized.checksum=" << deserialized.checksum() << " verify=" << checksum << std::endl;
-
-        std::cout << "raw.size=" << raw.size() << std::endl;
-
+        std::ofstream ofs("license.v1", std::ios::binary);
+        ofs.write(serialized.data(), serialized.size());
     }
 
-    LicenseFields fields;
-    fields.numberOfNonTrunkingPorts = 2;
-    fields.numberOfTrunkingPorts = 48;
-    fields.numberOfG5Modules = 8;
+    std::ifstream ifs("license.v1", std::ios::binary | std::ios::ate);
+    std::streamsize size = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
 
-    LicenseFile license(fields, hardware_identifier);
-    assert(license.validate(hardware_identifier));
+    std::string raw;
+    raw.resize(size);
+
+    if (!ifs.read(raw.data(), size))
+    {
+        throw std::runtime_error("Failed to read from licensefile.v1");
+    }
+
+    License deserialized;
+    deserialized.ParseFromString(raw);
+
+    std::cout << "deserialized.version()=" << deserialized.version() << std::endl;
+
+    auto checksum = CalculateChecksum(deserialized, hardware_identifier);
+    std::cout << "deserialized.checksum=" << deserialized.checksum() << " verify=" << checksum << std::endl;
+
+    std::cout << "raw.size=" << raw.size() << std::endl;
+
 
     std::cout << "Program finished without errors." << std::endl;
 

@@ -14,23 +14,23 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-class PbLicenseDefaultTypeInternal {
+class LicenseDefaultTypeInternal {
  public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<PbLicense> _instance;
-} _PbLicense_default_instance_;
-static void InitDefaultsscc_info_PbLicense_license_2eproto() {
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<License> _instance;
+} _License_default_instance_;
+static void InitDefaultsscc_info_License_license_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::_PbLicense_default_instance_;
-    new (ptr) ::PbLicense();
+    void* ptr = &::_License_default_instance_;
+    new (ptr) ::License();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::PbLicense::InitAsDefaultInstance();
+  ::License::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PbLicense_license_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_PbLicense_license_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_License_license_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_License_license_2eproto}, {}};
 
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_license_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_license_2eproto = nullptr;
@@ -38,43 +38,41 @@ static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_s
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_license_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::PbLicense, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::License, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::PbLicense, version_),
-  PROTOBUF_FIELD_OFFSET(::PbLicense, checksum_),
-  PROTOBUF_FIELD_OFFSET(::PbLicense, num_trunk_ports_),
-  PROTOBUF_FIELD_OFFSET(::PbLicense, num_nontrunk_ports_),
-  PROTOBUF_FIELD_OFFSET(::PbLicense, num_serial_ports_),
-  PROTOBUF_FIELD_OFFSET(::PbLicense, num_bluetooth_ports_),
-  PROTOBUF_FIELD_OFFSET(::PbLicense, num_g5_modules_),
+  PROTOBUF_FIELD_OFFSET(::License, checksum_),
+  PROTOBUF_FIELD_OFFSET(::License, version_),
+  PROTOBUF_FIELD_OFFSET(::License, num_trunk_ports_),
+  PROTOBUF_FIELD_OFFSET(::License, num_nontrunk_ports_),
+  PROTOBUF_FIELD_OFFSET(::License, num_usb_ports_),
+  PROTOBUF_FIELD_OFFSET(::License, num_nbaset_ports_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, sizeof(::PbLicense)},
+  { 0, -1, sizeof(::License)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::_PbLicense_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::_License_default_instance_),
 };
 
 const char descriptor_table_protodef_license_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\rlicense.proto\"\262\001\n\tPbLicense\022\017\n\007version"
-  "\030\001 \001(\005\022\020\n\010checksum\030\002 \001(\003\022\027\n\017num_trunk_po"
-  "rts\030\003 \001(\005\022\032\n\022num_nontrunk_ports\030\004 \001(\005\022\030\n"
-  "\020num_serial_ports\030\005 \001(\005\022\033\n\023num_bluetooth"
-  "_ports\030\006 \001(\005\022\026\n\016num_g5_modules\030\007 \001(\005b\006pr"
-  "oto3"
+  "\n\rlicense.proto\"\222\001\n\007License\022\020\n\010checksum\030"
+  "\001 \001(\003\022\017\n\007version\030\002 \001(\005\022\027\n\017num_trunk_port"
+  "s\030\003 \001(\005\022\032\n\022num_nontrunk_ports\030\004 \001(\005\022\025\n\rn"
+  "um_usb_ports\030\005 \001(\005\022\030\n\020num_nbaset_ports\030\006"
+  " \001(\005b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_license_2eproto_deps[1] = {
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_license_2eproto_sccs[1] = {
-  &scc_info_PbLicense_license_2eproto.base,
+  &scc_info_License_license_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_license_2eproto_once;
 static bool descriptor_table_license_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_license_2eproto = {
-  &descriptor_table_license_2eproto_initialized, descriptor_table_protodef_license_2eproto, "license.proto", 204,
+  &descriptor_table_license_2eproto_initialized, descriptor_table_protodef_license_2eproto, "license.proto", 172,
   &descriptor_table_license_2eproto_once, descriptor_table_license_2eproto_sccs, descriptor_table_license_2eproto_deps, 1, 0,
   schemas, file_default_instances, TableStruct_license_2eproto::offsets,
   file_level_metadata_license_2eproto, 1, file_level_enum_descriptors_license_2eproto, file_level_service_descriptors_license_2eproto,
@@ -85,80 +83,80 @@ static bool dynamic_init_dummy_license_2eproto = (  ::PROTOBUF_NAMESPACE_ID::int
 
 // ===================================================================
 
-void PbLicense::InitAsDefaultInstance() {
+void License::InitAsDefaultInstance() {
 }
-class PbLicense::_Internal {
+class License::_Internal {
  public:
 };
 
-PbLicense::PbLicense()
+License::License()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:PbLicense)
+  // @@protoc_insertion_point(constructor:License)
 }
-PbLicense::PbLicense(const PbLicense& from)
+License::License(const License& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&checksum_, &from.checksum_,
-    static_cast<size_t>(reinterpret_cast<char*>(&num_g5_modules_) -
-    reinterpret_cast<char*>(&checksum_)) + sizeof(num_g5_modules_));
-  // @@protoc_insertion_point(copy_constructor:PbLicense)
+    static_cast<size_t>(reinterpret_cast<char*>(&num_nbaset_ports_) -
+    reinterpret_cast<char*>(&checksum_)) + sizeof(num_nbaset_ports_));
+  // @@protoc_insertion_point(copy_constructor:License)
 }
 
-void PbLicense::SharedCtor() {
+void License::SharedCtor() {
   ::memset(&checksum_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&num_g5_modules_) -
-      reinterpret_cast<char*>(&checksum_)) + sizeof(num_g5_modules_));
+      reinterpret_cast<char*>(&num_nbaset_ports_) -
+      reinterpret_cast<char*>(&checksum_)) + sizeof(num_nbaset_ports_));
 }
 
-PbLicense::~PbLicense() {
-  // @@protoc_insertion_point(destructor:PbLicense)
+License::~License() {
+  // @@protoc_insertion_point(destructor:License)
   SharedDtor();
 }
 
-void PbLicense::SharedDtor() {
+void License::SharedDtor() {
 }
 
-void PbLicense::SetCachedSize(int size) const {
+void License::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const PbLicense& PbLicense::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_PbLicense_license_2eproto.base);
+const License& License::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_License_license_2eproto.base);
   return *internal_default_instance();
 }
 
 
-void PbLicense::Clear() {
-// @@protoc_insertion_point(message_clear_start:PbLicense)
+void License::Clear() {
+// @@protoc_insertion_point(message_clear_start:License)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   ::memset(&checksum_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&num_g5_modules_) -
-      reinterpret_cast<char*>(&checksum_)) + sizeof(num_g5_modules_));
+      reinterpret_cast<char*>(&num_nbaset_ports_) -
+      reinterpret_cast<char*>(&checksum_)) + sizeof(num_nbaset_ports_));
   _internal_metadata_.Clear();
 }
 
-const char* PbLicense::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+const char* License::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // int32 version = 1;
+      // int64 checksum = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          version_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          checksum_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // int64 checksum = 2;
+      // int32 version = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          checksum_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          version_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -176,24 +174,17 @@ const char* PbLicense::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // int32 num_serial_ports = 5;
+      // int32 num_usb_ports = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          num_serial_ports_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          num_usb_ports_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // int32 num_bluetooth_ports = 6;
+      // int32 num_nbaset_ports = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
-          num_bluetooth_ports_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      // int32 num_g5_modules = 7;
-      case 7:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
-          num_g5_modules_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          num_nbaset_ports_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -217,22 +208,22 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* PbLicense::_InternalSerialize(
+::PROTOBUF_NAMESPACE_ID::uint8* License::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:PbLicense)
+  // @@protoc_insertion_point(serialize_to_array_start:License)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // int32 version = 1;
-  if (this->version() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(1, this->_internal_version(), target);
-  }
-
-  // int64 checksum = 2;
+  // int64 checksum = 1;
   if (this->checksum() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(2, this->_internal_checksum(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(1, this->_internal_checksum(), target);
+  }
+
+  // int32 version = 2;
+  if (this->version() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(2, this->_internal_version(), target);
   }
 
   // int32 num_trunk_ports = 3;
@@ -247,48 +238,42 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(4, this->_internal_num_nontrunk_ports(), target);
   }
 
-  // int32 num_serial_ports = 5;
-  if (this->num_serial_ports() != 0) {
+  // int32 num_usb_ports = 5;
+  if (this->num_usb_ports() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(5, this->_internal_num_serial_ports(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(5, this->_internal_num_usb_ports(), target);
   }
 
-  // int32 num_bluetooth_ports = 6;
-  if (this->num_bluetooth_ports() != 0) {
+  // int32 num_nbaset_ports = 6;
+  if (this->num_nbaset_ports() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(6, this->_internal_num_bluetooth_ports(), target);
-  }
-
-  // int32 num_g5_modules = 7;
-  if (this->num_g5_modules() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(7, this->_internal_num_g5_modules(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(6, this->_internal_num_nbaset_ports(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target, stream);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:PbLicense)
+  // @@protoc_insertion_point(serialize_to_array_end:License)
   return target;
 }
 
-size_t PbLicense::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:PbLicense)
+size_t License::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:License)
   size_t total_size = 0;
 
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // int64 checksum = 2;
+  // int64 checksum = 1;
   if (this->checksum() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
         this->_internal_checksum());
   }
 
-  // int32 version = 1;
+  // int32 version = 2;
   if (this->version() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
@@ -309,25 +294,18 @@ size_t PbLicense::ByteSizeLong() const {
         this->_internal_num_nontrunk_ports());
   }
 
-  // int32 num_serial_ports = 5;
-  if (this->num_serial_ports() != 0) {
+  // int32 num_usb_ports = 5;
+  if (this->num_usb_ports() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
-        this->_internal_num_serial_ports());
+        this->_internal_num_usb_ports());
   }
 
-  // int32 num_bluetooth_ports = 6;
-  if (this->num_bluetooth_ports() != 0) {
+  // int32 num_nbaset_ports = 6;
+  if (this->num_nbaset_ports() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
-        this->_internal_num_bluetooth_ports());
-  }
-
-  // int32 num_g5_modules = 7;
-  if (this->num_g5_modules() != 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
-        this->_internal_num_g5_modules());
+        this->_internal_num_nbaset_ports());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -339,23 +317,23 @@ size_t PbLicense::ByteSizeLong() const {
   return total_size;
 }
 
-void PbLicense::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:PbLicense)
+void License::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:License)
   GOOGLE_DCHECK_NE(&from, this);
-  const PbLicense* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<PbLicense>(
+  const License* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<License>(
           &from);
   if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:PbLicense)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:License)
     ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:PbLicense)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:License)
     MergeFrom(*source);
   }
 }
 
-void PbLicense::MergeFrom(const PbLicense& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:PbLicense)
+void License::MergeFrom(const License& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:License)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -373,56 +351,52 @@ void PbLicense::MergeFrom(const PbLicense& from) {
   if (from.num_nontrunk_ports() != 0) {
     _internal_set_num_nontrunk_ports(from._internal_num_nontrunk_ports());
   }
-  if (from.num_serial_ports() != 0) {
-    _internal_set_num_serial_ports(from._internal_num_serial_ports());
+  if (from.num_usb_ports() != 0) {
+    _internal_set_num_usb_ports(from._internal_num_usb_ports());
   }
-  if (from.num_bluetooth_ports() != 0) {
-    _internal_set_num_bluetooth_ports(from._internal_num_bluetooth_ports());
-  }
-  if (from.num_g5_modules() != 0) {
-    _internal_set_num_g5_modules(from._internal_num_g5_modules());
+  if (from.num_nbaset_ports() != 0) {
+    _internal_set_num_nbaset_ports(from._internal_num_nbaset_ports());
   }
 }
 
-void PbLicense::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:PbLicense)
+void License::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:License)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void PbLicense::CopyFrom(const PbLicense& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:PbLicense)
+void License::CopyFrom(const License& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:License)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool PbLicense::IsInitialized() const {
+bool License::IsInitialized() const {
   return true;
 }
 
-void PbLicense::InternalSwap(PbLicense* other) {
+void License::InternalSwap(License* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   swap(checksum_, other->checksum_);
   swap(version_, other->version_);
   swap(num_trunk_ports_, other->num_trunk_ports_);
   swap(num_nontrunk_ports_, other->num_nontrunk_ports_);
-  swap(num_serial_ports_, other->num_serial_ports_);
-  swap(num_bluetooth_ports_, other->num_bluetooth_ports_);
-  swap(num_g5_modules_, other->num_g5_modules_);
+  swap(num_usb_ports_, other->num_usb_ports_);
+  swap(num_nbaset_ports_, other->num_nbaset_ports_);
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata PbLicense::GetMetadata() const {
+::PROTOBUF_NAMESPACE_ID::Metadata License::GetMetadata() const {
   return GetMetadataStatic();
 }
 
 
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::PbLicense* Arena::CreateMaybeMessage< ::PbLicense >(Arena* arena) {
-  return Arena::CreateInternal< ::PbLicense >(arena);
+template<> PROTOBUF_NOINLINE ::License* Arena::CreateMaybeMessage< ::License >(Arena* arena) {
+  return Arena::CreateInternal< ::License >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

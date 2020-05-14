@@ -160,24 +160,9 @@ void GenerateLicense(Version version, const std::string& hardware_identifier, in
 }
 
 
-int main(int argc, char** argv)
+void CreateLicense(const std::string& filename, const std::string& hardware_identifier)
 {
-    // Hardware identifier must passed as command line argument.
-    if (argc != 2)
-    {
-        std::cerr << "Usage: " << argv[0] << " <hardware_identifier>" << std::endl;
-        return -1;
-    }
-
-
-    /**
-     * Hardware identifier candidates:
-     *   - Motherboard serial number: cat /sys/class/dmi/id/board_serial
-     *   - MAC address of management port:cat /sys/class/net/man0/address
-     *   - ...
-     */
-    const std::string salt = "Hans en Grietje";
-    const std::string hardware_identifier = salt + argv[1];
+    std::cout << "Creating license " << filename << " using hardware id " << hardware_identifier << std::endl;
 
 
     License license_v1 = GenerateLicense_v1(hardware_identifier, 1, 48);
@@ -192,36 +177,55 @@ int main(int argc, char** argv)
 
 
     {
-        std::ofstream ofs("license.v1", std::ios::binary);
+        std::ofstream ofs(filename, std::ios::binary);
         std::string serialized = license.SerializeAsString();
         ofs.write(serialized.data(), serialized.size());
-        std::cout << "Written license.v1" << std::endl;
+        std::cout << "Written " << filename << std::endl;
     }
 
-    std::ifstream ifs("license.v1", std::ios::binary | std::ios::ate);
-    std::streamsize size = ifs.tellg();
-    ifs.seekg(0, std::ios::beg);
+}
 
-    std::string raw;
-    raw.resize(size);
 
-    if (!ifs.read(raw.data(), size))
+int usage_create(const char* program_name)
+{
+    std::cerr << "Usage: " << program_name << " create <filename> <hardwareid>" << std::endl;
+    return -1;
+}
+
+
+int main(int argc, char** argv)
+{
+    // Hardware identifier must passed as command line argument.
+    if (argc < 3)
     {
-        throw std::runtime_error("Failed to read from licensefile.v1");
+        std::cerr
+            << "Usage: \n"
+            << "  " << argv[0] << " create <filename> <hardwareid>\n"
+            << "  " << argv[0] << " check <filename>\n"
+            ;
+        return -1;
     }
 
-    License deserialized;
-    deserialized.ParseFromString(raw);
+    if (!strcmp(argv[1], "create"))
+    {
+        if (argc != 4)
+        {
+            return usage_create(argv[0]);
+        }
 
-    std::cout << "deserialized.version()=" << deserialized.version() << std::endl;
+        const std::string& filename = argv[2];
+        const std::string& hardware_identifier = argv[3];
 
-    auto checksum = CalculateChecksum(deserialized, hardware_identifier);
-    std::cout << "deserialized.checksum=" << deserialized.checksum() << " verify=" << checksum << std::endl;
+        CreateLicense(filename, hardware_identifier);
+        return 0;
+    }
 
-    std::cout << "raw.size=" << raw.size() << std::endl;
+    if (!strcmp(argv[1], "check"))
+    {
+        std::cout << "Checking license" << std::endl;
+        return -1;
+    }
 
-
-    std::cout << "Program finished without errors." << std::endl;
 
     return 0;
 }

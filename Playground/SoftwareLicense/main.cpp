@@ -1,12 +1,9 @@
-#include <cryptopp/sha.h>
 #include "Protobuf/license.pb.h"
+#include <cryptopp/sha.h>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <string>
-
-
-
 
 
 /**
@@ -26,36 +23,49 @@
 //! Helper for generating SHA-256 checksums.
 struct SHA256
 {
-    void add(uint32_t value)
+    void add(int32_t value)
     {
+        assert(!mFinalized);
+        mSHA.Update(reinterpret_cast<const uint8_t*>(&value), sizeof(value));
+    }
+
+    void add(int64_t value)
+    {
+        assert(!mFinalized);
         mSHA.Update(reinterpret_cast<const uint8_t*>(&value), sizeof(value));
     }
 
     void add(const std::string& str)
     {
+        assert(!mFinalized);
         mSHA.Update(reinterpret_cast<const uint8_t*>(str.data()), str.size());
     }
 
-    std::vector<uint8_t> getBytes()
+    std::vector<uint8_t> getResult()
     {
-        std::vector<uint8_t> result(mSHA.DigestSize());
-        mSHA.Final(reinterpret_cast<uint8_t*>(result.data()));
-        assert(8 * result.size() == 256); // result should be 256 bit
-        return result;
+        if (!mFinalized)
+        {
+            mResult.resize(mSHA.DigestSize());
+            mSHA.Final(reinterpret_cast<uint8_t*>(mResult.data()));
+            assert(8 * mResult.size() == 256); // result should be 256 bit
+            mFinalized = true;
+        }
+        return mResult;
     }
 
     uint64_t getLower64Bit()
     {
-        std::vector<uint8_t> bytes = getBytes();
-
+        std::vector<uint8_t> bytes = getResult();
         uint64_t result = 0;
         memcpy(&result, bytes.data(), sizeof(result));
         return result;
     }
 
+private:
     CryptoPP::SHA256 mSHA;
+    std::vector<uint8_t> mResult;
+    bool mFinalized = false;
 };
-
 
 
 
@@ -77,28 +87,28 @@ static constexpr Version current_version = Version3;
 
 uint64_t CalculateChecksum(const License& license, const std::string& hardware_id)
 {
-    SHA256 sha;
-    sha.add("Hans en Grietje" + hardware_id);
+    SHA256 checksum;
+    checksum.add(hardware_id);
 
-    sha.add(license.version());
+    checksum.add(license.version());
 
     if (license.version() >= Version1)
     {
-        sha.add(license.num_trunk_ports());
-        sha.add(license.num_nontrunk_ports());
+        checksum.add(license.num_trunk_ports());
+        checksum.add(license.num_nontrunk_ports());
     }
 
     if (license.version() >= Version2)
     {
-        sha.add(license.num_usb_ports());
+        checksum.add(license.num_usb_ports());
     }
 
     if (license.version() >= Version3)
     {
-        sha.add(license.num_nbaset_ports());
+        checksum.add(license.num_nbaset_ports());
     }
 
-    return sha.getLower64Bit();
+    return checksum.getLower64Bit();
 }
 
 
@@ -150,14 +160,12 @@ void GenerateLicense(Version version, const std::string& hardware_identifier, in
 }
 
 
-
-
 int main(int argc, char** argv)
 {
     // Hardware identifier must passed as command line argument.
     if (argc != 2)
     {
-        std::cerr << "Usage: " + std::string(argv[0]) + " hardware_identifier" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <hardware_identifier>" << std::endl;
         return -1;
     }
 
@@ -168,7 +176,8 @@ int main(int argc, char** argv)
      *   - MAC address of management port:cat /sys/class/net/man0/address
      *   - ...
      */
-    const std::string hardware_identifier = argv[1];
+    const std::string salt = "Hans en Grietje";
+    const std::string hardware_identifier = salt + argv[1];
 
 
     License license_v1 = GenerateLicense_v1(hardware_identifier, 1, 48);
@@ -179,16 +188,14 @@ int main(int argc, char** argv)
     license.set_version(current_version);
     license.set_num_nontrunk_ports(2);
     license.set_num_trunk_ports(48);
-
     license.set_checksum(CalculateChecksum(license, hardware_identifier));
-
-    std::string serialized = license.SerializeAsString();
-    std::cout << "serialized.size=" << serialized.size() << std::endl;
 
 
     {
         std::ofstream ofs("license.v1", std::ios::binary);
+        std::string serialized = license.SerializeAsString();
         ofs.write(serialized.data(), serialized.size());
+        std::cout << "Written license.v1" << std::endl;
     }
 
     std::ifstream ifs("license.v1", std::ios::binary | std::ios::ate);

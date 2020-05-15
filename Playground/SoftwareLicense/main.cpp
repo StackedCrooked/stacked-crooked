@@ -8,7 +8,7 @@
 
 
 /**
- * This proof-of-concept provides 3 core features for the software license:
+ * This proof-of-concept provides some basic features for the software license: 
  *
  *  (1) License integrity check: detect invalid changes in the license file
  *
@@ -42,7 +42,7 @@ struct SHA256
         mSHA.Update(reinterpret_cast<const uint8_t*>(str.data()), str.size());
     }
 
-    std::vector<uint8_t> getResult()
+    std::string generate_result()
     {
         if (!mFinalized)
         {
@@ -54,17 +54,9 @@ struct SHA256
         return mResult;
     }
 
-    uint64_t getLower64Bit()
-    {
-        std::vector<uint8_t> bytes = getResult();
-        uint64_t result = 0;
-        memcpy(&result, bytes.data(), sizeof(result));
-        return result;
-    }
-
 private:
     CryptoPP::SHA256 mSHA;
-    std::vector<uint8_t> mResult;
+    std::string mResult;
     bool mFinalized = false;
 };
 
@@ -84,40 +76,89 @@ enum Version
 };
 
 
-uint64_t CalculateChecksum(const License& license, const std::string& hardware_id)
+void UpdateChecksum(SHA256& checksum, const HardwareId& hardware_id, int license_version)
 {
-    SHA256 checksum;
-    checksum.add(hardware_id);
-
-    checksum.add(license.version());
-
-    if (license.version() >= Version1)
+    if (license_version >= Version1)
     {
-        checksum.add(license.num_trunk_ports());
-        checksum.add(license.num_nontrunk_ports());
+        checksum.add(hardware_id.type());
+        checksum.add(hardware_id.value());
     }
-
-    if (license.version() >= Version2)
-    {
-        checksum.add(license.num_usb_ports());
-    }
-
-    if (license.version() >= Version3)
-    {
-        checksum.add(license.num_nbaset_ports());
-    }
-
-    return checksum.getLower64Bit();
 }
 
 
-void CreateLicense(const std::string& filename, const std::string& hardware_identifier, int num_trunk, int num_nontrunk)
+void UpdateChecksum(SHA256& checksum, const Features& features, int license_version)
 {
+    if (license_version >= Version1)
+    {
+        checksum.add(features.num_trunk_ports());
+        checksum.add(features.num_nontrunk_ports());
+    }
+
+    if (license_version >= Version2)
+    {
+        checksum.add(features.num_usb_ports());
+    }
+
+    if (license_version >= Version3)
+    {
+        checksum.add(features.num_nbaset_ports());
+    }
+}
+
+
+void UpdateChecksum(SHA256& checksum, const Limits& limits, int license_version)
+{
+    if (license_version >= Version1)
+    {
+        checksum.add(limits.seconds_assigned());
+        checksum.add(limits.seconds_consumed());
+        checksum.add(limits.trialperiod_begin());
+        checksum.add(limits.trialperiod_end());
+    }
+}
+
+
+std::string GenerateSecureHash(const License& license)
+{
+    SHA256 shasum;
+    shasum.add("Hans en Grietje"); // salt
+    shasum.add(license.version());
+    UpdateChecksum(shasum, license.hardware_id(), license.version());
+    UpdateChecksum(shasum, license.limits(), license.version());
+    UpdateChecksum(shasum, license.features(), license.version());
+
+    return shasum.generate_result();
+}
+
+
+void CreateLicense(const std::string& filename, int license_version, HardwareIdType hardware_id_type, const std::string& hardware_id_value, int num_trunk, int num_nontrunk, int num_usb, int num_nbase_t)
+{
+    assert(license_version >= Version1);
+    assert(license_version <= CurrentVersion);
+
     License license;
-    license.set_version(CurrentVersion);
-    license.set_num_nontrunk_ports(num_nontrunk);
-    license.set_num_trunk_ports(num_trunk);
-    license.set_checksum(CalculateChecksum(license, hardware_identifier));
+    license.set_version(license_version);
+    license.mutable_hardware_id()->set_type(hardware_id_type);
+    license.mutable_hardware_id()->set_value(hardware_id_value);
+
+    if (license_version >= Version1)
+    {
+        license.mutable_features()->set_num_nontrunk_ports(num_nontrunk);
+        license.mutable_features()->set_num_trunk_ports(num_trunk);
+    }
+
+    if (license_version >= Version2)
+    {
+        license.mutable_features()->set_num_usb_ports(num_usb);
+    }
+
+    if (license_version >= Version3)
+    {
+        license.mutable_features()->set_num_nbaset_ports(num_nbase_t);
+    }
+
+    license.set_secure_hash(GenerateSecureHash(license));
+
 
     std::ofstream ofs(filename, std::ios::binary);
     std::string serialized = license.SerializeAsString();
@@ -125,7 +166,7 @@ void CreateLicense(const std::string& filename, const std::string& hardware_iden
 }
 
 
-void VerifyLicense(const std::string& filename, const std::string& hardware_id)
+void VerifyLicense(const std::string& filename)
 {
     std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
     std::streamsize size = ifs.tellg();
@@ -142,11 +183,11 @@ void VerifyLicense(const std::string& filename, const std::string& hardware_id)
     License license;
     license.ParseFromString(raw);
 
-    auto checksum = CalculateChecksum(license, hardware_id);
+    auto shasum = GenerateSecureHash(license);
 
-    if (checksum != license.checksum())
+    if (shasum != license.secure_hash())
     {
-        std::cerr << "Invalid license checksum. The hardware identifier doesn't match or license file is corrupted." << std::endl;
+        std::cerr << "License file validation failed. The file may be corrupted." << std::endl;
         std::exit(-1);
     }
 }
@@ -161,20 +202,26 @@ void create(const std::vector<std::string>& args)
     try
     {
         std::string filename;
-        std::string hardware_id;
+        HardwareIdType hardwareid_type = MAC_ADDRESS;
+        std::string hardwareid_value;
         int32_t num_trunk = 0;
         int32_t num_nontrunk = 0;
+        int32_t num_usb = 0;
+        int32_t num_nbase_t = 0;
 
         options.add_options()
             ("filename,F", value(&filename)->required(), "License filename")
-            ("hardware_id,H", value(&hardware_id)->required(), "Hardware identifier that connects the license to a specific machine.")
+            ("hardwareid", value(&hardwareid_value)->required(), "Hardware identifier that connects the license to a specific machine.")
             ("trunk,T", value(&num_trunk)->required(), "Number of trunking ports")
-            ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports");
+            ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports")
+            ("usb", value(&num_usb), "Number of usb ports")
+            ("nbaset", value(&num_nbase_t), "Number of NBase-T ports")
+                ;
 
         variables_map vm;
         store(command_line_parser(args).options(options).run(), vm);
         vm.notify();
-        CreateLicense(filename, hardware_id, num_trunk, num_nontrunk);
+        CreateLicense(filename, CurrentVersion, hardwareid_type, hardwareid_value, num_trunk, num_nontrunk, num_usb, num_nbase_t);
     }
     catch (const std::exception& e)
     {
@@ -192,17 +239,12 @@ void check(const std::vector<std::string>& args)
 
     try
     {
-        std::string filename;
-        std::string hardware_id;
+        if (args.size() != 1)
+        {
+            throw std::runtime_error("Usage: license check FileName");
+        }
 
-        options.add_options()
-            ("filename,F", value(&filename)->required(), "License filename")
-            ("hardware_id,H", value(&hardware_id)->required(), "Hardware identifier that connects the license to a specific machine.");
-
-        variables_map vm;
-        store(command_line_parser(args).options(options).run(), vm);
-        vm.notify();
-        VerifyLicense(filename, hardware_id);
+        VerifyLicense(args[0]);
     }
     catch (const std::exception& e)
     {

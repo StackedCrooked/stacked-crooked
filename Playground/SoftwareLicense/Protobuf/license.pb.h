@@ -31,6 +31,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
@@ -47,21 +48,526 @@ struct TableStruct_license_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[1]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_license_2eproto;
+class Features;
+class FeaturesDefaultTypeInternal;
+extern FeaturesDefaultTypeInternal _Features_default_instance_;
+class HardwareId;
+class HardwareIdDefaultTypeInternal;
+extern HardwareIdDefaultTypeInternal _HardwareId_default_instance_;
 class License;
 class LicenseDefaultTypeInternal;
 extern LicenseDefaultTypeInternal _License_default_instance_;
+class Limits;
+class LimitsDefaultTypeInternal;
+extern LimitsDefaultTypeInternal _Limits_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
+template<> ::Features* Arena::CreateMaybeMessage<::Features>(Arena*);
+template<> ::HardwareId* Arena::CreateMaybeMessage<::HardwareId>(Arena*);
 template<> ::License* Arena::CreateMaybeMessage<::License>(Arena*);
+template<> ::Limits* Arena::CreateMaybeMessage<::Limits>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 
+enum HardwareIdType : int {
+  MAC_ADDRESS = 0,
+  MOTHERBOARD_SERIAL = 1,
+  HardwareIdType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  HardwareIdType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool HardwareIdType_IsValid(int value);
+constexpr HardwareIdType HardwareIdType_MIN = MAC_ADDRESS;
+constexpr HardwareIdType HardwareIdType_MAX = MOTHERBOARD_SERIAL;
+constexpr int HardwareIdType_ARRAYSIZE = HardwareIdType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* HardwareIdType_descriptor();
+template<typename T>
+inline const std::string& HardwareIdType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, HardwareIdType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function HardwareIdType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    HardwareIdType_descriptor(), enum_t_value);
+}
+inline bool HardwareIdType_Parse(
+    const std::string& name, HardwareIdType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<HardwareIdType>(
+    HardwareIdType_descriptor(), name, value);
+}
 // ===================================================================
+
+class HardwareId :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:HardwareId) */ {
+ public:
+  HardwareId();
+  virtual ~HardwareId();
+
+  HardwareId(const HardwareId& from);
+  HardwareId(HardwareId&& from) noexcept
+    : HardwareId() {
+    *this = ::std::move(from);
+  }
+
+  inline HardwareId& operator=(const HardwareId& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline HardwareId& operator=(HardwareId&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const HardwareId& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const HardwareId* internal_default_instance() {
+    return reinterpret_cast<const HardwareId*>(
+               &_HardwareId_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  friend void swap(HardwareId& a, HardwareId& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(HardwareId* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline HardwareId* New() const final {
+    return CreateMaybeMessage<HardwareId>(nullptr);
+  }
+
+  HardwareId* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<HardwareId>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const HardwareId& from);
+  void MergeFrom(const HardwareId& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(HardwareId* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "HardwareId";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_license_2eproto);
+    return ::descriptor_table_license_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kValueFieldNumber = 2,
+    kTypeFieldNumber = 1,
+  };
+  // bytes value = 2;
+  void clear_value();
+  const std::string& value() const;
+  void set_value(const std::string& value);
+  void set_value(std::string&& value);
+  void set_value(const char* value);
+  void set_value(const void* value, size_t size);
+  std::string* mutable_value();
+  std::string* release_value();
+  void set_allocated_value(std::string* value);
+  private:
+  const std::string& _internal_value() const;
+  void _internal_set_value(const std::string& value);
+  std::string* _internal_mutable_value();
+  public:
+
+  // .HardwareIdType type = 1;
+  void clear_type();
+  ::HardwareIdType type() const;
+  void set_type(::HardwareIdType value);
+  private:
+  ::HardwareIdType _internal_type() const;
+  void _internal_set_type(::HardwareIdType value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:HardwareId)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
+  int type_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_license_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Features :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Features) */ {
+ public:
+  Features();
+  virtual ~Features();
+
+  Features(const Features& from);
+  Features(Features&& from) noexcept
+    : Features() {
+    *this = ::std::move(from);
+  }
+
+  inline Features& operator=(const Features& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Features& operator=(Features&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Features& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Features* internal_default_instance() {
+    return reinterpret_cast<const Features*>(
+               &_Features_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  friend void swap(Features& a, Features& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Features* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Features* New() const final {
+    return CreateMaybeMessage<Features>(nullptr);
+  }
+
+  Features* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Features>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Features& from);
+  void MergeFrom(const Features& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Features* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Features";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_license_2eproto);
+    return ::descriptor_table_license_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNumTrunkPortsFieldNumber = 1,
+    kNumNontrunkPortsFieldNumber = 2,
+    kNumUsbPortsFieldNumber = 3,
+    kNumNbasetPortsFieldNumber = 4,
+  };
+  // int32 num_trunk_ports = 1;
+  void clear_num_trunk_ports();
+  ::PROTOBUF_NAMESPACE_ID::int32 num_trunk_ports() const;
+  void set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_trunk_ports() const;
+  void _internal_set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 num_nontrunk_ports = 2;
+  void clear_num_nontrunk_ports();
+  ::PROTOBUF_NAMESPACE_ID::int32 num_nontrunk_ports() const;
+  void set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_nontrunk_ports() const;
+  void _internal_set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 num_usb_ports = 3;
+  void clear_num_usb_ports();
+  ::PROTOBUF_NAMESPACE_ID::int32 num_usb_ports() const;
+  void set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_usb_ports() const;
+  void _internal_set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 num_nbaset_ports = 4;
+  void clear_num_nbaset_ports();
+  ::PROTOBUF_NAMESPACE_ID::int32 num_nbaset_ports() const;
+  void set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_nbaset_ports() const;
+  void _internal_set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Features)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::int32 num_trunk_ports_;
+  ::PROTOBUF_NAMESPACE_ID::int32 num_nontrunk_ports_;
+  ::PROTOBUF_NAMESPACE_ID::int32 num_usb_ports_;
+  ::PROTOBUF_NAMESPACE_ID::int32 num_nbaset_ports_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_license_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Limits :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Limits) */ {
+ public:
+  Limits();
+  virtual ~Limits();
+
+  Limits(const Limits& from);
+  Limits(Limits&& from) noexcept
+    : Limits() {
+    *this = ::std::move(from);
+  }
+
+  inline Limits& operator=(const Limits& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Limits& operator=(Limits&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Limits& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Limits* internal_default_instance() {
+    return reinterpret_cast<const Limits*>(
+               &_Limits_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  friend void swap(Limits& a, Limits& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Limits* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Limits* New() const final {
+    return CreateMaybeMessage<Limits>(nullptr);
+  }
+
+  Limits* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Limits>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Limits& from);
+  void MergeFrom(const Limits& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Limits* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Limits";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_license_2eproto);
+    return ::descriptor_table_license_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kSecondsAssignedFieldNumber = 1,
+    kSecondsConsumedFieldNumber = 2,
+    kTrialperiodBeginFieldNumber = 3,
+    kTrialperiodEndFieldNumber = 4,
+  };
+  // int64 seconds_assigned = 1;
+  void clear_seconds_assigned();
+  ::PROTOBUF_NAMESPACE_ID::int64 seconds_assigned() const;
+  void set_seconds_assigned(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_seconds_assigned() const;
+  void _internal_set_seconds_assigned(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 seconds_consumed = 2;
+  void clear_seconds_consumed();
+  ::PROTOBUF_NAMESPACE_ID::int64 seconds_consumed() const;
+  void set_seconds_consumed(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_seconds_consumed() const;
+  void _internal_set_seconds_consumed(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 trialperiod_begin = 3;
+  void clear_trialperiod_begin();
+  ::PROTOBUF_NAMESPACE_ID::int64 trialperiod_begin() const;
+  void set_trialperiod_begin(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_trialperiod_begin() const;
+  void _internal_set_trialperiod_begin(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // int64 trialperiod_end = 4;
+  void clear_trialperiod_end();
+  ::PROTOBUF_NAMESPACE_ID::int64 trialperiod_end() const;
+  void set_trialperiod_end(::PROTOBUF_NAMESPACE_ID::int64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int64 _internal_trialperiod_end() const;
+  void _internal_set_trialperiod_end(::PROTOBUF_NAMESPACE_ID::int64 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Limits)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::int64 seconds_assigned_;
+  ::PROTOBUF_NAMESPACE_ID::int64 seconds_consumed_;
+  ::PROTOBUF_NAMESPACE_ID::int64 trialperiod_begin_;
+  ::PROTOBUF_NAMESPACE_ID::int64 trialperiod_end_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_license_2eproto;
+};
+// -------------------------------------------------------------------
 
 class License :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:License) */ {
@@ -105,7 +611,7 @@ class License :
                &_License_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    3;
 
   friend void swap(License& a, License& b) {
     a.Swap(&b);
@@ -169,23 +675,74 @@ class License :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kChecksumFieldNumber = 1,
-    kVersionFieldNumber = 2,
-    kNumTrunkPortsFieldNumber = 3,
-    kNumNontrunkPortsFieldNumber = 4,
-    kNumUsbPortsFieldNumber = 5,
-    kNumNbasetPortsFieldNumber = 6,
+    kSecureHashFieldNumber = 2,
+    kHardwareIdFieldNumber = 3,
+    kFeaturesFieldNumber = 4,
+    kLimitsFieldNumber = 5,
+    kVersionFieldNumber = 1,
   };
-  // int64 checksum = 1;
-  void clear_checksum();
-  ::PROTOBUF_NAMESPACE_ID::int64 checksum() const;
-  void set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value);
+  // bytes secure_hash = 2;
+  void clear_secure_hash();
+  const std::string& secure_hash() const;
+  void set_secure_hash(const std::string& value);
+  void set_secure_hash(std::string&& value);
+  void set_secure_hash(const char* value);
+  void set_secure_hash(const void* value, size_t size);
+  std::string* mutable_secure_hash();
+  std::string* release_secure_hash();
+  void set_allocated_secure_hash(std::string* secure_hash);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_checksum() const;
-  void _internal_set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value);
+  const std::string& _internal_secure_hash() const;
+  void _internal_set_secure_hash(const std::string& value);
+  std::string* _internal_mutable_secure_hash();
   public:
 
-  // int32 version = 2;
+  // .HardwareId hardware_id = 3;
+  bool has_hardware_id() const;
+  private:
+  bool _internal_has_hardware_id() const;
+  public:
+  void clear_hardware_id();
+  const ::HardwareId& hardware_id() const;
+  ::HardwareId* release_hardware_id();
+  ::HardwareId* mutable_hardware_id();
+  void set_allocated_hardware_id(::HardwareId* hardware_id);
+  private:
+  const ::HardwareId& _internal_hardware_id() const;
+  ::HardwareId* _internal_mutable_hardware_id();
+  public:
+
+  // .Features features = 4;
+  bool has_features() const;
+  private:
+  bool _internal_has_features() const;
+  public:
+  void clear_features();
+  const ::Features& features() const;
+  ::Features* release_features();
+  ::Features* mutable_features();
+  void set_allocated_features(::Features* features);
+  private:
+  const ::Features& _internal_features() const;
+  ::Features* _internal_mutable_features();
+  public:
+
+  // .Limits limits = 5;
+  bool has_limits() const;
+  private:
+  bool _internal_has_limits() const;
+  public:
+  void clear_limits();
+  const ::Limits& limits() const;
+  ::Limits* release_limits();
+  ::Limits* mutable_limits();
+  void set_allocated_limits(::Limits* limits);
+  private:
+  const ::Limits& _internal_limits() const;
+  ::Limits* _internal_mutable_limits();
+  public:
+
+  // int32 version = 1;
   void clear_version();
   ::PROTOBUF_NAMESPACE_ID::int32 version() const;
   void set_version(::PROTOBUF_NAMESPACE_ID::int32 value);
@@ -194,53 +751,16 @@ class License :
   void _internal_set_version(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
-  // int32 num_trunk_ports = 3;
-  void clear_num_trunk_ports();
-  ::PROTOBUF_NAMESPACE_ID::int32 num_trunk_ports() const;
-  void set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_trunk_ports() const;
-  void _internal_set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  public:
-
-  // int32 num_nontrunk_ports = 4;
-  void clear_num_nontrunk_ports();
-  ::PROTOBUF_NAMESPACE_ID::int32 num_nontrunk_ports() const;
-  void set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_nontrunk_ports() const;
-  void _internal_set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  public:
-
-  // int32 num_usb_ports = 5;
-  void clear_num_usb_ports();
-  ::PROTOBUF_NAMESPACE_ID::int32 num_usb_ports() const;
-  void set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_usb_ports() const;
-  void _internal_set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  public:
-
-  // int32 num_nbaset_ports = 6;
-  void clear_num_nbaset_ports();
-  ::PROTOBUF_NAMESPACE_ID::int32 num_nbaset_ports() const;
-  void set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_num_nbaset_ports() const;
-  void _internal_set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value);
-  public:
-
   // @@protoc_insertion_point(class_scope:License)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::int64 checksum_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr secure_hash_;
+  ::HardwareId* hardware_id_;
+  ::Features* features_;
+  ::Limits* limits_;
   ::PROTOBUF_NAMESPACE_ID::int32 version_;
-  ::PROTOBUF_NAMESPACE_ID::int32 num_trunk_ports_;
-  ::PROTOBUF_NAMESPACE_ID::int32 num_nontrunk_ports_;
-  ::PROTOBUF_NAMESPACE_ID::int32 num_usb_ports_;
-  ::PROTOBUF_NAMESPACE_ID::int32 num_nbaset_ports_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_license_2eproto;
 };
@@ -253,29 +773,261 @@ class License :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// HardwareId
+
+// .HardwareIdType type = 1;
+inline void HardwareId::clear_type() {
+  type_ = 0;
+}
+inline ::HardwareIdType HardwareId::_internal_type() const {
+  return static_cast< ::HardwareIdType >(type_);
+}
+inline ::HardwareIdType HardwareId::type() const {
+  // @@protoc_insertion_point(field_get:HardwareId.type)
+  return _internal_type();
+}
+inline void HardwareId::_internal_set_type(::HardwareIdType value) {
+  
+  type_ = value;
+}
+inline void HardwareId::set_type(::HardwareIdType value) {
+  _internal_set_type(value);
+  // @@protoc_insertion_point(field_set:HardwareId.type)
+}
+
+// bytes value = 2;
+inline void HardwareId::clear_value() {
+  value_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& HardwareId::value() const {
+  // @@protoc_insertion_point(field_get:HardwareId.value)
+  return _internal_value();
+}
+inline void HardwareId::set_value(const std::string& value) {
+  _internal_set_value(value);
+  // @@protoc_insertion_point(field_set:HardwareId.value)
+}
+inline std::string* HardwareId::mutable_value() {
+  // @@protoc_insertion_point(field_mutable:HardwareId.value)
+  return _internal_mutable_value();
+}
+inline const std::string& HardwareId::_internal_value() const {
+  return value_.GetNoArena();
+}
+inline void HardwareId::_internal_set_value(const std::string& value) {
+  
+  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void HardwareId::set_value(std::string&& value) {
+  
+  value_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:HardwareId.value)
+}
+inline void HardwareId::set_value(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:HardwareId.value)
+}
+inline void HardwareId::set_value(const void* value, size_t size) {
+  
+  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:HardwareId.value)
+}
+inline std::string* HardwareId::_internal_mutable_value() {
+  
+  return value_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* HardwareId::release_value() {
+  // @@protoc_insertion_point(field_release:HardwareId.value)
+  
+  return value_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void HardwareId::set_allocated_value(std::string* value) {
+  if (value != nullptr) {
+    
+  } else {
+    
+  }
+  value_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:HardwareId.value)
+}
+
+// -------------------------------------------------------------------
+
+// Features
+
+// int32 num_trunk_ports = 1;
+inline void Features::clear_num_trunk_ports() {
+  num_trunk_ports_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::_internal_num_trunk_ports() const {
+  return num_trunk_ports_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::num_trunk_ports() const {
+  // @@protoc_insertion_point(field_get:Features.num_trunk_ports)
+  return _internal_num_trunk_ports();
+}
+inline void Features::_internal_set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  num_trunk_ports_ = value;
+}
+inline void Features::set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_num_trunk_ports(value);
+  // @@protoc_insertion_point(field_set:Features.num_trunk_ports)
+}
+
+// int32 num_nontrunk_ports = 2;
+inline void Features::clear_num_nontrunk_ports() {
+  num_nontrunk_ports_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::_internal_num_nontrunk_ports() const {
+  return num_nontrunk_ports_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::num_nontrunk_ports() const {
+  // @@protoc_insertion_point(field_get:Features.num_nontrunk_ports)
+  return _internal_num_nontrunk_ports();
+}
+inline void Features::_internal_set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  num_nontrunk_ports_ = value;
+}
+inline void Features::set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_num_nontrunk_ports(value);
+  // @@protoc_insertion_point(field_set:Features.num_nontrunk_ports)
+}
+
+// int32 num_usb_ports = 3;
+inline void Features::clear_num_usb_ports() {
+  num_usb_ports_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::_internal_num_usb_ports() const {
+  return num_usb_ports_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::num_usb_ports() const {
+  // @@protoc_insertion_point(field_get:Features.num_usb_ports)
+  return _internal_num_usb_ports();
+}
+inline void Features::_internal_set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  num_usb_ports_ = value;
+}
+inline void Features::set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_num_usb_ports(value);
+  // @@protoc_insertion_point(field_set:Features.num_usb_ports)
+}
+
+// int32 num_nbaset_ports = 4;
+inline void Features::clear_num_nbaset_ports() {
+  num_nbaset_ports_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::_internal_num_nbaset_ports() const {
+  return num_nbaset_ports_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Features::num_nbaset_ports() const {
+  // @@protoc_insertion_point(field_get:Features.num_nbaset_ports)
+  return _internal_num_nbaset_ports();
+}
+inline void Features::_internal_set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  num_nbaset_ports_ = value;
+}
+inline void Features::set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_num_nbaset_ports(value);
+  // @@protoc_insertion_point(field_set:Features.num_nbaset_ports)
+}
+
+// -------------------------------------------------------------------
+
+// Limits
+
+// int64 seconds_assigned = 1;
+inline void Limits::clear_seconds_assigned() {
+  seconds_assigned_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::_internal_seconds_assigned() const {
+  return seconds_assigned_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::seconds_assigned() const {
+  // @@protoc_insertion_point(field_get:Limits.seconds_assigned)
+  return _internal_seconds_assigned();
+}
+inline void Limits::_internal_set_seconds_assigned(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  seconds_assigned_ = value;
+}
+inline void Limits::set_seconds_assigned(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_seconds_assigned(value);
+  // @@protoc_insertion_point(field_set:Limits.seconds_assigned)
+}
+
+// int64 seconds_consumed = 2;
+inline void Limits::clear_seconds_consumed() {
+  seconds_consumed_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::_internal_seconds_consumed() const {
+  return seconds_consumed_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::seconds_consumed() const {
+  // @@protoc_insertion_point(field_get:Limits.seconds_consumed)
+  return _internal_seconds_consumed();
+}
+inline void Limits::_internal_set_seconds_consumed(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  seconds_consumed_ = value;
+}
+inline void Limits::set_seconds_consumed(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_seconds_consumed(value);
+  // @@protoc_insertion_point(field_set:Limits.seconds_consumed)
+}
+
+// int64 trialperiod_begin = 3;
+inline void Limits::clear_trialperiod_begin() {
+  trialperiod_begin_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::_internal_trialperiod_begin() const {
+  return trialperiod_begin_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::trialperiod_begin() const {
+  // @@protoc_insertion_point(field_get:Limits.trialperiod_begin)
+  return _internal_trialperiod_begin();
+}
+inline void Limits::_internal_set_trialperiod_begin(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  trialperiod_begin_ = value;
+}
+inline void Limits::set_trialperiod_begin(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_trialperiod_begin(value);
+  // @@protoc_insertion_point(field_set:Limits.trialperiod_begin)
+}
+
+// int64 trialperiod_end = 4;
+inline void Limits::clear_trialperiod_end() {
+  trialperiod_end_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::_internal_trialperiod_end() const {
+  return trialperiod_end_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Limits::trialperiod_end() const {
+  // @@protoc_insertion_point(field_get:Limits.trialperiod_end)
+  return _internal_trialperiod_end();
+}
+inline void Limits::_internal_set_trialperiod_end(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  trialperiod_end_ = value;
+}
+inline void Limits::set_trialperiod_end(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  _internal_set_trialperiod_end(value);
+  // @@protoc_insertion_point(field_set:Limits.trialperiod_end)
+}
+
+// -------------------------------------------------------------------
+
 // License
 
-// int64 checksum = 1;
-inline void License::clear_checksum() {
-  checksum_ = PROTOBUF_LONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::int64 License::_internal_checksum() const {
-  return checksum_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::int64 License::checksum() const {
-  // @@protoc_insertion_point(field_get:License.checksum)
-  return _internal_checksum();
-}
-inline void License::_internal_set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  
-  checksum_ = value;
-}
-inline void License::set_checksum(::PROTOBUF_NAMESPACE_ID::int64 value) {
-  _internal_set_checksum(value);
-  // @@protoc_insertion_point(field_set:License.checksum)
-}
-
-// int32 version = 2;
+// int32 version = 1;
 inline void License::clear_version() {
   version_ = 0;
 }
@@ -295,92 +1047,268 @@ inline void License::set_version(::PROTOBUF_NAMESPACE_ID::int32 value) {
   // @@protoc_insertion_point(field_set:License.version)
 }
 
-// int32 num_trunk_ports = 3;
-inline void License::clear_num_trunk_ports() {
-  num_trunk_ports_ = 0;
+// bytes secure_hash = 2;
+inline void License::clear_secure_hash() {
+  secure_hash_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_trunk_ports() const {
-  return num_trunk_ports_;
+inline const std::string& License::secure_hash() const {
+  // @@protoc_insertion_point(field_get:License.secure_hash)
+  return _internal_secure_hash();
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_trunk_ports() const {
-  // @@protoc_insertion_point(field_get:License.num_trunk_ports)
-  return _internal_num_trunk_ports();
+inline void License::set_secure_hash(const std::string& value) {
+  _internal_set_secure_hash(value);
+  // @@protoc_insertion_point(field_set:License.secure_hash)
 }
-inline void License::_internal_set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline std::string* License::mutable_secure_hash() {
+  // @@protoc_insertion_point(field_mutable:License.secure_hash)
+  return _internal_mutable_secure_hash();
+}
+inline const std::string& License::_internal_secure_hash() const {
+  return secure_hash_.GetNoArena();
+}
+inline void License::_internal_set_secure_hash(const std::string& value) {
   
-  num_trunk_ports_ = value;
+  secure_hash_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
 }
-inline void License::set_num_trunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_num_trunk_ports(value);
-  // @@protoc_insertion_point(field_set:License.num_trunk_ports)
+inline void License::set_secure_hash(std::string&& value) {
+  
+  secure_hash_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:License.secure_hash)
+}
+inline void License::set_secure_hash(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  secure_hash_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:License.secure_hash)
+}
+inline void License::set_secure_hash(const void* value, size_t size) {
+  
+  secure_hash_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:License.secure_hash)
+}
+inline std::string* License::_internal_mutable_secure_hash() {
+  
+  return secure_hash_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* License::release_secure_hash() {
+  // @@protoc_insertion_point(field_release:License.secure_hash)
+  
+  return secure_hash_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void License::set_allocated_secure_hash(std::string* secure_hash) {
+  if (secure_hash != nullptr) {
+    
+  } else {
+    
+  }
+  secure_hash_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), secure_hash);
+  // @@protoc_insertion_point(field_set_allocated:License.secure_hash)
 }
 
-// int32 num_nontrunk_ports = 4;
-inline void License::clear_num_nontrunk_ports() {
-  num_nontrunk_ports_ = 0;
+// .HardwareId hardware_id = 3;
+inline bool License::_internal_has_hardware_id() const {
+  return this != internal_default_instance() && hardware_id_ != nullptr;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_nontrunk_ports() const {
-  return num_nontrunk_ports_;
+inline bool License::has_hardware_id() const {
+  return _internal_has_hardware_id();
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_nontrunk_ports() const {
-  // @@protoc_insertion_point(field_get:License.num_nontrunk_ports)
-  return _internal_num_nontrunk_ports();
+inline void License::clear_hardware_id() {
+  if (GetArenaNoVirtual() == nullptr && hardware_id_ != nullptr) {
+    delete hardware_id_;
+  }
+  hardware_id_ = nullptr;
 }
-inline void License::_internal_set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline const ::HardwareId& License::_internal_hardware_id() const {
+  const ::HardwareId* p = hardware_id_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::HardwareId*>(
+      &::_HardwareId_default_instance_);
+}
+inline const ::HardwareId& License::hardware_id() const {
+  // @@protoc_insertion_point(field_get:License.hardware_id)
+  return _internal_hardware_id();
+}
+inline ::HardwareId* License::release_hardware_id() {
+  // @@protoc_insertion_point(field_release:License.hardware_id)
   
-  num_nontrunk_ports_ = value;
+  ::HardwareId* temp = hardware_id_;
+  hardware_id_ = nullptr;
+  return temp;
 }
-inline void License::set_num_nontrunk_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_num_nontrunk_ports(value);
-  // @@protoc_insertion_point(field_set:License.num_nontrunk_ports)
+inline ::HardwareId* License::_internal_mutable_hardware_id() {
+  
+  if (hardware_id_ == nullptr) {
+    auto* p = CreateMaybeMessage<::HardwareId>(GetArenaNoVirtual());
+    hardware_id_ = p;
+  }
+  return hardware_id_;
+}
+inline ::HardwareId* License::mutable_hardware_id() {
+  // @@protoc_insertion_point(field_mutable:License.hardware_id)
+  return _internal_mutable_hardware_id();
+}
+inline void License::set_allocated_hardware_id(::HardwareId* hardware_id) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete hardware_id_;
+  }
+  if (hardware_id) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      hardware_id = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, hardware_id, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  hardware_id_ = hardware_id;
+  // @@protoc_insertion_point(field_set_allocated:License.hardware_id)
 }
 
-// int32 num_usb_ports = 5;
-inline void License::clear_num_usb_ports() {
-  num_usb_ports_ = 0;
+// .Features features = 4;
+inline bool License::_internal_has_features() const {
+  return this != internal_default_instance() && features_ != nullptr;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_usb_ports() const {
-  return num_usb_ports_;
+inline bool License::has_features() const {
+  return _internal_has_features();
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_usb_ports() const {
-  // @@protoc_insertion_point(field_get:License.num_usb_ports)
-  return _internal_num_usb_ports();
+inline void License::clear_features() {
+  if (GetArenaNoVirtual() == nullptr && features_ != nullptr) {
+    delete features_;
+  }
+  features_ = nullptr;
 }
-inline void License::_internal_set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline const ::Features& License::_internal_features() const {
+  const ::Features* p = features_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Features*>(
+      &::_Features_default_instance_);
+}
+inline const ::Features& License::features() const {
+  // @@protoc_insertion_point(field_get:License.features)
+  return _internal_features();
+}
+inline ::Features* License::release_features() {
+  // @@protoc_insertion_point(field_release:License.features)
   
-  num_usb_ports_ = value;
+  ::Features* temp = features_;
+  features_ = nullptr;
+  return temp;
 }
-inline void License::set_num_usb_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_num_usb_ports(value);
-  // @@protoc_insertion_point(field_set:License.num_usb_ports)
+inline ::Features* License::_internal_mutable_features() {
+  
+  if (features_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Features>(GetArenaNoVirtual());
+    features_ = p;
+  }
+  return features_;
+}
+inline ::Features* License::mutable_features() {
+  // @@protoc_insertion_point(field_mutable:License.features)
+  return _internal_mutable_features();
+}
+inline void License::set_allocated_features(::Features* features) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete features_;
+  }
+  if (features) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      features = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, features, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  features_ = features;
+  // @@protoc_insertion_point(field_set_allocated:License.features)
 }
 
-// int32 num_nbaset_ports = 6;
-inline void License::clear_num_nbaset_ports() {
-  num_nbaset_ports_ = 0;
+// .Limits limits = 5;
+inline bool License::_internal_has_limits() const {
+  return this != internal_default_instance() && limits_ != nullptr;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::_internal_num_nbaset_ports() const {
-  return num_nbaset_ports_;
+inline bool License::has_limits() const {
+  return _internal_has_limits();
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 License::num_nbaset_ports() const {
-  // @@protoc_insertion_point(field_get:License.num_nbaset_ports)
-  return _internal_num_nbaset_ports();
+inline void License::clear_limits() {
+  if (GetArenaNoVirtual() == nullptr && limits_ != nullptr) {
+    delete limits_;
+  }
+  limits_ = nullptr;
 }
-inline void License::_internal_set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline const ::Limits& License::_internal_limits() const {
+  const ::Limits* p = limits_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Limits*>(
+      &::_Limits_default_instance_);
+}
+inline const ::Limits& License::limits() const {
+  // @@protoc_insertion_point(field_get:License.limits)
+  return _internal_limits();
+}
+inline ::Limits* License::release_limits() {
+  // @@protoc_insertion_point(field_release:License.limits)
   
-  num_nbaset_ports_ = value;
+  ::Limits* temp = limits_;
+  limits_ = nullptr;
+  return temp;
 }
-inline void License::set_num_nbaset_ports(::PROTOBUF_NAMESPACE_ID::int32 value) {
-  _internal_set_num_nbaset_ports(value);
-  // @@protoc_insertion_point(field_set:License.num_nbaset_ports)
+inline ::Limits* License::_internal_mutable_limits() {
+  
+  if (limits_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Limits>(GetArenaNoVirtual());
+    limits_ = p;
+  }
+  return limits_;
+}
+inline ::Limits* License::mutable_limits() {
+  // @@protoc_insertion_point(field_mutable:License.limits)
+  return _internal_mutable_limits();
+}
+inline void License::set_allocated_limits(::Limits* limits) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete limits_;
+  }
+  if (limits) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      limits = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, limits, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  limits_ = limits;
+  // @@protoc_insertion_point(field_set_allocated:License.limits)
 }
 
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
+
+PROTOBUF_NAMESPACE_OPEN
+
+template <> struct is_proto_enum< ::HardwareIdType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::HardwareIdType>() {
+  return ::HardwareIdType_descriptor();
+}
+
+PROTOBUF_NAMESPACE_CLOSE
 
 // @@protoc_insertion_point(global_scope)
 

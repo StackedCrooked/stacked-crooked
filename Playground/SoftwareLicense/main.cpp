@@ -8,7 +8,7 @@
 
 
 /**
- * This proof-of-concept provides some basic features for the software license: 
+ * This proof-of-concept provides some basic features for the software license:
  *
  *  (1) License integrity check: detect invalid changes in the license file
  *

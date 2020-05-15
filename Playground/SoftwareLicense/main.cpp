@@ -166,7 +166,7 @@ void CreateLicense(const std::string& filename, int license_version, HardwareIdT
 }
 
 
-void VerifyLicense(const std::string& filename)
+License ReadLicenseFromFile(const std::string& filename)
 {
     std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
     std::streamsize size = ifs.tellg();
@@ -180,15 +180,76 @@ void VerifyLicense(const std::string& filename)
         throw std::runtime_error("Failed to read from licensefile.v1");
     }
 
+
     License license;
     license.ParseFromString(raw);
+    return license;
+}
 
-    auto shasum = GenerateSecureHash(license);
 
-    if (shasum != license.secure_hash())
+bool CheckLicenseValid(const License& license)
+{
+    return license.secure_hash() == GenerateSecureHash(license);
+}
+
+
+void VerifyLicense(const std::string& filename)
+{
+    if (!CheckLicenseValid(ReadLicenseFromFile(filename)))
     {
         std::cerr << "License file validation failed. The file may be corrupted." << std::endl;
         std::exit(-1);
+    }
+}
+
+
+void ShowLicense(const std::string& filename)
+{
+    License license = ReadLicenseFromFile(filename);
+
+    std::cout << "=== License Info ===" << std::endl;
+
+    std::cout << "  Version: " << license.version() << '\n';
+
+    if (license.limits().seconds_assigned())
+    {
+        std::cout << "  Usage limit: " << license.limits().seconds_assigned() << " seconds\n";
+    }
+    else
+    {
+        std::cout << "  Usage limit: unlimited\n";
+    }
+
+    if (license.limits().trialperiod_begin())
+    {
+        std::cout << "  Trial period: " << license.limits().trialperiod_begin() << " - " << license.limits().trialperiod_end() << '\n';
+    }
+
+    if (license.version() >= Version1)
+    {
+        std::cout << "  Number of trunk ports: " << license.features().num_nontrunk_ports() << '\n';
+        std::cout << "  Number of nontrunk ports: " << license.features().num_trunk_ports() << '\n';
+    }
+
+    if (license.version() >= Version2)
+    {
+        std::cout << "  Number of USB ports: " << license.features().num_usb_ports() << '\n';
+    }
+
+    if (license.version() >= Version3)
+    {
+        std::cout << "  Number of NBASE-T ports: " << license.features().num_nbaset_ports() << '\n';
+    }
+
+    std::cout << "  HardwareId: " << license.hardware_id().value() << '\n';
+
+    if (CheckLicenseValid(license))
+    {
+        std::cout << "  Secure hash: OK" << '\n';
+    }
+    else
+    {
+        std::cout << "  Secure hash: INVALID!!!" << '\n';
     }
 }
 
@@ -225,7 +286,7 @@ void create(const std::vector<std::string>& args)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << "\n\nUsage:\n" << options << std::endl;
+        std::cerr << "Error: " << e.what() << "\nUsage:\n" << options << std::endl;
         std::exit(-1);
     }
 }
@@ -233,10 +294,6 @@ void create(const std::vector<std::string>& args)
 
 void check(const std::vector<std::string>& args)
 {
-    using namespace boost::program_options;
-
-    options_description options;
-
     try
     {
         if (args.size() != 1)
@@ -248,7 +305,26 @@ void check(const std::vector<std::string>& args)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << "\n\nUsage:\n" << options << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::exit(-1);
+    }
+}
+
+
+void show(const std::vector<std::string>& args)
+{
+    try
+    {
+        if (args.size() != 1)
+        {
+            throw std::runtime_error("Usage: license check FileName");
+        }
+
+        ShowLicense(args[0]);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
         std::exit(-1);
     }
 }
@@ -263,6 +339,10 @@ void run(int argc, char** argv)
     else if (!strcmp(argv[0], "check"))
     {
         check(std::vector<std::string>(argv + 1, argv + argc));
+    }
+    else if (!strcmp(argv[0], "show"))
+    {
+        show(std::vector<std::string>(argv + 1, argv + argc));
     }
     else
     {

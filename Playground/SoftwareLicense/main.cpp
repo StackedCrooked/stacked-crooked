@@ -9,6 +9,124 @@
 #include <iostream>
 #include <string>
 
+struct MACAddress
+{
+    MACAddress() = default;
+
+    static MACAddress FromString(const std::string& s)
+    {
+        MACAddress result;
+        if (result.assign(s))
+        {
+            return result;
+        }
+        throw std::runtime_error("MACAddress: failed to parse " + s);
+    }
+
+    static MACAddress FromBinaryString(const std::string& s)
+    {
+        if (s.size() != 6)
+        {
+            throw std::runtime_error("Invalid MAC address: expected 6 bytes but got: " + std::to_string((s.size())));
+        }
+
+        MACAddress result;
+        memcpy(result.data(), s.data(), sizeof(result));
+        return result;
+    }
+
+    bool assign(std::string string_rep)
+    {
+        uint32_t part1 = 0;
+        uint32_t part2 = 0;
+        uint32_t part3 = 0;
+        uint32_t part4 = 0;
+        uint32_t part5 = 0;
+        uint32_t part6 = 0;
+
+        int n = std::sscanf(string_rep.c_str(), "%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x", &part1, &part2, &part3, &part4, &part5, &part6);
+        if (n != 6)
+        {
+            return false;
+        }
+
+        mArray[0] = part1;
+        mArray[1] = part2;
+        mArray[2] = part3;
+        mArray[3] = part4;
+        mArray[4] = part5;
+        mArray[5] = part6;
+        return true;
+    }
+
+    uint8_t* data() { return &mArray[0]; }
+
+    const uint8_t* data() const { return &mArray[0]; }
+    std::size_t size() const { return sizeof(mArray) / sizeof(mArray[0]); }
+
+    uint8_t* begin() { return data(); }
+    uint8_t* end() { return begin() + size(); }
+
+    const uint8_t* begin() const { return data(); }
+    const uint8_t* end() const { return begin() + size(); }
+
+    const char* cstr_begin() const { return reinterpret_cast<const char*>(begin()); }
+    const char* cstr_end() const { return reinterpret_cast<const char*>(end()); }
+
+    friend std::ostream& operator<<(std::ostream& os, const MACAddress& mac)
+    {
+        return os
+            << std::hex
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[0]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[1]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[2]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[3]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[4]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[5])
+            << std::dec;
+    }
+
+    uint8_t mArray[6];
+};
+
+
+std::string ExecuteShellCommand(const char* cmd)
+{
+    char buffer[128];
+    std::string result("");
+
+    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if (!pipe)
+    {
+        throw std::runtime_error("popen() failed!");
+    }
+
+    while (!feof(pipe.get()))
+    {
+        if (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+        {
+            result += buffer;
+        }
+    }
+
+    return result;
+}
+
+
+
+bool validate(const std::string& mac_string)
+{
+    //std::cout << "validate(" << mac_string << ")" << std::endl;
+    std::stringstream ss;
+    ss << R"~(list_network_interfaces() { ifconfig -a | grep '^[a-zA-Z]' | cut -d':' -f1; }; validate_network_interface() { license_mac=$1; shift; for i in "$@"; do mac="$(ifconfig $i | grep ether | awk '{print $2}')";  [ "$license_mac" == "$mac" ] && { return 0; } ; done ;  return 1; };)~";
+    ss << "validate_network_interface " << mac_string << " $(list_network_interfaces) && echo PASS || echo FAIL";
+    std::string command = ss.str();
+    //std::cout << "Command: \n" << command << std::endl;
+    auto result = ExecuteShellCommand(command.c_str());
+    //std::cout << "\nresult: |" << result << "|" << std::endl;
+    return result.find("PASS") != std::string::npos;
+}
+
 
 /**
  * This proof-of-concept provides some basic features for the software license:
@@ -62,6 +180,7 @@ private:
     std::string mResult;
     bool mFinalized = false;
 };
+
 
 
 
@@ -203,7 +322,7 @@ bool CheckLicenseValid(const License& license)
 }
 
 
-void VerifyLicense(const std::string& filename)
+void VerifyLicenseIntegrity(const std::string& filename)
 {
     if (!CheckLicenseValid(ReadLicenseFromFile(filename)))
     {
@@ -212,85 +331,26 @@ void VerifyLicense(const std::string& filename)
     }
 }
 
-struct MACAddress
+
+void ValidateLicenseOnCurrentHardware(const std::string& filename)
 {
-    MACAddress() = default;
 
-    static MACAddress FromString(const std::string& s)
+    //validate(license.mutable_hardware_id()->value());
+
+
+    License license = ReadLicenseFromFile(filename);
+    auto mac = MACAddress::FromBinaryString(license.mutable_hardware_id()->value());
+    //std::cout << "mac=" << mac << std::endl;
+    std::stringstream ss;
+    ss << mac;
+    std::string mac_str = ss.str();
+    if (!validate(mac_str))
     {
-        MACAddress result;
-        if (result.assign(s))
-        {
-            return result;
-        }
-        throw std::runtime_error("MACAddress: failed to parse " + s);
+        std::cerr << "Hardware Id " << mac_str << " was not found on this machine." << std::endl;
+        std::exit(-1);
     }
-
-    static MACAddress FromBinaryString(const std::string& s)
-    {
-        if (s.size() != 6)
-        {
-            throw std::runtime_error("Invalid MAC address: expected 6 bytes but got: " + std::to_string((s.size())));
-        }
-
-        MACAddress result;
-        memcpy(result.data(), s.data(), sizeof(result));
-        return result;
-    }
-
-    bool assign(std::string string_rep)
-    {
-        uint32_t part1 = 0;
-        uint32_t part2 = 0;
-        uint32_t part3 = 0;
-        uint32_t part4 = 0;
-        uint32_t part5 = 0;
-        uint32_t part6 = 0;
-
-        int n = std::sscanf(string_rep.c_str(), "%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x", &part1, &part2, &part3, &part4, &part5, &part6);
-        if (n != 6)
-        {
-            return false;
-        }
-
-        mArray[0] = part1;
-        mArray[1] = part2;
-        mArray[2] = part3;
-        mArray[3] = part4;
-        mArray[4] = part5;
-        mArray[5] = part6;
-        return true;
-    }
-
-    uint8_t* data() { return &mArray[0]; }
-
-    const uint8_t* data() const { return &mArray[0]; }
-    std::size_t size() const { return sizeof(mArray) / sizeof(mArray[0]); }
-
-    uint8_t* begin() { return data(); }
-    uint8_t* end() { return begin() + size(); }
-
-    const uint8_t* begin() const { return data(); }
-    const uint8_t* end() const { return begin() + size(); }
-
-    const char* cstr_begin() const { return reinterpret_cast<const char*>(begin()); }
-    const char* cstr_end() const { return reinterpret_cast<const char*>(end()); }
-
-    friend std::ostream& operator<<(std::ostream& os, const MACAddress& mac)
-    {
-        return os
-            << std::hex
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[0]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[1]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[2]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[3]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[4]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[5])
-            << std::dec;
-    }
-
-    uint8_t mArray[6];
-};
+    //std::cout << "It worked?\n";
+}
 
 
 void ShowLicense(const std::string& filename)
@@ -402,7 +462,7 @@ void check(const std::vector<std::string>& args)
             throw std::runtime_error("Usage: license check FileName");
         }
 
-        VerifyLicense(args[0]);
+        VerifyLicenseIntegrity(args[0]);
     }
     catch (const std::exception& e)
     {
@@ -444,6 +504,10 @@ void run(int argc, char** argv)
     else if (!strcmp(argv[0], "show"))
     {
         show(std::vector<std::string>(argv + 1, argv + argc));
+    }
+    else if (!strcmp(argv[0], "validate"))
+    {
+        ValidateLicenseOnCurrentHardware(argv[1]);
     }
     else
     {

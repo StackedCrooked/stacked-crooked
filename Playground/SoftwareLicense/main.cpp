@@ -256,7 +256,7 @@ void ShowLicense(const std::string& filename)
     }
     else
     {
-        std::cout << "  Secure hash: INVALID!!!" << '\n';
+        std::cout << "  Secure hash: *** INVALID *** " << '\n';
     }
 }
 

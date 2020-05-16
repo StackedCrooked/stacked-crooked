@@ -2,7 +2,10 @@
 #include <boost/program_options.hpp>
 #include <cryptopp/sha.h>
 #include <cstdint>
+#include <cstring>
+
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -209,6 +212,86 @@ void VerifyLicense(const std::string& filename)
     }
 }
 
+struct MACAddress
+{
+    MACAddress() = default;
+
+    static MACAddress FromString(const std::string& s)
+    {
+        MACAddress result;
+        if (result.assign(s))
+        {
+            return result;
+        }
+        throw std::runtime_error("MACAddress: failed to parse " + s);
+    }
+
+    static MACAddress FromBinaryString(const std::string& s)
+    {
+        if (s.size() != 6)
+        {
+            throw std::runtime_error("Invalid MAC address: expected 6 bytes but got: " + std::to_string((s.size())));
+        }
+
+        MACAddress result;
+        memcpy(result.data(), s.data(), sizeof(result));
+        return result;
+    }
+
+    bool assign(std::string string_rep)
+    {
+        uint32_t part1 = 0;
+        uint32_t part2 = 0;
+        uint32_t part3 = 0;
+        uint32_t part4 = 0;
+        uint32_t part5 = 0;
+        uint32_t part6 = 0;
+
+        int n = std::sscanf(string_rep.c_str(), "%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x", &part1, &part2, &part3, &part4, &part5, &part6);
+        if (n != 6)
+        {
+            return false;
+        }
+
+        mArray[0] = part1;
+        mArray[1] = part2;
+        mArray[2] = part3;
+        mArray[3] = part4;
+        mArray[4] = part5;
+        mArray[5] = part6;
+        return true;
+    }
+
+    uint8_t* data() { return &mArray[0]; }
+
+    const uint8_t* data() const { return &mArray[0]; }
+    std::size_t size() const { return sizeof(mArray) / sizeof(mArray[0]); }
+
+    uint8_t* begin() { return data(); }
+    uint8_t* end() { return begin() + size(); }
+
+    const uint8_t* begin() const { return data(); }
+    const uint8_t* end() const { return begin() + size(); }
+
+    const char* cstr_begin() const { return reinterpret_cast<const char*>(begin()); }
+    const char* cstr_end() const { return reinterpret_cast<const char*>(end()); }
+
+    friend std::ostream& operator<<(std::ostream& os, const MACAddress& mac)
+    {
+        return os
+            << std::hex
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[0]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[1]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[2]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[3]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[4]) << ":"
+            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[5])
+            << std::dec;
+    }
+
+    uint8_t mArray[6];
+};
+
 
 void ShowLicense(const std::string& filename)
 {
@@ -248,7 +331,7 @@ void ShowLicense(const std::string& filename)
         std::cout << "  Number of NBASE-T ports: " << license.features().num_nbaset_ports() << '\n';
     }
 
-    std::cout << "  HardwareId: " << license.hardware_id().value() << '\n';
+    std::cout << "  HardwareId: " << MACAddress::FromBinaryString(license.hardware_id().value()) << '\n';
 
     if (CheckLicenseValid(license))
     {
@@ -271,7 +354,7 @@ void create(const std::vector<std::string>& args)
     {
         std::string filename;
         HardwareIdType hardwareid_type = MAC_ADDRESS;
-        std::string hardwareid_value;
+        std::string hardwareid_mac;
         int32_t license_version = CurrentVersion;
         int32_t num_trunk = 0;
         int32_t num_nontrunk = 0;
@@ -281,7 +364,7 @@ void create(const std::vector<std::string>& args)
         options.add_options()
             ("filename,F", value(&filename)->required(), "License filename")
             ("version", value(&license_version), "License version number.")
-            ("hardwareid", value(&hardwareid_value)->required(), "Hardware identifier that connects the license to a specific machine.")
+            ("hardwareid", value(&hardwareid_mac)->required(), "Hardware identifier that connects the license to a specific machine.")
             ("trunk,T", value(&num_trunk)->required(), "Number of trunking ports")
             ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports")
             ("usb", value(&num_usb), "Number of usb ports")
@@ -297,7 +380,10 @@ void create(const std::vector<std::string>& args)
             throw std::runtime_error("Invalid version: " + std::to_string(license_version));
         }
 
-        CreateLicense(filename, license_version, hardwareid_type, hardwareid_value, num_trunk, num_nontrunk, num_usb, num_nbase_t);
+        auto mac = MACAddress::FromString(hardwareid_mac);
+        std::string binary_mac(mac.begin(), mac.end());
+
+        CreateLicense(filename, license_version, hardwareid_type, binary_mac, num_trunk, num_nontrunk, num_usb, num_nbase_t);
     }
     catch (const std::exception& e)
     {

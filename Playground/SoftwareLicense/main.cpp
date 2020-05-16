@@ -121,11 +121,21 @@ void UpdateChecksum(SHA256& checksum, const Limits& limits, int license_version)
 std::string GenerateSecureHash(const License& license)
 {
     SHA256 shasum;
-    shasum.add("Hans en Grietje"); // salt
-    shasum.add(license.version());
-    UpdateChecksum(shasum, license.hardware_id(), license.version());
-    UpdateChecksum(shasum, license.limits(), license.version());
-    UpdateChecksum(shasum, license.features(), license.version());
+
+    if (license.version() >= Version1)
+    {
+        shasum.add("Hans en Grietje"); // add salt
+        shasum.add(license.version());
+
+        // Add hardware id fields to checksum
+        UpdateChecksum(shasum, license.hardware_id(), license.version());
+
+        // Add license limit fields to checksum
+        UpdateChecksum(shasum, license.limits(), license.version());
+
+        // Add license feature fields to checksum
+        UpdateChecksum(shasum, license.features(), license.version());
+    }
 
     return shasum.generate_result();
 }
@@ -133,9 +143,6 @@ std::string GenerateSecureHash(const License& license)
 
 void CreateLicense(const std::string& filename, int license_version, HardwareIdType hardware_id_type, const std::string& hardware_id_value, int num_trunk, int num_nontrunk, int num_usb, int num_nbase_t)
 {
-    assert(license_version >= Version1);
-    assert(license_version <= CurrentVersion);
-
     License license;
     license.set_version(license_version);
     license.mutable_hardware_id()->set_type(hardware_id_type);
@@ -265,6 +272,7 @@ void create(const std::vector<std::string>& args)
         std::string filename;
         HardwareIdType hardwareid_type = MAC_ADDRESS;
         std::string hardwareid_value;
+        int32_t license_version = CurrentVersion;
         int32_t num_trunk = 0;
         int32_t num_nontrunk = 0;
         int32_t num_usb = 0;
@@ -272,6 +280,7 @@ void create(const std::vector<std::string>& args)
 
         options.add_options()
             ("filename,F", value(&filename)->required(), "License filename")
+            ("version", value(&license_version), "License version number.")
             ("hardwareid", value(&hardwareid_value)->required(), "Hardware identifier that connects the license to a specific machine.")
             ("trunk,T", value(&num_trunk)->required(), "Number of trunking ports")
             ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports")
@@ -282,7 +291,13 @@ void create(const std::vector<std::string>& args)
         variables_map vm;
         store(command_line_parser(args).options(options).run(), vm);
         vm.notify();
-        CreateLicense(filename, CurrentVersion, hardwareid_type, hardwareid_value, num_trunk, num_nontrunk, num_usb, num_nbase_t);
+
+        if (license_version < Version1 || license_version > CurrentVersion)
+        {
+            throw std::runtime_error("Invalid version: " + std::to_string(license_version));
+        }
+
+        CreateLicense(filename, license_version, hardwareid_type, hardwareid_value, num_trunk, num_nontrunk, num_usb, num_nbase_t);
     }
     catch (const std::exception& e)
     {

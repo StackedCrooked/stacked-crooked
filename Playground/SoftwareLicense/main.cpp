@@ -82,22 +82,28 @@ enum Version
 std::string GenerateSecureHash(const License& license)
 {
     SHA256 shasum;
+
     shasum.add("Hans en Grietje"); // add salt
+
+    // Version 1 fields:
     shasum.add(license.version());
     shasum.add(license.hardware_id());
     shasum.add(license.num_trunk_ports());
     shasum.add(license.num_nontrunk_ports());
 
+    // Version 2 fields:
     if (license.version() >= Version2)
     {
         shasum.add(license.num_usb_ports());
     }
 
+    // Version 3 fields:
     if (license.version() >= Version3)
     {
         shasum.add(license.num_nbaset_ports());
     }
 
+    // Get checksum
     return shasum.generate_result();
 }
 
@@ -105,16 +111,20 @@ std::string GenerateSecureHash(const License& license)
 License CreateLicense(int version, const std::string& hardware_id, int num_trunk, int num_nontrunk, int num_usb, int num_nbase_t)
 {
     License license;
+
+    // Version 1 fields:
     license.set_version(version);
     license.set_hardware_id(hardware_id);
     license.set_num_trunk_ports(num_trunk);
     license.set_num_nontrunk_ports(num_nontrunk);
 
+    // Version 2 fields:
     if (version >= Version2)
     {
         license.set_num_usb_ports(num_usb);
     }
 
+    // Version 3 fields:
     if (version >= Version3)
     {
         license.set_num_nbaset_ports(num_nbase_t);

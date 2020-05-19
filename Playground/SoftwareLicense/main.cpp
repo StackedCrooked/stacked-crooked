@@ -71,7 +71,7 @@ enum Version
 };
 
 
-std::string GenerateSecureHash(const License& license)
+std::string GenerateChecksum(const License& license)
 {
     SHA256 shasum;
 
@@ -109,20 +109,20 @@ License CreateLicense(int version, const std::string& hardware_id, int num_trunk
     license.set_hardware_id(hardware_id);
     license.set_num_trunk_ports(num_trunk);
     license.set_num_nontrunk_ports(num_nontrunk);
-    license.add_secure_hash(GenerateSecureHash(license));
+    license.add_checksum(GenerateChecksum(license));
 
     // Version 2 fields:
     if (version >= Version2)
     {
         license.set_num_usb_ports(num_usb);
-        license.add_secure_hash(GenerateSecureHash(license));
+        license.add_checksum(GenerateChecksum(license));
     }
 
     // Version 3 fields:
     if (version >= Version3)
     {
         license.set_num_nbaset_ports(num_nbase_t);
-        license.add_secure_hash(GenerateSecureHash(license));
+        license.add_checksum(GenerateChecksum(license));
     }
 
     return license;
@@ -160,7 +160,7 @@ License ReadLicenseFromFile(const std::string& filename)
 
 bool CheckLicenseValid(const License& license, int version)
 {
-    return license.secure_hash(version - 1) == GenerateSecureHash(license);
+    return license.checksum(version - 1) == GenerateChecksum(license);
 }
 
 
@@ -208,8 +208,8 @@ void ShowLicense(const std::string& filename)
         std::cout << "  Number of NBASE-T ports: " << license.num_nbaset_ports() << '\n';
     }
 
-    std::cout << "  Secure Hash: " << std::endl;
-    for (auto i = 0; i != license.secure_hash_size(); ++i)
+    std::cout << "  Checksum: " << std::endl;
+    for (auto i = 0; i != license.checksum_size(); ++i)
     {
         std::cout
             << "    Version " << (i + 1) << ": "

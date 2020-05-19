@@ -4,7 +4,7 @@ syntax = "proto3";
 message License
 {
     int32 version = 1;
-    repeated bytes secure_hash = 2;
+    repeated bytes checksum = 2;
     bytes hardware_id = 3;
 
     int32 num_trunk_ports = 4;

@@ -1,57 +1,18 @@
 syntax = "proto3";
 
 
-enum HardwareIdType
-{
-    // Since version 1:
-    MAC_ADDRESS = 0;
-    MOTHERBOARD_SERIAL = 1;
-
-    // Since version X:
-    // ...
-};
-
-
-message HardwareId
-{
-    // The hardware id type is also stored.
-    // This allows validation (i.e in case of MAC_ADDRESS the value must be a valid mac address)
-    // It also allows using different hardware id type for virtual machine deployments.
-    HardwareIdType type = 1;
-    bytes value = 2;
-}
-
-
-message Features
-{
-    // Since version 1
-    int32 num_trunk_ports = 1;
-    int32 num_nontrunk_ports = 2;
-
-    // Since version 2
-    int32 num_usb_ports = 3;
-
-    // Since version 3
-    int32 num_nbaset_ports = 4;
-}
-
-
-message Limits
-{
-    // Since version 1
-    int64 seconds_assigned = 1;  // Usage period. Value is zero for unlimited licenses.
-    int64 seconds_consumed = 2;  // Usage number of seconds the demo system has been in use. this value is periodically incremented (resulting in license rewrite)
-
-    int64 trialperiod_begin = 3; // UTC timestamp (in seconds) of trial start date. Value is zero for unlimited licenses.
-    int64 trialperiod_end   = 4;   // UTC timestamp (in seconds) of trial end date. Value is zero for unlimited licenses.
-}
-
-
 message License
 {
     int32 version = 1;
     bytes secure_hash = 2;
-    HardwareId hardware_id = 3;
-    Features features = 4;
-    Limits limits = 5;
+    bytes hardware_id = 3;
+
+    int32 num_trunk_ports = 4;
+    int32 num_nontrunk_ports = 5;
+
+    // Since version 2:
+    int32 num_usb_ports = 6;
+
+    // Since version 3:
+    int32 num_nbaset_ports = 7;
 }

@@ -3,129 +3,10 @@
 #include <cryptopp/sha.h>
 #include <cstdint>
 #include <cstring>
-
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
-
-struct MACAddress
-{
-    MACAddress() = default;
-
-    static MACAddress FromString(const std::string& s)
-    {
-        MACAddress result;
-        if (result.assign(s))
-        {
-            return result;
-        }
-        throw std::runtime_error("MACAddress: failed to parse " + s);
-    }
-
-    static MACAddress FromBinaryString(const std::string& s)
-    {
-        if (s.size() != 6)
-        {
-            throw std::runtime_error("Invalid MAC address: expected 6 bytes but got: " + std::to_string((s.size())));
-        }
-
-        MACAddress result;
-        memcpy(result.data(), s.data(), sizeof(result));
-        return result;
-    }
-
-    bool assign(std::string string_rep)
-    {
-        uint32_t part1 = 0;
-        uint32_t part2 = 0;
-        uint32_t part3 = 0;
-        uint32_t part4 = 0;
-        uint32_t part5 = 0;
-        uint32_t part6 = 0;
-
-        int n = std::sscanf(string_rep.c_str(), "%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x%*[-.:]%x", &part1, &part2, &part3, &part4, &part5, &part6);
-        if (n != 6)
-        {
-            return false;
-        }
-
-        mArray[0] = part1;
-        mArray[1] = part2;
-        mArray[2] = part3;
-        mArray[3] = part4;
-        mArray[4] = part5;
-        mArray[5] = part6;
-        return true;
-    }
-
-    uint8_t* data() { return &mArray[0]; }
-
-    const uint8_t* data() const { return &mArray[0]; }
-    std::size_t size() const { return sizeof(mArray) / sizeof(mArray[0]); }
-
-    uint8_t* begin() { return data(); }
-    uint8_t* end() { return begin() + size(); }
-
-    const uint8_t* begin() const { return data(); }
-    const uint8_t* end() const { return begin() + size(); }
-
-    const char* cstr_begin() const { return reinterpret_cast<const char*>(begin()); }
-    const char* cstr_end() const { return reinterpret_cast<const char*>(end()); }
-
-    friend std::ostream& operator<<(std::ostream& os, const MACAddress& mac)
-    {
-        return os
-            << std::hex
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[0]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[1]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[2]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[3]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[4]) << ":"
-            << std::setw(2) << std::setfill('0') << static_cast<int>(mac.mArray[5])
-            << std::dec;
-    }
-
-    uint8_t mArray[6];
-};
-
-
-std::string ExecuteShellCommand(const char* cmd)
-{
-    char buffer[128];
-    std::string result("");
-
-    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
-    if (!pipe)
-    {
-        throw std::runtime_error("popen() failed!");
-    }
-
-    while (!feof(pipe.get()))
-    {
-        if (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-        {
-            result += buffer;
-        }
-    }
-
-    return result;
-}
-
-
-
-bool validate(const std::string& mac_string)
-{
-    //std::cout << "validate(" << mac_string << ")" << std::endl;
-    std::stringstream ss;
-    ss << R"~(list_network_interfaces() { ifconfig -a | grep '^[a-zA-Z]' | cut -d':' -f1; }; validate_network_interface() { license_mac=$1; shift; for i in "$@"; do mac="$(ifconfig $i | grep ether | awk '{print $2}')";  [ "$license_mac" == "$mac" ] && { return 0; } ; done ;  return 1; };)~";
-    ss << "validate_network_interface " << mac_string << " $(list_network_interfaces) && echo PASS || echo FAIL";
-    std::string command = ss.str();
-    //std::cout << "Command: \n" << command << std::endl;
-    auto result = ExecuteShellCommand(command.c_str());
-    //std::cout << "\nresult: |" << result << "|" << std::endl;
-    return result.find("PASS") != std::string::npos;
-}
 
 
 /**
@@ -198,97 +79,56 @@ enum Version
 };
 
 
-void UpdateChecksum(SHA256& checksum, const HardwareId& hardware_id, int license_version)
-{
-    if (license_version >= Version1)
-    {
-        checksum.add(hardware_id.type());
-        checksum.add(hardware_id.value());
-    }
-}
-
-
-void UpdateChecksum(SHA256& checksum, const Features& features, int license_version)
-{
-    if (license_version >= Version1)
-    {
-        checksum.add(features.num_trunk_ports());
-        checksum.add(features.num_nontrunk_ports());
-    }
-
-    if (license_version >= Version2)
-    {
-        checksum.add(features.num_usb_ports());
-    }
-
-    if (license_version >= Version3)
-    {
-        checksum.add(features.num_nbaset_ports());
-    }
-}
-
-
-void UpdateChecksum(SHA256& checksum, const Limits& limits, int license_version)
-{
-    if (license_version >= Version1)
-    {
-        checksum.add(limits.seconds_assigned());
-        checksum.add(limits.seconds_consumed());
-        checksum.add(limits.trialperiod_begin());
-        checksum.add(limits.trialperiod_end());
-    }
-}
-
-
 std::string GenerateSecureHash(const License& license)
 {
     SHA256 shasum;
+    shasum.add("Hans en Grietje"); // add salt
+    shasum.add(license.version());
+    shasum.add(license.hardware_id());
+    shasum.add(license.num_trunk_ports());
+    shasum.add(license.num_nontrunk_ports());
 
-    if (license.version() >= Version1)
+    if (license.version() >= Version2)
     {
-        shasum.add("Hans en Grietje"); // add salt
-        shasum.add(license.version());
+        shasum.add(license.num_usb_ports());
+    }
 
-        // Add hardware id fields to checksum
-        UpdateChecksum(shasum, license.hardware_id(), license.version());
-
-        // Add license limit fields to checksum
-        UpdateChecksum(shasum, license.limits(), license.version());
-
-        // Add license feature fields to checksum
-        UpdateChecksum(shasum, license.features(), license.version());
+    if (license.version() >= Version3)
+    {
+        shasum.add(license.num_nbaset_ports());
     }
 
     return shasum.generate_result();
 }
 
 
-void CreateLicense(const std::string& filename, int license_version, HardwareIdType hardware_id_type, const std::string& hardware_id_value, int num_trunk, int num_nontrunk, int num_usb, int num_nbase_t)
+License CreateLicense(int version, const std::string& hardware_id, int num_trunk, int num_nontrunk, int num_usb, int num_nbase_t)
 {
     License license;
-    license.set_version(license_version);
-    license.mutable_hardware_id()->set_type(hardware_id_type);
-    license.mutable_hardware_id()->set_value(hardware_id_value);
+    license.set_version(version);
+    license.set_hardware_id(hardware_id);
+    license.set_num_trunk_ports(num_trunk);
+    license.set_num_nontrunk_ports(num_nontrunk);
 
-    if (license_version >= Version1)
+    if (version >= Version2)
     {
-        license.mutable_features()->set_num_nontrunk_ports(num_nontrunk);
-        license.mutable_features()->set_num_trunk_ports(num_trunk);
+        license.set_num_usb_ports(num_usb);
     }
 
-    if (license_version >= Version2)
+    if (version >= Version3)
     {
-        license.mutable_features()->set_num_usb_ports(num_usb);
+        license.set_num_nbaset_ports(num_nbase_t);
     }
 
-    if (license_version >= Version3)
-    {
-        license.mutable_features()->set_num_nbaset_ports(num_nbase_t);
-    }
-
+    // Last step: set the secure hash
     license.set_secure_hash(GenerateSecureHash(license));
 
+    return license;
+}
 
+
+void WriteLicenseToFile(const License& license, const std::string& filename)
+{
     std::ofstream ofs(filename, std::ios::binary);
     std::string serialized = license.SerializeAsString();
     ofs.write(serialized.data(), serialized.size());
@@ -329,27 +169,8 @@ void VerifyLicenseIntegrity(const std::string& filename)
         std::cerr << "License file validation failed. The file may be corrupted." << std::endl;
         std::exit(-1);
     }
-}
 
-
-void ValidateLicenseOnCurrentHardware(const std::string& filename)
-{
-
-    //validate(license.mutable_hardware_id()->value());
-
-
-    License license = ReadLicenseFromFile(filename);
-    auto mac = MACAddress::FromBinaryString(license.mutable_hardware_id()->value());
-    //std::cout << "mac=" << mac << std::endl;
-    std::stringstream ss;
-    ss << mac;
-    std::string mac_str = ss.str();
-    if (!validate(mac_str))
-    {
-        std::cerr << "Hardware Id " << mac_str << " was not found on this machine." << std::endl;
-        std::exit(-1);
-    }
-    //std::cout << "It worked?\n";
+    std::cout << "Checksum OK\n";
 }
 
 
@@ -361,37 +182,23 @@ void ShowLicense(const std::string& filename)
 
     std::cout << "  Version: " << license.version() << '\n';
 
-    if (license.limits().seconds_assigned())
-    {
-        std::cout << "  Usage limit: " << license.limits().seconds_assigned() << " seconds\n";
-    }
-    else
-    {
-        std::cout << "  Usage limit: unlimited\n";
-    }
-
-    if (license.limits().trialperiod_begin())
-    {
-        std::cout << "  Trial period: " << license.limits().trialperiod_begin() << " - " << license.limits().trialperiod_end() << '\n';
-    }
+    std::cout << "  HardwareId: " << license.hardware_id() << '\n';
 
     if (license.version() >= Version1)
     {
-        std::cout << "  Number of trunk ports: " << license.features().num_nontrunk_ports() << '\n';
-        std::cout << "  Number of nontrunk ports: " << license.features().num_trunk_ports() << '\n';
+        std::cout << "  Number of trunk ports: " << license.num_nontrunk_ports() << '\n';
+        std::cout << "  Number of nontrunk ports: " << license.num_trunk_ports() << '\n';
     }
 
     if (license.version() >= Version2)
     {
-        std::cout << "  Number of USB ports: " << license.features().num_usb_ports() << '\n';
+        std::cout << "  Number of USB ports: " << license.num_usb_ports() << '\n';
     }
 
     if (license.version() >= Version3)
     {
-        std::cout << "  Number of NBASE-T ports: " << license.features().num_nbaset_ports() << '\n';
+        std::cout << "  Number of NBASE-T ports: " << license.num_nbaset_ports() << '\n';
     }
-
-    std::cout << "  HardwareId: " << MACAddress::FromBinaryString(license.hardware_id().value()) << '\n';
 
     if (CheckLicenseValid(license))
     {
@@ -413,8 +220,7 @@ void create(const std::vector<std::string>& args)
     try
     {
         std::string filename;
-        HardwareIdType hardwareid_type = MAC_ADDRESS;
-        std::string hardwareid_mac;
+        std::string hardwareid;
         int32_t license_version = CurrentVersion;
         int32_t num_trunk = 0;
         int32_t num_nontrunk = 0;
@@ -424,7 +230,7 @@ void create(const std::vector<std::string>& args)
         options.add_options()
             ("filename,F", value(&filename)->required(), "License filename")
             ("version", value(&license_version), "License version number.")
-            ("hardwareid", value(&hardwareid_mac)->required(), "Hardware identifier that connects the license to a specific machine.")
+            ("hardwareid", value(&hardwareid)->required(), "Hardware identifier that connects the license to a specific machine.")
             ("trunk,T", value(&num_trunk)->required(), "Number of trunking ports")
             ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports")
             ("usb", value(&num_usb), "Number of usb ports")
@@ -440,10 +246,8 @@ void create(const std::vector<std::string>& args)
             throw std::runtime_error("Invalid version: " + std::to_string(license_version));
         }
 
-        auto mac = MACAddress::FromString(hardwareid_mac);
-        std::string binary_mac(mac.begin(), mac.end());
-
-        CreateLicense(filename, license_version, hardwareid_type, binary_mac, num_trunk, num_nontrunk, num_usb, num_nbase_t);
+        License license = CreateLicense(license_version, hardwareid, num_trunk, num_nontrunk, num_usb, num_nbase_t);
+        WriteLicenseToFile(license, filename);
     }
     catch (const std::exception& e)
     {
@@ -505,15 +309,12 @@ void run(int argc, char** argv)
     {
         show(std::vector<std::string>(argv + 1, argv + argc));
     }
-    else if (!strcmp(argv[0], "validate"))
-    {
-        ValidateLicenseOnCurrentHardware(argv[1]);
-    }
     else
     {
         throw std::runtime_error("Invalid command: " + std::string(argv[0]));
     }
 }
+
 
 int main(int argc, char** argv)
 {
@@ -521,7 +322,7 @@ int main(int argc, char** argv)
     {
         if (argc < 2)
         {
-            throw std::runtime_error("Action required: create, show, check or validate");
+            throw std::runtime_error("Action required: create, show, check");
         }
         run(argc - 1, argv + 1);
     }

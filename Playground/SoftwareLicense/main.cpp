@@ -71,7 +71,7 @@ enum Version
 };
 
 
-std::string GenerateChecksum(const License& license)
+std::string GenerateChecksum(const License& license, int version)
 {
     SHA256 shasum;
 
@@ -84,13 +84,13 @@ std::string GenerateChecksum(const License& license)
     shasum.add(license.num_nontrunk_ports());
 
     // Version 2 fields:
-    if (license.version() >= Version2)
+    if (version >= Version2)
     {
         shasum.add(license.num_usb_ports());
     }
 
     // Version 3 fields:
-    if (license.version() >= Version3)
+    if (version >= Version3)
     {
         shasum.add(license.num_nbaset_ports());
     }
@@ -109,20 +109,20 @@ License CreateLicense(int version, const std::string& hardware_id, int num_trunk
     license.set_hardware_id(hardware_id);
     license.set_num_trunk_ports(num_trunk);
     license.set_num_nontrunk_ports(num_nontrunk);
-    license.add_checksum(GenerateChecksum(license));
+    license.add_checksum(GenerateChecksum(license, Version1));
 
     // Version 2 fields:
     if (version >= Version2)
     {
         license.set_num_usb_ports(num_usb);
-        license.add_checksum(GenerateChecksum(license));
+        license.add_checksum(GenerateChecksum(license, Version2));
     }
 
     // Version 3 fields:
     if (version >= Version3)
     {
         license.set_num_nbaset_ports(num_nbase_t);
-        license.add_checksum(GenerateChecksum(license));
+        license.add_checksum(GenerateChecksum(license, Version3));
     }
 
     return license;
@@ -158,21 +158,29 @@ License ReadLicenseFromFile(const std::string& filename)
 }
 
 
-bool CheckLicenseValid(const License& license, int version)
+bool CheckLicenseValid(const License& license, int max_version)
 {
-    return license.checksum(version - 1) == GenerateChecksum(license);
-}
+    // Validate all checksums until the maximum common checksum.
+    for (auto version = 1; version <= std::min(max_version, license.version()); ++version)
+    {
+        if (license.checksum(version - 1) != GenerateChecksum(license, version))
+        {
+            std::cout << "Checksum Version " << version << ": INVALID\n";
+        }
+        else
+        {
+            std::cout << "Checksum Version " << version << ": OK\n";
+        }
+    }
 
-
-bool CheckLicenseValid(const License& license)
-{
-    return CheckLicenseValid(license, std::min<int>(CurrentVersion, license.version()));
+    return true;
 }
 
 
 void VerifyLicenseIntegrity(const std::string& filename)
 {
-    if (!CheckLicenseValid(ReadLicenseFromFile(filename)))
+    License license = ReadLicenseFromFile(filename);
+    if (!CheckLicenseValid(license, CurrentVersion))
     {
         std::cerr << "License file validation failed. The file may be corrupted." << std::endl;
         std::exit(-1);
@@ -207,10 +215,16 @@ void ShowLicense(const std::string& filename)
     }
 
     std::cout << "  Checksum: " << std::endl;
-    for (auto i = 0; i != license.checksum_size(); ++i)
+    for (auto version = 1; version <= license.version(); ++version)
     {
+        if (version > CurrentVersion)
+        {
+            std::cout << "    Version " << version << ": (unchecked)" << std::endl;
+            continue;
+        }
+
         std::cout
-            << "    Version " << (i + 1) << ": "
+            << "    Version " << version << ": "
             << (CheckLicenseValid(license, license.version()) ? "OK" : "FAIL!")
             << std::endl;
     }

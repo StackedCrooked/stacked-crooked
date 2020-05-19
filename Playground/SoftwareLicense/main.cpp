@@ -166,7 +166,7 @@ bool CheckLicenseValid(const License& license, int version)
 
 bool CheckLicenseValid(const License& license)
 {
-    return CheckLicenseValid(license, license.version());
+    return CheckLicenseValid(license, std::min<int>(CurrentVersion, license.version()));
 }
 
 

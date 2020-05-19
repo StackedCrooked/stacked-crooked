@@ -62,13 +62,11 @@ private:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-enum Version
-{
-    Version1 = 1,
-    Version2 = 2,
-    Version3 = 3,
-    CurrentVersion = Version3
-};
+static constexpr int Version1 = 1;
+static constexpr int Version2 = 2;
+static constexpr int Version3 = 3;
+static constexpr int CurrentVersion = 3;
+
 
 
 std::string GenerateChecksum(const License& license, int version)
@@ -165,11 +163,7 @@ bool CheckLicenseValid(const License& license, int max_version)
     {
         if (license.checksum(version - 1) != GenerateChecksum(license, version))
         {
-            std::cout << "Checksum Version " << version << ": INVALID\n";
-        }
-        else
-        {
-            std::cout << "Checksum Version " << version << ": OK\n";
+            return false;
         }
     }
 
@@ -180,7 +174,8 @@ bool CheckLicenseValid(const License& license, int max_version)
 void VerifyLicenseIntegrity(const std::string& filename)
 {
     License license = ReadLicenseFromFile(filename);
-    if (!CheckLicenseValid(license, CurrentVersion))
+
+    if (!CheckLicenseValid(license, std::min(license.version(), CurrentVersion)))
     {
         std::cerr << "License file validation failed. The file may be corrupted." << std::endl;
         std::exit(-1);
@@ -217,16 +212,21 @@ void ShowLicense(const std::string& filename)
     std::cout << "  Checksum: " << std::endl;
     for (auto version = 1; version <= license.version(); ++version)
     {
+        std::cout << "    Version " << version << ": ";
         if (version > CurrentVersion)
         {
-            std::cout << "    Version " << version << ": (unchecked)" << std::endl;
+            std::cout << "(unchecked)" << std::endl;
             continue;
         }
 
-        std::cout
-            << "    Version " << version << ": "
-            << (CheckLicenseValid(license, license.version()) ? "OK" : "FAIL!")
-            << std::endl;
+        if (CheckLicenseValid(license, CurrentVersion))
+        {
+            std::cout << "OK\n";
+        }
+        else
+        {
+            std::cout << "NOT OK\n";
+        }
     }
 }
 

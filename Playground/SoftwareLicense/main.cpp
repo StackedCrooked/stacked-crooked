@@ -187,9 +187,7 @@ void ShowLicense(const std::string& filename)
     License license = ReadLicenseFromFile(filename);
 
     std::cout << "=== License Info ===" << std::endl;
-
     std::cout << "  Version: " << license.version() << '\n';
-
     std::cout << "  HardwareId: " << license.hardware_id() << '\n';
 
     if (license.version() >= Version1)
@@ -215,7 +213,6 @@ void ShowLicense(const std::string& filename)
             << "    Version " << (i + 1) << ": "
             << (CheckLicenseValid(license, license.version()) ? "OK" : "FAIL!")
             << std::endl;
-
     }
 }
 

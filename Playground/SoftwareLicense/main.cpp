@@ -26,40 +26,32 @@
 //! Helper for generating SHA-256 checksums.
 struct SHA256
 {
-    void add(int32_t value)
-    {
-        assert(!mFinalized);
-        mSHA.Update(reinterpret_cast<const uint8_t*>(&value), sizeof(value));
-    }
-
     void add(int64_t value)
     {
-        assert(!mFinalized);
-        mSHA.Update(reinterpret_cast<const uint8_t*>(&value), sizeof(value));
+        mBuffer += std::to_string(value);
     }
 
     void add(const std::string& str)
     {
-        assert(!mFinalized);
-        mSHA.Update(reinterpret_cast<const uint8_t*>(str.data()), str.size());
+        mBuffer += str;
     }
 
     std::string generate_result()
     {
-        if (!mFinalized)
-        {
-            mResult.resize(mSHA.DigestSize());
-            mSHA.Final(reinterpret_cast<uint8_t*>(mResult.data()));
-            assert(8 * mResult.size() == 256); // result should be 256 bit
-            mFinalized = true;
-        }
-        return mResult;
+        std::string result;
+
+        CryptoPP::SHA256 sha;
+        sha.Update(reinterpret_cast<const uint8_t*>(mBuffer.data()), mBuffer.size());
+        result.resize(sha.DigestSize());
+        sha.Final(reinterpret_cast<uint8_t*>(result.data()));
+
+        assert(8 * result.size() == 256); // result should be 256 bit
+
+        return result;
     }
 
 private:
-    CryptoPP::SHA256 mSHA;
-    std::string mResult;
-    bool mFinalized = false;
+    std::string mBuffer;
 };
 
 
@@ -117,21 +109,21 @@ License CreateLicense(int version, const std::string& hardware_id, int num_trunk
     license.set_hardware_id(hardware_id);
     license.set_num_trunk_ports(num_trunk);
     license.set_num_nontrunk_ports(num_nontrunk);
+    license.add_secure_hash(GenerateSecureHash(license));
 
     // Version 2 fields:
     if (version >= Version2)
     {
         license.set_num_usb_ports(num_usb);
+        license.add_secure_hash(GenerateSecureHash(license));
     }
 
     // Version 3 fields:
     if (version >= Version3)
     {
         license.set_num_nbaset_ports(num_nbase_t);
+        license.add_secure_hash(GenerateSecureHash(license));
     }
-
-    // Last step: set the secure hash
-    license.set_secure_hash(GenerateSecureHash(license));
 
     return license;
 }
@@ -166,9 +158,15 @@ License ReadLicenseFromFile(const std::string& filename)
 }
 
 
+bool CheckLicenseValid(const License& license, int version)
+{
+    return license.secure_hash(version - 1) == GenerateSecureHash(license);
+}
+
+
 bool CheckLicenseValid(const License& license)
 {
-    return license.secure_hash() == GenerateSecureHash(license);
+    return CheckLicenseValid(license, license.version());
 }
 
 
@@ -210,13 +208,14 @@ void ShowLicense(const std::string& filename)
         std::cout << "  Number of NBASE-T ports: " << license.num_nbaset_ports() << '\n';
     }
 
-    if (CheckLicenseValid(license))
+    std::cout << "  Secure Hash: " << std::endl;
+    for (auto i = 0; i != license.secure_hash_size(); ++i)
     {
-        std::cout << "  Secure hash: OK" << '\n';
-    }
-    else
-    {
-        std::cout << "  Secure hash: *** INVALID *** " << '\n';
+        std::cout
+            << "    Version " << (i + 1) << ": "
+            << (CheckLicenseValid(license, license.version()) ? "OK" : "FAIL!")
+            << std::endl;
+
     }
 }
 

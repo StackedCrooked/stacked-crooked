@@ -22,7 +22,7 @@ NAME=gcc-${VERSION}
 # Exit the source dir, create the build directory and enter it
 mkdir build && cd build
 
-../$NAME/configure --prefix=/opt/$NAME --disable-multilib --enable-languages=c,c++
+../$NAME/configure --prefix=/opt/$NAME --program-suffix=-${VERSION} --disable-multilib --enable-languages=c,c++
 
 make -j$(nproc)
 make install-strip

@@ -17,12 +17,19 @@ Installing GCC
     cd .. && mkdir build && cd build
 
     # Configure step. Note that this should always be called from outside the source directory.
-    ../gcc-9.2.0/configure --prefix=/opt/gcc-9.2.0 --disable-multilib --enable-languages=c,c++
+    ../gcc-9.2.0/configure --prefix=/opt/gcc-9.2.0 --program-suffix=-9.2.0 --disable-multilib --enable-languages=c,c++
 
     # Build the code
-    make -j3
+    make -j$(nproc)
     make install-strip
 
+	# OPTIONAL: Make our gcc the system default 
+	#update-alternatives --install /usr/bin/gcc gcc /opt/$NAME/bin/gcc 100 --slave /usr/bin/g++ g++ /opt/$NAME/bin/g++
+
+
+Making our GCC the default system GCC
+-------------------------------------
+update-alternatives --install /usr/bin/gcc gcc /opt/gcc-9.3.0/bin/gcc 100 --slave /usr/bin/g++ g++ /opt/gcc-9.3.0/bin/g++
 
 
 Download

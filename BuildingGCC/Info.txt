@@ -29,7 +29,18 @@ Installing GCC
 
 Making our GCC the default system GCC
 -------------------------------------
-update-alternatives --install /usr/bin/gcc gcc /opt/gcc-9.3.0/bin/gcc 100 --slave /usr/bin/g++ g++ /opt/gcc-9.3.0/bin/g++
+- Install our gcc as the system default gcc:
+	update-alternatives --install /usr/bin/gcc gcc /opt/gcc-9.3.0/bin/gcc 100 --slave /usr/bin/g++ g++ /opt/gcc-9.3.0/bin/g++
+
+- Show list of alternatives for gcc:
+	update-alternatives --query gcc
+
+- Set the built-in gcc as the default (this overrides the priority value):
+	update-alternatives --set gcc /opt/gcc-9.3.0/bin/gcc
+
+- Set our gcc as the default (this overrides the priority value):
+	update-alternatives --set gcc /usr/bin/gcc-4.8
+
 
 
 Download

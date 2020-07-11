@@ -53,5 +53,5 @@ RUN rm -rf /tmp/gcc-build \
 
 
 # Use our gcc as THE gcc.
-RUN update-alternatives --install /usr/bin/gcc gcc /opt/gcc-9.3.0/bin/g++-9.3.0 100 --slave /usr/bin/g++ g++ /opt/gcc-9.3.0/bin/gcc-9.3.0
+RUN update-alternatives --install /usr/bin/gcc gcc /opt/gcc-9.3.0/bin/g++-9.3.0 100 --slave /usr/bin/g++ g++ /opt/gcc-9.3.0/bin/g++-9.3.0
 

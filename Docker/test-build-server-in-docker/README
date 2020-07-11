@@ -1,0 +1,17 @@
+Based on: https://blobfolio.com/2018/12/using-docker-as-a-build-environment/
+
+Docker container was built as:
+	docker build -t clean/stretch:latest -f Dockerfile .
+
+
+
+Instructions from the website:
+	# Build it with:
+	docker build -t clean/stretch:latest -f Dockerfile .
+
+	# Run it with:
+	#docker run --rm -v /full/path/to/host/share/folder:/mnt -it --name clean_stretch clean/stretch /bin/bash
+	docker run --rm -v `pwd`/shared_folder:/mnt -it --name clean_stretch clean/stretch /bin/bash
+
+
+

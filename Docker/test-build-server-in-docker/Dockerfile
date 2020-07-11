@@ -26,22 +26,22 @@ RUN apt-get update \
 	wget
 
 # Update APT sources from our local copy.
-COPY	sources.list /etc/apt/sources.list
+COPY sources.list /etc/apt/sources.list
 
 # Run updates again.
-RUN	aria2c -o /etc/apt/trusted.gpg.d/php.gpg -x1 https://packages.sury.org/php/apt.gpg \
+RUN aria2c -o /etc/apt/trusted.gpg.d/php.gpg -x1 https://packages.sury.org/php/apt.gpg \
 	&& apt-get update \
 	&& apt-get dist-upgrade -y \
 	&& apt-get build-dep -y gcc \
 	&& apt-get build-dep -y clang
-
-RUN	aria2c -o ninja.zip -x2 https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip \
+ 
+RUN aria2c -o ninja.zip -x2 https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip \
 	&& unzip ninja.zip \
 	&& rm ninja.zip \
 	&& mv ninja /usr/bin/ninja
 
 
-RUN	rm -rf /tmp/gcc-build \
+RUN rm -rf /tmp/gcc-build \
 	&& mkdir -p /tmp/gcc-build \
 	&& cd /tmp/gcc-build \
 	&& wget https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.xz \
@@ -53,5 +53,5 @@ RUN	rm -rf /tmp/gcc-build \
 
 
 # Use our gcc as THE gcc.
-RUN	update-alternatives --install /usr/bin/gcc gcc /opt/gcc-9.3.0/bin/g++-9.3.0 100 --slave /usr/bin/g++ g++ /opt/gcc-9.3.0/bin/gcc-9.3.0
+RUN update-alternatives --install /usr/bin/gcc gcc /opt/gcc-9.3.0/bin/g++-9.3.0 100 --slave /usr/bin/g++ g++ /opt/gcc-9.3.0/bin/gcc-9.3.0
 

@@ -153,16 +153,13 @@ struct LicenseConfig
 static uint64_t HardwareIdToUInt64(const std::string& s)
 {
     const std::string& command = "echo \"" + s + "\" | perl -pe 's,\\D,,g'";
-    std::cout << "command: " << command << std::endl;
     const std::string hex = "0x" + ExecuteShellCommand(command);
-    std::cout << "hex=" << hex << std::endl;
 
     std::stringstream ss;
     ss << hex;
 
     uint64_t u64 = 0;
     ss >> std::hex >> u64;
-    std::cout << "u64=" << u64 << std::endl;
     return u64;
 }
 
@@ -247,7 +244,7 @@ void VerifyLicenseIntegrity(const std::string& filename)
 
     if (!CheckLicenseValid(license, std::min(license.version(), CurrentVersion)))
     {
-        std::cerr << "License file validation failed. The file may be corrupted." << std::endl;
+        std::cerr << "License file validation failed. The file may be corrupted.\n";
         std::exit(-1);
     }
 
@@ -259,7 +256,7 @@ void ShowLicense(const std::string& filename)
 {
     License license = ReadLicenseFromFile(filename);
 
-    std::cout << "=== License Info ===" << std::endl;
+    std::cout << "=== License Info ===\n";
     std::cout << "  Version: " << license.version() << '\n';
     std::cout << "  HardwareId: " << license.hardware_id() << '\n';
 
@@ -279,13 +276,13 @@ void ShowLicense(const std::string& filename)
         std::cout << "  Number of NBASE-T ports: " << license.num_nbaset_ports() << '\n';
     }
 
-    std::cout << "  Checksum: " << std::endl;
+    std::cout << "  Checksum: \n";
     for (auto version = 1; version <= license.version(); ++version)
     {
         std::cout << "    Version " << version << ": ";
         if (version > CurrentVersion)
         {
-            std::cout << "(unchecked)" << std::endl;
+            std::cout << "(unchecked)\n";
             continue;
         }
 
@@ -336,7 +333,7 @@ void create(const std::vector<std::string>& args)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << "\nUsage:\n" << options << std::endl;
+        std::cerr << "Error: " << e.what() << "\nUsage:\n" << options << '\n';
         std::exit(-1);
     }
 }
@@ -355,7 +352,7 @@ void check(const std::vector<std::string>& args)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << '\n';
         std::exit(-1);
     }
 }
@@ -374,7 +371,7 @@ void show(const std::vector<std::string>& args)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << '\n';
         std::exit(-1);
     }
 }
@@ -413,7 +410,7 @@ int main(int argc, char** argv)
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
         return -1;
     }
 

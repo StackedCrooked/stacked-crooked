@@ -150,6 +150,21 @@ struct LicenseConfig
 
 
 
+static std::string UInt64ToHardwareId(uint64_t hardware_id)
+{
+    const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&hardware_id);
+
+    std::stringstream ss;
+    ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[0]);
+    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[1]);
+    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[2]);
+    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[3]);
+    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[4]);
+    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[5]);
+    return ss.str();
+}
+
+
 static uint64_t HardwareIdToUInt64(const std::string& s)
 {
     const std::string& command = "echo \"" + s + "\" | perl -pe 's,\\D,,g'";
@@ -258,7 +273,7 @@ void ShowLicense(const std::string& filename)
 
     std::cout << "=== License Info ===\n";
     std::cout << "  Version: " << license.version() << '\n';
-    std::cout << "  HardwareId: " << license.hardware_id() << '\n';
+    std::cout << "  HardwareId: " << UInt64ToHardwareId(license.hardware_id()) << '\n';
 
     if (license.version() >= Version1)
     {

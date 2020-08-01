@@ -4,9 +4,8 @@ syntax = "proto3";
 message License
 {
     int32 version = 1;
-    repeated bytes checksum = 2;
-    bytes hardware_id = 3;
-
+    repeated uint64 checksum = 2;
+    uint64 hardware_id = 3;
     int32 num_trunk_ports = 4;
     int32 num_nontrunk_ports = 5;
 

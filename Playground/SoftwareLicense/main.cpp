@@ -1,39 +1,12 @@
 #include "Protobuf/license.pb.h"
 #include <boost/program_options.hpp>
-//#include <cryptopp/sha.h>
+#include <cryptopp/sha.h>
 #include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
-#include <sstream>
-
-
-std::string ExecuteShellCommand(const std::string& cmd)
-{
-    char buffer[128];
-
-    std::string result;
-
-    std::shared_ptr<FILE> pipe(popen(cmd.c_str(), "r"), pclose);
-    if (!pipe)
-    {
-        throw std::runtime_error("popen failed for cmd: " + cmd);
-    }
-
-    while (!feof(pipe.get()))
-    {
-        if (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-        {
-            result += buffer;
-        }
-    }
-
-    return result;
-}
-
-
 
 
 /**
@@ -63,31 +36,18 @@ struct SHA256
         mBuffer += str;
     }
 
-    uint64_t generate_result()
+    std::string generate_result()
     {
-        std::stringstream ss;
-        ss << "echo "
-           << '"' << mBuffer << '"'
-           << " | shasum -a 256";
-
-        std::string result = "0x" + ExecuteShellCommand(ss.str()).substr(0, 16);
-
-        std::stringstream sss;
-        sss << result;
-
-        uint64_t u64 = 0;
-        sss >> std::hex >> u64;
-        return u64;
-
-#if 0
         std::string result;
+
         CryptoPP::SHA256 sha;
         sha.Update(reinterpret_cast<const uint8_t*>(mBuffer.data()), mBuffer.size());
         result.resize(sha.DigestSize());
         sha.Final(reinterpret_cast<uint8_t*>(result.data()));
+
         assert(8 * result.size() == 256); // result should be 256 bit
+
         return result;
-#endif
     }
 
 private:
@@ -109,7 +69,7 @@ static constexpr int CurrentVersion = 3;
 
 
 
-uint64_t GenerateChecksum(const License& license, int version)
+std::string GenerateChecksum(const License& license, int version)
 {
     SHA256 shasum;
 
@@ -138,70 +98,28 @@ uint64_t GenerateChecksum(const License& license, int version)
 }
 
 
-struct LicenseConfig
-{
-    std::string hardware_id;
-    int32_t version = CurrentVersion;
-    int32_t num_trunk = 0;
-    int32_t num_nontrunk = 0;
-    int32_t num_usb = 0;
-    int32_t num_nbase_t = 0;
-};
-
-
-
-static std::string UInt64ToHardwareId(uint64_t hardware_id)
-{
-    const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&hardware_id);
-
-    std::stringstream ss;
-    ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[0]);
-    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[1]);
-    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[2]);
-    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[3]);
-    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[4]);
-    ss << ":" << std::hex << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[5]);
-    return ss.str();
-}
-
-
-static uint64_t HardwareIdToUInt64(const std::string& s)
-{
-    const std::string& command = "echo \"" + s + "\" | perl -pe 's,\\D,,g'";
-    const std::string hex = "0x" + ExecuteShellCommand(command);
-
-    std::stringstream ss;
-    ss << hex;
-
-    uint64_t u64 = 0;
-    ss >> std::hex >> u64;
-    return u64;
-}
-
-
-
-License CreateLicense(const LicenseConfig& config)
+License CreateLicense(int version, const std::string& hardware_id, int num_trunk, int num_nontrunk, int num_usb, int num_nbase_t)
 {
     License license;
 
     // Version 1 fields:
-    license.set_version(config.version);
-    license.set_hardware_id(HardwareIdToUInt64(config.hardware_id));
-    license.set_num_trunk_ports(config.num_trunk);
-    license.set_num_nontrunk_ports(config.num_nontrunk);
+    license.set_version(version);
+    license.set_hardware_id(hardware_id);
+    license.set_num_trunk_ports(num_trunk);
+    license.set_num_nontrunk_ports(num_nontrunk);
     license.add_checksum(GenerateChecksum(license, Version1));
 
     // Version 2 fields:
-    if (config.version >= Version2)
+    if (version >= Version2)
     {
-        license.set_num_usb_ports(config.num_usb);
+        license.set_num_usb_ports(num_usb);
         license.add_checksum(GenerateChecksum(license, Version2));
     }
 
     // Version 3 fields:
-    if (config.version >= Version3)
+    if (version >= Version3)
     {
-        license.set_num_nbaset_ports(config.num_nbase_t);
+        license.set_num_nbaset_ports(num_nbase_t);
         license.add_checksum(GenerateChecksum(license, Version3));
     }
 
@@ -259,7 +177,7 @@ void VerifyLicenseIntegrity(const std::string& filename)
 
     if (!CheckLicenseValid(license, std::min(license.version(), CurrentVersion)))
     {
-        std::cerr << "License file validation failed. The file may be corrupted.\n";
+        std::cerr << "License file validation failed. The file may be corrupted." << std::endl;
         std::exit(-1);
     }
 
@@ -271,9 +189,9 @@ void ShowLicense(const std::string& filename)
 {
     License license = ReadLicenseFromFile(filename);
 
-    std::cout << "=== License Info ===\n";
+    std::cout << "=== License Info ===" << std::endl;
     std::cout << "  Version: " << license.version() << '\n';
-    std::cout << "  HardwareId: " << UInt64ToHardwareId(license.hardware_id()) << '\n';
+    std::cout << "  HardwareId: " << license.hardware_id() << '\n';
 
     if (license.version() >= Version1)
     {
@@ -291,13 +209,13 @@ void ShowLicense(const std::string& filename)
         std::cout << "  Number of NBASE-T ports: " << license.num_nbaset_ports() << '\n';
     }
 
-    std::cout << "  Checksum: \n";
+    std::cout << "  Checksum: " << std::endl;
     for (auto version = 1; version <= license.version(); ++version)
     {
         std::cout << "    Version " << version << ": ";
         if (version > CurrentVersion)
         {
-            std::cout << "(unchecked)\n";
+            std::cout << "(unchecked)" << std::endl;
             continue;
         }
 
@@ -318,37 +236,42 @@ void create(const std::vector<std::string>& args)
     using namespace boost::program_options;
 
     options_description options;
-    std::string filename;
 
     try
     {
-        LicenseConfig config;
+        std::string filename;
+        std::string hardwareid;
+        int32_t license_version = CurrentVersion;
+        int32_t num_trunk = 0;
+        int32_t num_nontrunk = 0;
+        int32_t num_usb = 0;
+        int32_t num_nbase_t = 0;
 
         options.add_options()
             ("filename,F", value(&filename)->required(), "License filename")
-            ("version", value(&config.version), "License version number.")
-            ("hardwareid", value(&config.hardware_id)->required(), "Hardware identifier that connects the license to a specific machine.")
-            ("trunk,T", value(&config.num_trunk)->required(), "Number of trunking ports")
-            ("nontrunk,N", value(&config.num_nontrunk)->required(), "Number of nontrunking ports")
-            ("usb", value(&config.num_usb), "Number of usb ports")
-            ("nbaset", value(&config.num_nbase_t), "Number of NBase-T ports")
+            ("version", value(&license_version), "License version number.")
+            ("hardwareid", value(&hardwareid)->required(), "Hardware identifier that connects the license to a specific machine.")
+            ("trunk,T", value(&num_trunk)->required(), "Number of trunking ports")
+            ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports")
+            ("usb", value(&num_usb), "Number of usb ports")
+            ("nbaset", value(&num_nbase_t), "Number of NBase-T ports")
                 ;
 
         variables_map vm;
         store(command_line_parser(args).options(options).run(), vm);
         vm.notify();
 
-        if (config.version < Version1 || config.version > CurrentVersion)
+        if (license_version < Version1 || license_version > CurrentVersion)
         {
-            throw std::runtime_error("Invalid version: " + std::to_string(config.version));
+            throw std::runtime_error("Invalid version: " + std::to_string(license_version));
         }
 
-        License license = CreateLicense(config);
+        License license = CreateLicense(license_version, hardwareid, num_trunk, num_nontrunk, num_usb, num_nbase_t);
         WriteLicenseToFile(license, filename);
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << "\nUsage:\n" << options << '\n';
+        std::cerr << "Error: " << e.what() << "\nUsage:\n" << options << std::endl;
         std::exit(-1);
     }
 }
@@ -367,7 +290,7 @@ void check(const std::vector<std::string>& args)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << '\n';
+        std::cerr << "Error: " << e.what() << std::endl;
         std::exit(-1);
     }
 }
@@ -386,7 +309,7 @@ void show(const std::vector<std::string>& args)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error: " << e.what() << '\n';
+        std::cerr << "Error: " << e.what() << std::endl;
         std::exit(-1);
     }
 }
@@ -425,7 +348,7 @@ int main(int argc, char** argv)
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
         return -1;
     }
 

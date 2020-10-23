@@ -36,8 +36,8 @@ struct Snapshot
 
 void run(int core_id)
 {
-    std::cout << "Pinning thread to core " << core_id << std::endl;
     {
+        std::cout << "Pinning thread to core " << core_id << std::endl;
         auto cpuset = cpu_set_t();
         CPU_SET(core_id, &cpuset);
         pthread_setaffinity_np(pthread_self(), sizeof(cpuset), &cpuset);
@@ -46,9 +46,9 @@ void run(int core_id)
     auto start_time = Clock::now();
     auto next_snapshot_time = start_time + std::chrono::seconds(1);
 
-
-
     Snapshot snapshot;
+
+    auto iteration_counter = 0ul;
 
     for (;;)
     {
@@ -61,12 +61,17 @@ void run(int core_id)
 
             if (t1 >= next_snapshot_time)
             {
-                std::cout
-                    << "num_samples=" << snapshot.num_samples
-                    << " sum_samples=" << snapshot.sum_samples
-                    << " average_sample_duration=" << (snapshot.num_samples ? snapshot.sum_samples / snapshot.num_samples : 0)
-                    << " max_sample=" << snapshot.max_sample
-                    << std::endl;
+                // The first iteration is always slow, so treat is as a warmup iteration and don't
+                // print its result.
+                if (iteration_counter++ > 0)
+                {
+                    std::cout
+                        << "num_samples=" << snapshot.num_samples
+                        << " sum_samples=" << snapshot.sum_samples
+                        << " average_sample_duration=" << (snapshot.num_samples ? snapshot.sum_samples / snapshot.num_samples : 0)
+                        << " max_sample=" << snapshot.max_sample
+                        << std::endl;
+                }
 
                 next_snapshot_time += std::chrono::seconds(1);
                 snapshot.clear();
@@ -92,7 +97,8 @@ int main(int argc, char** argv)
         std::string basename = program_name.substr(program_name.rfind('/') + 1);
         std::cerr << "Usage:\n\t" << basename << " <core_id> <priority>\n";
         std::cerr << "\nExample:\n\t" << basename << " 1 SCHED_RR\n";
-        std::cerr << "\nExample:\n\t" << basename << " 1 DEFAULT\n";
+        std::cerr << "\nExample:\n\t" << basename << " 1 SCHED_OTHER\n";
+        std::cerr << "\nNote: SCHED_OTHER is the default Linux scheduling policy.\n";
         return 1;
     }
 
@@ -113,9 +119,9 @@ int main(int argc, char** argv)
         param.sched_priority = sched_get_priority_min(policy);
         pthread_setschedparam(pthread_self(), policy, &param);
     }
-    else if (args[2] == "DEFAULT")
+    else if (args[2] == "SCHED_OTHER")
     {
-        std::cout << "- Scheduling priority: default\n";
+        std::cout << "- Scheduling priority: SCHED_OTHER\n";
     }
     else
     {

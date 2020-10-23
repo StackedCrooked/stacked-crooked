@@ -8,6 +8,32 @@
 using Clock = std::chrono::system_clock;
 
 
+struct Snapshot
+{
+    void add(uint64_t sample)
+    {
+        num_samples++;
+        sum_samples += sample;
+
+        if (sample > max_sample)
+        {
+            max_sample = sample;
+        }
+    }
+
+    void clear()
+    {
+        num_samples = 0;
+        max_sample = 0;
+        sum_samples = 0;
+    }
+
+    uint64_t num_samples = 0;
+    uint64_t sum_samples = 0;
+    uint64_t max_sample = 0;
+};
+
+
 void run(int core_id)
 {
     // TODO: pin thread to core
@@ -17,48 +43,36 @@ void run(int core_id)
     auto start_time = Clock::now();
     auto next_snapshot_time = start_time + std::chrono::seconds(1);
 
-    uint64_t total_duration_ns{0};
-    uint64_t num_samples = 0;
-    uint64_t max_sample = 0;
-    uint64_t min_sample = -1;
 
-    Clock::time_point t1 = Clock::now();
+
+    Snapshot snapshot;
 
     for (;;)
     {
-        Clock::time_point t2 = Clock::now();
-        uint64_t sample = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-        t1 = t2;
 
-        total_duration_ns += sample;
+        Clock::time_point t1 = Clock::now();
 
-        if (sample > max_sample)
+        for (;;)
         {
-            max_sample = sample;
-        }
-        else if (sample < min_sample)
-        {
-            min_sample = sample;
-        }
-        num_samples++;
+            Clock::time_point t2 = Clock::now();
+            uint64_t sample = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+            t1 = t2;
 
-        if (t1 >= next_snapshot_time)
-        {
-            std::cout
-                << "num_samples=" << num_samples
-                << " total_duration_ns=" << total_duration_ns
-                << " average_sample_duration=" << (num_samples ? total_duration_ns / num_samples : 0)
-                << " max_sample=" << max_sample
-                << " min_sample=" << min_sample
-                << std::endl;
+            snapshot.add(sample);
 
-            next_snapshot_time += std::chrono::seconds(1);
-            total_duration_ns = 0;
-            num_samples = 0;
-            max_sample = 0;
-            min_sample = -1;
+            if (t1 >= next_snapshot_time)
+            {
+                std::cout
+                    << "num_samples=" << snapshot.num_samples
+                    << " sum_samples=" << snapshot.sum_samples
+                    << " average_sample_duration=" << (snapshot.num_samples ? snapshot.sum_samples / snapshot.num_samples : 0)
+                    << " max_sample=" << snapshot.max_sample
+                    << std::endl;
 
-            t1 = Clock::now();
+                next_snapshot_time += std::chrono::seconds(1);
+                snapshot.clear();
+                break;
+            }
         }
     }
 }

@@ -154,12 +154,6 @@ private:
             // print its result.
             if (iteration_counter++ > 0)
             {
-//                std::cout
-//                    << "num_samples=" << snapshot.num_samples
-//                    << " sum_samples=" << snapshot.sum_samples
-//                    << " average_sample_duration=" << (snapshot.num_samples ? snapshot.sum_samples / snapshot.num_samples : 0)
-//                    << " max _sample=" << snapshot.max_sample
-//                    << std::endl;
                 mSnapshots.push(snapshot);
             }
 

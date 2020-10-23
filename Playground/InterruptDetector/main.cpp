@@ -1,5 +1,8 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 
 using Clock = std::chrono::system_clock;
@@ -54,13 +57,27 @@ void run(int core_id)
             num_samples = 0;
             max_sample = 0;
             min_sample = -1;
+
+            t1 = Clock::now();
         }
     }
 }
 
 
 
-int main()
+int main(int argc, char** argv)
 {
-    run(0);
+    if (argc != 2)
+    {
+        std::string program_name = argv[0];
+        std::string basename = program_name.substr(program_name.rfind('/') + 1);
+        std::cerr << "Usage: " << basename << " <core_id>\n";
+        return 1;
+    }
+
+    uint32_t core_id = std::stoi(argv[1]);
+
+    std::cout << "Running on core " << core_id << std::endl;
+
+    run(core_id);
 }

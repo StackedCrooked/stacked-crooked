@@ -12,5 +12,5 @@ ssh root@$remote_host "
     set -x
     cd $remote_path &&
     make &&
-    ./a.out 2 SCHED_RR
+    ./a.out 1-3 SCHED_RR
 "

@@ -1,7 +1,10 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <chrono>
 #include <condition_variable>
+#include <csignal>
+#include <cstring>
 #include <deque>
+#include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -13,12 +16,32 @@
 using Clock = std::chrono::system_clock;
 
 
-void pin_current_thread_to_core(int core_id)
+static void pin_current_thread_to_core(int core_id)
 {
-    std::cout << "Pinning thread to core " << core_id << std::endl;
     auto cpuset = cpu_set_t();
     CPU_SET(core_id, &cpuset);
     pthread_setaffinity_np(pthread_self(), sizeof(cpuset), &cpuset);
+}
+
+
+static void set_current_thread_name(const std::string& threadname)
+{
+    pthread_setname_np(pthread_self(), threadname.c_str());
+}
+
+
+// Helper function for registration of a signal handler.
+// This handles SIGTERM and SIGINT. (SIGKILL cannot be handled)
+// You must pass a function pointer of signature `void(int)`
+typedef void (*signal_handler_t)(int);
+static void add_signal_handler(signal_handler_t signal_handler)
+{
+    typedef struct sigaction sigaction_t;
+    auto action = sigaction_t();
+    action.sa_handler = signal_handler;
+    action.sa_flags = SA_RESETHAND;
+    sigaction(SIGTERM, &action, 0);
+    sigaction(SIGINT, &action, 0);
 }
 
 
@@ -82,6 +105,11 @@ struct ThreadRunner
         return mCoreId;
     }
 
+    bool is_snapshot_available() const
+    {
+        return mSnapshots.read_available();
+    }
+
     bool consume(Snapshot& snapshot)
     {
         return mSnapshots.pop(&snapshot, 1);
@@ -90,7 +118,9 @@ struct ThreadRunner
 private:
     void run_thread()
     {
-        std::cout << "ThreadRunner: entered thread function, pinning thread to core " << mCoreId << std::endl;
+        set_current_thread_name("CPU" + std::to_string(mCoreId));
+
+        std::cout << "ThreadRunner::run_thread: pinning thread to core " << mCoreId << "\n";
         pin_current_thread_to_core(mCoreId);
 
         auto start_time = Clock::now();
@@ -227,6 +257,13 @@ int main(int argc, char** argv)
 
     std::cout << std::endl;
 
+    // Trigger shutdown on SIGINT
+    std::cout << "Registring signal handler.\n";
+    add_signal_handler([](int signal) {
+        std::cerr << "\nReceived signal " << signal << "(" << strsignal(signal) << ")" << std::endl;
+        std::exit(0);
+    });
+
 
     /// The main thread is on core zero.
     pin_current_thread_to_core(0);
@@ -249,32 +286,60 @@ int main(int argc, char** argv)
         runner.start();
     }
 
+    /// WAIT UNTIL THREADS ARE STARTED
+    /// FIXME: USE NOTIFICATION SYSTEM HERE!!!
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    std::cout << "(Press Ctrl-C to exit)\n";
+
+    std::cout << "\n";
+
+    enum { column_width = 7 };
+
+    for (ThreadRunner& runner : runners)
+    {
+        std::cout << std::setw(column_width) << std::right << ("CPU" + std::to_string(runner.getCoreId()));
+    }
+
+    std::cout << '\n';
+
     for (;;)
     {
+        bool all_snapshots_available = true;
+
+        for (ThreadRunner& runner : runners)
+        {
+            if (!runner.is_snapshot_available())
+            {
+                all_snapshots_available = false;
+                break;
+            }
+            break;
+        }
+
+        if (!all_snapshots_available)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
+
+        std::vector<Snapshot> snapshots;
+        snapshots.reserve(runners.size());
 
         for (ThreadRunner& runner : runners)
         {
             Snapshot snapshot;
             if (runner.consume(snapshot))
             {
-                std::cout
-                    << "Consumed ThreadRunner with core id: " << runner.getCoreId()
-                    << " num_samples=" << snapshot.num_samples
-                    << " sum_samples=" << snapshot.sum_samples
-                    << " average_sample_duration=" << (snapshot.num_samples ? snapshot.sum_samples / snapshot.num_samples : 0)
-                    << " max _sample=" << snapshot.max_sample
-                    << std::endl;
-
+                snapshots.push_back(snapshot);
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        for (const Snapshot& snapshot : snapshots)
+        {
+            std::cout << std::setw(column_width) << std::right << snapshot.max_sample;
+        }
+
+        std::cout << std::endl;
     }
-
-    std::mutex m;
-    std::condition_variable c;
-    std::unique_lock<std::mutex> lock(m);
-    c.wait(lock);
-
-    std::cout << "Exiting program." << std::endl;
 }

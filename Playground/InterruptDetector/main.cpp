@@ -52,36 +52,38 @@ void run(int core_id)
 
     for (;;)
     {
-
         Clock::time_point t1 = Clock::now();
 
         for (;;)
         {
             Clock::time_point t2 = Clock::now();
 
-            if (t1 >= next_snapshot_time)
+            if (t1 < next_snapshot_time)
             {
-                // The first iteration is always slow, so treat is as a warmup iteration and don't
-                // print its result.
-                if (iteration_counter++ > 0)
-                {
-                    std::cout
-                        << "num_samples=" << snapshot.num_samples
-                        << " sum_samples=" << snapshot.sum_samples
-                        << " average_sample_duration=" << (snapshot.num_samples ? snapshot.sum_samples / snapshot.num_samples : 0)
-                        << " max_sample=" << snapshot.max_sample
-                        << std::endl;
-                }
-
-                next_snapshot_time += std::chrono::seconds(1);
-                snapshot.clear();
+                uint64_t sample = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+                snapshot.add(sample);
+                t1 = t2;
+            }
+            else
+            {
                 break;
             }
-
-            uint64_t sample = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-            snapshot.add(sample);
-            t1 = t2;
         }
+
+        // The first iteration is always slow, so treat is as a warmup iteration and don't
+        // print its result.
+        if (iteration_counter++ > 0)
+        {
+            std::cout
+                << "num_samples=" << snapshot.num_samples
+                << " sum_samples=" << snapshot.sum_samples
+                << " average_sample_duration=" << (snapshot.num_samples ? snapshot.sum_samples / snapshot.num_samples : 0)
+                << " max_sample=" << snapshot.max_sample
+                << std::endl;
+        }
+
+        next_snapshot_time += std::chrono::seconds(1);
+        snapshot.clear();
     }
 }
 

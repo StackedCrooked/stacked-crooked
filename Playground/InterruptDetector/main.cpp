@@ -84,17 +84,45 @@ void run(int core_id)
 
 int main(int argc, char** argv)
 {
-    if (argc != 2)
+    std::vector<std::string> args(argv, argv + argc);
+
+    if (argc != 3)
     {
-        std::string program_name = argv[0];
+        std::string program_name = args[0];
         std::string basename = program_name.substr(program_name.rfind('/') + 1);
-        std::cerr << "Usage: " << basename << " <core_id>\n";
+        std::cerr << "Usage:\n\t" << basename << " <core_id> <priority>\n";
+        std::cerr << "\nExample:\n\t" << basename << " 1 SCHED_RR\n";
+        std::cerr << "\nExample:\n\t" << basename << " 1 DEFAULT\n";
         return 1;
     }
 
+    std::cout << "Settings:\n";
+
+
     uint32_t core_id = std::stoi(argv[1]);
 
-    std::cout << "Running on core " << core_id << std::endl;
+    std::cout << "- Core id: " << core_id << std::endl;
+
+    if (args[2] == "SCHED_RR")
+    {
+        std::cout << "- Scheduling priority: SCHED_RR\n";
+        auto param = sched_param();
+        int policy = 0;
+        pthread_getschedparam(pthread_self(), &policy, &param);
+        policy = SCHED_RR;
+        param.sched_priority = sched_get_priority_min(policy);
+        pthread_setschedparam(pthread_self(), policy, &param);
+    }
+    else if (args[2] == "DEFAULT")
+    {
+        std::cout << "- Scheduling priority: default\n";
+    }
+    else
+    {
+        throw std::runtime_error("Invalid scheduling priority: " + args[2]);
+    }
+
+    std::cout << std::endl;
 
     run(core_id);
 }

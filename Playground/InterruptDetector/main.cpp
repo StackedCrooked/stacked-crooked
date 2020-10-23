@@ -36,9 +36,12 @@ struct Snapshot
 
 void run(int core_id)
 {
-    // TODO: pin thread to core
-    (void)core_id;
-
+    std::cout << "Pinning thread to core " << core_id << std::endl;
+    {
+        auto cpuset = cpu_set_t();
+        CPU_SET(core_id, &cpuset);
+        pthread_setaffinity_np(pthread_self(), sizeof(cpuset), &cpuset);
+    }
 
     auto start_time = Clock::now();
     auto next_snapshot_time = start_time + std::chrono::seconds(1);
@@ -55,10 +58,6 @@ void run(int core_id)
         for (;;)
         {
             Clock::time_point t2 = Clock::now();
-            uint64_t sample = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-            t1 = t2;
-
-            snapshot.add(sample);
 
             if (t1 >= next_snapshot_time)
             {
@@ -73,6 +72,10 @@ void run(int core_id)
                 snapshot.clear();
                 break;
             }
+
+            uint64_t sample = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+            snapshot.add(sample);
+            t1 = t2;
         }
     }
 }

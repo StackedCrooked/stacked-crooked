@@ -19,7 +19,7 @@ RUN export GCC_VERSION=9.3.0 \
     && make -j$(nproc) \
     && make install \
     && cd /tmp \
-    && rm -rf /tmp/gcc-${GCC_VERSION} /tmp/gcc-${GCC_VERSION}.tar.gz
+    && rm -rf /tmp/gcc-${GCC_VERSION} /tmp/gcc-${GCC_VERSION}.tar.gz \
     && ln -fs /opt/gcc-${GCC_VERSION} /opt/gcc
 
 

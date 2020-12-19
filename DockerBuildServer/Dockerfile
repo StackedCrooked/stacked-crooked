@@ -2,7 +2,27 @@ FROM debian:buster
 
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt update \
-    && apt -y install python3-dev python3-pip subversion git sshfs
+    && apt install -y \
+        bison \
+        build-essential \
+        cmake \
+        curl \
+        flex \
+        git \
+        libfl-dev \
+        libgmp-dev \
+        libmpc-dev \
+        libmpfr-dev \
+        libz3-dev \
+        python3-dev \
+        python3-pip \
+        sshfs \
+        subversion \
+        sudo \
+        unzip \
+        vim \
+        wget
+
 
 RUN pip3 install conan cmake ninja
 
@@ -10,7 +30,7 @@ RUN pip3 install conan cmake ninja
 RUN export GCC_VERSION=9.3.0 \
     && cd /tmp \
     && wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz \
-    && tar xf gcc-${GCC_VERSION}.tar.gz \
+    && tar xf gcc-${GCC_VERSION}.tar.xz \
     && cd /tmp/gcc-${GCC_VERSION} \
     && contrib/download_prerequisites \
     && mkdir build \
@@ -19,7 +39,7 @@ RUN export GCC_VERSION=9.3.0 \
     && make -j$(nproc) \
     && make install \
     && cd /tmp \
-    && rm -rf /tmp/gcc-${GCC_VERSION} /tmp/gcc-${GCC_VERSION}.tar.gz \
+    && rm -rf /tmp/gcc-${GCC_VERSION} /tmp/gcc-${GCC_VERSION}.tar.xz \
     && ln -fs /opt/gcc-${GCC_VERSION} /opt/gcc
 
 

@@ -90,9 +90,9 @@ static int hello_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	if (strcmp(path, "/") != 0)
 		return -ENOENT;
 
-	filler(buf, ".", NULL, 0, 0);
-	filler(buf, "..", NULL, 0, 0);
-	filler(buf, options.filename, NULL, 0, 0);
+	filler(buf, ".", NULL, 0, fuse_fill_dir_flags());
+	filler(buf, "..", NULL, 0, fuse_fill_dir_flags());
+	filler(buf, options.filename, NULL, 0, fuse_fill_dir_flags());
 
 	return 0;
 }
@@ -117,7 +117,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 		return -ENOENT;
 
 	len = strlen(options.contents);
-	if (offset < len) {
+	if (offset < static_cast<off_t>(len)) {
 		if (offset + size > len)
 			size = len - offset;
 		memcpy(buf, options.contents + offset, size);
@@ -128,11 +128,11 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset,
 }
 
 static const struct fuse_operations hello_oper = {
-	.init           = hello_init,
 	.getattr	= hello_getattr,
-	.readdir	= hello_readdir,
 	.open		= hello_open,
 	.read		= hello_read,
+	.readdir	= hello_readdir,
+	.init       = hello_init,
 };
 
 static void show_help(const char *progname)

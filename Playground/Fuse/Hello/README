@@ -1,2 +1,12 @@
 Fuse3 installation instructions can be found here: http://www.linuxfromscratch.org/blfs/view/svn/postlfs/fuse.html
 
+
+
+
+Mount:
+	mkdir -p my_mount
+	./hello my_mount
+
+Unmount:
+	fusermount3 -u my_mount
+

@@ -34,4 +34,5 @@ Build and install:
 ./bootstrap.sh
 
 # Build + Install
-./b2 --layout=system variant=release threading=multi link=static install
+echo ./b2 --layout=system variant=release threading=multi link=static install
+echo HAHA

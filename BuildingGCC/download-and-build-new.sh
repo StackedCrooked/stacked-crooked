@@ -4,7 +4,7 @@ set -x
 
 VERSION="$(wget -O - https://ftp.gnu.org/gnu/gcc 2>/dev/null | grep -E -o 'gcc-[1-9]+\.[0-9]+\.[0-9]+' | sed -e 's,gcc-,,g' | sort -n | tail -n1)"
 BASENAME="gcc-${VERSION}"
-FILENAME=${BASENAME}.tar.xz"
+FILENAME="${BASENAME}.tar.xz"
 
 FILE_URL="https://ftp.gnu.org/gnu/gcc/gcc-${VERSION}/${FILENAME}"
 

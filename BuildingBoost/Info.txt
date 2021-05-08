@@ -3,6 +3,17 @@
 Download:
     wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
 
+Download latest version:
+    LATEST_VERSION="$(wget -O - https://boostorg.jfrog.io/artifactory/main/release 2>/dev/null  | grep '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | perl -pe 's,.*href="([\w\./]+)".*,\1,g' | sed -e 's,/$,,g' | tail -n1)"
+    echo "Latest version: ${LATEST_VERSION}"
+
+    FILENAME="boost_$(echo $LATEST_VERSION  | perl -pe 's,\.,_,g').tar.gz"
+    echo "Filename: ${FILENAME}"
+
+    echo wget https://boostorg.jfrog.io/artifactory/main/release/${LATEST_VERSION}/source/${FILENAME}
+    wget https://boostorg.jfrog.io/artifactory/main/release/${LATEST_VERSION}/source/${FILENAME}
+
+
 Build and install:
 
     # Boostrap ?

@@ -1,3 +1,8 @@
+
+Downloads
+---------
+https://gcc.gnu.org/mirrors.html
+ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-9.3.0/
 
 
 Installing GCC

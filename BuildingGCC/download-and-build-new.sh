@@ -28,7 +28,7 @@ echo "Building the source code"
 mkdir build && cd build
 
 echo "Configuring"
-../$BASENAME/configure --prefix=/opt/$BASENAME --program-suffix=-${VERSION} --disable-multilib --enable-languages=c,c++
+../$BASENAME/configure --disable-multilib --enable-languages=c,c++
 
 echo "Building"
 make -j$(nproc)

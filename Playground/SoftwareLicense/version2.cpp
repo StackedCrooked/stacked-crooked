@@ -62,8 +62,7 @@ private:
 
 static constexpr int Version1 = 1;
 static constexpr int Version2 = 2;
-static constexpr int Version3 = 3;
-static constexpr int CurrentVersion = 3;
+static constexpr int CurrentVersion = 2;
 
 
 
@@ -83,12 +82,6 @@ std::string GenerateChecksum(const License& license, int version)
     if (version >= Version2)
     {
         shasum.add(license.num_usb_ports());
-    }
-
-    // Version 3 fields:
-    if (version >= Version3)
-    {
-        shasum.add(license.num_nbaset_ports());
     }
 
     // Get checksum
@@ -112,13 +105,6 @@ License CreateLicense(int version, const std::string& hardware_id, int num_trunk
     {
         license.set_num_usb_ports(num_usb);
         license.add_checksum(GenerateChecksum(license, Version2));
-    }
-
-    // Version 3 fields:
-    if (version >= Version3)
-    {
-        license.set_num_nbaset_ports(num_nbase_t);
-        license.add_checksum(GenerateChecksum(license, Version3));
     }
 
     return license;
@@ -200,11 +186,6 @@ void ShowLicense(const std::string& filename)
     if (license.version() >= Version2)
     {
         std::cout << "  Number of USB ports: " << license.num_usb_ports() << '\n';
-    }
-
-    if (license.version() >= Version3)
-    {
-        std::cout << "  Number of NBASE-T ports: " << license.num_nbaset_ports() << '\n';
     }
 
     std::cout << "  Checksum: " << std::endl;

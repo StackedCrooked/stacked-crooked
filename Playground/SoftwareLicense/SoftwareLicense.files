@@ -2,3 +2,6 @@ license.proto
 main.cpp
 protobuf/license.pb.h
 protobuf/license.pb.cc
+version1.cpp
+version2.cpp
+version3.cpp

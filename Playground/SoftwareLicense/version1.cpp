@@ -61,9 +61,7 @@ private:
 
 
 static constexpr int Version1 = 1;
-static constexpr int Version2 = 2;
-static constexpr int Version3 = 3;
-static constexpr int CurrentVersion = 3;
+static constexpr int CurrentVersion = 1;
 
 
 
@@ -78,18 +76,6 @@ std::string GenerateChecksum(const License& license, int version)
     shasum.add(license.hardware_id());
     shasum.add(license.num_trunk_ports());
     shasum.add(license.num_nontrunk_ports());
-
-    // Version 2 fields:
-    if (version >= Version2)
-    {
-        shasum.add(license.num_usb_ports());
-    }
-
-    // Version 3 fields:
-    if (version >= Version3)
-    {
-        shasum.add(license.num_nbaset_ports());
-    }
 
     // Get checksum
     return shasum.generate_result();
@@ -106,20 +92,6 @@ License CreateLicense(int version, const std::string& hardware_id, int num_trunk
     license.set_num_trunk_ports(num_trunk);
     license.set_num_nontrunk_ports(num_nontrunk);
     license.add_checksum(GenerateChecksum(license, Version1));
-
-    // Version 2 fields:
-    if (version >= Version2)
-    {
-        license.set_num_usb_ports(num_usb);
-        license.add_checksum(GenerateChecksum(license, Version2));
-    }
-
-    // Version 3 fields:
-    if (version >= Version3)
-    {
-        license.set_num_nbaset_ports(num_nbase_t);
-        license.add_checksum(GenerateChecksum(license, Version3));
-    }
 
     return license;
 }
@@ -195,16 +167,6 @@ void ShowLicense(const std::string& filename)
     {
         std::cout << "  Number of trunk ports: " << license.num_nontrunk_ports() << '\n';
         std::cout << "  Number of nontrunk ports: " << license.num_trunk_ports() << '\n';
-    }
-
-    if (license.version() >= Version2)
-    {
-        std::cout << "  Number of USB ports: " << license.num_usb_ports() << '\n';
-    }
-
-    if (license.version() >= Version3)
-    {
-        std::cout << "  Number of NBASE-T ports: " << license.num_nbaset_ports() << '\n';
     }
 
     std::cout << "  Checksum: " << std::endl;

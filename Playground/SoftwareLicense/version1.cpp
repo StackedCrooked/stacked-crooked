@@ -82,7 +82,7 @@ std::string GenerateChecksum(const License& license, int version)
 }
 
 
-License CreateLicense(int version, const std::string& hardware_id, int num_trunk, int num_nontrunk, int num_usb, int num_nbase_t)
+License CreateLicense(int version, const std::string& hardware_id, int num_trunk, int num_nontrunk)
 {
     License license;
 
@@ -204,8 +204,6 @@ void create(const std::vector<std::string>& args)
         int32_t license_version = CurrentVersion;
         int32_t num_trunk = 0;
         int32_t num_nontrunk = 0;
-        int32_t num_usb = 0;
-        int32_t num_nbase_t = 0;
 
         options.add_options()
             ("filename,F", value(&filename)->required(), "License filename")
@@ -213,8 +211,6 @@ void create(const std::vector<std::string>& args)
             ("hardwareid", value(&hardwareid)->required(), "Hardware identifier that connects the license to a specific machine.")
             ("trunk,T", value(&num_trunk)->required(), "Number of trunking ports")
             ("nontrunk,N", value(&num_nontrunk)->required(), "Number of nontrunking ports")
-            ("usb", value(&num_usb), "Number of usb ports")
-            ("nbaset", value(&num_nbase_t), "Number of NBase-T ports")
                 ;
 
         variables_map vm;
@@ -226,7 +222,7 @@ void create(const std::vector<std::string>& args)
             throw std::runtime_error("Invalid version: " + std::to_string(license_version));
         }
 
-        License license = CreateLicense(license_version, hardwareid, num_trunk, num_nontrunk, num_usb, num_nbase_t);
+        License license = CreateLicense(license_version, hardwareid, num_trunk, num_nontrunk);
         WriteLicenseToFile(license, filename);
     }
     catch (const std::exception& e)

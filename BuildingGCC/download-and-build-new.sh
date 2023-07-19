@@ -2,7 +2,12 @@
 set -e
 set -x
 
-VERSION="$(wget -O - https://ftp.gnu.org/gnu/gcc 2>/dev/null | grep -E -o 'gcc-[1-9]+\.[0-9]+\.[0-9]+' | sed -e 's,gcc-,,g' | sort -n | tail -n1)"
+[ -e build ] && {
+    echo "Directory \"build\" already exists. Please delete it." >&2
+    exit 1
+}
+
+VERSION="$(wget --no-check-certificate -O - https://ftp.gnu.org/gnu/gcc 2>/dev/null | grep -E -o 'gcc-[1-9]+\.[0-9]+\.[0-9]+' | sed -e 's,gcc-,,g' | sort -n | tail -n1)"
 BASENAME="gcc-${VERSION}"
 FILENAME="${BASENAME}.tar.xz"
 
@@ -11,7 +16,7 @@ FILE_URL="https://ftp.gnu.org/gnu/gcc/gcc-${VERSION}/${FILENAME}"
 # Download the file
 [ ! -f ${FILENAME} ] && {
     echo "Downloading ${FILE_URL}"
-	wget "${FILE_URL}"
+	wget --no-check-certificate "${FILE_URL}"
 }
 
 [ ! -d $BASENAME ] && { 
@@ -36,3 +41,5 @@ make -j$(nproc)
 echo "Make install-strip!"
 make install-strip
 
+# Cleanup build directory
+rm -rf build

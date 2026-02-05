@@ -36,7 +36,7 @@ echo "Configuring"
 ../$BASENAME/configure --disable-multilib --enable-languages=c,c++
 
 echo "Building"
-make -j$(nproc)
+make -j2
 
 echo "Make install-strip!"
 make install-strip
